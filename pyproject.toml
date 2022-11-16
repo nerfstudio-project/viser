@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "viser"
+version = "0.0.0"
+description = "3D visualization helper"
+authors = ["brentyi <brentyi@berkeley.edu>"]
+include = ["./viser/**/*"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+python_version = "3.8"
+ignore_missing_imports = true
+warn_unused_configs = true
