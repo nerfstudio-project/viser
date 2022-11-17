@@ -1,10 +1,15 @@
-// Message type definitions.
-//
-// These currently need to be synchronizd manually with the corresponding
-// Python definitions.
+// AUTOMATICALLY GENERATED message interfaces, from Python dataclass definitions.
+// This file should not be manually modified.
 
+// For numpy arrays, we directly serialize the underlying data buffer.
 type ArrayBuffer = Uint8Array;
 
+interface CameraFrustumMessage {
+  type: "camera_frustum";
+  name: string;
+  fov: number;
+  aspect: number;
+}
 interface FrameMessage {
   type: "frame";
   name: string;
@@ -19,12 +24,6 @@ interface PointCloudMessage {
   color_uint8: ArrayBuffer;
   point_size: number;
 }
-interface CameraFrustumMessage {
-  type: "camera_frustum";
-  name: string;
-  fov: number;
-  aspect: number;
-}
 interface RemoveSceneNodeMessage {
   type: "remove_scene_node";
   name: string;
@@ -33,9 +32,9 @@ interface ResetSceneMessage {
   type: "reset_scene";
 }
 
-export type Message =
+export type Message = 
+  | CameraFrustumMessage
   | FrameMessage
   | PointCloudMessage
-  | CameraFrustumMessage
   | RemoveSceneNodeMessage
   | ResetSceneMessage;
