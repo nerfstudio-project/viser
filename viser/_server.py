@@ -2,12 +2,7 @@
 
 
 import asyncio
-import collections
-import concurrent.futures
-import random
 import threading
-import time
-from typing import Dict
 
 import websockets.connection
 import websockets.exceptions
@@ -53,8 +48,6 @@ class ViserServer:
 
         async def serve(websocket: websockets.server.WebSocketServerProtocol) -> None:
             """Server loop, run once per connection."""
-            message_index = 0
-
             nonlocal connection_count
             connection_id = connection_count
             connection_count += 1
