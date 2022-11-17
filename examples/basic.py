@@ -1,9 +1,9 @@
 import random
+import time
 
 import viser
 
 server = viser.ViserServer()
-import time
 
 while True:
     server.queue(

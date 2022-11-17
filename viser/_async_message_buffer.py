@@ -1,7 +1,7 @@
 import asyncio
 import dataclasses
 from asyncio.events import AbstractEventLoop
-from typing import Dict, List
+from typing import Dict
 
 from ._messages import Message, RemoveSceneNodeMessage, ResetSceneMessage
 
