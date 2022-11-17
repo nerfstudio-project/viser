@@ -112,7 +112,7 @@ function useWebsocketInterface(useSceneTree: UseSceneTree) {
       stateUpdateQueue.current.splice(0, stateUpdateBatch.length);
 
       // Handle all messages.
-      stateUpdateBatch.map((handle) => handle());
+      stateUpdateBatch.forEach((handle) => handle());
     }, 50);
     return () => clearInterval(batchedMessageHandler);
   }, [stateUpdateQueue]);

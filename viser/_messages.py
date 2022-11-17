@@ -1,8 +1,20 @@
-"""Message type definitions. This currently needs to be synchronized manully with the
-client definitions in `WebsocketMessages.tsx`."""
+"""Message type definitions. For synchronization with the TypeScript definitions, see
+`_typescript_interface_gen.py.`"""
+
+from __future__ import annotations
 
 import dataclasses
-from typing import Any, ClassVar, Dict, List, Tuple
+from typing import (
+    Any,
+    ClassVar,
+    Dict,
+    List,
+    Tuple,
+    Type,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 import msgpack
 import numpy as onp
