@@ -21,15 +21,16 @@ class AsyncMessageBuffer:
         """Push a new message to our buffer, and remove old redundant ones.
 
         Not currently thread-safe."""
+
+        # If we're resetting the scene, we don't need any of the prior messages.
+        if isinstance(message, ResetSceneMessage):
+            self.message_from_id.clear()
+            self.id_from_name.clear()
+
         # Add message to buffer.
         new_message_id = self.message_counter
         self.message_counter += 1
         self.message_from_id[new_message_id] = message.serialize()
-
-        # If we're resetting the scene, we don't need any new messages.
-        if isinstance(message, ResetSceneMessage):
-            self.message_from_id.clear()
-            self.id_from_name.clear()
 
         # All messages that modify scene nodes have a name field.
         node_name = getattr(message, "name", None)
