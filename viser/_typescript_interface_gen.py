@@ -1,6 +1,7 @@
 from typing import ClassVar, Type, get_args, get_origin, get_type_hints
 
 import numpy as onp
+from typing_extensions import Literal
 
 from ._messages import Message
 
@@ -14,10 +15,20 @@ _raw_type_mapping = {
 
 
 def _get_ts_type(typ: Type) -> str:
-    if typ in _raw_type_mapping:
-        return _raw_type_mapping[typ]
     if get_origin(typ) is tuple:
         return "[" + ", ".join(map(_get_ts_type, get_args(typ))) + "]"
+    if get_origin(typ) is Literal:
+        return " | ".join(
+            map(
+                lambda lit: repr(lit).lower() if type(lit) is bool else repr(lit),
+                get_args(typ),
+            )
+        )
+
+    if hasattr(typ, "__origin__"):
+        typ = typ.__origin__
+    if typ in _raw_type_mapping:
+        return _raw_type_mapping[typ]
 
     assert False, f"Unsupported type: {typ}"
 

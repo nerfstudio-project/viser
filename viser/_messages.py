@@ -3,11 +3,16 @@
 
 from __future__ import annotations
 
+import base64
 import dataclasses
+import io
 from typing import Any, ClassVar, Tuple
 
 import msgpack
 import numpy as onp
+import numpy.typing as onpt
+from PIL import Image
+from typing_extensions import Literal
 
 
 def _prepare_for_serialization(value: Any) -> Any:
@@ -56,10 +61,12 @@ class FrameMessage(Message):
 
 @dataclasses.dataclass
 class PointCloudMessage(Message):
+    """Message for rendering"""
+
     type: ClassVar[str] = "point_cloud"
     name: str
-    position_f32: onp.ndarray
-    color_uint8: onp.ndarray
+    position_f32: onpt.NDArray[onp.float32]
+    color_uint8: onpt.NDArray[onp.uint8]
     point_size: float = 0.1
 
     def __post_init__(self):
@@ -67,6 +74,62 @@ class PointCloudMessage(Message):
         assert self.color_uint8.dtype == onp.uint8
         assert self.position_f32.shape == self.color_uint8.shape
         assert self.position_f32.shape[-1] == 3
+
+
+@dataclasses.dataclass
+class ImageMessage(Message):
+    """Message for rendering 2D images."""
+
+    # Note: it might be faster to do the bytes->base64 conversion on the client.
+    # Potentially worth revisiting.
+
+    type: ClassVar[str] = "image"
+    name: str
+    media_type: Literal["image/jpeg", "image/png"]
+    base64_data: str
+    render_width: float
+    render_height: float
+
+    @staticmethod
+    def from_array(
+        name: str,
+        array: onpt.NDArray[onp.uint8],
+        render_width: float,
+        render_height: float,
+    ) -> ImageMessage:
+        return ImageMessage.from_image(
+            name=name,
+            image=Image.fromarray(array),
+            render_width=render_width,
+            render_height=render_height,
+        )
+
+    @staticmethod
+    def from_image(
+        name: str,
+        image: Image.Image,
+        render_width: float,
+        render_height: float,
+    ) -> ImageMessage:
+        with io.BytesIO() as data_buffer:
+            # Use a PNG when an alpha channel is required, otherwise JPEG.
+            # In the future, we could expose more granular controls for this.
+            if image.mode == "RGBA":
+                media_type = "image/png"
+                image.save(data_buffer, format="PNG")
+            elif image.mode == "RGB":
+                media_type = "image/jpeg"
+                image.save(data_buffer, format="JPEG", quality=60)
+            else:
+                assert False, f"Unexpected image mode {image.mode}"
+
+            return ImageMessage(
+                name=name,
+                media_type="image/png",
+                base64_data=base64.b64encode(data_buffer.getvalue()).decode("ascii"),
+                render_width=render_width,
+                render_height=render_height,
+            )
 
 
 @dataclasses.dataclass

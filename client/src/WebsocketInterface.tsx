@@ -2,6 +2,7 @@ import { decode } from "@msgpack/msgpack";
 import AwaitLock from "await-lock";
 import React from "react";
 import * as THREE from "three";
+import { TextureLoader } from "three";
 
 import { SceneNode, UseSceneTree } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
@@ -72,6 +73,32 @@ function useMessageHandler(useSceneTree: UseSceneTree) {
             aspect={message.aspect}
           ></CameraFrustum>
         ));
+        return () => addSceneNode(node);
+      }
+      // Add an image.
+      case "image": {
+        // It's important that we load the texture outside of the node
+        // construction callback; this prevents flickering by ensuring that the
+        // texture is ready before the scene tree updates.
+        const colorMap = new TextureLoader().load(
+          `data:${message.media_type};base64,${message.base64_data}`
+        );
+        const node = new SceneNode(message.name, (ref) => {
+          return (
+            <mesh ref={ref}>
+              <planeGeometry
+                attach="geometry"
+                args={[message.render_width, message.render_height]}
+              />
+              <meshBasicMaterial
+                attach="material"
+                transparent={true}
+                side={THREE.DoubleSide}
+                map={colorMap}
+              />
+            </mesh>
+          );
+        });
         return () => addSceneNode(node);
       }
       // Remove a scene node by name.
