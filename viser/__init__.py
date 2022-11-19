@@ -1,6 +1,7 @@
 from ._messages import (
     CameraFrustumMessage,
     FrameMessage,
+    ImageMessage,
     Message,
     PointCloudMessage,
     RemoveSceneNodeMessage,
@@ -11,6 +12,7 @@ from ._server import ViserServer
 __all__ = [
     "CameraFrustumMessage",
     "FrameMessage",
+    "ImageMessage",
     "Message",
     "PointCloudMessage",
     "RemoveSceneNodeMessage",

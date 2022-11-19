@@ -24,6 +24,14 @@ interface PointCloudMessage {
   color_uint8: ArrayBuffer;
   point_size: number;
 }
+interface ImageMessage {
+  type: "image";
+  name: string;
+  media_type: "image/jpeg" | "image/png";
+  base64_data: string;
+  render_width: number;
+  render_height: number;
+}
 interface RemoveSceneNodeMessage {
   type: "remove_scene_node";
   name: string;
@@ -32,9 +40,10 @@ interface ResetSceneMessage {
   type: "reset_scene";
 }
 
-export type Message = 
+export type Message =
   | CameraFrustumMessage
   | FrameMessage
   | PointCloudMessage
+  | ImageMessage
   | RemoveSceneNodeMessage
   | ResetSceneMessage;
