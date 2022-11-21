@@ -19,7 +19,7 @@ server.queue(
     ),
     viser.ImageMessage.from_image(
         "/main/img",
-        Image.open(pathlib.Path("./assets/Cal_logo.png")),
+        Image.open(pathlib.Path("./assets/Cal_logo.png")), # Go Bears!
         4.0,
         4.0,
     ),

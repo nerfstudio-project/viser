@@ -41,6 +41,7 @@ export interface SceneTree extends SceneTreeState {
 
 // Create default scene tree state.
 // By default, the y-axis is up. Let's rotate everything so Z is up instead.
+// Are there return types with TypeScript?
 const rootFrameTemplate: MakeObject = (ref) => (
   <CoordinateFrame
     ref={ref}
@@ -127,6 +128,7 @@ export function useSceneTreeState() {
 /** Type corresponding to a zustand-style useSceneTree hook. */
 export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
 
+// How common is typing via interfaces like this?
 interface SceneNodeThreeChildrenProps {
   id: NodeIdType;
   useSceneTree: UseSceneTree;
@@ -159,7 +161,7 @@ function SceneNodeThreeChildren(props: SceneNodeThreeChildrenProps) {
 
 interface SceneNodeThreeObjectProps {
   id: NodeIdType;
-  useSceneTree: UseSceneTree;
+  useSceneTree: UseSceneTree; // How does "UseSceneTree" work here?
 }
 
 /** Component containing the three.js object and children for a particular scene node. */
