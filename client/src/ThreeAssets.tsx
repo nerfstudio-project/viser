@@ -25,6 +25,7 @@ export const CoordinateFrame = React.forwardRef<
   CoordinateFrameProps
 >(
   (
+    // Interesting. So this is how to have typing & default values which differ per function.
     {
       scale = 0.5,
       quaternion = undefined,
