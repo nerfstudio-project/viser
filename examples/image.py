@@ -26,7 +26,7 @@ server.queue(
     viser.FrameMessage(
         "/main/bkgd",
         xyzw=(0.0, 0.0, 0.0, 1.0),
-        position=(0.0, 0.0, -1e-5),
+        position=(0.0, 0.0, -1e-2),
         show_axes=False,
     ),
 )

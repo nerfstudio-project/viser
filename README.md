@@ -9,7 +9,11 @@ Scene tree
 - [x] useState prototype
 - [x] useState -> zustand
 
-Websocket connection
+- Websocket connection
+
+  - [x] Stateful server
+  - [x] Redundant message culling
+  - [ ] Multiple "servers"? Conflicting ports?
 
 - Camera controls
 
