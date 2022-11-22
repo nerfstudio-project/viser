@@ -16,6 +16,7 @@ interface FrameMessage {
   xyzw: [number, number, number, number];
   position: [number, number, number];
   show_axes: boolean;
+  scale: number;
 }
 interface PointCloudMessage {
   type: "point_cloud";

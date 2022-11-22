@@ -12,6 +12,7 @@ class AsyncMessageBuffer:
 
     Uses heuristics on scene node names to automatically cull out outdated messages."""
 
+    event_loop: AbstractEventLoop
     message_counter: int = 0
     message_from_id: Dict[int, bytes] = dataclasses.field(default_factory=dict)
     id_from_name: Dict[str, int] = dataclasses.field(default_factory=dict)
@@ -29,8 +30,8 @@ class AsyncMessageBuffer:
 
         # Add message to buffer.
         new_message_id = self.message_counter
-        self.message_counter += 1
         self.message_from_id[new_message_id] = message.serialize()
+        self.message_counter += 1
 
         # All messages that modify scene nodes have a name field.
         node_name = getattr(message, "name", None)
@@ -55,29 +56,36 @@ class AsyncMessageBuffer:
                     self.message_from_id.pop(id)
             self.id_from_name[node_name] = new_message_id
 
-    def notify(self, event_loop: AbstractEventLoop) -> None:
-        """Notify serve loops that a new message is available."""
-        event_loop.call_soon_threadsafe(self.message_event.set)
-        event_loop.call_soon_threadsafe(self.message_event.clear)
+        # Notify consumers that a new message is available.
+        self.event_loop.call_soon_threadsafe(self.message_event.set)
+        most_recent_message_id = next(reversed(self.message_from_id))
 
     async def __aiter__(self):
         """Async iterator over messages. Loops infinitely, and waits when no messages
         are available."""
+        # Wait for a first message to arrive.
+        if len(self.message_from_id) == 0:
+            await self.message_event.wait()
+
         last_sent_id = -1
-
         while True:
-            # Wait for a message to arrive.
-            if len(self.message_from_id) == 0:
-                await self.message_event.wait()
-
+            # Wait until there are new messages available.
+            # TODO: there are potential race conditions here.
             most_recent_message_id = next(reversed(self.message_from_id))
-
-            # No new messages => wait.
-            if most_recent_message_id <= last_sent_id:
+            while last_sent_id >= most_recent_message_id:
                 await self.message_event.wait()
+                most_recent_message_id = next(reversed(self.message_from_id))
 
-            # Try to yield the next message ID.
+            # Try to yield the next message ID. Note that messages can be culled before
+            # they're sent.
             last_sent_id += 1
             message = self.message_from_id.get(last_sent_id, None)
             if message is not None:
                 yield message
+                # TODO: it's likely OK for now, but feels sketchy to be sharing the same
+                # message event across all consumers.
+                self.event_loop.call_soon_threadsafe(self.message_event.clear)
+
+                # Small sleep: this is needed when (a) messages are being queued faster than
+                # we can send them and (b) when there are multiple clients.
+                await asyncio.sleep(1e-4)

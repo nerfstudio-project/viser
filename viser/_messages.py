@@ -57,6 +57,7 @@ class FrameMessage(Message):
     xyzw: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
     show_axes: bool = True
+    scale: float = 0.5
 
 
 @dataclasses.dataclass

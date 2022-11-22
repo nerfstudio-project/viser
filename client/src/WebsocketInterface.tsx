@@ -22,6 +22,7 @@ function useMessageHandler(useSceneTree: UseSceneTree) {
         const node = new SceneNode(message.name, (ref) => (
           <CoordinateFrame
             ref={ref}
+            scale={message.scale}
             position={new THREE.Vector3().fromArray(message.position)}
             quaternion={new THREE.Quaternion().fromArray(message.xyzw)}
             show_axes={message.show_axes}
