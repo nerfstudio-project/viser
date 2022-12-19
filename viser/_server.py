@@ -39,7 +39,8 @@ class ViserServer:
         message_queue: multiprocessing.Queue,
     ) -> None:
         connection_count = 0
-        event_loop = asyncio.get_event_loop()
+        event_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(event_loop)
         message_buffer = AsyncMessageBuffer(event_loop)
 
         def message_transfer() -> None:
