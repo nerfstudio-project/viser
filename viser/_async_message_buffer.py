@@ -58,7 +58,6 @@ class AsyncMessageBuffer:
 
         # Notify consumers that a new message is available.
         self.event_loop.call_soon_threadsafe(self.message_event.set)
-        most_recent_message_id = next(reversed(self.message_from_id))
 
     async def __aiter__(self):
         """Async iterator over messages. Loops infinitely, and waits when no messages
