@@ -38,7 +38,8 @@ export default function ControlPanel(props: ControlPanelProps) {
 
   const connected = useWebsocketInterface(
     props.useSceneTree,
-    props.websocketRef
+    props.websocketRef,
+    props.wrapperRef,
   );
   // const [parent, setParent] = React.useState<HTMLDivElement>();
   //

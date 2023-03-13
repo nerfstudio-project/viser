@@ -3,17 +3,18 @@
 
 import asyncio
 import multiprocessing
+import queue
 import threading
-import msgpack
+from typing import Optional
 
-import dacite
+import msgpack
 import websockets.connection
 import websockets.exceptions
 import websockets.server
 from websockets.legacy.server import WebSocketServer, WebSocketServerProtocol
 
 from ._async_message_buffer import AsyncMessageBuffer
-from ._messages import Message
+from ._messages import Message, ViewerCameraMessage
 
 
 class ViserServer:
@@ -23,9 +24,9 @@ class ViserServer:
         port: int = 8080,
     ):
         # Create websocket server process.
-        self.message_queue = multiprocessing.Queue(maxsize=1024)
-        self.camera = None
-        multiprocessing.Process(
+        self.message_queue = queue.Queue(maxsize=1024)
+        self.camera: Optional[ViewerCameraMessage] = None
+        threading.Thread(
             target=self._start_background_loop,
             args=(host, port, self.message_queue),
             daemon=True,
@@ -79,9 +80,13 @@ class ViserServer:
 
         async def consumer(websocket: WebSocketServerProtocol) -> None:
             while True:
-                messages = await websocket.recv()
-                print("Received a message")
-                print(msgpack.unpackb(messages))
+                message = msgpack.unpackb(await websocket.recv())
+                print(message)
+                t = message.pop("type")
+                if t == "viewer_camera":
+                    self.camera = ViewerCameraMessage(**message)
+                else:
+                    print("Unrecognized message", message)
 
         # Start message transfer thread.
         threading.Thread(target=message_transfer).start()

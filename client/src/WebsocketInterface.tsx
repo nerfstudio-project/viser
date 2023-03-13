@@ -1,6 +1,6 @@
 import { decode } from "@msgpack/msgpack";
 import AwaitLock from "await-lock";
-import React, { MutableRefObject } from "react";
+import React, { MutableRefObject, RefObject } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 
@@ -9,7 +9,10 @@ import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
 import { Message } from "./WebsocketMessages";
 
 /** React hook for handling incoming messages, and using them for scene tree manipulation. */
-function useMessageHandler(useSceneTree: UseSceneTree) {
+function useMessageHandler(
+  useSceneTree: UseSceneTree,
+  wrapperRef: RefObject<HTMLDivElement>
+) {
   const removeSceneNode = useSceneTree((state) => state.removeSceneNode);
   const resetScene = useSceneTree((state) => state.resetScene);
   const addSceneNode = useSceneTree((state) => state.addSceneNode);
@@ -84,6 +87,17 @@ function useMessageHandler(useSceneTree: UseSceneTree) {
         ));
         return () => addSceneNode(node);
       }
+      // Add a background image.
+      case "background_image": {
+        return () => {
+          if (wrapperRef.current != null) {
+            wrapperRef.current.style.backgroundImage = `url(data:${message.media_type};base64,${message.base64_data})`;
+            wrapperRef.current.style.backgroundSize = "contain";
+            wrapperRef.current.style.backgroundRepeat = "no-repeat";
+            wrapperRef.current.style.backgroundPosition = "center center";
+          }
+        };
+      }
       // Add an image.
       case "image": {
         // It's important that we load the texture outside of the node
@@ -131,7 +145,8 @@ function useMessageHandler(useSceneTree: UseSceneTree) {
 /** Component for handling websocket connections. Rendered as a connection indicator. */
 function useWebsocketInterface(
   useSceneTree: UseSceneTree,
-  websocketRef: MutableRefObject<WebSocket | null>
+  websocketRef: MutableRefObject<WebSocket | null>,
+  wrapperRef: RefObject<HTMLDivElement>
 ) {
   const [connected, setConnected] = React.useState(false);
 
@@ -152,7 +167,7 @@ function useWebsocketInterface(
     return () => clearInterval(batchedMessageHandler);
   }, [stateUpdateQueue]);
 
-  const handleMessage = useMessageHandler(useSceneTree);
+  const handleMessage = useMessageHandler(useSceneTree, wrapperRef);
 
   React.useEffect(() => {
     // Lock for making sure messages are handled in order. This is important

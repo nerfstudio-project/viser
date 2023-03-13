@@ -48,7 +48,7 @@ function CameraSynchronizer(props: CameraSynchronizerProps) {
         ],
         position: three_camera.position.toArray(),
         aspect: three_camera.aspect,
-        fov: three_camera.fov,
+        fov: three_camera.fov * Math.PI / 180.0,
       };
       if (props.staleCameraPoseRef.current) {
         sendCamera(camera);
@@ -75,8 +75,6 @@ function Root() {
   const Viewport = styled(Canvas)`
     position: relative;
     z-index: 0;
-
-    background-color: #fff;
 
     width: 100%;
     height: 100%;
