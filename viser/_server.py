@@ -5,6 +5,7 @@ import asyncio
 import multiprocessing
 import queue
 import threading
+import time
 from typing import Optional
 
 import msgpack
@@ -26,6 +27,7 @@ class ViserServer:
         # Create websocket server process.
         self.message_queue = queue.Queue(maxsize=1024)
         self.camera: Optional[ViewerCameraMessage] = None
+        self.camera_timestamp: float = 0.0
         threading.Thread(
             target=self._start_background_loop,
             args=(host, port, self.message_queue),
@@ -81,10 +83,10 @@ class ViserServer:
         async def consumer(websocket: WebSocketServerProtocol) -> None:
             while True:
                 message = msgpack.unpackb(await websocket.recv())
-                print(message)
                 t = message.pop("type")
                 if t == "viewer_camera":
                     self.camera = ViewerCameraMessage(**message)
+                    self.camera_timestamp = time.time()
                 else:
                     print("Unrecognized message", message)
 
