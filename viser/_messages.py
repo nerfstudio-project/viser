@@ -38,11 +38,26 @@ class Message:
 
 
 @dataclasses.dataclass
+class ViewerCameraMessage(Message):
+    """Message for a posed viewer camera."""
+
+    type: ClassVar[str] = "viewer_camera"
+    wxyz: Tuple[float, float, float, float]
+    position: Tuple[float, float, float]
+    fov: float
+    aspect: float
+    # Should we include near and far?
+
+
+@dataclasses.dataclass
 class CameraFrustumMessage(Message):
+    """Variant of CameraMessage used for visualizing camera frustums."""
+
     type: ClassVar[str] = "camera_frustum"
     name: str
     fov: float
     aspect: float
+    scale: float = 0.3
 
 
 @dataclasses.dataclass
@@ -54,7 +69,7 @@ class FrameMessage(Message):
 
     type: ClassVar[str] = "frame"
     name: str
-    xyzw: Tuple[float, float, float, float]
+    wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
     show_axes: bool = True
     scale: float = 0.5

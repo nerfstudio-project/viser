@@ -1,4 +1,4 @@
-from typing import ClassVar, Type, get_args, get_origin, get_type_hints
+from typing import ClassVar, List, Type, get_args, get_origin, get_type_hints
 
 import numpy as onp
 from typing_extensions import Literal
@@ -46,11 +46,18 @@ def generate_typescript_defs() -> str:
         "",
     ]
 
-    message_types = Message.__subclasses__()
+    def get_subclasses(typ: Type) -> List[Type[Message]]:
+        out = []
+        for sub in typ.__subclasses__():
+            out.append(sub)
+            out.extend(get_subclasses(sub))
+        return out
+
+    message_types = get_subclasses(Message)
 
     # Generate interfaces for each specific message.
     for cls in message_types:
-        out_lines.append(f"interface {cls.__name__} {{")
+        out_lines.append(f"export interface {cls.__name__} {{")
         for name, typ in get_type_hints(cls).items():
             if typ == ClassVar[str]:
                 typ = f'"{getattr(cls, name)}"'

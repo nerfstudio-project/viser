@@ -4,10 +4,13 @@
 import asyncio
 import multiprocessing
 import threading
+import msgpack
 
+import dacite
 import websockets.connection
 import websockets.exceptions
 import websockets.server
+from websockets.legacy.server import WebSocketServer, WebSocketServerProtocol
 
 from ._async_message_buffer import AsyncMessageBuffer
 from ._messages import Message
@@ -21,6 +24,7 @@ class ViserServer:
     ):
         # Create websocket server process.
         self.message_queue = multiprocessing.Queue(maxsize=1024)
+        self.camera = None
         multiprocessing.Process(
             target=self._start_background_loop,
             args=(host, port, self.message_queue),
@@ -48,26 +52,36 @@ class ViserServer:
             while True:
                 message_buffer.push(message_queue.get())
 
-        async def serve(websocket: websockets.server.WebSocketServerProtocol) -> None:
+        async def serve(websocket: WebSocketServerProtocol) -> None:
             """Server loop, run once per connection."""
             nonlocal connection_count
             connection_id = connection_count
             connection_count += 1
-
             print(
                 f"Connection opened ({connection_id}),"
                 f" {len(message_buffer.message_from_id)} buffered messages"
             )
-
-            # Infinite loop over messages from the message buffer.
             try:
-                async for message in message_buffer:
-                    await websocket.send(message)
+                await asyncio.gather(
+                    producer(websocket),
+                    consumer(websocket),
+                )
             except (
                 websockets.exceptions.ConnectionClosedOK,
                 websockets.exceptions.ConnectionClosedError,
             ):
                 print(f"Connection closed ({connection_id})")
+
+        async def producer(websocket: WebSocketServerProtocol) -> None:
+            # Infinite loop to send messages from the message buffer.
+            async for message in message_buffer:
+                await websocket.send(message)
+
+        async def consumer(websocket: WebSocketServerProtocol) -> None:
+            while True:
+                messages = await websocket.recv()
+                print("Received a message")
+                print(msgpack.unpackb(messages))
 
         # Start message transfer thread.
         threading.Thread(target=message_transfer).start()
