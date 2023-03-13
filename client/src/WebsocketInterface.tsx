@@ -92,7 +92,7 @@ function useMessageHandler(
         return () => {
           if (wrapperRef.current != null) {
             wrapperRef.current.style.backgroundImage = `url(data:${message.media_type};base64,${message.base64_data})`;
-            wrapperRef.current.style.backgroundSize = "contain";
+            wrapperRef.current.style.backgroundSize = "cover";
             wrapperRef.current.style.backgroundRepeat = "no-repeat";
             wrapperRef.current.style.backgroundPosition = "center center";
           }

@@ -44,7 +44,7 @@ export interface SceneTree extends SceneTreeState {
 const rootFrameTemplate: MakeObject = (ref) => (
   <CoordinateFrame
     ref={ref}
-    scale={5.0}
+    scale={0.5}
     quaternion={new THREE.Quaternion().setFromEuler(
       new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
     )}

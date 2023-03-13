@@ -3,7 +3,7 @@ import dataclasses
 from asyncio.events import AbstractEventLoop
 from typing import Dict
 
-from ._messages import Message, RemoveSceneNodeMessage, ResetSceneMessage
+from ._messages import Message, RemoveSceneNodeMessage, ResetSceneMessage, BackgroundImageMessage
 
 
 @dataclasses.dataclass
@@ -35,6 +35,10 @@ class AsyncMessageBuffer:
 
         # All messages that modify scene nodes have a name field.
         node_name = getattr(message, "name", None)
+
+        if isinstance(message, BackgroundImageMessage):
+            node_name = "__viser_background_image__"
+
         if node_name is not None:
             # If an existing message with the same scene node name already exists in our
             # buffer, we don't need the old one anymore. :-)

@@ -17,51 +17,60 @@ import { encode } from "@msgpack/msgpack";
 
 interface CameraSynchronizerProps {
   websocketRef: MutableRefObject<WebSocket | null>;
-  staleCameraPoseRef: MutableRefObject<boolean>;
 }
 
 // Communicate the threejs camera to the server.
 //
 // We may want to add the ability to make this opt-in.
 function CameraSynchronizer(props: CameraSynchronizerProps) {
-  function sendCamera(message: ViewerCameraMessage) {
+  const rootState = React.useRef<RootState | null>(null);
+  useThree((state) => {
+    rootState.current = state;
+  });
+
+  const cameraThrottleReady = React.useRef(true);
+  const cameraThrottleStale = React.useRef(false);
+
+  function sendCamera() {
+    if (rootState.current === null) return;
+    const three_camera = rootState.current.camera as PerspectiveCamera;
+    const message: ViewerCameraMessage = {
+      type: "viewer_camera",
+      wxyz: [
+        three_camera.quaternion.w,
+        three_camera.quaternion.x,
+        three_camera.quaternion.y,
+        three_camera.quaternion.z,
+      ],
+      position: three_camera.position.toArray(),
+      aspect: three_camera.aspect,
+      fov: (three_camera.fov * Math.PI) / 180.0,
+    };
     const websocket = props.websocketRef.current;
     websocket && websocket.send(encode(message));
   }
 
-  const rootState = React.useRef<RootState>();
-  useThree((state) => {
-    rootState.current = state;
-  });
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      if (rootState.current === undefined) return;
-      const three_camera = rootState.current.camera as PerspectiveCamera;
-
-      const camera: ViewerCameraMessage = {
-        type: "viewer_camera",
-        wxyz: [
-          three_camera.quaternion.w,
-          three_camera.quaternion.x,
-          three_camera.quaternion.y,
-          three_camera.quaternion.z,
-        ],
-        position: three_camera.position.toArray(),
-        aspect: three_camera.aspect,
-        fov: three_camera.fov * Math.PI / 180.0,
-      };
-      if (props.staleCameraPoseRef.current) {
-        sendCamera(camera);
-        console.log("sent a camera");
-        props.staleCameraPoseRef.current = false;
-        // console.log(camera);
-      }
-    }, 50);
-    return () => {
-      clearInterval(interval);
-    };
-  });
-  return <></>;
+  return (
+    <OrbitControls
+      minDistance={0.5}
+      maxDistance={200.0}
+      enableDamping={true}
+      dampingFactor={0.2}
+      onChange={() => {
+        if (cameraThrottleReady.current) {
+          sendCamera();
+          cameraThrottleReady.current = false;
+          cameraThrottleStale.current = false;
+          setTimeout(() => {
+            cameraThrottleReady.current = true;
+            if (cameraThrottleStale.current) sendCamera();
+          }, 50);
+        } else {
+          cameraThrottleStale.current = true;
+        }
+      }}
+    />
+  );
 }
 
 function Root() {
@@ -83,13 +92,13 @@ function Root() {
   // Our 2D label renderer needs access to the div used for rendering.
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const websocketRef = React.useRef<WebSocket | null>(null);
-  const staleCameraPoseRef = React.useRef<boolean>(true);
 
   // Declare the scene tree state. This returns a zustand store/hook, which we
   // can pass to any children that need state access.
   const useSceneTree = useSceneTreeState();
 
   // <Stats showPanel={0} className="stats" />
+  // <gridHelper args={[10.0, 10]} />
   return (
     <Wrapper ref={wrapperRef}>
       <ControlPanel
@@ -99,21 +108,8 @@ function Root() {
       />
       <Viewport>
         <LabelRenderer wrapperRef={wrapperRef} />
-        <CameraSynchronizer
-          websocketRef={websocketRef}
-          staleCameraPoseRef={staleCameraPoseRef}
-        />
-        <OrbitControls
-          minDistance={0.5}
-          maxDistance={200.0}
-          enableDamping={true}
-          dampingFactor={0.2}
-          onChange={() => {
-            staleCameraPoseRef.current = true;
-          }}
-        />
+        <CameraSynchronizer websocketRef={websocketRef} />
         <SceneNodeThreeObject id={0} useSceneTree={useSceneTree} />
-        <gridHelper args={[10.0, 10]} />
       </Viewport>
     </Wrapper>
   );

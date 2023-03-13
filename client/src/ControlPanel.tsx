@@ -19,7 +19,8 @@ interface ControlPanelProps {
 /** Root component for control panel. Parents the websocket interface and a set
  * of control tabs. */
 export default function ControlPanel(props: ControlPanelProps) {
-  const [hidden, setHidden] = React.useState(false);
+  // This will currently re-initialize the websocket connection whenever we toggle. Unideal...
+  const [hidden, setHidden] = React.useState(true);
 
   const ControlPanelWrapper = styled(Box)`
     box-sizing: content-box;
@@ -39,7 +40,7 @@ export default function ControlPanel(props: ControlPanelProps) {
   const connected = useWebsocketInterface(
     props.useSceneTree,
     props.websocketRef,
-    props.wrapperRef,
+    props.wrapperRef
   );
   // const [parent, setParent] = React.useState<HTMLDivElement>();
   //

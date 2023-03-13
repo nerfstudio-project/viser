@@ -110,7 +110,7 @@ class BackgroundImageMessage(Message):
                 iio.imwrite(data_buffer, image, format="PNG")
             elif image.shape[-1] == 3:
                 media_type = "image/jpeg"
-                iio.imwrite(data_buffer, image, format="JPEG", quality=60)
+                iio.imwrite(data_buffer, image, format="JPEG", quality=75)
             else:
                 assert False, f"Unexpected image shape {image.shape}"
 
