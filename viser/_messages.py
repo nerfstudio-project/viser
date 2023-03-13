@@ -8,10 +8,10 @@ import dataclasses
 import io
 from typing import Any, ClassVar, Tuple
 
+import imageio.v3 as iio
 import msgpack
 import numpy as onp
 import numpy.typing as onpt
-from PIL import Image
 from typing_extensions import Literal
 
 
@@ -93,6 +93,33 @@ class PointCloudMessage(Message):
 
 
 @dataclasses.dataclass
+class BackgroundImageMessage(Message):
+    """Message for rendering a background image."""
+
+    type: ClassVar[str] = "background_image"
+    media_type: Literal["image/jpeg", "image/png"]
+    base64_data: str
+
+    @staticmethod
+    def encode(image: onpt.NDArray[onp.uint8]) -> BackgroundImageMessage:
+        with io.BytesIO() as data_buffer:
+            # Use a PNG when an alpha channel is required, otherwise JPEG.
+            # In the future, we could expose more granular controls for this.
+            if image.shape[-1] == 4:
+                media_type = "image/png"
+                iio.imwrite(data_buffer, image, format="PNG")
+            elif image.shape[-1] == 3:
+                media_type = "image/jpeg"
+                iio.imwrite(data_buffer, image, format="JPEG", quality=60)
+            else:
+                assert False, f"Unexpected image shape {image.shape}"
+
+            base64_data = (base64.b64encode(data_buffer.getvalue()).decode("ascii"),)
+
+        return BackgroundImageMessage(media_type=media_type, base64_data=base64_data)
+
+
+@dataclasses.dataclass
 class ImageMessage(Message):
     """Message for rendering 2D images."""
 
@@ -107,45 +134,20 @@ class ImageMessage(Message):
     render_height: float
 
     @staticmethod
-    def from_array(
+    def encode(
         name: str,
-        array: onpt.NDArray[onp.uint8],
+        image: onpt.NDArray[onp.uint8],
         render_width: float,
         render_height: float,
     ) -> ImageMessage:
-        return ImageMessage.from_image(
+        proxy = BackgroundImageMessage.encode(image)
+        return ImageMessage(
             name=name,
-            image=Image.fromarray(array),
+            media_type=proxy.media_type,
+            base64_data=proxy.base64_data,
             render_width=render_width,
             render_height=render_height,
         )
-
-    @staticmethod
-    def from_image(
-        name: str,
-        image: Image.Image,
-        render_width: float,
-        render_height: float,
-    ) -> ImageMessage:
-        with io.BytesIO() as data_buffer:
-            # Use a PNG when an alpha channel is required, otherwise JPEG.
-            # In the future, we could expose more granular controls for this.
-            if image.mode == "RGBA":
-                media_type = "image/png"
-                image.save(data_buffer, format="PNG")
-            elif image.mode == "RGB":
-                media_type = "image/jpeg"
-                image.save(data_buffer, format="JPEG", quality=60)
-            else:
-                assert False, f"Unexpected image mode {image.mode}"
-
-            return ImageMessage(
-                name=name,
-                media_type="image/png",
-                base64_data=base64.b64encode(data_buffer.getvalue()).decode("ascii"),
-                render_width=render_width,
-                render_height=render_height,
-            )
 
 
 @dataclasses.dataclass

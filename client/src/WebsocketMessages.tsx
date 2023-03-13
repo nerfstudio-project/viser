@@ -33,6 +33,11 @@ export interface PointCloudMessage {
   color_uint8: ArrayBuffer;
   point_size: number;
 }
+export interface BackgroundImageMessage {
+  type: "background_image";
+  media_type: "image/jpeg" | "image/png";
+  base64_data: string;
+}
 export interface ImageMessage {
   type: "image";
   name: string;
@@ -54,6 +59,7 @@ export type Message =
   | CameraFrustumMessage
   | FrameMessage
   | PointCloudMessage
+  | BackgroundImageMessage
   | ImageMessage
   | RemoveSceneNodeMessage
   | ResetSceneMessage;

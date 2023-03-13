@@ -2,8 +2,8 @@ import pathlib
 import random
 import time
 
+import imageio.v3 as iio
 import numpy as onp
-from PIL import Image
 
 import viser
 
@@ -17,9 +17,10 @@ server.queue(
         position=(2.0, 2.0, 0.0),
         show_axes=False,
     ),
-    viser.ImageMessage.from_image(
+    viser.BackgroundImageMessage.encode(iio.imread("./assets/Cal_logo.png")),
+    viser.ImageMessage.encode(
         "/main/img",
-        Image.open(pathlib.Path("./assets/Cal_logo.png")),
+        iio.imread("./assets/Cal_logo.png"),
         4.0,
         4.0,
     ),
@@ -32,7 +33,7 @@ server.queue(
 )
 while True:
     server.queue(
-        viser.ImageMessage.from_array(
+        viser.ImageMessage.encode(
             "/main/bkgd/img",
             onp.random.randint(
                 0,
