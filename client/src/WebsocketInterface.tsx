@@ -1,6 +1,6 @@
 import { decode } from "@msgpack/msgpack";
 import AwaitLock from "await-lock";
-import React from "react";
+import React, { MutableRefObject } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 
@@ -24,7 +24,14 @@ function useMessageHandler(useSceneTree: UseSceneTree) {
             ref={ref}
             scale={message.scale}
             position={new THREE.Vector3().fromArray(message.position)}
-            quaternion={new THREE.Quaternion().fromArray(message.xyzw)}
+            quaternion={
+              new THREE.Quaternion(
+                message.wxyz[1],
+                message.wxyz[2],
+                message.wxyz[3],
+                message.wxyz[0]
+              )
+            }
             show_axes={message.show_axes}
           />
         ));
@@ -72,6 +79,7 @@ function useMessageHandler(useSceneTree: UseSceneTree) {
             ref={ref}
             fov={message.fov}
             aspect={message.aspect}
+            scale={message.scale}
           ></CameraFrustum>
         ));
         return () => addSceneNode(node);
@@ -121,17 +129,16 @@ function useMessageHandler(useSceneTree: UseSceneTree) {
 }
 
 /** Component for handling websocket connections. Rendered as a connection indicator. */
-function useWebsocketInterface(useSceneTree: UseSceneTree) {
+function useWebsocketInterface(
+  useSceneTree: UseSceneTree,
+  websocketRef: MutableRefObject<WebSocket | null>
+) {
   const [connected, setConnected] = React.useState(false);
-  const [websocket, setWebsocket] = React.useState<WebSocket | null>(null);
-  const [connectTimer, setConnectTimer] = React.useState<NodeJS.Timeout | null>(
-    null
-  );
 
-  // Handle state updates in batches, at regular intervals. This reduces
+  // Handle state updates in batches, at regular intervals. This helps reduce
   // re-renders when there are a lot of messages.
   //
-  // Should be revisited.
+  // Could be revisited.
   const stateUpdateQueue = React.useRef<(() => void)[]>([]);
   React.useEffect(() => {
     const batchedMessageHandler = setInterval(() => {
@@ -146,23 +153,29 @@ function useWebsocketInterface(useSceneTree: UseSceneTree) {
   }, [stateUpdateQueue]);
 
   const handleMessage = useMessageHandler(useSceneTree);
+
   React.useEffect(() => {
     // Lock for making sure messages are handled in order. This is important
     // especially when we are removing scene nodes.
     const orderLock = new AwaitLock();
 
-    function tryConnect(): WebSocket {
+    function tryConnect(): void {
       const ws = new WebSocket("ws://localhost:8080");
 
       ws.onopen = () => {
         console.log("Connected!");
+        console.log(ws);
+        websocketRef.current = ws;
         setConnected(true);
       };
 
       ws.onclose = () => {
         console.log("Disconnected!");
-        setWebsocket(null);
+        websocketRef.current = null;
         setConnected(false);
+
+        // Try to reconnect.
+        setTimeout(tryConnect, 1000);
       };
 
       ws.onmessage = async (event) => {
@@ -181,21 +194,13 @@ function useWebsocketInterface(useSceneTree: UseSceneTree) {
           orderLock.release();
         }
       };
-
-      return ws;
     }
 
-    // Try to connect.
-    if (websocket === null) {
-      setConnectTimer(
-        connectTimer ||
-          setTimeout(() => {
-            setWebsocket(tryConnect());
-            setConnectTimer(null);
-          }, 500)
-      );
-    }
-  }, [websocket, connectTimer, setConnectTimer, handleMessage]);
+    const timeout = setTimeout(tryConnect, 500);
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [handleMessage, websocketRef]);
 
   return connected;
 }

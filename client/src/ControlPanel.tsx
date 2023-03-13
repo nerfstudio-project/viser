@@ -1,7 +1,7 @@
 import { TreeItem, TreeView } from "@mui/lab";
 import Tabs from "@mui/material/Tabs";
 import Box from "@mui/material/Box";
-import React from "react";
+import React, { MutableRefObject, RefObject } from "react";
 import styled from "@emotion/styled";
 import Tab from "@mui/material/Tab";
 import { IconButton } from "@mui/material";
@@ -11,6 +11,8 @@ import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 import useWebsocketInterface from "./WebsocketInterface";
 
 interface ControlPanelProps {
+  wrapperRef: RefObject<HTMLDivElement>;
+  websocketRef: MutableRefObject<WebSocket | null>;
   useSceneTree: UseSceneTree;
 }
 
@@ -34,7 +36,15 @@ export default function ControlPanel(props: ControlPanelProps) {
     cursor: pointer;
   `;
 
-  const connected = useWebsocketInterface(props.useSceneTree);
+  const connected = useWebsocketInterface(
+    props.useSceneTree,
+    props.websocketRef
+  );
+  // const [parent, setParent] = React.useState<HTMLDivElement>();
+  //
+  // useEffect(() => {
+  //   props.wrapperRef.current && setParent(props.wrapperRef.current);
+  // });
 
   return (
     <ControlPanelWrapper
@@ -189,6 +199,7 @@ export function SceneNodeUI(props: SceneNodeUIProp) {
     if (itemRef.current!.matches(":hover")) {
       threeObj.add(label);
     }
+    threeObj.visible = visible;
     return () => {
       threeObj.remove(label);
     };

@@ -4,28 +4,36 @@
 // For numpy arrays, we directly serialize the underlying data buffer.
 type ArrayBuffer = Uint8Array;
 
-interface CameraFrustumMessage {
+export interface ViewerCameraMessage {
+  type: "viewer_camera";
+  wxyz: [number, number, number, number];
+  position: [number, number, number];
+  fov: number;
+  aspect: number;
+}
+export interface CameraFrustumMessage {
   type: "camera_frustum";
   name: string;
   fov: number;
   aspect: number;
+  scale: number;
 }
-interface FrameMessage {
+export interface FrameMessage {
   type: "frame";
   name: string;
-  xyzw: [number, number, number, number];
+  wxyz: [number, number, number, number];
   position: [number, number, number];
   show_axes: boolean;
   scale: number;
 }
-interface PointCloudMessage {
+export interface PointCloudMessage {
   type: "point_cloud";
   name: string;
   position_f32: ArrayBuffer;
   color_uint8: ArrayBuffer;
   point_size: number;
 }
-interface ImageMessage {
+export interface ImageMessage {
   type: "image";
   name: string;
   media_type: "image/jpeg" | "image/png";
@@ -33,15 +41,16 @@ interface ImageMessage {
   render_width: number;
   render_height: number;
 }
-interface RemoveSceneNodeMessage {
+export interface RemoveSceneNodeMessage {
   type: "remove_scene_node";
   name: string;
 }
-interface ResetSceneMessage {
+export interface ResetSceneMessage {
   type: "reset_scene";
 }
 
 export type Message =
+  | ViewerCameraMessage
   | CameraFrustumMessage
   | FrameMessage
   | PointCloudMessage

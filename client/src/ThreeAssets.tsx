@@ -97,6 +97,7 @@ const canonical_frustum = (
 interface CameraFrustumProps {
   fov: number;
   aspect: number;
+  scale: number;
 }
 
 /** Helper for visualizing camera frustums.
@@ -108,12 +109,15 @@ export const CameraFrustum = React.forwardRef<THREE.Group, CameraFrustumProps>(
   (props, ref) => {
     const y = Math.tan(props.fov / 2.0);
     const x = y * props.aspect;
-    const scale = 0.3;
     return (
       <group ref={ref}>
-        <CoordinateFrame scale={0.3} />
+        <CoordinateFrame scale={props.scale} />
         {React.cloneElement(canonical_frustum, {
-          scale: new THREE.Vector3(scale * x, scale * y, scale),
+          scale: new THREE.Vector3(
+            props.scale * x,
+            props.scale * y,
+            props.scale
+          ),
         })}
       </group>
     );
