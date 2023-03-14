@@ -11,7 +11,7 @@ import { SceneNodeThreeObject, useSceneTreeState } from "./SceneTree";
 import "./index.css";
 
 import Box from "@mui/material/Box";
-import { PerspectiveCamera } from "three";
+import { Euler, PerspectiveCamera, Quaternion } from "three";
 import { ViewerCameraMessage } from "./WebsocketMessages";
 import { encode } from "@msgpack/msgpack";
 
@@ -31,18 +31,33 @@ function CameraSynchronizer(props: CameraSynchronizerProps) {
   const cameraThrottleReady = React.useRef(true);
   const cameraThrottleStale = React.useRef(false);
 
+  // We put Z up to match the scene tree, and convert threejs camera convention
+  // to the OpenCV one.
+  const R_threecam_cam = new Quaternion();
+  const R_worldfix_world = new Quaternion();
+  R_threecam_cam.setFromEuler(new Euler(Math.PI, 0.0, 0.0));
+  R_worldfix_world.setFromEuler(new Euler(Math.PI / 2.0, 0.0, 0.0));
+
   function sendCamera() {
     if (rootState.current === null) return;
     const three_camera = rootState.current.camera as PerspectiveCamera;
+
+    const R_world_camera = R_worldfix_world.clone()
+      .multiply(three_camera.quaternion)
+      .multiply(R_threecam_cam);
+
     const message: ViewerCameraMessage = {
       type: "viewer_camera",
       wxyz: [
-        three_camera.quaternion.w,
-        three_camera.quaternion.x,
-        three_camera.quaternion.y,
-        three_camera.quaternion.z,
+        R_world_camera.w,
+        R_world_camera.x,
+        R_world_camera.y,
+        R_world_camera.z,
       ],
-      position: three_camera.position.toArray(),
+      position: three_camera.position
+        .clone()
+        .applyQuaternion(R_worldfix_world)
+        .toArray(),
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
     };
@@ -54,8 +69,7 @@ function CameraSynchronizer(props: CameraSynchronizerProps) {
     <OrbitControls
       minDistance={0.5}
       maxDistance={200.0}
-      enableDamping={true}
-      dampingFactor={0.2}
+      enableDamping={false}
       onChange={() => {
         if (cameraThrottleReady.current) {
           sendCamera();
@@ -64,7 +78,7 @@ function CameraSynchronizer(props: CameraSynchronizerProps) {
           setTimeout(() => {
             cameraThrottleReady.current = true;
             if (cameraThrottleStale.current) sendCamera();
-          }, 50);
+          }, 10);
         } else {
           cameraThrottleStale.current = true;
         }
