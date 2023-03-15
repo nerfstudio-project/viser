@@ -5,7 +5,7 @@ import dataclasses
 import queue as queue_
 import threading
 import time
-from typing import Dict, List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import msgpack
 import websockets.connection
@@ -17,8 +17,10 @@ from ._async_message_buffer import AsyncMessageBuffer
 from ._messages import Message, ViewerCameraMessage
 
 
-@dataclasses.dataclass
-class Connection:
+@dataclasses.dataclass(frozen=True)
+class ClientInfo:
+    """Information attached to a websocket connection. Mutated dynamically; we could revisit this API."""
+
     camera: Optional[ViewerCameraMessage]
     camera_timestamp: float
     _message_buffer: asyncio.Queue
@@ -31,7 +33,7 @@ class ViserServer:
         port: int = 8080,
     ):
         # Create websocket server process.
-        self.connection_from_id: Dict[int, Connection] = {}
+        self._client_from_id: Dict[int, ClientInfo] = {}
         self._message_queue = queue_.Queue(maxsize=1024)
         threading.Thread(
             target=self._start_background_loop,
@@ -39,14 +41,20 @@ class ViserServer:
             daemon=True,
         ).start()
 
+    def get_client_ids(self) -> Tuple[int, ...]:
+        return tuple(self._client_from_id.keys())
+
+    def get_client_info(self, client_id: int) -> Optional[ClientInfo]:
+        return self._client_from_id.get(client_id, None)
+
     def queue(
         self,
         *messages: Message,
-        connection_id: Union[Literal["broadcast"], int] = "broadcast",
+        client_id: Union[Literal["broadcast"], int] = "broadcast",
     ) -> None:
         """Queue a message, which can either be broadcast or sent to a particular connection ID."""
         for message in messages:
-            self._message_queue.put_nowait((connection_id, message))
+            self._message_queue.put_nowait((client_id, message))
 
     def _start_background_loop(
         self,
@@ -66,19 +74,17 @@ class ViserServer:
         def message_transfer() -> None:
             """Message transfer loop. Pulls messages from the main process and pushes them into our buffer."""
             while True:
-                connection_id, message = message_queue.get()
-                if connection_id == "broadcast":
+                client_id, message = message_queue.get()
+                if client_id == "broadcast":
                     broadcast_buffer.push(message)
-                elif connection_id in self.connection_from_id:
+                elif client_id in self._client_from_id:
                     event_loop.call_soon_threadsafe(
-                        self.connection_from_id[
-                            connection_id
-                        ]._message_buffer.put_nowait,
+                        self._client_from_id[client_id]._message_buffer.put_nowait,
                         message,
                     )
                 else:
                     print(
-                        f"Tried to send message to {connection_id}, but ID is closed or not valid."
+                        f"Tried to send message to {client_id}, but ID is closed or not valid."
                     )
 
         async def serve(websocket: WebSocketServerProtocol) -> None:
@@ -86,33 +92,33 @@ class ViserServer:
 
             # TODO: there are likely race conditions here...
             nonlocal connection_count
-            connection_id = connection_count
+            client_id = connection_count
             connection_count += 1
 
             nonlocal total_connections
             total_connections += 1
 
             single_connection_buffer = asyncio.Queue()
-            connection = Connection(None, 0.0, single_connection_buffer)
-            self.connection_from_id[connection_id] = connection
+            connection = ClientInfo(None, 0.0, single_connection_buffer)
+            self._client_from_id[client_id] = connection
 
             print(
-                f"Connection opened ({connection_id}, {total_connections} total),"
+                f"Connection opened ({client_id}, {total_connections} total),"
                 f" {len(broadcast_buffer.message_from_id)} buffered messages"
             )
             try:
                 await asyncio.gather(
                     single_connection_producer(websocket, single_connection_buffer),
                     broadcast_producer(websocket),
-                    consumer(websocket, connection),
+                    consumer(websocket, client_id),
                 )
             except (
                 websockets.exceptions.ConnectionClosedOK,
                 websockets.exceptions.ConnectionClosedError,
             ):
                 total_connections -= 1
-                print(f"Connection closed ({connection_id}, {total_connections} total)")
-                self.connection_from_id.pop(connection_id)
+                print(f"Connection closed ({client_id}, {total_connections} total)")
+                self._client_from_id.pop(client_id)
 
         async def single_connection_producer(
             websocket: WebSocketServerProtocol, buffer: asyncio.Queue
@@ -127,15 +133,16 @@ class ViserServer:
             async for message_serialized in broadcast_buffer:
                 await websocket.send(message_serialized)
 
-        async def consumer(
-            websocket: WebSocketServerProtocol, connection: Connection
-        ) -> None:
+        async def consumer(websocket: WebSocketServerProtocol, client_id: int) -> None:
             while True:
                 message = msgpack.unpackb(await websocket.recv())
                 t = message.pop("type")
                 if t == "viewer_camera":
-                    connection.camera = ViewerCameraMessage(**message)
-                    connection.camera_timestamp = time.time()
+                    self._client_from_id[client_id] = ClientInfo(
+                        camera=ViewerCameraMessage(**message),
+                        camera_timestamp=time.time(),
+                        _message_buffer=self._client_from_id[client_id]._message_buffer,
+                    )
                 else:
                     print("Unrecognized message", message)
 
