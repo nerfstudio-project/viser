@@ -149,7 +149,7 @@ function useWebsocketInterface(
   wrapperRef: RefObject<HTMLDivElement>,
   host: string,
   connected_cb: () => void,
-  disconnected_cb: () => void,
+  disconnected_cb: () => void
 ) {
   // Handle state updates in batches, at regular intervals. This helps reduce
   // re-renders when there are a lot of messages.
@@ -179,8 +179,7 @@ function useWebsocketInterface(
     let done = false;
 
     function tryConnect(): void {
-      if (done)
-        return;
+      if (done) return;
 
       ws = new WebSocket(host);
 
@@ -225,8 +224,7 @@ function useWebsocketInterface(
       ws && ws.close();
       clearTimeout(timeout);
     };
-  }, [handleMessage, websocketRef]);
-
+  }, [handleMessage, websocketRef, connected_cb, disconnected_cb, host]);
 }
 
 export default useWebsocketInterface;
