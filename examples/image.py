@@ -17,12 +17,15 @@ server.queue(
         position=(2.0, 2.0, 0.0),
         show_axes=False,
     ),
-    viser.BackgroundImageMessage.encode(iio.imread("./assets/Cal_logo.png")),
+    viser.BackgroundImageMessage.encode(
+        iio.imread("./assets/Cal_logo.png"), format="png"
+    ),
     viser.ImageMessage.encode(
         "/main/img",
         iio.imread("./assets/Cal_logo.png"),
         4.0,
         4.0,
+        format="png",
     ),
     viser.FrameMessage(
         "/main/bkgd",
@@ -43,6 +46,7 @@ while True:
             ),
             4.0,
             4.0,
+            format="jpeg",
         ),
     )
     time.sleep(0.1)

@@ -103,14 +103,14 @@ class BackgroundImageMessage(Message):
     @staticmethod
     def encode(
         image: onpt.NDArray[onp.uint8],
-        fmt: Literal["png", "jpeg"] = "jpeg",
+        format: Literal["png", "jpeg"] = "jpeg",
         quality: Optional[int] = None,
     ) -> BackgroundImageMessage:
         with io.BytesIO() as data_buffer:
-            if fmt == "png":
+            if format == "png":
                 media_type = "image/png"
                 iio.imwrite(data_buffer, image, format="PNG")
-            elif fmt == "jpeg":
+            elif format == "jpeg":
                 media_type = "image/jpeg"
                 iio.imwrite(
                     data_buffer,
@@ -146,10 +146,10 @@ class ImageMessage(Message):
         image: onpt.NDArray[onp.uint8],
         render_width: float,
         render_height: float,
-        fmt: Literal["png", "jpeg"] = "jpeg",
+        format: Literal["png", "jpeg"] = "jpeg",
         quality: Optional[int] = None,
     ) -> ImageMessage:
-        proxy = BackgroundImageMessage.encode(image, fmt=fmt, quality=quality)
+        proxy = BackgroundImageMessage.encode(image, format=format, quality=quality)
         return ImageMessage(
             name=name,
             media_type=proxy.media_type,
