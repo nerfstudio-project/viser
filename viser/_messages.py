@@ -101,16 +101,23 @@ class BackgroundImageMessage(Message):
     base64_data: str
 
     @staticmethod
-    def encode(image: onpt.NDArray[onp.uint8]) -> BackgroundImageMessage:
+    def encode(
+        image: onpt.NDArray[onp.uint8],
+        fmt: Literal["png", "jpeg"] = "jpeg",
+        quality: Optional[int] = None,
+    ) -> BackgroundImageMessage:
         with io.BytesIO() as data_buffer:
-            # Use a PNG when an alpha channel is required, otherwise JPEG.
-            # In the future, we could expose more granular controls for this.
-            if image.shape[-1] == 4:
+            if fmt == "png":
                 media_type = "image/png"
                 iio.imwrite(data_buffer, image, format="PNG")
-            elif image.shape[-1] == 3:
+            elif fmt == "jpeg":
                 media_type = "image/jpeg"
-                iio.imwrite(data_buffer, image, format="JPEG", quality=75)
+                iio.imwrite(
+                    data_buffer,
+                    image,
+                    format="JPEG",
+                    quality=75 if quality is None else quality,
+                )
             else:
                 assert False, f"Unexpected image shape {image.shape}"
 
@@ -139,8 +146,10 @@ class ImageMessage(Message):
         image: onpt.NDArray[onp.uint8],
         render_width: float,
         render_height: float,
+        fmt: Literal["png", "jpeg"] = "jpeg",
+        quality: Optional[int] = None,
     ) -> ImageMessage:
-        proxy = BackgroundImageMessage.encode(image)
+        proxy = BackgroundImageMessage.encode(image, fmt=fmt, quality=quality)
         return ImageMessage(
             name=name,
             media_type=proxy.media_type,

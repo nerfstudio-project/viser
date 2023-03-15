@@ -65,6 +65,22 @@ function CameraSynchronizer(props: CameraSynchronizerProps) {
     websocket && websocket.send(encode(message));
   }
 
+  // Send camera for new connections. Slightly hacky!
+  React.useEffect(() => {
+    let disconnected_prev = props.websocketRef.current === null;
+    const interval = setInterval(() => {
+      let disconnected = props.websocketRef.current === null;
+      if (!disconnected && disconnected_prev) {
+        sendCamera();
+      }
+      disconnected_prev = disconnected;
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  });
+
   return (
     <OrbitControls
       minDistance={0.5}
@@ -87,7 +103,7 @@ function CameraSynchronizer(props: CameraSynchronizerProps) {
   );
 }
 
-function Root() {
+function SingleViewer() {
   // Layout and styles.
   const Wrapper = styled(Box)`
     width: 100%;
@@ -126,6 +142,25 @@ function Root() {
         <SceneNodeThreeObject id={0} useSceneTree={useSceneTree} />
       </Viewport>
     </Wrapper>
+  );
+}
+
+function Root() {
+  return (
+    <>
+      <Box
+        component="div"
+        sx={{ position: "absolute", left: 0, height: "100%", width: "50%" }}
+      >
+        <SingleViewer />
+      </Box>
+      <Box
+        component="div"
+        sx={{ position: "absolute", right: 0, height: "100%", width: "50%" }}
+      >
+        <SingleViewer />
+      </Box>
+    </>
   );
 }
 

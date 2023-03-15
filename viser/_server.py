@@ -46,6 +46,7 @@ class ViserServer:
         message_queue: multiprocessing.Queue,
     ) -> None:
         connection_count = 0
+        total_connections = 0
         event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(event_loop)
         message_buffer = AsyncMessageBuffer(event_loop)
@@ -57,11 +58,17 @@ class ViserServer:
 
         async def serve(websocket: WebSocketServerProtocol) -> None:
             """Server loop, run once per connection."""
+
+            # TODO: there are likely race conditions here...
             nonlocal connection_count
             connection_id = connection_count
             connection_count += 1
+
+            nonlocal total_connections
+            total_connections += 1
+
             print(
-                f"Connection opened ({connection_id}),"
+                f"Connection opened ({connection_id}, {total_connections} total),"
                 f" {len(message_buffer.message_from_id)} buffered messages"
             )
             try:
@@ -73,7 +80,8 @@ class ViserServer:
                 websockets.exceptions.ConnectionClosedOK,
                 websockets.exceptions.ConnectionClosedError,
             ):
-                print(f"Connection closed ({connection_id})")
+                total_connections -= 1
+                print(f"Connection closed ({connection_id}, {total_connections} total)")
 
         async def producer(websocket: WebSocketServerProtocol) -> None:
             # Infinite loop to send messages from the message buffer.
