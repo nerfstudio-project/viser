@@ -39,7 +39,7 @@ export default function ControlPanel(props: ControlPanelProps) {
   `;
 
   const ControlPanelHandle = styled(Box)`
-    line-height: 3em;
+    line-height: 2em;
     text-align: center;
     padding: 0 1em;
     cursor: pointer;
@@ -50,11 +50,21 @@ export default function ControlPanel(props: ControlPanelProps) {
 
   const controlPanelRef = React.useRef<HTMLDivElement>();
 
-  const connected = useWebsocketInterface(
+  useWebsocketInterface(
     props.useSceneTree,
     props.websocketRef,
     props.wrapperRef,
     server,
+    () => {
+      if (controlPanelRef.current == null) return;
+      controlPanelRef.current.style.color = "green";
+      controlPanelRef.current.style.backgroundColor = "lightgreen";
+    },
+    () => {
+      if (controlPanelRef.current == null) return;
+      controlPanelRef.current.style.color = "darkred";
+      controlPanelRef.current.style.backgroundColor = "lightpink";
+    }
   );
 
   const idServer = React.useId();
@@ -63,7 +73,7 @@ export default function ControlPanel(props: ControlPanelProps) {
     <ControlPanelWrapper
       sx={{
         ...(hidden
-          ? { height: "3em", overflowY: "clip" }
+          ? { height: "2em", overflowY: "clip" }
           : { height: "100%", overflowY: "scroll" }),
         borderLeftWidth: "1px",
         borderLeftStyle: "solid",
@@ -71,7 +81,6 @@ export default function ControlPanel(props: ControlPanelProps) {
       }}
     >
       <ControlPanelHandle
-        sx={{ backgroundColor: connected ? "lightgreen" : "lightpink" }}
         ref={controlPanelRef}
         onClick={() => {
           setHidden(!hidden);

@@ -147,10 +147,10 @@ function useWebsocketInterface(
   useSceneTree: UseSceneTree,
   websocketRef: MutableRefObject<WebSocket | null>,
   wrapperRef: RefObject<HTMLDivElement>,
-  host: string
+  host: string,
+  connected_cb: () => void,
+  disconnected_cb: () => void,
 ) {
-  const [connected, setConnected] = React.useState(false);
-
   // Handle state updates in batches, at regular intervals. This helps reduce
   // re-renders when there are a lot of messages.
   //
@@ -175,23 +175,29 @@ function useWebsocketInterface(
     // especially when we are removing scene nodes.
     const orderLock = new AwaitLock();
 
+    let ws: null | WebSocket = null;
+    let done = false;
+
     function tryConnect(): void {
-      const ws = new WebSocket(host);
+      if (done)
+        return;
+
+      ws = new WebSocket(host);
 
       ws.onopen = () => {
-        console.log("Connected!");
+        console.log("Connected!" + host);
         console.log(ws);
         websocketRef.current = ws;
-        setConnected(true);
+        connected_cb();
       };
 
       ws.onclose = () => {
-        console.log("Disconnected!");
+        console.log("Disconnected! " + host);
         websocketRef.current = null;
-        setConnected(false);
+        disconnected_cb();
 
         // Try to reconnect.
-        setTimeout(tryConnect, 1000);
+        timeout = setTimeout(tryConnect, 1000);
       };
 
       ws.onmessage = async (event) => {
@@ -214,11 +220,13 @@ function useWebsocketInterface(
 
     let timeout = setTimeout(tryConnect, 500);
     return () => {
+      done = true;
+      clearTimeout(timeout);
+      ws && ws.close();
       clearTimeout(timeout);
     };
   }, [handleMessage, websocketRef]);
 
-  return connected;
 }
 
 export default useWebsocketInterface;

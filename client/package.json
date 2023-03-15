@@ -23,6 +23,7 @@
     "await-lock": "^2.2.2",
     "immer": "^9.0.15",
     "isomorphic-ws": "^5.0.0",
+    "prettier": "^2.8.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.4",
