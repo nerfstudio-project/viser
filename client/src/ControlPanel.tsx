@@ -29,13 +29,16 @@ export default function ControlPanel(props: ControlPanelProps) {
   const hidden = React.useRef(true);
 
   const ControlPanelWrapper = styled(Box)`
-    box-sizing: content-box;
+    box-sizing: border-box;
     position: absolute;
     width: 20em;
     z-index: 1;
     top: 0;
     right: 0;
     background-color: rgba(255, 255, 255, 0.85);
+    overflow-y: scroll;
+    max-height: 100%;
+    margin: 0;
   `;
 
   const ControlPanelHandle = styled(Box)`
@@ -81,7 +84,6 @@ export default function ControlPanel(props: ControlPanelProps) {
         borderBottomWidth: "1px",
         borderBottomStyle: "solid",
         borderBottomColor: "divider",
-        maxHeight: "100%",
       }}
     >
       <ControlPanelHandle
