@@ -5,7 +5,7 @@ import dataclasses
 import queue as queue_
 import threading
 import time
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Dict, List, Literal, NewType, Optional, Tuple, Union
 
 import msgpack
 import websockets.connection
@@ -19,11 +19,13 @@ from ._messages import Message, ViewerCameraMessage
 
 @dataclasses.dataclass(frozen=True)
 class ClientInfo:
-    """Information attached to a websocket connection. Mutated dynamically; we could revisit this API."""
+    """Information attached to a websocket connection."""
 
-    camera: Optional[ViewerCameraMessage]
+    camera: ViewerCameraMessage
     camera_timestamp: float
-    _message_buffer: asyncio.Queue
+
+
+ClientId = NewType("ClientId", int)
 
 
 class ViserServer:
@@ -33,7 +35,7 @@ class ViserServer:
         port: int = 8080,
     ):
         # Create websocket server process.
-        self._client_from_id: Dict[int, ClientInfo] = {}
+        self._client_from_id: Dict[ClientId, ClientInfo] = {}
         self._message_queue = queue_.Queue(maxsize=1024)
         threading.Thread(
             target=self._start_background_loop,
@@ -41,16 +43,18 @@ class ViserServer:
             daemon=True,
         ).start()
 
-    def get_client_ids(self) -> Tuple[int, ...]:
+    def get_client_ids(self) -> Tuple[ClientId, ...]:
+        """Get a tuple of all connected client IDs."""
         return tuple(self._client_from_id.keys())
 
-    def get_client_info(self, client_id: int) -> Optional[ClientInfo]:
+    def get_client_info(self, client_id: ClientId) -> Optional[ClientInfo]:
+        """Get information (currently just camera pose) associated with a particular client."""
         return self._client_from_id.get(client_id, None)
 
     def queue(
         self,
         *messages: Message,
-        client_id: Union[Literal["broadcast"], int] = "broadcast",
+        client_id: Union[Literal["broadcast"], ClientId] = "broadcast",
     ) -> None:
         """Queue a message, which can either be broadcast or sent to a particular connection ID."""
         for message in messages:
@@ -67,6 +71,8 @@ class ViserServer:
         event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(event_loop)
 
+        buffer_from_id: Dict[ClientId, asyncio.Queue] = {}
+
         # We maintain two message buffer types: a persistent broadcasted messages and
         # connection-specific messages.
         broadcast_buffer = AsyncMessageBuffer(event_loop)
@@ -77,9 +83,9 @@ class ViserServer:
                 client_id, message = message_queue.get()
                 if client_id == "broadcast":
                     broadcast_buffer.push(message)
-                elif client_id in self._client_from_id:
+                elif client_id in buffer_from_id:
                     event_loop.call_soon_threadsafe(
-                        self._client_from_id[client_id]._message_buffer.put_nowait,
+                        buffer_from_id[client_id].put_nowait,
                         message,
                     )
                 else:
@@ -98,9 +104,7 @@ class ViserServer:
             nonlocal total_connections
             total_connections += 1
 
-            single_connection_buffer = asyncio.Queue()
-            connection = ClientInfo(None, 0.0, single_connection_buffer)
-            self._client_from_id[client_id] = connection
+            buffer_from_id[client_id] = asyncio.Queue()
 
             print(
                 f"Connection opened ({client_id}, {total_connections} total),"
@@ -108,7 +112,7 @@ class ViserServer:
             )
             try:
                 await asyncio.gather(
-                    single_connection_producer(websocket, single_connection_buffer),
+                    single_connection_producer(websocket, buffer_from_id[client_id]),
                     broadcast_producer(websocket),
                     consumer(websocket, client_id),
                 )
@@ -118,7 +122,9 @@ class ViserServer:
             ):
                 total_connections -= 1
                 print(f"Connection closed ({client_id}, {total_connections} total)")
-                self._client_from_id.pop(client_id)
+
+                if client_id in self._client_from_id:
+                    self._client_from_id.pop(client_id)
 
         async def single_connection_producer(
             websocket: WebSocketServerProtocol, buffer: asyncio.Queue
@@ -141,7 +147,6 @@ class ViserServer:
                     self._client_from_id[client_id] = ClientInfo(
                         camera=ViewerCameraMessage(**message),
                         camera_timestamp=time.time(),
-                        _message_buffer=self._client_from_id[client_id]._message_buffer,
                     )
                 else:
                     print("Unrecognized message", message)
