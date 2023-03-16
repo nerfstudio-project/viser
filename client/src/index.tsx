@@ -192,7 +192,7 @@ function Root() {
     >
       <Box
         component="div"
-        sx={{ position: "fixed", bottom: "1em", right: "1em", zIndex: "1000" }}
+        sx={{ position: "fixed", top: "1em", left: "1em", zIndex: "1000" }}
       >
         <IconButton>
           <AddCircleRounded
