@@ -12,7 +12,7 @@ import imageio.v3 as iio
 import msgpack
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Literal
+from typing_extensions import Literal, assert_never
 
 
 def _prepare_for_serialization(value: Any) -> Any:
@@ -122,9 +122,9 @@ class BackgroundImageMessage(Message):
                     quality=75 if quality is None else quality,
                 )
             else:
-                assert False, f"Unexpected image shape {image.shape}"
+                assert_never(format)
 
-            base64_data = (base64.b64encode(data_buffer.getvalue()).decode("ascii"),)
+            base64_data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
 
         return BackgroundImageMessage(media_type=media_type, base64_data=base64_data)
 

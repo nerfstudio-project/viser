@@ -25,5 +25,5 @@ while True:
         ),
     )
     time.sleep(5.0)
-    # server.queue(viser.RemoveSceneNodeMessage("/tree/branch"))
-    # time.sleep(0.5)
+    server.queue(viser.RemoveSceneNodeMessage("/tree/branch"))
+    time.sleep(0.5)

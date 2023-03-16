@@ -280,7 +280,7 @@ interface SceneNodeUIProp {
 }
 
 /** Control panel component for showing a particular scene node. */
-export function SceneNodeUI(props: SceneNodeUIProp) {
+function SceneNodeUI(props: SceneNodeUIProp) {
   const sceneNode = props.useSceneTree((state) => state.nodeFromId[props.id]);
   const threeObj = props.useSceneTree((state) => state.objFromId[props.id]);
   const [visible, setVisible] = React.useState(true);
@@ -304,7 +304,7 @@ export function SceneNodeUI(props: SceneNodeUIProp) {
     if (itemRef.current!.matches(":hover")) {
       threeObj.add(label);
     }
-    threeObj.visible = visible;
+    setVisible(threeObj.visible);
     return () => {
       threeObj.remove(label);
     };
