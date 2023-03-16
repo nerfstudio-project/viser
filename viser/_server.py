@@ -2,7 +2,7 @@
 
 import asyncio
 import dataclasses
-import queue as queue_
+import queue
 import threading
 import time
 from typing import Dict, List, Literal, NewType, Optional, Tuple, Union
@@ -36,10 +36,10 @@ class ViserServer:
     ):
         # Create websocket server process.
         self._client_from_id: Dict[ClientId, ClientInfo] = {}
-        self._message_queue = queue_.Queue(maxsize=1024)
+        self._message_queue = queue.Queue()
         threading.Thread(
-            target=self._start_background_loop,
-            args=(host, port, self._message_queue),
+            target=_background_loop,
+            args=(host, port, self._client_from_id, self._message_queue),
             daemon=True,
         ).start()
 
@@ -60,102 +60,101 @@ class ViserServer:
         for message in messages:
             self._message_queue.put_nowait((client_id, message))
 
-    def _start_background_loop(
-        self,
-        host: str,
-        port: int,
-        message_queue: queue_.Queue,
-    ) -> None:
-        connection_count = 0
-        total_connections = 0
-        event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(event_loop)
 
-        buffer_from_id: Dict[ClientId, asyncio.Queue] = {}
+def _background_loop(
+    host: str,
+    port: int,
+    client_from_id: Dict[ClientId, ClientInfo],
+    message_queue: queue.Queue,
+) -> None:
+    connection_count = 0
+    total_connections = 0
+    event_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(event_loop)
 
-        # We maintain two message buffer types: a persistent broadcasted messages and
-        # connection-specific messages.
-        broadcast_buffer = AsyncMessageBuffer(event_loop)
+    buffer_from_id: Dict[ClientId, asyncio.Queue] = {}
 
-        def message_transfer() -> None:
-            """Message transfer loop. Pulls messages from the main process and pushes them into our buffer."""
-            # TODO: this design made sense when we were using multiprocessing, but we switched to a thread at some point.
-            # Should revisit.
-            while True:
-                client_id, message = message_queue.get()
-                if client_id == "broadcast":
-                    broadcast_buffer.push(message)
-                elif client_id in buffer_from_id:
-                    event_loop.call_soon_threadsafe(
-                        buffer_from_id[client_id].put_nowait,
-                        message,
-                    )
-                else:
-                    print(
-                        f"Tried to send message to {client_id}, but ID is closed or not valid."
-                    )
+    # We maintain two message buffer types: a persistent broadcasted messages and
+    # connection-specific messages.
+    broadcast_buffer = AsyncMessageBuffer(event_loop)
 
-        async def serve(websocket: WebSocketServerProtocol) -> None:
-            """Server loop, run once per connection."""
-
-            # TODO: there are likely race conditions here...
-            nonlocal connection_count
-            client_id = connection_count
-            connection_count += 1
-
-            nonlocal total_connections
-            total_connections += 1
-
-            buffer_from_id[client_id] = asyncio.Queue()
-
-            print(
-                f"Connection opened ({client_id}, {total_connections} total),"
-                f" {len(broadcast_buffer.message_from_id)} buffered messages"
-            )
-            try:
-                await asyncio.gather(
-                    single_connection_producer(websocket, buffer_from_id[client_id]),
-                    broadcast_producer(websocket),
-                    consumer(websocket, client_id),
+    def message_transfer() -> None:
+        """Message transfer loop. Pulls messages from the main process and pushes them into our buffer."""
+        while True:
+            client_id, message = message_queue.get()
+            if client_id == "broadcast":
+                broadcast_buffer.push(message)
+            elif client_id in buffer_from_id:
+                event_loop.call_soon_threadsafe(
+                    buffer_from_id[client_id].put_nowait,
+                    message,
                 )
-            except (
-                websockets.exceptions.ConnectionClosedOK,
-                websockets.exceptions.ConnectionClosedError,
-            ):
-                total_connections -= 1
-                print(f"Connection closed ({client_id}, {total_connections} total)")
+            else:
+                print(
+                    f"Tried to send message to {client_id}, but ID is closed or not valid."
+                )
 
-                if client_id in self._client_from_id:
-                    self._client_from_id.pop(client_id)
+    async def serve(websocket: WebSocketServerProtocol) -> None:
+        """Server loop, run once per connection."""
 
-        async def single_connection_producer(
-            websocket: WebSocketServerProtocol, buffer: asyncio.Queue
-        ) -> None:
-            # Infinite loop to send messages from the message buffer.
-            while True:
-                message = await buffer.get()
-                await websocket.send(message.serialize())
+        # TODO: there are likely race conditions here...
+        nonlocal connection_count
+        client_id = ClientId(connection_count)
+        connection_count += 1
 
-        async def broadcast_producer(websocket: WebSocketServerProtocol) -> None:
-            # Infinite loop to send messages from the message buffer.
-            async for message_serialized in broadcast_buffer:
-                await websocket.send(message_serialized)
+        nonlocal total_connections
+        total_connections += 1
 
-        async def consumer(websocket: WebSocketServerProtocol, client_id: int) -> None:
-            while True:
-                message = msgpack.unpackb(await websocket.recv())
-                t = message.pop("type")
-                if t == "viewer_camera":
-                    self._client_from_id[client_id] = ClientInfo(
-                        camera=ViewerCameraMessage(**message),
-                        camera_timestamp=time.time(),
-                    )
-                else:
-                    print("Unrecognized message", message)
+        buffer_from_id[client_id] = asyncio.Queue()
 
-        # Start message transfer thread.
-        threading.Thread(target=message_transfer).start()
+        print(
+            f"Connection opened ({client_id}, {total_connections} total),"
+            f" {len(broadcast_buffer.message_from_id)} buffered messages"
+        )
+        try:
+            await asyncio.gather(
+                single_connection_producer(websocket, buffer_from_id[client_id]),
+                broadcast_producer(websocket),
+                consumer(websocket, client_id),
+            )
+        except (
+            websockets.exceptions.ConnectionClosedOK,
+            websockets.exceptions.ConnectionClosedError,
+        ):
+            total_connections -= 1
+            print(f"Connection closed ({client_id}, {total_connections} total)")
 
-        # Run server.
-        event_loop.run_until_complete(websockets.server.serve(serve, host, port))
-        event_loop.run_forever()
+            if client_id in client_from_id:
+                client_from_id.pop(client_id)
+
+    async def single_connection_producer(
+        websocket: WebSocketServerProtocol, buffer: asyncio.Queue
+    ) -> None:
+        # Infinite loop to send messages from the message buffer.
+        while True:
+            message = await buffer.get()
+            await websocket.send(message.serialize())
+
+    async def broadcast_producer(websocket: WebSocketServerProtocol) -> None:
+        # Infinite loop to send messages from the message buffer.
+        async for message_serialized in broadcast_buffer:
+            await websocket.send(message_serialized)
+
+    async def consumer(websocket: WebSocketServerProtocol, client_id: ClientId) -> None:
+        while True:
+            message = msgpack.unpackb(await websocket.recv())
+            t = message.pop("type")
+            if t == "viewer_camera":
+                client_from_id[client_id] = ClientInfo(
+                    camera=ViewerCameraMessage(**message),
+                    camera_timestamp=time.time(),
+                )
+            else:
+                print("Unrecognized message", message)
+
+    # Start message transfer thread.
+    threading.Thread(target=message_transfer).start()
+
+    # Run server.
+    event_loop.run_until_complete(websockets.server.serve(serve, host, port))
+    event_loop.run_forever()

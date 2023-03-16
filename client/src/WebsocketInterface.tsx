@@ -22,23 +22,25 @@ function useMessageHandler(
     switch (message.type) {
       // Add a coordinate frame.
       case "frame": {
-        const node = new SceneNode(message.name, (ref) => (
-          <CoordinateFrame
-            ref={ref}
-            scale={message.scale}
-            position={new THREE.Vector3().fromArray(message.position)}
-            quaternion={
-              new THREE.Quaternion(
-                message.wxyz[1],
-                message.wxyz[2],
-                message.wxyz[3],
-                message.wxyz[0]
-              )
-            }
-            show_axes={message.show_axes}
-          />
-        ));
-        return () => addSceneNode(node);
+        addSceneNode(
+          new SceneNode(message.name, (ref) => (
+            <CoordinateFrame
+              ref={ref}
+              scale={message.scale}
+              position={new THREE.Vector3().fromArray(message.position)}
+              quaternion={
+                new THREE.Quaternion(
+                  message.wxyz[1],
+                  message.wxyz[2],
+                  message.wxyz[3],
+                  message.wxyz[0]
+                )
+              }
+              show_axes={message.show_axes}
+            />
+          ))
+        );
+        break;
       }
       // Add a point cloud.
       case "point_cloud": {
@@ -70,33 +72,40 @@ function useMessageHandler(
           new THREE.Uint8BufferAttribute(message.color_uint8, 3, true)
         );
 
-        const node = new SceneNode(message.name, (ref) => (
-          <points ref={ref} geometry={geometry} material={pointCloudMaterial} />
-        ));
-        return () => addSceneNode(node);
+        addSceneNode(
+          new SceneNode(message.name, (ref) => (
+            <points
+              ref={ref}
+              geometry={geometry}
+              material={pointCloudMaterial}
+            />
+          ))
+        );
+        break;
       }
       // Add a camera frustum.
       case "camera_frustum": {
-        const node = new SceneNode(message.name, (ref) => (
-          <CameraFrustum
-            ref={ref}
-            fov={message.fov}
-            aspect={message.aspect}
-            scale={message.scale}
-          ></CameraFrustum>
-        ));
-        return () => addSceneNode(node);
+        addSceneNode(
+          new SceneNode(message.name, (ref) => (
+            <CameraFrustum
+              ref={ref}
+              fov={message.fov}
+              aspect={message.aspect}
+              scale={message.scale}
+            ></CameraFrustum>
+          ))
+        );
+        break;
       }
       // Add a background image.
       case "background_image": {
-        return () => {
-          if (wrapperRef.current != null) {
-            wrapperRef.current.style.backgroundImage = `url(data:${message.media_type};base64,${message.base64_data})`;
-            wrapperRef.current.style.backgroundSize = "cover";
-            wrapperRef.current.style.backgroundRepeat = "no-repeat";
-            wrapperRef.current.style.backgroundPosition = "center center";
-          }
-        };
+        if (wrapperRef.current != null) {
+          wrapperRef.current.style.backgroundImage = `url(data:${message.media_type};base64,${message.base64_data})`;
+          wrapperRef.current.style.backgroundSize = "cover";
+          wrapperRef.current.style.backgroundRepeat = "no-repeat";
+          wrapperRef.current.style.backgroundPosition = "center center";
+        }
+        break;
       }
       // Add an image.
       case "image": {
@@ -106,37 +115,41 @@ function useMessageHandler(
         const colorMap = new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_data}`
         );
-        const node = new SceneNode(message.name, (ref) => {
-          return (
-            <mesh ref={ref}>
-              <planeGeometry
-                attach="geometry"
-                args={[message.render_width, message.render_height]}
-              />
-              <meshBasicMaterial
-                attach="material"
-                transparent={true}
-                side={THREE.DoubleSide}
-                map={colorMap}
-              />
-            </mesh>
-          );
-        });
-        return () => addSceneNode(node);
+        addSceneNode(
+          new SceneNode(message.name, (ref) => {
+            return (
+              <mesh ref={ref}>
+                <planeGeometry
+                  attach="geometry"
+                  args={[message.render_width, message.render_height]}
+                />
+                <meshBasicMaterial
+                  attach="material"
+                  transparent={true}
+                  side={THREE.DoubleSide}
+                  map={colorMap}
+                />
+              </mesh>
+            );
+          })
+        );
+        break;
       }
       // Remove a scene node by name.
       case "remove_scene_node": {
         console.log("Removing scene node:", message.name);
-        return () => removeSceneNode(message.name);
+        removeSceneNode(message.name);
+        break;
       }
       // Reset the entire scene, removing all scene nodes.
       case "reset_scene": {
         console.log("Resetting scene!");
-        return () => resetScene();
+        resetScene();
+        break;
       }
       default: {
         console.log("Received message did not match any known types:", message);
-        return () => undefined;
+        break;
       }
     }
   };
@@ -151,28 +164,10 @@ function useWebsocketInterface(
   connected_cb: () => void,
   disconnected_cb: () => void
 ) {
-  // Handle state updates in batches, at regular intervals. This helps reduce
-  // re-renders when there are a lot of messages.
-  //
-  // Could be revisited.
-  const stateUpdateQueue = React.useRef<(() => void)[]>([]);
-  React.useEffect(() => {
-    const batchedMessageHandler = setInterval(() => {
-      // Thread-safe pop for all state updates in the queue.
-      const stateUpdateBatch = [...stateUpdateQueue.current];
-      stateUpdateQueue.current.splice(0, stateUpdateBatch.length);
-
-      // Handle all messages.
-      stateUpdateBatch.forEach((handle) => handle());
-    }, 50);
-    return () => clearInterval(batchedMessageHandler);
-  }, [stateUpdateQueue]);
-
   const handleMessage = useMessageHandler(useSceneTree, wrapperRef);
 
   React.useEffect(() => {
-    // Lock for making sure messages are handled in order. This is important
-    // especially when we are removing scene nodes.
+    // Lock for making sure messages are handled in order.
     const orderLock = new AwaitLock();
 
     let ws: null | WebSocket = null;
@@ -209,8 +204,7 @@ function useWebsocketInterface(
         // Handle messages in order.
         await orderLock.acquireAsync();
         try {
-          const stateUpdate = handleMessage(await messagePromise);
-          stateUpdateQueue.current.push(stateUpdate);
+          handleMessage(await messagePromise);
         } finally {
           orderLock.release();
         }

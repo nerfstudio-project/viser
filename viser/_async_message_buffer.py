@@ -3,7 +3,12 @@ import dataclasses
 from asyncio.events import AbstractEventLoop
 from typing import Dict
 
-from ._messages import Message, RemoveSceneNodeMessage, ResetSceneMessage, BackgroundImageMessage
+from ._messages import (
+    BackgroundImageMessage,
+    Message,
+    RemoveSceneNodeMessage,
+    ResetSceneMessage,
+)
 
 
 @dataclasses.dataclass
