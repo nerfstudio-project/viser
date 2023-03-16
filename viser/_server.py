@@ -79,6 +79,8 @@ class ViserServer:
 
         def message_transfer() -> None:
             """Message transfer loop. Pulls messages from the main process and pushes them into our buffer."""
+            # TODO: this design made sense when we were using multiprocessing, but we switched to a thread at some point.
+            # Should revisit.
             while True:
                 client_id, message = message_queue.get()
                 if client_id == "broadcast":
