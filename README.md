@@ -29,7 +29,9 @@ Scene tree
   - [x] Camera frustum
   - [x] Image
   - [x] Video stream (seems fine to just images for this)
-  - [ ] Camera control
+  - [x] Background set
+  - [x] Camera read
+  - [ ] Camera write
   - [x] Ensure message ordering
 
 - Serialization

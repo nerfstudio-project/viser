@@ -39,7 +39,8 @@ class Message:
 
 @dataclasses.dataclass
 class ViewerCameraMessage(Message):
-    """Message for a posed viewer camera."""
+    """Message for a posed viewer camera.
+    Pose is in the form T_world_camera, OpenCV convention, +Z forward."""
 
     type: ClassVar[str] = "viewer_camera"
     wxyz: Tuple[float, float, float, float]
@@ -51,7 +52,9 @@ class ViewerCameraMessage(Message):
 
 @dataclasses.dataclass
 class CameraFrustumMessage(Message):
-    """Variant of CameraMessage used for visualizing camera frustums."""
+    """Variant of CameraMessage used for visualizing camera frustums.
+
+    OpenCV convention, +Z forward."""
 
     type: ClassVar[str] = "camera_frustum"
     name: str
