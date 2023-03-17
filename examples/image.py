@@ -1,5 +1,3 @@
-import pathlib
-import random
 import time
 
 import imageio.v3 as iio
