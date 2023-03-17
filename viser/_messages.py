@@ -5,8 +5,9 @@ from __future__ import annotations
 
 import base64
 import dataclasses
+import functools
 import io
-from typing import Any, ClassVar, Tuple
+from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type
 
 import imageio.v3 as iio
 import msgpack
@@ -31,10 +32,37 @@ class Message:
     type: ClassVar[str]
 
     def serialize(self) -> bytes:
+        """Convert a Python Message object into bytes."""
         mapping = {k: _prepare_for_serialization(v) for k, v in vars(self).items()}
         out = msgpack.packb({"type": self.type, **mapping})
         assert isinstance(out, bytes)
         return out
+
+    @staticmethod
+    def deserialize(message: bytes) -> Message:
+        """Convert bytes into a Python Message object."""
+        mapping = msgpack.unpackb(message)
+        message_type = Message._subclass_from_type_string()[mapping.pop("type")]
+        return message_type(**mapping)
+
+    @staticmethod
+    @functools.lru_cache
+    def _subclass_from_type_string() -> Dict[str, Type[Message]]:
+        subclasses = Message.get_subclasses()
+        return {s.type: s for s in subclasses}
+
+    @staticmethod
+    def get_subclasses() -> List[Type[Message]]:
+        """Recursively get message subclasses."""
+
+        def _get_subclasses(typ: Type[Message]) -> List[Type[Message]]:
+            out = []
+            for sub in typ.__subclasses__():
+                out.append(sub)
+                out.extend(_get_subclasses(sub))
+            return out
+
+        return _get_subclasses(Message)
 
 
 @dataclasses.dataclass

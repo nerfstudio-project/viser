@@ -4,7 +4,6 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 import pyrealsense2 as rs
-import scipy.ndimage
 from tqdm.auto import tqdm
 
 import viser
@@ -20,7 +19,6 @@ def realsense_pipeline(fps: int = 30):
 
     pipeline_wrapper = rs.pipeline_wrapper(pipeline)  # type: ignore
     pipeline_profile = config.resolve(pipeline_wrapper)
-    device = pipeline_profile.get_device()
 
     config.enable_stream(rs.stream.depth, rs.format.z16, fps)  # type: ignore
     config.enable_stream(rs.stream.color, rs.format.rgb8, fps)  # type: ignore
