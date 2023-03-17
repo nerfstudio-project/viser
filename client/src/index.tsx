@@ -15,16 +15,16 @@ import Box from "@mui/material/Box";
 import { Euler, PerspectiveCamera, Quaternion } from "three";
 import { ViewerCameraMessage } from "./WebsocketMessages";
 import { encode } from "@msgpack/msgpack";
-import { IconButton } from "@mui/material";
+import { IconButton, useMediaQuery } from "@mui/material";
 import { RemoveCircleRounded, AddCircleRounded } from "@mui/icons-material";
 
-interface CameraSynchronizerProps {
+interface SynchronizedOrbitControlsProps {
   globalCameras: MutableRefObject<CameraPrimitives[]>;
   websocketRef: MutableRefObject<WebSocket | null>;
 }
 
 // Communicate the threejs camera to the server.
-function CameraSynchronizer(props: CameraSynchronizerProps) {
+function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
   console.log("Setting up camera synchronizer; this should only happen once!");
 
   const camera = useThree((state) => state.camera as PerspectiveCamera);
@@ -66,9 +66,39 @@ function CameraSynchronizer(props: CameraSynchronizerProps) {
     websocket && websocket.send(encode(message));
   }
 
+  // What do we need to when the camera moves?
+  function cameraChangedCallback() {
+    // Match all cameras.
+    props.globalCameras.current.forEach((other) => {
+      if (camera === other.camera) return;
+      other.camera.copy(camera);
+      other.orbitRef.current!.target.copy(orbitRef.current!.target);
+    });
+
+    // If desired, send our camera via websocket.
+    if (cameraThrottleReady.current) {
+      sendCamera();
+      cameraThrottleReady.current = false;
+      cameraThrottleStale.current = false;
+      setTimeout(() => {
+        cameraThrottleReady.current = true;
+        if (cameraThrottleStale.current) sendCamera();
+      }, 10);
+    } else {
+      cameraThrottleStale.current = true;
+    }
+  }
+
   // Send camera for new connections. Slightly hacky!
   React.useEffect(() => {
-    const cameraMeta = { camera: camera, controls: orbitRef };
+    const cameraMeta: CameraPrimitives = { camera: camera, orbitRef: orbitRef };
+
+    if (props.globalCameras.current.length > 0) {
+      const other = props.globalCameras.current[0];
+      camera.copy(other.camera);
+      orbitRef.current!.target.copy(other.orbitRef.current!.target);
+    }
+
     props.globalCameras.current.push(cameraMeta);
 
     let disconnected_prev = props.websocketRef.current === null;
@@ -80,7 +110,11 @@ function CameraSynchronizer(props: CameraSynchronizerProps) {
       disconnected_prev = disconnected;
     }, 1000);
 
+    window.addEventListener("resize", cameraChangedCallback);
+
     return () => {
+      window.removeEventListener("resize", cameraChangedCallback);
+
       clearInterval(interval);
 
       // Remove ourself from camera list. Since we always add/remove panels
@@ -92,34 +126,13 @@ function CameraSynchronizer(props: CameraSynchronizerProps) {
       );
     };
   });
-
   return (
     <OrbitControls
       ref={orbitRef}
       minDistance={0.5}
       maxDistance={200.0}
       enableDamping={false}
-      onChange={() => {
-        // Match all cameras.
-        props.globalCameras.current.forEach((other) => {
-          if (camera === other.camera) return;
-          other.camera.copy(camera);
-          other.controls.current!.target.copy(orbitRef.current!.target);
-        });
-
-        // If desired, send our camera via websocket.
-        if (cameraThrottleReady.current) {
-          sendCamera();
-          cameraThrottleReady.current = false;
-          cameraThrottleStale.current = false;
-          setTimeout(() => {
-            cameraThrottleReady.current = true;
-            if (cameraThrottleStale.current) sendCamera();
-          }, 10);
-        } else {
-          cameraThrottleStale.current = true;
-        }
-      }}
+      onChange={cameraChangedCallback}
     />
   );
 }
@@ -166,7 +179,7 @@ const SingleViewer = React.memo(function SingleViewer(
       />
       <Viewport>
         <LabelRenderer wrapperRef={wrapperRef} />
-        <CameraSynchronizer
+        <SynchronizedOrbitControls
           websocketRef={websocketRef}
           globalCameras={props.globalCameras}
         />
@@ -178,13 +191,13 @@ const SingleViewer = React.memo(function SingleViewer(
 
 interface CameraPrimitives {
   camera: PerspectiveCamera;
-  controls: RefObject<OrbitControls_>;
+  orbitRef: RefObject<OrbitControls_>;
 }
 
 function Root() {
   const globalCameras = useRef<CameraPrimitives[]>([]);
-  const [panelKeys, setPanelKeys] = useState([0]);
-
+  const [panelCount, setPanelCount] = useState(1);
+  const isPortrait = useMediaQuery("(orientation: portrait)");
   return (
     <Box
       component="div"
@@ -197,31 +210,36 @@ function Root() {
         <IconButton>
           <AddCircleRounded
             onClick={() => {
-              setPanelKeys([...panelKeys, panelKeys.length]);
+              setPanelCount(panelCount + 1);
             }}
           />
         </IconButton>
-        <IconButton>
+        <IconButton disabled={panelCount == 1}>
           <RemoveCircleRounded
-            sx={{ opacity: panelKeys.length > 1 ? "1" : "0.5" }}
             onClick={() => {
-              if (panelKeys.length === 1) return;
-              setPanelKeys(panelKeys.slice(0, -1));
+              if (panelCount === 1) return;
+              setPanelCount(panelCount - 1);
             }}
           />
         </IconButton>
       </Box>
-      {panelKeys.map((i) => {
-        console.log(i);
+      {Array.from({ length: panelCount }, (_, i) => {
         return (
           <Box
             component="div"
             key={"box-" + i.toString()}
-            sx={{
-              height: "100%",
-              float: "left",
-              width: (100.0 / panelKeys.length).toString() + "%",
-            }}
+            sx={
+              isPortrait
+                ? {
+                    width: "100%",
+                    height: (100.0 / panelCount).toString() + "%",
+                  }
+                : {
+                    height: "100%",
+                    float: "left",
+                    width: (100.0 / panelCount).toString() + "%",
+                  }
+            }
           >
             <SingleViewer panelKey={i} globalCameras={globalCameras} />
           </Box>
