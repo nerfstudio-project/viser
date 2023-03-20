@@ -18,7 +18,7 @@ def realsense_pipeline(fps: int = 30):
     config = rs.config()  # type: ignore
 
     pipeline_wrapper = rs.pipeline_wrapper(pipeline)  # type: ignore
-    pipeline_profile = config.resolve(pipeline_wrapper)
+    config.resolve(pipeline_wrapper)
 
     config.enable_stream(rs.stream.depth, rs.format.z16, fps)  # type: ignore
     config.enable_stream(rs.stream.color, rs.format.rgb8, fps)  # type: ignore

@@ -15,11 +15,19 @@ import Box from "@mui/material/Box";
 import { Euler, PerspectiveCamera, Quaternion } from "three";
 import { ViewerCameraMessage } from "./WebsocketMessages";
 import { encode } from "@msgpack/msgpack";
-import { IconButton, useMediaQuery } from "@mui/material";
+import {
+  FormControlLabel,
+  IconButton,
+  useMediaQuery,
+  Grid,
+  Switch,
+} from "@mui/material";
 import { RemoveCircleRounded, AddCircleRounded } from "@mui/icons-material";
+import WebsocketInterface from "./WebsocketInterface";
+import { useGuiState } from "./GuiState";
 
 interface SynchronizedOrbitControlsProps {
-  globalCameras: MutableRefObject<CameraPrimitives[]>;
+  globalCameras: MutableRefObject<CameraPrimitives>;
   websocketRef: MutableRefObject<WebSocket | null>;
 }
 
@@ -68,12 +76,18 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
 
   // What do we need to when the camera moves?
   function cameraChangedCallback() {
+    const globalCameras = props.globalCameras.current;
     // Match all cameras.
-    props.globalCameras.current.forEach((other) => {
-      if (camera === other.camera) return;
-      other.camera.copy(camera);
-      other.orbitRef.current!.target.copy(orbitRef.current!.target);
-    });
+    if (globalCameras.synchronize) {
+      props.globalCameras.current!.cameras.forEach((other) => {
+        if (camera === other) return;
+        other.copy(camera);
+      });
+      props.globalCameras.current!.orbitRefs.forEach((other) => {
+        if (orbitRef === other) return;
+        other.current!.target.copy(orbitRef.current!.target);
+      });
+    }
 
     // If desired, send our camera via websocket.
     if (cameraThrottleReady.current) {
@@ -91,15 +105,15 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
 
   // Send camera for new connections. Slightly hacky!
   React.useEffect(() => {
-    const cameraMeta: CameraPrimitives = { camera: camera, orbitRef: orbitRef };
+    const globalCameras = props.globalCameras.current;
 
-    if (props.globalCameras.current.length > 0) {
-      const other = props.globalCameras.current[0];
-      camera.copy(other.camera);
-      orbitRef.current!.target.copy(other.orbitRef.current!.target);
+    if (globalCameras.synchronize && globalCameras.cameras.length > 0) {
+      camera.copy(globalCameras.cameras[0]);
+      orbitRef.current!.target.copy(globalCameras.orbitRefs[0].current!.target);
     }
 
-    props.globalCameras.current.push(cameraMeta);
+    globalCameras.cameras.push(camera);
+    globalCameras.orbitRefs.push(orbitRef);
 
     let disconnected_prev = props.websocketRef.current === null;
     const interval = setInterval(() => {
@@ -120,8 +134,9 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
       // Remove ourself from camera list. Since we always add/remove panels
       // from the end, a pop() would actually work as well here in constant
       // time.
-      props.globalCameras.current.splice(
-        props.globalCameras.current.indexOf(cameraMeta),
+      globalCameras.cameras.splice(globalCameras.cameras.indexOf(camera), 1);
+      globalCameras.orbitRefs.splice(
+        globalCameras.orbitRefs.indexOf(orbitRef),
         1
       );
     };
@@ -139,7 +154,7 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
 
 interface SingleViewerProps {
   panelKey: number;
-  globalCameras: MutableRefObject<CameraPrimitives[]>;
+  globalCameras: MutableRefObject<CameraPrimitives>;
 }
 
 const SingleViewer = React.memo(function SingleViewer(
@@ -167,15 +182,22 @@ const SingleViewer = React.memo(function SingleViewer(
   // Declare the scene tree state. This returns a zustand store/hook, which we
   // can pass to any children that need state access.
   const useSceneTree = useSceneTreeState();
+  const useGui = useGuiState();
 
   // <Stats showPanel={0} className="stats" />
   // <gridHelper args={[10.0, 10]} />
   return (
     <Wrapper ref={wrapperRef}>
+      <WebsocketInterface
+        useSceneTree={useSceneTree}
+        useGui={useGui}
+        websocketRef={websocketRef}
+        wrapperRef={wrapperRef}
+      />
       <ControlPanel
         wrapperRef={wrapperRef}
-        websocketRef={websocketRef}
         useSceneTree={useSceneTree}
+        useGui={useGui}
       />
       <Viewport>
         <LabelRenderer wrapperRef={wrapperRef} />
@@ -190,12 +212,17 @@ const SingleViewer = React.memo(function SingleViewer(
 });
 
 interface CameraPrimitives {
-  camera: PerspectiveCamera;
-  orbitRef: RefObject<OrbitControls_>;
+  synchronize: boolean;
+  cameras: PerspectiveCamera[];
+  orbitRefs: RefObject<OrbitControls_>[];
 }
 
 function Root() {
-  const globalCameras = useRef<CameraPrimitives[]>([]);
+  const globalCameras = useRef<CameraPrimitives>({
+    synchronize: false,
+    cameras: [],
+    orbitRefs: [],
+  });
   const [panelCount, setPanelCount] = useState(1);
   const isPortrait = useMediaQuery("(orientation: portrait)");
   return (
@@ -205,31 +232,52 @@ function Root() {
     >
       <Box
         component="div"
-        sx={{ position: "fixed", top: "1em", left: "1em", zIndex: "1000" }}
+        sx={{
+          position: "fixed",
+          bottom: "0",
+          width: "100%",
+          zIndex: "1000",
+          backgroundColor: "rgba(255, 255, 255, 0.85)",
+          borderTop: "1px solid",
+          borderTopColor: "divider",
+        }}
       >
-        <IconButton>
-          <AddCircleRounded
+        <Grid sx={{ float: "right" }}>
+          <IconButton
             onClick={() => {
               setPanelCount(panelCount + 1);
             }}
-          />
-        </IconButton>
-        <IconButton disabled={panelCount == 1}>
-          <RemoveCircleRounded
+          >
+            <AddCircleRounded />
+          </IconButton>
+          <IconButton
+            disabled={panelCount === 1}
             onClick={() => {
               if (panelCount === 1) return;
               setPanelCount(panelCount - 1);
             }}
+          >
+            <RemoveCircleRounded />
+          </IconButton>
+          <FormControlLabel
+            control={<Switch />}
+            label="Sync Cameras"
+            defaultChecked={globalCameras.current.synchronize}
+            onChange={(_event, checked) => {
+              globalCameras.current.synchronize = checked;
+            }}
+            sx={{ pl: 1 }}
+            disabled={panelCount === 1}
           />
-        </IconButton>
+        </Grid>
       </Box>
       {Array.from({ length: panelCount }, (_, i) => {
         return (
           <Box
             component="div"
             key={"box-" + i.toString()}
-            sx={
-              isPortrait
+            sx={{
+              ...(isPortrait
                 ? {
                     width: "100%",
                     height: (100.0 / panelCount).toString() + "%",
@@ -238,8 +286,13 @@ function Root() {
                     height: "100%",
                     float: "left",
                     width: (100.0 / panelCount).toString() + "%",
-                  }
-            }
+                  }),
+              boxSizing: "border-box;",
+              "&:not(:last-child)": {
+                borderRight: "1px solid",
+                borderColor: "divider",
+              },
+            }}
           >
             <SingleViewer panelKey={i} globalCameras={globalCameras} />
           </Box>

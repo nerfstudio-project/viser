@@ -3,6 +3,7 @@ import AwaitLock from "await-lock";
 import React, { MutableRefObject, RefObject } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
+import { UseGui } from "./GuiState";
 
 import { SceneNode, UseSceneTree } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
@@ -145,6 +146,7 @@ function useMessageHandler(
       case "reset_scene": {
         console.log("Resetting scene!");
         resetScene();
+        wrapperRef.current!.style.backgroundImage = "none";
         break;
       }
       default: {
@@ -155,16 +157,21 @@ function useMessageHandler(
   };
 }
 
-/** Component for handling websocket connections. Rendered as a connection indicator. */
-function useWebsocketInterface(
-  useSceneTree: UseSceneTree,
-  websocketRef: MutableRefObject<WebSocket | null>,
-  wrapperRef: RefObject<HTMLDivElement>,
-  host: string,
-  connected_cb: () => void,
-  disconnected_cb: () => void
-) {
-  const handleMessage = useMessageHandler(useSceneTree, wrapperRef);
+interface WebSocketInterfaceProps {
+  useSceneTree: UseSceneTree;
+  useGui: UseGui;
+  websocketRef: MutableRefObject<WebSocket | null>;
+  wrapperRef: RefObject<HTMLDivElement>;
+}
+
+/** Component for handling websocket connections. */
+export default function WebsocketInterface(props: WebSocketInterfaceProps) {
+  const handleMessage = useMessageHandler(props.useSceneTree, props.wrapperRef);
+
+  const server = props.useGui((state) => state.server);
+  const setWebsocketConnected = props.useGui(
+    (state) => state.setWebsocketConnected
+  );
 
   React.useEffect(() => {
     // Lock for making sure messages are handled in order.
@@ -176,19 +183,18 @@ function useWebsocketInterface(
     function tryConnect(): void {
       if (done) return;
 
-      ws = new WebSocket(host);
+      ws = new WebSocket(server);
 
       ws.onopen = () => {
-        console.log("Connected!" + host);
-        console.log(ws);
-        websocketRef.current = ws;
-        connected_cb();
+        console.log("Connected!" + server);
+        props.websocketRef.current = ws;
+        setWebsocketConnected(true);
       };
 
       ws.onclose = () => {
-        console.log("Disconnected! " + host);
-        websocketRef.current = null;
-        disconnected_cb();
+        console.log("Disconnected! " + server);
+        props.websocketRef.current = null;
+        setWebsocketConnected(false);
 
         // Try to reconnect.
         timeout = setTimeout(tryConnect, 1000);
@@ -215,10 +221,11 @@ function useWebsocketInterface(
     return () => {
       done = true;
       clearTimeout(timeout);
+      setWebsocketConnected(false);
       ws && ws.close();
       clearTimeout(timeout);
     };
-  }, [handleMessage, websocketRef, connected_cb, disconnected_cb, host]);
-}
+  }, [props, server, setWebsocketConnected]);
 
-export default useWebsocketInterface;
+  return <></>;
+}

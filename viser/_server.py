@@ -1,18 +1,10 @@
-#!/usr/bin/env python
+from __future__ import annotations
 
 import asyncio
 import dataclasses
 import threading
 import time
-from typing import (
-    Callable,
-    Dict,
-    Literal,
-    NewType,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Callable, Dict, Literal, NewType, Optional, Tuple, Union
 
 import websockets.connection
 import websockets.exceptions
