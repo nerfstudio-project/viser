@@ -1,4 +1,4 @@
-from typing import ClassVar, Type, get_args, get_origin, get_type_hints
+from typing import Any, ClassVar, Type, get_args, get_origin, get_type_hints
 
 import numpy as onp
 from typing_extensions import Literal
@@ -11,6 +11,7 @@ _raw_type_mapping = {
     int: "number",
     str: "string",
     onp.ndarray: "ArrayBuffer",
+    Any: "any",
 }
 
 
