@@ -203,3 +203,30 @@ class ResetSceneMessage(Message):
     """Reset scene."""
 
     type: ClassVar[str] = "reset_scene"
+
+
+@dataclasses.dataclass
+class AddGuiInputMessage(Message):
+    """Sent server->client to add a new GUI input."""
+
+    type: ClassVar[str] = "add_gui"
+    name: str
+    leva_conf: Any
+
+# TODO: implement!
+#
+# @dataclasses.dataclass
+# class RemoveGuiInputMessage(Message):
+#     """Sent server->client to add a new GUI input."""
+#
+#     type: ClassVar[str] = "remove_gui"
+#     name: str
+
+
+@dataclasses.dataclass
+class GuiUpdateMessage(Message):
+    """Sent client->server when a GUI input is changed."""
+
+    type: ClassVar[str] = "gui_update"
+    name: str
+    value: Any

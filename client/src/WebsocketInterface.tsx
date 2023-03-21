@@ -12,11 +12,13 @@ import { Message } from "./WebsocketMessages";
 /** React hook for handling incoming messages, and using them for scene tree manipulation. */
 function useMessageHandler(
   useSceneTree: UseSceneTree,
+  useGui: UseGui,
   wrapperRef: RefObject<HTMLDivElement>
 ) {
   const removeSceneNode = useSceneTree((state) => state.removeSceneNode);
   const resetScene = useSceneTree((state) => state.resetScene);
   const addSceneNode = useSceneTree((state) => state.addSceneNode);
+  const addGui = useGui((state) => state.addGui);
 
   // Return message handler.
   return (message: Message) => {
@@ -149,6 +151,11 @@ function useMessageHandler(
         wrapperRef.current!.style.backgroundImage = "none";
         break;
       }
+      // Add a GUI input.
+      case "add_gui": {
+        addGui(message.name, message.leva_conf);
+        break;
+      }
       default: {
         console.log("Received message did not match any known types:", message);
         break;
@@ -166,12 +173,17 @@ interface WebSocketInterfaceProps {
 
 /** Component for handling websocket connections. */
 export default function WebsocketInterface(props: WebSocketInterfaceProps) {
-  const handleMessage = useMessageHandler(props.useSceneTree, props.wrapperRef);
+  const handleMessage = useMessageHandler(
+    props.useSceneTree,
+    props.useGui,
+    props.wrapperRef
+  );
 
   const server = props.useGui((state) => state.server);
   const setWebsocketConnected = props.useGui(
     (state) => state.setWebsocketConnected
   );
+  const resetGui = props.useGui((state) => state.resetGui);
 
   React.useEffect(() => {
     // Lock for making sure messages are handled in order.
@@ -195,6 +207,7 @@ export default function WebsocketInterface(props: WebSocketInterfaceProps) {
         console.log("Disconnected! " + server);
         props.websocketRef.current = null;
         setWebsocketConnected(false);
+        resetGui();
 
         // Try to reconnect.
         timeout = setTimeout(tryConnect, 1000);
