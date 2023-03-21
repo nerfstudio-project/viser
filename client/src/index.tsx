@@ -195,9 +195,10 @@ const SingleViewer = React.memo(function SingleViewer(
         wrapperRef={wrapperRef}
       />
       <ControlPanel
-        wrapperRef={wrapperRef}
         useSceneTree={useSceneTree}
         useGui={useGui}
+        websocketRef={websocketRef}
+        wrapperRef={wrapperRef}
       />
       <Viewport>
         <LabelRenderer wrapperRef={wrapperRef} />
@@ -289,7 +290,8 @@ function Root() {
                   }),
               boxSizing: "border-box;",
               "&:not(:last-child)": {
-                borderRight: "1px solid",
+                borderRight: isPortrait ? null : "1px solid",
+                borderBottom: isPortrait ? "1px solid" : null,
                 borderColor: "divider",
               },
             }}

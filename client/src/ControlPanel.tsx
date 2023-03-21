@@ -1,10 +1,11 @@
 import { TreeItem, TreeView } from "@mui/lab";
 import Tabs from "@mui/material/Tabs";
 import Box from "@mui/material/Box";
-import React, { RefObject } from "react";
+import React, { MutableRefObject, RefObject } from "react";
 import styled from "@emotion/styled";
 import Tab from "@mui/material/Tab";
 import { IconButton } from "@mui/material";
+import { GuiUpdateMessage } from "./WebsocketMessages";
 import { UseSceneTree, NodeIdType } from "./SceneTree";
 import {
   Visibility,
@@ -14,32 +15,70 @@ import {
   SensorsOffRounded,
 } from "@mui/icons-material";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
-import { Leva, LevaPanel, useControls, useCreateStore } from "leva";
+import { folder, Leva, LevaPanel, useControls, useCreateStore } from "leva";
 import { LevaCustomTheme } from "leva/dist/declarations/src/styles";
 import { UseGui } from "./GuiState";
+import { encode } from "@msgpack/msgpack";
 
 const levaTheme: LevaCustomTheme = {
-  borderWidths: {
-    root: "2px",
-    input: "2px",
+  colors: {
+    elevation1: "#e5e5e5",
+    elevation2: "#ffffff",
+    elevation3: "#f5f5f5",
+    accent1: "#20262e",
+    accent2: "#cbcbcb",
+    accent3: "#3c93ff",
+    highlight1: "#000000",
+    highlight2: "#1d1d1d",
+    highlight3: "#000000",
+    vivid1: "#ffcc00",
+  },
+  radii: {
+    xs: "2px",
+    sm: "3px",
+    lg: "10px",
+  },
+  space: {
+    sm: "6px",
+    md: "6px",
+    rowGap: "10px",
+    colGap: "8px",
+  },
+  fontSizes: {
+    root: "0.9em",
   },
   fonts: {
     mono: "",
     sans: "",
   },
-  fontSizes: {
-    root: "1em",
+  sizes: {
+    rootWidth: "350px",
+    controlWidth: "160px",
+    scrubberWidth: "10px",
+    scrubberHeight: "14px",
+    rowHeight: "24px",
+    numberInputMinWidth: "60px",
+    folderTitleHeight: "24px",
+    checkboxSize: "16px",
+    joystickWidth: "100px",
+    joystickHeight: "100px",
+    colorPickerWidth: "160px",
+    colorPickerHeight: "100px",
+    monitorHeight: "60px",
+    titleBarHeight: "39px",
   },
-  colors: {
-    elevation1: "rgba(255, 255,255, 0)", //Titlebar.
-    elevation2: "rgba(255, 255,255, 0)", // Main panel.
-    elevation3: "#ffffff", // Inputs.
-    accent1: "#ccc",
-    accent2: "#e6e6e6",
-    accent3: "#ccc",
-    highlight1: "#333",
-    highlight2: "#000",
-    highlight3: "#000",
+  borderWidths: {
+    root: "0px",
+    input: "1px",
+    focus: "1px",
+    hover: "1px",
+    active: "1px",
+    folder: "1px",
+  },
+  fontWeights: {
+    label: "normal",
+    folder: "normal",
+    button: "normal",
   },
 };
 
@@ -67,9 +106,10 @@ function ConnectionStatus(props: ConnectedStatusProps) {
 }
 
 interface ControlPanelProps {
-  wrapperRef: RefObject<HTMLDivElement>;
   useSceneTree: UseSceneTree;
   useGui: UseGui;
+  websocketRef: MutableRefObject<WebSocket | null>;
+  wrapperRef: RefObject<HTMLDivElement>;
 }
 
 /** Root component for control panel. Parents the websocket interface and a set
@@ -77,7 +117,7 @@ interface ControlPanelProps {
 export default function ControlPanel(props: ControlPanelProps) {
   const ControlPanelWrapper = styled(Box)`
     box-sizing: border-box;
-    width: 18em;
+    width: 20em;
     z-index: 1;
     position: absolute;
     top: 1em;
@@ -129,7 +169,6 @@ export default function ControlPanel(props: ControlPanelProps) {
         },
       }}
       ref={panelWrapperRef}
-      className="hidden"
     >
       <ControlPanelHandle
         onClick={() => {
@@ -173,9 +212,12 @@ export default function ControlPanel(props: ControlPanelProps) {
         }}
         className="panel-contents"
       >
-        <ControlPanelContents tab_labels={["Server", "Scene"]}>
-          <Box component="div" sx={{ padding: "1em" }}>
-            <CoreControl useGui={props.useGui} />
+        <ControlPanelContents tab_labels={["Control", "Scene"]}>
+          <Box component="div" sx={{ padding: "0.5em 1em 0.5em 1em" }}>
+            <CoreControl
+              useGui={props.useGui}
+              websocketRef={props.websocketRef}
+            />
           </Box>
           <TreeView
             sx={{
@@ -192,6 +234,7 @@ export default function ControlPanel(props: ControlPanelProps) {
 
 interface CoreControlProps {
   useGui: UseGui;
+  websocketRef: MutableRefObject<WebSocket | null>;
 }
 
 /** One tab in the control panel. */
@@ -202,20 +245,47 @@ function CoreControl(props: CoreControlProps) {
   const label = props.useGui((state) => state.label);
   const setLabel = props.useGui((state) => state.setLabel);
 
+  const guiConfigFromName = props.useGui((state) => state.guiConfigFromName);
+
   const levaStore = useCreateStore();
+
+  const guiConfigWithCallbacks: { [key: string]: any } = {};
+
+  for (const [key, value] of Object.entries(guiConfigFromName)) {
+    guiConfigWithCallbacks[key] = {
+      ...value,
+      // Hacky bit that lives outside of TypeScript. :(
+      onChange: (value: any, _propName: any, _options: any) => {
+        // We intentionally send all of the initial values.
+        // if (options.initial) return;
+        const message: GuiUpdateMessage = {
+          type: "gui_update",
+          name: key,
+          value: value,
+        };
+        props.websocketRef.current!.send(encode(message));
+      },
+    };
+  }
+
   useControls(
     {
-      Label: { value: label, onChange: setLabel },
-      Server: { value: server, onChange: setServer },
+      Server: folder({
+        Label: { value: label, onChange: setLabel },
+        URL: { value: server, onChange: setServer },
+      }),
+      Application: folder({ ...guiConfigWithCallbacks }),
     },
-    { store: levaStore }
+    { store: levaStore },
+    [guiConfigFromName]
   );
+  console.log(guiConfigFromName);
+
   return (
     <Box
       component="div"
       sx={{
-        "& input": { color: "#777", border: "1px solid #ddd" },
-        "& label": { color: "#777" },
+        "& label": { color: "#777", "&:first-child": { paddingLeft: "0.2em" } },
       }}
     >
       <LevaPanel
@@ -224,6 +294,7 @@ function CoreControl(props: CoreControlProps) {
         titleBar={false}
         theme={levaTheme}
         store={levaStore}
+        hideCopyButton
       />
     </Box>
   );
@@ -246,7 +317,10 @@ function ControlPanelTabContents(props: ControlPanelTabContentsProps) {
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
-      sx={{ overflow: "auto" }}
+      sx={{
+        overflow: "auto",
+        backgroundColor: "#fff",
+      }}
       {...other}
     >
       {children}
@@ -335,21 +409,26 @@ function SceneNodeUI(props: SceneNodeUIProp) {
   const [visible, setVisible] = React.useState(true);
   const ToggleVisibilityIcon = visible ? Visibility : VisibilityOff;
 
-  const labelDiv = document.createElement("div");
-  labelDiv.style.cssText = `
-    font-size: 0.7em;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 0.5em;
-    border-radius: 0.5em;
-    color: #333;
-  `;
-  labelDiv.textContent = sceneNode.name;
-  const label = new CSS2DObject(labelDiv);
   const itemRef = React.useRef<HTMLElement>(null);
+
+  const labelRef = React.useRef<CSS2DObject>();
 
   React.useEffect(() => {
     if (threeObj === undefined) return;
     if (threeObj === null) return;
+
+    const labelDiv = document.createElement("div");
+    labelDiv.style.cssText = `
+      font-size: 0.7em;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 0.5em;
+      border-radius: 0.5em;
+      color: #333;
+    `;
+    labelDiv.textContent = sceneNode.name;
+    const label = new CSS2DObject(labelDiv);
+    labelRef.current = label;
+
     if (itemRef.current!.matches(":hover")) {
       threeObj.add(label);
     }
@@ -357,15 +436,35 @@ function SceneNodeUI(props: SceneNodeUIProp) {
     return () => {
       threeObj.remove(label);
     };
-  });
+  }, [threeObj]);
 
   // Flag for indicating when we're dragging across hide/show icons. Makes it
   // easier to toggle visibility for many scene nodes at once.
   const suppressMouseLeave = React.useRef(false);
 
-  // TODO: it would be nice to get rid of the graphical UI for hiding nodes,
-  // and instead just add the ability to filter scene nodes via regex. (similar
-  // to Tensorboard)
+  const mouseEnter = (event: React.MouseEvent) => {
+    // On hover, add an object label to the scene.
+    console.log("mouse enter" + sceneNode.name);
+    threeObj.add(labelRef.current!);
+    event.stopPropagation();
+    if (event.buttons !== 0) {
+      threeObj.visible = !threeObj.visible;
+      setVisible(threeObj.visible);
+      suppressMouseLeave.current = true;
+    }
+  };
+  const mouseLeave = (event: React.MouseEvent) => {
+    // Remove the object label.
+    threeObj.remove(labelRef.current!);
+    if (suppressMouseLeave.current) {
+      suppressMouseLeave.current = false;
+      return;
+    }
+    if (event.buttons !== 0) {
+      threeObj.visible = !threeObj.visible;
+      setVisible(threeObj.visible);
+    }
+  };
 
   const hideShowIcon = (
     <IconButton
@@ -374,9 +473,16 @@ function SceneNodeUI(props: SceneNodeUIProp) {
         setVisible(threeObj.visible);
         event.stopPropagation();
       }}
+      onMouseEnter={mouseEnter}
+      onMouseLeave={mouseLeave}
     >
       <ToggleVisibilityIcon />
     </IconButton>
+  );
+  const label = (
+    <Box component="div" onMouseEnter={mouseEnter} onMouseLeave={mouseLeave}>
+      {sceneNode.name === "" ? "/" : sceneNode.name}
+    </Box>
   );
 
   return (
@@ -387,29 +493,7 @@ function SceneNodeUI(props: SceneNodeUIProp) {
       }}
       ref={itemRef}
       icon={hideShowIcon}
-      onMouseEnter={(event) => {
-        // On hover, add an object label to the scene.
-        threeObj.add(label);
-        event.stopPropagation();
-        if (event.buttons !== 0) {
-          threeObj.visible = !threeObj.visible;
-          setVisible(threeObj.visible);
-          suppressMouseLeave.current = true;
-        }
-      }}
-      onMouseLeave={(event) => {
-        // Remove the object label.
-        threeObj.remove(label);
-        if (suppressMouseLeave.current) {
-          suppressMouseLeave.current = false;
-          return;
-        }
-        if (event.buttons !== 0) {
-          threeObj.visible = !threeObj.visible;
-          setVisible(threeObj.visible);
-        }
-      }}
-      label={sceneNode.name === "" ? "/" : sceneNode.name}
+      label={label}
     >
       <SceneNodeUIChildren id={props.id} useSceneTree={props.useSceneTree} />
     </TreeItem>
