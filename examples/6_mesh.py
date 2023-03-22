@@ -14,7 +14,7 @@ faces = mesh.faces
 print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
 
 server = viser.ViserServer()
+server.add_mesh(name="/dragon", vertices=vertices, faces=faces)
 
 while True:
-    server.add_mesh(name="/dragon", vertices=vertices, faces=faces)
     time.sleep(10.0)
