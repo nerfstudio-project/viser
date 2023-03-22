@@ -115,9 +115,9 @@ function useMessageHandler(
           "position",
            new THREE.Float32BufferAttribute(
             new Float32Array(
-              message.vertices_f32.buffer.slice(
-                message.vertices_f32.byteOffset,
-                message.vertices_f32.byteOffset + message.vertices_f32.byteLength
+              message.vertices.buffer.slice(
+                message.vertices.byteOffset,
+                message.vertices.byteOffset + message.vertices.byteLength
               )
             ),
             3
@@ -126,9 +126,9 @@ function useMessageHandler(
         geometry.setIndex(
           new THREE.Uint32BufferAttribute(
             new Uint32Array(
-              message.faces_uint32.buffer.slice(
-                message.faces_uint32.byteOffset,
-                message.faces_uint32.byteOffset + message.faces_uint32.byteLength
+              message.faces.buffer.slice(
+                message.faces.byteOffset,
+                message.faces.byteOffset + message.faces.byteLength
               )
             ),
             1
@@ -146,6 +146,7 @@ function useMessageHandler(
           ))
         );
 
+        // TODO we should revisit this!
         addSceneNode(
           new SceneNode("light", (ref) => (
             <group ref={ref}>

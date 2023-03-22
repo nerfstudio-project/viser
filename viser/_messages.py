@@ -31,6 +31,17 @@ def _prepare_for_serialization(value: Any) -> Any:
         return value
 
 
+def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
+    """Convert intensity values to uint8. We assume the range [0,1] for floats, and
+    [0,255] for integers."""
+    if colors.dtype != onp.uint8:
+        if onp.issubdtype(colors.dtype, onp.floating):
+            colors = onp.clip(colors * 255.0, 0, 255).astype(onp.uint8)
+        if onp.issubdtype(colors.dtype, onp.integer):
+            colors = onp.clip(colors, 0, 255).astype(onp.uint8)
+    return colors
+
+
 class Message:
     """Base message type for controlling our viewer."""
 
@@ -126,8 +137,8 @@ class PointCloudMessage(Message):
 
     type: ClassVar[str] = "point_cloud"
     name: str
-    position: onpt.NDArray
-    color: onpt.NDArray
+    position: onpt.NDArray[onp.float32]
+    color: onpt.NDArray[onp.uint8]
     point_size: float = 0.1
 
     def __post_init__(self):
@@ -139,25 +150,31 @@ class PointCloudMessage(Message):
         # Positions should be float32, colors should be uint8.
         if self.position.dtype != onp.float32:
             self.position = self.position.astype(onp.float32)
-        if self.color.dtype != onp.uint8:
-            if onp.issubdtype(self.color.dtype, onp.floating):
-                self.color = onp.clip(self.color * 255.0, 0, 255).astype(onp.uint8)
-            if onp.issubdtype(self.color.dtype, onp.integer):
-                self.color = onp.clip(self.color, 0, 255).astype(onp.uint8)
+        self.color = _colors_to_uint8(self.color)
 
 
 @dataclasses.dataclass
 class MeshMessage(Message):
+    """Mesh message.
+
+    Vertices are internally canonicalized to float32, faces to uint32.
+    """
+
     type: ClassVar[str] = "mesh"
     name: str
-    vertices_f32: onpt.NDArray[onp.float32]
-    faces_uint32: onpt.NDArray[onp.uint32]
+    vertices: onpt.NDArray[onp.float32]
+    faces: onpt.NDArray[onp.uint32]
 
     def __post_init__(self):
-        assert self.vertices_f32.dtype == onp.float32
-        assert self.faces_uint32.dtype == onp.uint32
-        assert self.vertices_f32.shape[-1] == 3
-        assert self.faces_uint32.shape[-1] == 3
+        if self.vertices.dtype != onp.float32:
+            self.vertices = self.vertices.astype(onp.float32)
+
+        assert onp.issubdtype(self.faces.dtype, onp.integer)
+        if self.faces.dtype != onp.uint32:
+            self.faces = self.faces.astype(onp.uint32)
+
+        assert self.vertices.shape[-1] == 3
+        assert self.faces.shape[-1] == 3
 
 
 @dataclasses.dataclass
@@ -170,10 +187,11 @@ class BackgroundImageMessage(Message):
 
     @staticmethod
     def encode(
-        image: onpt.NDArray[onp.uint8],
+        image: onp.ndarray,
         format: Literal["png", "jpeg"] = "jpeg",
         quality: Optional[int] = None,
     ) -> BackgroundImageMessage:
+        image = _colors_to_uint8(image)
         with io.BytesIO() as data_buffer:
             if format == "png":
                 media_type = "image/png"
@@ -182,7 +200,7 @@ class BackgroundImageMessage(Message):
                 media_type = "image/jpeg"
                 iio.imwrite(
                     data_buffer,
-                    image,
+                    image[..., :3],  # Strip alpha.
                     format="JPEG",
                     quality=75 if quality is None else quality,
                 )
@@ -211,7 +229,7 @@ class ImageMessage(Message):
     @staticmethod
     def encode(
         name: str,
-        image: onpt.NDArray[onp.uint8],
+        image: onp.ndarray,
         render_width: float,
         render_height: float,
         format: Literal["png", "jpeg"] = "jpeg",
