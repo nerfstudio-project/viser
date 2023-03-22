@@ -205,7 +205,15 @@ class ViserServer(MessageApi):
                 self._client_lock.release()
 
         # Run server.
-        event_loop.run_until_complete(websockets.server.serve(serve, host, port))
+        for i in range(50):
+            try:
+                event_loop.run_until_complete(
+                    websockets.server.serve(serve, host, port + i)
+                )
+                print(f"Started websocket server at: {host}:{port+i}")
+                break
+            except OSError:  # Port not available.
+                continue
         event_loop.run_forever()
 
 
