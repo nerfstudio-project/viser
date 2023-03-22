@@ -96,6 +96,20 @@ class PointCloudMessage(Message):
 
 
 @dataclasses.dataclass
+class MeshMessage(Message):
+    type: ClassVar[str] = "mesh"
+    name: str
+    vertices_f32: onpt.NDArray[onp.float32]
+    faces_uint32: onpt.NDArray[onp.uint32]
+
+    def __post_init__(self):
+        assert self.vertices_f32.dtype == onp.float32
+        assert self.faces_uint32.dtype == onp.uint32
+        assert self.vertices_f32.shape[-1] == 3
+        assert self.faces_uint32.shape[-1] == 3
+
+
+@dataclasses.dataclass
 class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 

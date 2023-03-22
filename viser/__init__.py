@@ -4,6 +4,7 @@ from ._messages import FrameMessage as FrameMessage
 from ._messages import ImageMessage as ImageMessage
 from ._messages import Message as Message
 from ._messages import PointCloudMessage as PointCloudMessage
+from ._messages import MeshMessage as MeshMessage
 from ._messages import RemoveSceneNodeMessage as RemoveSceneNodeMessage
 from ._messages import ResetSceneMessage as ResetSceneMessage
 from ._messages import ViewerCameraMessage as ViewerCameraMessage
