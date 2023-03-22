@@ -4,6 +4,21 @@
 
 ## TODO
 
+Python-controllable GUI
+
+- [x] Plumbing
+- [ ] Primitives
+  - [x] Select / drop-down
+  - [x] Checkbox
+  - [x] Slider
+  - [ ] Basic textbox
+  - [ ] 2D vector
+  - [ ] 3D vector
+- [x] .value(), last_updated()
+- [x] Callback interface
+- [ ] Set value from Python
+- [ ] Synchronization across clients (for broadcasted)
+
 Scene tree
 
 - [x] useState prototype

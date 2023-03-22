@@ -31,7 +31,7 @@ interface SceneTreeState {
   idFromName: { [key: string]: NodeIdType };
   objFromId: { [key: NodeIdType]: THREE.Object3D };
 }
-export interface SceneTree extends SceneTreeState {
+export interface SceneTreeActions extends SceneTreeState {
   setObj(id: NodeIdType, obj: THREE.Object3D): void;
   clearObj(id: NodeIdType): void;
   addSceneNode(nodes: SceneNode): void;
@@ -63,7 +63,7 @@ effort into avoiding a global state! */
 export function useSceneTreeState() {
   return React.useState(() =>
     create(
-      immer<SceneTree>((set) => ({
+      immer<SceneTreeState & SceneTreeActions>((set) => ({
         ...cleanSceneTreeState,
         setObj: (id, obj) =>
           set((state) => {

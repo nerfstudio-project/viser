@@ -1,4 +1,4 @@
-from typing import ClassVar, List, Type, get_args, get_origin, get_type_hints
+from typing import Any, ClassVar, Type, get_args, get_origin, get_type_hints
 
 import numpy as onp
 from typing_extensions import Literal
@@ -11,6 +11,7 @@ _raw_type_mapping = {
     int: "number",
     str: "string",
     onp.ndarray: "ArrayBuffer",
+    Any: "any",
 }
 
 
@@ -46,14 +47,7 @@ def generate_typescript_defs() -> str:
         "",
     ]
 
-    def get_subclasses(typ: Type) -> List[Type[Message]]:
-        out = []
-        for sub in typ.__subclasses__():
-            out.append(sub)
-            out.extend(get_subclasses(sub))
-        return out
-
-    message_types = get_subclasses(Message)
+    message_types = Message.get_subclasses()
 
     # Generate interfaces for each specific message.
     for cls in message_types:
