@@ -1,11 +1,5 @@
-from ._messages import BackgroundImageMessage as BackgroundImageMessage
-from ._messages import CameraFrustumMessage as CameraFrustumMessage
-from ._messages import FrameMessage as FrameMessage
-from ._messages import ImageMessage as ImageMessage
-from ._messages import Message as Message
-from ._messages import PointCloudMessage as PointCloudMessage
-from ._messages import MeshMessage as MeshMessage
-from ._messages import RemoveSceneNodeMessage as RemoveSceneNodeMessage
-from ._messages import ResetSceneMessage as ResetSceneMessage
-from ._messages import ViewerCameraMessage as ViewerCameraMessage
+from ._message_api import GuiHandle as GuiHandle
+from ._server import CameraInfo as CameraInfo
+from ._server import ClientHandle as ClientHandle
+from ._server import ClientId as ClientId
 from ._server import ViserServer as ViserServer

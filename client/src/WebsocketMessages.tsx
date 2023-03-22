@@ -59,6 +59,20 @@ export interface RemoveSceneNodeMessage {
 export interface ResetSceneMessage {
   type: "reset_scene";
 }
+export interface AddGuiInputMessage {
+  type: "add_gui";
+  name: string;
+  leva_conf: any;
+}
+export interface RemoveGuiInputMessage {
+  type: "remove_gui";
+  name: string;
+}
+export interface GuiUpdateMessage {
+  type: "gui_update";
+  name: string;
+  value: any;
+}
 
 export type Message = 
   | ViewerCameraMessage
@@ -69,4 +83,7 @@ export type Message =
   | BackgroundImageMessage
   | ImageMessage
   | RemoveSceneNodeMessage
-  | ResetSceneMessage;
+  | ResetSceneMessage
+  | AddGuiInputMessage
+  | RemoveGuiInputMessage
+  | GuiUpdateMessage;

@@ -4,6 +4,7 @@ from asyncio.events import AbstractEventLoop
 from typing import Dict
 
 from ._messages import (
+    AddGuiInputMessage,
     BackgroundImageMessage,
     Message,
     RemoveSceneNodeMessage,
@@ -45,6 +46,9 @@ class AsyncMessageBuffer:
             node_name = "__viser_background_image__"
 
         if node_name is not None:
+            if isinstance(message, AddGuiInputMessage):
+                node_name = "__gui__" + node_name
+
             # If an existing message with the same scene node name already exists in our
             # buffer, we don't need the old one anymore. :-)
             if node_name is not None and node_name in self.id_from_name:

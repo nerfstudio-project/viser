@@ -12,6 +12,7 @@ export default function LabelRenderer(props: LabelRendererProps) {
 
   React.useEffect(() => {
     const wrapper = props.wrapperRef.current!;
+    labelRenderer.domElement.style.overflow = "hidden";
     labelRenderer.domElement.style.position = "absolute";
     labelRenderer.domElement.style.pointerEvents = "none";
     labelRenderer.domElement.style.top = "0px";

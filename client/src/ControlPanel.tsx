@@ -4,173 +4,224 @@ import Box from "@mui/material/Box";
 import React, { MutableRefObject, RefObject } from "react";
 import styled from "@emotion/styled";
 import Tab from "@mui/material/Tab";
-import {
-  FormControl,
-  IconButton,
-  Button,
-  InputLabel,
-  OutlinedInput,
-} from "@mui/material";
+import { IconButton } from "@mui/material";
+import { GuiUpdateMessage } from "./WebsocketMessages";
 import { UseSceneTree, NodeIdType } from "./SceneTree";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  Visibility,
+  VisibilityOff,
+  ExpandLessRounded,
+  SensorsRounded,
+  SensorsOffRounded,
+} from "@mui/icons-material";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
-import useWebsocketInterface from "./WebsocketInterface";
+import { folder, Leva, LevaPanel, useControls, useCreateStore } from "leva";
+import { LevaCustomTheme } from "leva/dist/declarations/src/styles";
+import { UseGui } from "./GuiState";
+import { encode } from "@msgpack/msgpack";
+
+const levaTheme: LevaCustomTheme = {
+  colors: {
+    elevation1: "#e5e5e5",
+    elevation2: "#ffffff",
+    elevation3: "#f5f5f5",
+    accent1: "#20262e",
+    accent2: "#cbcbcb",
+    accent3: "#3c93ff",
+    highlight1: "#000000",
+    highlight2: "#1d1d1d",
+    highlight3: "#000000",
+    vivid1: "#ffcc00",
+  },
+  radii: {
+    xs: "2px",
+    sm: "3px",
+    lg: "10px",
+  },
+  space: {
+    sm: "6px",
+    md: "6px",
+    rowGap: "10px",
+    colGap: "8px",
+  },
+  fontSizes: {
+    root: "0.9em",
+  },
+  fonts: {
+    mono: "",
+    sans: "",
+  },
+  sizes: {
+    rootWidth: "350px",
+    controlWidth: "160px",
+    scrubberWidth: "10px",
+    scrubberHeight: "14px",
+    rowHeight: "24px",
+    numberInputMinWidth: "60px",
+    folderTitleHeight: "24px",
+    checkboxSize: "16px",
+    joystickWidth: "100px",
+    joystickHeight: "100px",
+    colorPickerWidth: "160px",
+    colorPickerHeight: "100px",
+    monitorHeight: "60px",
+    titleBarHeight: "39px",
+  },
+  borderWidths: {
+    root: "0px",
+    input: "1px",
+    focus: "1px",
+    hover: "1px",
+    active: "1px",
+    folder: "1px",
+  },
+  fontWeights: {
+    label: "normal",
+    folder: "normal",
+    button: "normal",
+  },
+};
+
+interface ConnectedStatusProps {
+  useGui: UseGui;
+}
+
+/* Icon and label telling us the current status of the websocket connection. */
+function ConnectionStatus(props: ConnectedStatusProps) {
+  const connected = props.useGui((state) => state.websocketConnected);
+  const server = props.useGui((state) => state.server);
+  const label = props.useGui((state) => state.label);
+
+  const StatusIcon = connected ? SensorsRounded : SensorsOffRounded;
+  return (
+    <>
+      <StatusIcon
+        htmlColor={connected ? "#0b0" : "#b00"}
+        style={{ transform: "translateY(0.25em) scale(1.2)" }}
+      />
+      &nbsp; &nbsp;
+      {label === "" ? server : label}
+    </>
+  );
+}
 
 interface ControlPanelProps {
-  wrapperRef: RefObject<HTMLDivElement>;
-  websocketRef: MutableRefObject<WebSocket | null>;
   useSceneTree: UseSceneTree;
+  useGui: UseGui;
+  websocketRef: MutableRefObject<WebSocket | null>;
+  wrapperRef: RefObject<HTMLDivElement>;
 }
 
 /** Root component for control panel. Parents the websocket interface and a set
  * of control tabs. */
 export default function ControlPanel(props: ControlPanelProps) {
-  // This will currently re-initialize the websocket connection whenever we toggle. Unideal...
-  const hidden = React.useRef(true);
-
   const ControlPanelWrapper = styled(Box)`
     box-sizing: border-box;
-    position: absolute;
     width: 20em;
     z-index: 1;
-    top: 0;
-    right: 0;
-    background-color: rgba(255, 255, 255, 0.85);
-    overflow-y: scroll;
-    max-height: 100%;
+    position: absolute;
+    top: 1em;
+    right: 1em;
     margin: 0;
+    border-radius: 0.5em;
+    max-height: 85%;
+    overflow: auto;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-sizing: border-box;
   `;
 
   const ControlPanelHandle = styled(Box)`
-    line-height: 2em;
-    text-align: center;
-    padding: 0 1em;
+    line-height: 1.5em;
     cursor: pointer;
-    font-weight: bold;
+    position: relative;
+    font-weight: 400;
+    color: #777;
+    box-sizing: border-box;
+    overflow: hidden;
   `;
 
-  const [server, setServer] = React.useState("ws://localhost:8080");
-  const [label, setLabel] = React.useState("");
-
-  const contentsRef = React.useRef<HTMLDivElement>(null);
-  const handleRef = React.useRef<HTMLDivElement>(null);
-
-  useWebsocketInterface(
-    props.useSceneTree,
-    props.websocketRef,
-    props.wrapperRef,
-    server,
-    () => {
-      if (handleRef.current === null) return;
-      handleRef.current.style.color = "green";
-      handleRef.current.style.backgroundColor = "lightgreen";
-    },
-    () => {
-      if (handleRef.current === null) return;
-      handleRef.current.style.color = "darkred";
-      handleRef.current.style.backgroundColor = "lightpink";
-    }
-  );
-
-  const idLabel = React.useId();
-  const idServer = React.useId();
+  const panelWrapperRef = React.useRef<HTMLDivElement>();
 
   return (
     <ControlPanelWrapper
       sx={{
-        borderLeftWidth: "1px",
-        borderLeftStyle: "solid",
-        borderLeftColor: "divider",
-        borderBottomWidth: "1px",
-        borderBottomStyle: "solid",
-        borderBottomColor: "divider",
+        border: "1px solid",
+        borderColor: "divider",
+        "&.hidden": {
+          height: "2.7em",
+          overflow: "hidden",
+        },
+        "& .panel-contents": {
+          opacity: "1.0",
+          display: "block",
+          transition: "all 0.5s",
+        },
+        "&.hidden .panel-contents": {
+          opacity: "0.0",
+          display: "none",
+          transition: "opacity 0.5s",
+        },
+        "& .expand-icon": {
+          transform: "rotate(0)",
+        },
+        "&.hidden .expand-icon": {
+          transform: "rotate(180deg)",
+        },
       }}
+      ref={panelWrapperRef}
     >
       <ControlPanelHandle
-        ref={handleRef}
         onClick={() => {
-          if (hidden.current) {
-            contentsRef.current!.style.display = "block";
+          const wrapper = panelWrapperRef.current!;
+
+          // We use a class instead of state for tracking hidden status.
+          // No re-render => we can add a (hacky) animation!
+          if (wrapper.classList.contains("hidden")) {
+            wrapper.classList.remove("hidden");
           } else {
-            // Throw the contents off the screen. Setting display: none produces a MUI error.
-            contentsRef.current!.style.display = "none";
+            wrapper.classList.add("hidden");
           }
-          hidden.current = !hidden.current;
         }}
       >
-        {label === "" ? server : label}
+        <Box
+          component="div"
+          sx={{
+            padding: "0.2em 3em 0.5em 1em",
+          }}
+        >
+          <ConnectionStatus useGui={props.useGui} />
+        </Box>
+        <Box
+          component="div"
+          sx={{
+            position: "absolute",
+            top: "50%",
+            right: "1em",
+            transform: "translateY(-48%) scale(1.2)",
+            height: "1.5em",
+          }}
+        >
+          <ExpandLessRounded color="action" className="expand-icon" />
+        </Box>
       </ControlPanelHandle>
       <Box
         component="div"
-        ref={contentsRef}
-        // Hidden by default.
-        sx={{ display: "none" }}
+        sx={{
+          borderTop: "1px solid",
+          borderTopColor: "divider",
+        }}
+        className="panel-contents"
       >
-        <ControlPanelContents tab_labels={["Core", "Scene"]}>
-          <Box component="div" sx={{ py: 4 }}>
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                setLabel(
-                  (document.getElementById(idLabel) as HTMLInputElement).value
-                );
-                setServer(
-                  (document.getElementById(idServer) as HTMLInputElement).value
-                );
-              }}
-            >
-              <FormControl fullWidth>
-                <InputLabel htmlFor={idLabel}>Label</InputLabel>
-                <OutlinedInput
-                  id={idLabel}
-                  defaultValue={label}
-                  label="Label"
-                />
-              </FormControl>
-              <FormControl fullWidth margin="normal">
-                <InputLabel htmlFor={idServer}>Server</InputLabel>
-                <OutlinedInput
-                  id={idServer}
-                  defaultValue={server}
-                  label="Server"
-                />
-              </FormControl>
-              <FormControl fullWidth margin="normal">
-                <Button variant="contained" fullWidth type="submit">
-                  Save
-                </Button>
-              </FormControl>
-            </form>
-            <Button
-              variant="outlined"
-              fullWidth
-              type="submit"
-              onClick={() => {
-                if (
-                  !props.wrapperRef.current!.style.backgroundImage.startsWith(
-                    "url("
-                  )
-                ) {
-                  // TODO: we should consider hiding this button if there's no background available.
-                  alert("No background to download!");
-                  return;
-                }
-                const data =
-                  props.wrapperRef.current!.style.backgroundImage.split('"')[1];
-                const link = document.createElement("a");
-                link.download = "background";
-                link.href = data;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-            >
-              Download Background
-            </Button>
+        <ControlPanelContents tab_labels={["Control", "Scene"]}>
+          <Box component="div" sx={{ padding: "0.5em 1em 0.5em 1em" }}>
+            <CoreControl
+              useGui={props.useGui}
+              websocketRef={props.websocketRef}
+            />
           </Box>
           <TreeView
             sx={{
-              paddingRight: "1em",
+              padding: "1em 2em 1em 1em",
             }}
           >
             <SceneNodeUI id={0} useSceneTree={props.useSceneTree} />
@@ -178,6 +229,74 @@ export default function ControlPanel(props: ControlPanelProps) {
         </ControlPanelContents>
       </Box>
     </ControlPanelWrapper>
+  );
+}
+
+interface CoreControlProps {
+  useGui: UseGui;
+  websocketRef: MutableRefObject<WebSocket | null>;
+}
+
+/** One tab in the control panel. */
+function CoreControl(props: CoreControlProps) {
+  const server = props.useGui((state) => state.server);
+  const setServer = props.useGui((state) => state.setServer);
+
+  const label = props.useGui((state) => state.label);
+  const setLabel = props.useGui((state) => state.setLabel);
+
+  const guiConfigFromName = props.useGui((state) => state.guiConfigFromName);
+
+  const levaStore = useCreateStore();
+
+  const guiConfigWithCallbacks: { [key: string]: any } = {};
+
+  for (const [key, value] of Object.entries(guiConfigFromName)) {
+    guiConfigWithCallbacks[key] = {
+      ...value,
+      // Hacky bit that lives outside of TypeScript. :(
+      onChange: (value: any, _propName: any, _options: any) => {
+        // We intentionally send all of the initial values.
+        // if (options.initial) return;
+        const message: GuiUpdateMessage = {
+          type: "gui_update",
+          name: key,
+          value: value,
+        };
+        props.websocketRef.current!.send(encode(message));
+      },
+    };
+  }
+
+  useControls(
+    {
+      Server: folder({
+        Label: { value: label, onChange: setLabel },
+        URL: { value: server, onChange: setServer },
+      }),
+      Application: folder({ ...guiConfigWithCallbacks }),
+    },
+    { store: levaStore },
+    [guiConfigFromName]
+  );
+  console.log(guiConfigFromName);
+
+  return (
+    <Box
+      component="div"
+      sx={{
+        "& label": { color: "#777", "&:first-child": { paddingLeft: "0.2em" } },
+      }}
+    >
+      <LevaPanel
+        fill
+        flat
+        titleBar={false}
+        theme={levaTheme}
+        store={levaStore}
+        hideCopyButton
+      />
+    </Box>
   );
 }
 
@@ -192,15 +311,20 @@ function ControlPanelTabContents(props: ControlPanelTabContentsProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
+    <Box
+      component="div"
       role="tabpanel"
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
+      sx={{
+        overflow: "auto",
+        backgroundColor: "#fff",
+      }}
       {...other}
     >
       {children}
-    </div>
+    </Box>
   );
 }
 
@@ -220,32 +344,31 @@ function ControlPanelContents(props: ControlPanelContentsProps) {
   // Our wrapper box needs a component prop set for type inference; the
   // typescript compiler will complain without it.
   return (
-    <Box
-      component="div"
-      sx={{
-        paddingLeft: "1em",
-        paddingRight: "1em",
-      }}
-    >
-      <Tabs
-        value={tabState}
-        onChange={handleChange}
+    <>
+      <Box
+        component="div"
         sx={{
+          paddingLeft: "1em",
+          paddingRight: "1em",
           borderBottom: 1,
           borderColor: "divider",
         }}
       >
-        {props.tab_labels.map((value, index) => {
-          return <Tab label={value} key={index} />;
-        })}
-      </Tabs>
+        <Tabs value={tabState} onChange={handleChange}>
+          {props.tab_labels.map((value, index) => {
+            return (
+              <Tab label={value} key={index} sx={{ fontSize: "0.75em" }} />
+            );
+          })}
+        </Tabs>
+      </Box>
 
       {arrayChildren.map((child, index) => (
         <ControlPanelTabContents value={tabState} index={index} key={index}>
           {child}
         </ControlPanelTabContents>
       ))}
-    </Box>
+    </>
   );
 }
 
@@ -286,21 +409,26 @@ function SceneNodeUI(props: SceneNodeUIProp) {
   const [visible, setVisible] = React.useState(true);
   const ToggleVisibilityIcon = visible ? Visibility : VisibilityOff;
 
-  const labelDiv = document.createElement("div");
-  labelDiv.style.cssText = `
-    font-size: 0.7em;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 0.5em;
-    border-radius: 0.5em;
-    color: #333;
-  `;
-  labelDiv.textContent = sceneNode.name;
-  const label = new CSS2DObject(labelDiv);
   const itemRef = React.useRef<HTMLElement>(null);
+
+  const labelRef = React.useRef<CSS2DObject>();
 
   React.useEffect(() => {
     if (threeObj === undefined) return;
     if (threeObj === null) return;
+
+    const labelDiv = document.createElement("div");
+    labelDiv.style.cssText = `
+      font-size: 0.7em;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 0.5em;
+      border-radius: 0.5em;
+      color: #333;
+    `;
+    labelDiv.textContent = sceneNode.name;
+    const label = new CSS2DObject(labelDiv);
+    labelRef.current = label;
+
     if (itemRef.current!.matches(":hover")) {
       threeObj.add(label);
     }
@@ -308,15 +436,35 @@ function SceneNodeUI(props: SceneNodeUIProp) {
     return () => {
       threeObj.remove(label);
     };
-  });
+  }, [threeObj]);
 
   // Flag for indicating when we're dragging across hide/show icons. Makes it
   // easier to toggle visibility for many scene nodes at once.
   const suppressMouseLeave = React.useRef(false);
 
-  // TODO: it would be nice to get rid of the graphical UI for hiding nodes,
-  // and instead just add the ability to filter scene nodes via regex. (similar
-  // to Tensorboard)
+  const mouseEnter = (event: React.MouseEvent) => {
+    // On hover, add an object label to the scene.
+    console.log("mouse enter" + sceneNode.name);
+    threeObj.add(labelRef.current!);
+    event.stopPropagation();
+    if (event.buttons !== 0) {
+      threeObj.visible = !threeObj.visible;
+      setVisible(threeObj.visible);
+      suppressMouseLeave.current = true;
+    }
+  };
+  const mouseLeave = (event: React.MouseEvent) => {
+    // Remove the object label.
+    threeObj.remove(labelRef.current!);
+    if (suppressMouseLeave.current) {
+      suppressMouseLeave.current = false;
+      return;
+    }
+    if (event.buttons !== 0) {
+      threeObj.visible = !threeObj.visible;
+      setVisible(threeObj.visible);
+    }
+  };
 
   const hideShowIcon = (
     <IconButton
@@ -325,40 +473,27 @@ function SceneNodeUI(props: SceneNodeUIProp) {
         setVisible(threeObj.visible);
         event.stopPropagation();
       }}
+      onMouseEnter={mouseEnter}
+      onMouseLeave={mouseLeave}
     >
       <ToggleVisibilityIcon />
     </IconButton>
+  );
+  const label = (
+    <Box component="div" onMouseEnter={mouseEnter} onMouseLeave={mouseLeave}>
+      {sceneNode.name === "" ? "/" : sceneNode.name}
+    </Box>
   );
 
   return (
     <TreeItem
       nodeId={"node_" + props.id.toString()}
-      style={{ opacity: visible ? 1.0 : 0.5 }}
+      sx={{
+        opacity: visible ? 1.0 : 0.5,
+      }}
       ref={itemRef}
       icon={hideShowIcon}
-      onMouseEnter={(event) => {
-        // On hover, add an object label to the scene.
-        threeObj.add(label);
-        event.stopPropagation();
-        if (event.buttons !== 0) {
-          threeObj.visible = !threeObj.visible;
-          setVisible(threeObj.visible);
-          suppressMouseLeave.current = true;
-        }
-      }}
-      onMouseLeave={(event) => {
-        // Remove the object label.
-        threeObj.remove(label);
-        if (suppressMouseLeave.current) {
-          suppressMouseLeave.current = false;
-          return;
-        }
-        if (event.buttons !== 0) {
-          threeObj.visible = !threeObj.visible;
-          setVisible(threeObj.visible);
-        }
-      }}
-      label={sceneNode.name === "" ? "/" : sceneNode.name}
+      label={label}
     >
       <SceneNodeUIChildren id={props.id} useSceneTree={props.useSceneTree} />
     </TreeItem>
