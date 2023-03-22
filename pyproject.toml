@@ -7,8 +7,12 @@ include = ["./viser/**/*"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 websockets = "^10.4"
+trimesh = "^3.21.0"
+numpy = "^1.24.2"
+msgpack = "^1.0.5"
+imageio = "^2.26.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

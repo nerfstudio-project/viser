@@ -3,7 +3,7 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
-import pyrealsense2 as rs
+import pyrealsense2 as rs  # type: ignore
 from tqdm.auto import tqdm
 
 import viser
@@ -109,13 +109,11 @@ def main():
             positions = positions @ R.T
 
             # Visualize.
-            viser_server.queue(
-                viser.PointCloudMessage(
-                    "/realsense",
-                    position_f32=positions * 10.0,
-                    color_uint8=colors,
-                    point_size=0.1,
-                )
+            viser_server.add_point_cloud(
+                "/realsense",
+                position=positions * 10.0,
+                color=colors,
+                point_size=0.1,
             )
 
 
