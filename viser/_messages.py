@@ -7,13 +7,18 @@ import base64
 import dataclasses
 import functools
 import io
-from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Tuple, Type
 
 import imageio.v3 as iio
 import msgpack
 import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import Literal, assert_never
+
+if TYPE_CHECKING:
+    from ._server import ClientId
+else:
+    ClientId = Any
 
 
 def _prepare_for_serialization(value: Any) -> Any:
@@ -30,6 +35,9 @@ class Message:
     """Base message type for controlling our viewer."""
 
     type: ClassVar[str]
+    excluded_self_client: Optional[ClientId] = None
+    """Don't send this message to a particular client. Example of when this is useful:
+    for synchronizing GUI stuff, we want to """
 
     def serialize(self) -> bytes:
         """Convert a Python Message object into bytes."""
@@ -108,19 +116,34 @@ class FrameMessage(Message):
 
 @dataclasses.dataclass
 class PointCloudMessage(Message):
-    """Message for rendering"""
+    """Point cloud message.
+
+    Positions are internally canonicalized to float32, colors to uint8.
+
+    Float color inputs should be in the range [0,1], int color inputs should be in the
+    range [0,255].
+    """
 
     type: ClassVar[str] = "point_cloud"
     name: str
-    position_f32: onpt.NDArray[onp.float32]
-    color_uint8: onpt.NDArray[onp.uint8]
+    position: onpt.NDArray
+    color: onpt.NDArray
     point_size: float = 0.1
 
     def __post_init__(self):
-        assert self.position_f32.dtype == onp.float32
-        assert self.color_uint8.dtype == onp.uint8
-        assert self.position_f32.shape == self.color_uint8.shape
-        assert self.position_f32.shape[-1] == 3
+        # Check shapes.
+        assert self.position.shape == self.color.shape
+        assert self.position.shape[-1] == 3
+
+        # Canonicalize dtypes.
+        # Positions should be float32, colors should be uint8.
+        if self.position.dtype != onp.float32:
+            self.position = self.position.astype(onp.float32)
+        if self.color.dtype != onp.uint8:
+            if onp.issubdtype(self.color.dtype, onp.floating):
+                self.color = onp.clip(self.color * 255.0, 0, 255).astype(onp.uint8)
+            if onp.issubdtype(self.color.dtype, onp.integer):
+                self.color = onp.clip(self.color, 0, 255).astype(onp.uint8)
 
 
 @dataclasses.dataclass
@@ -220,21 +243,21 @@ class ResetSceneMessage(Message):
 
 
 @dataclasses.dataclass
-class AddGuiInputMessage(Message):
+class GuiAddMessage(Message):
     """Sent server->client to add a new GUI input."""
 
     type: ClassVar[str] = "add_gui"
     name: str
+    folder: str
     leva_conf: Any
 
-# TODO: implement!
-#
-# @dataclasses.dataclass
-# class RemoveGuiInputMessage(Message):
-#     """Sent server->client to add a new GUI input."""
-#
-#     type: ClassVar[str] = "remove_gui"
-#     name: str
+
+@dataclasses.dataclass
+class GuiRemoveMessage(Message):
+    """Sent server->client to add a new GUI input."""
+
+    type: ClassVar[str] = "remove_gui"
+    name: str
 
 
 @dataclasses.dataclass
@@ -242,5 +265,14 @@ class GuiUpdateMessage(Message):
     """Sent client->server when a GUI input is changed."""
 
     type: ClassVar[str] = "gui_update"
+    name: str
+    value: Any
+
+
+@dataclasses.dataclass
+class GuiSetMessage(Message):
+    """Sent server->client to set the value of a particular input."""
+
+    type: ClassVar[str] = "gui_set"
     name: str
     value: Any

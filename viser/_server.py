@@ -18,8 +18,8 @@ from ._messages import Message, ViewerCameraMessage
 
 
 @dataclasses.dataclass(frozen=True)
-class CameraInfo:
-    """Information about a particular camera."""
+class CameraState:
+    """Information about a client's camera state."""
 
     wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
@@ -30,28 +30,29 @@ class CameraInfo:
 
 @dataclasses.dataclass
 class _ClientHandleState:
-    camera_info: Optional[CameraInfo]
+    # Internal state for ClientHandle objects.
+    camera_info: Optional[CameraState]
     message_buffer: asyncio.Queue
     event_loop: AbstractEventLoop
-    camera_cb: List[Callable[[CameraInfo], None]]
+    camera_cb: List[Callable[[CameraState], None]]
 
 
 @dataclasses.dataclass
 class ClientHandle(MessageApi):
     """Handle for interacting with a single connected client.
 
-    We can use this to read the camera state, send client-specific messages, etc."""
+    We can use this to read the camera state or send client-specific messages."""
 
     _state: _ClientHandleState
 
     def __post_init__(self) -> None:
         super().__init__()
 
-        def handle_camera(message: Message) -> None:
+        def handle_camera(client_id: ClientId, message: Message) -> None:
             """Handle camera messages."""
             if not isinstance(message, ViewerCameraMessage):
                 return
-            self._state.camera_info = CameraInfo(
+            self._state.camera_info = CameraState(
                 message.wxyz, message.position, message.fov, message.aspect, time.time()
             )
             for cb in self._state.camera_cb:
@@ -59,14 +60,14 @@ class ClientHandle(MessageApi):
 
         self._incoming_handlers.append(handle_camera)
 
-    def get_camera(self) -> CameraInfo:
+    def get_camera(self) -> CameraState:
         while self._state.camera_info is None:
             time.sleep(0.01)
         return self._state.camera_info
 
     def on_camera_update(
-        self, callback: Callable[[CameraInfo], None]
-    ) -> Callable[[CameraInfo], None]:
+        self, callback: Callable[[CameraState], None]
+    ) -> Callable[[CameraState], None]:
         self._state.camera_cb.append(callback)
         return callback
 
@@ -83,6 +84,16 @@ ClientId = NewType("ClientId", int)
 
 
 class ViserServer(MessageApi):
+    """Core visualization server. Communicates asynchronously with client applications
+    via websocket connections.
+
+    By default, all messages (eg `server.add_frame()`) are broadcasted to all connected
+    clients.
+
+    To send messages to an individual client, we can grab a client ID -> handle mapping
+    via `server.get_clients()`, and then call `client.add_frame()` on the handle.
+    """
+
     def __init__(
         self,
         host: str = "localhost",
@@ -90,8 +101,7 @@ class ViserServer(MessageApi):
     ):
         super().__init__()
 
-        # Note that we maintain two message buffer types: a persistent broadcasted messages and
-        # connection-specific messages.
+        # Track connected clients.
         self._handle_from_client: Dict[ClientId, _ClientHandleState] = {}
         self._client_lock = threading.Lock()
 
@@ -106,8 +116,11 @@ class ViserServer(MessageApi):
         # Wait for the thread to set self._event_loop and self._broadcast_buffer...
         ready_sem.acquire()
 
-        # Should be populated by the background worker.
+        # Broadcast buffer should be populated by the background worker.
         assert isinstance(self._broadcast_buffer, AsyncMessageBuffer)
+
+        # Reset the scene.
+        self.reset_scene()
 
     def get_clients(self) -> Dict[ClientId, ClientHandle]:
         """Get a mapping from client IDs to client handles.
@@ -120,7 +133,6 @@ class ViserServer(MessageApi):
         self._client_lock.release()
         return out
 
-    # Implement method defined in MessageAPI.
     def _queue(self, message: Message) -> None:
         """Implements message enqueue required by MessageApi.
 
@@ -137,19 +149,20 @@ class ViserServer(MessageApi):
         self._broadcast_buffer = AsyncMessageBuffer(event_loop)
         ready_sem.release()
 
+        count_lock = asyncio.Lock()
         connection_count = 0
         total_connections = 0
 
         async def serve(websocket: WebSocketServerProtocol) -> None:
             """Server loop, run once per connection."""
 
-            # TODO: there are likely race conditions here...
-            nonlocal connection_count
-            client_id = ClientId(connection_count)
-            connection_count += 1
+            async with count_lock:
+                nonlocal connection_count
+                client_id = ClientId(connection_count)
+                connection_count += 1
 
-            nonlocal total_connections
-            total_connections += 1
+                nonlocal total_connections
+                total_connections += 1
 
             print(
                 f"Connection opened ({client_id}, {total_connections} total),"
@@ -177,7 +190,7 @@ class ViserServer(MessageApi):
                     _single_connection_producer(
                         websocket, client_handle.message_buffer
                     ),
-                    _broadcast_producer(websocket, self._broadcast_buffer),
+                    _broadcast_producer(websocket, client_id, self._broadcast_buffer),
                     _consumer(websocket, client_id, handle_incoming),
                 )
             except (
@@ -206,11 +219,13 @@ async def _single_connection_producer(
 
 
 async def _broadcast_producer(
-    websocket: WebSocketServerProtocol, buffer: AsyncMessageBuffer
+    websocket: WebSocketServerProtocol, client_id: ClientId, buffer: AsyncMessageBuffer
 ) -> None:
     """Infinite loop to send messages from the broadcast buffer."""
-    async for message_serialized in buffer:
-        await websocket.send(message_serialized)
+    async for message in buffer:
+        if message.excluded_self_client == client_id:
+            continue
+        await websocket.send(message.serialize())
 
 
 async def _consumer(

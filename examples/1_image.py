@@ -1,3 +1,9 @@
+"""Example for sending images to the web viewer.
+
+We can send backgrond images to display behind the viewer (useful for visualizing
+NeRFs), or images to display in 3D with respect to coordinate frames.
+"""
+
 import time
 
 import imageio.v3 as iio
@@ -6,7 +12,6 @@ import numpy as onp
 import viser
 
 server = viser.ViserServer()
-server.reset_scene()
 
 # Add a background image.
 server.set_background_image(

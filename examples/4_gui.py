@@ -1,3 +1,5 @@
+"""Examples of basic UI elements that we can create, read from, and write to."""
+
 import time
 
 import numpy as onp
@@ -8,55 +10,71 @@ import viser
 server = viser.ViserServer()
 server.reset_scene()
 
-# Add some common GUI elements: a checkbox, dropdown, and slider.
+# Add some common GUI elements: number inputs, sliders, vectors, checkboxes.
+counter = 0
 
-gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
-gui_axis = server.add_gui_select("Axis", options=["x", "y", "z"])
-gui_location = server.add_gui_slider(
-    "Location", min=-5.0, max=5.0, step=0.05, initial_value=0.0
-)
-gui_num_points = server.add_gui_slider(
-    "# Points", min=1000, max=200_000, step=1000, initial_value=10_000
-)
-
-
-# We can read from each of these via the `.value()` function.
-# Let's define some functions that read the values, then use them to update a
-# frame/point cloud pair in the scene..
-
-
-def draw_frame():
-    axis = gui_axis.value()
-    if axis == "x":
-        pos = (gui_location.value(), 0.0, 0.0)
-    elif axis == "y":
-        pos = (0.0, gui_location.value(), 0.0)
-    elif axis == "z":
-        pos = (0.0, 0.0, gui_location.value())
-    else:
-        assert_never(axis)
-
-    server.add_frame(
-        "/frame",
-        wxyz=(1.0, 0.0, 0.0, 0.0),
-        position=pos,
-        show_axes=gui_show.value(),
-        scale=5.0,
+with server.gui_folder("Read-only"):
+    gui_counter = server.add_gui_number(
+        "Counter",
+        initial_value=counter,
+        disabled=True,
+    )
+    gui_slider = server.add_gui_slider(
+        "Slider",
+        min=0,
+        max=100,
+        step=1,
+        initial_value=counter,
+        disabled=True,
     )
 
-
-def draw_points():
-    num_points = gui_num_points.value()
-    server.add_point_cloud(
-        "/frame/point_cloud",
-        position_f32=onp.random.normal(size=(num_points, 3)).astype(onp.float32),
-        color_uint8=onp.random.randint(0, 256, size=(num_points, 3)).astype(onp.uint8),
+with server.gui_folder("Editable"):
+    gui_vector2 = server.add_gui_vector2(
+        "Position",
+        initial_value=(0.0, 0.0),
+        step=0.1,
+    )
+    gui_vector3 = server.add_gui_vector3(
+        "Size",
+        initial_value=(1.0, 1.0, 1.0),
+        step=0.25,
+        lock=True,
+    )
+    gui_text = server.add_gui_text(
+        "Text",
+        initial_value="Hello world",
+    )
+    gui_checkbox = server.add_gui_checkbox(
+        "Disable text",
+        initial_value=False,
     )
 
+# Pre-generate a point cloud to send.
+point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(500, 3))
+point_colors = onp.random.randint(0, 256, size=(500, 3))
 
-draw_frame()
-draw_points()
 while True:
-    draw_frame()
-    draw_points()
+    # We can call `set_value()` to set an input to a particular value.
+    gui_counter.set_value(counter)
+    gui_slider.set_value(counter % 100)
+
+    # We can call `value()` to read the current value of an input.
+    xy = gui_vector2.value()
+    server.add_frame(
+        "/controlled_frame",
+        wxyz=(1, 0, 0, 0),
+        position=xy + (0,),
+    )
+
+    size = gui_vector3.value()
+    server.add_point_cloud(
+        "/controlled_frame/point_cloud",
+        position=point_positions * onp.array(size, dtype=onp.float32),
+        color=point_colors,
+    )
+
+    # We can use `set_disabled()` to enable/disable GUI elements.
+    gui_text.set_disabled(gui_checkbox.value())
+
+    counter += 1
     time.sleep(0.1)

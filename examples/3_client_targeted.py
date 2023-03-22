@@ -1,4 +1,4 @@
-"""Quick example showing communication on a per-client basis.
+"""Example showing communication on a per-client basis.
 
 We send unique coordinate frames to each connected client.
 

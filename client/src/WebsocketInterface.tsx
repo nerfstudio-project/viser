@@ -3,7 +3,7 @@ import AwaitLock from "await-lock";
 import React, { MutableRefObject, RefObject } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
-import { UseGui } from "./GuiState";
+import { UseGui } from "./ControlPanel/GuiState";
 
 import { SceneNode, UseSceneTree } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
@@ -19,13 +19,34 @@ function useMessageHandler(
   const resetScene = useSceneTree((state) => state.resetScene);
   const addSceneNode = useSceneTree((state) => state.addSceneNode);
   const addGui = useGui((state) => state.addGui);
+  const removeGui = useGui((state) => state.removeGui);
+  const guiSet = useGui((state) => state.guiSet);
+  const setBackgroundAvailable = useGui(
+    (state) => state.setBackgroundAvailable
+  );
+
+  // Same as addSceneNode, but make a parent in the form of a dummy coordinate
+  // frame if it doesn't exist yet.
+  function addSceneNodeMakeParents(node: SceneNode) {
+    const idFromName = useSceneTree.getState().idFromName;
+    const parent_name = node.name.split("/").slice(0, -1).join("/");
+    if (idFromName[parent_name] === undefined) {
+      console.log("remaking parent", parent_name);
+      addSceneNodeMakeParents(
+        new SceneNode(parent_name, (ref) => (
+          <CoordinateFrame ref={ref} show_axes={false} />
+        ))
+      );
+    }
+    addSceneNode(node);
+  }
 
   // Return message handler.
   return (message: Message) => {
     switch (message.type) {
       // Add a coordinate frame.
       case "frame": {
-        addSceneNode(
+        addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => (
             <CoordinateFrame
               ref={ref}
@@ -58,10 +79,9 @@ function useMessageHandler(
           "position",
           new THREE.Float32BufferAttribute(
             new Float32Array(
-              message.position_f32.buffer.slice(
-                message.position_f32.byteOffset,
-                message.position_f32.byteOffset +
-                  message.position_f32.byteLength
+              message.position.buffer.slice(
+                message.position.byteOffset,
+                message.position.byteOffset + message.position.byteLength
               )
             ),
             3
@@ -72,10 +92,10 @@ function useMessageHandler(
         // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
         geometry.setAttribute(
           "color",
-          new THREE.Uint8BufferAttribute(message.color_uint8, 3, true)
+          new THREE.Uint8BufferAttribute(message.color, 3, true)
         );
 
-        addSceneNode(
+        addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => (
             <points
               ref={ref}
@@ -140,7 +160,7 @@ function useMessageHandler(
 
       // Add a camera frustum.
       case "camera_frustum": {
-        addSceneNode(
+        addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => (
             <CameraFrustum
               ref={ref}
@@ -159,6 +179,8 @@ function useMessageHandler(
           wrapperRef.current.style.backgroundSize = "cover";
           wrapperRef.current.style.backgroundRepeat = "no-repeat";
           wrapperRef.current.style.backgroundPosition = "center center";
+
+          setBackgroundAvailable(true);
         }
         break;
       }
@@ -170,7 +192,7 @@ function useMessageHandler(
         const colorMap = new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_data}`
         );
-        addSceneNode(
+        addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => {
             return (
               <mesh ref={ref}>
@@ -201,11 +223,25 @@ function useMessageHandler(
         console.log("Resetting scene!");
         resetScene();
         wrapperRef.current!.style.backgroundImage = "none";
+        setBackgroundAvailable(false);
         break;
       }
       // Add a GUI input.
       case "add_gui": {
-        addGui(message.name, message.leva_conf);
+        addGui(message.name, {
+          levaConf: message.leva_conf,
+          folderName: message.folder,
+        });
+        break;
+      }
+      // Set the value of a GUI input.
+      case "gui_set": {
+        guiSet(message.name, message.value);
+        break;
+      }
+      // Remove a GUI input.
+      case "remove_gui": {
+        removeGui(message.name);
         break;
       }
       default: {
@@ -259,7 +295,7 @@ export default function WebsocketInterface(props: WebSocketInterfaceProps) {
         console.log("Disconnected! " + server);
         props.websocketRef.current = null;
         setWebsocketConnected(false);
-        resetGui();
+        if (props.useGui.getState().guiNames.length > 0) resetGui();
 
         // Try to reconnect.
         timeout = setTimeout(tryConnect, 1000);
@@ -290,7 +326,7 @@ export default function WebsocketInterface(props: WebSocketInterfaceProps) {
       ws && ws.close();
       clearTimeout(timeout);
     };
-  }, [props, server, setWebsocketConnected]);
+  }, [props, server, setWebsocketConnected, handleMessage, resetGui]);
 
   return <></>;
 }

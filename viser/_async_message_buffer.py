@@ -4,8 +4,9 @@ from asyncio.events import AbstractEventLoop
 from typing import Dict
 
 from ._messages import (
-    AddGuiInputMessage,
     BackgroundImageMessage,
+    GuiAddMessage,
+    GuiSetMessage,
     Message,
     RemoveSceneNodeMessage,
     ResetSceneMessage,
@@ -16,18 +17,16 @@ from ._messages import (
 class AsyncMessageBuffer:
     """Async iterable for keeping a persistent buffer of messages.
 
-    Uses heuristics on scene node names to automatically cull out outdated messages."""
+    Uses heuristics on message names to automatically cull out redundant messages."""
 
     event_loop: AbstractEventLoop
     message_counter: int = 0
-    message_from_id: Dict[int, bytes] = dataclasses.field(default_factory=dict)
+    message_from_id: Dict[int, Message] = dataclasses.field(default_factory=dict)
     id_from_name: Dict[str, int] = dataclasses.field(default_factory=dict)
     message_event: asyncio.Event = dataclasses.field(default_factory=asyncio.Event)
 
-    def push(self, message: Message):
-        """Push a new message to our buffer, and remove old redundant ones.
-
-        Not currently thread-safe."""
+    def push(self, message: Message) -> None:
+        """Push a new message to our buffer, and remove old redundant ones."""
 
         # If we're resetting the scene, we don't need any of the prior messages.
         if isinstance(message, ResetSceneMessage):
@@ -36,7 +35,7 @@ class AsyncMessageBuffer:
 
         # Add message to buffer.
         new_message_id = self.message_counter
-        self.message_from_id[new_message_id] = message.serialize()
+        self.message_from_id[new_message_id] = message
         self.message_counter += 1
 
         # All messages that modify scene nodes have a name field.
@@ -46,11 +45,17 @@ class AsyncMessageBuffer:
             node_name = "__viser_background_image__"
 
         if node_name is not None:
-            if isinstance(message, AddGuiInputMessage):
-                node_name = "__gui__" + node_name
+            if isinstance(message, GuiAddMessage):
+                node_name = "__gui_input__" + node_name
+                is_scene_node = False
+            elif isinstance(message, GuiSetMessage):
+                node_name = "__gui_input_set__" + node_name
+                is_scene_node = False
+            else:
+                is_scene_node = True
 
-            # If an existing message with the same scene node name already exists in our
-            # buffer, we don't need the old one anymore. :-)
+            # If an existing message with the same name already exists in our buffer, we
+            # don't need the old one anymore. :-)
             if node_name is not None and node_name in self.id_from_name:
                 old_message_id = self.id_from_name.pop(node_name)
                 self.message_from_id.pop(old_message_id)
@@ -59,7 +64,11 @@ class AsyncMessageBuffer:
             #
             # TODO: this currently does a linear pass over all existing messages. We
             # could easily optimize this.
-            if node_name is not None and isinstance(message, RemoveSceneNodeMessage):
+            if (
+                is_scene_node
+                and node_name is not None
+                and isinstance(message, RemoveSceneNodeMessage)
+            ):
                 remove_list = []
                 for name, id in self.id_from_name.items():
                     if name.startswith(node_name):
