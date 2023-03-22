@@ -83,6 +83,58 @@ function useMessageHandler(
         );
         break;
       }
+
+      // Add mesh
+      case "mesh": {
+        const geometry = new THREE.BufferGeometry();
+        const material = new THREE.MeshStandardMaterial({ color: 0x00e8fc });
+        geometry.setAttribute(
+          "position",
+           new THREE.Float32BufferAttribute(
+            new Float32Array(
+              message.vertices_f32.buffer.slice(
+                message.vertices_f32.byteOffset,
+                message.vertices_f32.byteOffset + message.vertices_f32.byteLength
+              )
+            ),
+            3
+          )
+        );
+        geometry.setIndex(
+          new THREE.Uint32BufferAttribute(
+            new Uint32Array(
+              message.faces_uint32.buffer.slice(
+                message.faces_uint32.byteOffset,
+                message.faces_uint32.byteOffset + message.faces_uint32.byteLength
+              )
+            ),
+            1
+          )
+        );
+        geometry.computeVertexNormals();
+        geometry.computeBoundingSphere();
+        addSceneNode(
+          new SceneNode(message.name, (ref) => (
+            <mesh
+              ref={ref}
+              geometry={geometry}
+              material={material}
+            />
+          ))
+        );
+
+        addSceneNode(
+          new SceneNode("light", (ref) => (
+            <group ref={ref}>
+              <pointLight position={ [-10, -10, -10] } />;
+              <pointLight position={ [10, 10, 10] } />;
+              <ambientLight intensity={ 0.2 } />
+            </group>
+          ))
+        );
+        break;
+      }
+
       // Add a camera frustum.
       case "camera_frustum": {
         addSceneNode(
