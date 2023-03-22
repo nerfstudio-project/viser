@@ -137,8 +137,8 @@ class PointCloudMessage(Message):
 
     type: ClassVar[str] = "point_cloud"
     name: str
-    position: onpt.NDArray[onp.float32]
-    color: onpt.NDArray[onp.uint8]
+    position: onp.ndarray
+    color: onp.ndarray
     point_size: float = 0.1
 
     def __post_init__(self):
@@ -162,8 +162,8 @@ class MeshMessage(Message):
 
     type: ClassVar[str] = "mesh"
     name: str
-    vertices: onpt.NDArray[onp.float32]
-    faces: onpt.NDArray[onp.uint32]
+    vertices: onp.ndarray
+    faces: onp.ndarray
 
     def __post_init__(self):
         if self.vertices.dtype != onp.float32:

@@ -99,4 +99,5 @@ class GuiHandle(Generic[T]):
     def remove(self) -> None:
         """Remove this GUI element from the visualizer."""
         self._impl.api._queue(GuiRemoveMessage(self._impl.name))
+        assert self._impl.cleanup_cb is not None
         self._impl.cleanup_cb()
