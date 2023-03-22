@@ -5,8 +5,7 @@ import React, { MutableRefObject, RefObject } from "react";
 import styled from "@emotion/styled";
 import Tab from "@mui/material/Tab";
 import { IconButton } from "@mui/material";
-import { GuiUpdateMessage } from "./WebsocketMessages";
-import { UseSceneTree, NodeIdType } from "./SceneTree";
+import { UseSceneTree, NodeIdType } from "../SceneTree";
 import {
   Visibility,
   VisibilityOff,
@@ -15,72 +14,9 @@ import {
   SensorsOffRounded,
 } from "@mui/icons-material";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
-import { folder, Leva, LevaPanel, useControls, useCreateStore } from "leva";
-import { LevaCustomTheme } from "leva/dist/declarations/src/styles";
 import { UseGui } from "./GuiState";
-import { encode } from "@msgpack/msgpack";
-
-const levaTheme: LevaCustomTheme = {
-  colors: {
-    elevation1: "#e5e5e5",
-    elevation2: "#ffffff",
-    elevation3: "#f5f5f5",
-    accent1: "#20262e",
-    accent2: "#cbcbcb",
-    accent3: "#3c93ff",
-    highlight1: "#000000",
-    highlight2: "#1d1d1d",
-    highlight3: "#000000",
-    vivid1: "#ffcc00",
-  },
-  radii: {
-    xs: "2px",
-    sm: "3px",
-    lg: "10px",
-  },
-  space: {
-    sm: "6px",
-    md: "6px",
-    rowGap: "10px",
-    colGap: "8px",
-  },
-  fontSizes: {
-    root: "0.9em",
-  },
-  fonts: {
-    mono: "",
-    sans: "",
-  },
-  sizes: {
-    rootWidth: "350px",
-    controlWidth: "160px",
-    scrubberWidth: "10px",
-    scrubberHeight: "14px",
-    rowHeight: "24px",
-    numberInputMinWidth: "60px",
-    folderTitleHeight: "24px",
-    checkboxSize: "16px",
-    joystickWidth: "100px",
-    joystickHeight: "100px",
-    colorPickerWidth: "160px",
-    colorPickerHeight: "100px",
-    monitorHeight: "60px",
-    titleBarHeight: "39px",
-  },
-  borderWidths: {
-    root: "0px",
-    input: "1px",
-    focus: "1px",
-    hover: "1px",
-    active: "1px",
-    folder: "1px",
-  },
-  fontWeights: {
-    label: "normal",
-    folder: "normal",
-    button: "normal",
-  },
-};
+import GeneratedControls from "./Generated";
+import ServerControls from "./Server";
 
 interface ConnectedStatusProps {
   useGui: UseGui;
@@ -142,24 +78,30 @@ export default function ControlPanel(props: ControlPanelProps) {
 
   const panelWrapperRef = React.useRef<HTMLDivElement>();
 
+  const showGenerated = props.useGui((state) => state.guiNames.length > 0);
+
   return (
     <ControlPanelWrapper
       sx={{
         border: "1px solid",
         borderColor: "divider",
         "&.hidden": {
-          height: "2.7em",
           overflow: "hidden",
         },
         "& .panel-contents": {
           opacity: "1.0",
-          display: "block",
-          transition: "all 0.5s",
+          visibility: "visible",
+          maxHeight: "200em",
+          transition:
+            "visibility 0.1s linear,opacity 0.1s linear, max-height 0.2s ease-in",
         },
         "&.hidden .panel-contents": {
           opacity: "0.0",
-          display: "none",
-          transition: "opacity 0.5s",
+          visibility: "hidden",
+          maxHeight: "0 !important",
+          overflow: "hidden",
+          transition:
+            "visibility 0.1s linear,opacity 0.1s linear, max-height 0.2s ease-out",
         },
         "& .expand-icon": {
           transform: "rotate(0)",
@@ -212,11 +154,23 @@ export default function ControlPanel(props: ControlPanelProps) {
         }}
         className="panel-contents"
       >
-        <ControlPanelContents tab_labels={["Control", "Scene"]}>
-          <Box component="div" sx={{ padding: "0.5em 1em 0.5em 1em" }}>
-            <CoreControl
+        <ControlPanelContents
+          tab_labels={
+            showGenerated ? ["Control", "Server", "Scene"] : ["Server", "Scene"]
+          }
+        >
+          {showGenerated ? (
+            <Box component="div" sx={{ padding: "0.5em" }}>
+              <GeneratedControls
+                useGui={props.useGui}
+                websocketRef={props.websocketRef}
+              />
+            </Box>
+          ) : null}
+          <Box component="div" sx={{ padding: "0.5em" }}>
+            <ServerControls
               useGui={props.useGui}
-              websocketRef={props.websocketRef}
+              wrapperRef={props.wrapperRef}
             />
           </Box>
           <TreeView
@@ -229,74 +183,6 @@ export default function ControlPanel(props: ControlPanelProps) {
         </ControlPanelContents>
       </Box>
     </ControlPanelWrapper>
-  );
-}
-
-interface CoreControlProps {
-  useGui: UseGui;
-  websocketRef: MutableRefObject<WebSocket | null>;
-}
-
-/** One tab in the control panel. */
-function CoreControl(props: CoreControlProps) {
-  const server = props.useGui((state) => state.server);
-  const setServer = props.useGui((state) => state.setServer);
-
-  const label = props.useGui((state) => state.label);
-  const setLabel = props.useGui((state) => state.setLabel);
-
-  const guiConfigFromName = props.useGui((state) => state.guiConfigFromName);
-
-  const levaStore = useCreateStore();
-
-  const guiConfigWithCallbacks: { [key: string]: any } = {};
-
-  for (const [key, value] of Object.entries(guiConfigFromName)) {
-    guiConfigWithCallbacks[key] = {
-      ...value,
-      // Hacky bit that lives outside of TypeScript. :(
-      onChange: (value: any, _propName: any, _options: any) => {
-        // We intentionally send all of the initial values.
-        // if (options.initial) return;
-        const message: GuiUpdateMessage = {
-          type: "gui_update",
-          name: key,
-          value: value,
-        };
-        props.websocketRef.current!.send(encode(message));
-      },
-    };
-  }
-
-  useControls(
-    {
-      Server: folder({
-        Label: { value: label, onChange: setLabel },
-        URL: { value: server, onChange: setServer },
-      }),
-      Application: folder({ ...guiConfigWithCallbacks }),
-    },
-    { store: levaStore },
-    [guiConfigFromName]
-  );
-  console.log(guiConfigFromName);
-
-  return (
-    <Box
-      component="div"
-      sx={{
-        "& label": { color: "#777", "&:first-child": { paddingLeft: "0.2em" } },
-      }}
-    >
-      <LevaPanel
-        fill
-        flat
-        titleBar={false}
-        theme={levaTheme}
-        store={levaStore}
-        hideCopyButton
-      />
-    </Box>
   );
 }
 
@@ -436,7 +322,7 @@ function SceneNodeUI(props: SceneNodeUIProp) {
     return () => {
       threeObj.remove(label);
     };
-  }, [threeObj]);
+  }, [threeObj, sceneNode.name]);
 
   // Flag for indicating when we're dragging across hide/show icons. Makes it
   // easier to toggle visibility for many scene nodes at once.

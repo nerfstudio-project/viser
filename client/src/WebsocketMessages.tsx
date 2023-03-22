@@ -29,8 +29,8 @@ export interface FrameMessage {
 export interface PointCloudMessage {
   type: "point_cloud";
   name: string;
-  position_f32: ArrayBuffer;
-  color_uint8: ArrayBuffer;
+  position: ArrayBuffer;
+  color: ArrayBuffer;
   point_size: number;
 }
 export interface MeshMessage {
@@ -59,17 +59,23 @@ export interface RemoveSceneNodeMessage {
 export interface ResetSceneMessage {
   type: "reset_scene";
 }
-export interface AddGuiInputMessage {
+export interface GuiAddMessage {
   type: "add_gui";
   name: string;
+  folder: string;
   leva_conf: any;
 }
-export interface RemoveGuiInputMessage {
+export interface GuiRemoveMessage {
   type: "remove_gui";
   name: string;
 }
 export interface GuiUpdateMessage {
   type: "gui_update";
+  name: string;
+  value: any;
+}
+export interface GuiSetMessage {
+  type: "gui_set";
   name: string;
   value: any;
 }
@@ -84,6 +90,7 @@ export type Message =
   | ImageMessage
   | RemoveSceneNodeMessage
   | ResetSceneMessage
-  | AddGuiInputMessage
-  | RemoveGuiInputMessage
-  | GuiUpdateMessage;
+  | GuiAddMessage
+  | GuiRemoveMessage
+  | GuiUpdateMessage
+  | GuiSetMessage;

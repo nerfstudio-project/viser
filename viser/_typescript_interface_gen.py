@@ -1,3 +1,4 @@
+import dataclasses
 from typing import Any, ClassVar, Type, get_args, get_origin, get_type_hints
 
 import numpy as onp
@@ -51,12 +52,15 @@ def generate_typescript_defs() -> str:
 
     # Generate interfaces for each specific message.
     for cls in message_types:
-        out_lines.append(f"export interface {cls.__name__} {{")
+        out_lines.append(f"export interface {cls.__name__} " + "{")
+        field_names = set([f.name for f in dataclasses.fields(cls)])  # type: ignore
         for name, typ in get_type_hints(cls).items():
             if typ == ClassVar[str]:
                 typ = f'"{getattr(cls, name)}"'
-            else:
+            elif name in field_names:
                 typ = _get_ts_type(typ)
+            else:
+                continue
             out_lines.append(f"  {name}: {typ};")
         out_lines.append("}")
     out_lines.append("")

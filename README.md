@@ -6,18 +6,23 @@
 
 Python-controllable GUI
 
-- [x] Plumbing
-- [ ] Primitives
+- [x] Plumbing (new broadcast/client interfaces etc)
+- [x] Primitives
   - [x] Select / drop-down
   - [x] Checkbox
   - [x] Slider
-  - [ ] Basic textbox
-  - [ ] 2D vector
-  - [ ] 3D vector
-- [x] .value(), last_updated()
-- [x] Callback interface
-- [ ] Set value from Python
-- [ ] Synchronization across clients (for broadcasted)
+  - [x] Basic textbox
+  - [x] 2D vector
+  - [x] 3D vector
+  - [x] Button
+- [x] Commands
+  - [x] .value(), last_updated()
+  - [x] Callback interface
+  - [x] Set value from Python
+  - [x] Allow disabling
+  - [x] Remove GUI element
+- [x] Synchronize GUIs across clients (for broadcasted)
+- [x] Folders
 
 Scene tree
 

@@ -6,7 +6,6 @@ import time
 import viser
 
 server = viser.ViserServer()
-server.reset_scene()
 
 while True:
     server.add_frame(

@@ -5,7 +5,7 @@ import React, { MutableRefObject, RefObject, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { OrbitControls as OrbitControls_ } from "three-stdlib";
 
-import ControlPanel from "./ControlPanel";
+import ControlPanel from "./ControlPanel/ControlPanel";
 import LabelRenderer from "./LabelRenderer";
 import { SceneNodeThreeObject, useSceneTreeState } from "./SceneTree";
 
@@ -24,14 +24,14 @@ import {
 } from "@mui/material";
 import { RemoveCircleRounded, AddCircleRounded } from "@mui/icons-material";
 import WebsocketInterface from "./WebsocketInterface";
-import { useGuiState } from "./GuiState";
+import { useGuiState } from "./ControlPanel/GuiState";
 
 interface SynchronizedOrbitControlsProps {
   globalCameras: MutableRefObject<CameraPrimitives>;
   websocketRef: MutableRefObject<WebSocket | null>;
 }
 
-// Communicate the threejs camera to the server.
+/** OrbitControls, but synchronized with the server and other panels. */
 function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
   console.log("Setting up camera synchronizer; this should only happen once!");
 
