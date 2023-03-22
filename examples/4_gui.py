@@ -3,12 +3,10 @@
 import time
 
 import numpy as onp
-from typing_extensions import assert_never
 
 import viser
 
 server = viser.ViserServer()
-server.reset_scene()
 
 # Add some common GUI elements: number inputs, sliders, vectors, checkboxes.
 counter = 0

@@ -36,18 +36,18 @@ export interface PointCloudMessage {
 export interface MeshMessage {
   type: "mesh";
   name: string;
-  vertices_f32: ArrayBuffer;
-  faces_uint32: ArrayBuffer;
+  vertices: ArrayBuffer;
+  faces: ArrayBuffer;
 }
 export interface BackgroundImageMessage {
   type: "background_image";
-  media_type: 'image/jpeg' | 'image/png';
+  media_type: "image/jpeg" | "image/png";
   base64_data: string;
 }
 export interface ImageMessage {
   type: "image";
   name: string;
-  media_type: 'image/jpeg' | 'image/png';
+  media_type: "image/jpeg" | "image/png";
   base64_data: string;
   render_width: number;
   render_height: number;
@@ -80,7 +80,7 @@ export interface GuiSetMessage {
   value: any;
 }
 
-export type Message = 
+export type Message =
   | ViewerCameraMessage
   | CameraFrustumMessage
   | FrameMessage

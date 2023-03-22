@@ -53,6 +53,8 @@ Scene tree
   - [x] Camera read
   - [ ] Camera write
   - [x] Ensure message ordering
+  - [x] Meshes!!
+  - [ ] Lights?
 
 - Serialization
 

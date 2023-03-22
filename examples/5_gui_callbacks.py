@@ -9,9 +9,6 @@ from typing_extensions import assert_never
 import viser
 
 server = viser.ViserServer()
-server.reset_scene()
-
-# Add some common GUI elements: a checkbox, dropdown, and slider.
 
 with server.gui_folder("Control"):
     gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)

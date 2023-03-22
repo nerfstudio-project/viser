@@ -5,6 +5,7 @@ NeRFs), or images to display in 3D with respect to coordinate frames.
 """
 
 import time
+from pathlib import Path
 
 import imageio.v3 as iio
 import numpy as onp
@@ -15,7 +16,7 @@ server = viser.ViserServer()
 
 # Add a background image.
 server.set_background_image(
-    iio.imread("./assets/Cal_logo.png"),
+    iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
     format="png",
 )
 
@@ -28,7 +29,7 @@ server.add_frame(
 )
 server.add_image(
     "/main/img",
-    iio.imread("./assets/Cal_logo.png"),
+    iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
     4.0,
     4.0,
     format="png",
