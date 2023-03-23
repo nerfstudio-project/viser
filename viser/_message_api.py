@@ -266,13 +266,15 @@ def _handle_gui_updates(
     if not handle_state.is_button and message.value == handle_state.value:
         return
 
+    value = handle_state.typ(message.value)
+
     # Update state.
-    handle_state.value = handle_state.typ(message.value)
+    handle_state.value = value
     handle_state.last_updated = time.time()
 
     # Trigger callbacks.
-    for cb in self._handle_state_from_gui_name[message.name].update_cb:
-        cb(message.value)
+    for cb in handle_state.update_cb:
+        cb(GuiHandle(handle_state))
     if handle_state.sync_cb is not None:
         handle_state.sync_cb(client_id, message.value)
 
@@ -286,7 +288,7 @@ def _add_gui_impl(
 ) -> GuiHandle[Any]:
     """Private helper for adding a simple GUI element."""
 
-    handle = _GuiHandleState(
+    handle_state = _GuiHandleState(
         name,
         typ=type(initial_value),
         api=api,
@@ -297,8 +299,8 @@ def _add_gui_impl(
         leva_conf=leva_conf,
         is_button=is_button,
     )
-    api._handle_state_from_gui_name[name] = handle
-    handle.cleanup_cb = lambda: api._handle_state_from_gui_name.pop(name)
+    api._handle_state_from_gui_name[name] = handle_state
+    handle_state.cleanup_cb = lambda: api._handle_state_from_gui_name.pop(name)
 
     # For broadcasted GUI handles, we should synchronize all clients.
     from ._server import ViserServer
@@ -310,7 +312,7 @@ def _add_gui_impl(
             message.excluded_self_client = client_id
             api._queue(message)
 
-        handle.sync_cb = sync_other_clients
+        handle_state.sync_cb = sync_other_clients
 
     api._queue(
         _messages.GuiAddMessage(
@@ -319,4 +321,4 @@ def _add_gui_impl(
             leva_conf=leva_conf,
         )
     )
-    return GuiHandle(handle)
+    return GuiHandle(handle_state)

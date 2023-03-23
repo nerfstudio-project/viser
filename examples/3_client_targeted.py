@@ -7,6 +7,7 @@ via client.add_*().
 """
 
 import time
+from pathlib import Path
 
 import imageio.v3 as iio
 
@@ -19,7 +20,7 @@ server = viser.ViserServer()
 server.add_frame("/main", wxyz=(1, 0, 0, 0), position=(0, 0, 0), show_axes=False)
 server.add_image(
     "/main/img",
-    iio.imread("./assets/Cal_logo.png")[::-1, :],
+    iio.imread(Path(__file__).parent / "assets/Cal_logo.png")[::-1, :],
     4.0,
     4.0,
     format="png",
@@ -33,5 +34,23 @@ while True:
         # Match the image rotation of this particular client to face its camera.
         camera = client.get_camera()
         client.add_frame("/main", wxyz=camera.wxyz, position=(0, 0, 0), show_axes=False)
+
+        # Kind of fun: send our own camera to all of the other clients. This lets each
+        # connected client see the other clients.
+        for other in clients.values():
+            if client.client_id == other.client_id:
+                continue
+            camera = client.get_camera()
+            other.add_frame(
+                f"/client_{client.client_id}",
+                wxyz=camera.wxyz,
+                position=camera.position,
+                scale=0.01,
+            )
+            other.add_camera_frustum(
+                f"/client_{client.client_id}/frustum",
+                fov=camera.fov,
+                aspect=camera.aspect,
+            )
 
     time.sleep(0.01)

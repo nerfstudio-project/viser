@@ -37,7 +37,7 @@ class _GuiHandleState(Generic[T]):
     folder_label: str
     """Name of the folder this GUI input was placed into."""
 
-    update_cb: List[Callable[[T], None]]
+    update_cb: List[Callable[[GuiHandle[T]], None]]
     """Registered functions to call when this input is updated."""
 
     leva_conf: Dict[str, Any]
@@ -62,7 +62,13 @@ class GuiHandle(Generic[T]):
     # Let's shove private implementation details in here...
     _impl: _GuiHandleState[T]
 
-    def on_update(self, func: Callable[[T], None]) -> Callable[[T], None]:
+    def on_update(
+        self, func: Callable[[GuiHandle[T]], None]
+    ) -> Callable[[GuiHandle[T]], None]:
+        """Attach a function to call when a GUI input is updated. Happens in a thread.
+
+        Callbacks are passed the originating GUI handle, which can be useful in loops.
+        """
         self._impl.update_cb.append(func)
         return func
 
