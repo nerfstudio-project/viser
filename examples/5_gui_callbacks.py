@@ -61,32 +61,17 @@ def draw_points():
 # Here, we update the point clouds + frames whenever any of the GUI items are updated.
 
 
-@gui_show.on_update
-def show_cb(value: bool) -> None:
-    print("Got new show:", value)
-    draw_frame()
+gui_show.on_update(lambda handle: draw_frame())
+gui_axis.on_update(lambda handle: draw_frame())
+gui_location.on_update(lambda handle: draw_frame())
+gui_num_points.on_update(lambda handle: draw_frame())
 
 
-@gui_axis.on_update
-def axis_cb(value: str) -> None:
-    print("Got new axis:", value)
-    draw_frame()
-
-
-@gui_location.on_update
-def location_cb(value: float) -> None:
-    print("Got new location:", value)
-    draw_frame()
-
-
-@gui_num_points.on_update
-def num_points_cb(value: float) -> None:
-    print("Got new point count:", value)
-    draw_points()
+# We can also use this as a decorator.
 
 
 @gui_button.on_update
-def reset(value: bool):
+def reset(handle: viser.GuiHandle[bool]) -> None:
     """Reset the scene when the reset button is clicked."""
     gui_show.set_value(True)
     gui_location.set_value(0.0)

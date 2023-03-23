@@ -24,33 +24,31 @@ import {
 } from "@mui/material";
 import { RemoveCircleRounded, AddCircleRounded } from "@mui/icons-material";
 import WebsocketInterface from "./WebsocketInterface";
-import { useGuiState } from "./ControlPanel/GuiState";
+import { useGuiState, UseGui } from "./ControlPanel/GuiState";
 
 interface SynchronizedOrbitControlsProps {
   globalCameras: MutableRefObject<CameraPrimitives>;
+  useGui: UseGui;
   websocketRef: MutableRefObject<WebSocket | null>;
 }
 
 /** OrbitControls, but synchronized with the server and other panels. */
 function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
-  console.log("Setting up camera synchronizer; this should only happen once!");
-
   const camera = useThree((state) => state.camera as PerspectiveCamera);
   const cameraThrottleReady = React.useRef(true);
   const cameraThrottleStale = React.useRef(false);
-
   const orbitRef = React.useRef<OrbitControls_>(null);
 
-  // We put Z up to match the scene tree, and convert threejs camera convention
-  // to the OpenCV one.
-  const R_threecam_cam = new Quaternion();
-  const R_worldfix_world = new Quaternion();
-  R_threecam_cam.setFromEuler(new Euler(Math.PI, 0.0, 0.0));
-  R_worldfix_world.setFromEuler(new Euler(Math.PI / 2.0, 0.0, 0.0));
-
-  function sendCamera() {
+  // Callback for sending cameras.
+  const sendCamera = React.useCallback(() => {
     const three_camera = camera;
 
+    // We put Z up to match the scene tree, and convert threejs camera convention
+    // to the OpenCV one.
+    const R_threecam_cam = new Quaternion();
+    const R_worldfix_world = new Quaternion();
+    R_threecam_cam.setFromEuler(new Euler(Math.PI, 0.0, 0.0));
+    R_worldfix_world.setFromEuler(new Euler(Math.PI / 2.0, 0.0, 0.0));
     const R_world_camera = R_worldfix_world.clone()
       .multiply(three_camera.quaternion)
       .multiply(R_threecam_cam);
@@ -72,10 +70,10 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
     };
     const websocket = props.websocketRef.current;
     websocket && websocket.send(encode(message));
-  }
+  }, [camera, props.websocketRef]);
 
   // What do we need to when the camera moves?
-  function cameraChangedCallback() {
+  const cameraChangedCallback = React.useCallback(() => {
     const globalCameras = props.globalCameras.current;
     // Match all cameras.
     if (globalCameras.synchronize) {
@@ -101,9 +99,16 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
     } else {
       cameraThrottleStale.current = true;
     }
-  }
+  }, [props.globalCameras, camera, sendCamera]);
 
-  // Send camera for new connections. Slightly hacky!
+  // Send camera for new connections.
+  // We add a small delay to give the server time to add a callback.
+  const connected = props.useGui((state) => state.websocketConnected);
+  React.useEffect(() => {
+    if (!connected) return;
+    setTimeout(() => cameraChangedCallback(), 50);
+  }, [connected, cameraChangedCallback]);
+
   React.useEffect(() => {
     const globalCameras = props.globalCameras.current;
 
@@ -115,21 +120,10 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
     globalCameras.cameras.push(camera);
     globalCameras.orbitRefs.push(orbitRef);
 
-    let disconnected_prev = props.websocketRef.current === null;
-    const interval = setInterval(() => {
-      let disconnected = props.websocketRef.current === null;
-      if (!disconnected && disconnected_prev) {
-        sendCamera();
-      }
-      disconnected_prev = disconnected;
-    }, 1000);
-
     window.addEventListener("resize", cameraChangedCallback);
 
     return () => {
       window.removeEventListener("resize", cameraChangedCallback);
-
-      clearInterval(interval);
 
       // Remove ourself from camera list. Since we always add/remove panels
       // from the end, a pop() would actually work as well here in constant
@@ -140,7 +134,8 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
         1
       );
     };
-  });
+  }, [cameraChangedCallback, camera, props.globalCameras]);
+
   return (
     <OrbitControls
       ref={orbitRef}
@@ -204,6 +199,7 @@ const SingleViewer = React.memo(function SingleViewer(
         <LabelRenderer wrapperRef={wrapperRef} />
         <SynchronizedOrbitControls
           websocketRef={websocketRef}
+          useGui={useGui}
           globalCameras={props.globalCameras}
         />
         <SceneNodeThreeObject id={0} useSceneTree={useSceneTree} />

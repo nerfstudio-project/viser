@@ -34,7 +34,7 @@ class _ClientHandleState:
     camera_info: Optional[CameraState]
     message_buffer: asyncio.Queue
     event_loop: AbstractEventLoop
-    camera_cb: List[Callable[[CameraState], None]]
+    camera_cb: List[Callable[[ClientHandle], None]]
 
 
 @dataclasses.dataclass
@@ -43,6 +43,7 @@ class ClientHandle(MessageApi):
 
     We can use this to read the camera state or send client-specific messages."""
 
+    client_id: ClientId
     _state: _ClientHandleState
 
     def __post_init__(self) -> None:
@@ -56,7 +57,7 @@ class ClientHandle(MessageApi):
                 message.wxyz, message.position, message.fov, message.aspect, time.time()
             )
             for cb in self._state.camera_cb:
-                cb(self._state.camera_info)
+                cb(self)
 
         self._incoming_handlers.append(handle_camera)
 
@@ -66,8 +67,8 @@ class ClientHandle(MessageApi):
         return self._state.camera_info
 
     def on_camera_update(
-        self, callback: Callable[[CameraState], None]
-    ) -> Callable[[CameraState], None]:
+        self, callback: Callable[[ClientHandle], None]
+    ) -> Callable[[ClientHandle], None]:
         self._state.camera_cb.append(callback)
         return callback
 
@@ -129,7 +130,7 @@ class ViserServer(MessageApi):
         clients, etc."""
 
         self._client_lock.acquire()
-        out = {k: ClientHandle(v) for k, v in self._handle_from_client.items()}
+        out = {k: ClientHandle(k, v) for k, v in self._handle_from_client.items()}
         self._client_lock.release()
         return out
 
@@ -181,7 +182,9 @@ class ViserServer(MessageApi):
 
             def handle_incoming(message: Message) -> None:
                 self._handle_incoming_message(client_id, message)
-                ClientHandle(client_handle)._handle_incoming_message(client_id, message)
+                ClientHandle(client_id, client_handle)._handle_incoming_message(
+                    client_id, message
+                )
 
             try:
                 # For each client: infinite loop over producers (which send messages)
