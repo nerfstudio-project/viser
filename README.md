@@ -1,5 +1,26 @@
 # viser
 
+
+## Setup
+
+
+#### Client
+```bash
+cd viser/client
+npm install
+npm start
+```
+
+#### Server
+
+```bash
+cd viser/
+pip install -e .
+python ./examples/4_gui.py  # Or other example
+```
+
+---
+
 ![pointcloud_preview](./viser.png)
 
 ## TODO

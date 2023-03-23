@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import { levaTheme } from "./Generated";
 import { UseGui } from "./GuiState";
 import React, { RefObject } from "react";
-import { Button, FormControl, InputLabel, OutlinedInput } from "@mui/material";
 
 interface ServerControlsProps {
   useGui: UseGui;
