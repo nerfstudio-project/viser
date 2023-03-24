@@ -9,4 +9,6 @@ htmlcov
 .mypy_cache
 .dmypy.json
 .hypothesis
+.envrc
+.lvimrc
 .DS_Store

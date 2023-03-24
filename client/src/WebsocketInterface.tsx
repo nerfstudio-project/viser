@@ -104,10 +104,10 @@ function useMessageHandler(
         );
         break;
       }
-
       // Add mesh
       case "mesh": {
         const geometry = new THREE.BufferGeometry();
+        // TODO(hangg): Should expose color as well.
         const material = new THREE.MeshStandardMaterial({ color: 0x00e8fc });
         geometry.setAttribute(
           "position",
@@ -139,20 +139,8 @@ function useMessageHandler(
             <mesh ref={ref} geometry={geometry} material={material} />
           ))
         );
-
-        // TODO we should revisit this!
-        addSceneNode(
-          new SceneNode("light", (ref) => (
-            <group ref={ref}>
-              <pointLight position={[-10, -10, -10]} />;
-              <pointLight position={[10, 10, 10]} />;
-              <ambientLight intensity={0.2} />
-            </group>
-          ))
-        );
         break;
       }
-
       // Add a camera frustum.
       case "camera_frustum": {
         addSceneNodeMakeParents(

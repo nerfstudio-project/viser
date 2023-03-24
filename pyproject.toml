@@ -17,6 +17,7 @@ pyliblzfse = "^0.4.1"
 scikit-image = "^0.20.0"
 tqdm = "^4.65.0"
 tyro = "^0.4.2"
+gdown = "^4.6.6"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

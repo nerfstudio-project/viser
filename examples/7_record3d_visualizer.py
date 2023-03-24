@@ -1,8 +1,11 @@
+"""Parse and stream record3d captures. To get the demo data, checkout assets/download_record3d_dance.sh."""
+
 import time
 from pathlib import Path
 from typing import Tuple
 
 import numpy as onp
+import numpy.typing as onpt
 import tyro
 from scipy.spatial.transform import Rotation
 from tqdm.auto import tqdm
@@ -13,8 +16,13 @@ import viser
 def quat_from_so3(
     omega: Tuple[float, float, float]
 ) -> Tuple[float, float, float, float]:
-    xyzw = Rotation.from_rotvec(onp.array(omega)).as_quat()
-    return (xyzw[3], xyzw[0], xyzw[1], xyzw[2])
+    return tuple(onp.roll(Rotation.from_rotvec(onp.array(omega)).as_quat(), 1).tolist())
+
+
+def quat_from_mat3(
+    mat3: onpt.NDArray[onp.float32],
+) -> Tuple[float, float, float, float]:
+    return tuple(onp.roll(Rotation.from_matrix(mat3).as_quat(), 1).tolist())
 
 
 def main(
@@ -89,10 +97,29 @@ def main(
         show_axes=False,
     )
     for i in tqdm(range(num_frames)):
-        position, color = loader.get_frame(i).get_point_cloud(downsample_factor)
+        print(i)
+        frame = loader.get_frame(i)
+        position, color = frame.get_point_cloud(downsample_factor)
         server.add_point_cloud(
-            name=f"/frames/t{i}", position=position, color=color, point_size=0.01
+            name=f"/frames/t{i}/pcd", position=position, color=color, point_size=0.01
         )
+        server.add_frame(
+            f"/frames/t{i}/camera",
+            wxyz=quat_from_mat3(frame.T_world_camera[:3, :3]),
+            position=tuple(frame.T_world_camera[:3, 3].tolist()),
+            scale=0.1,
+        )
+        server.add_camera_frustum(
+            f"/frames/t{i}/camera/frustum",
+            fov=2 * onp.arctan2(frame.rgb.shape[0] / 2, frame.K[0, 0]),
+            aspect=frame.rgb.shape[1] / frame.rgb.shape[0],
+            scale=0.1,
+        )
+        gui_frames_loaded.set_value(f"{i+1}/{num_frames}")
+
+    # Remove loading progress indicator.
+    gui_frames_loaded.remove()
+    server.set_scene_node_visibility(f"/axes", False)
 
     # Undisable UI after the frames are loaded.
     gui_timestep.set_disabled(False)

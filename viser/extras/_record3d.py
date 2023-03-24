@@ -94,7 +94,8 @@ class Record3dFrame:
         rgb = self.rgb[::downsample_factor, ::downsample_factor]
         depth = skimage.transform.resize(self.depth, rgb.shape[:2], order=0)
         mask = cast(
-            onpt.NDArray[onp.bool_], skimage.transform.resize(self.mask, rgb.shape[:2])
+            onpt.NDArray[onp.bool_],
+            skimage.transform.resize(self.mask, rgb.shape[:2], order=0),
         )
         assert depth.shape == rgb.shape[:2]
 
