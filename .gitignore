@@ -9,3 +9,4 @@ htmlcov
 .mypy_cache
 .dmypy.json
 .hypothesis
+.DS_Store

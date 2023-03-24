@@ -43,6 +43,13 @@ def main(
             initial_value=0,
             disabled=True,
         )
+        gui_next_frame = server.add_gui_button("Next Frame", disabled=True)
+        gui_prev_frame = server.add_gui_button("Prev Frame", disabled=True)
+        gui_playing = server.add_gui_checkbox(
+            "Playing",
+            False,
+            disabled=True,
+        )
         gui_framerate = server.add_gui_slider(
             "FPS",
             min=1,
@@ -51,16 +58,22 @@ def main(
             initial_value=30,
             disabled=True,
         )
-        gui_playing = server.add_gui_checkbox(
-            "Playing",
-            False,
-            disabled=True,
-        )
 
-    # Disable the timestep slider when we're playing.
+    # Frame step buttons.
+    @gui_next_frame.on_update
+    def _(_) -> None:
+        gui_timestep.set_value((gui_timestep.value() + 1) % num_frames)
+
+    @gui_prev_frame.on_update
+    def _(_) -> None:
+        gui_timestep.set_value((gui_timestep.value() - 1) % num_frames)
+
+    # Disable frame controls when we're playing.
     @gui_playing.on_update
     def _(_) -> None:
         gui_timestep.set_disabled(gui_playing.value())
+        gui_next_frame.set_disabled(gui_playing.value())
+        gui_prev_frame.set_disabled(gui_playing.value())
 
     prev_timestep = gui_timestep.value()
 
@@ -91,9 +104,11 @@ def main(
     gui_frames_loaded.remove()
 
     # Undisable UI after the frames are loaded.
-    gui_timestep.set_disabled(gui_playing.value())
-    gui_framerate.set_disabled(False)
+    gui_timestep.set_disabled(False)
+    gui_next_frame.set_disabled(False)
+    gui_prev_frame.set_disabled(False)
     gui_playing.set_disabled(False)
+    gui_framerate.set_disabled(False)
 
     # Hide all but the current frame.
     for i in range(num_frames):
