@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, Environment } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
 import React, { MutableRefObject, RefObject, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
@@ -193,7 +193,7 @@ const SingleViewer = React.memo((props: SingleViewerProps) => {
         websocketRef={websocketRef}
         wrapperRef={wrapperRef}
       />
-      <Viewport>
+      <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
         <LabelRenderer wrapperRef={wrapperRef} />
         <SynchronizedOrbitControls
           websocketRef={websocketRef}
@@ -201,6 +201,7 @@ const SingleViewer = React.memo((props: SingleViewerProps) => {
           globalCameras={props.globalCameras}
         />
         <SceneNodeThreeObject name="" useSceneTree={useSceneTree} />
+        <Environment preset="city" blur={1} />
       </Viewport>
     </Wrapper>
   );
