@@ -56,6 +56,11 @@ export interface RemoveSceneNodeMessage {
   type: "remove_scene_node";
   name: string;
 }
+export interface SetSceneNodeVisibilityMessage {
+  type: "set_scene_node_visibility";
+  name: string;
+  visible: boolean;
+}
 export interface ResetSceneMessage {
   type: "reset_scene";
 }
@@ -74,10 +79,15 @@ export interface GuiUpdateMessage {
   name: string;
   value: any;
 }
-export interface GuiSetMessage {
+export interface GuiSetValueMessage {
   type: "gui_set";
   name: string;
   value: any;
+}
+export interface GuiSetLevaConfMessage {
+  type: "gui_set_leva_conf";
+  name: string;
+  leva_conf: any;
 }
 
 export type Message =
@@ -89,8 +99,10 @@ export type Message =
   | BackgroundImageMessage
   | ImageMessage
   | RemoveSceneNodeMessage
+  | SetSceneNodeVisibilityMessage
   | ResetSceneMessage
   | GuiAddMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
-  | GuiSetMessage;
+  | GuiSetValueMessage
+  | GuiSetLevaConfMessage;

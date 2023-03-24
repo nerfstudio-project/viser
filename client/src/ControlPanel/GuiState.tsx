@@ -18,10 +18,6 @@ interface GuiState {
 }
 
 interface GuiActions {
-  setLabel: (label: string) => void;
-  setServer: (server: string) => void;
-  setWebsocketConnected: (connected: boolean) => void;
-  setBackgroundAvailable: (available: boolean) => void;
   addGui: (name: string, config: GuiConfig) => void;
   removeGui: (name: string) => void;
   resetGui: () => void;
@@ -44,22 +40,6 @@ export function useGuiState() {
     create(
       immer<GuiState & GuiActions>((set) => ({
         ...cleanGuiState,
-        setLabel: (label) =>
-          set((state) => {
-            state.label = label;
-          }),
-        setServer: (server) =>
-          set((state) => {
-            state.server = server;
-          }),
-        setWebsocketConnected: (connected) =>
-          set((state) => {
-            state.websocketConnected = connected;
-          }),
-        setBackgroundAvailable: (available) =>
-          set((state) => {
-            state.backgroundAvailable = available;
-          }),
         addGui: (name, guiConfig) =>
           set((state) => {
             state.guiNames.push(name);
@@ -82,9 +62,12 @@ export function useGuiState() {
         applyGuiSetQueue: (apply) =>
           set((state) => {
             for (const [key, value] of Object.entries(state.guiSetQueue)) {
-              apply(key, value);
+              // Linear runtime here could be improved.
+              if (state.guiNames.includes(key)) {
+                delete state.guiSetQueue[key];
+                apply(key, value);
+              }
             }
-            state.guiSetQueue = {};
           }),
       }))
     )

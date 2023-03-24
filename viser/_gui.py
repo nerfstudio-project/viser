@@ -14,7 +14,7 @@ from typing import (
     TypeVar,
 )
 
-from ._messages import GuiAddMessage, GuiRemoveMessage, GuiSetMessage
+from ._messages import GuiRemoveMessage, GuiSetLevaConfMessage, GuiSetValueMessage
 
 if TYPE_CHECKING:
     from ._message_api import MessageApi
@@ -79,25 +79,30 @@ class GuiHandle(Generic[T]):
         return self._impl.last_updated
 
     def set_value(self, value: T) -> None:
+        # Send to client, except for buttons.
         if not self._impl.is_button:
-            self._impl.api._queue(GuiSetMessage(self._impl.name, value))
+            self._impl.api._queue(GuiSetValueMessage(self._impl.name, value))
+
+        # Set internal state.
         self._impl.value = value
         self._impl.last_updated = time.time()
+
+        # Call update callbacks.
+        for cb in self._impl.update_cb:
+            cb(self)
 
     def set_disabled(self, disabled: bool) -> None:
         if self._impl.is_button:
             self._impl.api._queue(
-                GuiAddMessage(
+                GuiSetLevaConfMessage(
                     self._impl.name,
-                    self._impl.folder_label,
                     {**self._impl.leva_conf, "settings": {"disabled": disabled}},
                 ),
             )
         else:
             self._impl.api._queue(
-                GuiAddMessage(
+                GuiSetLevaConfMessage(
                     self._impl.name,
-                    self._impl.folder_label,
                     {**self._impl.leva_conf, "disabled": disabled},
                 ),
             )

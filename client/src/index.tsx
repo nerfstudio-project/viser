@@ -152,9 +152,7 @@ interface SingleViewerProps {
   globalCameras: MutableRefObject<CameraPrimitives>;
 }
 
-const SingleViewer = React.memo(function SingleViewer(
-  props: SingleViewerProps
-) {
+const SingleViewer = React.memo((props: SingleViewerProps) => {
   // Layout and styles.
   const Wrapper = styled(Box)`
     width: 100%;
@@ -202,7 +200,7 @@ const SingleViewer = React.memo(function SingleViewer(
           useGui={useGui}
           globalCameras={props.globalCameras}
         />
-        <SceneNodeThreeObject id={0} useSceneTree={useSceneTree} />
+        <SceneNodeThreeObject name="" useSceneTree={useSceneTree} />
       </Viewport>
     </Wrapper>
   );

@@ -64,7 +64,7 @@ def draw_points():
 gui_show.on_update(lambda handle: draw_frame())
 gui_axis.on_update(lambda handle: draw_frame())
 gui_location.on_update(lambda handle: draw_frame())
-gui_num_points.on_update(lambda handle: draw_frame())
+gui_num_points.on_update(lambda handle: draw_points())
 
 
 # We can also use this as a decorator.

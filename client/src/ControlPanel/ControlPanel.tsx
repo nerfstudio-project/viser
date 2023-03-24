@@ -5,7 +5,7 @@ import React, { MutableRefObject, RefObject } from "react";
 import styled from "@emotion/styled";
 import Tab from "@mui/material/Tab";
 import { IconButton } from "@mui/material";
-import { UseSceneTree, NodeIdType } from "../SceneTree";
+import { UseSceneTree } from "../SceneTree";
 import {
   Visibility,
   VisibilityOff,
@@ -178,7 +178,7 @@ export default function ControlPanel(props: ControlPanelProps) {
               padding: "1em 2em 1em 1em",
             }}
           >
-            <SceneNodeUI id={0} useSceneTree={props.useSceneTree} />
+            <SceneNodeUI name="" useSceneTree={props.useSceneTree} />
           </TreeView>
         </ControlPanelContents>
       </Box>
@@ -259,21 +259,21 @@ function ControlPanelContents(props: ControlPanelContentsProps) {
 }
 
 interface SceneNodeUIChildrenProp {
-  id: NodeIdType;
+  name: string;
   useSceneTree: UseSceneTree;
 }
 
 /** Control panel component for listing children of a scene node. */
 export function SceneNodeUIChildren(props: SceneNodeUIChildrenProp) {
   const children = props.useSceneTree(
-    (state) => state.nodeFromId[props.id].children
+    (state) => state.nodeFromName[props.name].children
   );
   return (
     <>
       {children.map((child_id) => {
         return (
           <SceneNodeUI
-            id={child_id}
+            name={child_id}
             useSceneTree={props.useSceneTree}
             key={child_id}
           />
@@ -284,15 +284,19 @@ export function SceneNodeUIChildren(props: SceneNodeUIChildrenProp) {
 }
 
 interface SceneNodeUIProp {
-  id: NodeIdType;
+  name: string;
   useSceneTree: UseSceneTree;
 }
 
 /** Control panel component for showing a particular scene node. */
 function SceneNodeUI(props: SceneNodeUIProp) {
-  const sceneNode = props.useSceneTree((state) => state.nodeFromId[props.id]);
-  const threeObj = props.useSceneTree((state) => state.objFromId[props.id]);
-  const [visible, setVisible] = React.useState(true);
+  const sceneNode = props.useSceneTree((state) => state.nodeFromName[props.name]);
+  const threeObj = props.useSceneTree((state) => state.objFromName[props.name]);
+
+  const visible = props.useSceneTree(
+    (state) => state.visibilityFromName[props.name]
+  );
+  const setVisibility = props.useSceneTree((state) => state.setVisibility);
   const ToggleVisibilityIcon = visible ? Visibility : VisibilityOff;
 
   const itemRef = React.useRef<HTMLElement>(null);
@@ -318,11 +322,12 @@ function SceneNodeUI(props: SceneNodeUIProp) {
     if (itemRef.current!.matches(":hover")) {
       threeObj.add(label);
     }
-    setVisible(threeObj.visible);
+
+    threeObj.visible = visible;
     return () => {
       threeObj.remove(label);
     };
-  }, [threeObj, sceneNode.name]);
+  }, [threeObj, sceneNode.name, visible]);
 
   // Flag for indicating when we're dragging across hide/show icons. Makes it
   // easier to toggle visibility for many scene nodes at once.
@@ -334,9 +339,8 @@ function SceneNodeUI(props: SceneNodeUIProp) {
     threeObj.add(labelRef.current!);
     event.stopPropagation();
     if (event.buttons !== 0) {
-      threeObj.visible = !threeObj.visible;
-      setVisible(threeObj.visible);
       suppressMouseLeave.current = true;
+      setVisibility(props.name, !visible);
     }
   };
   const mouseLeave = (event: React.MouseEvent) => {
@@ -347,17 +351,15 @@ function SceneNodeUI(props: SceneNodeUIProp) {
       return;
     }
     if (event.buttons !== 0) {
-      threeObj.visible = !threeObj.visible;
-      setVisible(threeObj.visible);
+      setVisibility(props.name, !visible);
     }
   };
 
   const hideShowIcon = (
     <IconButton
       onClick={(event) => {
-        threeObj.visible = !threeObj.visible;
-        setVisible(threeObj.visible);
         event.stopPropagation();
+        setVisibility(props.name, !visible);
       }}
       onMouseEnter={mouseEnter}
       onMouseLeave={mouseLeave}
@@ -373,7 +375,7 @@ function SceneNodeUI(props: SceneNodeUIProp) {
 
   return (
     <TreeItem
-      nodeId={"node_" + props.id.toString()}
+      nodeId={"node_" + props.name.toString()}
       sx={{
         opacity: visible ? 1.0 : 0.5,
       }}
@@ -381,7 +383,7 @@ function SceneNodeUI(props: SceneNodeUIProp) {
       icon={hideShowIcon}
       label={label}
     >
-      <SceneNodeUIChildren id={props.id} useSceneTree={props.useSceneTree} />
+      <SceneNodeUIChildren name={props.name} useSceneTree={props.useSceneTree} />
     </TreeItem>
   );
 }

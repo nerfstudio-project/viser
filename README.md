@@ -76,6 +76,7 @@ Scene tree
   - [x] Ensure message ordering
   - [x] Meshes!!
   - [ ] Lights?
+  - [x] Set visibility
 
 - Serialization
 
@@ -85,10 +86,10 @@ Scene tree
 
 - UI
 
-  - [ ] Remove visibility toggle interface
-  - [ ] Regex filter for visibility
   - [ ] Icons for scene node type
+  - [ ] 
 
 - Exporting
+  - [x] Background download
   - [ ] Video export
   - [ ] SVG export
