@@ -45,7 +45,7 @@ class AsyncMessageBuffer:
         if node_name is not None:
             # TODO: hack to prevent undesirable message culling. We should revisit
             # this.
-            node_name = str(message) + node_name
+            node_name = str(type(message)) + node_name
 
             # If an existing message with the same name already exists in our buffer, we
             # don't need the old one anymore. :-)

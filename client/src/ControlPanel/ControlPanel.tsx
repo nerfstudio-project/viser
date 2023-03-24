@@ -45,8 +45,8 @@ interface ControlPanelProps {
   wrapperRef: RefObject<HTMLDivElement>;
 }
 
-/** Root component for control panel. Parents the websocket interface and a set
- * of control tabs. */
+/** Root component for control panel. Parents a set of control tabs.
+ * This could be refactored+cleaned up a lot! */
 export default function ControlPanel(props: ControlPanelProps) {
   const ControlPanelWrapper = styled(Box)`
     box-sizing: border-box;
@@ -57,7 +57,7 @@ export default function ControlPanel(props: ControlPanelProps) {
     right: 1em;
     margin: 0;
     border-radius: 0.5em;
-    max-height: 85%;
+    max-height: 90%;
     overflow: auto;
     background-color: rgba(255, 255, 255, 0.9);
     box-sizing: border-box;
@@ -71,11 +71,62 @@ export default function ControlPanel(props: ControlPanelProps) {
     color: #777;
     box-sizing: border-box;
     overflow: hidden;
+    user-select: none;
   `;
 
   const panelWrapperRef = React.useRef<HTMLDivElement>();
 
   const showGenerated = props.useGui((state) => state.guiNames.length > 0);
+
+  // Things to track for dragging.
+  const dragInfo = React.useRef({
+    dragging: false,
+    startPosX: 0,
+    startPosY: 0,
+    startClientX: 0,
+    startClientY: 0,
+  });
+
+  // Logic for "fixing" panel locations, which keeps the control panel within
+  // the bounds of the parent div.
+  const unfixedLoc = React.useRef<{ x?: number; y?: number }>({});
+  const setPanelLocation = React.useCallback(
+    (x: number, y: number) => {
+      const panel = panelWrapperRef.current!;
+      const parent = panel.parentElement!;
+
+      let newX = x;
+      let newY = y;
+      newX = Math.min(newX, parent.clientWidth - panel.clientWidth - 10);
+      newX = Math.max(newX, 10);
+      newY = Math.min(newY, parent.clientHeight - panel.clientHeight - 10);
+      newY = Math.max(newY, 10);
+
+      panel.style.top = newY.toString() + "px";
+      panel.style.left = newX.toString() + "px";
+
+      return [newX, newY];
+    },
+    [panelWrapperRef, unfixedLoc]
+  );
+
+  // Fix locations on resize.
+  React.useEffect(() => {
+    const panel = panelWrapperRef.current!;
+    const parent = panel.parentElement!;
+    const observer = new ResizeObserver(() => {
+      if (unfixedLoc.current.x === undefined) {
+        unfixedLoc.current.x = panel.offsetLeft;
+        unfixedLoc.current.y = panel.offsetTop;
+      }
+      setPanelLocation(unfixedLoc.current.x!, unfixedLoc.current.y!);
+    });
+    observer.observe(panel);
+    observer.observe(parent);
+    return () => {
+      observer.disconnect();
+    };
+  });
 
   return (
     <ControlPanelWrapper
@@ -88,17 +139,15 @@ export default function ControlPanel(props: ControlPanelProps) {
         "& .panel-contents": {
           opacity: "1.0",
           visibility: "visible",
-          maxHeight: "200em",
-          transition:
-            "visibility 0.1s linear,opacity 0.1s linear, max-height 0.2s ease-in",
+          height: "auto",
+          transition: "visibility 0.2s linear,opacity 0.2s linear",
         },
         "&.hidden .panel-contents": {
           opacity: "0.0",
           visibility: "hidden",
-          maxHeight: "0 !important",
+          height: "0 !important",
+          border: "0",
           overflow: "hidden",
-          transition:
-            "visibility 0.1s linear,opacity 0.1s linear, max-height 0.2s ease-out",
         },
         "& .expand-icon": {
           transform: "rotate(0)",
@@ -111,15 +160,49 @@ export default function ControlPanel(props: ControlPanelProps) {
     >
       <ControlPanelHandle
         onClick={() => {
-          const wrapper = panelWrapperRef.current!;
+          const state = dragInfo.current;
+          if (state.dragging) {
+            state.dragging = false;
+            return;
+          }
 
-          // We use a class instead of state for tracking hidden status.
-          // No re-render => we can add a (hacky) animation!
+          const wrapper = panelWrapperRef.current!;
           if (wrapper.classList.contains("hidden")) {
             wrapper.classList.remove("hidden");
           } else {
             wrapper.classList.add("hidden");
           }
+        }}
+        onMouseDown={(event) => {
+          const state = dragInfo.current;
+          const panel = panelWrapperRef.current!;
+          state.startClientX = event.clientX;
+          state.startClientY = event.clientY;
+          state.startPosX = panel.offsetLeft;
+          state.startPosY = panel.offsetTop;
+
+          function dragListener(event: MouseEvent) {
+            // Minimum motion.
+            const deltaX = event.clientX - state.startClientX;
+            const deltaY = event.clientY - state.startClientY;
+            if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+
+            state.dragging = true;
+            let newX = state.startPosX + deltaX;
+            let newY = state.startPosY + deltaY;
+            [unfixedLoc.current.x, unfixedLoc.current.y] = setPanelLocation(
+              newX,
+              newY
+            );
+          }
+          window.addEventListener("mousemove", dragListener);
+          window.addEventListener(
+            "mouseup",
+            () => {
+              window.removeEventListener("mousemove", dragListener);
+            },
+            { once: true }
+          );
         }}
       >
         <Box
