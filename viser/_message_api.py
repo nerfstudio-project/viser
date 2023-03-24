@@ -230,6 +230,10 @@ class MessageApi(abc.ABC):
     def remove_scene_node(self):
         ...
 
+    @_wrap_message(_messages.SetSceneNodeVisibilityMessage)
+    def set_scene_node_visibility(self):
+        ...
+
     @_wrap_message(_messages.BackgroundImageMessage.encode)
     def set_background_image(self):
         ...
@@ -308,7 +312,7 @@ def _add_gui_impl(
     if not is_button and isinstance(api, ViserServer):
 
         def sync_other_clients(client_id: ClientId, value: Any) -> None:
-            message = _messages.GuiSetMessage(name=name, value=value)
+            message = _messages.GuiSetValueMessage(name=name, value=value)
             message.excluded_self_client = client_id
             api._queue(message)
 

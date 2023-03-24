@@ -254,6 +254,15 @@ class RemoveSceneNodeMessage(Message):
 
 
 @dataclasses.dataclass
+class SetSceneNodeVisibilityMessage(Message):
+    """Set the visibility of a particular node in the scene."""
+
+    type: ClassVar[str] = "set_scene_node_visibility"
+    name: str
+    visible: bool
+
+
+@dataclasses.dataclass
 class ResetSceneMessage(Message):
     """Reset scene."""
 
@@ -288,9 +297,18 @@ class GuiUpdateMessage(Message):
 
 
 @dataclasses.dataclass
-class GuiSetMessage(Message):
+class GuiSetValueMessage(Message):
     """Sent server->client to set the value of a particular input."""
 
     type: ClassVar[str] = "gui_set"
     name: str
     value: Any
+
+
+@dataclasses.dataclass
+class GuiSetLevaConfMessage(Message):
+    """Sent server->client to override some part of an input's Leva config."""
+
+    type: ClassVar[str] = "gui_set_leva_conf"
+    name: str
+    leva_conf: Any

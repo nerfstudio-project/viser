@@ -8,8 +8,6 @@ import { immerable } from "immer";
 import create from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-export type NodeIdType = number;
-
 // The covariance/contravariance rules are too complicated here, so we just
 // type the reference with any.
 export type MakeObject = (ref: React.RefObject<any>) => React.ReactNode;
@@ -18,7 +16,7 @@ export type MakeObject = (ref: React.RefObject<any>) => React.ReactNode;
 export class SceneNode {
   [immerable] = true;
 
-  public children: NodeIdType[];
+  public children: string[];
 
   constructor(public name: string, public make_object: MakeObject) {
     this.children = [];
@@ -26,14 +24,14 @@ export class SceneNode {
 }
 
 interface SceneTreeState {
-  nodeCounter: number;
-  nodeFromId: { [key: NodeIdType]: SceneNode };
-  idFromName: { [key: string]: NodeIdType };
-  objFromId: { [key: NodeIdType]: THREE.Object3D };
+  nodeFromName: { [key: string]: SceneNode };
+  visibilityFromName: { [key: string]: boolean };
+  objFromName: { [key: string]: THREE.Object3D };
 }
 export interface SceneTreeActions extends SceneTreeState {
-  setObj(id: NodeIdType, obj: THREE.Object3D): void;
-  clearObj(id: NodeIdType): void;
+  setObj(name: string, obj: THREE.Object3D): void;
+  setVisibility(name: string, visible: boolean): void;
+  clearObj(name: string): void;
   addSceneNode(nodes: SceneNode): void;
   removeSceneNode(name: string): void;
   resetScene(): void;
@@ -44,18 +42,24 @@ export interface SceneTreeActions extends SceneTreeState {
 const rootFrameTemplate: MakeObject = (ref) => (
   <CoordinateFrame
     ref={ref}
-    scale={0.5}
+    show_axes={false}
     quaternion={new THREE.Quaternion().setFromEuler(
       new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
     )}
   />
 );
+const rootAxesTemplate: MakeObject = (ref) => (
+  <CoordinateFrame ref={ref} scale={0.5} />
+);
+
 const rootNodeTemplate = new SceneNode("", rootFrameTemplate);
+const rootAxesNode = new SceneNode("/axes", rootAxesTemplate);
+rootNodeTemplate.children.push("/axes");
+
 const cleanSceneTreeState = {
-  nodeCounter: 1,
-  nodeFromId: { 0: rootNodeTemplate },
-  idFromName: { "": 0 },
-  objFromId: {},
+  nodeFromName: { "": rootNodeTemplate, "/axes": rootAxesNode },
+  visibilityFromName: { "": true, "/axes": true },
+  objFromName: {},
 } as SceneTreeState;
 
 /** Declare a scene state, and return a hook for accessing it. Note that we put
@@ -65,33 +69,34 @@ export function useSceneTreeState() {
     create(
       immer<SceneTreeState & SceneTreeActions>((set) => ({
         ...cleanSceneTreeState,
-        setObj: (id, obj) =>
+        setObj: (name, obj) =>
           set((state) => {
-            state.objFromId[id] = obj;
+            state.objFromName[name] = obj;
           }),
-        clearObj: (id) =>
+        setVisibility: (name, visible) =>
           set((state) => {
-            delete state.objFromId[id];
+            state.visibilityFromName[name] = visible;
+          }),
+        clearObj: (name) =>
+          set((state) => {
+            delete state.objFromName[name];
           }),
         addSceneNode: (node) =>
           set((state) => {
-            if (state.idFromName[node.name] !== undefined) {
+            if (node.name in state.nodeFromName) {
               console.log("Updating node:", node.name);
-              const id = state.idFromName[node.name];
-              state.nodeFromId[id] = {
+              state.nodeFromName[node.name] = {
                 ...node,
-                children: state.nodeFromId[id].children,
+                children: state.nodeFromName[node.name].children,
               };
             } else {
               console.log("Creating node:", node.name);
-              const id = state.nodeCounter;
 
               const parent_name = node.name.split("/").slice(0, -1).join("/");
-              const parent_id = state.idFromName[parent_name];
-              state.nodeFromId[id] = node;
-              state.nodeFromId[parent_id].children.push(id);
-              state.idFromName[node.name] = id;
-              state.nodeCounter++;
+              state.nodeFromName[node.name] = node;
+              state.nodeFromName[parent_name].children.push(node.name);
+              if (!(node.name in state.visibilityFromName))
+                state.visibilityFromName[node.name] = true;
             }
           }),
         removeSceneNode: (name) =>
@@ -99,20 +104,18 @@ export function useSceneTreeState() {
             // Remove node from parent's children list.
             const parent_name = name.split("/").slice(0, -1).join("/");
 
-            const remove_id = state.idFromName[name];
-            const parent_id = state.idFromName[parent_name];
-            state.nodeFromId[parent_id].children = state.nodeFromId[
-              parent_id
-            ].children.filter((id) => id !== remove_id);
+            state.nodeFromName[parent_name].children = state.nodeFromName[
+              parent_name
+            ].children.filter((child_name) => child_name !== name);
+
+            delete state.visibilityFromName[name];
 
             // If we want to remove "/tree", we should remove all of "/tree", "/tree/trunk", "/tree/branch", etc.
-            const remove_names = Object.keys(state.idFromName).filter((n) =>
+            const remove_names = Object.keys(state.nodeFromName).filter((n) =>
               n.startsWith(name)
             );
             remove_names.forEach((remove_name) => {
-              const id = state.idFromName[remove_name];
-              delete state.nodeFromId[id];
-              delete state.idFromName[remove_name];
+              delete state.nodeFromName[remove_name];
             });
           }),
         resetScene: () =>
@@ -128,14 +131,16 @@ export function useSceneTreeState() {
 export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
 
 interface SceneNodeThreeChildrenProps {
-  id: NodeIdType;
+  name: string;
   useSceneTree: UseSceneTree;
 }
 function SceneNodeThreeChildren(props: SceneNodeThreeChildrenProps) {
   const children = props.useSceneTree(
-    (state) => state.nodeFromId[props.id].children
+    (state) => state.nodeFromName[props.name].children
   );
-  const parentObj = props.useSceneTree((state) => state.objFromId[props.id]);
+  const parentObj = props.useSceneTree(
+    (state) => state.objFromName[props.name]
+  );
 
   // Create a group of children inside of the parent object.
   return (
@@ -146,7 +151,7 @@ function SceneNodeThreeChildren(props: SceneNodeThreeChildrenProps) {
           return (
             <SceneNodeThreeObject
               key={child_id}
-              id={child_id}
+              name={child_id}
               useSceneTree={props.useSceneTree}
             />
           );
@@ -158,26 +163,57 @@ function SceneNodeThreeChildren(props: SceneNodeThreeChildrenProps) {
 }
 
 interface SceneNodeThreeObjectProps {
-  id: NodeIdType;
+  name: string;
   useSceneTree: UseSceneTree;
 }
 
 /** Component containing the three.js object and children for a particular scene node. */
-export function SceneNodeThreeObject(props: SceneNodeThreeObjectProps) {
-  const sceneNode = props.useSceneTree((state) => state.nodeFromId[props.id]);
-  const setObj = props.useSceneTree((state) => state.setObj);
-  const clearObj = props.useSceneTree((state) => state.clearObj);
-  const ref = React.useRef<THREE.Object3D>();
+export const SceneNodeThreeObject = React.memo(
+  // This memo is very important for big scenes!!
+  (props: SceneNodeThreeObjectProps) => {
+    const sceneNode = props.useSceneTree(
+      (state) => state.nodeFromName[props.name]
+    );
+    const setObj = props.useSceneTree((state) => state.setObj);
+    const clearObj = props.useSceneTree((state) => state.clearObj);
+    const ref = React.useRef<THREE.Object3D>(null);
 
-  React.useEffect(() => {
-    setObj(props.id, ref.current!);
-    return () => clearObj(props.id);
-  });
+    React.useEffect(() => {
+      setObj(props.name, ref.current!);
+      return () => clearObj(props.name);
+    });
 
-  return (
-    <>
-      {sceneNode.make_object(ref)}
-      <SceneNodeThreeChildren id={props.id} useSceneTree={props.useSceneTree} />
-    </>
+    return (
+      <>
+        {sceneNode.make_object(ref)}
+        <SceneNodeUpdater
+          name={props.name}
+          objRef={ref}
+          useSceneTree={props.useSceneTree}
+        />
+        <SceneNodeThreeChildren
+          name={props.name}
+          useSceneTree={props.useSceneTree}
+        />
+      </>
+    );
+  }
+);
+
+interface SceneNodeUpdaterProps {
+  name: string;
+  objRef: React.RefObject<THREE.Object3D>;
+  useSceneTree: UseSceneTree;
+}
+
+/** Shove visibility updates into a separate components so the main object
+ * component doesn't need to be repeatedly re-rendered.*/
+function SceneNodeUpdater(props: SceneNodeUpdaterProps) {
+  const visible = props.useSceneTree(
+    (state) => state.visibilityFromName[props.name]
   );
+  React.useEffect(() => {
+    props.objRef.current!.visible = visible;
+  }, [props, visible]);
+  return <></>;
 }

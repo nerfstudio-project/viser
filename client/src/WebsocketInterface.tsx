@@ -21,16 +21,14 @@ function useMessageHandler(
   const addGui = useGui((state) => state.addGui);
   const removeGui = useGui((state) => state.removeGui);
   const guiSet = useGui((state) => state.guiSet);
-  const setBackgroundAvailable = useGui(
-    (state) => state.setBackgroundAvailable
-  );
+  const setVisibility = useSceneTree((state) => state.setVisibility);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(node: SceneNode) {
-    const idFromName = useSceneTree.getState().idFromName;
+    const nodeFromName = useSceneTree.getState().nodeFromName;
     const parent_name = node.name.split("/").slice(0, -1).join("/");
-    if (idFromName[parent_name] === undefined) {
+    if (!(parent_name in nodeFromName)) {
       console.log("remaking parent", parent_name);
       addSceneNodeMakeParents(
         new SceneNode(parent_name, (ref) => (
@@ -113,7 +111,7 @@ function useMessageHandler(
         const material = new THREE.MeshStandardMaterial({ color: 0x00e8fc });
         geometry.setAttribute(
           "position",
-           new THREE.Float32BufferAttribute(
+          new THREE.Float32BufferAttribute(
             new Float32Array(
               message.vertices.buffer.slice(
                 message.vertices.byteOffset,
@@ -138,11 +136,7 @@ function useMessageHandler(
         geometry.computeBoundingSphere();
         addSceneNode(
           new SceneNode(message.name, (ref) => (
-            <mesh
-              ref={ref}
-              geometry={geometry}
-              material={material}
-            />
+            <mesh ref={ref} geometry={geometry} material={material} />
           ))
         );
 
@@ -150,9 +144,9 @@ function useMessageHandler(
         addSceneNode(
           new SceneNode("light", (ref) => (
             <group ref={ref}>
-              <pointLight position={ [-10, -10, -10] } />;
-              <pointLight position={ [10, 10, 10] } />;
-              <ambientLight intensity={ 0.2 } />
+              <pointLight position={[-10, -10, -10]} />;
+              <pointLight position={[10, 10, 10]} />;
+              <ambientLight intensity={0.2} />
             </group>
           ))
         );
@@ -181,7 +175,7 @@ function useMessageHandler(
           wrapperRef.current.style.backgroundRepeat = "no-repeat";
           wrapperRef.current.style.backgroundPosition = "center center";
 
-          setBackgroundAvailable(true);
+          useGui.setState({ backgroundAvailable: true });
         }
         break;
       }
@@ -219,12 +213,18 @@ function useMessageHandler(
         removeSceneNode(message.name);
         break;
       }
+      // Set the visibility of a particular scene node.
+      case "set_scene_node_visibility": {
+        setVisibility(message.name, message.visible);
+        break;
+      }
       // Reset the entire scene, removing all scene nodes.
       case "reset_scene": {
         console.log("Resetting scene!");
         resetScene();
         wrapperRef.current!.style.backgroundImage = "none";
-        setBackgroundAvailable(false);
+
+        useGui.setState({ backgroundAvailable: false });
         break;
       }
       // Add a GUI input.
@@ -238,6 +238,17 @@ function useMessageHandler(
       // Set the value of a GUI input.
       case "gui_set": {
         guiSet(message.name, message.value);
+        break;
+      }
+      // Add a GUI input.
+      case "gui_set_leva_conf": {
+        const currentConf = useGui.getState().guiConfigFromName[message.name];
+        if (currentConf !== undefined) {
+          addGui(message.name, {
+            levaConf: message.leva_conf,
+            folderName: currentConf.folderName,
+          });
+        }
         break;
       }
       // Remove a GUI input.
@@ -269,9 +280,6 @@ export default function WebsocketInterface(props: WebSocketInterfaceProps) {
   );
 
   const server = props.useGui((state) => state.server);
-  const setWebsocketConnected = props.useGui(
-    (state) => state.setWebsocketConnected
-  );
   const resetGui = props.useGui((state) => state.resetGui);
 
   React.useEffect(() => {
@@ -289,13 +297,13 @@ export default function WebsocketInterface(props: WebSocketInterfaceProps) {
       ws.onopen = () => {
         console.log("Connected!" + server);
         props.websocketRef.current = ws;
-        setWebsocketConnected(true);
+        props.useGui.setState({ websocketConnected: true });
       };
 
       ws.onclose = () => {
         console.log("Disconnected! " + server);
         props.websocketRef.current = null;
-        setWebsocketConnected(false);
+        props.useGui.setState({ websocketConnected: false });
         if (props.useGui.getState().guiNames.length > 0) resetGui();
 
         // Try to reconnect.
@@ -323,11 +331,11 @@ export default function WebsocketInterface(props: WebSocketInterfaceProps) {
     return () => {
       done = true;
       clearTimeout(timeout);
-      setWebsocketConnected(false);
+      props.useGui.setState({ websocketConnected: false });
       ws && ws.close();
       clearTimeout(timeout);
     };
-  }, [props, server, setWebsocketConnected, handleMessage, resetGui]);
+  }, [props, server, handleMessage, resetGui]);
 
   return <></>;
 }

@@ -25,5 +25,5 @@ while True:
     )
     time.sleep(5.0)
 
-    server.remove_scene_node("/tree/branch")
+    server.remove_scene_node("/tree/branch/leaf")
     time.sleep(0.5)

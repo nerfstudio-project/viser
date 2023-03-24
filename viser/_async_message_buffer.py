@@ -5,8 +5,6 @@ from typing import Dict
 
 from ._messages import (
     BackgroundImageMessage,
-    GuiAddMessage,
-    GuiSetMessage,
     Message,
     RemoveSceneNodeMessage,
     ResetSceneMessage,
@@ -45,14 +43,9 @@ class AsyncMessageBuffer:
             node_name = "__viser_background_image__"
 
         if node_name is not None:
-            if isinstance(message, GuiAddMessage):
-                node_name = "__gui_input__" + node_name
-                is_scene_node = False
-            elif isinstance(message, GuiSetMessage):
-                node_name = "__gui_input_set__" + node_name
-                is_scene_node = False
-            else:
-                is_scene_node = True
+            # TODO: hack to prevent undesirable message culling. We should revisit
+            # this.
+            node_name = str(message) + node_name
 
             # If an existing message with the same name already exists in our buffer, we
             # don't need the old one anymore. :-)
@@ -64,11 +57,7 @@ class AsyncMessageBuffer:
             #
             # TODO: this currently does a linear pass over all existing messages. We
             # could easily optimize this.
-            if (
-                is_scene_node
-                and node_name is not None
-                and isinstance(message, RemoveSceneNodeMessage)
-            ):
+            if isinstance(message, RemoveSceneNodeMessage) and node_name is not None:
                 remove_list = []
                 for name, id in self.id_from_name.items():
                     if name.startswith(node_name):

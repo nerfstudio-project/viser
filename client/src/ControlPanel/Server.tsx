@@ -10,8 +10,6 @@ interface ServerControlsProps {
 }
 
 export default function ServerControls(props: ServerControlsProps) {
-  const setServer = props.useGui((state) => state.setServer);
-  const setLabel = props.useGui((state) => state.setLabel);
   const server = props.useGui((state) => state.server);
   const label = props.useGui((state) => state.label);
   const backgroundAvailable = props.useGui(
@@ -21,10 +19,16 @@ export default function ServerControls(props: ServerControlsProps) {
   const levaStore = useCreateStore();
   useControls(
     {
-      Label: { value: label, onChange: setLabel },
-      URL: { value: server, onChange: setServer },
+      Label: {
+        value: label,
+        onChange: (value) => props.useGui.setState({ label: value }),
+      },
+      URL: {
+        value: server,
+        onChange: (value) => props.useGui.setState({ server: value }),
+      },
       "Download Background": button(
-        (get) => {
+        (_get) => {
           if (
             !props.wrapperRef.current!.style.backgroundImage.startsWith("url(")
           ) {
