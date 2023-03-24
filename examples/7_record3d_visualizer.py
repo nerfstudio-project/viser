@@ -30,11 +30,6 @@ def main(
 
     # Add playback UI.
     with server.gui_folder("Playback"):
-        gui_frames_loaded = server.add_gui_text(
-            "Loaded",
-            initial_value="",
-            disabled=True,
-        )
         gui_timestep = server.add_gui_slider(
             "Timestep",
             min=0,
@@ -98,10 +93,6 @@ def main(
         server.add_point_cloud(
             name=f"/frames/t{i}", position=position, color=color, point_size=0.01
         )
-        gui_frames_loaded.set_value(f"{i+1}/{num_frames}")
-
-    # Remove loading progress indicator.
-    gui_frames_loaded.remove()
 
     # Undisable UI after the frames are loaded.
     gui_timestep.set_disabled(False)
