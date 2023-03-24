@@ -1,3 +1,5 @@
+"""Visualize mesh. To get the demo data, checkout assets/download_dragon_mesh.sh."""
+
 import time
 from pathlib import Path
 from typing import Tuple
