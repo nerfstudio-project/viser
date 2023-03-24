@@ -48,7 +48,6 @@ function useMessageHandler(
           new SceneNode(message.name, (ref) => (
             <CoordinateFrame
               ref={ref}
-              scale={message.scale}
               position={new THREE.Vector3().fromArray(message.position)}
               quaternion={
                 new THREE.Quaternion(
@@ -59,6 +58,8 @@ function useMessageHandler(
                 )
               }
               show_axes={message.show_axes}
+              axes_length={message.axes_length}
+              axes_radius={message.axes_radius}
             />
           ))
         );
@@ -150,6 +151,7 @@ function useMessageHandler(
               fov={message.fov}
               aspect={message.aspect}
               scale={message.scale}
+              color={message.color}
             ></CameraFrustum>
           ))
         );

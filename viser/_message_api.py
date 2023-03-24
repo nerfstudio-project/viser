@@ -206,7 +206,7 @@ class MessageApi(abc.ABC):
             },
         )
 
-    @_wrap_message(_messages.CameraFrustumMessage)
+    @_wrap_message(_messages.CameraFrustumMessage.make)
     def add_camera_frustum(self):
         ...
 

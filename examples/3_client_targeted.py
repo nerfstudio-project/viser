@@ -45,7 +45,8 @@ while True:
                 f"/client_{client.client_id}",
                 wxyz=camera.wxyz,
                 position=camera.position,
-                scale=0.01,
+                axes_length=0.1,
+                axes_radius=0.005,
             )
             other.add_camera_frustum(
                 f"/client_{client.client_id}/frustum",

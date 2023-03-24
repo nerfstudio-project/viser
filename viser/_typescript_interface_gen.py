@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, ClassVar, Type, get_args, get_origin, get_type_hints
+from typing import Any, ClassVar, Type, Union, get_args, get_origin, get_type_hints
 
 import numpy as onp
 from typing_extensions import Literal
@@ -23,6 +23,13 @@ def _get_ts_type(typ: Type) -> str:
         return " | ".join(
             map(
                 lambda lit: repr(lit).lower() if type(lit) is bool else repr(lit),
+                get_args(typ),
+            )
+        )
+    if get_origin(typ) is Union:
+        return " | ".join(
+            map(
+                _get_ts_type,
                 get_args(typ),
             )
         )

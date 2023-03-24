@@ -36,6 +36,9 @@ def main(
     loader = viser.extras.Record3dLoader(data_path)
     num_frames = min(max_frames, loader.num_frames())
 
+    # Hide world axes.
+    server.set_scene_node_visibility("/WorldAxes", False)
+
     # Add playback UI.
     with server.gui_folder("Playback"):
         gui_timestep = server.add_gui_slider(
@@ -106,17 +109,18 @@ def main(
             f"/frames/t{i}/camera",
             wxyz=quat_from_mat3(frame.T_world_camera[:3, :3]),
             position=tuple(frame.T_world_camera[:3, 3].tolist()),
-            scale=0.1,
+            axes_length=0.1,
+            axes_radius=0.005,
         )
         server.add_camera_frustum(
             f"/frames/t{i}/camera/frustum",
             fov=2 * onp.arctan2(frame.rgb.shape[0] / 2, frame.K[0, 0]),
             aspect=frame.rgb.shape[1] / frame.rgb.shape[0],
-            scale=0.1,
+            scale=0.15,
         )
 
     # Remove loading progress indicator.
-    server.set_scene_node_visibility(f"/axes", False)
+    server.set_scene_node_visibility("/axes", False)
 
     # Undisable UI after the frames are loaded.
     gui_timestep.set_disabled(False)
