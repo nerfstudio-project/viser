@@ -1,4 +1,4 @@
-import { decode } from "@msgpack/msgpack";
+import { unpack } from "msgpackr";
 import AwaitLock from "await-lock";
 import React, { MutableRefObject, RefObject } from "react";
 import * as THREE from "three";
@@ -302,7 +302,7 @@ export default function WebsocketInterface(props: WebSocketInterfaceProps) {
         // Async message handler. This is structured to reduce websocket
         // backpressure.
         const messagePromise = new Promise<Message>(async (resolve) => {
-          resolve(decode(await event.data.arrayBuffer()) as Message);
+          resolve(unpack(new Uint8Array(await event.data.arrayBuffer())) as Message);
         });
 
         // Handle messages in order.

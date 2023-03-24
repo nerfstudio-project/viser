@@ -1,10 +1,10 @@
 import { GuiUpdateMessage } from "../WebsocketMessages";
-import { encode } from "@msgpack/msgpack";
 import { button, folder, LevaPanel, useControls, useCreateStore } from "leva";
 import { LevaCustomTheme } from "leva/dist/declarations/src/styles";
 import { UseGui } from "./GuiState";
 import React, { MutableRefObject } from "react";
 import Box from "@mui/material/Box";
+import { pack } from "msgpackr";
 
 export const levaTheme: LevaCustomTheme = {
   colors: {
@@ -101,7 +101,7 @@ export default function GeneratedControls(props: GeneratedControlsProps) {
           name: key,
           value: true,
         };
-        props.websocketRef.current!.send(encode(message));
+        props.websocketRef.current!.send(pack(message));
       }, levaConf["settings"]);
     } else {
       // Add any other kind of input.
@@ -118,7 +118,7 @@ export default function GeneratedControls(props: GeneratedControlsProps) {
             name: key,
             value: value,
           };
-          props.websocketRef.current!.send(encode(message));
+          props.websocketRef.current!.send(pack(message));
         },
       };
     }

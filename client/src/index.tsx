@@ -14,7 +14,6 @@ import "./index.css";
 import Box from "@mui/material/Box";
 import { Euler, PerspectiveCamera, Quaternion } from "three";
 import { ViewerCameraMessage } from "./WebsocketMessages";
-import { encode } from "@msgpack/msgpack";
 import {
   FormControlLabel,
   IconButton,
@@ -25,6 +24,7 @@ import {
 import { RemoveCircleRounded, AddCircleRounded } from "@mui/icons-material";
 import WebsocketInterface from "./WebsocketInterface";
 import { useGuiState, UseGui } from "./ControlPanel/GuiState";
+import { pack } from "msgpackr";
 
 interface SynchronizedOrbitControlsProps {
   globalCameras: MutableRefObject<CameraPrimitives>;
@@ -69,7 +69,7 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
       fov: (three_camera.fov * Math.PI) / 180.0,
     };
     const websocket = props.websocketRef.current;
-    websocket && websocket.send(encode(message));
+    websocket && websocket.send(pack(message));
   }, [camera, props.websocketRef]);
 
   // What do we need to when the camera moves?

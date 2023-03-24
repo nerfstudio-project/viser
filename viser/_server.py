@@ -211,7 +211,7 @@ class ViserServer(MessageApi):
         for i in range(50):
             try:
                 event_loop.run_until_complete(
-                    websockets.server.serve(serve, host, port + i)
+                    websockets.server.serve(serve, host, port + i, compression=None)
                 )
                 print(f"Started websocket server at: {host}:{port+i}")
                 break
