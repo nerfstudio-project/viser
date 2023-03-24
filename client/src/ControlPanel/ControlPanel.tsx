@@ -63,70 +63,9 @@ export default function ControlPanel(props: ControlPanelProps) {
     box-sizing: border-box;
   `;
 
-  const ControlPanelHandle = styled(Box)`
-    line-height: 1.5em;
-    cursor: pointer;
-    position: relative;
-    font-weight: 400;
-    color: #777;
-    box-sizing: border-box;
-    overflow: hidden;
-    user-select: none;
-  `;
-
-  const panelWrapperRef = React.useRef<HTMLDivElement>();
+  const panelWrapperRef = React.useRef<HTMLDivElement>(null);
 
   const showGenerated = props.useGui((state) => state.guiNames.length > 0);
-
-  // Things to track for dragging.
-  const dragInfo = React.useRef({
-    dragging: false,
-    startPosX: 0,
-    startPosY: 0,
-    startClientX: 0,
-    startClientY: 0,
-  });
-
-  // Logic for "fixing" panel locations, which keeps the control panel within
-  // the bounds of the parent div.
-  const unfixedLoc = React.useRef<{ x?: number; y?: number }>({});
-  const setPanelLocation = React.useCallback(
-    (x: number, y: number) => {
-      const panel = panelWrapperRef.current!;
-      const parent = panel.parentElement!;
-
-      let newX = x;
-      let newY = y;
-      newX = Math.min(newX, parent.clientWidth - panel.clientWidth - 10);
-      newX = Math.max(newX, 10);
-      newY = Math.min(newY, parent.clientHeight - panel.clientHeight - 10);
-      newY = Math.max(newY, 10);
-
-      panel.style.top = newY.toString() + "px";
-      panel.style.left = newX.toString() + "px";
-
-      return [newX, newY];
-    },
-    [panelWrapperRef, unfixedLoc]
-  );
-
-  // Fix locations on resize.
-  React.useEffect(() => {
-    const panel = panelWrapperRef.current!;
-    const parent = panel.parentElement!;
-    const observer = new ResizeObserver(() => {
-      if (unfixedLoc.current.x === undefined) {
-        unfixedLoc.current.x = panel.offsetLeft;
-        unfixedLoc.current.y = panel.offsetTop;
-      }
-      setPanelLocation(unfixedLoc.current.x!, unfixedLoc.current.y!);
-    });
-    observer.observe(panel);
-    observer.observe(parent);
-    return () => {
-      observer.disconnect();
-    };
-  });
 
   return (
     <ControlPanelWrapper
@@ -159,73 +98,9 @@ export default function ControlPanel(props: ControlPanelProps) {
       ref={panelWrapperRef}
     >
       <ControlPanelHandle
-        onClick={() => {
-          const state = dragInfo.current;
-          if (state.dragging) {
-            state.dragging = false;
-            return;
-          }
-
-          const wrapper = panelWrapperRef.current!;
-          if (wrapper.classList.contains("hidden")) {
-            wrapper.classList.remove("hidden");
-          } else {
-            wrapper.classList.add("hidden");
-          }
-        }}
-        onMouseDown={(event) => {
-          const state = dragInfo.current;
-          const panel = panelWrapperRef.current!;
-          state.startClientX = event.clientX;
-          state.startClientY = event.clientY;
-          state.startPosX = panel.offsetLeft;
-          state.startPosY = panel.offsetTop;
-
-          function dragListener(event: MouseEvent) {
-            // Minimum motion.
-            const deltaX = event.clientX - state.startClientX;
-            const deltaY = event.clientY - state.startClientY;
-            if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-
-            state.dragging = true;
-            let newX = state.startPosX + deltaX;
-            let newY = state.startPosY + deltaY;
-            [unfixedLoc.current.x, unfixedLoc.current.y] = setPanelLocation(
-              newX,
-              newY
-            );
-          }
-          window.addEventListener("mousemove", dragListener);
-          window.addEventListener(
-            "mouseup",
-            () => {
-              window.removeEventListener("mousemove", dragListener);
-            },
-            { once: true }
-          );
-        }}
-      >
-        <Box
-          component="div"
-          sx={{
-            padding: "0.2em 3em 0.5em 1em",
-          }}
-        >
-          <ConnectionStatus useGui={props.useGui} />
-        </Box>
-        <Box
-          component="div"
-          sx={{
-            position: "absolute",
-            top: "50%",
-            right: "1em",
-            transform: "translateY(-48%) scale(1.2)",
-            height: "1.5em",
-          }}
-        >
-          <ExpandLessRounded color="action" className="expand-icon" />
-        </Box>
-      </ControlPanelHandle>
+        panelWrapperRef={panelWrapperRef}
+        useGui={props.useGui}
+      />
       <Box
         component="div"
         sx={{
@@ -291,6 +166,142 @@ function ControlPanelTabContents(props: ControlPanelTabContentsProps) {
     >
       {children}
     </Box>
+  );
+}
+
+interface ControlPanelHandleProps {
+  panelWrapperRef: React.RefObject<HTMLDivElement>;
+  useGui: UseGui;
+}
+
+/** Handle object helps us hide, show, and drag our panel.*/
+function ControlPanelHandle(props: ControlPanelHandleProps) {
+  // Things to track for dragging.
+  const dragInfo = React.useRef({
+    dragging: false,
+    startPosX: 0,
+    startPosY: 0,
+    startClientX: 0,
+    startClientY: 0,
+  });
+
+  // Logic for "fixing" panel locations, which keeps the control panel within
+  // the bounds of the parent div.
+  const unfixedLoc = React.useRef<{ x?: number; y?: number }>({});
+  function setPanelLocation(x: number, y: number) {
+    const panel = props.panelWrapperRef.current!;
+    const parent = panel.parentElement!;
+
+    let newX = x;
+    let newY = y;
+    newX = Math.min(newX, parent.clientWidth - panel.clientWidth - 10);
+    newX = Math.max(newX, 10);
+    newY = Math.min(newY, parent.clientHeight - panel.clientHeight - 10);
+    newY = Math.max(newY, 10);
+
+    panel.style.top = newY.toString() + "px";
+    panel.style.left = newX.toString() + "px";
+
+    return [newX, newY];
+  }
+
+  // Fix locations on resize.
+  React.useEffect(() => {
+    const panel = props.panelWrapperRef.current!;
+    const parent = panel.parentElement!;
+    const observer = new ResizeObserver(() => {
+      if (unfixedLoc.current.x === undefined) {
+        unfixedLoc.current.x = panel.offsetLeft;
+        unfixedLoc.current.y = panel.offsetTop;
+      }
+      setPanelLocation(unfixedLoc.current.x!, unfixedLoc.current.y!);
+    });
+    observer.observe(panel);
+    observer.observe(parent);
+    return () => {
+      observer.disconnect();
+    };
+  });
+  const Handle = styled(Box)`
+    line-height: 1.5em;
+    cursor: pointer;
+    position: relative;
+    font-weight: 400;
+    color: #777;
+    box-sizing: border-box;
+    overflow: hidden;
+    user-select: none;
+  `;
+
+  return (
+    <Handle
+      onClick={() => {
+        const state = dragInfo.current;
+        if (state.dragging) {
+          state.dragging = false;
+          return;
+        }
+
+        const wrapper = props.panelWrapperRef.current!;
+        if (wrapper.classList.contains("hidden")) {
+          wrapper.classList.remove("hidden");
+        } else {
+          wrapper.classList.add("hidden");
+        }
+      }}
+      onMouseDown={(event) => {
+        const state = dragInfo.current;
+        const panel = props.panelWrapperRef.current!;
+        state.startClientX = event.clientX;
+        state.startClientY = event.clientY;
+        state.startPosX = panel.offsetLeft;
+        state.startPosY = panel.offsetTop;
+
+        function dragListener(event: MouseEvent) {
+          // Minimum motion.
+          const deltaX = event.clientX - state.startClientX;
+          const deltaY = event.clientY - state.startClientY;
+          if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+
+          state.dragging = true;
+          let newX = state.startPosX + deltaX;
+          let newY = state.startPosY + deltaY;
+          [unfixedLoc.current.x, unfixedLoc.current.y] = setPanelLocation(
+            newX,
+            newY
+          );
+        }
+        window.addEventListener("mousemove", dragListener);
+        window.addEventListener(
+          "mouseup",
+          () => {
+            window.removeEventListener("mousemove", dragListener);
+          },
+          { once: true }
+        );
+      }}
+    >
+      <Box
+        component="div"
+        sx={{
+          padding: "0.2em 3em 0.5em 1em",
+        }}
+      >
+        <ConnectionStatus useGui={props.useGui} />
+      </Box>
+      <Box
+        component="div"
+        sx={{
+          position: "absolute",
+          top: "50%",
+          right: "1em",
+          transform: "translateY(-48%) scale(1.2)",
+          height: "1.5em",
+        }}
+      >
+        <ExpandLessRounded color="action" className="expand-icon" />
+      </Box>
+    </Handle>
   );
 }
 
