@@ -12,3 +12,5 @@ htmlcov
 .envrc
 .lvimrc
 .DS_Store
+.envrc
+.lvimrc
