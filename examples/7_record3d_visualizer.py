@@ -30,13 +30,32 @@ def main(
 
     # Add playback UI.
     with server.gui_folder("Playback"):
+        gui_frames_loaded = server.add_gui_text(
+            "Loaded",
+            initial_value="",
+            disabled=True,
+        )
         gui_timestep = server.add_gui_slider(
-            "Timestep", min=0, max=num_frames - 1, step=1, initial_value=0
+            "Timestep",
+            min=0,
+            max=num_frames - 1,
+            step=1,
+            initial_value=0,
+            disabled=True,
         )
         gui_framerate = server.add_gui_slider(
-            "FPS", min=1, max=60, step=1, initial_value=30
+            "FPS",
+            min=1,
+            max=60,
+            step=1,
+            initial_value=30,
+            disabled=True,
         )
-        gui_playing = server.add_gui_checkbox("Playing", False)
+        gui_playing = server.add_gui_checkbox(
+            "Playing",
+            False,
+            disabled=True,
+        )
 
     # Disable the timestep slider when we're playing.
     @gui_playing.on_update
@@ -66,6 +85,15 @@ def main(
         server.add_point_cloud(
             name=f"/frames/t{i}", position=position, color=color, point_size=0.01
         )
+        gui_frames_loaded.set_value(f"{i+1}/{num_frames}")
+
+    # Remove loading progress indicator.
+    gui_frames_loaded.remove()
+
+    # Undisable UI after the frames are loaded.
+    gui_timestep.set_disabled(gui_playing.value())
+    gui_framerate.set_disabled(False)
+    gui_playing.set_disabled(False)
 
     # Hide all but the current frame.
     for i in range(num_frames):
