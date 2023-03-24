@@ -9,12 +9,12 @@ import * as THREE from "three";
 
 extend({ MeshLine, MeshLineMaterial });
 
-const axis_geom = new THREE.CylinderGeometry(0.025, 0.025, 1.0, 3, 1);
+const axis_geom = new THREE.CylinderGeometry(0.025, 0.025, 1.0, 16, 1);
 const x_material = new THREE.MeshBasicMaterial({ color: 0xcc0000 });
 const y_material = new THREE.MeshBasicMaterial({ color: 0x00cc00 });
 const z_material = new THREE.MeshBasicMaterial({ color: 0x0000cc });
 
-const origin_geom = new THREE.SphereGeometry(0.05);
+const origin_geom = new THREE.SphereGeometry(0.1);
 const origin_material = new THREE.MeshBasicMaterial({ color: 0xecec00 });
 
 interface CoordinateFrameProps {
@@ -42,25 +42,29 @@ export const CoordinateFrame = React.forwardRef<
       <group ref={ref} quaternion={quaternion} position={position}>
         {show_axes && (
           <>
-            <mesh geometry={origin_geom} material={origin_material} />
+            <mesh
+              geometry={origin_geom}
+              material={origin_material}
+              scale={new THREE.Vector3(scale, scale, scale)}
+            />
             <mesh
               geometry={axis_geom}
               rotation={new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0)}
               position={[0.5 * scale, 0.0, 0.0]}
-              scale={new THREE.Vector3(1.0, scale, 1.0)}
+              scale={new THREE.Vector3(scale, scale, scale)}
               material={x_material}
             />
             <mesh
               geometry={axis_geom}
               position={[0.0, 0.5 * scale, 0.0]}
-              scale={new THREE.Vector3(1.0, scale, 1.0)}
+              scale={new THREE.Vector3(scale, scale, scale)}
               material={y_material}
             />
             <mesh
               geometry={axis_geom}
               rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
               position={[0.0, 0.0, 0.5 * scale]}
-              scale={new THREE.Vector3(1.0, scale, 1.0)}
+              scale={new THREE.Vector3(scale, scale, scale)}
               material={z_material}
             />
           </>
