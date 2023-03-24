@@ -7,7 +7,17 @@ import base64
 import dataclasses
 import functools
 import io
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Tuple, Type
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import imageio.v3 as iio
 import msgpack
@@ -107,7 +117,28 @@ class CameraFrustumMessage(Message):
     name: str
     fov: float
     aspect: float
-    scale: float = 0.3
+    scale: float
+    color: int
+
+    @staticmethod
+    def make(
+        name: str,
+        fov: float,
+        aspect: float,
+        scale: float = 0.3,
+        color: Union[Tuple[int, int, int], Tuple[float, float, float]] = (90, 119, 255),
+    ) -> CameraFrustumMessage:
+        color = tuple(
+            value if isinstance(value, int) else int(value * 255) for value in color
+        )
+        return CameraFrustumMessage(
+            name=name,
+            fov=fov,
+            aspect=aspect,
+            scale=scale,
+            # (255, 255, 255) => 0xffffff, etc
+            color=color[0] * (256**2) + color[1] * 256 + color[2],
+        )
 
 
 @dataclasses.dataclass
@@ -122,7 +153,8 @@ class FrameMessage(Message):
     wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
     show_axes: bool = True
-    scale: float = 0.5
+    axes_length: float = 0.5
+    axes_radius: float = 0.025
 
 
 @dataclasses.dataclass

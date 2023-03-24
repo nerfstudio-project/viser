@@ -17,6 +17,7 @@ export interface CameraFrustumMessage {
   fov: number;
   aspect: number;
   scale: number;
+  color: number;
 }
 export interface FrameMessage {
   type: "frame";
@@ -24,6 +25,8 @@ export interface FrameMessage {
   wxyz: [number, number, number, number];
   position: [number, number, number];
   show_axes: boolean;
+  axes_length: number;
+  axes_radius: number;
   scale: number;
 }
 export interface PointCloudMessage {

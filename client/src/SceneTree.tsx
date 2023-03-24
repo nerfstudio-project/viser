@@ -49,16 +49,16 @@ const rootFrameTemplate: MakeObject = (ref) => (
   />
 );
 const rootAxesTemplate: MakeObject = (ref) => (
-  <CoordinateFrame ref={ref} scale={0.5} />
+  <CoordinateFrame ref={ref} />
 );
 
 const rootNodeTemplate = new SceneNode("", rootFrameTemplate);
-const rootAxesNode = new SceneNode("/axes", rootAxesTemplate);
-rootNodeTemplate.children.push("/axes");
+const rootAxesNode = new SceneNode("/WorldAxes", rootAxesTemplate);
+rootNodeTemplate.children.push("/WorldAxes");
 
 const cleanSceneTreeState = {
-  nodeFromName: { "": rootNodeTemplate, "/axes": rootAxesNode },
-  visibilityFromName: { "": true, "/axes": true },
+  nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
+  visibilityFromName: { "": true, "/WorldAxes": true },
   objFromName: {},
 } as SceneTreeState;
 
