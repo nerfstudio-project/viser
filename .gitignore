@@ -9,3 +9,5 @@ htmlcov
 .mypy_cache
 .dmypy.json
 .hypothesis
+.envrc
+.lvimrc
