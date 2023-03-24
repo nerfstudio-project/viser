@@ -38,11 +38,6 @@ def main(
 
     # Add playback UI.
     with server.gui_folder("Playback"):
-        gui_frames_loaded = server.add_gui_text(
-            "Loaded",
-            initial_value="",
-            disabled=True,
-        )
         gui_timestep = server.add_gui_slider(
             "Timestep",
             min=0,
