@@ -95,7 +95,7 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
       setTimeout(() => {
         cameraThrottleReady.current = true;
         if (cameraThrottleStale.current) sendCamera();
-      }, 10);
+      }, 20);
     } else {
       cameraThrottleStale.current = true;
     }
@@ -223,7 +223,13 @@ function Root() {
   return (
     <Box
       component="div"
-      sx={{ width: "100%", height: "100%", position: "relative" }}
+      sx={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        boxSizing: "border-box",
+        paddingBottom: "2.5em",
+      }}
     >
       <Box
         component="div"
@@ -231,6 +237,7 @@ function Root() {
           position: "fixed",
           bottom: "0",
           width: "100%",
+          height: "2.5em",
           zIndex: "1000",
           backgroundColor: "rgba(255, 255, 255, 0.85)",
           borderTop: "1px solid",
