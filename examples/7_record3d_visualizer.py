@@ -1,3 +1,5 @@
+"""Parse and stream record3d captures. To get the demo data, checkout assets/download_record3d_dance.sh."""
+
 import time
 from pathlib import Path
 from typing import Tuple
