@@ -57,8 +57,8 @@ def main(
             "FPS",
             min=1,
             max=60,
-            step=1,
-            initial_value=30,
+            step=0.1,
+            initial_value=loader.fps,
             disabled=True,
         )
 
@@ -97,7 +97,6 @@ def main(
         show_axes=False,
     )
     for i in tqdm(range(num_frames)):
-        print(i)
         frame = loader.get_frame(i)
         position, color = frame.get_point_cloud(downsample_factor)
         server.add_point_cloud(
@@ -115,10 +114,8 @@ def main(
             aspect=frame.rgb.shape[1] / frame.rgb.shape[0],
             scale=0.1,
         )
-        gui_frames_loaded.set_value(f"{i+1}/{num_frames}")
 
     # Remove loading progress indicator.
-    gui_frames_loaded.remove()
     server.set_scene_node_visibility(f"/axes", False)
 
     # Undisable UI after the frames are loaded.
