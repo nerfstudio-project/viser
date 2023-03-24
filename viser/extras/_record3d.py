@@ -15,6 +15,9 @@ from scipy.spatial.transform import Rotation
 
 
 class Record3dLoader:
+    # NOTE(hangg): Consider moving this module into
+    # `examples/7_record3d_visualizer.py` since it is usecase-specific.
+
     def __init__(self, data_dir: Path):
         metadata_path = data_dir / "metadata"
 
@@ -22,6 +25,7 @@ class Record3dLoader:
         metadata = json.loads(metadata_path.read_text())
 
         K = np.array(metadata["K"], np.float32).reshape(3, 3).T
+        fps = metadata["fps"]
 
         T_world_cameras = np.array(metadata["poses"], np.float32)
         T_world_cameras = np.concatenate(
@@ -34,6 +38,7 @@ class Record3dLoader:
         T_world_cameras = (T_world_cameras @ np.diag([1, -1, -1, 1])).astype(np.float32)
 
         self.K = K
+        self.fps = fps
         self.T_world_cameras = T_world_cameras
 
         rgbd_dir = data_dir / "rgbd"
