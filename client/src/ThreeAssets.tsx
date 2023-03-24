@@ -1,7 +1,12 @@
 import { extend } from "@react-three/fiber";
+import {
+  MeshLineGeometry as MeshLine,
+  MeshLineMaterial,
+  raycast as MeshLineRaycast,
+} from "meshline";
 import React from "react";
-import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "meshline";
 import * as THREE from "three";
+
 extend({ MeshLine, MeshLineMaterial });
 
 const axis_geom = new THREE.CylinderGeometry(0.025, 0.025, 1.0, 3, 1);
