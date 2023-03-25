@@ -187,21 +187,26 @@ server.add_frame(
     f"/frame",
     wxyz=quat_from_mat3(worldup_fix_mat3),
     position=(0.0, 0.0, 0.0),
-    scale=0.1,
+    axes_length=0.05,
+    axes_radius=0.005,
 )
 for i, c2w in enumerate(train_c2ws):
     server.add_frame(
         f"/frame/train/{i}/camera",
         wxyz=quat_from_mat3(c2w[:3, :3]),
         position=tuple(c2w[:3, 3].tolist()),
-        scale=0.1,
+        axes_length=0.05,
+        axes_radius=0.005,
     )
     server.add_camera_frustum(
         f"/frame/train/{i}/camera/frustum",
         fov=2 * np.arctan2(train_img_wh[0] / 2, train_intrin[0, 0]),
         aspect=train_img_wh[0] / train_img_wh[1],
-        scale=0.1,
+        scale=0.03,
     )
+
+
+__import__("ipdb").set_trace()
 
 
 @torch.inference_mode()

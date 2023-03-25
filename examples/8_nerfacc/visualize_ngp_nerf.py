@@ -148,13 +148,14 @@ for i, c2w in enumerate(train_c2ws):
         f"/train/{i}/camera",
         wxyz=quat_from_mat3(c2w[:3, :3]),
         position=tuple(c2w[:3, 3].tolist()),
-        scale=0.1,
+        axes_length=0.1,
+        axes_radius=0.01,
     )
     server.add_camera_frustum(
         f"/train/{i}/camera/frustum",
         fov=2 * np.arctan2(train_img_wh[0] / 2, train_intrin[0, 0]),
         aspect=train_img_wh[0] / train_img_wh[1],
-        scale=0.1,
+        scale=0.2,
     )
 
 
