@@ -1,0 +1,10 @@
+-f https://download.pytorch.org/whl/cu117
+torch==1.13.1
+git+https://github.com/KAIR-BAIR/nerfacc.git@17e28de798dca5d2e2761ff8d514b8b4df26ef6f
+opencv-python
+imageio
+numpy
+tqdm
+scipy
+lpips
+git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
