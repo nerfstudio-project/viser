@@ -1,0 +1,3 @@
+[submodule "examples/8_nerfacc/pycolmap"]
+	path = examples/8_nerfacc/pycolmap
+	url = https://github.com/rmbrualla/pycolmap.git
