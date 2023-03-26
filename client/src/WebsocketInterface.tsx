@@ -8,6 +8,7 @@ import { UseGui } from "./ControlPanel/GuiState";
 import { SceneNode, UseSceneTree } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
 import { Message } from "./WebsocketMessages";
+import { syncSearchParamServer } from "./SearchParamsUtils";
 
 /** React hook for handling incoming messages, and using them for scene tree manipulation. */
 function useMessageHandler(
@@ -254,7 +255,8 @@ function useMessageHandler(
   };
 }
 
-interface WebSocketInterfaceProps {
+interface WebsocketInterfaceProps {
+  panelKey: number;
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: MutableRefObject<WebSocket | null>;
@@ -262,7 +264,7 @@ interface WebSocketInterfaceProps {
 }
 
 /** Component for handling websocket connections. */
-export default function WebsocketInterface(props: WebSocketInterfaceProps) {
+export default function WebsocketInterface(props: WebsocketInterfaceProps) {
   const handleMessage = useMessageHandler(
     props.useSceneTree,
     props.useGui,
@@ -271,6 +273,8 @@ export default function WebsocketInterface(props: WebSocketInterfaceProps) {
 
   const server = props.useGui((state) => state.server);
   const resetGui = props.useGui((state) => state.resetGui);
+
+  syncSearchParamServer(props.panelKey, server);
 
   React.useEffect(() => {
     // Lock for making sure messages are handled in order.
@@ -304,7 +308,9 @@ export default function WebsocketInterface(props: WebSocketInterfaceProps) {
         // Async message handler. This is structured to reduce websocket
         // backpressure.
         const messagePromise = new Promise<Message>(async (resolve) => {
-          resolve(unpack(new Uint8Array(await event.data.arrayBuffer())) as Message);
+          resolve(
+            unpack(new Uint8Array(await event.data.arrayBuffer())) as Message
+          );
         });
 
         // Handle messages in order.

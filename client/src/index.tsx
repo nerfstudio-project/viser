@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { OrbitControls, Environment } from "@react-three/drei";
 import { Canvas, useThree } from "@react-three/fiber";
+
 import React, { MutableRefObject, RefObject, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { OrbitControls as OrbitControls_ } from "three-stdlib";
@@ -25,6 +26,10 @@ import { RemoveCircleRounded, AddCircleRounded } from "@mui/icons-material";
 import WebsocketInterface from "./WebsocketInterface";
 import { useGuiState, UseGui } from "./ControlPanel/GuiState";
 import { pack } from "msgpackr";
+import {
+  getServersFromSearchParams,
+  truncateSearchParamServers,
+} from "./SearchParamsUtils";
 
 interface SynchronizedOrbitControlsProps {
   globalCameras: MutableRefObject<CameraPrimitives>;
@@ -172,16 +177,24 @@ const SingleViewer = React.memo((props: SingleViewerProps) => {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const websocketRef = React.useRef<WebSocket | null>(null);
 
+  // ...
+  const servers = new URLSearchParams(window.location.search).getAll("server");
+  const initialServer =
+    props.panelKey < servers.length
+      ? servers[props.panelKey]
+      : "ws://localhost:8080";
+
   // Declare the scene tree state. This returns a zustand store/hook, which we
   // can pass to any children that need state access.
   const useSceneTree = useSceneTreeState();
-  const useGui = useGuiState();
+  const useGui = useGuiState(initialServer);
 
   // <Stats showPanel={0} className="stats" />
   // <gridHelper args={[10.0, 10]} />
   return (
     <Wrapper ref={wrapperRef}>
       <WebsocketInterface
+        panelKey={props.panelKey}
         useSceneTree={useSceneTree}
         useGui={useGui}
         websocketRef={websocketRef}
@@ -219,8 +232,11 @@ function Root() {
     cameras: [],
     orbitRefs: [],
   });
-  const [panelCount, setPanelCount] = useState(1);
+  const [panelCount, setPanelCount] = useState(
+    Math.max(1, getServersFromSearchParams().length)
+  );
   const isPortrait = useMediaQuery("(orientation: portrait)");
+
   return (
     <Box
       component="div"
@@ -232,48 +248,11 @@ function Root() {
         paddingBottom: "2.5em",
       }}
     >
-      <Box
-        component="div"
-        sx={{
-          position: "fixed",
-          bottom: "0",
-          width: "100%",
-          height: "2.5em",
-          zIndex: "1000",
-          backgroundColor: "rgba(255, 255, 255, 0.85)",
-          borderTop: "1px solid",
-          borderTopColor: "divider",
-        }}
-      >
-        <Grid sx={{ float: "right" }}>
-          <IconButton
-            onClick={() => {
-              setPanelCount(panelCount + 1);
-            }}
-          >
-            <AddCircleRounded />
-          </IconButton>
-          <IconButton
-            disabled={panelCount === 1}
-            onClick={() => {
-              if (panelCount === 1) return;
-              setPanelCount(panelCount - 1);
-            }}
-          >
-            <RemoveCircleRounded />
-          </IconButton>
-          <FormControlLabel
-            control={<Switch />}
-            label="Sync Cameras"
-            defaultChecked={globalCameras.current.synchronize}
-            onChange={(_event, checked) => {
-              globalCameras.current.synchronize = checked;
-            }}
-            sx={{ pl: 1 }}
-            disabled={panelCount === 1}
-          />
-        </Grid>
-      </Box>
+      <PanelController
+        panelCount={panelCount}
+        setPanelCount={setPanelCount}
+        globalCameras={globalCameras}
+      />
       {Array.from({ length: panelCount }, (_, i) => {
         return (
           <Box
@@ -302,6 +281,60 @@ function Root() {
           </Box>
         );
       })}
+    </Box>
+  );
+}
+
+interface PanelControllerProps {
+  panelCount: number;
+  setPanelCount: React.Dispatch<React.SetStateAction<number>>;
+  globalCameras: MutableRefObject<CameraPrimitives>;
+}
+
+function PanelController(props: PanelControllerProps) {
+  return (
+    <Box
+      component="div"
+      sx={{
+        position: "fixed",
+        bottom: "0",
+        width: "100%",
+        height: "2.5em",
+        zIndex: "1000",
+        backgroundColor: "rgba(255, 255, 255, 0.85)",
+        borderTop: "1px solid",
+        borderTopColor: "divider",
+      }}
+    >
+      <Grid sx={{ float: "right" }}>
+        <IconButton
+          onClick={() => {
+            props.setPanelCount(props.panelCount + 1);
+          }}
+        >
+          <AddCircleRounded />
+        </IconButton>
+        <IconButton
+          disabled={props.panelCount === 1}
+          onClick={() => {
+            if (props.panelCount === 1) return;
+            truncateSearchParamServers(props.panelCount - 1);
+            props.setPanelCount(props.panelCount - 1);
+          }}
+        >
+          <RemoveCircleRounded />
+        </IconButton>
+        <FormControlLabel
+          control={<Switch />}
+          label="Sync Cameras"
+          defaultChecked={props.globalCameras.current.synchronize}
+          onChange={(_event, checked) => {
+            props.globalCameras.current.synchronize = checked;
+          }}
+          sx={{ pl: 1 }}
+          disabled={props.panelCount === 1}
+        />
+      </Grid>
     </Box>
   );
 }

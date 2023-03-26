@@ -1,5 +1,5 @@
 import React from "react";
-import create from "zustand";
+import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 interface GuiConfig {
@@ -27,7 +27,7 @@ interface GuiActions {
 
 const cleanGuiState: GuiState = {
   label: "",
-  server: "ws://localhost:8080",
+  server: "ws://localhost:8080", // Currently this will always be overridden.
   websocketConnected: false,
   backgroundAvailable: false,
   guiNames: [],
@@ -35,11 +35,12 @@ const cleanGuiState: GuiState = {
   guiSetQueue: {},
 };
 
-export function useGuiState() {
+export function useGuiState(initialServer: string) {
   return React.useState(() =>
     create(
       immer<GuiState & GuiActions>((set) => ({
         ...cleanGuiState,
+        server: initialServer,
         addGui: (name, guiConfig) =>
           set((state) => {
             state.guiNames.push(name);

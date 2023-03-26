@@ -113,7 +113,6 @@ export const CameraFrustum = React.forwardRef<THREE.Group, CameraFrustumProps>(
   (props, ref) => {
     const y = Math.tan(props.fov / 2.0);
     const x = y * props.aspect;
-    console.log(props.color);
     return (
       <group ref={ref}>
         <mesh
@@ -132,7 +131,6 @@ export const CameraFrustum = React.forwardRef<THREE.Group, CameraFrustumProps>(
             color={props.color}
           />
         </mesh>
-        ;
       </group>
     );
   }
