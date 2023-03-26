@@ -57,7 +57,6 @@ export default function ControlPanel(props: ControlPanelProps) {
     right: 1em;
     margin: 0;
     border-radius: 0.5em;
-    max-height: 90%;
     overflow: auto;
     background-color: rgba(255, 255, 255, 0.9);
     box-sizing: border-box;
@@ -187,34 +186,75 @@ function ControlPanelHandle(props: ControlPanelHandleProps) {
 
   // Logic for "fixing" panel locations, which keeps the control panel within
   // the bounds of the parent div.
-  const unfixedLoc = React.useRef<{ x?: number; y?: number }>({});
+  //
+  // For `unfixedOffset`, we use a negative sign to indicate that the panel is
+  // positioned relative to the right/bottom bound of the parent.
+  const unfixedOffset = React.useRef<{ x?: number; y?: number }>({});
+  const computePanelOffset = (
+    panelPosition: number,
+    panelSize: number,
+    parentSize: number
+  ) =>
+    Math.abs(panelPosition + panelSize / 2.0) <
+    Math.abs(panelPosition - parentSize + panelSize / 2.0)
+      ? panelPosition
+      : panelPosition - parentSize;
+  const panelBoundaryPad = 15;
   function setPanelLocation(x: number, y: number) {
     const panel = props.panelWrapperRef.current!;
     const parent = panel.parentElement!;
 
     let newX = x;
     let newY = y;
-    newX = Math.min(newX, parent.clientWidth - panel.clientWidth - 10);
-    newX = Math.max(newX, 10);
-    newY = Math.min(newY, parent.clientHeight - panel.clientHeight - 10);
-    newY = Math.max(newY, 10);
+
+    newX = Math.min(
+      newX,
+      parent.clientWidth - panel.clientWidth - panelBoundaryPad
+    );
+    newX = Math.max(newX, panelBoundaryPad);
+    newY = Math.min(
+      newY,
+      parent.clientHeight - panel.clientHeight - panelBoundaryPad
+    );
+    newY = Math.max(newY, panelBoundaryPad);
 
     panel.style.top = newY.toString() + "px";
     panel.style.left = newX.toString() + "px";
 
-    return [newX, newY];
+    return [
+      computePanelOffset(newX, panel.clientWidth, parent.clientWidth),
+      computePanelOffset(newY, panel.clientHeight, parent.clientHeight),
+    ];
   }
 
   // Fix locations on resize.
   React.useEffect(() => {
     const panel = props.panelWrapperRef.current!;
     const parent = panel.parentElement!;
+    panel.style.maxHeight =
+      (parent.clientHeight - panelBoundaryPad * 2).toString() + "px";
+
     const observer = new ResizeObserver(() => {
-      if (unfixedLoc.current.x === undefined) {
-        unfixedLoc.current.x = panel.offsetLeft;
-        unfixedLoc.current.y = panel.offsetTop;
+      if (unfixedOffset.current.x === undefined) {
+        unfixedOffset.current.x = computePanelOffset(
+          panel.offsetLeft,
+          panel.clientWidth,
+          parent.clientWidth
+        );
+        unfixedOffset.current.y = computePanelOffset(
+          panel.offsetTop,
+          panel.clientHeight,
+          parent.clientHeight
+        );
       }
-      setPanelLocation(unfixedLoc.current.x!, unfixedLoc.current.y!);
+      panel.style.maxHeight =
+        (parent.clientHeight - panelBoundaryPad * 2).toString() + "px";
+
+      let newX = unfixedOffset.current.x!;
+      let newY = unfixedOffset.current.y!;
+      while (newX < 0) newX += parent.clientWidth;
+      while (newY < 0) newY += parent.clientHeight;
+      setPanelLocation(newX, newY);
     });
     observer.observe(panel);
     observer.observe(parent);
@@ -266,7 +306,7 @@ function ControlPanelHandle(props: ControlPanelHandleProps) {
           state.dragging = true;
           let newX = state.startPosX + deltaX;
           let newY = state.startPosY + deltaY;
-          [unfixedLoc.current.x, unfixedLoc.current.y] = setPanelLocation(
+          [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
             newX,
             newY
           );

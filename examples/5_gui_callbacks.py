@@ -44,7 +44,7 @@ def draw_frame():
         wxyz=(1.0, 0.0, 0.0, 0.0),
         position=pos,
         show_axes=gui_show.value(),
-        scale=5.0,
+        axes_length=5.0,
     )
 
 
