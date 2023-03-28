@@ -3,27 +3,14 @@
 
 from __future__ import annotations
 
-import base64
 import dataclasses
 import functools
-import io
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    ClassVar,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Tuple, Type
 
-import imageio.v3 as iio
 import msgpack
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Literal, assert_never
+from typing_extensions import Literal
 
 if TYPE_CHECKING:
     from ._server import ClientId
@@ -39,17 +26,6 @@ def _prepare_for_serialization(value: Any) -> Any:
         return value.data if value.data.c_contiguous else value.copy().data
     else:
         return value
-
-
-def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
-    """Convert intensity values to uint8. We assume the range [0,1] for floats, and
-    [0,255] for integers."""
-    if colors.dtype != onp.uint8:
-        if onp.issubdtype(colors.dtype, onp.floating):
-            colors = onp.clip(colors * 255.0, 0, 255).astype(onp.uint8)
-        if onp.issubdtype(colors.dtype, onp.integer):
-            colors = onp.clip(colors, 0, 255).astype(onp.uint8)
-    return colors
 
 
 class Message:
@@ -120,26 +96,6 @@ class CameraFrustumMessage(Message):
     scale: float
     color: int
 
-    @staticmethod
-    def make(
-        name: str,
-        fov: float,
-        aspect: float,
-        scale: float = 0.3,
-        color: Union[Tuple[int, int, int], Tuple[float, float, float]] = (90, 119, 255),
-    ) -> CameraFrustumMessage:
-        color = tuple(
-            value if isinstance(value, int) else int(value * 255) for value in color
-        )
-        return CameraFrustumMessage(
-            name=name,
-            fov=fov,
-            aspect=aspect,
-            scale=scale,
-            # (255, 255, 255) => 0xffffff, etc
-            color=color[0] * (256**2) + color[1] * 256 + color[2],
-        )
-
 
 @dataclasses.dataclass
 class FrameMessage(Message):
@@ -169,8 +125,8 @@ class PointCloudMessage(Message):
 
     type: ClassVar[str] = "point_cloud"
     name: str
-    position: onp.ndarray
-    color: onp.ndarray
+    position: onpt.NDArray[onp.float32]
+    color: onpt.NDArray[onp.uint8]
     point_size: float = 0.1
 
     def __post_init__(self):
@@ -178,11 +134,9 @@ class PointCloudMessage(Message):
         assert self.position.shape == self.color.shape
         assert self.position.shape[-1] == 3
 
-        # Canonicalize dtypes.
-        # Positions should be float32, colors should be uint8.
-        if self.position.dtype != onp.float32:
-            self.position = self.position.astype(onp.float32)
-        self.color = _colors_to_uint8(self.color)
+        # Check dtypes.
+        assert self.position.dtype == onp.float32
+        assert self.color.dtype == onp.uint8
 
 
 @dataclasses.dataclass
@@ -194,17 +148,11 @@ class MeshMessage(Message):
 
     type: ClassVar[str] = "mesh"
     name: str
-    vertices: onp.ndarray
-    faces: onp.ndarray
+    vertices: onpt.NDArray[onp.float32]
+    faces: onpt.NDArray[onp.uint32]
 
     def __post_init__(self):
-        if self.vertices.dtype != onp.float32:
-            self.vertices = self.vertices.astype(onp.float32)
-
-        assert onp.issubdtype(self.faces.dtype, onp.integer)
-        if self.faces.dtype != onp.uint32:
-            self.faces = self.faces.astype(onp.uint32)
-
+        # Check shapes.
         assert self.vertices.shape[-1] == 3
         assert self.faces.shape[-1] == 3
 
@@ -216,32 +164,6 @@ class BackgroundImageMessage(Message):
     type: ClassVar[str] = "background_image"
     media_type: Literal["image/jpeg", "image/png"]
     base64_data: str
-
-    @staticmethod
-    def encode(
-        image: onp.ndarray,
-        format: Literal["png", "jpeg"] = "jpeg",
-        quality: Optional[int] = None,
-    ) -> BackgroundImageMessage:
-        image = _colors_to_uint8(image)
-        with io.BytesIO() as data_buffer:
-            if format == "png":
-                media_type = "image/png"
-                iio.imwrite(data_buffer, image, format="PNG")
-            elif format == "jpeg":
-                media_type = "image/jpeg"
-                iio.imwrite(
-                    data_buffer,
-                    image[..., :3],  # Strip alpha.
-                    format="JPEG",
-                    quality=75 if quality is None else quality,
-                )
-            else:
-                assert_never(format)
-
-            base64_data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
-
-        return BackgroundImageMessage(media_type=media_type, base64_data=base64_data)
 
 
 @dataclasses.dataclass
@@ -257,24 +179,6 @@ class ImageMessage(Message):
     base64_data: str
     render_width: float
     render_height: float
-
-    @staticmethod
-    def encode(
-        name: str,
-        image: onp.ndarray,
-        render_width: float,
-        render_height: float,
-        format: Literal["png", "jpeg"] = "jpeg",
-        quality: Optional[int] = None,
-    ) -> ImageMessage:
-        proxy = BackgroundImageMessage.encode(image, format=format, quality=quality)
-        return ImageMessage(
-            name=name,
-            media_type=proxy.media_type,
-            base64_data=proxy.base64_data,
-            render_width=render_width,
-            render_height=render_height,
-        )
 
 
 @dataclasses.dataclass
