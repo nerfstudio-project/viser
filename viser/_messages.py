@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import dataclasses
 import functools
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Tuple, Type, cast
 
 import msgpack
 import numpy as onp
@@ -47,7 +47,15 @@ class Message:
     def deserialize(message: bytes) -> Message:
         """Convert bytes into a Python Message object."""
         mapping = msgpack.unpackb(message)
-        message_type = Message._subclass_from_type_string()[mapping.pop("type")]
+
+        # msgpack deserializes to lists by default, but all of our annotations use
+        # tuples.
+        mapping = {
+            k: tuple(v) if isinstance(v, list) else v for k, v in mapping.items()
+        }
+        message_type = Message._subclass_from_type_string()[
+            cast(str, mapping.pop("type"))
+        ]
         return message_type(**mapping)
 
     @staticmethod
