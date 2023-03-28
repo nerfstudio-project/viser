@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import abc
+import base64
 import contextlib
+import io
 import time
 from typing import (
     TYPE_CHECKING,
@@ -10,12 +12,17 @@ from typing import (
     Dict,
     Generator,
     List,
+    Literal,
     Optional,
     Tuple,
     TypeVar,
+    cast,
 )
 
-from typing_extensions import LiteralString, ParamSpec
+import imageio.v3 as iio
+import numpy as onp
+import numpy.typing as onpt
+from typing_extensions import LiteralString, ParamSpec, assert_never
 
 from . import _messages
 from ._gui import GuiHandle, _GuiHandleState
@@ -27,20 +34,76 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 
 
-# TODO(by): I had to drop a Concatenate[] to make this signature work. Seems like probably a
-# pyright bug?
+# TODO(by): the function signatures below are super redundant. In theory we could just
+# auto-generate signatures with ParamSpec, but support for this is still pretty weak.
+# Hopefully we can strip out a bunch of code in a few months.
 #
-# https://github.com/microsoft/pyright/issues/4813
-def _wrap_message(
-    message_cls: Callable[P, _messages.Message]
-) -> Callable[[Callable], Callable[P, None]]:
-    """Wrap a message type."""
+# Filed by us for pyright:
+#     https://github.com/microsoft/pyright/issues/4813
+#
+# For the (comparatively few) people who use jedi:
+#     https://github.com/davidhalter/jedi/issues/1812
+#
+# def _wrap_message(
+#     message_cls: Callable[P, _messages.Message]
+# ) -> Callable[[Callable], Callable[P, None]]:
+#     """Wrap a message type."""
+#
+#     def inner(self: MessageApi, *args: P.args, **kwargs: P.kwargs) -> None:
+#         message = message_cls(*args, **kwargs)
+#         self._queue(message)
+#
+#     return lambda _: inner  # type: ignore
 
-    def inner(self: MessageApi, *args: P.args, **kwargs: P.kwargs) -> None:
-        message = message_cls(*args, **kwargs)
-        self._queue(message)
 
-    return lambda _: inner  # type: ignore
+def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
+    """Convert intensity values to uint8. We assume the range [0,1] for floats, and
+    [0,255] for integers."""
+    if colors.dtype != onp.uint8:
+        if onp.issubdtype(colors.dtype, onp.floating):
+            colors = onp.clip(colors * 255.0, 0, 255).astype(onp.uint8)
+        if onp.issubdtype(colors.dtype, onp.integer):
+            colors = onp.clip(colors, 0, 255).astype(onp.uint8)
+    return colors
+
+
+def _encode_image_base64(
+    image: onp.ndarray,
+    format: Literal["png", "jpeg"],
+    quality: Optional[int] = None,
+) -> Tuple[Literal["image/png", "image/jpeg"], str]:
+    media_type: Literal["image/png", "image/jpeg"]
+    image = _colors_to_uint8(image)
+    with io.BytesIO() as data_buffer:
+        if format == "png":
+            media_type = "image/png"
+            iio.imwrite(data_buffer, image, format="PNG")
+        elif format == "jpeg":
+            media_type = "image/jpeg"
+            iio.imwrite(
+                data_buffer,
+                image[..., :3],  # Strip alpha.
+                format="JPEG",
+                quality=75 if quality is None else quality,
+            )
+        else:
+            assert_never(format)
+
+        base64_data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
+
+    return media_type, base64_data
+
+
+TVector = TypeVar("TVector", bound=tuple)
+
+
+def _cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
+    if isinstance(vector, tuple):
+        assert len(vector) == length
+        return cast(TVector, vector)
+    else:
+        assert cast(onp.ndarray, vector).shape == (length,)
+        return cast(TVector, tuple(map(float, vector)))
 
 
 IntOrFloat = TypeVar("IntOrFloat", int, float)
@@ -123,7 +186,7 @@ class MessageApi(abc.ABC):
     def add_gui_vector2(
         self,
         name: str,
-        initial_value: Tuple[float, float],
+        initial_value: Tuple[float, float] | onp.ndarray,
         step: Optional[float] = None,
         disabled: bool = False,
     ) -> GuiHandle[Tuple[float, float]]:
@@ -131,14 +194,14 @@ class MessageApi(abc.ABC):
         return _add_gui_impl(
             self,
             name,
-            initial_value,
+            _cast_vector(initial_value, length=2),
             leva_conf={"value": initial_value, "step": step, "disabled": disabled},
         )
 
     def add_gui_vector3(
         self,
         name: str,
-        initial_value: Tuple[float, float, float],
+        initial_value: Tuple[float, float, float] | onp.ndarray,
         step: Optional[float] = None,
         lock: bool = False,
         disabled: bool = False,
@@ -147,7 +210,7 @@ class MessageApi(abc.ABC):
         return _add_gui_impl(
             self,
             name,
-            initial_value,
+            _cast_vector(initial_value, length=3),
             leva_conf={
                 "value": initial_value,
                 "step": step,
@@ -206,41 +269,121 @@ class MessageApi(abc.ABC):
             },
         )
 
-    @_wrap_message(_messages.CameraFrustumMessage.make)
-    def add_camera_frustum(self):
-        ...
+    def add_camera_frustum(
+        self,
+        name: str,
+        fov: float,
+        aspect: float,
+        scale: float = 0.3,
+        color: Tuple[int, int, int]
+        | Tuple[float, float, float]
+        | onp.ndarray = (90, 119, 255),
+    ) -> None:
+        color = tuple(  # type: ignore
+            value if isinstance(value, int) else int(value * 255) for value in color
+        )
+        self._queue(
+            _messages.CameraFrustumMessage(
+                name=name,
+                fov=fov,
+                aspect=aspect,
+                scale=scale,
+                # (255, 255, 255) => 0xffffff, etc
+                color=int(color[0] * (256**2) + color[1] * 256 + color[2]),
+            )
+        )
 
-    @_wrap_message(_messages.FrameMessage)
-    def add_frame(self):
-        ...
+    def add_frame(
+        self,
+        name: str,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray,
+        position: Tuple[float, float, float] | onp.ndarray,
+        show_axes: bool = True,
+        axes_length: float = 0.5,
+        axes_radius: float = 0.025,
+    ) -> None:
+        self._queue(
+            _messages.FrameMessage(
+                name=name,
+                wxyz=_cast_vector(wxyz, length=4),
+                position=_cast_vector(position, length=3),
+                show_axes=show_axes,
+                axes_length=axes_length,
+                axes_radius=axes_radius,
+            )
+        )
 
-    @_wrap_message(_messages.PointCloudMessage)
-    def add_point_cloud(self):
-        ...
+    def add_point_cloud(
+        self,
+        name: str,
+        position: onp.ndarray,
+        color: onp.ndarray,
+        point_size: float = 0.1,
+    ) -> None:
+        self._queue(
+            _messages.PointCloudMessage(
+                name=name,
+                position=position.astype(onp.float32),
+                color=_colors_to_uint8(color),
+                point_size=point_size,
+            )
+        )
 
-    @_wrap_message(_messages.MeshMessage)
-    def add_mesh(self):
-        ...
+    def add_mesh(
+        self,
+        name: str,
+        vertices: onp.ndarray,
+        faces: onp.ndarray,
+    ) -> None:
+        self._queue(
+            _messages.MeshMessage(
+                name,
+                vertices.astype(onp.float32),
+                faces.astype(onp.uint32),
+            )
+        )
 
-    @_wrap_message(_messages.ImageMessage.encode)
-    def add_image(self):
-        ...
+    def set_background_image(
+        self,
+        image: onp.ndarray,
+        format: Literal["png", "jpeg"] = "jpeg",
+        quality: Optional[int] = None,
+    ) -> None:
+        media_type, base64_data = _encode_image_base64(image, format, quality=quality)
+        self._queue(
+            _messages.BackgroundImageMessage(
+                media_type=media_type, base64_data=base64_data
+            )
+        )
 
-    @_wrap_message(_messages.RemoveSceneNodeMessage)
-    def remove_scene_node(self):
-        ...
+    def add_image(
+        self,
+        name: str,
+        image: onp.ndarray,
+        render_width: float,
+        render_height: float,
+        format: Literal["png", "jpeg"] = "jpeg",
+        quality: Optional[int] = None,
+    ) -> None:
+        media_type, base64_data = _encode_image_base64(image, format, quality=quality)
+        self._queue(
+            _messages.ImageMessage(
+                name=name,
+                media_type=media_type,
+                base64_data=base64_data,
+                render_width=render_width,
+                render_height=render_height,
+            )
+        )
 
-    @_wrap_message(_messages.SetSceneNodeVisibilityMessage)
-    def set_scene_node_visibility(self):
-        ...
+    def remove_scene_node(self, name: str) -> None:
+        self._queue(_messages.RemoveSceneNodeMessage(name=name))
 
-    @_wrap_message(_messages.BackgroundImageMessage.encode)
-    def set_background_image(self):
-        ...
+    def set_scene_node_visibility(self, name: str, visible: bool) -> None:
+        self._queue(_messages.SetSceneNodeVisibilityMessage(name=name, visible=visible))
 
-    @_wrap_message(_messages.ResetSceneMessage)
     def reset_scene(self):
-        ...
+        self._queue(_messages.ResetSceneMessage())
 
     def _handle_incoming_message(
         self, client_id: ClientId, message: _messages.Message

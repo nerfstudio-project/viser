@@ -13,16 +13,16 @@ from tqdm.auto import tqdm
 import viser
 
 
-def quat_from_so3(
-    omega: Tuple[float, float, float]
-) -> Tuple[float, float, float, float]:
-    return tuple(onp.roll(Rotation.from_rotvec(onp.array(omega)).as_quat(), 1).tolist())
+def quat_from_so3(omega: Tuple[float, float, float]) -> onp.ndarray:
+    # xyzw => wxyz
+    return onp.roll(Rotation.from_rotvec(onp.array(omega)).as_quat(), 1)
 
 
 def quat_from_mat3(
     mat3: onpt.NDArray[onp.float32],
-) -> Tuple[float, float, float, float]:
-    return tuple(onp.roll(Rotation.from_matrix(mat3).as_quat(), 1).tolist())
+) -> onp.ndarray:
+    # xyzw => wxyz
+    return onp.roll(Rotation.from_matrix(mat3).as_quat(), 1)
 
 
 def main(
@@ -108,7 +108,7 @@ def main(
         server.add_frame(
             f"/frames/t{i}/camera",
             wxyz=quat_from_mat3(frame.T_world_camera[:3, :3]),
-            position=tuple(frame.T_world_camera[:3, 3].tolist()),
+            position=frame.T_world_camera[:3, 3],
             axes_length=0.1,
             axes_radius=0.005,
         )
