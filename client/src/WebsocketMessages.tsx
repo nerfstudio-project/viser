@@ -27,7 +27,6 @@ export interface FrameMessage {
   show_axes: boolean;
   axes_length: number;
   axes_radius: number;
-  scale: number;
 }
 export interface PointCloudMessage {
   type: "point_cloud";
