@@ -1,4 +1,4 @@
-import { unpack } from "msgpackr";
+import { pack, unpack } from "msgpackr";
 import AwaitLock from "await-lock";
 import React, { MutableRefObject, RefObject } from "react";
 import * as THREE from "three";
@@ -7,14 +7,16 @@ import { UseGui } from "./ControlPanel/GuiState";
 
 import { SceneNode, UseSceneTree } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
-import { Message } from "./WebsocketMessages";
+import { Message, TransformControlsUpdateMessage } from "./WebsocketMessages";
 import { syncSearchParamServer } from "./SearchParamsUtils";
+import { Box, PivotControls } from "@react-three/drei";
 
 /** React hook for handling incoming messages, and using them for scene tree manipulation. */
 function useMessageHandler(
   useSceneTree: UseSceneTree,
   useGui: UseGui,
-  wrapperRef: RefObject<HTMLDivElement>
+  wrapperRef: RefObject<HTMLDivElement>,
+  websocketRef: MutableRefObject<WebSocket | null>
 ) {
   const removeSceneNode = useSceneTree((state) => state.removeSceneNode);
   const resetScene = useSceneTree((state) => state.resetScene);
@@ -161,6 +163,43 @@ function useMessageHandler(
         );
         break;
       }
+      case "transform_controls": {
+        const name = message.name;
+        addSceneNodeMakeParents(
+          new SceneNode(message.name, (ref) => (
+            <PivotControls
+              ref={ref}
+              scale={message.scale}
+              lineWidth={message.line_width}
+              fixed={message.fixed}
+              activeAxes={message.active_axes}
+              disableAxes={message.disable_axes}
+              disableSliders={message.disable_sliders}
+              disableRotations={message.disable_rotations}
+              translationLimits={message.translation_limits}
+              rotationLimits={message.rotation_limits}
+              depthTest={message.depth_test}
+              opacity={message.opacity}
+              onDrag={(l, _deltaL, _w, _deltaW) => {
+                const wxyz = new THREE.Quaternion();
+                wxyz.setFromRotationMatrix(l);
+                const position = new THREE.Vector3().setFromMatrixPosition(l);
+                const message: TransformControlsUpdateMessage = {
+                  type: "transform_controls_update",
+                  name: name,
+                  wxyz: [wxyz.w, wxyz.x, wxyz.y, wxyz.z],
+                  position: position.toArray(),
+                };
+
+                // TODO: we should organize the message sending bits better, consolidate throttling, etc.
+                const websocket = websocketRef.current;
+                websocket && websocket.send(pack(message));
+              }}
+            />
+          ))
+        );
+        break;
+      }
       // Add a background image.
       case "background_image": {
         if (wrapperRef.current != null) {
@@ -271,7 +310,8 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
   const handleMessage = useMessageHandler(
     props.useSceneTree,
     props.useGui,
-    props.wrapperRef
+    props.wrapperRef,
+    props.websocketRef
   );
 
   const server = props.useGui((state) => state.server);

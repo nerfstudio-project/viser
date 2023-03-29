@@ -168,6 +168,41 @@ class MeshMessage(Message):
 
 
 @dataclasses.dataclass
+class TransformControlsMessage(Message):
+    """Message for transform gizmos."""
+
+    type: ClassVar[str] = "transform_controls"
+    name: str
+    scale: float
+    line_width: float
+    fixed: bool
+    active_axes: Tuple[bool, bool, bool]
+    disable_axes: bool
+    disable_sliders: bool
+    disable_rotations: bool
+    translation_limits: Tuple[
+        Tuple[float, float], Tuple[float, float], Tuple[float, float]
+    ]
+    rotation_limits: Tuple[
+        Tuple[float, float], Tuple[float, float], Tuple[float, float]
+    ]
+    depth_test: bool
+    opacity: float
+
+
+@dataclasses.dataclass
+class TransformControlsUpdateMessage(Message):
+    """Client -> server message when a transform control is updated.
+
+    As with all other messages, transforms take the `T_parent_local` convention."""
+
+    type: ClassVar[str] = "transform_controls_update"
+    name: str
+    wxyz: Tuple[float, float, float, float]
+    position: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
 class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
