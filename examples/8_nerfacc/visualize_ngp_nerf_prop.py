@@ -206,9 +206,6 @@ for i, c2w in enumerate(train_c2ws):
     )
 
 
-__import__("ipdb").set_trace()
-
-
 @torch.inference_mode()
 def render_image_from_camera(camera: viser.CameraState) -> None:
     # TODO(hangg): Hard-code for now. Should expose it to GUI and/or deternine
@@ -304,13 +301,13 @@ while True:
             def camera_update(client: viser.ClientHandle) -> None:
                 camera = client.get_camera()
                 print("New camera", camera)
-                server.set_background_image(render_image_from_camera(camera))
+                client.set_background_image(render_image_from_camera(camera))
 
             # Show the client ID in the GUI.
             client.add_gui_text("Info", initial_value=f"Client {id}", disabled=True)
 
         camera = client.get_camera()
-        server.set_background_image(render_image_from_camera(camera))
+        client.set_background_image(render_image_from_camera(camera))
         print(f"Camera pose for client {id}")
         print(f"\twxyz: {camera.wxyz}")
         print(f"\tposition: {camera.position}")
