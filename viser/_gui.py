@@ -72,6 +72,8 @@ class GuiHandle(Generic[T]):
         self._impl.update_cb.append(func)
         return func
 
+    # TODO(by): we have get_state(), get_camera(), etc in other parts of the code...
+    # should this be get_value()? Or should the others be state(), camera(), ...?
     def value(self) -> T:
         return self._impl.value
 

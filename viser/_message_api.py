@@ -26,6 +26,7 @@ from typing_extensions import LiteralString, ParamSpec, assert_never
 
 from . import _messages
 from ._gui import GuiHandle, _GuiHandleState
+from ._scene_handle import TransformControlsHandle, _TransformControlsState
 
 if TYPE_CHECKING:
     from ._server import ClientId
@@ -34,15 +35,13 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 
 
-# TODO(by): the function signatures below are super redundant. In theory we could just
-# auto-generate signatures with ParamSpec, but support for this is still pretty weak.
-# Hopefully we can strip out a bunch of code in a few months.
+# TODO(by): the function signatures below are super redundant.
 #
-# Filed by us for pyright:
+# We can strip out a ton of it and replace with a ParamSpec-based decorator factory, but
+# we'd be reliant on a pyright bug fix that only just happened:
 #     https://github.com/microsoft/pyright/issues/4813
 #
-# For the (comparatively few) people who use jedi:
-#     https://github.com/davidhalter/jedi/issues/1812
+# We should probably wait at least until the next pylance version drops.
 #
 # def _wrap_message(
 #     message_cls: Callable[P, _messages.Message]
@@ -118,12 +117,13 @@ class MessageApi(abc.ABC):
 
     def __init__(self) -> None:
         self._handle_state_from_gui_name: Dict[str, _GuiHandleState[Any]] = {}
-        self._incoming_handlers: List[
-            Callable[[ClientId, _messages.Message], None]
-        ] = []
-        self._incoming_handlers.append(
-            lambda client_id, msg: _handle_gui_updates(self, client_id, msg)
-        )
+        self._handle_state_from_transform_controls_name: Dict[
+            str, _TransformControlsState
+        ] = {}
+        self._incoming_handlers: List[Callable[[ClientId, _messages.Message], None]] = [
+            lambda client_id, msg: _handle_gui_updates(self, client_id, msg),
+            lambda client_id, msg: _handle_transform_controls_updates(self, msg),
+        ]
         self._gui_folder_label = "User"
 
     @contextlib.contextmanager
@@ -387,8 +387,59 @@ class MessageApi(abc.ABC):
             )
         )
 
+    def add_transform_controls(
+        self,
+        name: str,
+        scale: float = 1.0,
+        line_width: float = 2.5,
+        fixed: bool = False,
+        active_axes: Tuple[bool, bool, bool] = (True, True, True),
+        disable_axes: bool = False,
+        disable_sliders: bool = False,
+        disable_rotations: bool = False,
+        translation_limits: Tuple[
+            Tuple[float, float], Tuple[float, float], Tuple[float, float]
+        ] = ((-1000.0, 1000.0), (-1000.0, 1000.0), (-1000.0, 1000.0)),
+        rotation_limits: Tuple[
+            Tuple[float, float], Tuple[float, float], Tuple[float, float]
+        ] = ((-1000.0, 1000.0), (-1000.0, 1000.0), (-1000.0, 1000.0)),
+        depth_test: bool = True,
+        opacity: float = 1.0,
+    ) -> TransformControlsHandle:
+        # That decorator factory would be really helpful here...
+        self._queue(
+            _messages.TransformControlsMessage(
+                name=name,
+                scale=scale,
+                line_width=line_width,
+                fixed=fixed,
+                active_axes=active_axes,
+                disable_axes=disable_axes,
+                disable_sliders=disable_sliders,
+                disable_rotations=disable_rotations,
+                translation_limits=translation_limits,
+                rotation_limits=rotation_limits,
+                depth_test=depth_test,
+                opacity=opacity,
+            )
+        )
+
+        state = _TransformControlsState(
+            name=name,
+            api=self,
+            wxyz=(1.0, 0.0, 0.0, 0.0),
+            position=(0.0, 0.0, 0.0),
+            last_updated=time.time(),
+            update_cb=[],
+        )
+        self._handle_state_from_transform_controls_name[name] = state
+        return TransformControlsHandle(state)
+
     def remove_scene_node(self, name: str) -> None:
         self._queue(_messages.RemoveSceneNodeMessage(name=name))
+
+        if name in self._handle_state_from_transform_controls_name:
+            self._handle_state_from_transform_controls_name.pop(name)
 
     def set_scene_node_visibility(self, name: str, visible: bool) -> None:
         self._queue(_messages.SetSceneNodeVisibilityMessage(name=name, visible=visible))
@@ -435,6 +486,29 @@ def _handle_gui_updates(
         cb(GuiHandle(handle_state))
     if handle_state.sync_cb is not None:
         handle_state.sync_cb(client_id, message.value)
+
+
+def _handle_transform_controls_updates(
+    self: MessageApi,
+    message: _messages.Message,
+) -> None:
+    if not isinstance(message, _messages.TransformControlsUpdateMessage):
+        return
+
+    handle_state = self._handle_state_from_transform_controls_name.get(
+        message.name, None
+    )
+    if handle_state is None:
+        return
+
+    # Update state.
+    handle_state.wxyz = message.wxyz
+    handle_state.position = message.position
+    handle_state.last_updated = time.time()
+
+    # Trigger callbacks.
+    for cb in handle_state.update_cb:
+        cb(TransformControlsHandle(handle_state))
 
 
 T = TypeVar("T")

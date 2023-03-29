@@ -148,6 +148,7 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
       maxDistance={200.0}
       enableDamping={false}
       onChange={cameraChangedCallback}
+      makeDefault
     />
   );
 }

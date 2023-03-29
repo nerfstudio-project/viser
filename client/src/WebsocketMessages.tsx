@@ -43,6 +43,27 @@ export interface MeshMessage {
   color: number;
   wireframe: boolean;
 }
+export interface TransformControlsMessage {
+  type: "transform_controls";
+  name: string;
+  scale: number;
+  line_width: number;
+  fixed: boolean;
+  active_axes: [boolean, boolean, boolean];
+  disable_axes: boolean;
+  disable_sliders: boolean;
+  disable_rotations: boolean;
+  translation_limits: [[number, number], [number, number], [number, number]];
+  rotation_limits: [[number, number], [number, number], [number, number]];
+  depth_test: boolean;
+  opacity: number;
+}
+export interface TransformControlsUpdateMessage {
+  type: "transform_controls_update";
+  name: string;
+  wxyz: [number, number, number, number];
+  position: [number, number, number];
+}
 export interface BackgroundImageMessage {
   type: "background_image";
   media_type: "image/jpeg" | "image/png";
@@ -100,6 +121,8 @@ export type Message =
   | FrameMessage
   | PointCloudMessage
   | MeshMessage
+  | TransformControlsMessage
+  | TransformControlsUpdateMessage
   | BackgroundImageMessage
   | ImageMessage
   | RemoveSceneNodeMessage
