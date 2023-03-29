@@ -107,7 +107,7 @@ def _cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
 
 
 IntOrFloat = TypeVar("IntOrFloat", int, float)
-TLiteral = TypeVar("TLiteral", bound=LiteralString)
+TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 
 
 class MessageApi(abc.ABC):
@@ -222,15 +222,15 @@ class MessageApi(abc.ABC):
     def add_gui_select(
         self,
         name: str,
-        options: List[TLiteral],
-        initial_value: Optional[TLiteral] = None,
+        options: List[TLiteralString],
+        initial_value: Optional[TLiteralString] = None,
         disabled: bool = False,
-    ) -> GuiHandle[TLiteral]:
+    ) -> GuiHandle[TLiteralString]:
         """Add a dropdown to the GUI."""
         assert len(options) > 0
         if initial_value is None:
             initial_value = options[0]
-        return _add_gui_impl(
+        out: GuiHandle[TLiteralString] = _add_gui_impl(
             self,
             name,
             initial_value,
@@ -240,6 +240,7 @@ class MessageApi(abc.ABC):
                 "disabled": disabled,
             },
         )
+        return out
 
     def add_gui_slider(
         self,
@@ -334,12 +335,22 @@ class MessageApi(abc.ABC):
         name: str,
         vertices: onp.ndarray,
         faces: onp.ndarray,
+        color: Tuple[int, int, int]
+        | Tuple[float, float, float]
+        | onp.ndarray = (90, 200, 255),
+        wireframe: bool = False,
     ) -> None:
+        color = tuple(  # type: ignore
+            value if isinstance(value, int) else int(value * 255) for value in color
+        )
         self._queue(
             _messages.MeshMessage(
                 name,
                 vertices.astype(onp.float32),
                 faces.astype(onp.uint32),
+                # (255, 255, 255) => 0xffffff, etc
+                color=int(color[0] * (256**2) + color[1] * 256 + color[2]),
+                wireframe=wireframe,
             )
         )
 
@@ -426,13 +437,16 @@ def _handle_gui_updates(
         handle_state.sync_cb(client_id, message.value)
 
 
+T = TypeVar("T")
+
+
 def _add_gui_impl(
     api: MessageApi,
     name: str,
-    initial_value: Any,
+    initial_value: T,
     leva_conf: dict,
     is_button: bool = False,
-) -> GuiHandle[Any]:
+) -> GuiHandle[T]:
     """Private helper for adding a simple GUI element."""
 
     handle_state = _GuiHandleState(

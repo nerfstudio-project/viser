@@ -40,6 +40,8 @@ export interface MeshMessage {
   name: string;
   vertices: ArrayBuffer;
   faces: ArrayBuffer;
+  color: number;
+  wireframe: boolean;
 }
 export interface BackgroundImageMessage {
   type: "background_image";
