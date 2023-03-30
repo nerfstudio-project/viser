@@ -176,6 +176,7 @@ class TransformControlsMessage(Message):
     scale: float
     line_width: float
     fixed: bool
+    auto_transform: bool
     active_axes: Tuple[bool, bool, bool]
     disable_axes: bool
     disable_sliders: bool
@@ -188,6 +189,18 @@ class TransformControlsMessage(Message):
     ]
     depth_test: bool
     opacity: float
+
+
+@dataclasses.dataclass
+class TransformControlsSetMessage(Message):
+    """Server -> client message to set a transform control's pose.
+
+    As with all other messages, transforms take the `T_parent_local` convention."""
+
+    type: ClassVar[str] = "transform_controls_set"
+    name: str
+    wxyz: Tuple[float, float, float, float]
+    position: Tuple[float, float, float]
 
 
 @dataclasses.dataclass

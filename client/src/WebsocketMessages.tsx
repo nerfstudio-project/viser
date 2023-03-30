@@ -49,6 +49,7 @@ export interface TransformControlsMessage {
   scale: number;
   line_width: number;
   fixed: boolean;
+  auto_transform: boolean;
   active_axes: [boolean, boolean, boolean];
   disable_axes: boolean;
   disable_sliders: boolean;
@@ -57,6 +58,12 @@ export interface TransformControlsMessage {
   rotation_limits: [[number, number], [number, number], [number, number]];
   depth_test: boolean;
   opacity: number;
+}
+export interface TransformControlsSetMessage {
+  type: "transform_controls_set";
+  name: string;
+  wxyz: [number, number, number, number];
+  position: [number, number, number];
 }
 export interface TransformControlsUpdateMessage {
   type: "transform_controls_update";
@@ -122,6 +129,7 @@ export type Message =
   | PointCloudMessage
   | MeshMessage
   | TransformControlsMessage
+  | TransformControlsSetMessage
   | TransformControlsUpdateMessage
   | BackgroundImageMessage
   | ImageMessage

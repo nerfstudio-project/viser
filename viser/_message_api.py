@@ -122,7 +122,9 @@ class MessageApi(abc.ABC):
         ] = {}
         self._incoming_handlers: List[Callable[[ClientId, _messages.Message], None]] = [
             lambda client_id, msg: _handle_gui_updates(self, client_id, msg),
-            lambda client_id, msg: _handle_transform_controls_updates(self, msg),
+            lambda client_id, msg: _handle_transform_controls_updates(
+                self, client_id, msg
+            ),
         ]
         self._gui_folder_label = "User"
 
@@ -393,6 +395,7 @@ class MessageApi(abc.ABC):
         scale: float = 1.0,
         line_width: float = 2.5,
         fixed: bool = False,
+        auto_transform: bool = True,
         active_axes: Tuple[bool, bool, bool] = (True, True, True),
         disable_axes: bool = False,
         disable_sliders: bool = False,
@@ -413,6 +416,7 @@ class MessageApi(abc.ABC):
                 scale=scale,
                 line_width=line_width,
                 fixed=fixed,
+                auto_transform=auto_transform,
                 active_axes=active_axes,
                 disable_axes=disable_axes,
                 disable_sliders=disable_sliders,
@@ -424,6 +428,13 @@ class MessageApi(abc.ABC):
             )
         )
 
+        def sync_cb(client_id: ClientId, state: _TransformControlsState) -> None:
+            message = _messages.TransformControlsSetMessage(
+                name=name, wxyz=state.wxyz, position=state.position
+            )
+            message.excluded_self_client = client_id
+            self._queue(message)
+
         state = _TransformControlsState(
             name=name,
             api=self,
@@ -431,6 +442,7 @@ class MessageApi(abc.ABC):
             position=(0.0, 0.0, 0.0),
             last_updated=time.time(),
             update_cb=[],
+            sync_cb=sync_cb,
         )
         self._handle_state_from_transform_controls_name[name] = state
         return TransformControlsHandle(state)
@@ -490,6 +502,7 @@ def _handle_gui_updates(
 
 def _handle_transform_controls_updates(
     self: MessageApi,
+    client_id: ClientId,
     message: _messages.Message,
 ) -> None:
     if not isinstance(message, _messages.TransformControlsUpdateMessage):
@@ -509,6 +522,8 @@ def _handle_transform_controls_updates(
     # Trigger callbacks.
     for cb in handle_state.update_cb:
         cb(TransformControlsHandle(handle_state))
+    if handle_state.sync_cb is not None:
+        handle_state.sync_cb(client_id, handle_state)
 
 
 T = TypeVar("T")

@@ -9,9 +9,39 @@ import { SceneNode, UseSceneTree } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
 import { Message, TransformControlsUpdateMessage } from "./WebsocketMessages";
 import { syncSearchParamServer } from "./SearchParamsUtils";
-import { Box, PivotControls } from "@react-three/drei";
+import { PivotControls } from "@react-three/drei";
 
-/** React hook for handling incoming messages, and using them for scene tree manipulation. */
+/** Returns a function for sending messages, with automatic throttling. */
+export function makeThrottledMessageSender(
+  websocketRef: MutableRefObject<WebSocket | null>,
+  throttleMilliseconds: number
+) {
+  let readyToSend = true;
+  let stale = false;
+  let latestMessage: Message | null = null;
+
+  function send(message: Message) {
+    if (websocketRef.current === null) return;
+    latestMessage = message;
+    if (readyToSend) {
+      console.log("sending");
+      websocketRef.current!.send(pack(message));
+      stale = false;
+      readyToSend = false;
+
+      setTimeout(() => {
+        readyToSend = true;
+        if (!stale) return;
+        send(latestMessage!);
+      }, throttleMilliseconds);
+    } else {
+      stale = true;
+    }
+  }
+  return send;
+}
+
+/** Returns a handler for all incoming messages. */
 function useMessageHandler(
   useSceneTree: UseSceneTree,
   useGui: UseGui,
@@ -165,6 +195,7 @@ function useMessageHandler(
       }
       case "transform_controls": {
         const name = message.name;
+        const sendDragMessage = makeThrottledMessageSender(websocketRef, 25);
         addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => (
             <PivotControls
@@ -172,6 +203,7 @@ function useMessageHandler(
               scale={message.scale}
               lineWidth={message.line_width}
               fixed={message.fixed}
+              autoTransform={message.auto_transform}
               activeAxes={message.active_axes}
               disableAxes={message.disable_axes}
               disableSliders={message.disable_sliders}
@@ -190,14 +222,44 @@ function useMessageHandler(
                   wxyz: [wxyz.w, wxyz.x, wxyz.y, wxyz.z],
                   position: position.toArray(),
                 };
-
-                // TODO: we should organize the message sending bits better, consolidate throttling, etc.
-                const websocket = websocketRef.current;
-                websocket && websocket.send(pack(message));
+                sendDragMessage(message);
               }}
             />
           ))
         );
+        break;
+      }
+      case "transform_controls_set": {
+        const obj = useSceneTree.getState().objFromName[message.name];
+        if (obj !== undefined) {
+          // TODO fix
+          console.log(message.name, obj.matrix);
+          obj.matrix = new THREE.Matrix4()
+            .makeRotationFromQuaternion(
+              new THREE.Quaternion(
+                message.wxyz[1],
+                message.wxyz[2],
+                message.wxyz[3],
+                message.wxyz[0]
+              )
+            )
+            .setPosition(
+              message.position[0],
+              message.position[1],
+              message.position[2]
+            );
+          // obj.rotation.setFromQuaternion(
+          //   new THREE.Quaternion(
+          //     message.wxyz[1],
+          //     message.wxyz[2],
+          //     message.wxyz[3],
+          //     message.wxyz[0]
+          //   )
+          // );
+          // obj.position.setX(message.position[0]);
+          // obj.position.setY(message.position[1]);
+          // obj.position.setZ(message.position[2]);
+        }
         break;
       }
       // Add a background image.

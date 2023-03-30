@@ -12,7 +12,11 @@ from typing import (
     Optional,
     Type,
     TypeVar,
+    Union,
+    cast,
 )
+
+import numpy as onp
 
 from ._messages import GuiRemoveMessage, GuiSetLevaConfMessage, GuiSetValueMessage
 
@@ -80,7 +84,17 @@ class GuiHandle(Generic[T]):
     def last_updated(self) -> float:
         return self._impl.last_updated
 
-    def set_value(self, value: T) -> None:
+    def set_value(self, value: Union[T, onp.ndarray]) -> None:
+        if isinstance(value, onp.ndarray):
+            if value.shape == ():
+                pass
+            elif len(value.shape) == 1:
+                assert isinstance(self._impl.value, tuple)
+                value = cast(T, tuple(value))
+                assert len(value) == len(cast(tuple, self._impl.value))
+            else:
+                assert False, f"{value.shape} should be at most 1D!"
+
         # Send to client, except for buttons.
         if not self._impl.is_button:
             self._impl.api._queue(GuiSetValueMessage(self._impl.name, value))
