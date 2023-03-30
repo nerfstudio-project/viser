@@ -5,6 +5,7 @@ import { UseGui } from "./GuiState";
 import React, { MutableRefObject } from "react";
 import Box from "@mui/material/Box";
 import { pack } from "msgpackr";
+import { makeThrottledMessageSender } from "../WebsocketInterface";
 
 export const levaTheme: LevaCustomTheme = {
   colors: {
@@ -105,6 +106,7 @@ export default function GeneratedControls(props: GeneratedControlsProps) {
       }, levaConf["settings"]);
     } else {
       // Add any other kind of input.
+      const sendUpdate = makeThrottledMessageSender(props.websocketRef, 50);
       guiConfigWithCallbacks[folderName][key] = {
         ...levaConf,
         onChange: (value: any, _propName: any, options: any) => {
@@ -118,7 +120,7 @@ export default function GeneratedControls(props: GeneratedControlsProps) {
             name: key,
             value: value,
           };
-          props.websocketRef.current!.send(pack(message));
+          sendUpdate(message);
         },
       };
     }

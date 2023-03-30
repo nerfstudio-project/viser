@@ -23,9 +23,10 @@ import {
   Switch,
 } from "@mui/material";
 import { RemoveCircleRounded, AddCircleRounded } from "@mui/icons-material";
-import WebsocketInterface from "./WebsocketInterface";
+import WebsocketInterface, {
+  makeThrottledMessageSender,
+} from "./WebsocketInterface";
 import { useGuiState, UseGui } from "./ControlPanel/GuiState";
-import { pack } from "msgpackr";
 import {
   getServersFromSearchParams,
   truncateSearchParamServers,
@@ -40,9 +41,12 @@ interface SynchronizedOrbitControlsProps {
 /** OrbitControls, but synchronized with the server and other panels. */
 function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
   const camera = useThree((state) => state.camera as PerspectiveCamera);
-  const cameraThrottleReady = React.useRef(true);
-  const cameraThrottleStale = React.useRef(false);
   const orbitRef = React.useRef<OrbitControls_>(null);
+
+  const sendCameraThrottled = makeThrottledMessageSender(
+    props.websocketRef,
+    20
+  );
 
   // Callback for sending cameras.
   const sendCamera = React.useCallback(() => {
@@ -73,9 +77,8 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
     };
-    const websocket = props.websocketRef.current;
-    websocket && websocket.send(pack(message));
-  }, [camera, props.websocketRef]);
+    sendCameraThrottled(message);
+  }, [camera, sendCameraThrottled]);
 
   // What do we need to when the camera moves?
   const cameraChangedCallback = React.useCallback(() => {
@@ -93,17 +96,7 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
     }
 
     // If desired, send our camera via websocket.
-    if (cameraThrottleReady.current) {
-      sendCamera();
-      cameraThrottleReady.current = false;
-      cameraThrottleStale.current = false;
-      setTimeout(() => {
-        cameraThrottleReady.current = true;
-        if (cameraThrottleStale.current) sendCamera();
-      }, 20);
-    } else {
-      cameraThrottleStale.current = true;
-    }
+    sendCamera();
   }, [props.globalCameras, camera, sendCamera]);
 
   // Send camera for new connections.
