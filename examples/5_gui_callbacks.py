@@ -29,13 +29,13 @@ with server.gui_folder("Reset"):
 
 
 def draw_frame():
-    axis = gui_axis.value()
+    axis = gui_axis.get_value()
     if axis == "x":
-        pos = (gui_location.value(), 0.0, 0.0)
+        pos = (gui_location.get_value(), 0.0, 0.0)
     elif axis == "y":
-        pos = (0.0, gui_location.value(), 0.0)
+        pos = (0.0, gui_location.get_value(), 0.0)
     elif axis == "z":
-        pos = (0.0, 0.0, gui_location.value())
+        pos = (0.0, 0.0, gui_location.get_value())
     else:
         assert_never(axis)
 
@@ -43,13 +43,13 @@ def draw_frame():
         "/frame",
         wxyz=(1.0, 0.0, 0.0, 0.0),
         position=pos,
-        show_axes=gui_show.value(),
+        show_axes=gui_show.get_value(),
         axes_length=5.0,
     )
 
 
 def draw_points():
-    num_points = gui_num_points.value()
+    num_points = gui_num_points.get_value()
     server.add_point_cloud(
         "/frame/point_cloud",
         position=onp.random.normal(size=(num_points, 3)),
