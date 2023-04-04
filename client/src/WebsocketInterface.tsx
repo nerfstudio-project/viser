@@ -1,5 +1,4 @@
-import { unpack } from "msgpackr";
-import AwaitLock from "await-lock";
+import { pack, unpack } from "msgpackr";
 import React, { MutableRefObject, RefObject } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
@@ -7,14 +6,45 @@ import { UseGui } from "./ControlPanel/GuiState";
 
 import { SceneNode, UseSceneTree } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
-import { Message } from "./WebsocketMessages";
+import { Message, TransformControlsUpdateMessage } from "./WebsocketMessages";
 import { syncSearchParamServer } from "./SearchParamsUtils";
+import { PivotControls } from "@react-three/drei";
 
-/** React hook for handling incoming messages, and using them for scene tree manipulation. */
+/** Returns a function for sending messages, with automatic throttling. */
+export function makeThrottledMessageSender(
+  websocketRef: MutableRefObject<WebSocket | null>,
+  throttleMilliseconds: number
+) {
+  let readyToSend = true;
+  let stale = false;
+  let latestMessage: Message | null = null;
+
+  function send(message: Message) {
+    if (websocketRef.current === null) return;
+    latestMessage = message;
+    if (readyToSend) {
+      websocketRef.current!.send(pack(message));
+      stale = false;
+      readyToSend = false;
+
+      setTimeout(() => {
+        readyToSend = true;
+        if (!stale) return;
+        send(latestMessage!);
+      }, throttleMilliseconds);
+    } else {
+      stale = true;
+    }
+  }
+  return send;
+}
+
+/** Returns a handler for all incoming messages. */
 function useMessageHandler(
   useSceneTree: UseSceneTree,
   useGui: UseGui,
-  wrapperRef: RefObject<HTMLDivElement>
+  wrapperRef: RefObject<HTMLDivElement>,
+  websocketRef: MutableRefObject<WebSocket | null>
 ) {
   const removeSceneNode = useSceneTree((state) => state.removeSceneNode);
   const resetScene = useSceneTree((state) => state.resetScene);
@@ -30,7 +60,6 @@ function useMessageHandler(
     const nodeFromName = useSceneTree.getState().nodeFromName;
     const parent_name = node.name.split("/").slice(0, -1).join("/");
     if (!(parent_name in nodeFromName)) {
-      console.log("remaking parent", parent_name);
       addSceneNodeMakeParents(
         new SceneNode(parent_name, (ref) => (
           <CoordinateFrame ref={ref} show_axes={false} />
@@ -110,7 +139,10 @@ function useMessageHandler(
       case "mesh": {
         const geometry = new THREE.BufferGeometry();
         // TODO(hangg): Should expose color as well.
-        const material = new THREE.MeshStandardMaterial({ color: 0x00e8fc });
+        const material = new THREE.MeshStandardMaterial({
+          color: message.color,
+          wireframe: message.wireframe,
+        });
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -136,7 +168,7 @@ function useMessageHandler(
         );
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
-        addSceneNode(
+        addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => (
             <mesh ref={ref} geometry={geometry} material={material} />
           ))
@@ -156,6 +188,62 @@ function useMessageHandler(
             ></CameraFrustum>
           ))
         );
+        break;
+      }
+      case "transform_controls": {
+        const name = message.name;
+        const sendDragMessage = makeThrottledMessageSender(websocketRef, 25);
+        addSceneNodeMakeParents(
+          new SceneNode(message.name, (ref) => (
+            <PivotControls
+              ref={ref}
+              scale={message.scale}
+              lineWidth={message.line_width}
+              fixed={message.fixed}
+              autoTransform={message.auto_transform}
+              activeAxes={message.active_axes}
+              disableAxes={message.disable_axes}
+              disableSliders={message.disable_sliders}
+              disableRotations={message.disable_rotations}
+              translationLimits={message.translation_limits}
+              rotationLimits={message.rotation_limits}
+              depthTest={message.depth_test}
+              opacity={message.opacity}
+              onDrag={(l, _deltaL, _w, _deltaW) => {
+                const wxyz = new THREE.Quaternion();
+                wxyz.setFromRotationMatrix(l);
+                const position = new THREE.Vector3().setFromMatrixPosition(l);
+                const message: TransformControlsUpdateMessage = {
+                  type: "transform_controls_update",
+                  name: name,
+                  wxyz: [wxyz.w, wxyz.x, wxyz.y, wxyz.z],
+                  position: position.toArray(),
+                };
+                sendDragMessage(message);
+              }}
+            />
+          ))
+        );
+        break;
+      }
+      case "transform_controls_set": {
+        const obj = useSceneTree.getState().objFromName[message.name];
+        if (obj !== undefined) {
+          obj.matrix = new THREE.Matrix4()
+            .makeRotationFromQuaternion(
+              new THREE.Quaternion(
+                message.wxyz[1],
+                message.wxyz[2],
+                message.wxyz[3],
+                message.wxyz[0]
+              )
+            )
+            .setPosition(
+              message.position[0],
+              message.position[1],
+              message.position[2]
+            );
+        }
         break;
       }
       // Add a background image.
@@ -268,7 +356,8 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
   const handleMessage = useMessageHandler(
     props.useSceneTree,
     props.useGui,
-    props.wrapperRef
+    props.wrapperRef,
+    props.websocketRef
   );
 
   const server = props.useGui((state) => state.server);
@@ -277,9 +366,6 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
   syncSearchParamServer(props.panelKey, server);
 
   React.useEffect(() => {
-    // Lock for making sure messages are handled in order.
-    const orderLock = new AwaitLock();
-
     let ws: null | WebSocket = null;
     let done = false;
 
@@ -305,21 +391,10 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
       };
 
       ws.onmessage = async (event) => {
-        // Async message handler. This is structured to reduce websocket
-        // backpressure.
-        const messagePromise = new Promise<Message>(async (resolve) => {
-          resolve(
-            unpack(new Uint8Array(await event.data.arrayBuffer())) as Message
-          );
-        });
-
-        // Handle messages in order.
-        await orderLock.acquireAsync();
-        try {
-          handleMessage(await messagePromise);
-        } finally {
-          orderLock.release();
-        }
+        const message = unpack(
+          new Uint8Array(await event.data.arrayBuffer())
+        ) as Message;
+        handleMessage(message);
       };
     }
 

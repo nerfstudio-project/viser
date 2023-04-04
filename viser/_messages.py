@@ -158,11 +158,61 @@ class MeshMessage(Message):
     name: str
     vertices: onpt.NDArray[onp.float32]
     faces: onpt.NDArray[onp.uint32]
+    color: int
+    wireframe: bool
 
     def __post_init__(self):
         # Check shapes.
         assert self.vertices.shape[-1] == 3
         assert self.faces.shape[-1] == 3
+
+
+@dataclasses.dataclass
+class TransformControlsMessage(Message):
+    """Message for transform gizmos."""
+
+    type: ClassVar[str] = "transform_controls"
+    name: str
+    scale: float
+    line_width: float
+    fixed: bool
+    auto_transform: bool
+    active_axes: Tuple[bool, bool, bool]
+    disable_axes: bool
+    disable_sliders: bool
+    disable_rotations: bool
+    translation_limits: Tuple[
+        Tuple[float, float], Tuple[float, float], Tuple[float, float]
+    ]
+    rotation_limits: Tuple[
+        Tuple[float, float], Tuple[float, float], Tuple[float, float]
+    ]
+    depth_test: bool
+    opacity: float
+
+
+@dataclasses.dataclass
+class TransformControlsSetMessage(Message):
+    """Server -> client message to set a transform control's pose.
+
+    As with all other messages, transforms take the `T_parent_local` convention."""
+
+    type: ClassVar[str] = "transform_controls_set"
+    name: str
+    wxyz: Tuple[float, float, float, float]
+    position: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
+class TransformControlsUpdateMessage(Message):
+    """Client -> server message when a transform control is updated.
+
+    As with all other messages, transforms take the `T_parent_local` convention."""
+
+    type: ClassVar[str] = "transform_controls_update"
+    name: str
+    wxyz: Tuple[float, float, float, float]
+    position: Tuple[float, float, float]
 
 
 @dataclasses.dataclass

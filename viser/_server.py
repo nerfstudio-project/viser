@@ -10,6 +10,7 @@ from typing import Callable, Dict, List, NewType, Optional, Tuple
 import websockets.connection
 import websockets.exceptions
 import websockets.server
+from typing_extensions import override
 from websockets.legacy.server import WebSocketServerProtocol
 
 from ._async_message_buffer import AsyncMessageBuffer
@@ -72,6 +73,7 @@ class ClientHandle(MessageApi):
         self._state.camera_cb.append(callback)
         return callback
 
+    @override
     def _queue(self, message: Message) -> None:
         """Implements message enqueue required by MessageApi.
 
@@ -134,6 +136,7 @@ class ViserServer(MessageApi):
         self._client_lock.release()
         return out
 
+    @override
     def _queue(self, message: Message) -> None:
         """Implements message enqueue required by MessageApi.
 
