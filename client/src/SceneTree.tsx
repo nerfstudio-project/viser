@@ -48,9 +48,7 @@ const rootFrameTemplate: MakeObject = (ref) => (
     )}
   />
 );
-const rootAxesTemplate: MakeObject = (ref) => (
-  <CoordinateFrame ref={ref} />
-);
+const rootAxesTemplate: MakeObject = (ref) => <CoordinateFrame ref={ref} />;
 
 const rootNodeTemplate = new SceneNode("", rootFrameTemplate);
 const rootAxesNode = new SceneNode("/WorldAxes", rootAxesTemplate);
@@ -84,14 +82,11 @@ export function useSceneTreeState() {
         addSceneNode: (node) =>
           set((state) => {
             if (node.name in state.nodeFromName) {
-              console.log("Updating node:", node.name);
               state.nodeFromName[node.name] = {
                 ...node,
                 children: state.nodeFromName[node.name].children,
               };
             } else {
-              console.log("Creating node:", node.name);
-
               const parent_name = node.name.split("/").slice(0, -1).join("/");
               state.nodeFromName[node.name] = node;
               state.nodeFromName[parent_name].children.push(node.name);

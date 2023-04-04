@@ -158,6 +158,8 @@ class MeshMessage(Message):
     name: str
     vertices: onpt.NDArray[onp.float32]
     faces: onpt.NDArray[onp.uint32]
+    color: int
+    wireframe: bool
 
     def __post_init__(self):
         # Check shapes.

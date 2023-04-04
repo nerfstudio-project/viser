@@ -110,7 +110,10 @@ function useMessageHandler(
       case "mesh": {
         const geometry = new THREE.BufferGeometry();
         // TODO(hangg): Should expose color as well.
-        const material = new THREE.MeshStandardMaterial({ color: 0x00e8fc });
+        const material = new THREE.MeshStandardMaterial({
+          color: message.color,
+          wireframe: message.wireframe,
+        });
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -136,7 +139,7 @@ function useMessageHandler(
         );
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
-        addSceneNode(
+        addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => (
             <mesh ref={ref} geometry={geometry} material={material} />
           ))
