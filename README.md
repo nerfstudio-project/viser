@@ -21,20 +21,30 @@ Core features:
 
 ## Setup
 
-#### Client
+```bash
+# Clone the repository.
+https://github.com/brentyi/viser.git
+
+# Install the package.
+cd ./viser
+pip install -e .
+
+# Run an example.
+python ./examples/4_gui.py
+```
+
+After an example is running, you can connect by navigating to
+https://brentyi.github.io/viser/.
+
+## Setup (client development)
+
+This is only needed for client-side development. The hosted viewer should be
+sufficient otherwise.
 
 ```bash
 cd viser/client
 npm install
 npm start
-```
-
-#### Server
-
-```bash
-cd viser/
-pip install -e .
-python ./examples/4_gui.py  # Or other example.
 ```
 
 ---
@@ -93,6 +103,7 @@ Scene tree
   - [ ] Camera write
   - [x] Ensure message ordering
   - [x] Meshes!!
+  - [x] Transform controls
   - [ ] Lights?
   - [x] Set visibility
 

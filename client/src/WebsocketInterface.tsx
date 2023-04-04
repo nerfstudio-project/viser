@@ -1,6 +1,7 @@
 import { pack, unpack } from "msgpackr";
 import React, { MutableRefObject, RefObject } from "react";
 import * as THREE from "three";
+import AwaitLock from "await-lock";
 import { TextureLoader } from "three";
 import { UseGui } from "./ControlPanel/GuiState";
 
@@ -366,6 +367,9 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
   syncSearchParamServer(props.panelKey, server);
 
   React.useEffect(() => {
+    // Lock for making sure messages are handled in order.
+    const orderLock = new AwaitLock();
+
     let ws: null | WebSocket = null;
     let done = false;
 
@@ -391,10 +395,16 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
       };
 
       ws.onmessage = async (event) => {
-        const message = unpack(
-          new Uint8Array(await event.data.arrayBuffer())
-        ) as Message;
-        handleMessage(message);
+        // Handle messages in order. This helps prevent issues where large messages may take much longer to unpack than smaller ones.
+        await orderLock.acquireAsync();
+        try {
+          const message = unpack(
+            new Uint8Array(await event.data.arrayBuffer())
+          ) as Message;
+          handleMessage(message);
+        } finally {
+          orderLock.release();
+        }
       };
     }
 
