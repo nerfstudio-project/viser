@@ -12,7 +12,10 @@ from typing import (
     Optional,
     Type,
     TypeVar,
+    Union,
 )
+
+import numpy as onp
 
 from ._messages import GuiRemoveMessage, GuiSetLevaConfMessage, GuiSetValueMessage
 
@@ -72,19 +75,25 @@ class GuiHandle(Generic[T]):
         self._impl.update_cb.append(func)
         return func
 
+    # TODO(by): we have get_state(), get_camera(), etc in other parts of the code...
+    # should this be get_value()? Or should the others be state(), camera(), ...?
     def value(self) -> T:
         return self._impl.value
 
     def last_updated(self) -> float:
         return self._impl.last_updated
 
-    def set_value(self, value: T) -> None:
+    def set_value(self, value: Union[T, onp.ndarray]) -> None:
+        if isinstance(value, onp.ndarray):
+            assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
+
         # Send to client, except for buttons.
         if not self._impl.is_button:
             self._impl.api._queue(GuiSetValueMessage(self._impl.name, value))
 
-        # Set internal state.
-        self._impl.value = value
+        # Set internal state. We automatically convert numpy arrays to the expected
+        # internal type. (eg 1D arrays to tuples)
+        self._impl.value = type(self._impl.value)(value)  # type: ignore
         self._impl.last_updated = time.time()
 
         # Call update callbacks.

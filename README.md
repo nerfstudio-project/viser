@@ -1,12 +1,28 @@
 # viser
 
-https://user-images.githubusercontent.com/6992947/228734499-87d8a12a-df1a-4511-a4e0-0a46bd8532fd.mov
+`viser` is a library for web-based 3D visualization + Python, inspired by the
+best bits of the
+[Nerfstudio viewer](https://github.com/nerfstudio-project/nerfstudio),
+[Pangolin](https://github.com/stevenlovegrove/Pangolin),
+[rviz](https://wiki.ros.org/rviz/), and
+[meshcat](https://github.com/rdeits/meshcat).
 
+Core features:
+
+- A websocket interface for easy use on remote machines.
+- Visualization primitives: coordinate axes, frustums, point clouds, meshes,
+  images.
+- Python-configurable inputs: buttons, checkboxes, text inputs, sliders,
+  dropdowns, gizmos.
+- Support for multiple panels and view-synchronized connections; helpful for
+  side-by-side comparisons.
+
+---
 
 ## Setup
 
-
 #### Client
+
 ```bash
 cd viser/client
 npm install
@@ -18,12 +34,12 @@ npm start
 ```bash
 cd viser/
 pip install -e .
-python ./examples/4_gui.py  # Or other example
+python ./examples/4_gui.py  # Or other example.
 ```
 
 ---
 
-![pointcloud_preview](./viser.png)
+https://user-images.githubusercontent.com/6992947/228734499-87d8a12a-df1a-4511-a4e0-0a46bd8532fd.mov
 
 ## TODO
 
@@ -89,7 +105,7 @@ Scene tree
 - UI
 
   - [ ] Icons for scene node type
-  - [ ] 
+  - [ ]
 
 - Exporting
   - [x] Background download
