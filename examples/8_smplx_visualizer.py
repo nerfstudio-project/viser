@@ -274,4 +274,4 @@ def joint_transforms_and_parents_from_smpl(model, output):
 
 
 if __name__ == "__main__":
-    tyro.cli(main)
+    tyro.cli(main, description=__doc__)
