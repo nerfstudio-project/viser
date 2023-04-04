@@ -13,7 +13,6 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    cast,
 )
 
 import numpy as onp
@@ -86,21 +85,15 @@ class GuiHandle(Generic[T]):
 
     def set_value(self, value: Union[T, onp.ndarray]) -> None:
         if isinstance(value, onp.ndarray):
-            if value.shape == ():
-                pass
-            elif len(value.shape) == 1:
-                assert isinstance(self._impl.value, tuple)
-                value = cast(T, tuple(value))
-                assert len(value) == len(cast(tuple, self._impl.value))
-            else:
-                assert False, f"{value.shape} should be at most 1D!"
+            assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
 
         # Send to client, except for buttons.
         if not self._impl.is_button:
             self._impl.api._queue(GuiSetValueMessage(self._impl.name, value))
 
-        # Set internal state.
-        self._impl.value = value
+        # Set internal state. We automatically convert numpy arrays to the expected
+        # internal type. (eg 1D arrays to tuples)
+        self._impl.value = type(self._impl.value)(value)  # type: ignore
         self._impl.last_updated = time.time()
 
         # Call update callbacks.
