@@ -280,7 +280,7 @@ class MessageApi(abc.ABC):
         scale: float = 0.3,
         color: Tuple[int, int, int]
         | Tuple[float, float, float]
-        | onp.ndarray = (90, 119, 255),
+        | onp.ndarray = (120, 200, 255),
     ) -> None:
         color = tuple(  # type: ignore
             value if isinstance(value, int) else int(value * 255) for value in color

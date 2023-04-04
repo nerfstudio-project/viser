@@ -395,15 +395,24 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
       };
 
       ws.onmessage = async (event) => {
-        // Handle messages in order. This helps prevent issues where large messages may take much longer to unpack than smaller ones.
-        await orderLock.acquireAsync();
+        // Reduce websocket backprss
+        const messagePromise = new Promise<Message>(async (resolve) => {
+          resolve(
+            unpack(new Uint8Array(await event.data.arrayBuffer())) as Message
+          );
+        });
+
+        // Try our best to handle messages in order. If this takes more than 1 second, we give up. :)
+        let orderLockSuccess = true;
+        await orderLock.acquireAsync({ timeout: 1000 }).catch(() => {
+          console.log("Order lock timed.");
+          orderLockSuccess = false;
+        });
+
         try {
-          const message = unpack(
-            new Uint8Array(await event.data.arrayBuffer())
-          ) as Message;
-          handleMessage(message);
+          handleMessage(await messagePromise);
         } finally {
-          orderLock.release();
+          orderLockSuccess && orderLock.release();
         }
       };
     }
