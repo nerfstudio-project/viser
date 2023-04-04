@@ -1,5 +1,6 @@
 {
   "name": "viewer",
+  "homepage": "https://brentyi.github.io/viser",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
