@@ -86,7 +86,6 @@ export function SceneNodeUI(props: SceneNodeUIProp) {
 
   const mouseEnter = (event: React.MouseEvent) => {
     // On hover, add an object label to the scene.
-    console.log("mouse enter" + sceneNode.name);
     threeObj.add(labelRef.current!);
     event.stopPropagation();
     if (event.buttons !== 0) {

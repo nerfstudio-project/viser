@@ -1,5 +1,4 @@
 import { pack, unpack } from "msgpackr";
-import AwaitLock from "await-lock";
 import React, { MutableRefObject, RefObject } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
@@ -24,7 +23,6 @@ export function makeThrottledMessageSender(
     if (websocketRef.current === null) return;
     latestMessage = message;
     if (readyToSend) {
-      console.log("sending");
       websocketRef.current!.send(pack(message));
       stale = false;
       readyToSend = false;
@@ -62,7 +60,6 @@ function useMessageHandler(
     const nodeFromName = useSceneTree.getState().nodeFromName;
     const parent_name = node.name.split("/").slice(0, -1).join("/");
     if (!(parent_name in nodeFromName)) {
-      console.log("remaking parent", parent_name);
       addSceneNodeMakeParents(
         new SceneNode(parent_name, (ref) => (
           <CoordinateFrame ref={ref} show_axes={false} />
@@ -232,8 +229,6 @@ function useMessageHandler(
       case "transform_controls_set": {
         const obj = useSceneTree.getState().objFromName[message.name];
         if (obj !== undefined) {
-          // TODO fix
-          console.log(message.name, obj.matrix);
           obj.matrix = new THREE.Matrix4()
             .makeRotationFromQuaternion(
               new THREE.Quaternion(
@@ -248,17 +243,6 @@ function useMessageHandler(
               message.position[1],
               message.position[2]
             );
-          // obj.rotation.setFromQuaternion(
-          //   new THREE.Quaternion(
-          //     message.wxyz[1],
-          //     message.wxyz[2],
-          //     message.wxyz[3],
-          //     message.wxyz[0]
-          //   )
-          // );
-          // obj.position.setX(message.position[0]);
-          // obj.position.setY(message.position[1]);
-          // obj.position.setZ(message.position[2]);
         }
         break;
       }
@@ -382,9 +366,6 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
   syncSearchParamServer(props.panelKey, server);
 
   React.useEffect(() => {
-    // Lock for making sure messages are handled in order.
-    const orderLock = new AwaitLock();
-
     let ws: null | WebSocket = null;
     let done = false;
 
@@ -410,21 +391,10 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
       };
 
       ws.onmessage = async (event) => {
-        // Async message handler. This is structured to reduce websocket
-        // backpressure.
-        const messagePromise = new Promise<Message>(async (resolve) => {
-          resolve(
-            unpack(new Uint8Array(await event.data.arrayBuffer())) as Message
-          );
-        });
-
-        // Handle messages in order.
-        await orderLock.acquireAsync();
-        try {
-          handleMessage(await messagePromise);
-        } finally {
-          orderLock.release();
-        }
+        const message = unpack(
+          new Uint8Array(await event.data.arrayBuffer())
+        ) as Message;
+        handleMessage(message);
       };
     }
 
