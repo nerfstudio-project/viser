@@ -68,26 +68,26 @@ def main(
     # Frame step buttons.
     @gui_next_frame.on_update
     def _(_) -> None:
-        gui_timestep.set_value((gui_timestep.value() + 1) % num_frames)
+        gui_timestep.set_value((gui_timestep.get_value() + 1) % num_frames)
 
     @gui_prev_frame.on_update
     def _(_) -> None:
-        gui_timestep.set_value((gui_timestep.value() - 1) % num_frames)
+        gui_timestep.set_value((gui_timestep.get_value() - 1) % num_frames)
 
     # Disable frame controls when we're playing.
     @gui_playing.on_update
     def _(_) -> None:
-        gui_timestep.set_disabled(gui_playing.value())
-        gui_next_frame.set_disabled(gui_playing.value())
-        gui_prev_frame.set_disabled(gui_playing.value())
+        gui_timestep.set_disabled(gui_playing.get_value())
+        gui_next_frame.set_disabled(gui_playing.get_value())
+        gui_prev_frame.set_disabled(gui_playing.get_value())
 
-    prev_timestep = gui_timestep.value()
+    prev_timestep = gui_timestep.get_value()
 
     # Toggle frame visibility when the timestep slider changes.
     @gui_timestep.on_update
     def _(_) -> None:
         nonlocal prev_timestep
-        current_timestep = gui_timestep.value()
+        current_timestep = gui_timestep.get_value()
         server.set_scene_node_visibility(f"/frames/t{current_timestep}", True)
         server.set_scene_node_visibility(f"/frames/t{prev_timestep}", False)
         prev_timestep = current_timestep
@@ -131,15 +131,15 @@ def main(
 
     # Hide all but the current frame.
     for i in range(num_frames):
-        server.set_scene_node_visibility(f"/frames/t{i}", i == gui_timestep.value())
+        server.set_scene_node_visibility(f"/frames/t{i}", i == gui_timestep.get_value())
 
     # Playback update loop.
-    prev_timestep = gui_timestep.value()
+    prev_timestep = gui_timestep.get_value()
     while True:
-        if gui_playing.value():
-            gui_timestep.set_value((gui_timestep.value() + 1) % num_frames)
+        if gui_playing.get_value():
+            gui_timestep.set_value((gui_timestep.get_value() + 1) % num_frames)
 
-        time.sleep(1.0 / gui_framerate.value())
+        time.sleep(1.0 / gui_framerate.get_value())
 
 
 if __name__ == "__main__":

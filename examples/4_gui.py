@@ -57,14 +57,14 @@ while True:
     gui_slider.set_value(counter % 100)
 
     # We can call `value()` to read the current value of an input.
-    xy = gui_vector2.value()
+    xy = gui_vector2.get_value()
     server.add_frame(
         "/controlled_frame",
         wxyz=(1, 0, 0, 0),
         position=xy + (0,),
     )
 
-    size = gui_vector3.value()
+    size = gui_vector3.get_value()
     server.add_point_cloud(
         "/controlled_frame/point_cloud",
         position=point_positions * onp.array(size, dtype=onp.float32),
@@ -72,7 +72,7 @@ while True:
     )
 
     # We can use `set_disabled()` to enable/disable GUI elements.
-    gui_text.set_disabled(gui_checkbox.value())
+    gui_text.set_disabled(gui_checkbox.get_value())
 
     counter += 1
     time.sleep(0.1)

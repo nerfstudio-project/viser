@@ -92,15 +92,15 @@ def main(
         output = model.forward(
             betas=torch.from_numpy(  # type: ignore
                 onp.array(
-                    [b.value() for b in gui_elements.gui_betas], dtype=onp.float32
+                    [b.get_value() for b in gui_elements.gui_betas], dtype=onp.float32
                 )[None, ...]
             ),
             expression=None,
             return_verts=True,
             body_pose=torch.from_numpy(
-                onp.array([j.value() for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
+                onp.array([j.get_value() for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
             ),
-            global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].value(), dtype=onp.float32)[None, ...]),  # type: ignore
+            global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].get_value(), dtype=onp.float32)[None, ...]),  # type: ignore
             return_full_pose=True,
         )
         joint_positions = output.joints.squeeze(axis=0).detach().cpu().numpy()  # type: ignore
@@ -113,7 +113,7 @@ def main(
             "/reoriented/smpl",
             vertices=output.vertices.squeeze(axis=0).detach().cpu().numpy(),  # type: ignore
             faces=model.faces,
-            wireframe=gui_elements.gui_wireframe.value(),
+            wireframe=gui_elements.gui_wireframe.get_value(),
         )
 
         # Update per-joint frames, which are used for transform controls.
@@ -157,7 +157,7 @@ def make_gui_elements(
 
         @gui_show_controls.on_update
         def _(_):
-            add_transform_controls(enabled=gui_show_controls.value())
+            add_transform_controls(enabled=gui_show_controls.get_value())
 
     # GUI elements: shape parameters.
     with server.gui_folder("Shape"):
@@ -250,7 +250,7 @@ def make_gui_elements(
     def sync_transform_controls() -> None:
         """Sync transform controls when a joint angle changes."""
         for t, j in zip(transform_controls, gui_joints):
-            t.set_state(quat_from_so3(j.value()), t.get_state().position)
+            t.set_state(quat_from_so3(j.get_value()), t.get_state().position)
 
     add_transform_controls(enabled=False)
 
