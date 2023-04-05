@@ -2,14 +2,21 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
+import http.server
+import mimetypes
 import threading
 import time
 from asyncio.events import AbstractEventLoop
+from pathlib import Path
 from typing import Callable, Dict, List, NewType, Optional, Tuple
 
+import rich
 import websockets.connection
+import websockets.datastructures
 import websockets.exceptions
 import websockets.server
+from rich.padding import Padding
+from rich.panel import Panel
 from typing_extensions import override
 from websockets.legacy.server import WebSocketServerProtocol
 
@@ -101,6 +108,7 @@ class ViserServer(MessageApi):
         self,
         host: str = "localhost",
         port: int = 8080,
+        http_server: bool = True,
     ):
         super().__init__()
 
@@ -112,7 +120,7 @@ class ViserServer(MessageApi):
         ready_sem = threading.Semaphore(value=1)
         ready_sem.acquire()
         threading.Thread(
-            target=lambda: self._background_worker(host, port, ready_sem),
+            target=lambda: self._background_worker(host, port, ready_sem, http_server),
             daemon=True,
         ).start()
 
@@ -144,7 +152,11 @@ class ViserServer(MessageApi):
         self._broadcast_buffer.push(message)
 
     def _background_worker(
-        self, host: str, port: int, ready_sem: threading.Semaphore
+        self,
+        host: str,
+        port: int,
+        ready_sem: threading.Semaphore,
+        http_server: bool,
     ) -> None:
         # Need to make a new event loop for notebook compatbility.
         event_loop = asyncio.new_event_loop()
@@ -168,8 +180,9 @@ class ViserServer(MessageApi):
                 nonlocal total_connections
                 total_connections += 1
 
-            print(
-                f"Connection opened ({client_id}, {total_connections} total),"
+            rich.print(
+                f"[bold](viser)[/bold] Connection opened ({client_id},"
+                f" {total_connections} total),"
                 f" {len(self._broadcast_buffer.message_from_id)} persistent messages"
             )
 
@@ -204,23 +217,84 @@ class ViserServer(MessageApi):
                 websockets.exceptions.ConnectionClosedError,
             ):
                 # Cleanup.
-                print(f"Connection closed ({client_id}, {total_connections} total)")
+                rich.print(
+                    f"[bold](viser)[/bold] Connection closed ({client_id},"
+                    f" {total_connections} total)"
+                )
                 total_connections -= 1
                 self._client_lock.acquire()
                 self._handle_from_client.pop(client_id)
                 self._client_lock.release()
 
-        # Run server.
-        for i in range(50):
+        # Host client on the same port as the websocket.
+        async def viser_http_server(
+            path: str, request_headers: websockets.datastructures.Headers
+        ) -> Optional[
+            Tuple[http.HTTPStatus, websockets.datastructures.HeadersLike, bytes]
+        ]:
+            # Ignore websocket packets.
+            if request_headers.get("Upgrade") == "websocket":
+                return None
+
+            # Strip out search params, get relative path.
+            path = path.partition("?")[0]
+            relpath = str(Path(path).relative_to("/"))
+            if relpath == ".":
+                relpath = "index.html"
+            source = Path(__file__).absolute().parent / "client" / "build" / relpath
+
+            # Try to read + send over file.
+            try:
+                return (  # type: ignore
+                    http.HTTPStatus.OK,
+                    {
+                        "content-type": mimetypes.MimeTypes().guess_type(relpath)[0],
+                    },
+                    source.read_bytes(),
+                )
+            except FileNotFoundError:
+                return (http.HTTPStatus.NOT_FOUND, {}, b"404")  # type: ignore
+
+        for _ in range(500):
             try:
                 event_loop.run_until_complete(
-                    websockets.server.serve(serve, host, port + i, compression=None)
+                    websockets.server.serve(
+                        serve,
+                        host,
+                        port,
+                        compression=None,
+                        process_request=viser_http_server if http_server else None,
+                    )
                 )
-                print(f"Started websocket server at: {host}:{port+i}")
+                rich.print(
+                    Panel.fit(
+                        Padding(
+                            (
+                                "Started HTTP server at"
+                                f" [bold][link=http://{host}:{port}/]http://{host}:{port}/[/link][/bold]"
+                                if http_server
+                                else (
+                                    "Started websocket server at"
+                                    f" [bold][link=ws://{host}:{port}/]ws://{host}:{port}/[/link][/bold]"
+                                )
+                            ),
+                            1,
+                        ),
+                        title="viser",
+                    )
+                )
                 break
             except OSError:  # Port not available.
+                port += 1
                 continue
+
         event_loop.run_forever()
+
+
+def httpserver(port: int):
+    http.server.HTTPServer(
+        ("", port), http.server.BaseHTTPRequestHandler
+    ).serve_forever()
 
 
 async def _single_connection_producer(

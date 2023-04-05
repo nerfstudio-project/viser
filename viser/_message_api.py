@@ -282,8 +282,9 @@ class MessageApi(abc.ABC):
         | Tuple[float, float, float]
         | onp.ndarray = (120, 200, 255),
     ) -> None:
-        color = tuple(  # type: ignore
-            value if isinstance(value, int) else int(value * 255) for value in color
+        color = tuple(
+            value if isinstance(value, int) else int(value * 255)  # type: ignore
+            for value in color
         )
         self._queue(
             _messages.CameraFrustumMessage(
@@ -342,8 +343,9 @@ class MessageApi(abc.ABC):
         | onp.ndarray = (90, 200, 255),
         wireframe: bool = False,
     ) -> None:
-        color = tuple(  # type: ignore
-            value if isinstance(value, int) else int(value * 255) for value in color
+        color = tuple(
+            value if isinstance(value, int) else int(value * 255)  # type: ignore
+            for value in color
         )
         self._queue(
             _messages.MeshMessage(

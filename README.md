@@ -23,7 +23,7 @@ Core features:
 
 ```bash
 # Clone the repository.
-https://github.com/brentyi/viser.git
+git clone https://github.com/brentyi/viser.git
 
 # Install the package.
 cd ./viser
@@ -33,16 +33,16 @@ pip install -e .
 python ./examples/4_gui.py
 ```
 
-After an example is running, you can connect by navigating to
-https://brentyi.github.io/viser/.
+After an example script is running, you can connect by navigating to the printed
+URL (default: `http://localhost:8080`).
 
 ## Setup (client development)
 
-This is only needed for client-side development. The hosted viewer should be
-sufficient otherwise.
+This is only needed for client-side development. The automatically hosted viewer
+should be sufficient otherwise.
 
 ```bash
-cd viser/client
+cd ./viser/viser/client
 npm install
 npm start
 ```
@@ -82,7 +82,8 @@ Scene tree
 
   - [x] Stateful server
   - [x] Redundant message culling
-  - [ ] Multiple "servers"? Conflicting ports?
+  - [x] Basic handling of conflicting ports
+  - [x] Automatic HTTP server for front-end
 
 - Camera controls
 
@@ -104,7 +105,7 @@ Scene tree
   - [x] Ensure message ordering
   - [x] Meshes!!
   - [x] Transform controls
-  - [ ] Lights?
+  - [x] Environment map
   - [x] Set visibility
 
 - Serialization
@@ -116,9 +117,7 @@ Scene tree
 - UI
 
   - [ ] Icons for scene node type
-  - [ ]
 
 - Exporting
+
   - [x] Background download
-  - [ ] Video export
-  - [ ] SVG export

@@ -120,9 +120,11 @@ def main(
         for i in range(model.NUM_BODY_JOINTS + 1):
             server.add_frame(
                 f"/reoriented/smpl/joint_{i}",
-                wxyz=(1.0, 0.0, 0.0, 0.0)
-                if i == 0
-                else quat_from_mat3(joint_transforms[parents[i], :3, :3]),
+                wxyz=(
+                    (1.0, 0.0, 0.0, 0.0)
+                    if i == 0
+                    else quat_from_mat3(joint_transforms[parents[i], :3, :3])
+                ),
                 position=joint_positions[i],
                 show_axes=False,
             )
