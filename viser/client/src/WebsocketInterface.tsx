@@ -376,7 +376,6 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
     function tryConnect(): void {
       if (done) return;
 
-      // @ts-ignore
       ws = new WebSocket(server);
 
       ws.onopen = () => {
@@ -396,7 +395,7 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
       };
 
       ws.onmessage = async (event) => {
-        // Reduce websocket backprss
+        // Reduce websocket backpressure.
         const messagePromise = new Promise<Message>(async (resolve) => {
           resolve(
             unpack(new Uint8Array(await event.data.arrayBuffer())) as Message
@@ -404,16 +403,14 @@ export default function WebsocketInterface(props: WebsocketInterfaceProps) {
         });
 
         // Try our best to handle messages in order. If this takes more than 1 second, we give up. :)
-        let orderLockSuccess = true;
         await orderLock.acquireAsync({ timeout: 1000 }).catch(() => {
           console.log("Order lock timed.");
-          orderLockSuccess = false;
+          orderLock.release();
         });
-
         try {
           handleMessage(await messagePromise);
         } finally {
-          orderLockSuccess && orderLock.release();
+          orderLock.acquired && orderLock.release();
         }
       };
     }
