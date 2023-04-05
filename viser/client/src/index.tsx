@@ -176,9 +176,7 @@ const SingleViewer = React.memo((props: SingleViewerProps) => {
   const initialServer =
     props.panelKey < servers.length
       ? servers[props.panelKey]
-      : window.location.href.includes("localhost:")
-      ? window.location.href.replace("http://", "ws://")
-      : "ws://localhost:8080";
+      : window.location.href.replace("http://", "ws://");
 
   // Declare the scene tree state. This returns a zustand store/hook, which we
   // can pass to any children that need state access.

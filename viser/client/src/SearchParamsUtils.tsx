@@ -20,11 +20,11 @@ export function syncSearchParamServer(panelKey: number, server: string) {
   // No need to update the URL bar if the websocket port matches the HTTP port.
   // So if we navigate to http://localhost:8081, this should by default connect to ws://localhost:8081.
   if (
-    panelKey == 0 &&
+    panelKey === 0 &&
     window.location.host.includes(
       server.replace("ws://", "").replace("/", "")
     ) &&
-    serverParams.length == 1
+    serverParams.length === 1
   )
     serverParams = [];
 
@@ -33,7 +33,7 @@ export function syncSearchParamServer(panelKey: number, server: string) {
     "Viser",
     // We could use URLSearchParams() to build this string, but that would escape
     // it. We're going to just not escape the string. :)
-    serverParams.length == 0
+    serverParams.length === 0
       ? window.location.href.split("?")[0]
       : "?" + serverParams.map((s) => key + "=" + s).join("&")
   );
