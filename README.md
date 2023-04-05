@@ -1,6 +1,8 @@
+:warning: :warning: :warning: Work-in-progress, a lot of changes planned :warning: :warning: :warning:
+
 # viser
 
-`viser` is a library for web-based 3D visualization + Python, inspired by the
+`viser` is a library for interactive 3D visualization + Python, inspired by the
 best bits of the
 [Nerfstudio viewer](https://github.com/nerfstudio-project/nerfstudio),
 [Pangolin](https://github.com/stevenlovegrove/Pangolin),
@@ -9,15 +11,13 @@ best bits of the
 
 Core features:
 
-- A websocket interface for easy use on remote machines.
+- Web interface for easy use on remote machines.
 - Visualization primitives: coordinate axes, frustums, point clouds, meshes,
-  images.
+  images. More to come.
 - Python-configurable inputs: buttons, checkboxes, text inputs, sliders,
   dropdowns, gizmos.
 - Support for multiple panels and view-synchronized connections; helpful for
   side-by-side comparisons.
-
----
 
 ## Setup
 
@@ -47,7 +47,7 @@ npm install
 npm start
 ```
 
----
+## Interactive SMPL-X Example
 
 https://user-images.githubusercontent.com/6992947/228734499-87d8a12a-df1a-4511-a4e0-0a46bd8532fd.mov
 
