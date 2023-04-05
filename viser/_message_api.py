@@ -140,7 +140,9 @@ class MessageApi(abc.ABC):
 
     def add_gui_button(self, name: str, disabled: bool = False) -> GuiHandle[bool]:
         """Add a button to the GUI. The value of this input is set to `True` every time
-        it is clicked; to detect clicks, we can manually set it back to `False`."""
+        it is clicked; to detect clicks, we can manually set it back to `False`.
+
+        Currently, all button names need to be unique."""
         return _add_gui_impl(
             self,
             name,
@@ -156,9 +158,9 @@ class MessageApi(abc.ABC):
         assert isinstance(initial_value, bool)
         return _add_gui_impl(
             self,
-            name,
+            self._gui_folder_label + "/" + name,
             initial_value,
-            leva_conf={"value": initial_value, "disabled": disabled},
+            leva_conf={"value": initial_value, "label": name, "disabled": disabled},
         )
 
     def add_gui_text(
@@ -168,9 +170,9 @@ class MessageApi(abc.ABC):
         assert isinstance(initial_value, str)
         return _add_gui_impl(
             self,
-            name,
+            self._gui_folder_label + "/" + name,
             initial_value,
-            leva_conf={"value": initial_value, "disabled": disabled},
+            leva_conf={"value": initial_value, "label": name, "disabled": disabled},
         )
 
     def add_gui_number(
@@ -180,9 +182,9 @@ class MessageApi(abc.ABC):
         assert isinstance(initial_value, (int, float))
         return _add_gui_impl(
             self,
-            name,
+            self._gui_folder_label + "/" + name,
             initial_value,
-            leva_conf={"value": initial_value, "disabled": disabled},
+            leva_conf={"value": initial_value, "label": name, "disabled": disabled},
         )
 
     def add_gui_vector2(
@@ -195,9 +197,14 @@ class MessageApi(abc.ABC):
         """Add a length-2 vector input to the GUI."""
         return _add_gui_impl(
             self,
-            name,
+            self._gui_folder_label + "/" + name,
             _cast_vector(initial_value, length=2),
-            leva_conf={"value": initial_value, "step": step, "disabled": disabled},
+            leva_conf={
+                "value": initial_value,
+                "label": name,
+                "step": step,
+                "disabled": disabled,
+            },
         )
 
     def add_gui_vector3(
@@ -211,9 +218,10 @@ class MessageApi(abc.ABC):
         """Add a length-3 vector input to the GUI."""
         return _add_gui_impl(
             self,
-            name,
+            self._gui_folder_label + "/" + name,
             _cast_vector(initial_value, length=3),
             leva_conf={
+                "label": name,
                 "value": initial_value,
                 "step": step,
                 "lock": lock,
@@ -234,10 +242,11 @@ class MessageApi(abc.ABC):
             initial_value = options[0]
         out: GuiHandle[TLiteralString] = _add_gui_impl(
             self,
-            name,
+            self._gui_folder_label + "/" + name,
             initial_value,
             leva_conf={
                 "value": initial_value,
+                "label": name,
                 "options": options,
                 "disabled": disabled,
             },
@@ -261,10 +270,11 @@ class MessageApi(abc.ABC):
 
         return _add_gui_impl(
             self,
-            name,
+            self._gui_folder_label + "/" + name,
             initial_value,
             leva_conf={
                 "value": initial_value,
+                "label": name,
                 "min": min,
                 "max": max,
                 "step": step,
@@ -280,7 +290,7 @@ class MessageApi(abc.ABC):
         scale: float = 0.3,
         color: Tuple[int, int, int]
         | Tuple[float, float, float]
-        | onp.ndarray = (120, 200, 255),
+        | onp.ndarray = (80, 120, 255),
     ) -> None:
         color = tuple(
             value if isinstance(value, int) else int(value * 255)  # type: ignore

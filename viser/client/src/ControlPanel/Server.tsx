@@ -23,7 +23,7 @@ export default function ServerControls(props: ServerControlsProps) {
         value: label,
         onChange: (value) => props.useGui.setState({ label: value }),
       },
-      URL: {
+      ["Websocket"]: {
         value: server,
         onChange: (value) => props.useGui.setState({ server: value }),
       },

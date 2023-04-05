@@ -15,8 +15,9 @@ import websockets.connection
 import websockets.datastructures
 import websockets.exceptions
 import websockets.server
-from rich.padding import Padding
+from rich import box, style
 from rich.panel import Panel
+from rich.table import Table
 from typing_extensions import override
 from websockets.legacy.server import WebSocketServerProtocol
 
@@ -266,27 +267,24 @@ class ViserServer(MessageApi):
                         process_request=viser_http_server if http_server else None,
                     )
                 )
-                rich.print(
-                    Panel.fit(
-                        Padding(
-                            (
-                                "Started HTTP server at"
-                                f" [bold][link=http://{host}:{port}/]http://{host}:{port}/[/link][/bold]"
-                                if http_server
-                                else (
-                                    "Started websocket server at"
-                                    f" [bold][link=ws://{host}:{port}/]ws://{host}:{port}/[/link][/bold]"
-                                )
-                            ),
-                            1,
-                        ),
-                        title="viser",
-                    )
-                )
                 break
             except OSError:  # Port not available.
                 port += 1
                 continue
+
+        http_url = f"http://{host}:{port}"
+        ws_url = f"ws://{host}:{port}"
+
+        table = Table(
+            title=None,
+            show_header=False,
+            box=box.MINIMAL,
+            title_style=style.Style(bold=True),
+        )
+        table.add_row("HTTP", f"[link={http_url}]{http_url}[/link]")
+        table.add_row("Websocket", f"[link={ws_url}]{ws_url}[/link]")
+
+        rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
 
         event_loop.run_forever()
 
