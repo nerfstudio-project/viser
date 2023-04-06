@@ -38,14 +38,15 @@ with server.gui_folder("Editable"):
         step=0.25,
         lock=True,
     )
-    gui_text = server.add_gui_text(
-        "Text",
-        initial_value="Hello world",
-    )
-    gui_checkbox = server.add_gui_checkbox(
-        "Disable text",
-        initial_value=False,
-    )
+    with server.gui_folder("Text toggle"):
+        gui_text = server.add_gui_text(
+            "Text",
+            initial_value="Hello world",
+        )
+        gui_checkbox = server.add_gui_checkbox(
+            "Disable text",
+            initial_value=False,
+        )
 
 # Pre-generate a point cloud to send.
 point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(500, 3))

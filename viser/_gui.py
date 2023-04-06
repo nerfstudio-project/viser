@@ -37,8 +37,8 @@ class _GuiHandleState(Generic[T]):
     value: T
     last_updated: float
 
-    folder_label: str
-    """Name of the folder this GUI input was placed into."""
+    folder_labels: List[str]
+    """Name of the folders this GUI input was placed into."""
 
     update_cb: List[Callable[[GuiHandle[T]], None]]
     """Registered functions to call when this input is updated."""
