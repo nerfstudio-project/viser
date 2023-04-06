@@ -13,12 +13,14 @@ server = viser.ViserServer()
 with server.gui_folder("Control"):
     gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
     gui_axis = server.add_gui_select("Axis", options=["x", "y", "z"])
-    gui_location = server.add_gui_slider(
-        "Location", min=-5.0, max=5.0, step=0.05, initial_value=0.0
-    )
-    gui_num_points = server.add_gui_slider(
-        "# Points", min=1000, max=200_000, step=1000, initial_value=10_000
-    )
+
+    with server.gui_folder("Sliders"):
+        gui_location = server.add_gui_slider(
+            "Location", min=-5.0, max=5.0, step=0.05, initial_value=0.0
+        )
+        gui_num_points = server.add_gui_slider(
+            "# Points", min=1000, max=200_000, step=1000, initial_value=10_000
+        )
 
 with server.gui_folder("Reset"):
     gui_button = server.add_gui_button("Reset")

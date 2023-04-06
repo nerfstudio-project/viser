@@ -126,17 +126,16 @@ class MessageApi(abc.ABC):
                 self, client_id, msg
             ),
         ]
-        self._gui_folder_label = "User"
+        self._gui_folder_labels: List[str] = []
 
     @contextlib.contextmanager
     def gui_folder(self, label: str) -> Generator[None, None, None]:
         """Context for placing all GUI elements into a particular folder.
 
         We currently only support one folder level."""
-        old_folder_label = self._gui_folder_label
-        self._gui_folder_label = label
+        self._gui_folder_labels.append(label)
         yield
-        self._gui_folder_label = old_folder_label
+        assert self._gui_folder_labels.pop() == label
 
     def add_gui_button(self, name: str, disabled: bool = False) -> GuiHandle[bool]:
         """Add a button to the GUI. The value of this input is set to `True` every time
@@ -158,7 +157,7 @@ class MessageApi(abc.ABC):
         assert isinstance(initial_value, bool)
         return _add_gui_impl(
             self,
-            self._gui_folder_label + "/" + name,
+            "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={"value": initial_value, "label": name, "disabled": disabled},
         )
@@ -170,7 +169,7 @@ class MessageApi(abc.ABC):
         assert isinstance(initial_value, str)
         return _add_gui_impl(
             self,
-            self._gui_folder_label + "/" + name,
+            "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={"value": initial_value, "label": name, "disabled": disabled},
         )
@@ -182,7 +181,7 @@ class MessageApi(abc.ABC):
         assert isinstance(initial_value, (int, float))
         return _add_gui_impl(
             self,
-            self._gui_folder_label + "/" + name,
+            "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={"value": initial_value, "label": name, "disabled": disabled},
         )
@@ -197,7 +196,7 @@ class MessageApi(abc.ABC):
         """Add a length-2 vector input to the GUI."""
         return _add_gui_impl(
             self,
-            self._gui_folder_label + "/" + name,
+            "/".join(self._gui_folder_labels + [name]),
             _cast_vector(initial_value, length=2),
             leva_conf={
                 "value": initial_value,
@@ -218,7 +217,7 @@ class MessageApi(abc.ABC):
         """Add a length-3 vector input to the GUI."""
         return _add_gui_impl(
             self,
-            self._gui_folder_label + "/" + name,
+            "/".join(self._gui_folder_labels + [name]),
             _cast_vector(initial_value, length=3),
             leva_conf={
                 "label": name,
@@ -242,7 +241,7 @@ class MessageApi(abc.ABC):
             initial_value = options[0]
         out: GuiHandle[TLiteralString] = _add_gui_impl(
             self,
-            self._gui_folder_label + "/" + name,
+            "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={
                 "value": initial_value,
@@ -270,7 +269,7 @@ class MessageApi(abc.ABC):
 
         return _add_gui_impl(
             self,
-            self._gui_folder_label + "/" + name,
+            "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={
                 "value": initial_value,
@@ -556,7 +555,7 @@ def _add_gui_impl(
         api=api,
         value=initial_value,
         last_updated=time.time(),
-        folder_label=api._gui_folder_label,
+        folder_labels=api._gui_folder_labels,
         update_cb=[],
         leva_conf=leva_conf,
         is_button=is_button,
@@ -579,7 +578,7 @@ def _add_gui_impl(
     api._queue(
         _messages.GuiAddMessage(
             name=name,
-            folder=api._gui_folder_label,
+            folder_labels=tuple(api._gui_folder_labels),
             leva_conf=leva_conf,
         )
     )
