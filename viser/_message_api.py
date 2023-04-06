@@ -15,6 +15,7 @@ from typing import (
     Literal,
     Optional,
     Tuple,
+    Type,
     TypeVar,
     cast,
 )
@@ -93,6 +94,7 @@ def _encode_image_base64(
     return media_type, base64_data
 
 
+T = TypeVar("T")
 TVector = TypeVar("TVector", bound=tuple)
 
 
@@ -120,12 +122,14 @@ class MessageApi(abc.ABC):
         self._handle_state_from_transform_controls_name: Dict[
             str, _TransformControlsState
         ] = {}
-        self._incoming_handlers: List[Callable[[ClientId, _messages.Message], None]] = [
-            lambda client_id, msg: _handle_gui_updates(self, client_id, msg),
-            lambda client_id, msg: _handle_transform_controls_updates(
-                self, client_id, msg
-            ),
-        ]
+        self._incoming_handlers: Dict[
+            Type[_messages.Message], List[Callable[[ClientId, _messages.Message], None]]
+        ] = {
+            _messages.GuiUpdateMessage: [self._handle_gui_updates],
+            _messages.TransformControlsUpdateMessage: [
+                self._handle_transform_controls_updates
+            ],
+        }
         self._gui_folder_labels: List[str] = []
 
     @contextlib.contextmanager
@@ -142,8 +146,7 @@ class MessageApi(abc.ABC):
         it is clicked; to detect clicks, we can manually set it back to `False`.
 
         Currently, all button names need to be unique."""
-        return _add_gui_impl(
-            self,
+        return self._add_gui_impl(
             name,
             initial_value=False,
             leva_conf={"type": "BUTTON", "settings": {"disabled": disabled}},
@@ -155,8 +158,7 @@ class MessageApi(abc.ABC):
     ) -> GuiHandle[bool]:
         """Add a checkbox to the GUI."""
         assert isinstance(initial_value, bool)
-        return _add_gui_impl(
-            self,
+        return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={"value": initial_value, "label": name, "disabled": disabled},
@@ -167,8 +169,7 @@ class MessageApi(abc.ABC):
     ) -> GuiHandle[str]:
         """Add a text input to the GUI."""
         assert isinstance(initial_value, str)
-        return _add_gui_impl(
-            self,
+        return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={"value": initial_value, "label": name, "disabled": disabled},
@@ -179,8 +180,7 @@ class MessageApi(abc.ABC):
     ) -> GuiHandle[IntOrFloat]:
         """Add a number input to the GUI."""
         assert isinstance(initial_value, (int, float))
-        return _add_gui_impl(
-            self,
+        return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={"value": initial_value, "label": name, "disabled": disabled},
@@ -194,8 +194,7 @@ class MessageApi(abc.ABC):
         disabled: bool = False,
     ) -> GuiHandle[Tuple[float, float]]:
         """Add a length-2 vector input to the GUI."""
-        return _add_gui_impl(
-            self,
+        return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             _cast_vector(initial_value, length=2),
             leva_conf={
@@ -215,8 +214,7 @@ class MessageApi(abc.ABC):
         disabled: bool = False,
     ) -> GuiHandle[Tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI."""
-        return _add_gui_impl(
-            self,
+        return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             _cast_vector(initial_value, length=3),
             leva_conf={
@@ -239,8 +237,7 @@ class MessageApi(abc.ABC):
         assert len(options) > 0
         if initial_value is None:
             initial_value = options[0]
-        out: GuiHandle[TLiteralString] = _add_gui_impl(
-            self,
+        out: GuiHandle[TLiteralString] = self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={
@@ -267,8 +264,7 @@ class MessageApi(abc.ABC):
             assert step <= (max - min)
         assert max >= initial_value >= min
 
-        return _add_gui_impl(
-            self,
+        return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={
@@ -473,113 +469,99 @@ class MessageApi(abc.ABC):
     def _handle_incoming_message(
         self, client_id: ClientId, message: _messages.Message
     ) -> None:
-        for cb in self._incoming_handlers:
-            cb(client_id, message)
+        """Handle incoming messages."""
+        if type(message) in self._incoming_handlers:
+            for cb in self._incoming_handlers[type(message)]:
+                cb(client_id, message)
 
     @abc.abstractmethod
     def _queue(self, message: _messages.Message) -> None:
         """Abstract method for sending messages."""
         ...
 
+    def _handle_gui_updates(
+        self, client_id: ClientId, message: _messages.Message
+    ) -> None:
+        assert isinstance(message, _messages.GuiUpdateMessage)
 
-def _handle_gui_updates(
-    self: MessageApi,
-    client_id: ClientId,
-    message: _messages.Message,
-) -> None:
-    if not isinstance(message, _messages.GuiUpdateMessage):
-        return
+        handle_state = self._handle_state_from_gui_name.get(message.name, None)
+        if handle_state is None:
+            return
 
-    handle_state = self._handle_state_from_gui_name.get(message.name, None)
-    if handle_state is None:
-        return
+        # Only call update when value has actually changed.
+        if not handle_state.is_button and message.value == handle_state.value:
+            return
 
-    # Only call update when value has actually changed.
-    if not handle_state.is_button and message.value == handle_state.value:
-        return
+        value = handle_state.typ(message.value)
 
-    value = handle_state.typ(message.value)
+        # Update state.
+        handle_state.value = value
+        handle_state.last_updated = time.time()
 
-    # Update state.
-    handle_state.value = value
-    handle_state.last_updated = time.time()
+        # Trigger callbacks.
+        for cb in handle_state.update_cb:
+            cb(GuiHandle(handle_state))
+        if handle_state.sync_cb is not None:
+            handle_state.sync_cb(client_id, message.value)
 
-    # Trigger callbacks.
-    for cb in handle_state.update_cb:
-        cb(GuiHandle(handle_state))
-    if handle_state.sync_cb is not None:
-        handle_state.sync_cb(client_id, message.value)
+    def _handle_transform_controls_updates(
+        self, client_id: ClientId, message: _messages.Message
+    ) -> None:
+        assert isinstance(message, _messages.TransformControlsUpdateMessage)
 
-
-def _handle_transform_controls_updates(
-    self: MessageApi,
-    client_id: ClientId,
-    message: _messages.Message,
-) -> None:
-    if not isinstance(message, _messages.TransformControlsUpdateMessage):
-        return
-
-    handle_state = self._handle_state_from_transform_controls_name.get(
-        message.name, None
-    )
-    if handle_state is None:
-        return
-
-    # Update state.
-    handle_state.wxyz = message.wxyz
-    handle_state.position = message.position
-    handle_state.last_updated = time.time()
-
-    # Trigger callbacks.
-    for cb in handle_state.update_cb:
-        cb(TransformControlsHandle(handle_state))
-    if handle_state.sync_cb is not None:
-        handle_state.sync_cb(client_id, handle_state)
-
-
-T = TypeVar("T")
-
-
-def _add_gui_impl(
-    api: MessageApi,
-    name: str,
-    initial_value: T,
-    leva_conf: dict,
-    is_button: bool = False,
-) -> GuiHandle[T]:
-    """Private helper for adding a simple GUI element."""
-
-    handle_state = _GuiHandleState(
-        name,
-        typ=type(initial_value),
-        api=api,
-        value=initial_value,
-        last_updated=time.time(),
-        folder_labels=api._gui_folder_labels,
-        update_cb=[],
-        leva_conf=leva_conf,
-        is_button=is_button,
-    )
-    api._handle_state_from_gui_name[name] = handle_state
-    handle_state.cleanup_cb = lambda: api._handle_state_from_gui_name.pop(name)
-
-    # For broadcasted GUI handles, we should synchronize all clients.
-    from ._server import ViserServer
-
-    if not is_button and isinstance(api, ViserServer):
-
-        def sync_other_clients(client_id: ClientId, value: Any) -> None:
-            message = _messages.GuiSetValueMessage(name=name, value=value)
-            message.excluded_self_client = client_id
-            api._queue(message)
-
-        handle_state.sync_cb = sync_other_clients
-
-    api._queue(
-        _messages.GuiAddMessage(
-            name=name,
-            folder_labels=tuple(api._gui_folder_labels),
-            leva_conf=leva_conf,
+        handle_state = self._handle_state_from_transform_controls_name.get(
+            message.name, None
         )
-    )
-    return GuiHandle(handle_state)
+        if handle_state is None:
+            return
+
+        # Update state.
+        handle_state.wxyz = message.wxyz
+        handle_state.position = message.position
+        handle_state.last_updated = time.time()
+
+        # Trigger callbacks.
+        for cb in handle_state.update_cb:
+            cb(TransformControlsHandle(handle_state))
+        if handle_state.sync_cb is not None:
+            handle_state.sync_cb(client_id, handle_state)
+
+    def _add_gui_impl(
+        self, name: str, initial_value: T, leva_conf: dict, is_button: bool = False
+    ) -> GuiHandle[T]:
+        """Private helper for adding a simple GUI element."""
+
+        handle_state = _GuiHandleState(
+            name,
+            typ=type(initial_value),
+            api=self,
+            value=initial_value,
+            last_updated=time.time(),
+            folder_labels=self._gui_folder_labels,
+            update_cb=[],
+            leva_conf=leva_conf,
+            is_button=is_button,
+        )
+        self._handle_state_from_gui_name[name] = handle_state
+        handle_state.cleanup_cb = lambda: self._handle_state_from_gui_name.pop(name)
+
+        # For broadcasted GUI handles, we should synchronize all clients.
+        from ._server import ViserServer
+
+        if not is_button and isinstance(self, ViserServer):
+
+            def sync_other_clients(client_id: ClientId, value: Any) -> None:
+                message = _messages.GuiSetValueMessage(name=name, value=value)
+                message.excluded_self_client = client_id
+                self._queue(message)
+
+            handle_state.sync_cb = sync_other_clients
+
+        self._queue(
+            _messages.GuiAddMessage(
+                name=name,
+                folder_labels=tuple(self._gui_folder_labels),
+                leva_conf=leva_conf,
+            )
+        )
+        return GuiHandle(handle_state)

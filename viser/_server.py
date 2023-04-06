@@ -68,7 +68,7 @@ class ClientHandle(MessageApi):
             for cb in self._state.camera_cb:
                 cb(self)
 
-        self._incoming_handlers.append(handle_camera)
+        self._incoming_handlers[ViewerCameraMessage] = [handle_camera]
 
     def get_camera(self) -> CameraState:
         while self._state.camera_info is None:
