@@ -15,6 +15,7 @@ from typing import (
     Literal,
     Optional,
     Tuple,
+    Type,
     TypeVar,
     cast,
 )
@@ -120,12 +121,12 @@ class MessageApi(abc.ABC):
         self._handle_state_from_transform_controls_name: Dict[
             str, _TransformControlsState
         ] = {}
-        self._incoming_handlers: List[Callable[[ClientId, _messages.Message], None]] = [
-            lambda client_id, msg: _handle_gui_updates(self, client_id, msg),
-            lambda client_id, msg: _handle_transform_controls_updates(
-                self, client_id, msg
-            ),
-        ]
+        self._incoming_handlers: Dict[Type[_messages.Message], List[Callable[[ClientId, _messages.Message], None]]] = {
+            _messages.GuiUpdateMessage: [lambda client_id, msg: _handle_gui_updates(self, client_id, msg)],
+            _messages.TransformControlsUpdateMessage: [
+                lambda client_id, msg: _handle_transform_controls_updates(self, client_id, msg)
+            ],
+        }
         self._gui_folder_labels: List[str] = []
 
     @contextlib.contextmanager
@@ -470,11 +471,11 @@ class MessageApi(abc.ABC):
     def reset_scene(self):
         self._queue(_messages.ResetSceneMessage())
 
-    def _handle_incoming_message(
-        self, client_id: ClientId, message: _messages.Message
-    ) -> None:
-        for cb in self._incoming_handlers:
-            cb(client_id, message)
+    def _handle_incoming_message(self, client_id: ClientId, message: _messages.Message) -> None:
+        """ Handle incoming messages. """
+        if type(message) in self._incoming_handlers:
+            for cb in self._incoming_handlers[type(message)]:
+                cb(client_id, message)
 
     @abc.abstractmethod
     def _queue(self, message: _messages.Message) -> None:
