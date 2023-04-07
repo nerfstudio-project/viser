@@ -125,11 +125,10 @@ export function useSceneTreeState() {
 /** Type corresponding to a zustand-style useSceneTree hook. */
 export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
 
-interface SceneNodeThreeChildrenProps {
+function SceneNodeThreeChildren(props: {
   name: string;
   useSceneTree: UseSceneTree;
-}
-function SceneNodeThreeChildren(props: SceneNodeThreeChildrenProps) {
+}) {
   const children = props.useSceneTree(
     (state) => state.nodeFromName[props.name].children
   );
@@ -157,15 +156,10 @@ function SceneNodeThreeChildren(props: SceneNodeThreeChildrenProps) {
   );
 }
 
-interface SceneNodeThreeObjectProps {
-  name: string;
-  useSceneTree: UseSceneTree;
-}
-
 /** Component containing the three.js object and children for a particular scene node. */
 export const SceneNodeThreeObject = React.memo(
   // This memo is very important for big scenes!!
-  (props: SceneNodeThreeObjectProps) => {
+  (props: { name: string; useSceneTree: UseSceneTree }) => {
     const sceneNode = props.useSceneTree(
       (state) => state.nodeFromName[props.name]
     );
@@ -195,15 +189,13 @@ export const SceneNodeThreeObject = React.memo(
   }
 );
 
-interface SceneNodeUpdaterProps {
+/** Shove visibility updates into a separate components so the main object
+ * component doesn't need to be repeatedly re-rendered.*/
+function SceneNodeUpdater(props: {
   name: string;
   objRef: React.RefObject<THREE.Object3D>;
   useSceneTree: UseSceneTree;
-}
-
-/** Shove visibility updates into a separate components so the main object
- * component doesn't need to be repeatedly re-rendered.*/
-function SceneNodeUpdater(props: SceneNodeUpdaterProps) {
+}) {
   const visible = props.useSceneTree(
     (state) => state.visibilityFromName[props.name]
   );

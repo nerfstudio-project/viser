@@ -344,16 +344,14 @@ function useMessageHandler(
   };
 }
 
-interface WebsocketInterfaceProps {
+/** Component for handling websocket connections. */
+export default function WebsocketInterface(props: {
   panelKey: number;
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: MutableRefObject<WebSocket | null>;
   wrapperRef: RefObject<HTMLDivElement>;
-}
-
-/** Component for handling websocket connections. */
-export default function WebsocketInterface(props: WebsocketInterfaceProps) {
+}) {
   const handleMessage = useMessageHandler(
     props.useSceneTree,
     props.useGui,

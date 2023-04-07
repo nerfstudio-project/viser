@@ -15,12 +15,8 @@ import GeneratedControls from "./Generated";
 import ServerControls from "./Server";
 import { SceneNodeUI } from "./SceneTreeUI";
 
-interface ConnectedStatusProps {
-  useGui: UseGui;
-}
-
 /* Icon and label telling us the current status of the websocket connection. */
-function ConnectionStatus(props: ConnectedStatusProps) {
+function ConnectionStatus(props: { useGui: UseGui }) {
   const connected = props.useGui((state) => state.websocketConnected);
   const server = props.useGui((state) => state.server);
   const label = props.useGui((state) => state.label);
@@ -38,16 +34,14 @@ function ConnectionStatus(props: ConnectedStatusProps) {
   );
 }
 
-interface ControlPanelProps {
+/** Root component for control panel. Parents a set of control tabs.
+ * This could be refactored+cleaned up a lot! */
+export default function ControlPanel(props: {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: MutableRefObject<WebSocket | null>;
   wrapperRef: RefObject<HTMLDivElement>;
-}
-
-/** Root component for control panel. Parents a set of control tabs.
- * This could be refactored+cleaned up a lot! */
-export default function ControlPanel(props: ControlPanelProps) {
+}) {
   const ControlPanelWrapper = styled(Box)`
     box-sizing: border-box;
     width: 20em;
@@ -140,14 +134,12 @@ export default function ControlPanel(props: ControlPanelProps) {
   );
 }
 
-interface ControlPanelTabContentsProps {
+/** One tab in the control panel. */
+function ControlPanelTabContents(props: {
   children?: React.ReactNode;
   index: number;
   value: number;
-}
-
-/** One tab in the control panel. */
-function ControlPanelTabContents(props: ControlPanelTabContentsProps) {
+}) {
   const { children, value, index, ...other } = props;
 
   return (
@@ -168,13 +160,11 @@ function ControlPanelTabContents(props: ControlPanelTabContentsProps) {
   );
 }
 
-interface ControlPanelHandleProps {
+/** Handle object helps us hide, show, and drag our panel.*/
+function ControlPanelHandle(props: {
   panelWrapperRef: React.RefObject<HTMLDivElement>;
   useGui: UseGui;
-}
-
-/** Handle object helps us hide, show, and drag our panel.*/
-function ControlPanelHandle(props: ControlPanelHandleProps) {
+}) {
   // Things to track for dragging.
   const dragInfo = React.useRef({
     dragging: false,
@@ -345,13 +335,11 @@ function ControlPanelHandle(props: ControlPanelHandleProps) {
   );
 }
 
-interface ControlPanelContentsProps {
+/** Wrapper for tabulated control panel interface. */
+function ControlPanelContents(props: {
   children?: React.ReactNode;
   tab_labels: string[];
-}
-
-/** Wrapper for tabulated control panel interface. */
-function ControlPanelContents(props: ControlPanelContentsProps) {
+}) {
   const [tabState, setTabState] = React.useState(0);
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabState(newValue);

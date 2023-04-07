@@ -5,13 +5,11 @@ import React from "react";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { UseSceneTree } from "../SceneTree";
 
-interface SceneNodeUIChildrenProp {
+/** Control panel component for listing children of a scene node. */
+function SceneNodeUIChildren(props: {
   name: string;
   useSceneTree: UseSceneTree;
-}
-
-/** Control panel component for listing children of a scene node. */
-function SceneNodeUIChildren(props: SceneNodeUIChildrenProp) {
+}) {
   const children = props.useSceneTree(
     (state) => state.nodeFromName[props.name].children
   );
@@ -30,13 +28,11 @@ function SceneNodeUIChildren(props: SceneNodeUIChildrenProp) {
   );
 }
 
-interface SceneNodeUIProp {
+/** Control panel component for showing a particular scene node. */
+export function SceneNodeUI(props: {
   name: string;
   useSceneTree: UseSceneTree;
-}
-
-/** Control panel component for showing a particular scene node. */
-export function SceneNodeUI(props: SceneNodeUIProp) {
+}) {
   const sceneNode = props.useSceneTree(
     (state) => state.nodeFromName[props.name]
   );

@@ -2,14 +2,12 @@ import { button, LevaPanel, useControls, useCreateStore } from "leva";
 import Box from "@mui/material/Box";
 import { levaTheme } from "./Generated";
 import { UseGui } from "./GuiState";
-import React, { RefObject } from "react";
+import { RefObject } from "react";
 
-interface ServerControlsProps {
+export default function ServerControls(props: {
   useGui: UseGui;
   wrapperRef: RefObject<HTMLDivElement>;
-}
-
-export default function ServerControls(props: ServerControlsProps) {
+}) {
   const server = props.useGui((state) => state.server);
   const label = props.useGui((state) => state.label);
   const backgroundAvailable = props.useGui(
@@ -23,7 +21,7 @@ export default function ServerControls(props: ServerControlsProps) {
         value: label,
         onChange: (value) => props.useGui.setState({ label: value }),
       },
-      ["Websocket"]: {
+      Websocket: {
         value: server,
         onChange: (value) => props.useGui.setState({ server: value }),
       },
