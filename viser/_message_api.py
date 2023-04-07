@@ -77,13 +77,13 @@ def _encode_image_base64(
     with io.BytesIO() as data_buffer:
         if format == "png":
             media_type = "image/png"
-            iio.imwrite(data_buffer, image, format="PNG")
+            iio.imwrite(data_buffer, image, extension=".png")
         elif format == "jpeg":
             media_type = "image/jpeg"
             iio.imwrite(
                 data_buffer,
                 image[..., :3],  # Strip alpha.
-                format="JPEG",
+                extension=".jpeg",
                 quality=75 if quality is None else quality,
             )
         else:
