@@ -70,13 +70,11 @@ export const levaTheme: LevaCustomTheme = {
   },
 };
 
-interface GeneratedControlsProps {
+/** One tab in the control panel. */
+export default function GeneratedControls(props: {
   useGui: UseGui;
   websocketRef: MutableRefObject<WebSocket | null>;
-}
-
-/** One tab in the control panel. */
-export default function GeneratedControls(props: GeneratedControlsProps) {
+}) {
   const guiNames = props.useGui((state) => state.guiNames);
   const guiConfigFromName = props.useGui((state) => state.guiConfigFromName);
 
@@ -98,18 +96,18 @@ export default function GeneratedControls(props: GeneratedControlsProps) {
     return guiConfigNode;
   }
 
-  guiNames.forEach((key) => {
-    const { levaConf, folderLabels } = guiConfigFromName[key];
+  guiNames.forEach((guiName) => {
+    const { levaConf, folderLabels } = guiConfigFromName[guiName];
 
     const leafFolder = getFolderContainer(folderLabels);
 
     // Hacky stuff that lives outside of TypeScript...
     if (levaConf["type"] === "BUTTON") {
       // Add a button.
-      leafFolder[key] = button((_get: any) => {
+      leafFolder[guiName] = button((_get: any) => {
         const message: GuiUpdateMessage = {
           type: "gui_update",
-          name: key,
+          name: guiName,
           value: true,
         };
         props.websocketRef.current!.send(pack(message));
@@ -117,17 +115,17 @@ export default function GeneratedControls(props: GeneratedControlsProps) {
     } else {
       // Add any other kind of input.
       const sendUpdate = makeThrottledMessageSender(props.websocketRef, 50);
-      leafFolder[key] = {
+      leafFolder[guiName] = {
         ...levaConf,
         onChange: (value: any, _propName: any, options: any) => {
           if (options.initial) return;
-          if (suppressOnChange.current[key]) {
-            delete suppressOnChange.current[key];
+          if (suppressOnChange.current[guiName]) {
+            delete suppressOnChange.current[guiName];
             return;
           }
           const message: GuiUpdateMessage = {
             type: "gui_update",
-            name: key,
+            name: guiName,
             value: value,
           };
           sendUpdate(message);

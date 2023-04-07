@@ -32,14 +32,12 @@ import {
   truncateSearchParamServers,
 } from "./SearchParamsUtils";
 
-interface SynchronizedOrbitControlsProps {
+/** OrbitControls, but synchronized with the server and other panels. */
+function SynchronizedOrbitControls(props: {
   globalCameras: MutableRefObject<CameraPrimitives>;
   useGui: UseGui;
   websocketRef: MutableRefObject<WebSocket | null>;
-}
-
-/** OrbitControls, but synchronized with the server and other panels. */
-function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
+}) {
   const camera = useThree((state) => state.camera as PerspectiveCamera);
   const orbitRef = React.useRef<OrbitControls_>(null);
 
@@ -146,73 +144,75 @@ function SynchronizedOrbitControls(props: SynchronizedOrbitControlsProps) {
   );
 }
 
-interface SingleViewerProps {
-  panelKey: number;
-  globalCameras: MutableRefObject<CameraPrimitives>;
-}
+const SingleViewer = React.memo(
+  (props: {
+    panelKey: number;
+    globalCameras: MutableRefObject<CameraPrimitives>;
+  }) => {
+    // Layout and styles.
+    const Wrapper = styled(Box)`
+      width: 100%;
+      height: 100%;
+      position: relative;
+    `;
 
-const SingleViewer = React.memo((props: SingleViewerProps) => {
-  // Layout and styles.
-  const Wrapper = styled(Box)`
-    width: 100%;
-    height: 100%;
-    position: relative;
-  `;
+    const Viewport = styled(Canvas)`
+      position: relative;
+      z-index: 0;
 
-  const Viewport = styled(Canvas)`
-    position: relative;
-    z-index: 0;
+      width: 100%;
+      height: 100%;
+    `;
 
-    width: 100%;
-    height: 100%;
-  `;
+    // Our 2D label renderer needs access to the div used for rendering.
+    const wrapperRef = React.useRef<HTMLDivElement>(null);
+    const websocketRef = React.useRef<WebSocket | null>(null);
 
-  // Our 2D label renderer needs access to the div used for rendering.
-  const wrapperRef = React.useRef<HTMLDivElement>(null);
-  const websocketRef = React.useRef<WebSocket | null>(null);
+    // ...
+    const servers = new URLSearchParams(window.location.search).getAll(
+      "server"
+    );
+    const initialServer =
+      props.panelKey < servers.length
+        ? servers[props.panelKey]
+        : window.location.href.replace("http://", "ws://");
 
-  // ...
-  const servers = new URLSearchParams(window.location.search).getAll("server");
-  const initialServer =
-    props.panelKey < servers.length
-      ? servers[props.panelKey]
-      : window.location.href.replace("http://", "ws://");
+    // Declare the scene tree state. This returns a zustand store/hook, which we
+    // can pass to any children that need state access.
+    const useSceneTree = useSceneTreeState();
+    const useGui = useGuiState(initialServer);
 
-  // Declare the scene tree state. This returns a zustand store/hook, which we
-  // can pass to any children that need state access.
-  const useSceneTree = useSceneTreeState();
-  const useGui = useGuiState(initialServer);
-
-  // <Stats showPanel={0} className="stats" />
-  // <gridHelper args={[10.0, 10]} />
-  return (
-    <Wrapper ref={wrapperRef}>
-      <WebsocketInterface
-        panelKey={props.panelKey}
-        useSceneTree={useSceneTree}
-        useGui={useGui}
-        websocketRef={websocketRef}
-        wrapperRef={wrapperRef}
-      />
-      <ControlPanel
-        useSceneTree={useSceneTree}
-        useGui={useGui}
-        websocketRef={websocketRef}
-        wrapperRef={wrapperRef}
-      />
-      <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
-        <LabelRenderer wrapperRef={wrapperRef} />
-        <SynchronizedOrbitControls
-          websocketRef={websocketRef}
+    // <Stats showPanel={0} className="stats" />
+    // <gridHelper args={[10.0, 10]} />
+    return (
+      <Wrapper ref={wrapperRef}>
+        <WebsocketInterface
+          panelKey={props.panelKey}
+          useSceneTree={useSceneTree}
           useGui={useGui}
-          globalCameras={props.globalCameras}
+          websocketRef={websocketRef}
+          wrapperRef={wrapperRef}
         />
-        <SceneNodeThreeObject name="" useSceneTree={useSceneTree} />
-        <Environment preset="city" blur={1} />
-      </Viewport>
-    </Wrapper>
-  );
-});
+        <ControlPanel
+          useSceneTree={useSceneTree}
+          useGui={useGui}
+          websocketRef={websocketRef}
+          wrapperRef={wrapperRef}
+        />
+        <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
+          <LabelRenderer wrapperRef={wrapperRef} />
+          <SynchronizedOrbitControls
+            websocketRef={websocketRef}
+            useGui={useGui}
+            globalCameras={props.globalCameras}
+          />
+          <SceneNodeThreeObject name="" useSceneTree={useSceneTree} />
+          <Environment preset="city" blur={1} />
+        </Viewport>
+      </Wrapper>
+    );
+  }
+);
 
 interface CameraPrimitives {
   synchronize: boolean;
@@ -279,13 +279,11 @@ function Root() {
   );
 }
 
-interface PanelControllerProps {
+function PanelController(props: {
   panelCount: number;
   setPanelCount: React.Dispatch<React.SetStateAction<number>>;
   globalCameras: MutableRefObject<CameraPrimitives>;
-}
-
-function PanelController(props: PanelControllerProps) {
+}) {
   return (
     <Box
       component="div"

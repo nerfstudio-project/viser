@@ -2,12 +2,10 @@ import React from "react";
 import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { useFrame } from "@react-three/fiber";
 
-interface LabelRendererProps {
-  wrapperRef: React.RefObject<HTMLDivElement>;
-}
-
 /** Component for rendering text labels on scene nodes. */
-export default function LabelRenderer(props: LabelRendererProps) {
+export default function LabelRenderer(props: {
+  wrapperRef: React.RefObject<HTMLDivElement>;
+}) {
   const labelRenderer = new CSS2DRenderer();
 
   React.useEffect(() => {
