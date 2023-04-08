@@ -84,13 +84,18 @@ function SynchronizedOrbitControls(props: {
     const globalCameras = props.globalCameras.current;
     // Match all cameras.
     if (globalCameras.synchronize) {
-      props.globalCameras.current!.cameras.forEach((other) => {
+      globalCameras.cameras.forEach((other) => {
         if (camera === other) return;
         other.copy(camera);
       });
-      props.globalCameras.current!.orbitRefs.forEach((other) => {
-        if (orbitRef === other) return;
-        other.current!.target.copy(orbitRef.current!.target);
+      globalCameras.orbitRefs.forEach((other) => {
+        if (
+          orbitRef === other ||
+          orbitRef.current === null ||
+          other.current === null
+        )
+          return;
+        other.current.target.copy(orbitRef.current.target);
       });
     }
 
@@ -111,7 +116,9 @@ function SynchronizedOrbitControls(props: {
 
     if (globalCameras.synchronize && globalCameras.cameras.length > 0) {
       camera.copy(globalCameras.cameras[0]);
-      orbitRef.current!.target.copy(globalCameras.orbitRefs[0].current!.target);
+      const ours = orbitRef.current;
+      const other = globalCameras.orbitRefs[0].current;
+      ours && other && ours.target.copy(other.target);
     }
 
     globalCameras.cameras.push(camera);
@@ -145,84 +152,82 @@ function SynchronizedOrbitControls(props: {
   );
 }
 
-const SingleViewer = React.memo(
-  (props: {
-    panelKey: number;
-    globalCameras: MutableRefObject<CameraPrimitives>;
-  }) => {
-    // Layout and styles.
-    const Wrapper = styled(Box)`
-      width: 100%;
-      height: 100%;
-      position: relative;
-    `;
+const SingleViewer = React.memo(function SingleViewer(props: {
+  panelKey: number;
+  globalCameras: MutableRefObject<CameraPrimitives>;
+}) {
+  // Layout and styles.
+  const Wrapper = styled(Box)`
+    width: 100%;
+    height: 100%;
+    position: relative;
+  `;
 
-    const Viewport = styled(Canvas)`
-      position: relative;
-      z-index: 0;
+  const Viewport = styled(Canvas)`
+    position: relative;
+    z-index: 0;
 
-      width: 100%;
-      height: 100%;
-    `;
+    width: 100%;
+    height: 100%;
+  `;
 
-    // Our 2D label renderer needs access to the div used for rendering.
-    const wrapperRef = React.useRef<HTMLDivElement>(null);
-    const websocketRef = React.useRef<WebSocket | null>(null);
+  // Our 2D label renderer needs access to the div used for rendering.
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const websocketRef = React.useRef<WebSocket | null>(null);
 
-    // Default server logic.
-    function getDefaultServerFromUrl() {
-      // https://localhost:8080/ => ws://localhost:8080
-      // https://localhost:8080/?server=some_url => ws://localhost:8080
-      let server = window.location.href;
-      server = server.replace("http://", "ws://");
-      server = server.split("?")[0];
-      if (server.endsWith("/")) server = server.slice(0, -1);
-      return server;
-    }
-    const servers = new URLSearchParams(window.location.search).getAll(
-      searchParamKey
-    );
-    const initialServer =
-      props.panelKey < servers.length
-        ? servers[props.panelKey]
-        : getDefaultServerFromUrl();
-
-    // Declare the scene tree state. This returns a zustand store/hook, which we
-    // can pass to any children that need state access.
-    const useSceneTree = useSceneTreeState();
-    const useGui = useGuiState(initialServer);
-
-    // <Stats showPanel={0} className="stats" />
-    // <gridHelper args={[10.0, 10]} />
-    return (
-      <Wrapper ref={wrapperRef}>
-        <WebsocketInterface
-          panelKey={props.panelKey}
-          useSceneTree={useSceneTree}
-          useGui={useGui}
-          websocketRef={websocketRef}
-          wrapperRef={wrapperRef}
-        />
-        <ControlPanel
-          useSceneTree={useSceneTree}
-          useGui={useGui}
-          websocketRef={websocketRef}
-          wrapperRef={wrapperRef}
-        />
-        <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
-          <LabelRenderer wrapperRef={wrapperRef} />
-          <SynchronizedOrbitControls
-            websocketRef={websocketRef}
-            useGui={useGui}
-            globalCameras={props.globalCameras}
-          />
-          <SceneNodeThreeObject name="" useSceneTree={useSceneTree} />
-          <Environment preset="city" blur={1} />
-        </Viewport>
-      </Wrapper>
-    );
+  // Default server logic.
+  function getDefaultServerFromUrl() {
+    // https://localhost:8080/ => ws://localhost:8080
+    // https://localhost:8080/?server=some_url => ws://localhost:8080
+    let server = window.location.href;
+    server = server.replace("http://", "ws://");
+    server = server.split("?")[0];
+    if (server.endsWith("/")) server = server.slice(0, -1);
+    return server;
   }
-);
+  const servers = new URLSearchParams(window.location.search).getAll(
+    searchParamKey
+  );
+  const initialServer =
+    props.panelKey < servers.length
+      ? servers[props.panelKey]
+      : getDefaultServerFromUrl();
+
+  // Declare the scene tree state. This returns a zustand store/hook, which we
+  // can pass to any children that need state access.
+  const useSceneTree = useSceneTreeState();
+  const useGui = useGuiState(initialServer);
+
+  // <Stats showPanel={0} className="stats" />
+  // <gridHelper args={[10.0, 10]} />
+  return (
+    <Wrapper ref={wrapperRef}>
+      <WebsocketInterface
+        panelKey={props.panelKey}
+        useSceneTree={useSceneTree}
+        useGui={useGui}
+        websocketRef={websocketRef}
+        wrapperRef={wrapperRef}
+      />
+      <ControlPanel
+        useSceneTree={useSceneTree}
+        useGui={useGui}
+        websocketRef={websocketRef}
+        wrapperRef={wrapperRef}
+      />
+      <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
+        <LabelRenderer wrapperRef={wrapperRef} />
+        <SynchronizedOrbitControls
+          websocketRef={websocketRef}
+          useGui={useGui}
+          globalCameras={props.globalCameras}
+        />
+        <SceneNodeThreeObject name="" useSceneTree={useSceneTree} />
+        <Environment preset="city" blur={1} />
+      </Viewport>
+    </Wrapper>
+  );
+});
 
 interface CameraPrimitives {
   synchronize: boolean;

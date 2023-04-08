@@ -24,14 +24,14 @@ export function makeThrottledMessageSender(
     if (websocketRef.current === null) return;
     latestMessage = message;
     if (readyToSend) {
-      websocketRef.current!.send(pack(message));
+      websocketRef.current.send(pack(message));
       stale = false;
       readyToSend = false;
 
       setTimeout(() => {
         readyToSend = true;
         if (!stale) return;
-        send(latestMessage!);
+        latestMessage && send(latestMessage);
       }, throttleMilliseconds);
     } else {
       stale = true;
@@ -210,7 +210,7 @@ function useMessageHandler(
               rotationLimits={message.rotation_limits}
               depthTest={message.depth_test}
               opacity={message.opacity}
-              onDrag={(l, _deltaL, _w, _deltaW) => {
+              onDrag={(l) => {
                 const wxyz = new THREE.Quaternion();
                 wxyz.setFromRotationMatrix(l);
                 const position = new THREE.Vector3().setFromMatrixPosition(l);
@@ -302,7 +302,8 @@ function useMessageHandler(
       case "reset_scene": {
         console.log("Resetting scene!");
         resetScene();
-        wrapperRef.current!.style.backgroundImage = "none";
+        wrapperRef.current &&
+          (wrapperRef.current.style.backgroundImage = "none");
 
         useGui.setState({ backgroundAvailable: false });
         break;
@@ -394,10 +395,10 @@ export default function WebsocketInterface(props: {
 
       ws.onmessage = async (event) => {
         // Reduce websocket backpressure.
-        const messagePromise = new Promise<Message>(async (resolve) => {
-          resolve(
-            unpack(new Uint8Array(await event.data.arrayBuffer())) as Message
-          );
+        const messagePromise = new Promise<Message>((resolve) => {
+          (event.data.arrayBuffer() as Promise<ArrayBuffer>).then((buffer) => {
+            resolve(unpack(new Uint8Array(buffer)) as Message);
+          });
         });
 
         // Try our best to handle messages in order. If this takes more than 1 second, we give up. :)

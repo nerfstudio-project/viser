@@ -191,8 +191,11 @@ function ControlPanelHandle(props: {
       : panelPosition - parentSize;
   const panelBoundaryPad = 15;
   function setPanelLocation(x: number, y: number) {
-    const panel = props.panelWrapperRef.current!;
-    const parent = panel.parentElement!;
+    const panel = props.panelWrapperRef.current;
+    if (panel === null) return [x, y];
+
+    const parent = panel.parentElement;
+    if (parent === null) return [x, y];
 
     let newX = x;
     let newY = y;
@@ -219,29 +222,34 @@ function ControlPanelHandle(props: {
 
   // Fix locations on resize.
   React.useEffect(() => {
-    const panel = props.panelWrapperRef.current!;
-    const parent = panel.parentElement!;
+    const panel = props.panelWrapperRef.current;
+    if (panel === null) return;
+
+    const parent = panel.parentElement;
+    if (parent === null) return;
+
     panel.style.maxHeight =
       (parent.clientHeight - panelBoundaryPad * 2).toString() + "px";
 
     const observer = new ResizeObserver(() => {
-      if (unfixedOffset.current.x === undefined) {
+      if (unfixedOffset.current.x === undefined)
         unfixedOffset.current.x = computePanelOffset(
           panel.offsetLeft,
           panel.clientWidth,
           parent.clientWidth
         );
+      if (unfixedOffset.current.y === undefined)
         unfixedOffset.current.y = computePanelOffset(
           panel.offsetTop,
           panel.clientHeight,
           parent.clientHeight
         );
-      }
+
       panel.style.maxHeight =
         (parent.clientHeight - panelBoundaryPad * 2).toString() + "px";
 
-      let newX = unfixedOffset.current.x!;
-      let newY = unfixedOffset.current.y!;
+      let newX = unfixedOffset.current.x;
+      let newY = unfixedOffset.current.y;
       while (newX < 0) newX += parent.clientWidth;
       while (newY < 0) newY += parent.clientHeight;
       setPanelLocation(newX, newY);
@@ -272,7 +280,8 @@ function ControlPanelHandle(props: {
           return;
         }
 
-        const wrapper = props.panelWrapperRef.current!;
+        const wrapper = props.panelWrapperRef.current;
+        if (!wrapper) return;
         if (wrapper.classList.contains("hidden")) {
           wrapper.classList.remove("hidden");
         } else {
@@ -281,7 +290,8 @@ function ControlPanelHandle(props: {
       }}
       onMouseDown={(event) => {
         const state = dragInfo.current;
-        const panel = props.panelWrapperRef.current!;
+        const panel = props.panelWrapperRef.current;
+        if (!panel) return;
         state.startClientX = event.clientX;
         state.startClientY = event.clientY;
         state.startPosX = panel.offsetLeft;
@@ -294,8 +304,8 @@ function ControlPanelHandle(props: {
           if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
 
           state.dragging = true;
-          let newX = state.startPosX + deltaX;
-          let newY = state.startPosY + deltaY;
+          const newX = state.startPosX + deltaX;
+          const newY = state.startPosY + deltaY;
           [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
             newX,
             newY

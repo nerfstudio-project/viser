@@ -43,8 +43,8 @@ should be sufficient otherwise.
 
 ```bash
 cd ./viser/viser/client
-npm install
-npm start
+yarn
+yarn start
 ```
 
 ## Interactive SMPL-X Example

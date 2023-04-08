@@ -27,58 +27,56 @@ export const CoordinateFrame = React.forwardRef<
     axes_length?: number;
     axes_radius?: number;
   }
->(
-  (
-    {
-      quaternion = undefined,
-      position = undefined,
-      show_axes = true,
-      axes_length = 0.5,
-      axes_radius = 0.0125,
-    },
-    ref
-  ) => {
-    return (
-      <group ref={ref} quaternion={quaternion} position={position}>
-        {show_axes && (
-          <>
-            <mesh
-              geometry={origin_geom}
-              material={origin_material}
-              scale={
-                new THREE.Vector3(
-                  axes_radius * 2.5,
-                  axes_radius * 2.5,
-                  axes_radius * 2.5
-                )
-              }
-            />
-            <mesh
-              geometry={axis_geom}
-              rotation={new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0)}
-              position={[0.5 * axes_length, 0.0, 0.0]}
-              scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
-              material={x_material}
-            />
-            <mesh
-              geometry={axis_geom}
-              position={[0.0, 0.5 * axes_length, 0.0]}
-              scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
-              material={y_material}
-            />
-            <mesh
-              geometry={axis_geom}
-              rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
-              position={[0.0, 0.0, 0.5 * axes_length]}
-              scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
-              material={z_material}
-            />
-          </>
-        )}
-      </group>
-    );
-  }
-);
+>(function CoordinateFrame(
+  {
+    quaternion = undefined,
+    position = undefined,
+    show_axes = true,
+    axes_length = 0.5,
+    axes_radius = 0.0125,
+  },
+  ref
+) {
+  return (
+    <group ref={ref} quaternion={quaternion} position={position}>
+      {show_axes && (
+        <>
+          <mesh
+            geometry={origin_geom}
+            material={origin_material}
+            scale={
+              new THREE.Vector3(
+                axes_radius * 2.5,
+                axes_radius * 2.5,
+                axes_radius * 2.5
+              )
+            }
+          />
+          <mesh
+            geometry={axis_geom}
+            rotation={new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0)}
+            position={[0.5 * axes_length, 0.0, 0.0]}
+            scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
+            material={x_material}
+          />
+          <mesh
+            geometry={axis_geom}
+            position={[0.0, 0.5 * axes_length, 0.0]}
+            scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
+            material={y_material}
+          />
+          <mesh
+            geometry={axis_geom}
+            rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
+            position={[0.0, 0.0, 0.5 * axes_length]}
+            scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
+            material={z_material}
+          />
+        </>
+      )}
+    </group>
+  );
+});
 
 // Camera frustum helper. We jitter to prevent z-fighting for overlapping lines.
 const jitter = () => Math.random() * 1e-5;
@@ -108,7 +106,7 @@ export const CameraFrustum = React.forwardRef<
     scale: number;
     color: number;
   }
->((props, ref) => {
+>(function CameraFrustum(props, ref) {
   const y = Math.tan(props.fov / 2.0);
   const x = y * props.aspect;
   return (
