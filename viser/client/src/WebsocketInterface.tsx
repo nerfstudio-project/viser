@@ -313,6 +313,7 @@ function useMessageHandler(
         addGui(message.name, {
           levaConf: message.leva_conf,
           folderLabels: message.folder_labels,
+          hidden: false,
         });
         break;
       }
@@ -321,13 +322,24 @@ function useMessageHandler(
         guiSet(message.name, message.value);
         break;
       }
+      // Set the hidden state of a GUI input.
+      case "gui_set_hidden": {
+        const currentConf = useGui.getState().guiConfigFromName[message.name];
+        if (currentConf !== undefined) {
+          addGui(message.name, {
+            ...currentConf,
+            hidden: message.hidden,
+          });
+        }
+        break;
+      }
       // Add a GUI input.
       case "gui_set_leva_conf": {
         const currentConf = useGui.getState().guiConfigFromName[message.name];
         if (currentConf !== undefined) {
           addGui(message.name, {
+            ...currentConf,
             levaConf: message.leva_conf,
-            folderLabels: currentConf.folderLabels,
           });
         }
         break;
