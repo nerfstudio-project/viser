@@ -39,13 +39,21 @@ with server.gui_folder("Editable"):
         lock=True,
     )
     with server.gui_folder("Text toggle"):
+        gui_checkbox_hide = server.add_gui_checkbox(
+            "Hide",
+            initial_value=False,
+        )
         gui_text = server.add_gui_text(
             "Text",
             initial_value="Hello world",
         )
-        gui_checkbox = server.add_gui_checkbox(
-            "Disable text",
+        gui_checkbox_disable = server.add_gui_checkbox(
+            "Disable",
             initial_value=False,
+        )
+        gui_rgba = server.add_gui_rgba(
+            "Color",
+            initial_value=(255, 255, 0, 255),
         )
 
 # Pre-generate a point cloud to send.
@@ -73,7 +81,8 @@ while True:
     )
 
     # We can use `set_disabled()` to enable/disable GUI elements.
-    gui_text.set_disabled(gui_checkbox.get_value())
+    gui_text.set_hidden(gui_checkbox_hide.get_value())
+    gui_rgba.set_disabled(gui_checkbox_disable.get_value())
 
     counter += 1
     time.sleep(0.1)

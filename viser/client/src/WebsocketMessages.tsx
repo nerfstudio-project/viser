@@ -111,6 +111,11 @@ export interface GuiUpdateMessage {
   name: string;
   value: any;
 }
+export interface GuiSetHiddenMessage {
+  type: "gui_set_hidden";
+  name: string;
+  hidden: boolean;
+}
 export interface GuiSetValueMessage {
   type: "gui_set";
   name: string;
@@ -139,5 +144,6 @@ export type Message =
   | GuiAddMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
+  | GuiSetHiddenMessage
   | GuiSetValueMessage
   | GuiSetLevaConfMessage;

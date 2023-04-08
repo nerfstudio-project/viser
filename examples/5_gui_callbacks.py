@@ -88,4 +88,4 @@ def reset(handle: viser.GuiHandle[bool]) -> None:
 draw_frame()
 draw_points()
 while True:
-    time.sleep(10.0)
+    time.sleep(1.0)

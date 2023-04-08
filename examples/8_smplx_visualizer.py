@@ -114,6 +114,7 @@ def main(
             vertices=output.vertices.squeeze(axis=0).detach().cpu().numpy(),  # type: ignore
             faces=model.faces,
             wireframe=gui_elements.gui_wireframe.get_value(),
+            color=gui_elements.gui_rgb.get_value(),
         )
 
         # Update per-joint frames, which are used for transform controls.
@@ -134,6 +135,7 @@ def main(
 class GuiElements:
     """Structure containing handles for reading from GUI elements."""
 
+    gui_rgb: viser.GuiHandle[Tuple[int, int, int]]
     gui_wireframe: viser.GuiHandle[bool]
     gui_betas: List[viser.GuiHandle[float]]
     gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]]
@@ -149,6 +151,12 @@ def make_gui_elements(
 
     # GUI elements: mesh settings + visibility.
     with server.gui_folder("View"):
+        gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
+
+        @gui_rgb.on_update
+        def _(_):
+            out.changed = True
+
         gui_wireframe = server.add_gui_checkbox("Wireframe", initial_value=False)
 
         @gui_wireframe.on_update
@@ -256,7 +264,7 @@ def make_gui_elements(
 
     add_transform_controls(enabled=False)
 
-    out = GuiElements(gui_wireframe, gui_betas, gui_joints, changed=True)
+    out = GuiElements(gui_rgb, gui_wireframe, gui_betas, gui_joints, changed=True)
     return out
 
 

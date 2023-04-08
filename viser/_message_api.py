@@ -277,6 +277,58 @@ class MessageApi(abc.ABC):
             },
         )
 
+    def add_gui_rgb(
+        self,
+        name: str,
+        initial_value: Tuple[int, int, int],
+        disabled: bool = False,
+    ) -> GuiHandle[Tuple[int, int, int]]:
+        """Add an RGB picker to the GUI."""
+        return self._add_gui_impl(
+            "/".join(self._gui_folder_labels + [name]),
+            initial_value,
+            leva_conf={
+                "value": {
+                    "r": initial_value[0],
+                    "g": initial_value[1],
+                    "b": initial_value[2],
+                },
+                "label": name,
+                "disabled": disabled,
+            },
+            encoder=lambda rgb: dict(zip("rgb", rgb)),
+            decoder=lambda rgb_dict: (rgb_dict["r"], rgb_dict["g"], rgb_dict["b"]),
+        )
+
+    def add_gui_rgba(
+        self,
+        name: str,
+        initial_value: Tuple[int, int, int, int],
+        disabled: bool = False,
+    ) -> GuiHandle[Tuple[int, int, int, int]]:
+        """Add an RGBA picker to the GUI."""
+        return self._add_gui_impl(
+            "/".join(self._gui_folder_labels + [name]),
+            initial_value,
+            leva_conf={
+                "value": {
+                    "r": initial_value[0],
+                    "g": initial_value[1],
+                    "b": initial_value[2],
+                    "a": initial_value[3],
+                },
+                "label": name,
+                "disabled": disabled,
+            },
+            encoder=lambda rgba: dict(zip("rgba", rgba)),
+            decoder=lambda rgba_dict: (
+                rgba_dict["r"],
+                rgba_dict["g"],
+                rgba_dict["b"],
+                rgba_dict["a"],
+            ),
+        )
+
     def add_camera_frustum(
         self,
         name: str,
@@ -488,11 +540,11 @@ class MessageApi(abc.ABC):
         if handle_state is None:
             return
 
-        # Only call update when value has actually changed.
-        if not handle_state.is_button and message.value == handle_state.value:
-            return
+        value = handle_state.typ(handle_state.decoder(message.value))
 
-        value = handle_state.typ(message.value)
+        # Only call update when value has actually changed.
+        if not handle_state.is_button and value == handle_state.value:
+            return
 
         # Update state.
         handle_state.value = value
@@ -502,7 +554,7 @@ class MessageApi(abc.ABC):
         for cb in handle_state.update_cb:
             cb(GuiHandle(handle_state))
         if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, message.value)
+            handle_state.sync_cb(client_id, value)
 
     def _handle_transform_controls_updates(
         self, client_id: ClientId, message: _messages.Message
@@ -527,7 +579,13 @@ class MessageApi(abc.ABC):
             handle_state.sync_cb(client_id, handle_state)
 
     def _add_gui_impl(
-        self, name: str, initial_value: T, leva_conf: dict, is_button: bool = False
+        self,
+        name: str,
+        initial_value: T,
+        leva_conf: dict,
+        is_button: bool = False,
+        encoder: Callable[[T], Any] = lambda x: x,
+        decoder: Callable[[Any], T] = lambda x: x,
     ) -> GuiHandle[T]:
         """Private helper for adding a simple GUI element."""
 
@@ -541,6 +599,8 @@ class MessageApi(abc.ABC):
             update_cb=[],
             leva_conf=leva_conf,
             is_button=is_button,
+            encoder=encoder,
+            decoder=decoder,
         )
         self._handle_state_from_gui_name[name] = handle_state
         handle_state.cleanup_cb = lambda: self._handle_state_from_gui_name.pop(name)
@@ -551,7 +611,9 @@ class MessageApi(abc.ABC):
         if not is_button and isinstance(self, ViserServer):
 
             def sync_other_clients(client_id: ClientId, value: Any) -> None:
-                message = _messages.GuiSetValueMessage(name=name, value=value)
+                message = _messages.GuiSetValueMessage(
+                    name=name, value=handle_state.encoder(value)
+                )
                 message.excluded_self_client = client_id
                 self._queue(message)
 
