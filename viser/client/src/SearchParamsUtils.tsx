@@ -2,29 +2,38 @@
  *
  * This lets us specify the websocket server + port from the URL. */
 
-const key = "server";
+export const searchParamKey = "websocket";
 
 export function getServersFromSearchParams() {
-  return new URLSearchParams(window.location.search).getAll(key);
+  return new URLSearchParams(window.location.search).getAll(searchParamKey);
 }
 
 export function syncSearchParamServer(panelKey: number, server: string) {
-  // Add/update servers in the URL bar.
   let serverParams = getServersFromSearchParams();
-  if (panelKey >= serverParams.length) {
+
+  // Make sure our server search parameter list is long enough! This is hacky, but should always work if all panels have the same default server address.
+  while (panelKey >= serverParams.length) {
     serverParams.push(server);
-  } else {
-    serverParams[panelKey] = server;
   }
 
+  // Set the search parameter for this particular panel.
+  serverParams[panelKey] = server;
+
+  setServerParams(serverParams);
+}
+
+export function truncateSearchParamServers(length: number) {
+  setServerParams(getServersFromSearchParams().slice(0, length));
+}
+
+function setServerParams(serverParams: string[]) {
   // No need to update the URL bar if the websocket port matches the HTTP port.
   // So if we navigate to http://localhost:8081, this should by default connect to ws://localhost:8081.
   if (
-    panelKey === 0 &&
+    serverParams.length === 1 &&
     window.location.host.includes(
-      server.replace("ws://", "").replace("/", "")
-    ) &&
-    serverParams.length === 1
+      serverParams[0].replace("ws://", "").replace("/", "")
+    )
   )
     serverParams = [];
 
@@ -35,17 +44,6 @@ export function syncSearchParamServer(panelKey: number, server: string) {
     // it. We're going to just not escape the string. :)
     serverParams.length === 0
       ? window.location.href.split("?")[0]
-      : "?" + serverParams.map((s) => key + "=" + s).join("&")
-  );
-}
-
-export function truncateSearchParamServers(length: number) {
-  const serverParams = getServersFromSearchParams().slice(0, length);
-  window.history.replaceState(
-    null,
-    "Viser",
-    // We could URLSearchParams() to build this string, but that would escape
-    // it. We're going to just not escape the string. :)
-    "?" + serverParams.map((s) => key + "=" + s).join("&")
+      : "?" + serverParams.map((s) => searchParamKey + "=" + s).join("&")
   );
 }

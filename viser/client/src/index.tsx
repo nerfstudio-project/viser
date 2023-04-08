@@ -29,6 +29,7 @@ import WebsocketInterface, {
 import { useGuiState, UseGui } from "./ControlPanel/GuiState";
 import {
   getServersFromSearchParams,
+  searchParamKey,
   truncateSearchParamServers,
 } from "./SearchParamsUtils";
 
@@ -168,14 +169,23 @@ const SingleViewer = React.memo(
     const wrapperRef = React.useRef<HTMLDivElement>(null);
     const websocketRef = React.useRef<WebSocket | null>(null);
 
-    // ...
+    // Default server logic.
+    function getDefaultServerFromUrl() {
+      // https://localhost:8080/ => ws://localhost:8080
+      // https://localhost:8080/?server=some_url => ws://localhost:8080
+      let server = window.location.href;
+      server = server.replace("http://", "ws://");
+      server = server.split("?")[0];
+      if (server.endsWith("/")) server = server.slice(0, -1);
+      return server;
+    }
     const servers = new URLSearchParams(window.location.search).getAll(
-      "server"
+      searchParamKey
     );
     const initialServer =
       props.panelKey < servers.length
         ? servers[props.panelKey]
-        : window.location.href.replace("http://", "ws://");
+        : getDefaultServerFromUrl();
 
     // Declare the scene tree state. This returns a zustand store/hook, which we
     // can pass to any children that need state access.
@@ -263,7 +273,8 @@ function Root() {
                     float: "left",
                     width: (100.0 / panelCount).toString() + "%",
                   }),
-              boxSizing: "border-box;",
+              boxSizing: "border-box",
+              position: "relative",
               "&:not(:last-child)": {
                 borderRight: isPortrait ? null : "1px solid",
                 borderBottom: isPortrait ? "1px solid" : null,
