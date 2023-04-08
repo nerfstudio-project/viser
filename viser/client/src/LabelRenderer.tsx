@@ -9,15 +9,16 @@ export default function LabelRenderer(props: {
   const labelRenderer = new CSS2DRenderer();
 
   React.useEffect(() => {
-    const wrapper = props.wrapperRef.current!;
+    const wrapper = props.wrapperRef.current;
     labelRenderer.domElement.style.overflow = "hidden";
     labelRenderer.domElement.style.position = "absolute";
     labelRenderer.domElement.style.pointerEvents = "none";
     labelRenderer.domElement.style.top = "0px";
-    wrapper.appendChild(labelRenderer.domElement);
+    wrapper && wrapper.appendChild(labelRenderer.domElement);
 
     function updateDimensions() {
-      labelRenderer.setSize(wrapper.offsetWidth, wrapper.offsetHeight);
+      wrapper &&
+        labelRenderer.setSize(wrapper.offsetWidth, wrapper.offsetHeight);
     }
     updateDimensions();
 

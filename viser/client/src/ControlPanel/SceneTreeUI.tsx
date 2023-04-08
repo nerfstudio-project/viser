@@ -66,7 +66,7 @@ export function SceneNodeUI(props: {
     const label = new CSS2DObject(labelDiv);
     labelRef.current = label;
 
-    if (itemRef.current!.matches(":hover")) {
+    if (itemRef.current && itemRef.current.matches(":hover")) {
       threeObj.add(label);
     }
 
@@ -82,7 +82,7 @@ export function SceneNodeUI(props: {
 
   const mouseEnter = (event: React.MouseEvent) => {
     // On hover, add an object label to the scene.
-    threeObj.add(labelRef.current!);
+    labelRef.current && threeObj.add(labelRef.current);
     event.stopPropagation();
     if (event.buttons !== 0) {
       suppressMouseLeave.current = true;
@@ -91,7 +91,7 @@ export function SceneNodeUI(props: {
   };
   const mouseLeave = (event: React.MouseEvent) => {
     // Remove the object label.
-    threeObj.remove(labelRef.current!);
+    labelRef.current && threeObj.remove(labelRef.current);
     if (suppressMouseLeave.current) {
       suppressMouseLeave.current = false;
       return;

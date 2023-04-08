@@ -9,7 +9,7 @@ export function getServersFromSearchParams() {
 }
 
 export function syncSearchParamServer(panelKey: number, server: string) {
-  let serverParams = getServersFromSearchParams();
+  const serverParams = getServersFromSearchParams();
 
   // Make sure our server search parameter list is long enough! This is hacky, but should always work if all panels have the same default server address.
   while (panelKey >= serverParams.length) {

@@ -159,7 +159,10 @@ function SceneNodeThreeChildren(props: {
 /** Component containing the three.js object and children for a particular scene node. */
 export const SceneNodeThreeObject = React.memo(
   // This memo is very important for big scenes!!
-  (props: { name: string; useSceneTree: UseSceneTree }) => {
+  function SceneNodeThreeObject(props: {
+    name: string;
+    useSceneTree: UseSceneTree;
+  }) {
     const sceneNode = props.useSceneTree(
       (state) => state.nodeFromName[props.name]
     );
@@ -168,7 +171,7 @@ export const SceneNodeThreeObject = React.memo(
     const ref = React.useRef<THREE.Object3D>(null);
 
     React.useEffect(() => {
-      setObj(props.name, ref.current!);
+      ref.current && setObj(props.name, ref.current);
       return () => clearObj(props.name);
     });
 
@@ -200,7 +203,7 @@ function SceneNodeUpdater(props: {
     (state) => state.visibilityFromName[props.name]
   );
   React.useEffect(() => {
-    props.objRef.current!.visible = visible;
+    if (props.objRef.current !== null) props.objRef.current.visible = visible;
   }, [props, visible]);
   return <></>;
 }

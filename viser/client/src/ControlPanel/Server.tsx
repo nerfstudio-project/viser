@@ -26,16 +26,16 @@ export default function ServerControls(props: {
         onChange: (value) => props.useGui.setState({ server: value }),
       },
       "Download Background": button(
-        (_get) => {
-          if (
-            !props.wrapperRef.current!.style.backgroundImage.startsWith("url(")
-          ) {
+        () => {
+          const wrapper = props.wrapperRef.current;
+          if (wrapper === null) return;
+
+          if (wrapper.style.backgroundImage.startsWith("url(")) {
             // TODO: we should consider hiding this button if there's no background available.
             alert("No background to download!");
             return;
           }
-          const data =
-            props.wrapperRef.current!.style.backgroundImage.split('"')[1];
+          const data = wrapper.style.backgroundImage.split('"')[1];
           const link = document.createElement("a");
           link.download = "background";
           link.href = data;

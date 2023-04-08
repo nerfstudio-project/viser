@@ -104,13 +104,14 @@ export default function GeneratedControls(props: {
     // Hacky stuff that lives outside of TypeScript...
     if (levaConf["type"] === "BUTTON") {
       // Add a button.
-      leafFolder[guiName] = button((_get: any) => {
+      leafFolder[guiName] = button(() => {
         const message: GuiUpdateMessage = {
           type: "gui_update",
           name: guiName,
           value: true,
         };
-        props.websocketRef.current!.send(pack(message));
+        const ws = props.websocketRef.current;
+        ws && ws.send(pack(message));
       }, levaConf["settings"]);
     } else {
       // Add any other kind of input.
@@ -155,7 +156,7 @@ export default function GeneratedControls(props: {
   // Make Leva controls.
   const levaStore = useCreateStore();
   const [, set] = useControls(
-    () => wrapFoldersInGuiConfigTree(guiConfigTree, true),
+    () => wrapFoldersInGuiConfigTree(guiConfigTree, true) as any,
     { store: levaStore },
     [guiConfigTree]
   );
