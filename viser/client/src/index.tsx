@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { OrbitControls, Environment } from "@react-three/drei";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Environment } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 
-import React, { MutableRefObject, RefObject, useRef, useState } from "react";
+import { CameraPrimitives, SynchronizedCameraControls } from "./CameraControls";
+import React, { MutableRefObject, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { OrbitControls as OrbitControls_ } from "three-stdlib";
 
 import ControlPanel from "./ControlPanel/ControlPanel";
 import LabelRenderer from "./LabelRenderer";
@@ -13,8 +13,6 @@ import { SceneNodeThreeObject, useSceneTreeState } from "./SceneTree";
 import "./index.css";
 
 import Box from "@mui/material/Box";
-import { Euler, PerspectiveCamera, Quaternion } from "three";
-import { ViewerCameraMessage } from "./WebsocketMessages";
 import {
   FormControlLabel,
   IconButton,
@@ -23,134 +21,13 @@ import {
   Switch,
 } from "@mui/material";
 import { RemoveCircleRounded, AddCircleRounded } from "@mui/icons-material";
-import WebsocketInterface, {
-  makeThrottledMessageSender,
-} from "./WebsocketInterface";
-import { useGuiState, UseGui } from "./ControlPanel/GuiState";
+import WebsocketInterface from "./WebsocketInterface";
+import { useGuiState } from "./ControlPanel/GuiState";
 import {
   getServersFromSearchParams,
   searchParamKey,
   truncateSearchParamServers,
 } from "./SearchParamsUtils";
-
-/** OrbitControls, but synchronized with the server and other panels. */
-function SynchronizedOrbitControls(props: {
-  globalCameras: MutableRefObject<CameraPrimitives>;
-  useGui: UseGui;
-  websocketRef: MutableRefObject<WebSocket | null>;
-}) {
-  const camera = useThree((state) => state.camera as PerspectiveCamera);
-  const orbitRef = React.useRef<OrbitControls_>(null);
-
-  const sendCameraThrottled = makeThrottledMessageSender(
-    props.websocketRef,
-    20
-  );
-
-  // Callback for sending cameras.
-  const sendCamera = React.useCallback(() => {
-    const three_camera = camera;
-
-    // We put Z up to match the scene tree, and convert threejs camera convention
-    // to the OpenCV one.
-    const R_threecam_cam = new Quaternion();
-    const R_worldfix_world = new Quaternion();
-    R_threecam_cam.setFromEuler(new Euler(Math.PI, 0.0, 0.0));
-    R_worldfix_world.setFromEuler(new Euler(Math.PI / 2.0, 0.0, 0.0));
-    const R_world_camera = R_worldfix_world.clone()
-      .multiply(three_camera.quaternion)
-      .multiply(R_threecam_cam);
-
-    const message: ViewerCameraMessage = {
-      type: "viewer_camera",
-      wxyz: [
-        R_world_camera.w,
-        R_world_camera.x,
-        R_world_camera.y,
-        R_world_camera.z,
-      ],
-      position: three_camera.position
-        .clone()
-        .applyQuaternion(R_worldfix_world)
-        .toArray(),
-      aspect: three_camera.aspect,
-      fov: (three_camera.fov * Math.PI) / 180.0,
-    };
-    sendCameraThrottled(message);
-  }, [camera, sendCameraThrottled]);
-
-  // What do we need to when the camera moves?
-  const cameraChangedCallback = React.useCallback(() => {
-    const globalCameras = props.globalCameras.current;
-    // Match all cameras.
-    if (globalCameras.synchronize) {
-      globalCameras.cameras.forEach((other) => {
-        if (camera === other) return;
-        other.copy(camera);
-      });
-      globalCameras.orbitRefs.forEach((other) => {
-        if (
-          orbitRef === other ||
-          orbitRef.current === null ||
-          other.current === null
-        )
-          return;
-        other.current.target.copy(orbitRef.current.target);
-      });
-    }
-
-    // If desired, send our camera via websocket.
-    sendCamera();
-  }, [props.globalCameras, camera, sendCamera]);
-
-  // Send camera for new connections.
-  // We add a small delay to give the server time to add a callback.
-  const connected = props.useGui((state) => state.websocketConnected);
-  React.useEffect(() => {
-    if (!connected) return;
-    setTimeout(() => cameraChangedCallback(), 50);
-  }, [connected, cameraChangedCallback]);
-
-  React.useEffect(() => {
-    const globalCameras = props.globalCameras.current;
-
-    if (globalCameras.synchronize && globalCameras.cameras.length > 0) {
-      camera.copy(globalCameras.cameras[0]);
-      const ours = orbitRef.current;
-      const other = globalCameras.orbitRefs[0].current;
-      ours && other && ours.target.copy(other.target);
-    }
-
-    globalCameras.cameras.push(camera);
-    globalCameras.orbitRefs.push(orbitRef);
-
-    window.addEventListener("resize", cameraChangedCallback);
-
-    return () => {
-      window.removeEventListener("resize", cameraChangedCallback);
-
-      // Remove ourself from camera list. Since we always add/remove panels
-      // from the end, a pop() would actually work as well here in constant
-      // time.
-      globalCameras.cameras.splice(globalCameras.cameras.indexOf(camera), 1);
-      globalCameras.orbitRefs.splice(
-        globalCameras.orbitRefs.indexOf(orbitRef),
-        1
-      );
-    };
-  }, [cameraChangedCallback, camera, props.globalCameras]);
-
-  return (
-    <OrbitControls
-      ref={orbitRef}
-      minDistance={0.5}
-      maxDistance={200.0}
-      enableDamping={false}
-      onChange={cameraChangedCallback}
-      makeDefault
-    />
-  );
-}
 
 const SingleViewer = React.memo(function SingleViewer(props: {
   panelKey: number;
@@ -198,8 +75,7 @@ const SingleViewer = React.memo(function SingleViewer(props: {
   const useSceneTree = useSceneTreeState();
   const useGui = useGuiState(initialServer);
 
-  // <Stats showPanel={0} className="stats" />
-  // <gridHelper args={[10.0, 10]} />
+  // TODO: we should consider moving some of these props to a context.
   return (
     <Wrapper ref={wrapperRef}>
       <WebsocketInterface
@@ -217,7 +93,7 @@ const SingleViewer = React.memo(function SingleViewer(props: {
       />
       <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
         <LabelRenderer wrapperRef={wrapperRef} />
-        <SynchronizedOrbitControls
+        <SynchronizedCameraControls
           websocketRef={websocketRef}
           useGui={useGui}
           globalCameras={props.globalCameras}
@@ -229,17 +105,11 @@ const SingleViewer = React.memo(function SingleViewer(props: {
   );
 });
 
-interface CameraPrimitives {
-  synchronize: boolean;
-  cameras: PerspectiveCamera[];
-  orbitRefs: RefObject<OrbitControls_>[];
-}
-
 function Root() {
   const globalCameras = useRef<CameraPrimitives>({
     synchronize: false,
     cameras: [],
-    orbitRefs: [],
+    cameraControlRefs: [],
   });
   const [panelCount, setPanelCount] = useState(
     Math.max(1, getServersFromSearchParams().length)

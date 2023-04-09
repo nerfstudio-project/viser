@@ -20,6 +20,7 @@
     "@types/react-dom": "^18.0.11",
     "@types/three": "^0.150.1",
     "await-lock": "^2.2.2",
+    "hold-event": "^0.2.0",
     "immer": "^9.0.21",
     "isomorphic-ws": "^5.0.0",
     "leva": "^0.9.34",
@@ -66,8 +67,8 @@
     "@types/msgpack": "0.0.31",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
-    "typescript": "^5.0.4",
     "eslint": "^8.38.0",
-    "eslint-plugin-react": "^7.32.2"
+    "eslint-plugin-react": "^7.32.2",
+    "typescript": "^5.0.4"
   }
 }
