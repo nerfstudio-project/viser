@@ -5610,6 +5610,11 @@ hoist-non-react-statics@^3.3.0, hoist-non-react-statics@^3.3.1, hoist-non-react-
   dependencies:
     react-is "^16.7.0"
 
+hold-event@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/hold-event/-/hold-event-0.2.0.tgz#1e8848ba42fb9098aa55006a5f450589dcaf0564"
+  integrity sha512-rko5P1XgHzy4B0NR0xVHEpWPgj0i23f8Mf8qsOugd1CHvfLR0PyIyy+8TAQQA9v8qAa1OZ4XuCKk04rxmPGHNQ==
+
 hoopy@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/hoopy/-/hoopy-0.1.4.tgz#609207d661100033a9a9402ad3dea677381c1b1d"

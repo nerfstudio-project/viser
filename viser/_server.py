@@ -211,7 +211,7 @@ class ViserServer(MessageApi):
                         websocket, client_handle.message_buffer
                     ),
                     _broadcast_producer(websocket, client_id, self._broadcast_buffer),
-                    _consumer(websocket, client_id, handle_incoming),
+                    _consumer(websocket, handle_incoming),
                 )
             except (
                 websockets.exceptions.ConnectionClosedOK,
@@ -289,12 +289,6 @@ class ViserServer(MessageApi):
         event_loop.run_forever()
 
 
-def httpserver(port: int):
-    http.server.HTTPServer(
-        ("", port), http.server.BaseHTTPRequestHandler
-    ).serve_forever()
-
-
 async def _single_connection_producer(
     websocket: WebSocketServerProtocol, buffer: asyncio.Queue
 ) -> None:
@@ -316,7 +310,6 @@ async def _broadcast_producer(
 
 async def _consumer(
     websocket: WebSocketServerProtocol,
-    client_id: ClientId,
     handle_message: Callable[[Message], None],
 ) -> None:
     """Infinite loop waiting for and then handling incoming messages."""

@@ -88,7 +88,7 @@ Scene tree
 - Camera controls
 
   - [x] Orbit controls
-  - [ ] Keyboard
+  - [x] Keyboard
 
 - Message types
 
