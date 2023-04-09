@@ -1,3 +1,10 @@
+# mypy: disable-error-code="misc"
+#
+# TLiteralString overload on `add_gui_select()` is waiting on PEP 675 support in mypy.
+# https://github.com/python/mypy/issues/12554
+#
+# In the meantime, it works great in Pyright/Pylance, which is more important.
+
 from __future__ import annotations
 
 import abc
@@ -18,6 +25,7 @@ from typing import (
     Type,
     TypeVar,
     cast,
+    overload,
 )
 
 import imageio.v3 as iio
@@ -26,7 +34,7 @@ import numpy.typing as onpt
 from typing_extensions import LiteralString, ParamSpec, assert_never
 
 from . import _messages
-from ._gui import GuiHandle, _GuiHandleState
+from ._gui import GuiHandle, GuiSelectHandle, _GuiHandleState
 from ._scene_handle import TransformControlsHandle, _TransformControlsState
 
 if TYPE_CHECKING:
@@ -226,28 +234,50 @@ class MessageApi(abc.ABC):
             },
         )
 
+    # Resolve type of value to a Literal whenever possible.
+    @overload
     def add_gui_select(
         self,
         name: str,
         options: List[TLiteralString],
         initial_value: Optional[TLiteralString] = None,
         disabled: bool = False,
-    ) -> GuiHandle[TLiteralString]:
+    ) -> GuiSelectHandle[TLiteralString]:
+        ...
+
+    @overload
+    def add_gui_select(
+        self,
+        name: str,
+        options: List[str],
+        initial_value: Optional[str] = None,
+        disabled: bool = False,
+    ) -> GuiSelectHandle[str]:
+        ...
+
+    def add_gui_select(
+        self,
+        name: str,
+        options: List[TLiteralString] | List[str],
+        initial_value: Optional[TLiteralString | str] = None,
+        disabled: bool = False,
+    ) -> GuiSelectHandle[TLiteralString] | GuiSelectHandle[str]:
         """Add a dropdown to the GUI."""
         assert len(options) > 0
         if initial_value is None:
             initial_value = options[0]
-        out: GuiHandle[TLiteralString] = self._add_gui_impl(
-            "/".join(self._gui_folder_labels + [name]),
-            initial_value,
-            leva_conf={
-                "value": initial_value,
-                "label": name,
-                "options": options,
-                "disabled": disabled,
-            },
+        return GuiSelectHandle(
+            self._add_gui_impl(
+                "/".join(self._gui_folder_labels + [name]),
+                initial_value,
+                leva_conf={
+                    "value": initial_value,
+                    "label": name,
+                    "options": options,
+                    "disabled": disabled,
+                },
+            )._impl
         )
-        return out
 
     def add_gui_slider(
         self,
@@ -258,7 +288,7 @@ class MessageApi(abc.ABC):
         initial_value: IntOrFloat,
         disabled: bool = False,
     ) -> GuiHandle[IntOrFloat]:
-        """Add a dropdown to the GUI."""
+        """Add a slider to the GUI."""
         assert max >= min
         if step is not None:
             assert step <= (max - min)
