@@ -1,3 +1,10 @@
+# mypy: disable-error-code="arg-type"
+#
+# assert_never() on the `axis` variable is waiting on PEP 675 support in mypy.
+# https://github.com/python/mypy/issues/12554
+#
+# In the meantime, it works great in Pyright/Pylance, which is more important.
+
 """Asynchronous usage of GUI elements: we can attach callbacks that are called as soon
 as we get updates."""
 
@@ -13,6 +20,13 @@ server = viser.ViserServer()
 with server.gui_folder("Control"):
     gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
     gui_axis = server.add_gui_select("Axis", options=["x", "y", "z"])
+    gui_include_z = server.add_gui_checkbox("Z in dropdown", initial_value=True)
+
+    @gui_include_z.on_update
+    def _(_) -> None:
+        gui_axis.set_options(
+            ["x", "y", "z"] if gui_include_z.get_value() else ["x", "y"]
+        )
 
     with server.gui_folder("Sliders"):
         gui_location = server.add_gui_slider(
@@ -30,7 +44,7 @@ with server.gui_folder("Reset"):
 # frame/point cloud pair in the scene..
 
 
-def draw_frame():
+def draw_frame() -> None:
     axis = gui_axis.get_value()
     if axis == "x":
         pos = (gui_location.get_value(), 0.0, 0.0)
@@ -50,7 +64,7 @@ def draw_frame():
     )
 
 
-def draw_points():
+def draw_points() -> None:
     num_points = gui_num_points.get_value()
     server.add_point_cloud(
         "/frame/point_cloud",
