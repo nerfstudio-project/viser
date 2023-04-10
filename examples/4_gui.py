@@ -47,6 +47,9 @@ with server.gui_folder("Editable"):
             "Text",
             initial_value="Hello world",
         )
+        gui_button = server.add_gui_button(
+            "Button"
+        )
         gui_checkbox_disable = server.add_gui_checkbox(
             "Disable",
             initial_value=False,
@@ -82,6 +85,7 @@ while True:
 
     # We can use `set_disabled()` to enable/disable GUI elements.
     gui_text.set_hidden(gui_checkbox_hide.get_value())
+    gui_button.set_hidden(gui_checkbox_hide.get_value())
     gui_rgba.set_disabled(gui_checkbox_disable.get_value())
 
     counter += 1
