@@ -63,7 +63,8 @@ def generate_typescript_defs() -> str:
 
     # Generate interfaces for each specific message.
     for cls in message_types:
-        out_lines.append(f"export interface {cls.__name__} " + "{")
+        out_lines.append(f"interface {cls.__name__} " + "{")
+        out_lines.append(f'  type: "{cls.__name__}";')
         field_names = set([f.name for f in dataclasses.fields(cls)])  # type: ignore
         for name, typ in get_type_hints(cls).items():
             if typ == ClassVar[str]:

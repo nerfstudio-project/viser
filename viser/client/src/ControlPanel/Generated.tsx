@@ -1,11 +1,12 @@
-import { GuiUpdateMessage } from "../WebsocketMessages";
 import { button, folder, LevaPanel, useControls, useCreateStore } from "leva";
 import { LevaCustomTheme } from "leva/dist/declarations/src/styles";
 import { UseGui } from "./GuiState";
 import React, { MutableRefObject } from "react";
 import Box from "@mui/material/Box";
-import { pack } from "msgpackr";
-import { makeThrottledMessageSender } from "../WebsocketInterface";
+import {
+  makeThrottledMessageSender,
+  sendWebsocketMessage,
+} from "../WebsocketInterface";
 
 export const levaTheme: LevaCustomTheme = {
   colors: {
@@ -105,13 +106,11 @@ export default function GeneratedControls(props: {
     if (levaConf["type"] === "BUTTON") {
       // Add a button.
       leafFolder[guiName] = button(() => {
-        const message: GuiUpdateMessage = {
-          type: "gui_update",
+        sendWebsocketMessage(props.websocketRef, {
+          type: "GuiUpdateMessage",
           name: guiName,
           value: true,
-        };
-        const ws = props.websocketRef.current;
-        ws && ws.send(pack(message));
+        });
       }, levaConf["settings"]);
     } else {
       // Add any other kind of input.
@@ -124,12 +123,11 @@ export default function GeneratedControls(props: {
             delete suppressOnChange.current[guiName];
             return;
           }
-          const message: GuiUpdateMessage = {
-            type: "gui_update",
+          sendUpdate({
+            type: "GuiUpdateMessage",
             name: guiName,
             value: value,
-          };
-          sendUpdate(message);
+          });
         },
         render: () => !hidden,
       };

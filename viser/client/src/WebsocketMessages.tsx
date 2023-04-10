@@ -4,23 +4,23 @@
 // For numpy arrays, we directly serialize the underlying data buffer.
 type ArrayBuffer = Uint8Array;
 
-export interface ViewerCameraMessage {
-  type: "viewer_camera";
+interface ViewerCameraMessage {
+  type: "ViewerCameraMessage";
   wxyz: [number, number, number, number];
   position: [number, number, number];
   fov: number;
   aspect: number;
 }
-export interface CameraFrustumMessage {
-  type: "camera_frustum";
+interface CameraFrustumMessage {
+  type: "CameraFrustumMessage";
   name: string;
   fov: number;
   aspect: number;
   scale: number;
   color: number;
 }
-export interface FrameMessage {
-  type: "frame";
+interface FrameMessage {
+  type: "FrameMessage";
   name: string;
   wxyz: [number, number, number, number];
   position: [number, number, number];
@@ -28,23 +28,23 @@ export interface FrameMessage {
   axes_length: number;
   axes_radius: number;
 }
-export interface PointCloudMessage {
-  type: "point_cloud";
+interface PointCloudMessage {
+  type: "PointCloudMessage";
   name: string;
   position: ArrayBuffer;
   color: ArrayBuffer;
   point_size: number;
 }
-export interface MeshMessage {
-  type: "mesh";
+interface MeshMessage {
+  type: "MeshMessage";
   name: string;
   vertices: ArrayBuffer;
   faces: ArrayBuffer;
   color: number;
   wireframe: boolean;
 }
-export interface TransformControlsMessage {
-  type: "transform_controls";
+interface TransformControlsMessage {
+  type: "TransformControlsMessage";
   name: string;
   scale: number;
   line_width: number;
@@ -59,70 +59,70 @@ export interface TransformControlsMessage {
   depth_test: boolean;
   opacity: number;
 }
-export interface TransformControlsSetMessage {
-  type: "transform_controls_set";
+interface TransformControlsSetMessage {
+  type: "TransformControlsSetMessage";
   name: string;
   wxyz: [number, number, number, number];
   position: [number, number, number];
 }
-export interface TransformControlsUpdateMessage {
-  type: "transform_controls_update";
+interface TransformControlsUpdateMessage {
+  type: "TransformControlsUpdateMessage";
   name: string;
   wxyz: [number, number, number, number];
   position: [number, number, number];
 }
-export interface BackgroundImageMessage {
-  type: "background_image";
+interface BackgroundImageMessage {
+  type: "BackgroundImageMessage";
   media_type: "image/jpeg" | "image/png";
   base64_data: string;
 }
-export interface ImageMessage {
-  type: "image";
+interface ImageMessage {
+  type: "ImageMessage";
   name: string;
   media_type: "image/jpeg" | "image/png";
   base64_data: string;
   render_width: number;
   render_height: number;
 }
-export interface RemoveSceneNodeMessage {
-  type: "remove_scene_node";
+interface RemoveSceneNodeMessage {
+  type: "RemoveSceneNodeMessage";
   name: string;
 }
-export interface SetSceneNodeVisibilityMessage {
-  type: "set_scene_node_visibility";
+interface SetSceneNodeVisibilityMessage {
+  type: "SetSceneNodeVisibilityMessage";
   name: string;
   visible: boolean;
 }
-export interface ResetSceneMessage {
-  type: "reset_scene";
+interface ResetSceneMessage {
+  type: "ResetSceneMessage";
 }
-export interface GuiAddMessage {
-  type: "add_gui";
+interface GuiAddMessage {
+  type: "GuiAddMessage";
   name: string;
   folder_labels: string[];
   leva_conf: any;
 }
-export interface GuiRemoveMessage {
-  type: "remove_gui";
+interface GuiRemoveMessage {
+  type: "GuiRemoveMessage";
   name: string;
 }
-export interface GuiUpdateMessage {
-  type: "gui_update";
+interface GuiUpdateMessage {
+  type: "GuiUpdateMessage";
   name: string;
   value: any;
 }
-export interface GuiSetHiddenMessage {
-  type: "gui_set_hidden";
+interface GuiSetHiddenMessage {
+  type: "GuiSetHiddenMessage";
   name: string;
   hidden: boolean;
 }
-export interface GuiSetValueMessage {
-  type: "gui_set";
+interface GuiSetValueMessage {
+  type: "GuiSetValueMessage";
   name: string;
   value: any;
 }
-export interface GuiSetLevaConfMessage {
-  type: "gui_set_leva_conf";
+interface GuiSetLevaConfMessage {
+  type: "GuiSetLevaConfMessage";
   name: string;
   leva_conf: any;
 }

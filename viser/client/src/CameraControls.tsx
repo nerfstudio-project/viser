@@ -6,7 +6,6 @@ import { CameraControls } from "@react-three/drei";
 import { makeThrottledMessageSender } from "./WebsocketInterface";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { ViewerCameraMessage } from "./WebsocketMessages";
 
 export interface CameraPrimitives {
   synchronize: boolean;
@@ -42,8 +41,8 @@ export function SynchronizedCameraControls(props: {
       .multiply(three_camera.quaternion)
       .multiply(R_threecam_cam);
 
-    const message: ViewerCameraMessage = {
-      type: "viewer_camera",
+    sendCameraThrottled({
+      type: "ViewerCameraMessage",
       wxyz: [
         R_world_camera.w,
         R_world_camera.x,
@@ -56,8 +55,7 @@ export function SynchronizedCameraControls(props: {
         .toArray(),
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
-    };
-    sendCameraThrottled(message);
+    });
   }, [camera, sendCameraThrottled]);
 
   // What do we need to when the camera moves?
