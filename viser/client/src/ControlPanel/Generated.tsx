@@ -99,6 +99,7 @@ export default function GeneratedControls(props: {
 
   guiNames.forEach((guiName) => {
     const { levaConf, folderLabels, hidden } = guiConfigFromName[guiName];
+    if (hidden) return;
 
     const leafFolder = getFolderContainer(folderLabels);
 
@@ -129,7 +130,6 @@ export default function GeneratedControls(props: {
             value: value,
           });
         },
-        render: () => !hidden,
       };
     }
   });
