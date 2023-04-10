@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import dataclasses
 import functools
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Tuple, Type, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, cast
 
 import msgpack
 import numpy as onp
@@ -31,7 +31,6 @@ def _prepare_for_serialization(value: Any) -> Any:
 class Message:
     """Base message type for controlling our viewer."""
 
-    type: ClassVar[str]
     excluded_self_client: Optional[ClientId] = None
     """Don't send this message to a particular client. Example of when this is useful:
     for synchronizing GUI stuff, we want to """
@@ -39,7 +38,7 @@ class Message:
     def serialize(self) -> bytes:
         """Convert a Python Message object into bytes."""
         mapping = {k: _prepare_for_serialization(v) for k, v in vars(self).items()}
-        out = msgpack.packb({"type": self.type, **mapping})
+        out = msgpack.packb({"type": type(self).__name__, **mapping})
         assert isinstance(out, bytes)
         return out
 
@@ -62,7 +61,7 @@ class Message:
     @functools.lru_cache
     def _subclass_from_type_string() -> Dict[str, Type[Message]]:
         subclasses = Message.get_subclasses()
-        return {s.type: s for s in subclasses}
+        return {s.__name__: s for s in subclasses}
 
     @staticmethod
     def get_subclasses() -> List[Type[Message]]:
@@ -83,12 +82,10 @@ class ViewerCameraMessage(Message):
     """Message for a posed viewer camera.
     Pose is in the form T_world_camera, OpenCV convention, +Z forward."""
 
-    type: ClassVar[str] = "viewer_camera"
     wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
     fov: float
     aspect: float
-    # Should we include near and far?
 
 
 @dataclasses.dataclass
@@ -97,7 +94,6 @@ class CameraFrustumMessage(Message):
 
     OpenCV convention, +Z forward."""
 
-    type: ClassVar[str] = "camera_frustum"
     name: str
     fov: float
     aspect: float
@@ -112,7 +108,6 @@ class FrameMessage(Message):
     Position and orientation should follow a `T_parent_local` convention, which
     corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`."""
 
-    type: ClassVar[str] = "frame"
     name: str
     wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
@@ -128,10 +123,8 @@ class PointCloudMessage(Message):
     Positions are internally canonicalized to float32, colors to uint8.
 
     Float color inputs should be in the range [0,1], int color inputs should be in the
-    range [0,255].
-    """
+    range [0,255]."""
 
-    type: ClassVar[str] = "point_cloud"
     name: str
     position: onpt.NDArray[onp.float32]
     color: onpt.NDArray[onp.uint8]
@@ -151,10 +144,8 @@ class PointCloudMessage(Message):
 class MeshMessage(Message):
     """Mesh message.
 
-    Vertices are internally canonicalized to float32, faces to uint32.
-    """
+    Vertices are internally canonicalized to float32, faces to uint32."""
 
-    type: ClassVar[str] = "mesh"
     name: str
     vertices: onpt.NDArray[onp.float32]
     faces: onpt.NDArray[onp.uint32]
@@ -171,7 +162,6 @@ class MeshMessage(Message):
 class TransformControlsMessage(Message):
     """Message for transform gizmos."""
 
-    type: ClassVar[str] = "transform_controls"
     name: str
     scale: float
     line_width: float
@@ -197,7 +187,6 @@ class TransformControlsSetMessage(Message):
 
     As with all other messages, transforms take the `T_parent_local` convention."""
 
-    type: ClassVar[str] = "transform_controls_set"
     name: str
     wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
@@ -209,7 +198,6 @@ class TransformControlsUpdateMessage(Message):
 
     As with all other messages, transforms take the `T_parent_local` convention."""
 
-    type: ClassVar[str] = "transform_controls_update"
     name: str
     wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
@@ -219,7 +207,6 @@ class TransformControlsUpdateMessage(Message):
 class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
-    type: ClassVar[str] = "background_image"
     media_type: Literal["image/jpeg", "image/png"]
     base64_data: str
 
@@ -228,10 +215,6 @@ class BackgroundImageMessage(Message):
 class ImageMessage(Message):
     """Message for rendering 2D images."""
 
-    # Note: it might be faster to do the bytes->base64 conversion on the client.
-    # Potentially worth revisiting.
-
-    type: ClassVar[str] = "image"
     name: str
     media_type: Literal["image/jpeg", "image/png"]
     base64_data: str
@@ -243,7 +226,6 @@ class ImageMessage(Message):
 class RemoveSceneNodeMessage(Message):
     """Remove a particular node from the scene."""
 
-    type: ClassVar[str] = "remove_scene_node"
     name: str
 
 
@@ -251,7 +233,6 @@ class RemoveSceneNodeMessage(Message):
 class SetSceneNodeVisibilityMessage(Message):
     """Set the visibility of a particular node in the scene."""
 
-    type: ClassVar[str] = "set_scene_node_visibility"
     name: str
     visible: bool
 
@@ -260,14 +241,11 @@ class SetSceneNodeVisibilityMessage(Message):
 class ResetSceneMessage(Message):
     """Reset scene."""
 
-    type: ClassVar[str] = "reset_scene"
-
 
 @dataclasses.dataclass
 class GuiAddMessage(Message):
     """Sent server->client to add a new GUI input."""
 
-    type: ClassVar[str] = "add_gui"
     name: str
     folder_labels: Tuple[str, ...]
     leva_conf: Any
@@ -277,7 +255,6 @@ class GuiAddMessage(Message):
 class GuiRemoveMessage(Message):
     """Sent server->client to add a new GUI input."""
 
-    type: ClassVar[str] = "remove_gui"
     name: str
 
 
@@ -285,7 +262,6 @@ class GuiRemoveMessage(Message):
 class GuiUpdateMessage(Message):
     """Sent client->server when a GUI input is changed."""
 
-    type: ClassVar[str] = "gui_update"
     name: str
     value: Any
 
@@ -294,7 +270,6 @@ class GuiUpdateMessage(Message):
 class GuiSetHiddenMessage(Message):
     """Sent client->server when a GUI input is changed."""
 
-    type: ClassVar[str] = "gui_set_hidden"
     name: str
     hidden: bool
 
@@ -303,7 +278,6 @@ class GuiSetHiddenMessage(Message):
 class GuiSetValueMessage(Message):
     """Sent server->client to set the value of a particular input."""
 
-    type: ClassVar[str] = "gui_set"
     name: str
     value: Any
 
@@ -312,6 +286,5 @@ class GuiSetValueMessage(Message):
 class GuiSetLevaConfMessage(Message):
     """Sent server->client to override some part of an input's Leva config."""
 
-    type: ClassVar[str] = "gui_set_leva_conf"
     name: str
     leva_conf: Any

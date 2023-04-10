@@ -7,9 +7,18 @@ import { UseGui } from "./ControlPanel/GuiState";
 
 import { SceneNode, UseSceneTree } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
-import { Message, TransformControlsUpdateMessage } from "./WebsocketMessages";
+import { Message } from "./WebsocketMessages";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { PivotControls } from "@react-three/drei";
+
+/** Send message over websocket. */
+export function sendWebsocketMessage(
+  websocketRef: MutableRefObject<WebSocket | null>,
+  message: Message
+) {
+  if (websocketRef.current === null) return;
+  websocketRef.current.send(pack(message));
+}
 
 /** Returns a function for sending messages, with automatic throttling. */
 export function makeThrottledMessageSender(
@@ -74,7 +83,7 @@ function useMessageHandler(
   return (message: Message) => {
     switch (message.type) {
       // Add a coordinate frame.
-      case "frame": {
+      case "FrameMessage": {
         addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => (
             <CoordinateFrame
@@ -97,7 +106,7 @@ function useMessageHandler(
         break;
       }
       // Add a point cloud.
-      case "point_cloud": {
+      case "PointCloudMessage": {
         const geometry = new THREE.BufferGeometry();
         const pointCloudMaterial = new THREE.PointsMaterial({
           size: message.point_size,
@@ -137,7 +146,7 @@ function useMessageHandler(
         break;
       }
       // Add mesh
-      case "mesh": {
+      case "MeshMessage": {
         const geometry = new THREE.BufferGeometry();
         // TODO(hangg): Should expose color as well.
         const material = new THREE.MeshStandardMaterial({
@@ -177,7 +186,7 @@ function useMessageHandler(
         break;
       }
       // Add a camera frustum.
-      case "camera_frustum": {
+      case "CameraFrustumMessage": {
         addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => (
             <CameraFrustum
@@ -191,7 +200,7 @@ function useMessageHandler(
         );
         break;
       }
-      case "transform_controls": {
+      case "TransformControlsMessage": {
         const name = message.name;
         const sendDragMessage = makeThrottledMessageSender(websocketRef, 25);
         addSceneNodeMakeParents(
@@ -214,20 +223,19 @@ function useMessageHandler(
                 const wxyz = new THREE.Quaternion();
                 wxyz.setFromRotationMatrix(l);
                 const position = new THREE.Vector3().setFromMatrixPosition(l);
-                const message: TransformControlsUpdateMessage = {
-                  type: "transform_controls_update",
+                sendDragMessage({
+                  type: "TransformControlsUpdateMessage",
                   name: name,
                   wxyz: [wxyz.w, wxyz.x, wxyz.y, wxyz.z],
                   position: position.toArray(),
-                };
-                sendDragMessage(message);
+                });
               }}
             />
           ))
         );
         break;
       }
-      case "transform_controls_set": {
+      case "TransformControlsSetMessage": {
         const obj = useSceneTree.getState().objFromName[message.name];
         if (obj !== undefined) {
           obj.matrix = new THREE.Matrix4()
@@ -248,7 +256,7 @@ function useMessageHandler(
         break;
       }
       // Add a background image.
-      case "background_image": {
+      case "BackgroundImageMessage": {
         if (wrapperRef.current != null) {
           wrapperRef.current.style.backgroundImage = `url(data:${message.media_type};base64,${message.base64_data})`;
           wrapperRef.current.style.backgroundSize = "cover";
@@ -260,7 +268,7 @@ function useMessageHandler(
         break;
       }
       // Add an image.
-      case "image": {
+      case "ImageMessage": {
         // It's important that we load the texture outside of the node
         // construction callback; this prevents flickering by ensuring that the
         // texture is ready before the scene tree updates.
@@ -288,19 +296,18 @@ function useMessageHandler(
         break;
       }
       // Remove a scene node by name.
-      case "remove_scene_node": {
+      case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
         break;
       }
       // Set the visibility of a particular scene node.
-      case "set_scene_node_visibility": {
+      case "SetSceneNodeVisibilityMessage": {
         setVisibility(message.name, message.visible);
         break;
       }
       // Reset the entire scene, removing all scene nodes.
-      case "reset_scene": {
-        console.log("Resetting scene!");
+      case "ResetSceneMessage": {
         resetScene();
         wrapperRef.current &&
           (wrapperRef.current.style.backgroundImage = "none");
@@ -309,7 +316,7 @@ function useMessageHandler(
         break;
       }
       // Add a GUI input.
-      case "add_gui": {
+      case "GuiAddMessage": {
         addGui(message.name, {
           levaConf: message.leva_conf,
           folderLabels: message.folder_labels,
@@ -318,12 +325,12 @@ function useMessageHandler(
         break;
       }
       // Set the value of a GUI input.
-      case "gui_set": {
+      case "GuiSetValueMessage": {
         guiSet(message.name, message.value);
         break;
       }
       // Set the hidden state of a GUI input.
-      case "gui_set_hidden": {
+      case "GuiSetHiddenMessage": {
         const currentConf = useGui.getState().guiConfigFromName[message.name];
         if (currentConf !== undefined) {
           addGui(message.name, {
@@ -334,7 +341,7 @@ function useMessageHandler(
         break;
       }
       // Add a GUI input.
-      case "gui_set_leva_conf": {
+      case "GuiSetLevaConfMessage": {
         const currentConf = useGui.getState().guiConfigFromName[message.name];
         if (currentConf !== undefined) {
           addGui(message.name, {
@@ -345,7 +352,7 @@ function useMessageHandler(
         break;
       }
       // Remove a GUI input.
-      case "remove_gui": {
+      case "GuiRemoveMessage": {
         removeGui(message.name);
         break;
       }
@@ -415,7 +422,7 @@ export default function WebsocketInterface(props: {
 
         // Try our best to handle messages in order. If this takes more than 1 second, we give up. :)
         await orderLock.acquireAsync({ timeout: 1000 }).catch(() => {
-          console.log("Order lock timed.");
+          console.log("Order lock timed out.");
           orderLock.release();
         });
         try {
