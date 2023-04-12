@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING, Callable, List, Optional, Tuple, TypeVar, cast
 
 import numpy as onp
 
-from . import _messages
-
 if TYPE_CHECKING:
     from ._message_api import ClientId, MessageApi
 
@@ -22,19 +20,30 @@ def _cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
         return cast(TVector, tuple(map(float, vector)))
 
 
-# TODO(by): we can add helpers for stuff like removing scene nodes, click events,
-# etc here...
+@dataclasses.dataclass
+class _SceneNodeHandleState:
+    name: str
+    api: MessageApi
 
-# @dataclasses.dataclass
-# class _SceneHandleState:
-#     name: str
-#     api: MessageApi
-#
-#
-# @dataclasses.dataclass(frozen=True)
-# class SceneHandle:
-#     _impl: _SceneHandleState
-#
+
+@dataclasses.dataclass(frozen=True)
+class SceneNodeHandle:
+    _impl: _SceneNodeHandleState
+
+    def set_transform(
+        self,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray,
+        position: Tuple[float, float, float] | onp.ndarray,
+    ) -> SceneNodeHandle:
+        self._impl.api.set_scene_node_transform(self._impl.name, wxyz, position)
+        return self
+
+    def set_visibility(self, visible: bool) -> SceneNodeHandle:
+        self._impl.api.set_scene_node_visibility(self._impl.name, visible)
+        return self
+
+    def remove(self) -> None:
+        self._impl.api.remove_scene_node(self._impl.name)
 
 
 @dataclasses.dataclass
@@ -71,13 +80,15 @@ class TransformControlsHandle:
         self._impl.update_cb.append(func)
         return func
 
-    def set_state(
+    def set_transform(
         self,
         wxyz: Tuple[float, float, float, float] | onp.ndarray,
         position: Tuple[float, float, float] | onp.ndarray,
-    ) -> None:
-        self._impl.api._queue(
-            _messages.TransformControlsSetMessage(
-                self._impl.name, _cast_vector(wxyz, 4), _cast_vector(position, 3)
-            )
-        )
+    ) -> TransformControlsHandle:
+        self._impl.api.set_scene_node_transform(self._impl.name, wxyz, position)
+        self._impl.wxyz = _cast_vector(wxyz, 4)
+        self._impl.position = _cast_vector(position, 3)
+        return self
+
+    def remove(self) -> None:
+        self._impl.api.remove_scene_node(self._impl.name)

@@ -59,8 +59,8 @@ interface TransformControlsMessage {
   depth_test: boolean;
   opacity: number;
 }
-interface TransformControlsSetMessage {
-  type: "TransformControlsSetMessage";
+interface SetTransformMessage {
+  type: "SetTransformMessage";
   name: string;
   wxyz: [number, number, number, number];
   position: [number, number, number];
@@ -134,7 +134,7 @@ export type Message =
   | PointCloudMessage
   | MeshMessage
   | TransformControlsMessage
-  | TransformControlsSetMessage
+  | SetTransformMessage
   | TransformControlsUpdateMessage
   | BackgroundImageMessage
   | ImageMessage

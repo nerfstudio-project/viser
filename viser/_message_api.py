@@ -35,7 +35,12 @@ from typing_extensions import LiteralString, ParamSpec, assert_never
 
 from . import _messages
 from ._gui import GuiHandle, GuiSelectHandle, _GuiHandleState
-from ._scene_handle import TransformControlsHandle, _TransformControlsState
+from ._scene_handle import (
+    SceneNodeHandle,
+    TransformControlsHandle,
+    _SceneNodeHandleState,
+    _TransformControlsState,
+)
 
 if TYPE_CHECKING:
     from ._server import ClientId
@@ -149,7 +154,7 @@ class MessageApi(abc.ABC):
         yield
         assert self._gui_folder_labels.pop() == label
 
-    def add_gui_button(self, name: str, disabled: bool = False) -> GuiHandle[bool]:
+    def add_gui_button(self, name: str) -> GuiHandle[bool]:
         """Add a button to the GUI. The value of this input is set to `True` every time
         it is clicked; to detect clicks, we can manually set it back to `False`.
 
@@ -157,41 +162,37 @@ class MessageApi(abc.ABC):
         return self._add_gui_impl(
             name,
             initial_value=False,
-            leva_conf={"type": "BUTTON", "settings": {"disabled": disabled}},
+            leva_conf={"type": "BUTTON", "settings": {}},
             is_button=True,
         )
 
-    def add_gui_checkbox(
-        self, name: str, initial_value: bool, disabled: bool = False
-    ) -> GuiHandle[bool]:
+    def add_gui_checkbox(self, name: str, initial_value: bool) -> GuiHandle[bool]:
         """Add a checkbox to the GUI."""
         assert isinstance(initial_value, bool)
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
-            leva_conf={"value": initial_value, "label": name, "disabled": disabled},
+            leva_conf={"value": initial_value, "label": name},
         )
 
-    def add_gui_text(
-        self, name: str, initial_value: str, disabled: bool = False
-    ) -> GuiHandle[str]:
+    def add_gui_text(self, name: str, initial_value: str) -> GuiHandle[str]:
         """Add a text input to the GUI."""
         assert isinstance(initial_value, str)
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
-            leva_conf={"value": initial_value, "label": name, "disabled": disabled},
+            leva_conf={"value": initial_value, "label": name},
         )
 
     def add_gui_number(
-        self, name: str, initial_value: IntOrFloat, disabled: bool = False
+        self, name: str, initial_value: IntOrFloat
     ) -> GuiHandle[IntOrFloat]:
         """Add a number input to the GUI."""
         assert isinstance(initial_value, (int, float))
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
-            leva_conf={"value": initial_value, "label": name, "disabled": disabled},
+            leva_conf={"value": initial_value, "label": name},
         )
 
     def add_gui_vector2(
@@ -199,7 +200,6 @@ class MessageApi(abc.ABC):
         name: str,
         initial_value: Tuple[float, float] | onp.ndarray,
         step: Optional[float] = None,
-        disabled: bool = False,
     ) -> GuiHandle[Tuple[float, float]]:
         """Add a length-2 vector input to the GUI."""
         return self._add_gui_impl(
@@ -209,7 +209,6 @@ class MessageApi(abc.ABC):
                 "value": initial_value,
                 "label": name,
                 "step": step,
-                "disabled": disabled,
             },
         )
 
@@ -219,7 +218,6 @@ class MessageApi(abc.ABC):
         initial_value: Tuple[float, float, float] | onp.ndarray,
         step: Optional[float] = None,
         lock: bool = False,
-        disabled: bool = False,
     ) -> GuiHandle[Tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI."""
         return self._add_gui_impl(
@@ -230,7 +228,6 @@ class MessageApi(abc.ABC):
                 "value": initial_value,
                 "step": step,
                 "lock": lock,
-                "disabled": disabled,
             },
         )
 
@@ -241,7 +238,6 @@ class MessageApi(abc.ABC):
         name: str,
         options: List[TLiteralString],
         initial_value: Optional[TLiteralString] = None,
-        disabled: bool = False,
     ) -> GuiSelectHandle[TLiteralString]:
         ...
 
@@ -251,7 +247,6 @@ class MessageApi(abc.ABC):
         name: str,
         options: List[str],
         initial_value: Optional[str] = None,
-        disabled: bool = False,
     ) -> GuiSelectHandle[str]:
         ...
 
@@ -260,7 +255,6 @@ class MessageApi(abc.ABC):
         name: str,
         options: List[TLiteralString] | List[str],
         initial_value: Optional[TLiteralString | str] = None,
-        disabled: bool = False,
     ) -> GuiSelectHandle[TLiteralString] | GuiSelectHandle[str]:
         """Add a dropdown to the GUI."""
         assert len(options) > 0
@@ -274,7 +268,6 @@ class MessageApi(abc.ABC):
                     "value": initial_value,
                     "label": name,
                     "options": options,
-                    "disabled": disabled,
                 },
             )._impl
         )
@@ -286,7 +279,6 @@ class MessageApi(abc.ABC):
         max: IntOrFloat,
         step: Optional[IntOrFloat],
         initial_value: IntOrFloat,
-        disabled: bool = False,
     ) -> GuiHandle[IntOrFloat]:
         """Add a slider to the GUI."""
         assert max >= min
@@ -303,7 +295,6 @@ class MessageApi(abc.ABC):
                 "min": min,
                 "max": max,
                 "step": step,
-                "disabled": disabled,
             },
         )
 
@@ -311,7 +302,6 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         initial_value: Tuple[int, int, int],
-        disabled: bool = False,
     ) -> GuiHandle[Tuple[int, int, int]]:
         """Add an RGB picker to the GUI."""
         return self._add_gui_impl(
@@ -324,7 +314,6 @@ class MessageApi(abc.ABC):
                     "b": initial_value[2],
                 },
                 "label": name,
-                "disabled": disabled,
             },
             encoder=lambda rgb: dict(zip("rgb", rgb)),
             decoder=lambda rgb_dict: (rgb_dict["r"], rgb_dict["g"], rgb_dict["b"]),
@@ -334,7 +323,6 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         initial_value: Tuple[int, int, int, int],
-        disabled: bool = False,
     ) -> GuiHandle[Tuple[int, int, int, int]]:
         """Add an RGBA picker to the GUI."""
         return self._add_gui_impl(
@@ -348,7 +336,6 @@ class MessageApi(abc.ABC):
                     "a": initial_value[3],
                 },
                 "label": name,
-                "disabled": disabled,
             },
             encoder=lambda rgba: dict(zip("rgba", rgba)),
             decoder=lambda rgba_dict: (
@@ -368,7 +355,7 @@ class MessageApi(abc.ABC):
         color: Tuple[int, int, int]
         | Tuple[float, float, float]
         | onp.ndarray = (80, 120, 255),
-    ) -> None:
+    ) -> SceneNodeHandle:
         color = tuple(
             value if isinstance(value, int) else int(value * 255)  # type: ignore
             for value in color
@@ -383,6 +370,7 @@ class MessageApi(abc.ABC):
                 color=int(color[0] * (256**2) + color[1] * 256 + color[2]),
             )
         )
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
 
     def add_frame(
         self,
@@ -392,7 +380,7 @@ class MessageApi(abc.ABC):
         show_axes: bool = True,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
-    ) -> None:
+    ) -> SceneNodeHandle:
         self._queue(
             _messages.FrameMessage(
                 name=name,
@@ -403,6 +391,7 @@ class MessageApi(abc.ABC):
                 axes_radius=axes_radius,
             )
         )
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
 
     def add_point_cloud(
         self,
@@ -410,7 +399,7 @@ class MessageApi(abc.ABC):
         position: onp.ndarray,
         color: onp.ndarray,
         point_size: float = 0.1,
-    ) -> None:
+    ) -> SceneNodeHandle:
         self._queue(
             _messages.PointCloudMessage(
                 name=name,
@@ -419,6 +408,7 @@ class MessageApi(abc.ABC):
                 point_size=point_size,
             )
         )
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
 
     def add_mesh(
         self,
@@ -429,7 +419,7 @@ class MessageApi(abc.ABC):
         | Tuple[float, float, float]
         | onp.ndarray = (90, 200, 255),
         wireframe: bool = False,
-    ) -> None:
+    ) -> SceneNodeHandle:
         color = tuple(
             value if isinstance(value, int) else int(value * 255)  # type: ignore
             for value in color
@@ -444,6 +434,7 @@ class MessageApi(abc.ABC):
                 wireframe=wireframe,
             )
         )
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
 
     def set_background_image(
         self,
@@ -466,7 +457,7 @@ class MessageApi(abc.ABC):
         render_height: float,
         format: Literal["png", "jpeg"] = "jpeg",
         quality: Optional[int] = None,
-    ) -> None:
+    ) -> SceneNodeHandle:
         media_type, base64_data = _encode_image_base64(image, format, quality=quality)
         self._queue(
             _messages.ImageMessage(
@@ -477,6 +468,7 @@ class MessageApi(abc.ABC):
                 render_height=render_height,
             )
         )
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
 
     def add_transform_controls(
         self,
@@ -518,7 +510,7 @@ class MessageApi(abc.ABC):
         )
 
         def sync_cb(client_id: ClientId, state: _TransformControlsState) -> None:
-            message = _messages.TransformControlsSetMessage(
+            message = _messages.SetTransformMessage(
                 name=name, wxyz=state.wxyz, position=state.position
             )
             message.excluded_self_client = client_id
@@ -544,6 +536,16 @@ class MessageApi(abc.ABC):
 
     def set_scene_node_visibility(self, name: str, visible: bool) -> None:
         self._queue(_messages.SetSceneNodeVisibilityMessage(name=name, visible=visible))
+
+    def set_scene_node_transform(
+        self,
+        name: str,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray,
+        position: Tuple[float, float, float] | onp.ndarray,
+    ) -> None:
+        wxyz = _cast_vector(wxyz, 4)
+        position = _cast_vector(position, 3)
+        self._queue(_messages.SetTransformMessage(name, wxyz, position))
 
     def reset_scene(self):
         self._queue(_messages.ResetSceneMessage())

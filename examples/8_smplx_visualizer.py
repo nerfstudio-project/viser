@@ -260,7 +260,7 @@ def make_gui_elements(
     def sync_transform_controls() -> None:
         """Sync transform controls when a joint angle changes."""
         for t, j in zip(transform_controls, gui_joints):
-            t.set_state(quat_from_so3(j.get_value()), t.get_state().position)
+            t.set_transform(quat_from_so3(j.get_value()), t.get_state().position)
 
     add_transform_controls(enabled=False)
 

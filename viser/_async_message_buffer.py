@@ -3,12 +3,7 @@ import dataclasses
 from asyncio.events import AbstractEventLoop
 from typing import Dict
 
-from ._messages import (
-    BackgroundImageMessage,
-    Message,
-    RemoveSceneNodeMessage,
-    ResetSceneMessage,
-)
+from ._messages import Message, ResetSceneMessage
 
 
 @dataclasses.dataclass
@@ -20,7 +15,7 @@ class AsyncMessageBuffer:
     event_loop: AbstractEventLoop
     message_counter: int = 0
     message_from_id: Dict[int, Message] = dataclasses.field(default_factory=dict)
-    id_from_name: Dict[str, int] = dataclasses.field(default_factory=dict)
+    id_from_redundancy_key: Dict[str, int] = dataclasses.field(default_factory=dict)
     message_event: asyncio.Event = dataclasses.field(default_factory=asyncio.Event)
 
     def push(self, message: Message) -> None:
@@ -29,43 +24,23 @@ class AsyncMessageBuffer:
         # If we're resetting the scene, we don't need any of the prior messages.
         if isinstance(message, ResetSceneMessage):
             self.message_from_id.clear()
-            self.id_from_name.clear()
+            self.id_from_redundancy_key.clear()
 
         # Add message to buffer.
         new_message_id = self.message_counter
         self.message_from_id[new_message_id] = message
         self.message_counter += 1
 
-        # All messages that modify scene nodes have a name field.
-        node_name = getattr(message, "name", None)
-
-        if isinstance(message, BackgroundImageMessage):
-            node_name = "__viser_background_image__"
-
-        if node_name is not None:
-            # TODO: hack to prevent undesirable message culling. We should revisit
-            # this.
-            node_name = str(type(message)) + node_name
-
-            # If an existing message with the same name already exists in our buffer, we
-            # don't need the old one anymore. :-)
-            if node_name is not None and node_name in self.id_from_name:
-                old_message_id = self.id_from_name.pop(node_name)
-                self.message_from_id.pop(old_message_id)
-
-            # If we're removing a scene node, remove children as well.
-            #
-            # TODO: this currently does a linear pass over all existing messages. We
-            # could easily optimize this.
-            if isinstance(message, RemoveSceneNodeMessage) and node_name is not None:
-                remove_list = []
-                for name, id in self.id_from_name.items():
-                    if name.startswith(node_name):
-                        remove_list.append((name, id))
-                for name, id in remove_list:
-                    self.id_from_name.pop(name)
-                    self.message_from_id.pop(id)
-            self.id_from_name[node_name] = new_message_id
+        # If an existing message with the same key already exists in our buffer, we
+        # don't need the old one anymore. :-)
+        #
+        # In the future, we could also add some logic for RemoveSceneNodeMessage, which
+        # could cull out AddSceneNodeMessage for the specificied node and all children.
+        redundancy_key = message.redundancy_key()
+        if redundancy_key is not None and redundancy_key in self.id_from_redundancy_key:
+            old_message_id = self.id_from_redundancy_key.pop(redundancy_key)
+            self.message_from_id.pop(old_message_id)
+        self.id_from_redundancy_key[redundancy_key] = new_message_id
 
         # Notify consumers that a new message is available.
         self.event_loop.call_soon_threadsafe(self.message_event.set)

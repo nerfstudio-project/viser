@@ -71,6 +71,7 @@ class ClientHandle(MessageApi):
         self._incoming_handlers[ViewerCameraMessage] = [handle_camera]
 
     def get_camera(self) -> CameraState:
+        # TODO: there's a risk of getting stuck in an infinite loop here.
         while self._state.camera_info is None:
             time.sleep(0.01)
         return self._state.camera_info

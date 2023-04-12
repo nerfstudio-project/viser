@@ -99,13 +99,12 @@ export default function GeneratedControls(props: {
 
   guiNames.forEach((guiName) => {
     const { levaConf, folderLabels, hidden } = guiConfigFromName[guiName];
-    if (hidden) return;
-
     const leafFolder = getFolderContainer(folderLabels);
 
     // Hacky stuff that lives outside of TypeScript...
     if (levaConf["type"] === "BUTTON") {
       // Add a button.
+      if (hidden) return;
       leafFolder[guiName] = button(() => {
         sendWebsocketMessage(props.websocketRef, {
           type: "GuiUpdateMessage",
@@ -130,6 +129,7 @@ export default function GeneratedControls(props: {
             value: value,
           });
         },
+        render: () => !hidden,
       };
     }
   });
