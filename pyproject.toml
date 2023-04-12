@@ -19,6 +19,7 @@ tqdm = "^4.65.0"
 tyro = "^0.4.2"
 gdown = "^4.6.6"
 rich = "^13.3.3"
+yourdfpy = "^0.0.53"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

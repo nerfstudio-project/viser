@@ -76,6 +76,22 @@ class Message:
 
         return _get_subclasses(Message)
 
+    def redundancy_key(self) -> str:
+        """Returns a unique key for this message, used for detecting redundant
+        messages.
+
+        For example: if we send 1000 GuiSetValue messages for the same gui element, we
+        should only keep the latest messages.
+        """
+        parts = [type(self).__name__]
+
+        # GUI and scene node manipulation messages all have a "name" field.
+        node_name = getattr(self, "name", None)
+        if node_name is not None:
+            parts.append(node_name)
+
+        return "_".join(parts)
+
 
 @dataclasses.dataclass
 class ViewerCameraMessage(Message):
@@ -182,8 +198,8 @@ class TransformControlsMessage(Message):
 
 
 @dataclasses.dataclass
-class TransformControlsSetMessage(Message):
-    """Server -> client message to set a transform control's pose.
+class SetTransformMessage(Message):
+    """Server -> client message to set a scene node's pose.
 
     As with all other messages, transforms take the `T_parent_local` convention."""
 

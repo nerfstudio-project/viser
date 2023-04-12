@@ -23,7 +23,7 @@ while True:
                 print("New camera", client.get_camera())
 
             # Show the client ID in the GUI.
-            client.add_gui_text("Info", initial_value=f"Client {id}", disabled=True)
+            client.add_gui_text("Info", initial_value=f"Client {id}").set_disabled(True)
 
         camera = client.get_camera()
         print(f"Camera pose for client {id}")

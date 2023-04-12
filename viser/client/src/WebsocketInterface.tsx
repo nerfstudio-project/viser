@@ -63,6 +63,7 @@ function useMessageHandler(
   const removeGui = useGui((state) => state.removeGui);
   const guiSet = useGui((state) => state.guiSet);
   const setVisibility = useSceneTree((state) => state.setVisibility);
+  const setMatrix = useSceneTree((state) => state.setMatrix);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -235,10 +236,10 @@ function useMessageHandler(
         );
         break;
       }
-      case "TransformControlsSetMessage": {
-        const obj = useSceneTree.getState().objFromName[message.name];
-        if (obj !== undefined) {
-          obj.matrix = new THREE.Matrix4()
+      case "SetTransformMessage": {
+        setMatrix(
+          message.name,
+          new THREE.Matrix4()
             .makeRotationFromQuaternion(
               new THREE.Quaternion(
                 message.wxyz[1],
@@ -251,8 +252,8 @@ function useMessageHandler(
               message.position[0],
               message.position[1],
               message.position[2]
-            );
-        }
+            )
+        );
         break;
       }
       // Add a background image.
@@ -412,6 +413,16 @@ export default function WebsocketInterface(props: {
         timeout = setTimeout(tryConnect, 1000);
       };
 
+      const messageQueue: Message[] = [];
+
+      // Handle batches of messages at 200Hz. This helps prevent some React errors from interrupting renders.
+      setInterval(() => {
+        const numMessages = messageQueue.length;
+        const processBatch = messageQueue.slice(0, numMessages);
+        messageQueue.splice(0, numMessages);
+        processBatch.forEach(handleMessage);
+      }, 5);
+
       ws.onmessage = async (event) => {
         // Reduce websocket backpressure.
         const messagePromise = new Promise<Message>((resolve) => {
@@ -426,7 +437,8 @@ export default function WebsocketInterface(props: {
           orderLock.release();
         });
         try {
-          handleMessage(await messagePromise);
+          messageQueue.push(await messagePromise);
+          // handleMessage(await messagePromise);
         } finally {
           orderLock.acquired && orderLock.release();
         }

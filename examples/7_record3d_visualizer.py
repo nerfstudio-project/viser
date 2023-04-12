@@ -42,27 +42,13 @@ def main(
     # Add playback UI.
     with server.gui_folder("Playback"):
         gui_timestep = server.add_gui_slider(
-            "Timestep",
-            min=0,
-            max=num_frames - 1,
-            step=1,
-            initial_value=0,
-            disabled=True,
+            "Timestep", min=0, max=num_frames - 1, step=1, initial_value=0
         )
-        gui_next_frame = server.add_gui_button("Next Frame", disabled=True)
-        gui_prev_frame = server.add_gui_button("Prev Frame", disabled=True)
-        gui_playing = server.add_gui_checkbox(
-            "Playing",
-            False,
-            disabled=True,
-        )
+        gui_next_frame = server.add_gui_button("Next Frame")
+        gui_prev_frame = server.add_gui_button("Prev Frame")
+        gui_playing = server.add_gui_checkbox("Playing", False)
         gui_framerate = server.add_gui_slider(
-            "FPS",
-            min=1,
-            max=60,
-            step=0.1,
-            initial_value=loader.fps,
-            disabled=True,
+            "FPS", min=1, max=60, step=0.1, initial_value=loader.fps
         )
 
     # Frame step buttons.
@@ -121,13 +107,6 @@ def main(
 
     # Remove loading progress indicator.
     server.set_scene_node_visibility("/axes", False)
-
-    # Undisable UI after the frames are loaded.
-    gui_timestep.set_disabled(False)
-    gui_next_frame.set_disabled(False)
-    gui_prev_frame.set_disabled(False)
-    gui_playing.set_disabled(False)
-    gui_framerate.set_disabled(False)
 
     # Hide all but the current frame.
     for i in range(num_frames):
