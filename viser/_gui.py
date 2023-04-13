@@ -99,6 +99,7 @@ class GuiHandle(Generic[T]):
     def set_value(self, value: Union[T, onp.ndarray]) -> GuiHandle[T]:
         if isinstance(value, onp.ndarray):
             assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
+            value = tuple(map(float, value))  # type: ignore
 
         # Send to client, except for buttons.
         if not self._impl.is_button:
