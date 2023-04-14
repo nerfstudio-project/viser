@@ -63,8 +63,10 @@ def _encode_rgb(
     | Tuple[float, float, float]
     | onp.ndarray = (80, 120, 255),
 ) -> int:
+    if isinstance(rgb, onp.ndarray):
+        assert rgb.shape == (3,)
     rgb_fixed = tuple(
-        value if isinstance(value, int) else int(value * 255) for value in rgb
+        value if onp.issubdtype(type(value), onp.integer) else int(value * 255) for value in rgb
     )
     assert len(rgb_fixed) == 3
     return int(rgb_fixed[0] * (256**2) + rgb_fixed[1] * 256 + rgb_fixed[2])
