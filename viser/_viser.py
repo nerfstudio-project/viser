@@ -45,7 +45,7 @@ class ClientHandle(MessageApi):
     @override
     def _queue(self, message: infra.Message) -> None:
         """Define how the message API should send messages."""
-        self._state.connection.queue_message(message)
+        self._state.connection.send(message)
 
     def get_camera(self) -> CameraState:
         """Get the view camera from a particular client. Blocks if not available yet."""

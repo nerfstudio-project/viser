@@ -34,9 +34,6 @@ class AsyncMessageBuffer:
 
         # If an existing message with the same key already exists in our buffer, we
         # don't need the old one anymore. :-)
-        #
-        # In the future, we could also add some logic for RemoveSceneNodeMessage, which
-        # could cull out AddSceneNodeMessage for the specificied node and all children.
         redundancy_key = message.redundancy_key()
         if redundancy_key is not None and redundancy_key in self.id_from_redundancy_key:
             old_message_id = self.id_from_redundancy_key.pop(redundancy_key)

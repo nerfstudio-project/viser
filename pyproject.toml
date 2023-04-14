@@ -1,9 +1,8 @@
 [tool.poetry]
 name = "viser"
-version = "0.0.0"
+version = "0.0.1"
 description = "3D visualization helper"
 authors = ["brentyi <brentyi@berkeley.edu>"]
-include = ["./viser/**/*.py", "./viser/py.typed", "./viser/client/build/**/*"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
