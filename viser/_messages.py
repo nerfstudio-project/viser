@@ -4,78 +4,17 @@
 from __future__ import annotations
 
 import dataclasses
-import functools
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type, cast
+from typing import Any, Tuple
 
-import msgpack
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Literal
+from typing_extensions import Literal, override
 
-if TYPE_CHECKING:
-    from ._server import ClientId
-else:
-    ClientId = Any
+from . import infra
 
 
-def _prepare_for_serialization(value: Any) -> Any:
-    """Prepare any special types for serialization. Currently just maps numpy arrays to
-    their underlying data buffers."""
-
-    if isinstance(value, onp.ndarray):
-        return value.data if value.data.c_contiguous else value.copy().data
-    else:
-        return value
-
-
-class Message:
-    """Base message type for controlling our viewer."""
-
-    excluded_self_client: Optional[ClientId] = None
-    """Don't send this message to a particular client. Example of when this is useful:
-    for synchronizing GUI stuff, we want to """
-
-    def serialize(self) -> bytes:
-        """Convert a Python Message object into bytes."""
-        mapping = {k: _prepare_for_serialization(v) for k, v in vars(self).items()}
-        out = msgpack.packb({"type": type(self).__name__, **mapping})
-        assert isinstance(out, bytes)
-        return out
-
-    @staticmethod
-    def deserialize(message: bytes) -> Message:
-        """Convert bytes into a Python Message object."""
-        mapping = msgpack.unpackb(message)
-
-        # msgpack deserializes to lists by default, but all of our annotations use
-        # tuples.
-        mapping = {
-            k: tuple(v) if isinstance(v, list) else v for k, v in mapping.items()
-        }
-        message_type = Message._subclass_from_type_string()[
-            cast(str, mapping.pop("type"))
-        ]
-        return message_type(**mapping)
-
-    @staticmethod
-    @functools.lru_cache
-    def _subclass_from_type_string() -> Dict[str, Type[Message]]:
-        subclasses = Message.get_subclasses()
-        return {s.__name__: s for s in subclasses}
-
-    @staticmethod
-    def get_subclasses() -> List[Type[Message]]:
-        """Recursively get message subclasses."""
-
-        def _get_subclasses(typ: Type[Message]) -> List[Type[Message]]:
-            out = []
-            for sub in typ.__subclasses__():
-                out.append(sub)
-                out.extend(_get_subclasses(sub))
-            return out
-
-        return _get_subclasses(Message)
-
+class Message(infra.Message):
+    @override
     def redundancy_key(self) -> str:
         """Returns a unique key for this message, used for detecting redundant
         messages.

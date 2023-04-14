@@ -5,10 +5,9 @@ import dataclasses
 import http.server
 import mimetypes
 import threading
-import time
 from asyncio.events import AbstractEventLoop
 from pathlib import Path
-from typing import Callable, Dict, List, NewType, Optional, Tuple
+from typing import Any, Callable, Dict, List, NewType, Optional, Tuple, Type, TypeVar
 
 import rich
 import websockets.connection
@@ -18,36 +17,50 @@ import websockets.server
 from rich import box, style
 from rich.panel import Panel
 from rich.table import Table
-from typing_extensions import override
 from websockets.legacy.server import WebSocketServerProtocol
 
 from ._async_message_buffer import AsyncMessageBuffer
-from ._message_api import MessageApi
-from ._messages import Message, ViewerCameraMessage
-
-
-@dataclasses.dataclass(frozen=True)
-class CameraState:
-    """Information about a client's camera state."""
-
-    wxyz: Tuple[float, float, float, float]
-    position: Tuple[float, float, float]
-    fov: float
-    aspect: float
-    last_updated: float
+from ._messages import Message
 
 
 @dataclasses.dataclass
 class _ClientHandleState:
-    # Internal state for ClientHandle objects.
-    camera_info: Optional[CameraState]
+    # Internal state for ClientConnection objects.
     message_buffer: asyncio.Queue
     event_loop: AbstractEventLoop
-    camera_cb: List[Callable[[ClientHandle], None]]
+
+
+ClientId = NewType("ClientId", int)
+TMessage = TypeVar("TMessage", bound=Message)
+
+
+class MessageHandler:
+    """Mix-in for adding message handling + callbacks to a class."""
+
+    def __init__(self) -> None:
+        self._incoming_handlers: Dict[
+            Type[Message], List[Callable[[ClientId, Message], None]]
+        ] = {}
+
+    def register_handler(
+        self,
+        message_cls: Type[TMessage],
+        callback: Callable[[ClientId, TMessage], None],
+    ) -> None:
+        """Register a handler for a particular message type."""
+        if message_cls not in self._incoming_handlers:
+            self._incoming_handlers[message_cls] = []
+        self._incoming_handlers[message_cls].append(callback)  # type: ignore
+
+    def _handle_incoming_message(self, client_id: ClientId, message: Message) -> None:
+        """Handle incoming messages."""
+        if type(message) in self._incoming_handlers:
+            for cb in self._incoming_handlers[type(message)]:
+                cb(client_id, message)
 
 
 @dataclasses.dataclass
-class ClientHandle(MessageApi):
+class ClientConnection(MessageHandler):
     """Handle for interacting with a single connected client.
 
     We can use this to read the camera state or send client-specific messages."""
@@ -58,32 +71,7 @@ class ClientHandle(MessageApi):
     def __post_init__(self) -> None:
         super().__init__()
 
-        def handle_camera(client_id: ClientId, message: Message) -> None:
-            """Handle camera messages."""
-            if not isinstance(message, ViewerCameraMessage):
-                return
-            self._state.camera_info = CameraState(
-                message.wxyz, message.position, message.fov, message.aspect, time.time()
-            )
-            for cb in self._state.camera_cb:
-                cb(self)
-
-        self._incoming_handlers[ViewerCameraMessage] = [handle_camera]
-
-    def get_camera(self) -> CameraState:
-        # TODO: there's a risk of getting stuck in an infinite loop here.
-        while self._state.camera_info is None:
-            time.sleep(0.01)
-        return self._state.camera_info
-
-    def on_camera_update(
-        self, callback: Callable[[ClientHandle], None]
-    ) -> Callable[[ClientHandle], None]:
-        self._state.camera_cb.append(callback)
-        return callback
-
-    @override
-    def _queue(self, message: Message) -> None:
+    def queue_message(self, message: Message) -> None:
         """Implements message enqueue required by MessageApi.
 
         Pushes a message onto a client-specific queue."""
@@ -92,12 +80,9 @@ class ClientHandle(MessageApi):
         )
 
 
-ClientId = NewType("ClientId", int)
-
-
-class ViserServer(MessageApi):
-    """Core visualization server. Communicates asynchronously with client applications
-    via websocket connections.
+class Server(MessageHandler):
+    """Core websocket + optionally HTTP server. Communicates asynchronously with client
+    applications via websocket connections.
 
     By default, all messages (eg `server.add_frame()`) are broadcasted to all connected
     clients.
@@ -108,21 +93,30 @@ class ViserServer(MessageApi):
 
     def __init__(
         self,
-        host: str = "localhost",
-        port: int = 8080,
-        http_server: bool = True,
+        host: str,
+        port: int,
+        http_server_root: Optional[Path] = None,
     ):
         super().__init__()
 
         # Track connected clients.
-        self._handle_from_client: Dict[ClientId, _ClientHandleState] = {}
-        self._client_lock = threading.Lock()
+        self._client_connect_cb: List[Callable[[ClientConnection], None]] = []
+        self._client_disconnect_cb: List[Callable[[ClientConnection], None]] = []
+
+        self._host = host
+        self._port = port
+        self._http_server_root = http_server_root
+
+    def start(self) -> None:
+        """Start the server."""
 
         # Start server thread.
         ready_sem = threading.Semaphore(value=1)
         ready_sem.acquire()
         threading.Thread(
-            target=lambda: self._background_worker(host, port, ready_sem, http_server),
+            target=lambda: self._background_worker(
+                self._host, self._port, ready_sem, self._http_server_root
+            ),
             daemon=True,
         ).start()
 
@@ -132,25 +126,16 @@ class ViserServer(MessageApi):
         # Broadcast buffer should be populated by the background worker.
         assert isinstance(self._broadcast_buffer, AsyncMessageBuffer)
 
-        # Reset the scene.
-        self.reset_scene()
+    def on_client_connect(self, cb: Callable[[ClientConnection], Any]) -> None:
+        """Attach a callback to run for newly connected clients."""
+        self._client_connect_cb.append(cb)
 
-    def get_clients(self) -> Dict[ClientId, ClientHandle]:
-        """Get a mapping from client IDs to client handles.
+    def on_client_disconnect(self, cb: Callable[[ClientConnection], Any]) -> None:
+        """Attach a callback to run when clients disconnect."""
+        self._client_disconnect_cb.append(cb)
 
-        We can use client handles to get camera information, send individual messages to
-        clients, etc."""
-
-        self._client_lock.acquire()
-        out = {k: ClientHandle(k, v) for k, v in self._handle_from_client.items()}
-        self._client_lock.release()
-        return out
-
-    @override
-    def _queue(self, message: Message) -> None:
-        """Implements message enqueue required by MessageApi.
-
-        Pushes a message onto a broadcast queue."""
+    def broadcast(self, message: Message) -> None:
+        """Pushes a message onto a broadcast queue. Message will be sent to all clients."""
         self._broadcast_buffer.push(message)
 
     def _background_worker(
@@ -158,7 +143,7 @@ class ViserServer(MessageApi):
         host: str,
         port: int,
         ready_sem: threading.Semaphore,
-        http_server: bool,
+        http_server_root: Optional[Path],
     ) -> None:
         # Need to make a new event loop for notebook compatbility.
         event_loop = asyncio.new_event_loop()
@@ -188,28 +173,26 @@ class ViserServer(MessageApi):
                 f" {len(self._broadcast_buffer.message_from_id)} persistent messages"
             )
 
-            client_handle = _ClientHandleState(
-                camera_info=None,
+            client_state = _ClientHandleState(
                 message_buffer=asyncio.Queue(),
                 event_loop=event_loop,
-                camera_cb=[],
             )
-            self._client_lock.acquire()
-            self._handle_from_client[client_id] = client_handle
-            self._client_lock.release()
+            client_connection = ClientConnection(client_id, client_state)
 
             def handle_incoming(message: Message) -> None:
                 self._handle_incoming_message(client_id, message)
-                ClientHandle(client_id, client_handle)._handle_incoming_message(
-                    client_id, message
-                )
+                client_connection._handle_incoming_message(client_id, message)
+
+            # New connection callbacks.
+            for cb in self._client_connect_cb:
+                cb(client_connection)
 
             try:
                 # For each client: infinite loop over producers (which send messages)
                 # and consumers (which receive messages).
                 await asyncio.gather(
                     _single_connection_producer(
-                        websocket, client_handle.message_buffer
+                        websocket, client_id, client_state.message_buffer
                     ),
                     _broadcast_producer(websocket, client_id, self._broadcast_buffer),
                     _consumer(websocket, handle_incoming),
@@ -218,15 +201,16 @@ class ViserServer(MessageApi):
                 websockets.exceptions.ConnectionClosedOK,
                 websockets.exceptions.ConnectionClosedError,
             ):
+                # Disconnection callbacks.
+                for cb in self._client_disconnect_cb:
+                    cb(client_connection)
+
                 # Cleanup.
                 rich.print(
                     f"[bold](viser)[/bold] Connection closed ({client_id},"
                     f" {total_connections} total)"
                 )
                 total_connections -= 1
-                self._client_lock.acquire()
-                self._handle_from_client.pop(client_id)
-                self._client_lock.release()
 
         # Host client on the same port as the websocket.
         async def viser_http_server(
@@ -243,7 +227,8 @@ class ViserServer(MessageApi):
             relpath = str(Path(path).relative_to("/"))
             if relpath == ".":
                 relpath = "index.html"
-            source = Path(__file__).absolute().parent / "client" / "build" / relpath
+            assert http_server_root is not None
+            source = http_server_root / relpath
 
             # Try to read + send over file.
             try:
@@ -265,7 +250,9 @@ class ViserServer(MessageApi):
                         host,
                         port,
                         compression=None,
-                        process_request=viser_http_server if http_server else None,
+                        process_request=viser_http_server
+                        if http_server_root is not None
+                        else None,
                     )
                 )
                 break
@@ -282,7 +269,8 @@ class ViserServer(MessageApi):
             box=box.MINIMAL,
             title_style=style.Style(bold=True),
         )
-        table.add_row("HTTP", f"[link={http_url}]{http_url}[/link]")
+        if http_server_root is not None:
+            table.add_row("HTTP", f"[link={http_url}]{http_url}[/link]")
         table.add_row("Websocket", f"[link={ws_url}]{ws_url}[/link]")
 
         rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
@@ -291,11 +279,13 @@ class ViserServer(MessageApi):
 
 
 async def _single_connection_producer(
-    websocket: WebSocketServerProtocol, buffer: asyncio.Queue
+    websocket: WebSocketServerProtocol, client_id: ClientId, buffer: asyncio.Queue
 ) -> None:
     """Infinite loop to send messages from the client buffer."""
     while True:
         message = await buffer.get()
+        if message.excluded_self_client == client_id:
+            continue
         await websocket.send(message.serialize())
 
 

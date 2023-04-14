@@ -3,11 +3,12 @@
 import pathlib
 import subprocess
 
-from viser._typescript_interface_gen import generate_typescript_defs
+import viser.infra
+from viser._messages import Message
 
 if __name__ == "__main__":
     # Generate typescript source.
-    defs = generate_typescript_defs()
+    defs = viser.infra.generate_typescript_interfaces(Message)
 
     # Write to file.
     target_path = pathlib.Path(__file__).parent / pathlib.Path(

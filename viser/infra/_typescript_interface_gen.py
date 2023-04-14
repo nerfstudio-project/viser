@@ -46,20 +46,10 @@ def _get_ts_type(typ: Type) -> str:
     assert False, f"Unsupported type: {typ}"
 
 
-def generate_typescript_defs() -> str:
-    out_lines = [
-        (
-            "// AUTOMATICALLY GENERATED message interfaces, from Python dataclass"
-            " definitions."
-        ),
-        "// This file should not be manually modified.",
-        "",
-        "// For numpy arrays, we directly serialize the underlying data buffer.",
-        "type ArrayBuffer = Uint8Array;",
-        "",
-    ]
-
-    message_types = Message.get_subclasses()
+def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
+    """Generate TypeScript definitions for all subclasses of a base message class."""
+    out_lines = []
+    message_types = message_cls.get_subclasses()
 
     # Generate interfaces for each specific message.
     for cls in message_types:
@@ -83,4 +73,28 @@ def generate_typescript_defs() -> str:
         out_lines.append(f"  | {cls.__name__}")
     out_lines[-1] = out_lines[-1] + ";"
 
-    return "\n".join(out_lines) + "\n"
+    interfaces = "\n".join(out_lines) + "\n"
+
+    # Add header and return.
+    return (
+        "\n".join(
+            [
+                (
+                    "// AUTOMATICALLY GENERATED message interfaces, from Python dataclass"
+                    " definitions."
+                ),
+                "// This file should not be manually modified.",
+                "",
+            ]
+            + (
+                # Add numpy type alias if needed.
+                [
+                    "// For numpy arrays, we directly serialize the underlying data buffer.",
+                    "type ArrayBuffer = Uint8Array;" "",
+                ]
+                if interfaces.count("ArrayBuffer") > 0
+                else []
+            )
+        )
+        + interfaces
+    )
