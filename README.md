@@ -56,13 +56,13 @@ yarn start
 
 ## Demos
 
-**Interactive SMPL-X Example**
+### Interactive SMPL-X Example
 
 https://user-images.githubusercontent.com/6992947/228734499-87d8a12a-df1a-4511-a4e0-0a46bd8532fd.mov
 
 
-**Interactive NeRF rendering**
+### Interactive NeRF rendering
 
-(code not yet released)
+(code not released)
 
 https://user-images.githubusercontent.com/6992947/232163875-ff788455-f074-4bd3-9154-5330b5ed4733.mov
