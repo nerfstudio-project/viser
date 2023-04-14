@@ -1,6 +1,13 @@
 # viser
 
-**[ [API Reference](https://brentyi.github.io/viser) ]**
+**[ [API Reference](https://brentyi.github.io/viser) ]** &nbsp;&nbsp;&bull;&nbsp;&nbsp; `pip install viser`
+
+![pyright](https://github.com/brentyi/viser/workflows/pyright/badge.svg)
+![mypy](https://github.com/brentyi/viser/workflows/mypy/badge.svg)
+![typescript](https://github.com/brentyi/viser/workflows/typescript-compile/badge.svg)
+[![pypi](https://img.shields.io/pypi/pyversions/viser)](https://pypi.org/project/viser)
+
+---
 
 `viser` is a library for interactive 3D visualization + Python, inspired by
 our favorite bits of the
