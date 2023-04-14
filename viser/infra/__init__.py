@@ -1,10 +1,14 @@
-"""Application-agnostic communication for viser.
+"""Websocket-based communication infrastructure.
 
-We specify interfaces for:
-    - Launching a websocket+HTTP server on a shared port.
-    - Registering callbacks for new connections and incoming messages.
-    - Defining dataclass-based message types.
-    - Translating Python message types to TypeScript interfaces.
+We implement abstractions for:
+- Launching a websocket+HTTP server on a shared port.
+- Registering callbacks for connection events and incoming messages.
+- Asynchronous message sending, both broadcasted and to individual clients.
+- Defining dataclass-based message types.
+- Translating Python message types to TypeScript interfaces.
+
+These are what `viser` runs on under-the-hood, and generally won't be useful unless
+you're building your own front-end from scratch.
 """
 
 from ._core import ClientConnection as ClientConnection

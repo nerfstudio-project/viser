@@ -33,8 +33,8 @@ class Message(abc.ABC):
     """Base message type for controlling our viewer."""
 
     excluded_self_client: Optional[ClientId] = None
-    """Don't send this message to a particular client. Example of when this is useful:
-    for synchronizing GUI stuff, we want to """
+    """Don't send this message to a particular client. Useful when a client wants to
+    send synchronization information to other clients."""
 
     def serialize(self) -> bytes:
         """Convert a Python Message object into bytes."""
@@ -82,6 +82,6 @@ class Message(abc.ABC):
         """Returns a unique key for this message, used for detecting redundant
         messages.
 
-        For example: if we send 1000 GuiSetValue messages for the same gui element, we
-        should only keep the latest messages.
+        For example: if we send 1000 "set value" messages for the same gui element, we
+        should only keep the latest message.
         """

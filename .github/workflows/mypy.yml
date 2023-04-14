@@ -21,10 +21,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -e .
-          pip install -r ./examples/requirements.txt
-          pip install mypy
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install
+          poetry run pip install -r ./examples/requirements.txt
+          poetry run pip install mypy
       - name: Test with mypy
         run: |
-          mypy --install-types --non-interactive .
+          poetry run mypy --install-types --non-interactive .

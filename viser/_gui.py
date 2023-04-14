@@ -152,7 +152,7 @@ StringType = TypeVar("StringType", bound=str)
 
 
 @dataclasses.dataclass(frozen=True)
-class GuiSelectHandle(Generic[StringType], GuiHandle[StringType]):
+class GuiSelectHandle(GuiHandle[StringType], Generic[StringType]):
     def set_options(self, options: List[StringType]) -> None:
         """Assign a new set of options for the dropdown menu.
 

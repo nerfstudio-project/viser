@@ -37,14 +37,17 @@ class SceneNodeHandle:
         wxyz: Tuple[float, float, float, float] | onp.ndarray,
         position: Tuple[float, float, float] | onp.ndarray,
     ) -> SceneNodeHandle:
+        """Set the 6D pose of the scene node."""
         self._impl.api.set_scene_node_transform(self._impl.name, wxyz, position)
         return self
 
     def set_visibility(self, visible: bool) -> SceneNodeHandle:
+        """Set the visibility of the scene node."""
         self._impl.api.set_scene_node_visibility(self._impl.name, visible)
         return self
 
     def remove(self) -> None:
+        """Remove the node from the scene."""
         self._impl.api.remove_scene_node(self._impl.name)
 
 
@@ -69,11 +72,12 @@ class TransformControlsState:
 
 @dataclasses.dataclass(frozen=True)
 class TransformControlsHandle:
-    """Handle for interacting with transform control nodes."""
+    """Handle for interacting with transform control gizmos."""
 
     _impl: _TransformControlsState
 
     def get_state(self) -> TransformControlsState:
+        """Get the current state of the gizmo."""
         return TransformControlsState(
             self._impl.wxyz, self._impl.position, self._impl.last_updated
         )
@@ -81,6 +85,7 @@ class TransformControlsHandle:
     def on_update(
         self, func: Callable[[TransformControlsHandle], None]
     ) -> Callable[[TransformControlsHandle], None]:
+        """Attach a callback for when the gizmo is moved."""
         self._impl.update_cb.append(func)
         return func
 
@@ -89,10 +94,12 @@ class TransformControlsHandle:
         wxyz: Tuple[float, float, float, float] | onp.ndarray,
         position: Tuple[float, float, float] | onp.ndarray,
     ) -> TransformControlsHandle:
+        """Set the 6D pose of the gizmo."""
         self._impl.api.set_scene_node_transform(self._impl.name, wxyz, position)
         self._impl.wxyz = _cast_vector(wxyz, 4)
         self._impl.position = _cast_vector(position, 3)
         return self
 
     def remove(self) -> None:
+        """Remove the node from the scene."""
         self._impl.api.remove_scene_node(self._impl.name)
