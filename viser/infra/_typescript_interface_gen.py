@@ -1,8 +1,8 @@
 import dataclasses
-from typing import Any, ClassVar, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, ClassVar, Type, Union, get_type_hints
 
 import numpy as onp
-from typing_extensions import Literal
+from typing_extensions import Literal, get_args, get_origin
 
 from ._messages import Message
 
@@ -80,8 +80,8 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
         "\n".join(
             [
                 (
-                    "// AUTOMATICALLY GENERATED message interfaces, from Python dataclass"
-                    " definitions."
+                    "// AUTOMATICALLY GENERATED message interfaces, from Python"
+                    " dataclass definitions."
                 ),
                 "// This file should not be manually modified.",
                 "",
@@ -89,8 +89,11 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
             + (
                 # Add numpy type alias if needed.
                 [
-                    "// For numpy arrays, we directly serialize the underlying data buffer.",
-                    "type ArrayBuffer = Uint8Array;" "",
+                    (
+                        "// For numpy arrays, we directly serialize the underlying data"
+                        " buffer."
+                    ),
+                    "type ArrayBuffer = Uint8Array;",
                 ]
                 if interfaces.count("ArrayBuffer") > 0
                 else []

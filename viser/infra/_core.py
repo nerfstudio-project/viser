@@ -96,6 +96,7 @@ class Server(MessageHandler):
         host: str,
         port: int,
         http_server_root: Optional[Path] = None,
+        verbose: bool = True,
     ):
         super().__init__()
 
@@ -106,6 +107,7 @@ class Server(MessageHandler):
         self._host = host
         self._port = port
         self._http_server_root = http_server_root
+        self._verbose = verbose
 
     def start(self) -> None:
         """Start the server."""
@@ -167,11 +169,13 @@ class Server(MessageHandler):
                 nonlocal total_connections
                 total_connections += 1
 
-            rich.print(
-                f"[bold](viser)[/bold] Connection opened ({client_id},"
-                f" {total_connections} total),"
-                f" {len(self._broadcast_buffer.message_from_id)} persistent messages"
-            )
+            if self._verbose:
+                rich.print(
+                    f"[bold](viser)[/bold] Connection opened ({client_id},"
+                    f" {total_connections} total),"
+                    f" {len(self._broadcast_buffer.message_from_id)} persistent"
+                    " messages"
+                )
 
             client_state = _ClientHandleState(
                 message_buffer=asyncio.Queue(),
@@ -206,11 +210,12 @@ class Server(MessageHandler):
                     cb(client_connection)
 
                 # Cleanup.
-                rich.print(
-                    f"[bold](viser)[/bold] Connection closed ({client_id},"
-                    f" {total_connections} total)"
-                )
                 total_connections -= 1
+                if self._verbose:
+                    rich.print(
+                        f"[bold](viser)[/bold] Connection closed ({client_id},"
+                        f" {total_connections} total)"
+                    )
 
         # Host client on the same port as the websocket.
         async def viser_http_server(
@@ -232,10 +237,12 @@ class Server(MessageHandler):
 
             # Try to read + send over file.
             try:
-                return (  # type: ignore
+                return (
                     http.HTTPStatus.OK,
                     {
-                        "content-type": mimetypes.MimeTypes().guess_type(relpath)[0],
+                        "content-type": str(
+                            mimetypes.MimeTypes().guess_type(relpath)[0]
+                        ),
                     },
                     source.read_bytes(),
                 )
@@ -250,9 +257,9 @@ class Server(MessageHandler):
                         host,
                         port,
                         compression=None,
-                        process_request=viser_http_server
-                        if http_server_root is not None
-                        else None,
+                        process_request=(
+                            viser_http_server if http_server_root is not None else None
+                        ),
                     )
                 )
                 break
@@ -260,20 +267,21 @@ class Server(MessageHandler):
                 port += 1
                 continue
 
-        http_url = f"http://{host}:{port}"
-        ws_url = f"ws://{host}:{port}"
+        if self._verbose:
+            http_url = f"http://{host}:{port}"
+            ws_url = f"ws://{host}:{port}"
 
-        table = Table(
-            title=None,
-            show_header=False,
-            box=box.MINIMAL,
-            title_style=style.Style(bold=True),
-        )
-        if http_server_root is not None:
-            table.add_row("HTTP", f"[link={http_url}]{http_url}[/link]")
-        table.add_row("Websocket", f"[link={ws_url}]{ws_url}[/link]")
+            table = Table(
+                title=None,
+                show_header=False,
+                box=box.MINIMAL,
+                title_style=style.Style(bold=True),
+            )
+            if http_server_root is not None:
+                table.add_row("HTTP", f"[link={http_url}]{http_url}[/link]")
+            table.add_row("Websocket", f"[link={ws_url}]{ws_url}[/link]")
 
-        rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
+            rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
 
         event_loop.run_forever()
 

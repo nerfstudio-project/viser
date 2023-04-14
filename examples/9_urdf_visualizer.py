@@ -72,12 +72,16 @@ def main(urdf_path: Path):
             assert isinstance(joint, yourdfpy.Joint)
             slider = server.add_gui_slider(
                 name=joint_name,
-                min=joint.limit.lower
-                if joint.limit is not None and joint.limit.lower is not None
-                else -onp.pi,
-                max=joint.limit.upper
-                if joint.limit is not None and joint.limit.upper is not None
-                else onp.pi,
+                min=(
+                    joint.limit.lower
+                    if joint.limit is not None and joint.limit.lower is not None
+                    else -onp.pi
+                ),
+                max=(
+                    joint.limit.upper
+                    if joint.limit is not None and joint.limit.upper is not None
+                    else onp.pi
+                ),
                 step=1e-3,
                 initial_value=0.0,
             )

@@ -28,6 +28,8 @@ class _SceneNodeHandleState:
 
 @dataclasses.dataclass(frozen=True)
 class SceneNodeHandle:
+    """Handle for interacting with scene nodes."""
+
     _impl: _SceneNodeHandleState
 
     def set_transform(
@@ -67,6 +69,8 @@ class TransformControlsState:
 
 @dataclasses.dataclass(frozen=True)
 class TransformControlsHandle:
+    """Handle for interacting with transform control nodes."""
+
     _impl: _TransformControlsState
 
     def get_state(self) -> TransformControlsState:

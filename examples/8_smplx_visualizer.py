@@ -9,7 +9,7 @@ import dataclasses
 import functools
 import time
 from pathlib import Path
-from typing import List, Literal, Tuple, Union
+from typing import List, Tuple, Union
 
 import numpy as onp
 import smplx
@@ -18,6 +18,7 @@ import smplx.lbs
 import torch
 import tyro
 from scipy.spatial.transform import Rotation
+from typing_extensions import Literal
 
 import viser
 

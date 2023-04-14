@@ -1,5 +1,3 @@
-:warning: :warning: :warning: Work-in-progress, a lot of changes planned :warning: :warning: :warning:
-
 # viser
 
 `viser` is a library for interactive 3D visualization + Python, inspired by the
@@ -30,6 +28,7 @@ cd ./viser
 pip install -e .
 
 # Run an example.
+pip install -r ./examples/requirements.txt
 python ./examples/4_gui.py
 ```
 
@@ -50,74 +49,3 @@ yarn start
 ## Interactive SMPL-X Example
 
 https://user-images.githubusercontent.com/6992947/228734499-87d8a12a-df1a-4511-a4e0-0a46bd8532fd.mov
-
-## TODO
-
-Python-controllable GUI
-
-- [x] Plumbing (new broadcast/client interfaces etc)
-- [x] Primitives
-  - [x] Select / drop-down
-  - [x] Checkbox
-  - [x] Slider
-  - [x] Basic textbox
-  - [x] 2D vector
-  - [x] 3D vector
-  - [x] Button
-- [x] Commands
-  - [x] .value(), last_updated()
-  - [x] Callback interface
-  - [x] Set value from Python
-  - [x] Allow disabling
-  - [x] Remove GUI element
-- [x] Synchronize GUIs across clients (for broadcasted)
-- [x] Folders
-
-Scene tree
-
-- [x] useState prototype
-- [x] useState -> zustand
-
-- Websocket connection
-
-  - [x] Stateful server
-  - [x] Redundant message culling
-  - [x] Basic handling of conflicting ports
-  - [x] Automatic HTTP server for front-end
-
-- Camera controls
-
-  - [x] Orbit controls
-  - [x] Keyboard
-
-- Message types
-
-  - [x] Coordinate frame
-  - [x] Point cloud
-    - [x] Naive serialization
-    - [x] Directly access `.data`
-  - [x] Camera frustum
-  - [x] Image
-  - [x] Video stream (seems fine to just images for this)
-  - [x] Background set
-  - [x] Camera read
-  - [ ] Camera write
-  - [x] Ensure message ordering
-  - [x] Meshes!!
-  - [x] Transform controls
-  - [x] Environment map
-  - [x] Set visibility
-
-- Serialization
-
-  - [x] JSON
-  - [x] JSON -> msgpack
-  - [x] Automate synchronization of typescript / dataclass definitions
-
-- UI
-
-  - [ ] Icons for scene node type
-
-- Exporting
-
-  - [x] Background download

@@ -59,7 +59,7 @@ class Message(abc.ABC):
         return message_type(**mapping)
 
     @classmethod
-    @functools.lru_cache
+    @functools.lru_cache(maxsize=100)
     def _subclass_from_type_string(cls: Type[T]) -> Dict[str, Type[T]]:
         subclasses = cls.get_subclasses()
         return {s.__name__: s for s in subclasses}

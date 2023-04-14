@@ -33,6 +33,9 @@ class _ClientHandleState:
 
 @dataclasses.dataclass
 class ClientHandle(MessageApi):
+    """Handle for interacting with a specific client. Can be used to send messages to
+    individual clients, read camera information, etc."""
+
     client_id: infra.ClientId
     _state: _ClientHandleState
 
@@ -48,7 +51,7 @@ class ClientHandle(MessageApi):
         """Get the view camera from a particular client. Blocks if not available yet."""
         # TODO: there's a risk of getting stuck in an infinite loop here.
         while self._state.camera_info is None:
-            time.sleep(0.1)
+            time.sleep(0.01)
         return self._state.camera_info
 
     def on_camera_update(
