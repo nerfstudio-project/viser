@@ -1,7 +1,9 @@
 import asyncio
 import dataclasses
 from asyncio.events import AbstractEventLoop
-from typing import Dict
+
+# For Python 3.7 support.
+from typing import OrderedDict
 
 from ._messages import Message
 
@@ -14,8 +16,12 @@ class AsyncMessageBuffer:
 
     event_loop: AbstractEventLoop
     message_counter: int = 0
-    message_from_id: Dict[int, Message] = dataclasses.field(default_factory=dict)
-    id_from_redundancy_key: Dict[str, int] = dataclasses.field(default_factory=dict)
+    message_from_id: OrderedDict[int, Message] = dataclasses.field(
+        default_factory=OrderedDict
+    )
+    id_from_redundancy_key: OrderedDict[str, int] = dataclasses.field(
+        default_factory=OrderedDict
+    )
     message_event: asyncio.Event = dataclasses.field(default_factory=asyncio.Event)
 
     def push(self, message: Message) -> None:
@@ -50,7 +56,6 @@ class AsyncMessageBuffer:
         last_sent_id = -1
         while True:
             # Wait until there are new messages available.
-            # TODO: there are potential race conditions here.
             most_recent_message_id = next(reversed(self.message_from_id))
             while last_sent_id >= most_recent_message_id:
                 await self.message_event.wait()

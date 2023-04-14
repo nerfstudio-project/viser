@@ -19,7 +19,6 @@ from typing import (
     Dict,
     Generator,
     List,
-    Literal,
     Optional,
     Tuple,
     TypeVar,
@@ -30,7 +29,7 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import LiteralString, ParamSpec, assert_never
+from typing_extensions import Literal, LiteralString, ParamSpec, assert_never
 
 from . import _messages, infra
 from ._gui import GuiHandle, GuiSelectHandle, _GuiHandleState

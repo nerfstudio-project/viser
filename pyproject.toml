@@ -3,23 +3,21 @@ name = "viser"
 version = "0.0.0"
 description = "3D visualization helper"
 authors = ["brentyi <brentyi@berkeley.edu>"]
-include = ["./viser/**/*"]
+include = ["./viser/**/*.py", "./viser/py.typed", "./viser/client/build/**/*"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7"
 websockets = "^10.4"
-trimesh = "^3.21.0"
-numpy = "^1.24.2"
-msgpack = "^1.0.5"
+numpy = ">1.0.0"
+msgpack = ">1.0.0"
 imageio = "^2.26.1"
 pyliblzfse = "^0.4.1"
-scikit-image = "^0.20.0"
+scikit-image = ">0.18.0"
 tqdm = "^4.65.0"
 tyro = "^0.4.2"
 gdown = "^4.6.6"
 rich = "^13.3.3"
-yourdfpy = "^0.0.53"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -29,6 +27,6 @@ build-backend = "poetry.core.masonry.api"
 profile = "black"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.7"
 ignore_missing_imports = true
 warn_unused_configs = true
