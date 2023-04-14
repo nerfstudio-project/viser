@@ -1,7 +1,9 @@
 # viser
 
-`viser` is a library for interactive 3D visualization + Python, inspired by the
-best bits of the
+**[ [API Reference](https://brentyi.github.io/viser) ]**
+
+`viser` is a library for interactive 3D visualization + Python, inspired by
+our favorite bits of the
 [Nerfstudio viewer](https://github.com/nerfstudio-project/nerfstudio),
 [Pangolin](https://github.com/stevenlovegrove/Pangolin),
 [rviz](https://wiki.ros.org/rviz/), and

@@ -11,7 +11,7 @@ import msgpack
 import numpy as onp
 
 if TYPE_CHECKING:
-    from ._core import ClientId
+    from ._infra import ClientId
 else:
     ClientId = Any
 
