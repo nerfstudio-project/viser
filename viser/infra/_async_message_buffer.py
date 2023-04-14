@@ -3,7 +3,7 @@ import dataclasses
 from asyncio.events import AbstractEventLoop
 from typing import Dict
 
-from ._messages import Message, ResetSceneMessage
+from ._messages import Message
 
 
 @dataclasses.dataclass
@@ -20,11 +20,6 @@ class AsyncMessageBuffer:
 
     def push(self, message: Message) -> None:
         """Push a new message to our buffer, and remove old redundant ones."""
-
-        # If we're resetting the scene, we don't need any of the prior messages.
-        if isinstance(message, ResetSceneMessage):
-            self.message_from_id.clear()
-            self.id_from_redundancy_key.clear()
 
         # Add message to buffer.
         new_message_id = self.message_counter

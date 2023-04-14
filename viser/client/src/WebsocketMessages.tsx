@@ -3,7 +3,6 @@
 
 // For numpy arrays, we directly serialize the underlying data buffer.
 type ArrayBuffer = Uint8Array;
-
 interface ViewerCameraMessage {
   type: "ViewerCameraMessage";
   wxyz: [number, number, number, number];

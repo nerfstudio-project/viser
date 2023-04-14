@@ -22,7 +22,6 @@ from typing import (
     Literal,
     Optional,
     Tuple,
-    Type,
     TypeVar,
     cast,
     overload,
@@ -33,7 +32,7 @@ import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import LiteralString, ParamSpec, assert_never
 
-from . import _messages
+from . import _messages, infra
 from ._gui import GuiHandle, GuiSelectHandle, _GuiHandleState
 from ._scene_handle import (
     SceneNodeHandle,
@@ -43,30 +42,10 @@ from ._scene_handle import (
 )
 
 if TYPE_CHECKING:
-    from ._server import ClientId
+    from .infra import ClientId
 
 
 P = ParamSpec("P")
-
-
-# TODO(by): the function signatures below are super redundant.
-#
-# We can strip out a ton of it and replace with a ParamSpec-based decorator factory, but
-# we'd be reliant on a pyright bug fix that only just happened:
-#     https://github.com/microsoft/pyright/issues/4813
-#
-# We should probably wait at least until the next pylance version drops.
-#
-# def _wrap_message(
-#     message_cls: Callable[P, _messages.Message]
-# ) -> Callable[[Callable], Callable[P, None]]:
-#     """Wrap a message type."""
-#
-#     def inner(self: MessageApi, *args: P.args, **kwargs: P.kwargs) -> None:
-#         message = message_cls(*args, **kwargs)
-#         self._queue(message)
-#
-#     return lambda _: inner  # type: ignore
 
 
 def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
@@ -130,19 +109,18 @@ class MessageApi(abc.ABC):
     Should be implemented by both our global server object (for broadcasting) and by
     invidividual clients."""
 
-    def __init__(self) -> None:
+    def __init__(self, handler: infra.MessageHandler) -> None:
         self._handle_state_from_gui_name: Dict[str, _GuiHandleState[Any]] = {}
         self._handle_state_from_transform_controls_name: Dict[
             str, _TransformControlsState
         ] = {}
-        self._incoming_handlers: Dict[
-            Type[_messages.Message], List[Callable[[ClientId, _messages.Message], None]]
-        ] = {
-            _messages.GuiUpdateMessage: [self._handle_gui_updates],
-            _messages.TransformControlsUpdateMessage: [
-                self._handle_transform_controls_updates
-            ],
-        }
+
+        handler.register_handler(_messages.GuiUpdateMessage, self._handle_gui_updates)
+        handler.register_handler(
+            _messages.TransformControlsUpdateMessage,
+            self._handle_transform_controls_updates,
+        )
+
         self._gui_folder_labels: List[str] = []
 
     @contextlib.contextmanager
@@ -550,24 +528,14 @@ class MessageApi(abc.ABC):
     def reset_scene(self):
         self._queue(_messages.ResetSceneMessage())
 
-    def _handle_incoming_message(
-        self, client_id: ClientId, message: _messages.Message
-    ) -> None:
-        """Handle incoming messages."""
-        if type(message) in self._incoming_handlers:
-            for cb in self._incoming_handlers[type(message)]:
-                cb(client_id, message)
-
     @abc.abstractmethod
     def _queue(self, message: _messages.Message) -> None:
         """Abstract method for sending messages."""
         ...
 
     def _handle_gui_updates(
-        self, client_id: ClientId, message: _messages.Message
+        self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
-        assert isinstance(message, _messages.GuiUpdateMessage)
-
         handle_state = self._handle_state_from_gui_name.get(message.name, None)
         if handle_state is None:
             return
@@ -589,10 +557,8 @@ class MessageApi(abc.ABC):
             handle_state.sync_cb(client_id, value)
 
     def _handle_transform_controls_updates(
-        self, client_id: ClientId, message: _messages.Message
+        self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
     ) -> None:
-        assert isinstance(message, _messages.TransformControlsUpdateMessage)
-
         handle_state = self._handle_state_from_transform_controls_name.get(
             message.name, None
         )
@@ -638,9 +604,8 @@ class MessageApi(abc.ABC):
         handle_state.cleanup_cb = lambda: self._handle_state_from_gui_name.pop(name)
 
         # For broadcasted GUI handles, we should synchronize all clients.
-        from ._server import ViserServer
-
-        if not is_button and isinstance(self, ViserServer):
+        # This will be a no-op for client handles.
+        if not is_button:
 
             def sync_other_clients(client_id: ClientId, value: Any) -> None:
                 message = _messages.GuiSetValueMessage(

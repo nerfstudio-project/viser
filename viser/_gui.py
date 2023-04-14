@@ -23,10 +23,10 @@ from ._messages import (
     GuiSetLevaConfMessage,
     GuiSetValueMessage,
 )
+from .infra import ClientId
 
 if TYPE_CHECKING:
     from ._message_api import MessageApi
-    from ._server import ClientId
 
 
 T = TypeVar("T")
@@ -91,12 +91,15 @@ class GuiHandle(Generic[T]):
         return func
 
     def get_value(self) -> T:
+        """Get the value of the GUI input."""
         return self._impl.value
 
     def get_update_timestamp(self) -> float:
+        """Get the last time that this input was updated."""
         return self._impl.last_updated
 
     def set_value(self, value: Union[T, onp.ndarray]) -> GuiHandle[T]:
+        """Set the value of the GUI input."""
         if isinstance(value, onp.ndarray):
             assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
             value = tuple(map(float, value))  # type: ignore
@@ -119,6 +122,7 @@ class GuiHandle(Generic[T]):
         return self
 
     def set_disabled(self, disabled: bool) -> GuiHandle[T]:
+        """Allow/disallow user interaction with the input."""
         if self._impl.is_button:
             self._impl.leva_conf["settings"]["disabled"] = disabled
             self._impl.api._queue(
