@@ -84,9 +84,9 @@ class Server(MessageHandler):
     """Websocket server abstraction. Communicates asynchronously with client
     applications.
 
-    By default, all messages`) are broadcasted to all connected clients.
+    By default, all messages are broadcasted to all connected clients.
 
-    To send messages to an individual client, we can use `on_client_connect()`` to
+    To send messages to an individual client, we can use `on_client_connect()` to
     retrieve client handles.
     """
 

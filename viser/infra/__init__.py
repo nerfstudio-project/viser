@@ -1,7 +1,7 @@
-"""Websocket-based communication infrastructure.
+""":mod:`viser.infra` provides WebSocket-based communication infrastructure.
 
 We implement abstractions for:
-- Launching a websocket+HTTP server on a shared port.
+- Launching a WebSocket+HTTP server on a shared port.
 - Registering callbacks for connection events and incoming messages.
 - Asynchronous message sending, both broadcasted and to individual clients.
 - Defining dataclass-based message types.
