@@ -59,7 +59,7 @@ rootNodeTemplate.children.push("/WorldAxes");
 const cleanSceneTreeState = {
   nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
   visibilityFromName: { "": true, "/WorldAxes": true },
-  matrixFromName: { },
+  matrixFromName: {},
   objFromName: {},
 } as SceneTreeState;
 
@@ -103,6 +103,10 @@ export function useSceneTreeState() {
           }),
         removeSceneNode: (name) =>
           set((state) => {
+            if (!(name in state.nodeFromName)) {
+              console.log("Skipping scene node removal for " + name);
+              return;
+            }
             // Remove node from parent's children list.
             const parent_name = name.split("/").slice(0, -1).join("/");
 
@@ -174,6 +178,7 @@ export const SceneNodeThreeObject = React.memo(
     const sceneNode = props.useSceneTree(
       (state) => state.nodeFromName[props.name]
     );
+    const obj = props.useSceneTree((state) => state.objFromName[props.name]);
     const setObj = props.useSceneTree((state) => state.setObj);
     const clearObj = props.useSceneTree((state) => state.clearObj);
     const ref = React.useRef<THREE.Object3D>(null);
@@ -181,7 +186,7 @@ export const SceneNodeThreeObject = React.memo(
     React.useEffect(() => {
       ref.current && setObj(props.name, ref.current);
       return () => clearObj(props.name);
-    });
+    }, [obj]); // This `obj` dependency is needed for when resetScene() clears the world axis obj.
 
     return (
       <>

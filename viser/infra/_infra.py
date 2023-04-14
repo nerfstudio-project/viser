@@ -71,10 +71,8 @@ class ClientConnection(MessageHandler):
     def __post_init__(self) -> None:
         super().__init__()
 
-    def queue_message(self, message: Message) -> None:
-        """Implements message enqueue required by MessageApi.
-
-        Pushes a message onto a client-specific queue."""
+    def send(self, message: Message) -> None:
+        """Send a message to a specific client."""
         self._state.event_loop.call_soon_threadsafe(
             self._state.message_buffer.put_nowait, message
         )
@@ -136,7 +134,11 @@ class Server(MessageHandler):
         self._client_disconnect_cb.append(cb)
 
     def broadcast(self, message: Message) -> None:
-        """Pushes a message onto a broadcast queue. Message will be sent to all clients."""
+        """Pushes a message onto the broadcast queue. Message will be sent to all clients.
+
+        Broadcasted messages are persistent: if a new client connects to the server,
+        they will receive a buffered set of previously broadcasted messages. The buffer
+        is culled using the value of `message.redundancy_key()`."""
         self._broadcast_buffer.push(message)
 
     def _background_worker(

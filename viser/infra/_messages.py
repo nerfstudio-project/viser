@@ -82,6 +82,6 @@ class Message(abc.ABC):
         """Returns a unique key for this message, used for detecting redundant
         messages.
 
-        For example: if we send 1000 "set value" messages for the same gui element, we
+        For example: if we send 1000 "set value" messages for the same GUI element, we
         should only keep the latest message.
         """
