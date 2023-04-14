@@ -326,8 +326,8 @@ send synchronization information to other clients.</p>
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">redundancy_key</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_messages/#Message.redundancy_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Message.redundancy_key" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns a unique key for this message, used for detecting redundant
 messages.</p>
-<p>For example: if we send 1000 GuiSetValue messages for the same gui element, we
-should only keep the latest messages.</p>
+<p>For example: if we send 1000 “set value” messages for the same gui element, we
+should only keep the latest message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>str</p>
