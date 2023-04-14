@@ -9,48 +9,40 @@ communicating with clients.
 .. autoapiclass:: viser.ViserServer
    :members:
    :undoc-members:
-   :special-members:
    :inherited-members:
 
 .. autoapiclass:: viser.ClientHandle
    :members:
    :undoc-members:
-   :special-members:
    :inherited-members:
 
 .. autoapiclass:: viser.CameraState
    :members:
    :undoc-members:
-   :special-members:
    :inherited-members:
 
 .. autoapiclass:: viser.SceneNodeHandle
    :members:
    :undoc-members:
-   :special-members:
    :inherited-members:
 
 .. autoapiclass:: viser.TransformControlsHandle
    :members:
    :undoc-members:
-   :special-members:
    :inherited-members:
 
 .. autoapiclass:: viser.TransformControlsState
    :members:
    :undoc-members:
-   :special-members:
 
 .. autoapiclass:: viser.GuiHandle
    :members:
    :undoc-members:
-   :special-members:
    :inherited-members:
 
 .. autoapiclass:: viser.GuiSelectHandle
    :members:
    :undoc-members:
-   :special-members:
    :inherited-members:
 
 <!-- prettier-ignore-end -->
