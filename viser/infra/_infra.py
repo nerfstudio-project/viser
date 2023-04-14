@@ -35,7 +35,7 @@ TMessage = TypeVar("TMessage", bound=Message)
 
 
 class MessageHandler:
-    """Mix-in for adding message handling + callbacks to a class."""
+    """Mix-in for adding message handling to a class."""
 
     def __init__(self) -> None:
         self._incoming_handlers: Dict[
@@ -81,14 +81,13 @@ class ClientConnection(MessageHandler):
 
 
 class Server(MessageHandler):
-    """Core websocket + optionally HTTP server. Communicates asynchronously with client
-    applications via websocket connections.
+    """Websocket server abstraction. Communicates asynchronously with client
+    applications.
 
-    By default, all messages (eg `server.add_frame()`) are broadcasted to all connected
-    clients.
+    By default, all messages`) are broadcasted to all connected clients.
 
-    To send messages to an individual client, we can grab a client ID -> handle mapping
-    via `server.get_clients()`, and then call `client.add_frame()` on the handle.
+    To send messages to an individual client, we can use `on_client_connect()`` to
+    retrieve client handles.
     """
 
     def __init__(

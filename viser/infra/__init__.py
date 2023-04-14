@@ -8,13 +8,13 @@ We implement abstractions for:
 - Translating Python message types to TypeScript interfaces.
 
 These are what `viser` runs on under-the-hood, and generally won't be useful unless
-you're building your own front-end from scratch.
+you're building a web-based application from scratch.
 """
 
-from ._core import ClientConnection as ClientConnection
-from ._core import ClientId as ClientId
-from ._core import MessageHandler as MessageHandler
-from ._core import Server as Server
+from ._infra import ClientConnection as ClientConnection
+from ._infra import ClientId as ClientId
+from ._infra import MessageHandler as MessageHandler
+from ._infra import Server as Server
 from ._messages import Message as Message
 from ._typescript_interface_gen import (
     generate_typescript_interfaces as generate_typescript_interfaces,
