@@ -58,6 +58,18 @@ def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
     return colors
 
 
+def _encode_rgb(
+    rgb: Tuple[int, int, int]
+    | Tuple[float, float, float]
+    | onp.ndarray = (80, 120, 255),
+) -> int:
+    rgb_fixed = tuple(
+        value if isinstance(value, int) else int(value * 255) for value in rgb
+    )
+    assert len(rgb_fixed) == 3
+    return int(rgb_fixed[0] * (256**2) + rgb_fixed[1] * 256 + rgb_fixed[2])
+
+
 def _encode_image_base64(
     image: onp.ndarray,
     format: Literal["png", "jpeg"],
@@ -124,9 +136,8 @@ class MessageApi(abc.ABC):
 
     @contextlib.contextmanager
     def gui_folder(self, label: str) -> Generator[None, None, None]:
-        """Context for placing all GUI elements into a particular folder.
-
-        We currently only support one folder level."""
+        """Context for placing all GUI elements into a particular folder. Folders can
+        also be nested."""
         self._gui_folder_labels.append(label)
         yield
         assert self._gui_folder_labels.pop() == label
@@ -333,10 +344,7 @@ class MessageApi(abc.ABC):
         | Tuple[float, float, float]
         | onp.ndarray = (80, 120, 255),
     ) -> SceneNodeHandle:
-        color = tuple(
-            value if isinstance(value, int) else int(value * 255)  # type: ignore
-            for value in color
-        )
+        """Add a frustum to the scene. Useful for visualizing cameras."""
         self._queue(
             _messages.CameraFrustumMessage(
                 name=name,
@@ -344,7 +352,7 @@ class MessageApi(abc.ABC):
                 aspect=aspect,
                 scale=scale,
                 # (255, 255, 255) => 0xffffff, etc
-                color=int(color[0] * (256**2) + color[1] * 256 + color[2]),
+                color=_encode_rgb(color),
             )
         )
         return SceneNodeHandle(_SceneNodeHandleState(name, self))
@@ -377,6 +385,7 @@ class MessageApi(abc.ABC):
         color: onp.ndarray,
         point_size: float = 0.1,
     ) -> SceneNodeHandle:
+        """Add a point cloud to the scene."""
         self._queue(
             _messages.PointCloudMessage(
                 name=name,
@@ -397,17 +406,14 @@ class MessageApi(abc.ABC):
         | onp.ndarray = (90, 200, 255),
         wireframe: bool = False,
     ) -> SceneNodeHandle:
-        color = tuple(
-            value if isinstance(value, int) else int(value * 255)  # type: ignore
-            for value in color
-        )
+        """Add a mesh to the scene."""
         self._queue(
             _messages.MeshMessage(
                 name,
                 vertices.astype(onp.float32),
                 faces.astype(onp.uint32),
                 # (255, 255, 255) => 0xffffff, etc
-                color=int(color[0] * (256**2) + color[1] * 256 + color[2]),
+                color=_encode_rgb(color),
                 wireframe=wireframe,
             )
         )
@@ -419,6 +425,7 @@ class MessageApi(abc.ABC):
         format: Literal["png", "jpeg"] = "jpeg",
         quality: Optional[int] = None,
     ) -> None:
+        """Set a background image for the scene. Useful for NeRF visualization."""
         media_type, base64_data = _encode_image_base64(image, format, quality=quality)
         self._queue(
             _messages.BackgroundImageMessage(
@@ -435,6 +442,7 @@ class MessageApi(abc.ABC):
         format: Literal["png", "jpeg"] = "jpeg",
         quality: Optional[int] = None,
     ) -> SceneNodeHandle:
+        """Add a 2D image to the scene. Rendered in 3D."""
         media_type, base64_data = _encode_image_base64(image, format, quality=quality)
         self._queue(
             _messages.ImageMessage(
@@ -467,6 +475,7 @@ class MessageApi(abc.ABC):
         depth_test: bool = True,
         opacity: float = 1.0,
     ) -> TransformControlsHandle:
+        """Add a transform gizmo for interacting with the scene."""
         # That decorator factory would be really helpful here...
         self._queue(
             _messages.TransformControlsMessage(
@@ -506,12 +515,14 @@ class MessageApi(abc.ABC):
         return TransformControlsHandle(state)
 
     def remove_scene_node(self, name: str) -> None:
+        """Remove a node from the scene by name."""
         self._queue(_messages.RemoveSceneNodeMessage(name=name))
 
         if name in self._handle_state_from_transform_controls_name:
             self._handle_state_from_transform_controls_name.pop(name)
 
     def set_scene_node_visibility(self, name: str, visible: bool) -> None:
+        """Set the visibility of a node in the scene by name."""
         self._queue(_messages.SetSceneNodeVisibilityMessage(name=name, visible=visible))
 
     def set_scene_node_transform(
@@ -520,11 +531,13 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray,
         position: Tuple[float, float, float] | onp.ndarray,
     ) -> None:
+        """Set the transformation of a node in the scene by name."""
         wxyz = _cast_vector(wxyz, 4)
         position = _cast_vector(position, 3)
         self._queue(_messages.SetTransformMessage(name, wxyz, position))
 
     def reset_scene(self):
+        """Reset the scene."""
         self._queue(_messages.ResetSceneMessage())
 
     @abc.abstractmethod
@@ -535,6 +548,7 @@ class MessageApi(abc.ABC):
     def _handle_gui_updates(
         self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
+        """Callback for handling GUI messages."""
         handle_state = self._handle_state_from_gui_name.get(message.name, None)
         if handle_state is None:
             return
@@ -558,6 +572,7 @@ class MessageApi(abc.ABC):
     def _handle_transform_controls_updates(
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
     ) -> None:
+        """Callback for handling transform gizmo messages."""
         handle_state = self._handle_state_from_transform_controls_name.get(
             message.name, None
         )

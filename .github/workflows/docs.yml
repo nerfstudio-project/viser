@@ -1,0 +1,33 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+
+      # Check out source
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+
+      # Build documentation
+      - name: Building documentation
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install
+          poetry run pip install -r docs/requirements.txt
+          poetry run sphinx-build docs/source docs/build -b dirhtml
+
+      # Deploy
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/build

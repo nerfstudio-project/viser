@@ -1,0 +1,7 @@
+sphinx==5.2.0
+furo==2023.03.27
+docutils==0.17.1
+sphinx-autoapi==2.1.0
+m2r2==0.3.2
+git+https://github.com/brentyi/sphinxcontrib-programoutput.git
+git+https://github.com/brentyi/ansi.git

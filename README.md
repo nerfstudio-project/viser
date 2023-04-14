@@ -10,20 +10,19 @@ best bits of the
 Core features:
 
 - Web interface for easy use on remote machines.
-- Visualization primitives: coordinate axes, frustums, point clouds, meshes,
-  images. More to come.
+- Pure-Python API for sending 3D primitives to the browser.
 - Python-configurable inputs: buttons, checkboxes, text inputs, sliders,
   dropdowns, gizmos.
-- Support for multiple panels and view-synchronized connections; helpful for
-  side-by-side comparisons.
+- Support for multiple panels and view-synchronized connections.
 
-## Setup
+## Running examples
 
 ```bash
 # Clone the repository.
 git clone https://github.com/brentyi/viser.git
 
 # Install the package.
+# You can also install via pip: `pip install viser`.
 cd ./viser
 pip install -e .
 

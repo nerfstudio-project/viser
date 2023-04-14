@@ -36,7 +36,7 @@ class ClientHandle(MessageApi):
     """Handle for interacting with a specific client. Can be used to send messages to
     individual clients, read camera information, etc."""
 
-    client_id: infra.ClientId
+    client_id: int
     _state: _ClientHandleState
 
     def __post_init__(self):
@@ -65,11 +65,13 @@ class ClientHandle(MessageApi):
 @dataclasses.dataclass
 class _ViserServerState:
     connection: infra.Server
-    connected_clients: Dict[infra.ClientId, ClientHandle]
+    connected_clients: Dict[int, ClientHandle]
     client_lock: threading.Lock
 
 
 class ViserServer(MessageApi):
+    """Viser server class. The primary interface for functionality in `viser`."""
+
     def __init__(self, host: str = "127.0.0.1", port: int = 8080):
         server = infra.Server(
             host=host,
@@ -114,8 +116,8 @@ class ViserServer(MessageApi):
         server.start()
         self.reset_scene()
 
-    def get_clients(self) -> Dict[infra.ClientId, ClientHandle]:
-        """Get connected clients."""
+    def get_clients(self) -> Dict[int, ClientHandle]:
+        """Get mapping from connected client IDs to handles."""
         with self._state.client_lock:
             return self._state.connected_clients.copy()
 
