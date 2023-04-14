@@ -268,10 +268,8 @@
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-<div class="viewcode-block" id="ClientConnection.queue_message"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.ClientConnection.queue_message">[docs]</a>    <span class="k">def</span> <span class="nf">queue_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Implements message enqueue required by MessageApi.</span>
-
-<span class="sd">        Pushes a message onto a client-specific queue.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="ClientConnection.send"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.ClientConnection.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a message to a specific client.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">event_loop</span><span class="o">.</span><span class="n">call_soon_threadsafe</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">message_buffer</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">,</span> <span class="n">message</span>
         <span class="p">)</span></div></div>
@@ -333,7 +331,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Server.broadcast"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.broadcast">[docs]</a>    <span class="k">def</span> <span class="nf">broadcast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pushes a message onto a broadcast queue. Message will be sent to all clients.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pushes a message onto the broadcast queue. Message will be sent to all clients.</span>
+
+<span class="sd">        Broadcasted messages are persistent: if a new client connects to the server,</span>
+<span class="sd">        they will receive a buffered set of previously broadcasted messages. The buffer</span>
+<span class="sd">        is culled using the value of `message.redundancy_key()`.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_background_worker</span><span class="p">(</span>

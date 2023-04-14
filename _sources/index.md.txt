@@ -17,7 +17,7 @@ Core features:
   dropdowns, gizmos.
 - Support for multiple panels and view-synchronized connections.
 
-## Running example
+## Running examples
 
 ```bash
 # Clone the repository.
