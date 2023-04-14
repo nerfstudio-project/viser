@@ -215,26 +215,6 @@ you’re building a web-based application from scratch.</p>
 <dd><p>Bases: <a class="reference internal" href="#viser.infra.MessageHandler" title="viser.infra.MessageHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageHandler</span></code></a></p>
 <p>Handle for interacting with a single connected client.</p>
 <p>We can use this to read the camera state or send client-specific messages.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.ClientConnection.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.infra.ClientConnection.__init__" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.ClientConnection.__post_init__">
-<span class="sig-name descname"><span class="pre">__post_init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_infra/#ClientConnection.__post_init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.ClientConnection.__post_init__" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.infra.ClientConnection.client_id">
 <span class="sig-name descname"><span class="pre">client_id</span></span><a class="headerlink" href="#viser.infra.ClientConnection.client_id" title="Permalink to this definition">#</a></dt>
@@ -284,11 +264,6 @@ you’re building a web-based application from scratch.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">Message</span></span><a class="reference internal" href="../_modules/viser/infra/_messages/#Message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Message" title="Permalink to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
 <p>Base message type for controlling our viewer.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.infra.Message.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">()</span></em><a class="headerlink" href="#viser.infra.Message.__slots__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.Message.deserialize">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_messages/#Message.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Message.deserialize" title="Permalink to this definition">#</a></dt>
@@ -353,16 +328,6 @@ should only keep the latest message.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">MessageHandler</span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#MessageHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.MessageHandler" title="Permalink to this definition">#</a></dt>
 <dd><p>Mix-in for adding message handling to a class.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.MessageHandler.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_infra/#MessageHandler.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.MessageHandler.__init__" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.MessageHandler.register_handler">
 <span class="sig-name descname"><span class="pre">register_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_infra/#MessageHandler.register_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.MessageHandler.register_handler" title="Permalink to this definition">#</a></dt>
 <dd><p>Register a handler for a particular message type.</p>
@@ -400,21 +365,6 @@ retrieve client handles.</p>
 </ul>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">http_server_root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.__init__" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>host</strong> (<em>str</em>) – </p></li>
-<li><p><strong>port</strong> (<em>int</em>) – </p></li>
-<li><p><strong>http_server_root</strong> (<em>Optional</em><em>[</em><em>pathlib.Path</em><em>]</em>) – </p></li>
-<li><p><strong>verbose</strong> (<em>bool</em>) – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.Server.broadcast">
 <span class="sig-name descname"><span class="pre">broadcast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.infra.Message" title="viser.infra.Message"><span class="pre">viser.infra.Message</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.broadcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.broadcast" title="Permalink to this definition">#</a></dt>
@@ -559,8 +509,6 @@ retrieve client handles.</p>
             <ul>
 <li><a class="reference internal" href="#">Infrastructure</a><ul>
 <li><a class="reference internal" href="#viser.infra.ClientConnection"><code class="docutils literal notranslate"><span class="pre">ClientConnection</span></code></a><ul>
-<li><a class="reference internal" href="#viser.infra.ClientConnection.__init__"><code class="docutils literal notranslate"><span class="pre">ClientConnection.__init__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.ClientConnection.__post_init__"><code class="docutils literal notranslate"><span class="pre">ClientConnection.__post_init__()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.ClientConnection.client_id"><code class="docutils literal notranslate"><span class="pre">ClientConnection.client_id</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.ClientConnection.queue_message"><code class="docutils literal notranslate"><span class="pre">ClientConnection.queue_message()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.ClientConnection.register_handler"><code class="docutils literal notranslate"><span class="pre">ClientConnection.register_handler()</span></code></a></li>
@@ -568,7 +516,6 @@ retrieve client handles.</p>
 </li>
 <li><a class="reference internal" href="#viser.infra.ClientId"><code class="docutils literal notranslate"><span class="pre">ClientId</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Message"><code class="docutils literal notranslate"><span class="pre">Message</span></code></a><ul>
-<li><a class="reference internal" href="#viser.infra.Message.__slots__"><code class="docutils literal notranslate"><span class="pre">Message.__slots__</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Message.deserialize"><code class="docutils literal notranslate"><span class="pre">Message.deserialize()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Message.excluded_self_client"><code class="docutils literal notranslate"><span class="pre">Message.excluded_self_client</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Message.get_subclasses"><code class="docutils literal notranslate"><span class="pre">Message.get_subclasses()</span></code></a></li>
@@ -577,12 +524,10 @@ retrieve client handles.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.infra.MessageHandler"><code class="docutils literal notranslate"><span class="pre">MessageHandler</span></code></a><ul>
-<li><a class="reference internal" href="#viser.infra.MessageHandler.__init__"><code class="docutils literal notranslate"><span class="pre">MessageHandler.__init__()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.MessageHandler.register_handler"><code class="docutils literal notranslate"><span class="pre">MessageHandler.register_handler()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.infra.Server"><code class="docutils literal notranslate"><span class="pre">Server</span></code></a><ul>
-<li><a class="reference internal" href="#viser.infra.Server.__init__"><code class="docutils literal notranslate"><span class="pre">Server.__init__()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Server.broadcast"><code class="docutils literal notranslate"><span class="pre">Server.broadcast()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Server.on_client_connect"><code class="docutils literal notranslate"><span class="pre">Server.on_client_connect()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Server.on_client_disconnect"><code class="docutils literal notranslate"><span class="pre">Server.on_client_disconnect()</span></code></a></li>

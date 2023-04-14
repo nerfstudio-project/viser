@@ -6,7 +6,6 @@
    :show-inheritance:
    :members:
    :undoc-members:
-   :special-members:
    :inherited-members:
 
 <!-- prettier-ignore-end -->

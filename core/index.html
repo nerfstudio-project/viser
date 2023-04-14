@@ -214,24 +214,6 @@ communicating with clients.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.ViserServer.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'127.0.0.1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8080</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.__init__" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>host</strong> (<em>str</em>) – </p></li>
-<li><p><strong>port</strong> (<em>int</em>) – </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ViserServer.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">()</span></em><a class="headerlink" href="#viser.ViserServer.__slots__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_camera_frustum">
 <span class="sig-name descname"><span class="pre">add_camera_frustum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(80,</span> <span class="pre">120,</span> <span class="pre">255)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_camera_frustum" title="Permalink to this definition">#</a></dt>
 <dd><p>Add a frustum to the scene. Useful for visualizing cameras.</p>
@@ -634,29 +616,6 @@ individual clients, read camera information, etc.</p>
 <dd class="field-odd"><p><strong>handler</strong> (<a class="reference internal" href="../infrastructure/#viser.infra.MessageHandler" title="viser.infra.MessageHandler"><em>viser.infra.MessageHandler</em></a>) – </p>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ClientHandle.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../infrastructure/#viser.infra.MessageHandler" title="viser.infra.MessageHandler"><span class="pre">viser.infra.MessageHandler</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.__init__" title="Permalink to this definition">#</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>handler</strong> (<a class="reference internal" href="../infrastructure/#viser.infra.MessageHandler" title="viser.infra.MessageHandler"><em>viser.infra.MessageHandler</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ClientHandle.__post_init__">
-<span class="sig-name descname"><span class="pre">__post_init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ClientHandle.__post_init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClientHandle.__post_init__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ClientHandle.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">()</span></em><a class="headerlink" href="#viser.ClientHandle.__slots__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ClientHandle.add_camera_frustum">
 <span class="sig-name descname"><span class="pre">add_camera_frustum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(80,</span> <span class="pre">120,</span> <span class="pre">255)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.add_camera_frustum" title="Permalink to this definition">#</a></dt>
@@ -1233,26 +1192,6 @@ also be nested.</p>
 <dd><p>Handle for a particular GUI input in our visualizer.</p>
 <p>Lets us get values, set values, and detect updates.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.__class_getitem__">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__class_getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiHandle.__class_getitem__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.__init_subclass__">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__init_subclass__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiHandle.__init_subclass__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.__new__">
-<span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiHandle.__new__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.GuiHandle.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">()</span></em><a class="headerlink" href="#viser.GuiHandle.__slots__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiHandle.get_update_timestamp">
 <span class="sig-name descname"><span class="pre">get_update_timestamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui/#GuiHandle.get_update_timestamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle.get_update_timestamp" title="Permalink to this definition">#</a></dt>
 <dd><p>Get the last time that this input was updated.</p>
@@ -1349,26 +1288,6 @@ also be nested.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiSelectHandle</span></span><a class="reference internal" href="../_modules/viser/_gui/#GuiSelectHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiSelectHandle" title="Permalink to this definition">#</a></dt>
 <dd><p>Handle for a particular GUI input in our visualizer.</p>
 <p>Lets us get values, set values, and detect updates.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.__class_getitem__">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__class_getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.__class_getitem__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.__init_subclass__">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__init_subclass__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.__init_subclass__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.__new__">
-<span class="sig-name descname"><span class="pre">__new__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.__new__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.__slots__">
-<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="pre">=</span> <span class="pre">()</span></em><a class="headerlink" href="#viser.GuiSelectHandle.__slots__" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiSelectHandle.get_update_timestamp">
 <span class="sig-name descname"><span class="pre">get_update_timestamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.get_update_timestamp" title="Permalink to this definition">#</a></dt>
@@ -1545,8 +1464,6 @@ we can declare handles as <code class="docutils literal notranslate"><span class
             <ul>
 <li><a class="reference internal" href="#">Viser Core</a><ul>
 <li><a class="reference internal" href="#viser.ViserServer"><code class="docutils literal notranslate"><span class="pre">ViserServer</span></code></a><ul>
-<li><a class="reference internal" href="#viser.ViserServer.__init__"><code class="docutils literal notranslate"><span class="pre">ViserServer.__init__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ViserServer.__slots__"><code class="docutils literal notranslate"><span class="pre">ViserServer.__slots__</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_camera_frustum"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_camera_frustum()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_frame"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_frame()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_button"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_button()</span></code></a></li>
@@ -1573,9 +1490,6 @@ we can declare handles as <code class="docutils literal notranslate"><span class
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.ClientHandle"><code class="docutils literal notranslate"><span class="pre">ClientHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.ClientHandle.__init__"><code class="docutils literal notranslate"><span class="pre">ClientHandle.__init__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ClientHandle.__post_init__"><code class="docutils literal notranslate"><span class="pre">ClientHandle.__post_init__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ClientHandle.__slots__"><code class="docutils literal notranslate"><span class="pre">ClientHandle.__slots__</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_camera_frustum"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_camera_frustum()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_frame"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_frame()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_button"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_button()</span></code></a></li>
@@ -1631,10 +1545,6 @@ we can declare handles as <code class="docutils literal notranslate"><span class
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiHandle"><code class="docutils literal notranslate"><span class="pre">GuiHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.GuiHandle.__class_getitem__"><code class="docutils literal notranslate"><span class="pre">GuiHandle.__class_getitem__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.__init_subclass__"><code class="docutils literal notranslate"><span class="pre">GuiHandle.__init_subclass__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.__new__"><code class="docutils literal notranslate"><span class="pre">GuiHandle.__new__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.__slots__"><code class="docutils literal notranslate"><span class="pre">GuiHandle.__slots__</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiHandle.get_update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiHandle.get_update_timestamp()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiHandle.get_value"><code class="docutils literal notranslate"><span class="pre">GuiHandle.get_value()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiHandle.on_update"><code class="docutils literal notranslate"><span class="pre">GuiHandle.on_update()</span></code></a></li>
@@ -1645,10 +1555,6 @@ we can declare handles as <code class="docutils literal notranslate"><span class
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiSelectHandle"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.__class_getitem__"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.__class_getitem__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.__init_subclass__"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.__init_subclass__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.__new__"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.__new__()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.__slots__"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.__slots__</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiSelectHandle.get_update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.get_update_timestamp()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiSelectHandle.get_value"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.get_value()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiSelectHandle.on_update"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.on_update()</span></code></a></li>
