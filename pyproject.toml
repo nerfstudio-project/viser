@@ -1,22 +1,22 @@
 [tool.poetry]
 name = "viser"
-version = "0.0.1"
+version = "0.0.2"
 description = "3D visualization helper"
 authors = ["brentyi <brentyi@berkeley.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-websockets = "^10.4"
-numpy = ">1.0.0"
-msgpack = ">1.0.0"
-imageio = "^2.26.1"
-pyliblzfse = "^0.4.1"
-scikit-image = ">0.18.0"
-tqdm = "^4.65.0"
-tyro = "^0.4.2"
-gdown = "^4.6.6"
-rich = "^13.3.3"
+websockets = ">=10.4"
+numpy = ">=1.0.0"
+msgpack = ">=1.0.0"
+imageio = ">=2.0.0"
+pyliblzfse = ">=0.4.1"
+scikit-image = ">=0.18.0"
+tqdm = ">=4.0.0"
+tyro = ">=0.2.0"
+gdown = ">=4.6.6"
+rich = ">=13.3.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
