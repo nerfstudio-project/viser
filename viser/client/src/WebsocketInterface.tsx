@@ -438,8 +438,6 @@ export default function WebsocketInterface(props: {
         });
         try {
           messageQueue.push(await messagePromise);
-          // handleMessage(await messagePromise);
-          // handleMessage(await messagePromise);
         } finally {
           orderLock.acquired && orderLock.release();
         }

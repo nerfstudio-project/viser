@@ -127,7 +127,7 @@ export function useSceneTreeState() {
           }),
         resetScene: () =>
           set((state) => {
-            Object.assign(state, cleanSceneTreeState);
+            state = { ...state, ...cleanSceneTreeState }; // eslint-disable-line @typescript-eslint/no-unused-vars
           }),
       }))
     )
@@ -178,7 +178,6 @@ export const SceneNodeThreeObject = React.memo(
     const sceneNode = props.useSceneTree(
       (state) => state.nodeFromName[props.name]
     );
-    const obj = props.useSceneTree((state) => state.objFromName[props.name]);
     const setObj = props.useSceneTree((state) => state.setObj);
     const clearObj = props.useSceneTree((state) => state.clearObj);
     const ref = React.useRef<THREE.Object3D>(null);
@@ -186,7 +185,7 @@ export const SceneNodeThreeObject = React.memo(
     React.useEffect(() => {
       ref.current && setObj(props.name, ref.current);
       return () => clearObj(props.name);
-    }, [obj]); // This `obj` dependency is needed for when resetScene() clears the world axis obj.
+    });
 
     return (
       <>
