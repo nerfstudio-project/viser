@@ -30,8 +30,8 @@ export default function ServerControls(props: {
           const wrapper = props.wrapperRef.current;
           if (wrapper === null) return;
 
-          if (wrapper.style.backgroundImage.startsWith("url(")) {
-            // TODO: we should consider hiding this button if there's no background available.
+          if (!wrapper.style.backgroundImage.startsWith("url(")) {
+            // This should never happen.
             alert("No background to download!");
             return;
           }
