@@ -125,8 +125,8 @@ class MessageApi(abc.ABC):
 
     def __init__(self, handler: infra.MessageHandler) -> None:
         self._handle_state_from_gui_name: Dict[str, _GuiHandleState[Any]] = {}
-        self._handle_state_from_transform_controls_name: Dict[
-            str, _TransformControlsState
+        self._handle_from_transform_controls_name: Dict[
+            str, TransformControlsHandle
         ] = {}
 
         handler.register_handler(_messages.GuiUpdateMessage, self._handle_gui_updates)
@@ -260,7 +260,8 @@ class MessageApi(abc.ABC):
                     "label": name,
                     "options": options,
                 },
-            )._impl
+            )._impl,
+            options,  # type: ignore
         )
 
     def add_gui_slider(
@@ -363,23 +364,27 @@ class MessageApi(abc.ABC):
     def add_frame(
         self,
         name: str,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray,
-        position: Tuple[float, float, float] | onp.ndarray,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         show_axes: bool = True,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
     ) -> SceneNodeHandle:
+        wxyz_tup = _cast_vector(wxyz, length=4)
+        position_tup = _cast_vector(position, length=3)
         self._queue(
             _messages.FrameMessage(
                 name=name,
-                wxyz=_cast_vector(wxyz, length=4),
-                position=_cast_vector(position, length=3),
+                wxyz=wxyz_tup,
+                position=position_tup,
                 show_axes=show_axes,
                 axes_length=axes_length,
                 axes_radius=axes_radius,
             )
         )
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle(
+            _SceneNodeHandleState(name, self, wxyz=wxyz_tup, position=position_tup)
+        )
 
     def add_point_cloud(
         self,
@@ -498,46 +503,33 @@ class MessageApi(abc.ABC):
             )
         )
 
-        def sync_cb(client_id: ClientId, state: _TransformControlsState) -> None:
-            message = _messages.SetTransformMessage(
-                name=name, wxyz=state.wxyz, position=state.position
+        def sync_cb(client_id: ClientId, state: TransformControlsHandle) -> None:
+            message_orientation = _messages.SetOrientationMessage(
+                name=name, wxyz=state._impl.wxyz
             )
-            message.excluded_self_client = client_id
-            self._queue(message)
+            message_orientation.excluded_self_client = client_id
+            self._queue(message_orientation)
 
-        state = _TransformControlsState(
+            message_position = _messages.SetPositionMessage(
+                name=name, position=state._impl.position
+            )
+            message_position.excluded_self_client = client_id
+            self._queue(message_position)
+
+        state = _SceneNodeHandleState(
             name=name,
             api=self,
             wxyz=(1.0, 0.0, 0.0, 0.0),
             position=(0.0, 0.0, 0.0),
+        )
+        state_aux = _TransformControlsState(
             last_updated=time.time(),
             update_cb=[],
             sync_cb=sync_cb,
         )
-        self._handle_state_from_transform_controls_name[name] = state
-        return TransformControlsHandle(state)
-
-    def remove_scene_node(self, name: str) -> None:
-        """Remove a node from the scene by name."""
-        self._queue(_messages.RemoveSceneNodeMessage(name=name))
-
-        if name in self._handle_state_from_transform_controls_name:
-            self._handle_state_from_transform_controls_name.pop(name)
-
-    def set_scene_node_visibility(self, name: str, visible: bool) -> None:
-        """Set the visibility of a node in the scene by name."""
-        self._queue(_messages.SetSceneNodeVisibilityMessage(name=name, visible=visible))
-
-    def set_scene_node_transform(
-        self,
-        name: str,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray,
-        position: Tuple[float, float, float] | onp.ndarray,
-    ) -> None:
-        """Set the transformation of a node in the scene by name."""
-        wxyz = _cast_vector(wxyz, 4)
-        position = _cast_vector(position, 3)
-        self._queue(_messages.SetTransformMessage(name, wxyz, position))
+        handle = TransformControlsHandle(state, state_aux)
+        self._handle_from_transform_controls_name[name] = handle
+        return handle
 
     def reset_scene(self):
         """Reset the scene."""
@@ -576,22 +568,20 @@ class MessageApi(abc.ABC):
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
     ) -> None:
         """Callback for handling transform gizmo messages."""
-        handle_state = self._handle_state_from_transform_controls_name.get(
-            message.name, None
-        )
-        if handle_state is None:
+        handle = self._handle_from_transform_controls_name.get(message.name, None)
+        if handle is None:
             return
 
         # Update state.
-        handle_state.wxyz = message.wxyz
-        handle_state.position = message.position
-        handle_state.last_updated = time.time()
+        handle._impl.wxyz = message.wxyz
+        handle._impl.position = message.position
+        handle._impl_aux.last_updated = time.time()
 
         # Trigger callbacks.
-        for cb in handle_state.update_cb:
-            cb(TransformControlsHandle(handle_state))
-        if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, handle_state)
+        for cb in handle._impl_aux.update_cb:
+            cb(handle)
+        if handle._impl_aux.sync_cb is not None:
+            handle._impl_aux.sync_cb(client_id, handle)
 
     def _add_gui_impl(
         self,

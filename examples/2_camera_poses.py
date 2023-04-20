@@ -20,12 +20,13 @@ while True:
             # This will run whenever we get a new camera!
             @client.on_camera_update
             def camera_update(client: viser.ClientHandle) -> None:
-                print("New camera", client.get_camera())
+                print("New camera", client.camera)
 
             # Show the client ID in the GUI.
-            client.add_gui_text("Info", initial_value=f"Client {id}").set_disabled(True)
+            gui_info = client.add_gui_text("Info", initial_value=f"Client {id}")
+            gui_info.disabled = True
 
-        camera = client.get_camera()
+        camera = client.camera
         print(f"Camera pose for client {id}")
         print(f"\twxyz: {camera.wxyz}")
         print(f"\tposition: {camera.position}")

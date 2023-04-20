@@ -58,10 +58,14 @@ interface TransformControlsMessage {
   depth_test: boolean;
   opacity: number;
 }
-interface SetTransformMessage {
-  type: "SetTransformMessage";
+interface SetOrientationMessage {
+  type: "SetOrientationMessage";
   name: string;
   wxyz: [number, number, number, number];
+}
+interface SetPositionMessage {
+  type: "SetPositionMessage";
+  name: string;
   position: [number, number, number];
 }
 interface TransformControlsUpdateMessage {
@@ -110,10 +114,10 @@ interface GuiUpdateMessage {
   name: string;
   value: any;
 }
-interface GuiSetHiddenMessage {
-  type: "GuiSetHiddenMessage";
+interface GuiSetVisibleMessage {
+  type: "GuiSetVisibleMessage";
   name: string;
-  hidden: boolean;
+  visible: boolean;
 }
 interface GuiSetValueMessage {
   type: "GuiSetValueMessage";
@@ -133,7 +137,8 @@ export type Message =
   | PointCloudMessage
   | MeshMessage
   | TransformControlsMessage
-  | SetTransformMessage
+  | SetOrientationMessage
+  | SetPositionMessage
   | TransformControlsUpdateMessage
   | BackgroundImageMessage
   | ImageMessage
@@ -143,6 +148,6 @@ export type Message =
   | GuiAddMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
-  | GuiSetHiddenMessage
+  | GuiSetVisibleMessage
   | GuiSetValueMessage
   | GuiSetLevaConfMessage;

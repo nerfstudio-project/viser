@@ -26,9 +26,7 @@ def main():
 
         @gui_include_z.on_update
         def _(_) -> None:
-            gui_axis.set_options(
-                ["x", "y", "z"] if gui_include_z.get_value() else ["x", "y"]
-            )
+            gui_axis.options = ["x", "y", "z"] if gui_include_z.value else ["x", "y"]
 
         with server.gui_folder("Sliders"):
             gui_location = server.add_gui_slider(
@@ -42,13 +40,13 @@ def main():
         gui_button = server.add_gui_button("Reset")
 
     def draw_frame() -> None:
-        axis = gui_axis.get_value()
+        axis = gui_axis.value
         if axis == "x":
-            pos = (gui_location.get_value(), 0.0, 0.0)
+            pos = (gui_location.value, 0.0, 0.0)
         elif axis == "y":
-            pos = (0.0, gui_location.get_value(), 0.0)
+            pos = (0.0, gui_location.value, 0.0)
         elif axis == "z":
-            pos = (0.0, 0.0, gui_location.get_value())
+            pos = (0.0, 0.0, gui_location.value)
         else:
             assert_never(axis)
 
@@ -56,12 +54,12 @@ def main():
             "/frame",
             wxyz=(1.0, 0.0, 0.0, 0.0),
             position=pos,
-            show_axes=gui_show.get_value(),
+            show_axes=gui_show.value,
             axes_length=5.0,
         )
 
     def draw_points() -> None:
-        num_points = gui_num_points.get_value()
+        num_points = gui_num_points.value
         server.add_point_cloud(
             "/frame/point_cloud",
             position=onp.random.normal(size=(num_points, 3)),
@@ -78,10 +76,10 @@ def main():
     @gui_button.on_update
     def _(_: viser.GuiHandle[bool]) -> None:
         """Reset the scene when the reset button is clicked."""
-        gui_show.set_value(True)
-        gui_location.set_value(0.0)
-        gui_axis.set_value("x")
-        gui_num_points.set_value(10_000)
+        gui_show.value = True
+        gui_location.value = 0.0
+        gui_axis.value = "x"
+        gui_num_points.value = 10_000
 
         draw_frame()
         draw_points()

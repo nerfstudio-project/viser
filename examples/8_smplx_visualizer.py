@@ -36,15 +36,19 @@ def quat_from_mat3(mat3: onp.ndarray) -> onp.ndarray:
     return onp.roll(Rotation.from_matrix(mat3).as_quat(), 1)
 
 
-def quat_from_so3(*omegas: Tuple[float, float, float]) -> onp.ndarray:
+def quat_from_so3(
+    *omegas: Tuple[float, float, float]
+) -> Tuple[float, float, float, float]:
     # xyzw => wxyz
-    return onp.roll(
+    wxyz = onp.roll(
         functools.reduce(
             Rotation.__mul__,
             [Rotation.from_rotvec(onp.array(omega)) for omega in omegas],
         ).as_quat(),
         1,
     )
+    assert wxyz.shape == (4,)
+    return (wxyz[0], wxyz[1], wxyz[2], wxyz[3])
 
 
 def main(
@@ -75,7 +79,6 @@ def main(
         position=onp.zeros(3),
         show_axes=False,
     )
-    server.set_scene_node_visibility("/WorldAxes", False)
 
     # Main loop. We'll just keep read from the joints, deform the mesh, then sending the
     # updated mesh in a loop. This could be made a lot more efficient.
@@ -92,16 +95,16 @@ def main(
         # Get deformed mesh.
         output = model.forward(
             betas=torch.from_numpy(  # type: ignore
-                onp.array(
-                    [b.get_value() for b in gui_elements.gui_betas], dtype=onp.float32
-                )[None, ...]
+                onp.array([b.value for b in gui_elements.gui_betas], dtype=onp.float32)[
+                    None, ...
+                ]
             ),
             expression=None,
             return_verts=True,
             body_pose=torch.from_numpy(
-                onp.array([j.get_value() for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
+                onp.array([j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
             ),
-            global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].get_value(), dtype=onp.float32)[None, ...]),  # type: ignore
+            global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].value, dtype=onp.float32)[None, ...]),  # type: ignore
             return_full_pose=True,
         )
         joint_positions = output.joints.squeeze(axis=0).detach().cpu().numpy()  # type: ignore
@@ -114,8 +117,8 @@ def main(
             "/reoriented/smpl",
             vertices=output.vertices.squeeze(axis=0).detach().cpu().numpy(),  # type: ignore
             faces=model.faces,
-            wireframe=gui_elements.gui_wireframe.get_value(),
-            color=gui_elements.gui_rgb.get_value(),
+            wireframe=gui_elements.gui_wireframe.value,
+            color=gui_elements.gui_rgb.value,
         )
 
         # Update per-joint frames, which are used for transform controls.
@@ -168,7 +171,7 @@ def make_gui_elements(
 
         @gui_show_controls.on_update
         def _(_):
-            add_transform_controls(enabled=gui_show_controls.get_value())
+            add_transform_controls(enabled=gui_show_controls.value)
 
     # GUI elements: shape parameters.
     with server.gui_folder("Shape"):
@@ -178,12 +181,12 @@ def make_gui_elements(
         @gui_reset_shape.on_update
         def _(_):
             for beta in gui_betas:
-                beta.set_value(0.0)
+                beta.value = 0.0
 
         @gui_random_shape.on_update
         def _(_):
             for beta in gui_betas:
-                beta.set_value(onp.random.normal(loc=0.0, scale=1.0))
+                beta.value = onp.random.normal(loc=0.0, scale=1.0)
 
         gui_betas = []
         for i in range(num_betas):
@@ -205,7 +208,7 @@ def make_gui_elements(
         @gui_reset_joints.on_update
         def _(_):
             for joint in gui_joints:
-                joint.set_value((0.0, 0.0, 0.0))
+                joint.value = (0.0, 0.0, 0.0)
                 sync_transform_controls()
 
         @gui_random_joints.on_update
@@ -215,7 +218,7 @@ def make_gui_elements(
                 # first sample on S^3 and then convert.
                 quat = onp.random.normal(loc=0.0, scale=1.0, size=(4,))
                 quat /= onp.linalg.norm(quat)
-                joint.set_value(so3_from_quat(quat))
+                joint.value = so3_from_quat(quat)
                 sync_transform_controls()
 
         gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]] = []
@@ -251,8 +254,8 @@ def make_gui_elements(
             def curry_callback(i: int) -> None:
                 @controls.on_update
                 def _(controls: viser.TransformControlsHandle) -> None:
-                    axisangle = so3_from_quat(controls.get_state().wxyz)
-                    gui_joints[i].set_value((axisangle[0], axisangle[1], axisangle[2]))
+                    axisangle = so3_from_quat(controls.wxyz)
+                    gui_joints[i].value = (axisangle[0], axisangle[1], axisangle[2])
 
             curry_callback(i)
 
@@ -261,7 +264,7 @@ def make_gui_elements(
     def sync_transform_controls() -> None:
         """Sync transform controls when a joint angle changes."""
         for t, j in zip(transform_controls, gui_joints):
-            t.set_transform(quat_from_so3(j.get_value()), t.get_state().position)
+            t.wxyz = quat_from_so3(j.value)
 
     add_transform_controls(enabled=False)
 

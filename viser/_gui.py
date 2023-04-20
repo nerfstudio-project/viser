@@ -19,9 +19,9 @@ import numpy as onp
 
 from ._messages import (
     GuiRemoveMessage,
-    GuiSetHiddenMessage,
     GuiSetLevaConfMessage,
     GuiSetValueMessage,
+    GuiSetVisibleMessage,
 )
 from .infra import ClientId
 
@@ -70,8 +70,11 @@ class _GuiHandleState(Generic[T]):
     encoder: Callable[[T], Any] = lambda x: x  # noqa
     decoder: Callable[[Any], T] = lambda x: x  # noqa
 
+    disabled: bool = False
+    visible: bool = False
 
-@dataclasses.dataclass(frozen=True)
+
+@dataclasses.dataclass
 class GuiHandle(Generic[T]):
     """Handle for a particular GUI input in our visualizer.
 
@@ -90,16 +93,30 @@ class GuiHandle(Generic[T]):
         self._impl.update_cb.append(func)
         return func
 
-    def get_value(self) -> T:
-        """Get the value of the GUI input."""
+    # Should we use @property for get_value / set_value, set_hidden, etc?
+    #
+    # Benefits:
+    #   @property is syntactically very nice.
+    #   `gui.value = ...` is really tempting!
+    #   Feels a bit more magical.
+    #
+    # Downsides:
+    #   Consistency: not everything that can be written can be read, and not everything
+    #   that can be read can be written. `get_`/`set_` makes this really clear.
+    #   Clarity: some things that we read (like client mappings) are copied before
+    #   they're returned. An attribute access obfuscates the overhead here.
+    #   Flexibility: getter/setter types should match. https://github.com/python/mypy/issues/3004
+    #   Feels a bit more magical.
+    #
+    # Is this worth the tradeoff?
+
+    @property
+    def value(self) -> T:
+        """Value of the GUI input. Synchronized automatically when assigned."""
         return self._impl.value
 
-    def get_update_timestamp(self) -> float:
-        """Get the last time that this input was updated."""
-        return self._impl.last_updated
-
-    def set_value(self, value: Union[T, onp.ndarray]) -> GuiHandle[T]:
-        """Set the value of the GUI input."""
+    @value.setter
+    def value(self, value: Union[T, onp.ndarray]) -> GuiHandle[T]:
         if isinstance(value, onp.ndarray):
             assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
             value = tuple(map(float, value))  # type: ignore
@@ -121,8 +138,19 @@ class GuiHandle(Generic[T]):
 
         return self
 
-    def set_disabled(self, disabled: bool) -> GuiHandle[T]:
-        """Allow/disallow user interaction with the input."""
+    @property
+    def update_timestamp(self) -> float:
+        """Get the last time that this input was updated."""
+        return self._impl.last_updated
+
+    @property
+    def disabled(self) -> bool:
+        """Allow/disallow user interaction with the input. Synchronized automatically
+        when assigned."""
+        return self._impl.disabled
+
+    @disabled.setter
+    def disabled(self, disabled: bool) -> GuiHandle[T]:
         if self._impl.is_button:
             self._impl.leva_conf["settings"]["disabled"] = disabled
             self._impl.api._queue(
@@ -133,12 +161,19 @@ class GuiHandle(Generic[T]):
             self._impl.api._queue(
                 GuiSetLevaConfMessage(self._impl.name, self._impl.leva_conf),
             )
-
+        self._impl.disabled = disabled
         return self
 
-    def set_hidden(self, hidden: bool) -> GuiHandle[T]:
-        """Temporarily hide this GUI element from the visualizer."""
-        self._impl.api._queue(GuiSetHiddenMessage(self._impl.name, hidden=hidden))
+    @property
+    def visible(self) -> bool:
+        """Temporarily show or hide this GUI element from the visualizer. Synchronized
+        automatically when assigned."""
+        return self._impl.visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> GuiHandle[T]:
+        self._impl.api._queue(GuiSetVisibleMessage(self._impl.name, visible=visible))
+        self._impl.visible = visible
         return self
 
     def remove(self) -> None:
@@ -151,16 +186,24 @@ class GuiHandle(Generic[T]):
 StringType = TypeVar("StringType", bound=str)
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class GuiSelectHandle(GuiHandle[StringType], Generic[StringType]):
-    def set_options(self, options: List[StringType]) -> None:
-        """Assign a new set of options for the dropdown menu.
+    _impl_options: List[StringType]
+
+    @property
+    def options(self) -> List[StringType]:
+        """Options for our dropdown. Synchronized automatically when assigned.
 
         For projects that care about typing: the static type of `options` should be
         consistent with the `StringType` associated with a handle. Literal types will be
         inferred where possible when handles are instantiated; for the most flexibility,
         we can declare handles as `GuiHandle[str]`.
         """
+        return self._impl_options
+
+    @options.setter
+    def options(self, options: List[StringType]) -> None:
+        self._impl_options = options
 
         # Make sure initial value is in options.
         self._impl.leva_conf["options"] = options
@@ -173,5 +216,5 @@ class GuiSelectHandle(GuiHandle[StringType], Generic[StringType]):
         )
 
         # Make sure current value is in options.
-        if self.get_value() not in options:
-            self.set_value(options[0])
+        if self.value not in options:
+            self.value = options[0]

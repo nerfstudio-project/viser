@@ -26,13 +26,15 @@ export class SceneNode {
 interface SceneTreeState {
   nodeFromName: { [key: string]: SceneNode };
   visibilityFromName: { [key: string]: boolean };
-  matrixFromName: { [key: string]: THREE.Matrix4 };
+  orientationFromName: { [key: string]: THREE.Quaternion };
+  positionFromName: { [key: string]: THREE.Vector3 };
   objFromName: { [key: string]: THREE.Object3D };
 }
 export interface SceneTreeActions extends SceneTreeState {
   setObj(name: string, obj: THREE.Object3D): void;
   setVisibility(name: string, visible: boolean): void;
-  setMatrix(name: string, matrix: THREE.Matrix4): void;
+  setOrientation(name: string, wxyz: THREE.Quaternion): void;
+  setPosition(name: string, position: THREE.Vector3): void;
   clearObj(name: string): void;
   addSceneNode(nodes: SceneNode): void;
   removeSceneNode(name: string): void;
@@ -59,7 +61,8 @@ rootNodeTemplate.children.push("/WorldAxes");
 const cleanSceneTreeState = {
   nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
   visibilityFromName: { "": true, "/WorldAxes": true },
-  matrixFromName: {},
+  orientationFromName: {},
+  positionFromName: {},
   objFromName: {},
 } as SceneTreeState;
 
@@ -78,9 +81,13 @@ export function useSceneTreeState() {
           set((state) => {
             state.visibilityFromName[name] = visible;
           }),
-        setMatrix: (name, matrix) =>
+        setOrientation: (name, wxyz) =>
           set((state) => {
-            state.matrixFromName[name] = matrix;
+            state.orientationFromName[name] = wxyz;
+          }),
+        setPosition: (name, position) =>
+          set((state) => {
+            state.positionFromName[name] = position;
           }),
         clearObj: (name) =>
           set((state) => {
@@ -115,7 +122,7 @@ export function useSceneTreeState() {
             ].children.filter((child_name) => child_name !== name);
 
             delete state.visibilityFromName[name];
-            delete state.matrixFromName[name];
+            delete state.orientationFromName[name];
 
             // If we want to remove "/tree", we should remove all of "/tree", "/tree/trunk", "/tree/branch", etc.
             const remove_names = Object.keys(state.nodeFromName).filter((n) =>
@@ -214,13 +221,18 @@ function SceneNodeUpdater(props: {
   const visible = props.useSceneTree(
     (state) => state.visibilityFromName[props.name]
   );
-  const matrix = props.useSceneTree(
-    (state) => state.matrixFromName[props.name]
+  const orientation = props.useSceneTree(
+    (state) => state.orientationFromName[props.name]
+  );
+  const position = props.useSceneTree(
+    (state) => state.positionFromName[props.name]
   );
   React.useEffect(() => {
     if (props.objRef.current === null) return;
     props.objRef.current.visible = visible;
-    matrix && props.objRef.current.matrix.copy(matrix);
-  }, [props, visible, matrix]);
+    orientation && props.objRef.current.rotation.setFromQuaternion(orientation);
+    position &&
+      props.objRef.current.position.set(position.x, position.y, position.z);
+  }, [props, visible, orientation, position]);
   return <></>;
 }

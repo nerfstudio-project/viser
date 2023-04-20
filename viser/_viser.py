@@ -4,7 +4,7 @@ import dataclasses
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from typing_extensions import override
 
@@ -47,12 +47,18 @@ class ClientHandle(MessageApi):
         """Define how the message API should send messages."""
         self._state.connection.send(message)
 
-    def get_camera(self) -> CameraState:
+    @property
+    def camera(self) -> CameraState:
         """Get the view camera from a particular client. Blocks if not available yet."""
         # TODO: there's a risk of getting stuck in an infinite loop here.
         while self._state.camera_info is None:
             time.sleep(0.01)
         return self._state.camera_info
+
+    @camera.setter
+    def camera(self, camera: CameraState) -> None:
+        # TODO
+        raise NotImplementedError()
 
     def on_camera_update(
         self, callback: Callable[[ClientHandle], None]
@@ -82,11 +88,16 @@ class ViserServer(MessageApi):
 
         state = _ViserServerState(server, {}, threading.Lock())
         self._state = state
+        self._client_connect_cb: List[Callable[[ClientHandle], None]] = []
+        self._client_disconnect_cb: List[Callable[[ClientHandle], None]] = []
 
         # For new clients, register and add a handler for camera messages.
         @server.on_client_connect
         def _(conn: infra.ClientConnection) -> None:
             client = ClientHandle(conn.client_id, _ClientHandleState(conn, None, []))
+
+            for cb in self._client_connect_cb:
+                cb(client)
 
             def handle_camera_message(
                 client_id: infra.ClientId, message: ViewerCameraMessage
@@ -110,16 +121,28 @@ class ViserServer(MessageApi):
         @server.on_client_disconnect
         def _(conn: infra.ClientConnection) -> None:
             with self._state.client_lock:
-                state.connected_clients.pop(conn.client_id)
+                handle = state.connected_clients.pop(conn.client_id)
+
+            for cb in self._client_disconnect_cb:
+                cb(handle)
 
         # Start the server.
         server.start()
         self.reset_scene()
 
     def get_clients(self) -> Dict[int, ClientHandle]:
-        """Get mapping from connected client IDs to handles."""
+        """Creates and returns a copy of the mapping from connected client IDs to
+        handles."""
         with self._state.client_lock:
             return self._state.connected_clients.copy()
+
+    def on_client_connect(self, cb: Callable[[ClientHandle], Any]) -> None:
+        """Attach a callback to run for newly connected clients."""
+        self._client_connect_cb.append(cb)
+
+    def on_client_disconnect(self, cb: Callable[[ClientHandle], Any]) -> None:
+        """Attach a callback to run when clients disconnect."""
+        self._client_disconnect_cb.append(cb)
 
     @override
     def _queue(self, message: infra.Message) -> None:

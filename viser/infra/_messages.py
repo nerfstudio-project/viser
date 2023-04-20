@@ -30,7 +30,7 @@ T = TypeVar("T", bound="Message")
 
 
 class Message(abc.ABC):
-    """Base message type for controlling our viewer."""
+    """Base message type for server/client communication."""
 
     excluded_self_client: Optional[ClientId] = None
     """Don't send this message to a particular client. Useful when a client wants to
