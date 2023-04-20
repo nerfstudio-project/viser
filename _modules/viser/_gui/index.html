@@ -306,6 +306,7 @@
     <span class="c1">#   that can be read can be written. `get_`/`set_` makes this really clear.</span>
     <span class="c1">#   Clarity: some things that we read (like client mappings) are copied before</span>
     <span class="c1">#   they&#39;re returned. An attribute access obfuscates the overhead here.</span>
+    <span class="c1">#   Flexibility: getter/setter types should match. https://github.com/python/mypy/issues/3004</span>
     <span class="c1">#   Feels a bit more magical.</span>
     <span class="c1">#</span>
     <span class="c1"># Is this worth the tradeoff?</span>
