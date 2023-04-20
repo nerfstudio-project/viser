@@ -14,12 +14,13 @@ def main():
     counter = 0
 
     with server.gui_folder("Read-only"):
-        gui_counter = server.add_gui_number(
-            "Counter", initial_value=counter
-        ).set_disabled(True)
+        gui_counter = server.add_gui_number("Counter", initial_value=counter)
+        gui_counter.disabled = True
+
         gui_slider = server.add_gui_slider(
             "Slider", min=0, max=100, step=1, initial_value=counter
-        ).set_disabled(True)
+        )
+        gui_slider.disabled = True
 
     with server.gui_folder("Editable"):
         gui_vector2 = server.add_gui_vector2(
@@ -56,30 +57,31 @@ def main():
     point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(500, 3))
     point_colors = onp.random.randint(0, 256, size=(500, 3))
 
+    frame_node = server.add_frame(
+        "/controlled_frame", wxyz=(1.0, 0.0, 0.0, 0.0), position=(0.0, 0.0, 0.0)
+    )
+
     while True:
-        # We can call `set_value()` to set an input to a particular value.
-        gui_counter.set_value(counter)
-        gui_slider.set_value(counter % 100)
+        # We can set the value of an input to a particular value. Changes are
+        # automatically reflected in connected clients.
+        gui_counter.value = counter
+        gui_slider.value = counter % 100
 
-        # We can call `value()` to read the current value of an input.
-        xy = gui_vector2.get_value()
-        server.add_frame(
-            "/controlled_frame",
-            wxyz=(1, 0, 0, 0),
-            position=xy + (0,),
-        )
+        # We can set the position of a scene node with `.position`, and read the value
+        # of a gui element with `.value`. Changes are automatically reflected in
+        # connected clients.
+        frame_node.position = gui_vector2.value + (0,)
 
-        size = gui_vector3.get_value()
         server.add_point_cloud(
             "/controlled_frame/point_cloud",
-            position=point_positions * onp.array(size, dtype=onp.float32),
+            position=point_positions * onp.array(gui_vector3.value, dtype=onp.float32),
             color=point_colors,
         )
 
-        # We can use `set_disabled()` to enable/disable GUI elements.
-        gui_text.set_hidden(gui_checkbox_hide.get_value())
-        gui_button.set_hidden(gui_checkbox_hide.get_value())
-        gui_rgba.set_disabled(gui_checkbox_disable.get_value())
+        # We can use `.visible` and `.disabled` to toggle GUI elements.
+        gui_text.visible = not gui_checkbox_hide.value
+        gui_button.visible = not gui_checkbox_hide.value
+        gui_rgba.disabled = gui_checkbox_disable.value
 
         counter += 1
         time.sleep(1e-2)

@@ -54,10 +54,10 @@ def main(urdf_path: Path):
         @button.on_update
         def _(_):
             for g in gui_joints:
-                g.set_value(0.0)
+                g.value = 0.0
 
         def update_frames():
-            urdf.update_cfg(onp.array([gui.get_value() for gui in gui_joints]))
+            urdf.update_cfg(onp.array([gui.value for gui in gui_joints]))
             for joint in urdf.joint_map.values():
                 assert isinstance(joint, yourdfpy.Joint)
                 T_parent_child = urdf.get_transform(joint.child, joint.parent)
@@ -86,7 +86,7 @@ def main(urdf_path: Path):
                 initial_value=0.0,
             )
             if joint.limit is None:
-                slider.set_hidden(True)
+                slider.visible = False
 
             @slider.on_update
             def _(_):

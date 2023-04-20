@@ -63,7 +63,8 @@ function useMessageHandler(
   const removeGui = useGui((state) => state.removeGui);
   const guiSet = useGui((state) => state.guiSet);
   const setVisibility = useSceneTree((state) => state.setVisibility);
-  const setMatrix = useSceneTree((state) => state.setMatrix);
+  const setOrientation = useSceneTree((state) => state.setOrientation);
+  const setPosition = useSceneTree((state) => state.setPosition);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -236,23 +237,26 @@ function useMessageHandler(
         );
         break;
       }
-      case "SetTransformMessage": {
-        setMatrix(
+      case "SetOrientationMessage": {
+        setOrientation(
           message.name,
-          new THREE.Matrix4()
-            .makeRotationFromQuaternion(
-              new THREE.Quaternion(
-                message.wxyz[1],
-                message.wxyz[2],
-                message.wxyz[3],
-                message.wxyz[0]
-              )
-            )
-            .setPosition(
-              message.position[0],
-              message.position[1],
-              message.position[2]
-            )
+          new THREE.Quaternion(
+            message.wxyz[1],
+            message.wxyz[2],
+            message.wxyz[3],
+            message.wxyz[0]
+          )
+        );
+        break;
+      }
+      case "SetPositionMessage": {
+        setPosition(
+          message.name,
+          new THREE.Vector3(
+            message.position[0],
+            message.position[1],
+            message.position[2]
+          )
         );
         break;
       }
@@ -321,7 +325,7 @@ function useMessageHandler(
         addGui(message.name, {
           levaConf: message.leva_conf,
           folderLabels: message.folder_labels,
-          hidden: false,
+          visible: true,
         });
         break;
       }
@@ -331,12 +335,12 @@ function useMessageHandler(
         break;
       }
       // Set the hidden state of a GUI input.
-      case "GuiSetHiddenMessage": {
+      case "GuiSetVisibleMessage": {
         const currentConf = useGui.getState().guiConfigFromName[message.name];
         if (currentConf !== undefined) {
           addGui(message.name, {
             ...currentConf,
-            hidden: message.hidden,
+            visible: message.visible,
           });
         }
         break;
@@ -379,9 +383,11 @@ export default function WebsocketInterface(props: {
     props.wrapperRef,
     props.websocketRef
   );
+  const setVisibility = props.useSceneTree((state) => state.setVisibility);
 
   const server = props.useGui((state) => state.server);
   const resetGui = props.useGui((state) => state.resetGui);
+  const resetScene = props.useSceneTree((state) => state.resetScene);
 
   syncSearchParamServer(props.panelKey, server);
 
@@ -401,6 +407,10 @@ export default function WebsocketInterface(props: {
         console.log("Connected!" + server);
         props.websocketRef.current = ws;
         props.useGui.setState({ websocketConnected: true });
+        resetScene();
+
+        // Hide world axes on connection.
+        setVisibility("/WorldAxes", false);
       };
 
       ws.onclose = () => {
@@ -408,6 +418,9 @@ export default function WebsocketInterface(props: {
         props.websocketRef.current = null;
         props.useGui.setState({ websocketConnected: false });
         if (props.useGui.getState().guiNames.length > 0) resetGui();
+
+        // Show world axes on disconnection.
+        setVisibility("/WorldAxes", true);
 
         // Try to reconnect.
         timeout = setTimeout(tryConnect, 1000);

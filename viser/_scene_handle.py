@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, Callable, List, Optional, Tuple, TypeVar, cast
 
 import numpy as onp
 
+from . import _messages
+
 if TYPE_CHECKING:
     from ._message_api import ClientId, MessageApi
 
@@ -24,43 +26,67 @@ def _cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
 class _SceneNodeHandleState:
     name: str
     api: MessageApi
+    wxyz: Tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
+    position: Tuple[float, float, float] = (0.0, 0.0, 0.0)
+    visible: bool = True
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class SceneNodeHandle:
     """Handle for interacting with scene nodes."""
 
     _impl: _SceneNodeHandleState
 
-    def set_transform(
-        self,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray,
-        position: Tuple[float, float, float] | onp.ndarray,
-    ) -> SceneNodeHandle:
-        """Set the 6D pose of the scene node."""
-        self._impl.api.set_scene_node_transform(self._impl.name, wxyz, position)
-        return self
+    @property
+    def wxyz(self) -> Tuple[float, float, float, float]:
+        """Orientation of the scene node. This is the quaternion representation of the R
+        in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
+        """
+        return self._impl.wxyz
 
-    def set_visibility(self, visible: bool) -> SceneNodeHandle:
-        """Set the visibility of the scene node."""
-        self._impl.api.set_scene_node_visibility(self._impl.name, visible)
-        return self
+    @wxyz.setter
+    def wxyz(self, wxyz: Tuple[float, float, float, float]) -> None:
+        self._impl.wxyz = wxyz
+        self._impl.api._queue(
+            _messages.SetOrientationMessage(self._impl.name, self._impl.wxyz)
+        )
+
+    @property
+    def position(self) -> Tuple[float, float, float]:
+        """Position of the scene node. This is equivalent to the t in
+        `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
+        """
+        return self._impl.position
+
+    @position.setter
+    def position(self, position: Tuple[float, float, float]) -> None:
+        self._impl.position = position
+        self._impl.api._queue(
+            _messages.SetPositionMessage(self._impl.name, self._impl.position)
+        )
+
+    @property
+    def visible(self) -> bool:
+        """Whether the scene node is visible or not. Synchronized to clients automatically when assigned."""
+        return self._impl.visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        self._impl.api._queue(
+            _messages.SetSceneNodeVisibilityMessage(self._impl.name, visible)
+        )
+        self._impl.visible = visible
 
     def remove(self) -> None:
         """Remove the node from the scene."""
-        self._impl.api.remove_scene_node(self._impl.name)
+        self._impl.api._queue(_messages.RemoveSceneNodeMessage(self._impl.name))
 
 
 @dataclasses.dataclass
 class _TransformControlsState:
-    name: str
-    api: MessageApi
-    wxyz: Tuple[float, float, float, float]
-    position: Tuple[float, float, float]
     last_updated: float
-
     update_cb: List[Callable[[TransformControlsHandle], None]]
-    sync_cb: Optional[Callable[[ClientId, _TransformControlsState], None]] = None
+    sync_cb: Optional[Callable[[ClientId, TransformControlsHandle], None]] = None
 
 
 @dataclasses.dataclass(frozen=True)
@@ -70,36 +96,19 @@ class TransformControlsState:
     last_updated: float
 
 
-@dataclasses.dataclass(frozen=True)
-class TransformControlsHandle:
+@dataclasses.dataclass
+class TransformControlsHandle(SceneNodeHandle):
     """Handle for interacting with transform control gizmos."""
 
-    _impl: _TransformControlsState
+    _impl_aux: _TransformControlsState
 
-    def get_state(self) -> TransformControlsState:
-        """Get the current state of the gizmo."""
-        return TransformControlsState(
-            self._impl.wxyz, self._impl.position, self._impl.last_updated
-        )
+    @property
+    def update_timestamp(self) -> float:
+        return self._impl_aux.last_updated
 
     def on_update(
         self, func: Callable[[TransformControlsHandle], None]
     ) -> Callable[[TransformControlsHandle], None]:
         """Attach a callback for when the gizmo is moved."""
-        self._impl.update_cb.append(func)
+        self._impl_aux.update_cb.append(func)
         return func
-
-    def set_transform(
-        self,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray,
-        position: Tuple[float, float, float] | onp.ndarray,
-    ) -> TransformControlsHandle:
-        """Set the 6D pose of the gizmo."""
-        self._impl.api.set_scene_node_transform(self._impl.name, wxyz, position)
-        self._impl.wxyz = _cast_vector(wxyz, 4)
-        self._impl.position = _cast_vector(position, 3)
-        return self
-
-    def remove(self) -> None:
-        """Remove the node from the scene."""
-        self._impl.api.remove_scene_node(self._impl.name)

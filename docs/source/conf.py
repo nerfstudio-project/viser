@@ -75,8 +75,8 @@ html_theme_options = {
             "class": "",
         },
     ],
-    # "light_logo": "logo-light.svg",
-    # "dark_logo": "logo-dark.svg",
+    "light_logo": "viser.svg",
+    "dark_logo": "viser.svg",
 }
 
 # Pull documentation types from hints
@@ -246,7 +246,7 @@ def docstring(app, what, name, obj, options, lines):
 
 def setup(app):
     app.connect("autodoc-process-docstring", docstring)
-    app.add_css_file("css/compact_table_header.css")
+    app.add_css_file("css/custom.css")
 
 
 # Generate name aliases

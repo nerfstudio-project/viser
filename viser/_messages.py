@@ -137,13 +137,22 @@ class TransformControlsMessage(Message):
 
 
 @dataclasses.dataclass
-class SetTransformMessage(Message):
-    """Server -> client message to set a scene node's pose.
+class SetOrientationMessage(Message):
+    """Server -> client message to set a scene node's orientation.
 
     As with all other messages, transforms take the `T_parent_local` convention."""
 
     name: str
     wxyz: Tuple[float, float, float, float]
+
+
+@dataclasses.dataclass
+class SetPositionMessage(Message):
+    """Server -> client message to set a scene node's position.
+
+    As with all other messages, transforms take the `T_parent_local` convention."""
+
+    name: str
     position: Tuple[float, float, float]
 
 
@@ -222,11 +231,11 @@ class GuiUpdateMessage(Message):
 
 
 @dataclasses.dataclass
-class GuiSetHiddenMessage(Message):
+class GuiSetVisibleMessage(Message):
     """Sent client->server when a GUI input is changed."""
 
     name: str
-    hidden: bool
+    visible: bool
 
 
 @dataclasses.dataclass

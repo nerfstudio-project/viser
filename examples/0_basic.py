@@ -18,12 +18,13 @@ while True:
         wxyz=(1.0, 0.0, 0.0, 0.0),
         position=(random.random() * 2.0, 2.0, 0.2),
     )
-    server.add_frame(
+    leaf = server.add_frame(
         "/tree/branch/leaf",
         wxyz=(1.0, 0.0, 0.0, 0.0),
         position=(random.random() * 2.0, 2.0, 0.2),
     )
     time.sleep(5.0)
 
-    server.remove_scene_node("/tree/branch/leaf")
+    # Remove the leaf node from the scene.
+    leaf.remove()
     time.sleep(0.5)

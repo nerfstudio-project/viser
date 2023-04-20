@@ -9,22 +9,21 @@ on:
 
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-    - name: Install dependencies
-      run: |
-        curl -sSL https://install.python-poetry.org | python3 -
-        poetry install
-    - name: Build and publish
-      env:
-        PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: |
-        poetry publish --build --username $PYPI_USERNAME --password $PYPI_PASSWORD
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          poetry install
+      - name: Build and publish
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          poetry publish --build --username $PYPI_USERNAME --password $PYPI_PASSWORD

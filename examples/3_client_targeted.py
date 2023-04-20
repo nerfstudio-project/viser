@@ -32,7 +32,7 @@ while True:
 
     for id, client in clients.items():
         # Match the image rotation of this particular client to face its camera.
-        camera = client.get_camera()
+        camera = client.camera
         client.add_frame("/main", wxyz=camera.wxyz, position=(0, 0, 0), show_axes=False)
 
         # Kind of fun: send our own camera to all of the other clients. This lets each
@@ -40,7 +40,7 @@ while True:
         for other in clients.values():
             if client.client_id == other.client_id:
                 continue
-            camera = client.get_camera()
+            camera = client.camera
             other.add_frame(
                 f"/client_{client.client_id}",
                 wxyz=camera.wxyz,

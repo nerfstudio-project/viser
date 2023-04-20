@@ -2,7 +2,7 @@
 
 import time
 from pathlib import Path
-from typing import Tuple
+from typing import List, Tuple
 
 import numpy as onp
 import numpy.typing as onpt
@@ -36,9 +36,6 @@ def main(
     loader = viser.extras.Record3dLoader(data_path)
     num_frames = min(max_frames, loader.num_frames())
 
-    # Hide world axes.
-    server.set_scene_node_visibility("/WorldAxes", False)
-
     # Add playback UI.
     with server.gui_folder("Playback"):
         gui_timestep = server.add_gui_slider(
@@ -54,28 +51,28 @@ def main(
     # Frame step buttons.
     @gui_next_frame.on_update
     def _(_) -> None:
-        gui_timestep.set_value((gui_timestep.get_value() + 1) % num_frames)
+        gui_timestep.value = (gui_timestep.value + 1) % num_frames
 
     @gui_prev_frame.on_update
     def _(_) -> None:
-        gui_timestep.set_value((gui_timestep.get_value() - 1) % num_frames)
+        gui_timestep.value = (gui_timestep.value - 1) % num_frames
 
     # Disable frame controls when we're playing.
     @gui_playing.on_update
     def _(_) -> None:
-        gui_timestep.set_disabled(gui_playing.get_value())
-        gui_next_frame.set_disabled(gui_playing.get_value())
-        gui_prev_frame.set_disabled(gui_playing.get_value())
+        gui_timestep.disabled = gui_playing.value
+        gui_next_frame.disabled = gui_playing.value
+        gui_prev_frame.disabled = gui_playing.value
 
-    prev_timestep = gui_timestep.get_value()
+    prev_timestep = gui_timestep.value
 
     # Toggle frame visibility when the timestep slider changes.
     @gui_timestep.on_update
     def _(_) -> None:
         nonlocal prev_timestep
-        current_timestep = gui_timestep.get_value()
-        server.set_scene_node_visibility(f"/frames/t{current_timestep}", True)
-        server.set_scene_node_visibility(f"/frames/t{prev_timestep}", False)
+        current_timestep = gui_timestep.value
+        frame_nodes[current_timestep].visible = True
+        frame_nodes[prev_timestep].visible = False
         prev_timestep = current_timestep
 
     # Load in frames.
@@ -85,9 +82,11 @@ def main(
         position=(0, 0, 0),
         show_axes=False,
     )
+    frame_nodes: List[viser.SceneNodeHandle] = []
     for i in tqdm(range(num_frames)):
         frame = loader.get_frame(i)
         position, color = frame.get_point_cloud(downsample_factor)
+        frame_nodes.append(server.add_frame(f"/frames/t{i}", show_axes=False))
         server.add_point_cloud(
             name=f"/frames/t{i}/pcd", position=position, color=color, point_size=0.01
         )
@@ -105,20 +104,17 @@ def main(
             scale=0.15,
         )
 
-    # Remove loading progress indicator.
-    server.set_scene_node_visibility("/axes", False)
-
     # Hide all but the current frame.
-    for i in range(num_frames):
-        server.set_scene_node_visibility(f"/frames/t{i}", i == gui_timestep.get_value())
+    for i, frame_node in enumerate(frame_nodes):
+        frame_node.visible = i == gui_timestep.value
 
     # Playback update loop.
-    prev_timestep = gui_timestep.get_value()
+    prev_timestep = gui_timestep.value
     while True:
-        if gui_playing.get_value():
-            gui_timestep.set_value((gui_timestep.get_value() + 1) % num_frames)
+        if gui_playing.value:
+            gui_timestep.value = (gui_timestep.value + 1) % num_frames
 
-        time.sleep(1.0 / gui_framerate.get_value())
+        time.sleep(1.0 / gui_framerate.value)
 
 
 if __name__ == "__main__":
