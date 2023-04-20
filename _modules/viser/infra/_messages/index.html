@@ -9,7 +9,7 @@
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/css/compact_table_header.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -149,6 +149,10 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../">
   
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../../_static/viser.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../../_static/viser.svg" alt="Dark Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">viser</span>
   
@@ -227,7 +231,7 @@
 
 
 <div class="viewcode-block" id="Message"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message">[docs]</a><span class="k">class</span> <span class="nc">Message</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base message type for controlling our viewer.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base message type for server/client communication.&quot;&quot;&quot;</span>
 
     <span class="n">excluded_self_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClientId</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Don&#39;t send this message to a particular client. Useful when a client wants to</span>

@@ -3,19 +3,28 @@
 |mypy| |nbsp| |pyright| |nbsp| |typescript| |nbsp| |versions|
 
 `viser` is a library for interactive 3D visualization + Python, inspired by
-our favorite bits of the
-[Nerfstudio viewer](https://github.com/nerfstudio-project/nerfstudio),
-[Pangolin](https://github.com/stevenlovegrove/Pangolin),
+tools like [Pangolin](https://github.com/stevenlovegrove/Pangolin),
 [rviz](https://wiki.ros.org/rviz/), and
 [meshcat](https://github.com/rdeits/meshcat).
 
-Core features:
+As a standalone visualization tool, `viser` features include:
 
 - Web interface for easy use on remote machines.
-- Pure-Python API for sending 3D primitives to the browser.
+- Python API for sending 3D primitives to the browser.
 - Python-configurable inputs: buttons, checkboxes, text inputs, sliders,
   dropdowns, gizmos.
 - Support for multiple panels and view-synchronized connections.
+
+The `viser.infra` backend can also be used to build custom web applications
+(example:
+[the Nerfstudio viewer](https://github.com/nerfstudio-project/nerfstudio)). It
+supports:
+
+- Websocket / HTTP server management, on a shared port.
+- Asynchronous server/client communication infrastructure.
+- Client state persistence logic.
+- Typed serialization; synchronization between Python dataclass and TypeScript
+  interfaces.
 
 ## Running examples
 

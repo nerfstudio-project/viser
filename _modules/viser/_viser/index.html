@@ -9,7 +9,7 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/compact_table_header.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -149,6 +149,10 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../">
   
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../_static/viser.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../_static/viser.svg" alt="Dark Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">viser</span>
   
@@ -201,7 +205,7 @@
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">override</span>
 
@@ -244,12 +248,18 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ClientHandle.get_camera"><a class="viewcode-back" href="../../../core/#viser.ClientHandle.get_camera">[docs]</a>    <span class="k">def</span> <span class="nf">get_camera</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraState</span><span class="p">:</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">camera</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraState</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the view camera from a particular client. Blocks if not available yet.&quot;&quot;&quot;</span>
         <span class="c1"># TODO: there&#39;s a risk of getting stuck in an infinite loop here.</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_info</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_info</span>
+
+    <span class="nd">@camera</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">camera</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">CameraState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># TODO</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ClientHandle.on_camera_update"><a class="viewcode-back" href="../../../core/#viser.ClientHandle.on_camera_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_camera_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
@@ -279,11 +289,16 @@
 
         <span class="n">state</span> <span class="o">=</span> <span class="n">_ViserServerState</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="p">{},</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># For new clients, register and add a handler for camera messages.</span>
         <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_connect</span>
         <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">client</span> <span class="o">=</span> <span class="n">ClientHandle</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">_ClientHandleState</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]))</span>
+
+            <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span>
+                <span class="n">cb</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">handle_camera_message</span><span class="p">(</span>
                 <span class="n">client_id</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">ViewerCameraMessage</span>
@@ -309,14 +324,26 @@
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
                 <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span>
 
+            <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span>
+                <span class="n">cb</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+
         <span class="c1"># Start the server.</span>
         <span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ViserServer.get_clients"><a class="viewcode-back" href="../../../core/#viser.ViserServer.get_clients">[docs]</a>    <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get mapping from connected client IDs to handles.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates and returns a copy of the mapping from connected client IDs to</span>
+<span class="sd">        handles.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connected_clients</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ViserServer.on_client_connect"><a class="viewcode-back" href="../../../core/#viser.ViserServer.on_client_connect">[docs]</a>    <span class="k">def</span> <span class="nf">on_client_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run for newly connected clients.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ViserServer.on_client_disconnect"><a class="viewcode-back" href="../../../core/#viser.ViserServer.on_client_disconnect">[docs]</a>    <span class="k">def</span> <span class="nf">on_client_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run when clients disconnect.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span></div>
 
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

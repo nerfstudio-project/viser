@@ -10,7 +10,7 @@
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/compact_table_header.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -150,6 +150,10 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../">
   
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/viser.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/viser.svg" alt="Dark Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">viser</span>
   
@@ -235,7 +239,7 @@ communicating with clients.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_frame">
-<span class="sig-name descname"><span class="pre">add_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.025</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_frame" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">add_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.025</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_frame" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -508,7 +512,8 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.get_clients">
 <span class="sig-name descname"><span class="pre">get_clients</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.get_clients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.get_clients" title="Permalink to this definition">#</a></dt>
-<dd><p>Get mapping from connected client IDs to handles.</p>
+<dd><p>Creates and returns a copy of the mapping from connected client IDs to
+handles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Dict[int, <a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle">ClientHandle</a>]</p>
@@ -532,12 +537,26 @@ also be nested.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.ViserServer.remove_scene_node">
-<span class="sig-name descname"><span class="pre">remove_scene_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.remove_scene_node" title="Permalink to this definition">#</a></dt>
-<dd><p>Remove a node from the scene by name.</p>
+<dt class="sig sig-object py" id="viser.ViserServer.on_client_connect">
+<span class="sig-name descname"><span class="pre">on_client_connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.on_client_connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.on_client_connect" title="Permalink to this definition">#</a></dt>
+<dd><p>Attach a callback to run for newly connected clients.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – </p>
+<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><em>ClientHandle</em></a><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.on_client_disconnect">
+<span class="sig-name descname"><span class="pre">on_client_disconnect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.on_client_disconnect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.on_client_disconnect" title="Permalink to this definition">#</a></dt>
+<dd><p>Attach a callback to run when clients disconnect.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><em>ClientHandle</em></a><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
@@ -561,41 +580,6 @@ also be nested.</p>
 <li><p><strong>image</strong> (<em>numpy.ndarray</em>) – </p></li>
 <li><p><strong>format</strong> (<em>typing_extensions.Literal</em><em>[</em><em>png</em><em>, </em><em>jpeg</em><em>]</em>) – </p></li>
 <li><p><strong>quality</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ViserServer.set_scene_node_transform">
-<span class="sig-name descname"><span class="pre">set_scene_node_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.set_scene_node_transform" title="Permalink to this definition">#</a></dt>
-<dd><p>Set the transformation of a node in the scene by name.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>onp.ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>onp.ndarray</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ViserServer.set_scene_node_visibility">
-<span class="sig-name descname"><span class="pre">set_scene_node_visibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.set_scene_node_visibility" title="Permalink to this definition">#</a></dt>
-<dd><p>Set the visibility of a node in the scene by name.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -638,7 +622,7 @@ individual clients, read camera information, etc.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ClientHandle.add_frame">
-<span class="sig-name descname"><span class="pre">add_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.025</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.add_frame" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">add_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.025</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.add_frame" title="Permalink to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -908,14 +892,9 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ClientHandle.client_id">
-<span class="sig-name descname"><span class="pre">client_id</span></span><a class="headerlink" href="#viser.ClientHandle.client_id" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ClientHandle.get_camera">
-<span class="sig-name descname"><span class="pre">get_camera</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ClientHandle.get_camera"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClientHandle.get_camera" title="Permalink to this definition">#</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.ClientHandle.camera">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">camera</span></span><a class="headerlink" href="#viser.ClientHandle.camera" title="Permalink to this definition">#</a></dt>
 <dd><p>Get the view camera from a particular client. Blocks if not available yet.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -923,6 +902,11 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ClientHandle.client_id">
+<span class="sig-name descname"><span class="pre">client_id</span></span><a class="headerlink" href="#viser.ClientHandle.client_id" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ClientHandle.gui_folder">
@@ -954,20 +938,6 @@ also be nested.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.ClientHandle.remove_scene_node">
-<span class="sig-name descname"><span class="pre">remove_scene_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.remove_scene_node" title="Permalink to this definition">#</a></dt>
-<dd><p>Remove a node from the scene by name.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="viser.ClientHandle.reset_scene">
 <span class="sig-name descname"><span class="pre">reset_scene</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.reset_scene" title="Permalink to this definition">#</a></dt>
 <dd><p>Reset the scene.</p>
@@ -983,41 +953,6 @@ also be nested.</p>
 <li><p><strong>image</strong> (<em>numpy.ndarray</em>) – </p></li>
 <li><p><strong>format</strong> (<em>typing_extensions.Literal</em><em>[</em><em>png</em><em>, </em><em>jpeg</em><em>]</em>) – </p></li>
 <li><p><strong>quality</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ClientHandle.set_scene_node_transform">
-<span class="sig-name descname"><span class="pre">set_scene_node_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.set_scene_node_transform" title="Permalink to this definition">#</a></dt>
-<dd><p>Set the transformation of a node in the scene by name.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>onp.ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>onp.ndarray</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ClientHandle.set_scene_node_visibility">
-<span class="sig-name descname"><span class="pre">set_scene_node_visibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.set_scene_node_visibility" title="Permalink to this definition">#</a></dt>
-<dd><p>Set the visibility of a node in the scene by name.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1063,6 +998,18 @@ also be nested.</p>
 <dt class="sig sig-object py" id="viser.SceneNodeHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">SceneNodeHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handle/#SceneNodeHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SceneNodeHandle" title="Permalink to this definition">#</a></dt>
 <dd><p>Handle for interacting with scene nodes.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.SceneNodeHandle.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.SceneNodeHandle.position" title="Permalink to this definition">#</a></dt>
+<dd><p>Position of the scene node. This is equivalent to the t in
+<code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[float, float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.SceneNodeHandle.remove">
 <span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handle/#SceneNodeHandle.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SceneNodeHandle.remove" title="Permalink to this definition">#</a></dt>
@@ -1074,33 +1021,25 @@ also be nested.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.SceneNodeHandle.set_transform">
-<span class="sig-name descname"><span class="pre">set_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handle/#SceneNodeHandle.set_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SceneNodeHandle.set_transform" title="Permalink to this definition">#</a></dt>
-<dd><p>Set the 6D pose of the scene node.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.SceneNodeHandle.visible">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.SceneNodeHandle.visible" title="Permalink to this definition">#</a></dt>
+<dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>onp.ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>onp.ndarray</em>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.SceneNodeHandle" title="viser.SceneNodeHandle">SceneNodeHandle</a></p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.SceneNodeHandle.set_visibility">
-<span class="sig-name descname"><span class="pre">set_visibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handle/#SceneNodeHandle.set_visibility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SceneNodeHandle.set_visibility" title="Permalink to this definition">#</a></dt>
-<dd><p>Set the visibility of the scene node.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.SceneNodeHandle.wxyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.SceneNodeHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<dd><p>Orientation of the scene node. This is the quaternion representation of the R
+in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>visible</strong> (<em>bool</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.SceneNodeHandle" title="viser.SceneNodeHandle">SceneNodeHandle</a></p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[float, float, float, float]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1111,17 +1050,6 @@ also be nested.</p>
 <dt class="sig sig-object py" id="viser.TransformControlsHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">TransformControlsHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handle/#TransformControlsHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle" title="Permalink to this definition">#</a></dt>
 <dd><p>Handle for interacting with transform control gizmos.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.TransformControlsHandle.get_state">
-<span class="sig-name descname"><span class="pre">get_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handle/#TransformControlsHandle.get_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.get_state" title="Permalink to this definition">#</a></dt>
-<dd><p>Get the current state of the gizmo.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#viser.TransformControlsState" title="viser.TransformControlsState">TransformControlsState</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.on_update">
 <span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.TransformControlsHandle" title="viser.TransformControlsHandle"><span class="pre">TransformControlsHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handle/#TransformControlsHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.on_update" title="Permalink to this definition">#</a></dt>
@@ -1136,9 +1064,21 @@ also be nested.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.TransformControlsHandle.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.TransformControlsHandle.position" title="Permalink to this definition">#</a></dt>
+<dd><p>Position of the scene node. This is equivalent to the t in
+<code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[float, float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handle/#TransformControlsHandle.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.TransformControlsHandle.remove" title="Permalink to this definition">#</a></dt>
 <dd><p>Remove the node from the scene.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -1147,19 +1087,35 @@ also be nested.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.TransformControlsHandle.set_transform">
-<span class="sig-name descname"><span class="pre">set_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handle/#TransformControlsHandle.set_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.set_transform" title="Permalink to this definition">#</a></dt>
-<dd><p>Set the 6D pose of the gizmo.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>onp.ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>onp.ndarray</em>) – </p></li>
-</ul>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.TransformControlsHandle.update_timestamp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><a class="headerlink" href="#viser.TransformControlsHandle.update_timestamp" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.TransformControlsHandle" title="viser.TransformControlsHandle">TransformControlsHandle</a></p>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.TransformControlsHandle.visible">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.TransformControlsHandle.visible" title="Permalink to this definition">#</a></dt>
+<dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.TransformControlsHandle.wxyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.TransformControlsHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<dd><p>Orientation of the scene node. This is the quaternion representation of the R
+in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[float, float, float, float]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1191,24 +1147,14 @@ also be nested.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiHandle</span></span><a class="reference internal" href="../_modules/viser/_gui/#GuiHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle" title="Permalink to this definition">#</a></dt>
 <dd><p>Handle for a particular GUI input in our visualizer.</p>
 <p>Lets us get values, set values, and detect updates.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.get_update_timestamp">
-<span class="sig-name descname"><span class="pre">get_update_timestamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui/#GuiHandle.get_update_timestamp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle.get_update_timestamp" title="Permalink to this definition">#</a></dt>
-<dd><p>Get the last time that this input was updated.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiHandle.disabled">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disabled</span></span><a class="headerlink" href="#viser.GuiHandle.disabled" title="Permalink to this definition">#</a></dt>
+<dd><p>Allow/disallow user interaction with the input. Synchronized automatically
+when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.get_value">
-<span class="sig-name descname"><span class="pre">get_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui/#GuiHandle.get_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle.get_value" title="Permalink to this definition">#</a></dt>
-<dd><p>Get the value of the GUI input.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>T</p>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1239,44 +1185,36 @@ also be nested.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.set_disabled">
-<span class="sig-name descname"><span class="pre">set_disabled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui/#GuiHandle.set_disabled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle.set_disabled" title="Permalink to this definition">#</a></dt>
-<dd><p>Allow/disallow user interaction with the input.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiHandle.update_timestamp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><a class="headerlink" href="#viser.GuiHandle.update_timestamp" title="Permalink to this definition">#</a></dt>
+<dd><p>Get the last time that this input was updated.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>disabled</strong> (<em>bool</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.GuiHandle" title="viser.GuiHandle">GuiHandle</a>[T]</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.set_hidden">
-<span class="sig-name descname"><span class="pre">set_hidden</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui/#GuiHandle.set_hidden"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle.set_hidden" title="Permalink to this definition">#</a></dt>
-<dd><p>Temporarily hide this GUI element from the visualizer.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiHandle.value">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#viser.GuiHandle.value" title="Permalink to this definition">#</a></dt>
+<dd><p>Value of the GUI input. Synchronized automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>hidden</strong> (<em>bool</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.GuiHandle" title="viser.GuiHandle">GuiHandle</a>[T]</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>T</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.set_value">
-<span class="sig-name descname"><span class="pre">set_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui/#GuiHandle.set_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle.set_value" title="Permalink to this definition">#</a></dt>
-<dd><p>Set the value of the GUI input.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiHandle.visible">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.GuiHandle.visible" title="Permalink to this definition">#</a></dt>
+<dd><p>Temporarily show or hide this GUI element from the visualizer. Synchronized
+automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>Union</em><em>[</em><em>T</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.GuiHandle" title="viser.GuiHandle">GuiHandle</a>[T]</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1288,24 +1226,14 @@ also be nested.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiSelectHandle</span></span><a class="reference internal" href="../_modules/viser/_gui/#GuiSelectHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiSelectHandle" title="Permalink to this definition">#</a></dt>
 <dd><p>Handle for a particular GUI input in our visualizer.</p>
 <p>Lets us get values, set values, and detect updates.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.get_update_timestamp">
-<span class="sig-name descname"><span class="pre">get_update_timestamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.get_update_timestamp" title="Permalink to this definition">#</a></dt>
-<dd><p>Get the last time that this input was updated.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiSelectHandle.disabled">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disabled</span></span><a class="headerlink" href="#viser.GuiSelectHandle.disabled" title="Permalink to this definition">#</a></dt>
+<dd><p>Allow/disallow user interaction with the input. Synchronized automatically
+when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.get_value">
-<span class="sig-name descname"><span class="pre">get_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.get_value" title="Permalink to this definition">#</a></dt>
-<dd><p>Get the value of the GUI input.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>T</p>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1325,6 +1253,21 @@ also be nested.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiSelectHandle.options">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">options</span></span><a class="headerlink" href="#viser.GuiSelectHandle.options" title="Permalink to this definition">#</a></dt>
+<dd><p>Options for our dropdown. Synchronized automatically when assigned.</p>
+<p>For projects that care about typing: the static type of <code class="docutils literal notranslate"><span class="pre">options</span></code> should be
+consistent with the <code class="docutils literal notranslate"><span class="pre">StringType</span></code> associated with a handle. Literal types will be
+inferred where possible when handles are instantiated; for the most flexibility,
+we can declare handles as <code class="docutils literal notranslate"><span class="pre">GuiHandle[str]</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[StringType]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiSelectHandle.remove">
 <span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.remove" title="Permalink to this definition">#</a></dt>
@@ -1336,62 +1279,36 @@ also be nested.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.set_disabled">
-<span class="sig-name descname"><span class="pre">set_disabled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.set_disabled" title="Permalink to this definition">#</a></dt>
-<dd><p>Allow/disallow user interaction with the input.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiSelectHandle.update_timestamp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><a class="headerlink" href="#viser.GuiSelectHandle.update_timestamp" title="Permalink to this definition">#</a></dt>
+<dd><p>Get the last time that this input was updated.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>disabled</strong> (<em>bool</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.GuiHandle" title="viser.GuiHandle">GuiHandle</a>[T]</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.set_hidden">
-<span class="sig-name descname"><span class="pre">set_hidden</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.set_hidden" title="Permalink to this definition">#</a></dt>
-<dd><p>Temporarily hide this GUI element from the visualizer.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiSelectHandle.value">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#viser.GuiSelectHandle.value" title="Permalink to this definition">#</a></dt>
+<dd><p>Value of the GUI input. Synchronized automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>hidden</strong> (<em>bool</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.GuiHandle" title="viser.GuiHandle">GuiHandle</a>[T]</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>T</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.set_options">
-<span class="sig-name descname"><span class="pre">set_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">StringType</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui/#GuiSelectHandle.set_options"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiSelectHandle.set_options" title="Permalink to this definition">#</a></dt>
-<dd><p>Assign a new set of options for the dropdown menu.</p>
-<p>For projects that care about typing: the static type of <code class="docutils literal notranslate"><span class="pre">options</span></code> should be
-consistent with the <code class="docutils literal notranslate"><span class="pre">StringType</span></code> associated with a handle. Literal types will be
-inferred where possible when handles are instantiated; for the most flexibility,
-we can declare handles as <code class="docutils literal notranslate"><span class="pre">GuiHandle[str]</span></code>.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.GuiSelectHandle.visible">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.GuiSelectHandle.visible" title="Permalink to this definition">#</a></dt>
+<dd><p>Temporarily show or hide this GUI element from the visualizer. Synchronized
+automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>options</strong> (<em>List</em><em>[</em><em>StringType</em><em>]</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.set_value">
-<span class="sig-name descname"><span class="pre">set_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">T</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.set_value" title="Permalink to this definition">#</a></dt>
-<dd><p>Set the value of the GUI input.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>Union</em><em>[</em><em>T</em><em>, </em><em>numpy.ndarray</em><em>]</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.GuiHandle" title="viser.GuiHandle">GuiHandle</a>[T]</p>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1482,11 +1399,10 @@ we can declare handles as <code class="docutils literal notranslate"><span class
 <li><a class="reference internal" href="#viser.ViserServer.add_transform_controls"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_transform_controls()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.get_clients"><code class="docutils literal notranslate"><span class="pre">ViserServer.get_clients()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.gui_folder"><code class="docutils literal notranslate"><span class="pre">ViserServer.gui_folder()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ViserServer.remove_scene_node"><code class="docutils literal notranslate"><span class="pre">ViserServer.remove_scene_node()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.on_client_connect"><code class="docutils literal notranslate"><span class="pre">ViserServer.on_client_connect()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.on_client_disconnect"><code class="docutils literal notranslate"><span class="pre">ViserServer.on_client_disconnect()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.reset_scene"><code class="docutils literal notranslate"><span class="pre">ViserServer.reset_scene()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.set_background_image"><code class="docutils literal notranslate"><span class="pre">ViserServer.set_background_image()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ViserServer.set_scene_node_transform"><code class="docutils literal notranslate"><span class="pre">ViserServer.set_scene_node_transform()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ViserServer.set_scene_node_visibility"><code class="docutils literal notranslate"><span class="pre">ViserServer.set_scene_node_visibility()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.ClientHandle"><code class="docutils literal notranslate"><span class="pre">ClientHandle</span></code></a><ul>
@@ -1506,15 +1422,12 @@ we can declare handles as <code class="docutils literal notranslate"><span class
 <li><a class="reference internal" href="#viser.ClientHandle.add_mesh"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_mesh()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_point_cloud"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_point_cloud()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_transform_controls"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_transform_controls()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.camera"><code class="docutils literal notranslate"><span class="pre">ClientHandle.camera</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.client_id"><code class="docutils literal notranslate"><span class="pre">ClientHandle.client_id</span></code></a></li>
-<li><a class="reference internal" href="#viser.ClientHandle.get_camera"><code class="docutils literal notranslate"><span class="pre">ClientHandle.get_camera()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.gui_folder"><code class="docutils literal notranslate"><span class="pre">ClientHandle.gui_folder()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.on_camera_update"><code class="docutils literal notranslate"><span class="pre">ClientHandle.on_camera_update()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ClientHandle.remove_scene_node"><code class="docutils literal notranslate"><span class="pre">ClientHandle.remove_scene_node()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.reset_scene"><code class="docutils literal notranslate"><span class="pre">ClientHandle.reset_scene()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.set_background_image"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_background_image()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ClientHandle.set_scene_node_transform"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_scene_node_transform()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ClientHandle.set_scene_node_visibility"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_scene_node_visibility()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.CameraState"><code class="docutils literal notranslate"><span class="pre">CameraState</span></code></a><ul>
@@ -1526,16 +1439,19 @@ we can declare handles as <code class="docutils literal notranslate"><span class
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.SceneNodeHandle"><code class="docutils literal notranslate"><span class="pre">SceneNodeHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.SceneNodeHandle.position"><code class="docutils literal notranslate"><span class="pre">SceneNodeHandle.position</span></code></a></li>
 <li><a class="reference internal" href="#viser.SceneNodeHandle.remove"><code class="docutils literal notranslate"><span class="pre">SceneNodeHandle.remove()</span></code></a></li>
-<li><a class="reference internal" href="#viser.SceneNodeHandle.set_transform"><code class="docutils literal notranslate"><span class="pre">SceneNodeHandle.set_transform()</span></code></a></li>
-<li><a class="reference internal" href="#viser.SceneNodeHandle.set_visibility"><code class="docutils literal notranslate"><span class="pre">SceneNodeHandle.set_visibility()</span></code></a></li>
+<li><a class="reference internal" href="#viser.SceneNodeHandle.visible"><code class="docutils literal notranslate"><span class="pre">SceneNodeHandle.visible</span></code></a></li>
+<li><a class="reference internal" href="#viser.SceneNodeHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">SceneNodeHandle.wxyz</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.TransformControlsHandle.get_state"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.get_state()</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.on_update"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.on_update()</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsHandle.position"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.position</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.remove"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove()</span></code></a></li>
-<li><a class="reference internal" href="#viser.TransformControlsHandle.set_transform"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.set_transform()</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.update_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsHandle.visible"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.visible</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.wxyz</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.TransformControlsState"><code class="docutils literal notranslate"><span class="pre">TransformControlsState</span></code></a><ul>
@@ -1545,24 +1461,22 @@ we can declare handles as <code class="docutils literal notranslate"><span class
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiHandle"><code class="docutils literal notranslate"><span class="pre">GuiHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.GuiHandle.get_update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiHandle.get_update_timestamp()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.get_value"><code class="docutils literal notranslate"><span class="pre">GuiHandle.get_value()</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiHandle.disabled"><code class="docutils literal notranslate"><span class="pre">GuiHandle.disabled</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiHandle.on_update"><code class="docutils literal notranslate"><span class="pre">GuiHandle.on_update()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiHandle.remove()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.set_disabled"><code class="docutils literal notranslate"><span class="pre">GuiHandle.set_disabled()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.set_hidden"><code class="docutils literal notranslate"><span class="pre">GuiHandle.set_hidden()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.set_value"><code class="docutils literal notranslate"><span class="pre">GuiHandle.set_value()</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiHandle.update_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiHandle.value</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiHandle.visible"><code class="docutils literal notranslate"><span class="pre">GuiHandle.visible</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiSelectHandle"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.get_update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.get_update_timestamp()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.get_value"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.get_value()</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiSelectHandle.disabled"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.disabled</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiSelectHandle.on_update"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.on_update()</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiSelectHandle.options"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.options</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiSelectHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.remove()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.set_disabled"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.set_disabled()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.set_hidden"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.set_hidden()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.set_options"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.set_options()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.set_value"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.set_value()</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiSelectHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.update_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiSelectHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.value</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiSelectHandle.visible"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.visible</span></code></a></li>
 </ul>
 </li>
 </ul>

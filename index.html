@@ -10,7 +10,7 @@
       <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="_static/css/compact_table_header.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
     <link rel="stylesheet" type="text/css" href="_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -150,6 +150,10 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
   
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="_static/viser.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="_static/viser.svg" alt="Dark Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">viser</span>
   
@@ -200,18 +204,27 @@
 <h1>viser<a class="headerlink" href="#viser" title="Permalink to this heading">#</a></h1>
 <p><a class="reference external" href="https://github.com/brentyi/viser"><img alt="Mypy status icon" src="https://github.com/brentyi/viser/workflows/mypy/badge.svg?branch=main" /></a> <a class="reference external" href="https://github.com/brentyi/viser"><img alt="Mypy status icon" src="https://github.com/brentyi/viser/workflows/pyright/badge.svg?branch=main" /></a> <a class="reference external" href="https://github.com/brentyi/viser"><img alt="TypeScript status icon" src="https://github.com/brentyi/viser/workflows/typescript-compile/badge.svg" /></a> <a class="reference external" href="https://pypi.org/project/viser/"><img alt="Version icon" src="https://img.shields.io/pypi/pyversions/viser" /></a></p>
 <p><code class="docutils literal notranslate"><span class="pre">viser</span></code> is a library for interactive 3D visualization + Python, inspired by
-our favorite bits of the
-<a class="reference external" href="https://github.com/nerfstudio-project/nerfstudio">Nerfstudio viewer</a>,
-<a class="reference external" href="https://github.com/stevenlovegrove/Pangolin">Pangolin</a>,
+tools like <a class="reference external" href="https://github.com/stevenlovegrove/Pangolin">Pangolin</a>,
 <a class="reference external" href="https://wiki.ros.org/rviz/">rviz</a>, and
 <a class="reference external" href="https://github.com/rdeits/meshcat">meshcat</a>.</p>
-<p>Core features:</p>
+<p>As a standalone visualization tool, <code class="docutils literal notranslate"><span class="pre">viser</span></code> features include:</p>
 <ul class="simple">
 <li><p>Web interface for easy use on remote machines.</p></li>
-<li><p>Pure-Python API for sending 3D primitives to the browser.</p></li>
+<li><p>Python API for sending 3D primitives to the browser.</p></li>
 <li><p>Python-configurable inputs: buttons, checkboxes, text inputs, sliders,
 dropdowns, gizmos.</p></li>
 <li><p>Support for multiple panels and view-synchronized connections.</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">viser.infra</span></code> backend can also be used to build custom web applications
+(example:
+<a class="reference external" href="https://github.com/nerfstudio-project/nerfstudio">the Nerfstudio viewer</a>). It
+supports:</p>
+<ul class="simple">
+<li><p>Websocket / HTTP server management, on a shared port.</p></li>
+<li><p>Asynchronous server/client communication infrastructure.</p></li>
+<li><p>Client state persistence logic.</p></li>
+<li><p>Typed serialization; synchronization between Python dataclass and TypeScript
+interfaces.</p></li>
 </ul>
 <section id="running-examples">
 <h2>Running examples<a class="headerlink" href="#running-examples" title="Permalink to this heading">#</a></h2>

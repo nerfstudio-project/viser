@@ -9,7 +9,7 @@
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/compact_table_header.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -149,6 +149,10 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../">
   
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../../../_static/viser.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../../../_static/viser.svg" alt="Dark Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">viser</span>
   
@@ -202,6 +206,8 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_messages</span>
+
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span> <span class="nn">._message_api</span> <span class="kn">import</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">MessageApi</span>
 
@@ -221,43 +227,67 @@
 <span class="k">class</span> <span class="nc">_SceneNodeHandleState</span><span class="p">:</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">api</span><span class="p">:</span> <span class="n">MessageApi</span>
+    <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
 
-<div class="viewcode-block" id="SceneNodeHandle"><a class="viewcode-back" href="../../../core/#viser.SceneNodeHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="SceneNodeHandle"><a class="viewcode-back" href="../../../core/#viser.SceneNodeHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">SceneNodeHandle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with scene nodes.&quot;&quot;&quot;</span>
 
     <span class="n">_impl</span><span class="p">:</span> <span class="n">_SceneNodeHandleState</span>
 
-<div class="viewcode-block" id="SceneNodeHandle.set_transform"><a class="viewcode-back" href="../../../core/#viser.SceneNodeHandle.set_transform">[docs]</a>    <span class="k">def</span> <span class="nf">set_transform</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SceneNodeHandle</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the 6D pose of the scene node.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">set_scene_node_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation of the scene node. This is the quaternion representation of the R</span>
+<span class="sd">        in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">wxyz</span>
 
-<div class="viewcode-block" id="SceneNodeHandle.set_visibility"><a class="viewcode-back" href="../../../core/#viser.SceneNodeHandle.set_visibility">[docs]</a>    <span class="k">def</span> <span class="nf">set_visibility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SceneNodeHandle</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the visibility of the scene node.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">set_scene_node_visibility</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span></div>
+    <span class="nd">@wxyz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">_cast_vector</span><span class="p">(</span><span class="n">wxyz</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">SetOrientationMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">wxyz</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Position of the scene node. This is equivalent to the t in</span>
+<span class="sd">        `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">position</span>
+
+    <span class="nd">@position</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">_cast_vector</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">SetPositionMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">visible</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether the scene node is visible or not. Synchronized to clients automatically when assigned.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">visible</span>
+
+    <span class="nd">@visible</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">SetSceneNodeVisibilityMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">visible</span>
 
 <div class="viewcode-block" id="SceneNodeHandle.remove"><a class="viewcode-back" href="../../../core/#viser.SceneNodeHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove the node from the scene.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">remove_scene_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">RemoveSceneNodeMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div></div>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">_TransformControlsState</span><span class="p">:</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">api</span><span class="p">:</span> <span class="n">MessageApi</span>
-    <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
-    <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
     <span class="n">last_updated</span><span class="p">:</span> <span class="nb">float</span>
-
     <span class="n">update_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">TransformControlsHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
-    <span class="n">sync_cb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">_TransformControlsState</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">sync_cb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">TransformControlsHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="TransformControlsState"><a class="viewcode-back" href="../../../core/#viser.TransformControlsState">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -267,39 +297,22 @@
     <span class="n">last_updated</span><span class="p">:</span> <span class="nb">float</span></div>
 
 
-<div class="viewcode-block" id="TransformControlsHandle"><a class="viewcode-back" href="../../../core/#viser.TransformControlsHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">TransformControlsHandle</span><span class="p">:</span>
+<div class="viewcode-block" id="TransformControlsHandle"><a class="viewcode-back" href="../../../core/#viser.TransformControlsHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">TransformControlsHandle</span><span class="p">(</span><span class="n">SceneNodeHandle</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with transform control gizmos.&quot;&quot;&quot;</span>
 
-    <span class="n">_impl</span><span class="p">:</span> <span class="n">_TransformControlsState</span>
+    <span class="n">_impl_aux</span><span class="p">:</span> <span class="n">_TransformControlsState</span>
 
-<div class="viewcode-block" id="TransformControlsHandle.get_state"><a class="viewcode-back" href="../../../core/#viser.TransformControlsHandle.get_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransformControlsState</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the current state of the gizmo.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">TransformControlsState</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">last_updated</span>
-        <span class="p">)</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">update_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">last_updated</span>
 
 <div class="viewcode-block" id="TransformControlsHandle.on_update"><a class="viewcode-back" href="../../../core/#viser.TransformControlsHandle.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">TransformControlsHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">TransformControlsHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback for when the gizmo is moved.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">update_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span></div>
-
-<div class="viewcode-block" id="TransformControlsHandle.set_transform"><a class="viewcode-back" href="../../../core/#viser.TransformControlsHandle.set_transform">[docs]</a>    <span class="k">def</span> <span class="nf">set_transform</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TransformControlsHandle</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the 6D pose of the gizmo.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">set_scene_node_transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">_cast_vector</span><span class="p">(</span><span class="n">wxyz</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">_cast_vector</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span></div>
-
-<div class="viewcode-block" id="TransformControlsHandle.remove"><a class="viewcode-back" href="../../../core/#viser.TransformControlsHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove the node from the scene.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">remove_scene_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">update_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span></div></div>
 </pre></div>
         </article>
       </div>

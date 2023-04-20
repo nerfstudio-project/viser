@@ -8,7 +8,7 @@
 <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/compact_table_header.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
     
@@ -148,6 +148,10 @@
       
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../">
   
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/viser.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/viser.svg" alt="Dark Logo"/>
+  </div>
   
   <span class="sidebar-brand-text">viser</span>
   
@@ -196,7 +200,7 @@
           
 <section class="genindex-section">
   <h1 id="index">Index</h1>
-  <div class="genindex-jumpbox"><a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#W"><strong>W</strong></a></div>
+  <div class="genindex-jumpbox"><a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#W"><strong>W</strong></a></div>
 </section>
 <section id="A" class="genindex-section">
   <h2>A</h2>
@@ -320,6 +324,8 @@
   <h2>C</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../core/#viser.ClientHandle.camera">camera (viser.ClientHandle property)</a>
+</li>
         <li><a href="../core/#viser.CameraState">CameraState (class in viser)</a>
 </li>
         <li><a href="../core/#viser.ClientHandle.client_id">client_id (viser.ClientHandle attribute)</a>
@@ -346,6 +352,14 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../infrastructure/#viser.infra.Message.deserialize">deserialize() (viser.infra.Message static method)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../core/#viser.GuiHandle.disabled">disabled (viser.GuiHandle property)</a>
+
+        <ul>
+          <li><a href="../core/#viser.GuiSelectHandle.disabled">(viser.GuiSelectHandle property)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -376,28 +390,12 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../infrastructure/#viser.infra.generate_typescript_interfaces">generate_typescript_interfaces() (in module viser.infra)</a>
 </li>
-        <li><a href="../core/#viser.ClientHandle.get_camera">get_camera() (viser.ClientHandle method)</a>
-</li>
         <li><a href="../core/#viser.ViserServer.get_clients">get_clients() (viser.ViserServer method)</a>
-</li>
-        <li><a href="../core/#viser.TransformControlsHandle.get_state">get_state() (viser.TransformControlsHandle method)</a>
 </li>
         <li><a href="../infrastructure/#viser.infra.Message.get_subclasses">get_subclasses() (viser.infra.Message class method)</a>
 </li>
-        <li><a href="../core/#viser.GuiHandle.get_update_timestamp">get_update_timestamp() (viser.GuiHandle method)</a>
-
-        <ul>
-          <li><a href="../core/#viser.GuiSelectHandle.get_update_timestamp">(viser.GuiSelectHandle method)</a>
-</li>
-        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="../core/#viser.GuiHandle.get_value">get_value() (viser.GuiHandle method)</a>
-
-        <ul>
-          <li><a href="../core/#viser.GuiSelectHandle.get_value">(viser.GuiSelectHandle method)</a>
-</li>
-        </ul></li>
         <li><a href="../core/#viser.ClientHandle.gui_folder">gui_folder() (viser.ClientHandle method)</a>
 
         <ul>
@@ -454,9 +452,17 @@
         <li><a href="../core/#viser.ClientHandle.on_camera_update">on_camera_update() (viser.ClientHandle method)</a>
 </li>
         <li><a href="../infrastructure/#viser.infra.Server.on_client_connect">on_client_connect() (viser.infra.Server method)</a>
+
+        <ul>
+          <li><a href="../core/#viser.ViserServer.on_client_connect">(viser.ViserServer method)</a>
 </li>
+        </ul></li>
         <li><a href="../infrastructure/#viser.infra.Server.on_client_disconnect">on_client_disconnect() (viser.infra.Server method)</a>
+
+        <ul>
+          <li><a href="../core/#viser.ViserServer.on_client_disconnect">(viser.ViserServer method)</a>
 </li>
+        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.GuiHandle.on_update">on_update() (viser.GuiHandle method)</a>
@@ -467,6 +473,8 @@
           <li><a href="../core/#viser.TransformControlsHandle.on_update">(viser.TransformControlsHandle method)</a>
 </li>
         </ul></li>
+        <li><a href="../core/#viser.GuiSelectHandle.options">options (viser.GuiSelectHandle property)</a>
+</li>
     </ul></td>
   </tr></table>
 </section>
@@ -478,6 +486,10 @@
         <li><a href="../core/#viser.CameraState.position">position (viser.CameraState attribute)</a>
 
         <ul>
+          <li><a href="../core/#viser.SceneNodeHandle.position">(viser.SceneNodeHandle property)</a>
+</li>
+          <li><a href="../core/#viser.TransformControlsHandle.position">(viser.TransformControlsHandle property)</a>
+</li>
           <li><a href="../core/#viser.TransformControlsState.position">(viser.TransformControlsState attribute)</a>
 </li>
         </ul></li>
@@ -511,12 +523,6 @@
         </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="../core/#viser.ClientHandle.remove_scene_node">remove_scene_node() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../core/#viser.ViserServer.remove_scene_node">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
         <li><a href="../core/#viser.ClientHandle.reset_scene">reset_scene() (viser.ClientHandle method)</a>
 
         <ul>
@@ -537,6 +543,8 @@
 </li>
         <li><a href="../infrastructure/#viser.infra.Message.serialize">serialize() (viser.infra.Message method)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../infrastructure/#viser.infra.Server">Server (class in viser.infra)</a>
 </li>
         <li><a href="../core/#viser.ClientHandle.set_background_image">set_background_image() (viser.ClientHandle method)</a>
@@ -545,48 +553,6 @@
           <li><a href="../core/#viser.ViserServer.set_background_image">(viser.ViserServer method)</a>
 </li>
         </ul></li>
-        <li><a href="../core/#viser.GuiHandle.set_disabled">set_disabled() (viser.GuiHandle method)</a>
-
-        <ul>
-          <li><a href="../core/#viser.GuiSelectHandle.set_disabled">(viser.GuiSelectHandle method)</a>
-</li>
-        </ul></li>
-        <li><a href="../core/#viser.GuiHandle.set_hidden">set_hidden() (viser.GuiHandle method)</a>
-
-        <ul>
-          <li><a href="../core/#viser.GuiSelectHandle.set_hidden">(viser.GuiSelectHandle method)</a>
-</li>
-        </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="../core/#viser.GuiSelectHandle.set_options">set_options() (viser.GuiSelectHandle method)</a>
-</li>
-        <li><a href="../core/#viser.ClientHandle.set_scene_node_transform">set_scene_node_transform() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../core/#viser.ViserServer.set_scene_node_transform">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
-        <li><a href="../core/#viser.ClientHandle.set_scene_node_visibility">set_scene_node_visibility() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../core/#viser.ViserServer.set_scene_node_visibility">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
-        <li><a href="../core/#viser.SceneNodeHandle.set_transform">set_transform() (viser.SceneNodeHandle method)</a>
-
-        <ul>
-          <li><a href="../core/#viser.TransformControlsHandle.set_transform">(viser.TransformControlsHandle method)</a>
-</li>
-        </ul></li>
-        <li><a href="../core/#viser.GuiHandle.set_value">set_value() (viser.GuiHandle method)</a>
-
-        <ul>
-          <li><a href="../core/#viser.GuiSelectHandle.set_value">(viser.GuiSelectHandle method)</a>
-</li>
-        </ul></li>
-        <li><a href="../core/#viser.SceneNodeHandle.set_visibility">set_visibility() (viser.SceneNodeHandle method)</a>
-</li>
         <li><a href="../infrastructure/#viser.infra.Server.start">start() (viser.infra.Server method)</a>
 </li>
     </ul></td>
@@ -607,10 +573,32 @@
   </tr></table>
 </section>
 
+<section id="U" class="genindex-section">
+  <h2>U</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../core/#viser.GuiHandle.update_timestamp">update_timestamp (viser.GuiHandle property)</a>
+
+        <ul>
+          <li><a href="../core/#viser.GuiSelectHandle.update_timestamp">(viser.GuiSelectHandle property)</a>
+</li>
+          <li><a href="../core/#viser.TransformControlsHandle.update_timestamp">(viser.TransformControlsHandle property)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
 <section id="V" class="genindex-section">
   <h2>V</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../core/#viser.GuiHandle.value">value (viser.GuiHandle property)</a>
+
+        <ul>
+          <li><a href="../core/#viser.GuiSelectHandle.value">(viser.GuiSelectHandle property)</a>
+</li>
+        </ul></li>
         <li>
     viser.infra
 
@@ -622,6 +610,16 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.ViserServer">ViserServer (class in viser)</a>
 </li>
+        <li><a href="../core/#viser.GuiHandle.visible">visible (viser.GuiHandle property)</a>
+
+        <ul>
+          <li><a href="../core/#viser.GuiSelectHandle.visible">(viser.GuiSelectHandle property)</a>
+</li>
+          <li><a href="../core/#viser.SceneNodeHandle.visible">(viser.SceneNodeHandle property)</a>
+</li>
+          <li><a href="../core/#viser.TransformControlsHandle.visible">(viser.TransformControlsHandle property)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -633,6 +631,10 @@
         <li><a href="../core/#viser.CameraState.wxyz">wxyz (viser.CameraState attribute)</a>
 
         <ul>
+          <li><a href="../core/#viser.SceneNodeHandle.wxyz">(viser.SceneNodeHandle property)</a>
+</li>
+          <li><a href="../core/#viser.TransformControlsHandle.wxyz">(viser.TransformControlsHandle property)</a>
+</li>
           <li><a href="../core/#viser.TransformControlsState.wxyz">(viser.TransformControlsState attribute)</a>
 </li>
         </ul></li>
