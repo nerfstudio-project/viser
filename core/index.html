@@ -588,6 +588,13 @@ also be nested.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ViserServer.world_axes">
+<span class="sig-name descname"><span class="pre">world_axes</span></span><a class="headerlink" href="#viser.ViserServer.world_axes" title="Permalink to this definition">#</a></dt>
+<dd><p>Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
+and then hidden by default.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1123,26 +1130,6 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="viser.TransformControlsState">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">TransformControlsState</span></span><a class="reference internal" href="../_modules/viser/_scene_handle/#TransformControlsState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsState" title="Permalink to this definition">#</a></dt>
-<dd><dl class="py attribute">
-<dt class="sig sig-object py" id="viser.TransformControlsState.last_updated">
-<span class="sig-name descname"><span class="pre">last_updated</span></span><a class="headerlink" href="#viser.TransformControlsState.last_updated" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.TransformControlsState.position">
-<span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.TransformControlsState.position" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.TransformControlsState.wxyz">
-<span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.TransformControlsState.wxyz" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="viser.GuiHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiHandle</span></span><a class="reference internal" href="../_modules/viser/_gui/#GuiHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle" title="Permalink to this definition">#</a></dt>
 <dd><p>Handle for a particular GUI input in our visualizer.</p>
@@ -1403,6 +1390,7 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ViserServer.on_client_disconnect"><code class="docutils literal notranslate"><span class="pre">ViserServer.on_client_disconnect()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.reset_scene"><code class="docutils literal notranslate"><span class="pre">ViserServer.reset_scene()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.set_background_image"><code class="docutils literal notranslate"><span class="pre">ViserServer.set_background_image()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.world_axes"><code class="docutils literal notranslate"><span class="pre">ViserServer.world_axes</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.ClientHandle"><code class="docutils literal notranslate"><span class="pre">ClientHandle</span></code></a><ul>
@@ -1452,12 +1440,6 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.update_timestamp</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.visible"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.wxyz</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#viser.TransformControlsState"><code class="docutils literal notranslate"><span class="pre">TransformControlsState</span></code></a><ul>
-<li><a class="reference internal" href="#viser.TransformControlsState.last_updated"><code class="docutils literal notranslate"><span class="pre">TransformControlsState.last_updated</span></code></a></li>
-<li><a class="reference internal" href="#viser.TransformControlsState.position"><code class="docutils literal notranslate"><span class="pre">TransformControlsState.position</span></code></a></li>
-<li><a class="reference internal" href="#viser.TransformControlsState.wxyz"><code class="docutils literal notranslate"><span class="pre">TransformControlsState.wxyz</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiHandle"><code class="docutils literal notranslate"><span class="pre">GuiHandle</span></code></a><ul>

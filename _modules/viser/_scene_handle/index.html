@@ -290,13 +290,6 @@
     <span class="n">sync_cb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">TransformControlsHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="TransformControlsState"><a class="viewcode-back" href="../../../core/#viser.TransformControlsState">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">TransformControlsState</span><span class="p">:</span>
-    <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
-    <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
-    <span class="n">last_updated</span><span class="p">:</span> <span class="nb">float</span></div>
-
-
 <div class="viewcode-block" id="TransformControlsHandle"><a class="viewcode-back" href="../../../core/#viser.TransformControlsHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">TransformControlsHandle</span><span class="p">(</span><span class="n">SceneNodeHandle</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with transform control gizmos.&quot;&quot;&quot;</span>
