@@ -134,7 +134,10 @@ export function useSceneTreeState() {
           }),
         resetScene: () =>
           set((state) => {
-            state = { ...state, ...cleanSceneTreeState }; // eslint-disable-line @typescript-eslint/no-unused-vars
+            for (const [key, value] of Object.entries(cleanSceneTreeState)) {
+              /* @ts-ignore */
+              state[key] = value;
+            }
           }),
       }))
     )

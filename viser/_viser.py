@@ -11,6 +11,7 @@ from typing_extensions import override
 from . import infra
 from ._message_api import MessageApi
 from ._messages import ViewerCameraMessage
+from ._scene_handle import SceneNodeHandle, _SceneNodeHandleState
 
 
 @dataclasses.dataclass(frozen=True)
@@ -78,6 +79,10 @@ class _ViserServerState:
 class ViserServer(MessageApi):
     """Viser server class. The primary interface for functionality in `viser`."""
 
+    world_axes: SceneNodeHandle
+    """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
+    and then hidden by default."""
+
     def __init__(self, host: str = "127.0.0.1", port: int = 8080):
         server = infra.Server(
             host=host,
@@ -129,6 +134,8 @@ class ViserServer(MessageApi):
         # Start the server.
         server.start()
         self.reset_scene()
+        self.world_axes = SceneNodeHandle(_SceneNodeHandleState("/WorldAxes", self))
+        self.world_axes.visible = False
 
     def get_clients(self) -> Dict[int, ClientHandle]:
         """Creates and returns a copy of the mapping from connected client IDs to

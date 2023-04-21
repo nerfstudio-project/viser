@@ -89,13 +89,6 @@ class _TransformControlsState:
     sync_cb: Optional[Callable[[ClientId, TransformControlsHandle], None]] = None
 
 
-@dataclasses.dataclass(frozen=True)
-class TransformControlsState:
-    wxyz: Tuple[float, float, float, float]
-    position: Tuple[float, float, float]
-    last_updated: float
-
-
 @dataclasses.dataclass
 class TransformControlsHandle(SceneNodeHandle):
     """Handle for interacting with transform control gizmos."""
