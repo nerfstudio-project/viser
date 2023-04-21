@@ -62,9 +62,9 @@ function useMessageHandler(
   const addGui = useGui((state) => state.addGui);
   const removeGui = useGui((state) => state.removeGui);
   const guiSet = useGui((state) => state.guiSet);
-  const setVisibility = useSceneTree((state) => state.setVisibility);
   const setOrientation = useSceneTree((state) => state.setOrientation);
   const setPosition = useSceneTree((state) => state.setPosition);
+  const setVisibility = useSceneTree((state) => state.setVisibility);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -383,11 +383,9 @@ export default function WebsocketInterface(props: {
     props.wrapperRef,
     props.websocketRef
   );
-  const setVisibility = props.useSceneTree((state) => state.setVisibility);
 
   const server = props.useGui((state) => state.server);
   const resetGui = props.useGui((state) => state.resetGui);
-  const resetScene = props.useSceneTree((state) => state.resetScene);
 
   syncSearchParamServer(props.panelKey, server);
 
@@ -407,10 +405,6 @@ export default function WebsocketInterface(props: {
         console.log("Connected!" + server);
         props.websocketRef.current = ws;
         props.useGui.setState({ websocketConnected: true });
-        resetScene();
-
-        // Hide world axes on connection.
-        setVisibility("/WorldAxes", false);
       };
 
       ws.onclose = () => {
@@ -418,9 +412,6 @@ export default function WebsocketInterface(props: {
         props.websocketRef.current = null;
         props.useGui.setState({ websocketConnected: false });
         if (props.useGui.getState().guiNames.length > 0) resetGui();
-
-        // Show world axes on disconnection.
-        setVisibility("/WorldAxes", true);
 
         // Try to reconnect.
         timeout = setTimeout(tryConnect, 1000);
