@@ -137,6 +137,27 @@ class TransformControlsMessage(Message):
 
 
 @dataclasses.dataclass
+class SetCameraOrientationMessage(Message):
+    """Server -> client message to set the camera's orientation."""
+
+    wxyz: Tuple[float, float, float, float]
+
+
+@dataclasses.dataclass
+class SetCameraPositionMessage(Message):
+    """Server -> client message to set the camera's position."""
+
+    position: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
+class SetCameraFovMessage(Message):
+    """Server -> client message to set the camera's field of view."""
+
+    fov: float
+
+
+@dataclasses.dataclass
 class SetOrientationMessage(Message):
     """Server -> client message to set a scene node's orientation.
 

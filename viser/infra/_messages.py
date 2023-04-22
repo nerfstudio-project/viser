@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast
 
 import msgpack
 import numpy as onp
+from typing_extensions import get_args, get_origin, get_type_hints
 
 if TYPE_CHECKING:
     from ._infra import ClientId
@@ -16,17 +17,50 @@ else:
     ClientId = Any
 
 
-def _prepare_for_serialization(value: Any) -> Any:
+def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     """Prepare any special types for serialization. Currently just maps numpy arrays to
     their underlying data buffers."""
 
+    # Coerce some scalar types: if we've annotated as float / int but we get an
+    # onp.float32 / onp.int64, for example, we should cast automatically.
+    if annotation is float:
+        return float(value)
+    if annotation is int:
+        return int(value)
+
+    # Recursively handle tuples.
+    if get_origin(annotation) is tuple:
+        if isinstance(value, onp.ndarray):
+            assert (
+                False
+            ), f"Expected a tuple, but got an array... missing a cast somewhere? {value}"
+
+        out = []
+        args = get_args(annotation)
+        if len(args) >= 1:
+            if len(args) >= 2 and args[1] == ...:
+                args = (args[0],) * len(value)
+            else:
+                assert len(value) == len(args)
+
+            for i, inner_annotation in enumerate(args):
+                out.append(_prepare_for_serialization(value[i], inner_annotation))
+            return tuple(out)
+
+    # For arrays, we serialize underlying data directly. The client is responsible for
+    # reading using the correct dtype.
     if isinstance(value, onp.ndarray):
         return value.data if value.data.c_contiguous else value.copy().data
-    else:
-        return value
+
+    return value
 
 
 T = TypeVar("T", bound="Message")
+
+
+@functools.lru_cache(maxsize=None)
+def get_type_hints_cached(cls: Type) -> Dict[str, Any]:
+    return get_type_hints(cls)
 
 
 class Message(abc.ABC):
@@ -38,7 +72,10 @@ class Message(abc.ABC):
 
     def serialize(self) -> bytes:
         """Convert a Python Message object into bytes."""
-        mapping = {k: _prepare_for_serialization(v) for k, v in vars(self).items()}
+        hints = get_type_hints_cached(type(self))
+        mapping = {
+            k: _prepare_for_serialization(v, hints[k]) for k, v in vars(self).items()
+        }
         out = msgpack.packb({"type": type(self).__name__, **mapping})
         assert isinstance(out, bytes)
         return out

@@ -8,7 +8,11 @@ import { createRoot } from "react-dom/client";
 
 import ControlPanel from "./ControlPanel/ControlPanel";
 import LabelRenderer from "./LabelRenderer";
-import { SceneNodeThreeObject, useSceneTreeState } from "./SceneTree";
+import {
+  SceneNodeThreeObject,
+  UseSceneTree,
+  useSceneTreeState,
+} from "./SceneTree";
 
 import "./index.css";
 
@@ -22,12 +26,21 @@ import {
 } from "@mui/material";
 import { RemoveCircleRounded, AddCircleRounded } from "@mui/icons-material";
 import WebsocketInterface from "./WebsocketInterface";
-import { useGuiState } from "./ControlPanel/GuiState";
+import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import {
   getServersFromSearchParams,
   searchParamKey,
   truncateSearchParamServers,
 } from "./SearchParamsUtils";
+
+export const ViewerContext = React.createContext<null | {
+  panelKey: number;
+  useSceneTree: UseSceneTree;
+  useGui: UseGui;
+  websocketRef: MutableRefObject<WebSocket | null>;
+  wrapperRef: React.RefObject<HTMLDivElement>;
+  globalCameras: MutableRefObject<CameraPrimitives>;
+}>(null);
 
 const SingleViewer = React.memo(function SingleViewer(props: {
   panelKey: number;
@@ -48,10 +61,6 @@ const SingleViewer = React.memo(function SingleViewer(props: {
     height: 100%;
   `;
 
-  // Our 2D label renderer needs access to the div used for rendering.
-  const wrapperRef = React.useRef<HTMLDivElement>(null);
-  const websocketRef = React.useRef<WebSocket | null>(null);
-
   // Default server logic.
   function getDefaultServerFromUrl() {
     // https://localhost:8080/ => ws://localhost:8080
@@ -70,38 +79,29 @@ const SingleViewer = React.memo(function SingleViewer(props: {
       ? servers[props.panelKey]
       : getDefaultServerFromUrl();
 
-  // Declare the scene tree state. This returns a zustand store/hook, which we
-  // can pass to any children that need state access.
-  const useSceneTree = useSceneTreeState();
-  const useGui = useGuiState(initialServer);
+  // Values that can be globally accessed by components in a viewer.
+  const viewer = {
+    panelKey: props.panelKey,
+    useSceneTree: useSceneTreeState(),
+    useGui: useGuiState(initialServer),
+    websocketRef: React.useRef<WebSocket | null>(null),
+    wrapperRef: React.useRef<HTMLDivElement>(null),
+    globalCameras: props.globalCameras,
+  };
 
-  // TODO: we should consider moving some of these props to a context.
   return (
-    <Wrapper ref={wrapperRef}>
-      <WebsocketInterface
-        panelKey={props.panelKey}
-        useSceneTree={useSceneTree}
-        useGui={useGui}
-        websocketRef={websocketRef}
-        wrapperRef={wrapperRef}
-      />
-      <ControlPanel
-        useSceneTree={useSceneTree}
-        useGui={useGui}
-        websocketRef={websocketRef}
-        wrapperRef={wrapperRef}
-      />
-      <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
-        <LabelRenderer wrapperRef={wrapperRef} />
-        <SynchronizedCameraControls
-          websocketRef={websocketRef}
-          useGui={useGui}
-          globalCameras={props.globalCameras}
-        />
-        <SceneNodeThreeObject name="" useSceneTree={useSceneTree} />
-        <Environment preset="city" blur={1} />
-      </Viewport>
-    </Wrapper>
+    <ViewerContext.Provider value={viewer}>
+      <Wrapper ref={viewer.wrapperRef}>
+        <ControlPanel />
+        <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
+          <WebsocketInterface />
+          <LabelRenderer />
+          <SynchronizedCameraControls />
+          <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
+          <Environment preset="city" blur={1} />
+        </Viewport>
+      </Wrapper>
+    </ViewerContext.Provider>
   );
 });
 

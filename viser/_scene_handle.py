@@ -1,25 +1,12 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import TYPE_CHECKING, Callable, List, Optional, Tuple, TypeVar, cast
-
-import numpy as onp
+from typing import TYPE_CHECKING, Callable, List, Optional, Tuple
 
 from . import _messages
 
 if TYPE_CHECKING:
     from ._message_api import ClientId, MessageApi
-
-TVector = TypeVar("TVector", bound=tuple)
-
-
-def _cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
-    if isinstance(vector, tuple):
-        assert len(vector) == length
-        return cast(TVector, vector)
-    else:
-        assert cast(onp.ndarray, vector).shape == (length,)
-        return cast(TVector, tuple(map(float, vector)))
 
 
 @dataclasses.dataclass

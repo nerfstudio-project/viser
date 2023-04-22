@@ -1,5 +1,4 @@
 <h1>
-  <img src="https://brentyi.github.io/viser/_static/viser.svg" height="34px" />
   viser
 </h1>
 
