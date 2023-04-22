@@ -899,16 +899,10 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 </dl>
 </dd></dl>
 
-<dl class="py property">
+<dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ClientHandle.camera">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">camera</span></span><a class="headerlink" href="#viser.ClientHandle.camera" title="Permalink to this definition">#</a></dt>
-<dd><p>Get the view camera from a particular client. Blocks if not available yet.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#viser.CameraState" title="viser.CameraState">CameraState</a></p>
-</dd>
-</dl>
-</dd></dl>
+<span class="sig-name descname"><span class="pre">camera</span></span><a class="headerlink" href="#viser.ClientHandle.camera" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ClientHandle.client_id">
@@ -971,33 +965,64 @@ also be nested.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="viser.CameraState">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">CameraState</span></span><a class="reference internal" href="../_modules/viser/_viser/#CameraState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraState" title="Permalink to this definition">#</a></dt>
-<dd><p>Information about a client’s camera state.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.CameraState.aspect">
-<span class="sig-name descname"><span class="pre">aspect</span></span><a class="headerlink" href="#viser.CameraState.aspect" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="viser.CameraHandle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">CameraHandle</span></span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle" title="Permalink to this definition">#</a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="viser.CameraHandle.aspect">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">aspect</span></span><a class="headerlink" href="#viser.CameraHandle.aspect" title="Permalink to this definition">#</a></dt>
+<dd><p>Canvas width divided by height. Not assignable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.CameraState.fov">
-<span class="sig-name descname"><span class="pre">fov</span></span><a class="headerlink" href="#viser.CameraState.fov" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.CameraHandle.fov">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fov</span></span><a class="headerlink" href="#viser.CameraHandle.fov" title="Permalink to this definition">#</a></dt>
+<dd><p>Vertical field of view of the camera, in radians. Synchronized automatically
+when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.CameraState.last_updated">
-<span class="sig-name descname"><span class="pre">last_updated</span></span><a class="headerlink" href="#viser.CameraState.last_updated" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.CameraHandle.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.CameraHandle.position" title="Permalink to this definition">#</a></dt>
+<dd><p>Corresponds to the t in <code class="docutils literal notranslate"><span class="pre">P_world</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_camera</span></code>. Synchronized
+automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[float, float, float]</p>
+</dd>
+</dl>
+</dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.CameraState.position">
-<span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.CameraState.position" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.CameraHandle.update_timestamp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><a class="headerlink" href="#viser.CameraHandle.update_timestamp" title="Permalink to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.CameraState.wxyz">
-<span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.CameraState.wxyz" title="Permalink to this definition">#</a></dt>
-<dd></dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.CameraHandle.wxyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.CameraHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<dd><p>Corresponds to the R in <code class="docutils literal notranslate"><span class="pre">P_world</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_camera</span></code>. Synchronized
+automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Tuple[float, float, float, float]</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -1418,12 +1443,12 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ClientHandle.set_background_image"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_background_image()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#viser.CameraState"><code class="docutils literal notranslate"><span class="pre">CameraState</span></code></a><ul>
-<li><a class="reference internal" href="#viser.CameraState.aspect"><code class="docutils literal notranslate"><span class="pre">CameraState.aspect</span></code></a></li>
-<li><a class="reference internal" href="#viser.CameraState.fov"><code class="docutils literal notranslate"><span class="pre">CameraState.fov</span></code></a></li>
-<li><a class="reference internal" href="#viser.CameraState.last_updated"><code class="docutils literal notranslate"><span class="pre">CameraState.last_updated</span></code></a></li>
-<li><a class="reference internal" href="#viser.CameraState.position"><code class="docutils literal notranslate"><span class="pre">CameraState.position</span></code></a></li>
-<li><a class="reference internal" href="#viser.CameraState.wxyz"><code class="docutils literal notranslate"><span class="pre">CameraState.wxyz</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle"><code class="docutils literal notranslate"><span class="pre">CameraHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.CameraHandle.aspect"><code class="docutils literal notranslate"><span class="pre">CameraHandle.aspect</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle.fov"><code class="docutils literal notranslate"><span class="pre">CameraHandle.fov</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle.position"><code class="docutils literal notranslate"><span class="pre">CameraHandle.position</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">CameraHandle.update_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">CameraHandle.wxyz</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.SceneNodeHandle"><code class="docutils literal notranslate"><span class="pre">SceneNodeHandle</span></code></a><ul>

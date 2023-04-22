@@ -16,7 +16,7 @@ communicating with clients.
    :undoc-members:
    :inherited-members:
 
-.. autoapiclass:: viser.CameraState
+.. autoapiclass:: viser.CameraHandle
    :members:
    :undoc-members:
    :inherited-members:

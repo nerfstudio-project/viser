@@ -205,31 +205,86 @@
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">override</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">infra</span>
 <span class="kn">from</span> <span class="nn">._message_api</span> <span class="kn">import</span> <span class="n">MessageApi</span>
-<span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="n">ViewerCameraMessage</span>
+<span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SetCameraFovMessage</span><span class="p">,</span>
+    <span class="n">SetCameraOrientationMessage</span><span class="p">,</span>
+    <span class="n">SetCameraPositionMessage</span><span class="p">,</span>
+    <span class="n">ViewerCameraMessage</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">._scene_handle</span> <span class="kn">import</span> <span class="n">SceneNodeHandle</span><span class="p">,</span> <span class="n">_SceneNodeHandleState</span>
 
 
-<div class="viewcode-block" id="CameraState"><a class="viewcode-back" href="../../../core/#viser.CameraState">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">CameraState</span><span class="p">:</span>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">_CameraHandleState</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about a client&#39;s camera state.&quot;&quot;&quot;</span>
 
+    <span class="n">connection</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span>
     <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
     <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
     <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">aspect</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">last_updated</span><span class="p">:</span> <span class="nb">float</span></div>
+    <span class="n">update_timestamp</span><span class="p">:</span> <span class="nb">float</span>
+
+
+<div class="viewcode-block" id="CameraHandle"><a class="viewcode-back" href="../../../core/#viser.CameraHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">CameraHandle</span><span class="p">:</span>
+    <span class="n">_state</span><span class="p">:</span> <span class="n">_CameraHandleState</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Corresponds to the R in `P_world = [R | t] p_camera`. Synchronized</span>
+<span class="sd">        automatically when assigned.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">wxyz</span>
+
+    <span class="nd">@wxyz</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">wxyz</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetCameraOrientationMessage</span><span class="p">(</span><span class="n">wxyz</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Corresponds to the t in `P_world = [R | t] p_camera`. Synchronized</span>
+<span class="sd">        automatically when assigned.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span>
+
+    <span class="nd">@position</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetCameraPositionMessage</span><span class="p">(</span><span class="n">position</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fov</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Vertical field of view of the camera, in radians. Synchronized automatically</span>
+<span class="sd">        when assigned.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">fov</span>
+
+    <span class="nd">@fov</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">fov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">fov</span> <span class="o">=</span> <span class="n">fov</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetCameraFovMessage</span><span class="p">(</span><span class="n">fov</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Canvas width divided by height. Not assignable.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">aspect</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">update_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span></div>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">_ClientHandleState</span><span class="p">:</span>
     <span class="n">connection</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span>
-    <span class="n">camera_info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CameraState</span><span class="p">]</span>
     <span class="n">camera_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
 
 
@@ -239,6 +294,7 @@
 <span class="sd">    individual clients, read camera information, etc.&quot;&quot;&quot;</span>
 
     <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">camera</span><span class="p">:</span> <span class="n">CameraHandle</span>
     <span class="n">_state</span><span class="p">:</span> <span class="n">_ClientHandleState</span>
 
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -248,19 +304,6 @@
     <span class="k">def</span> <span class="nf">_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">camera</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraState</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the view camera from a particular client. Blocks if not available yet.&quot;&quot;&quot;</span>
-        <span class="c1"># TODO: there&#39;s a risk of getting stuck in an infinite loop here.</span>
-        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_info</span>
-
-    <span class="nd">@camera</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">camera</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">camera</span><span class="p">:</span> <span class="n">CameraState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># TODO</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ClientHandle.on_camera_update"><a class="viewcode-back" href="../../../core/#viser.ClientHandle.on_camera_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_camera_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
@@ -300,7 +343,18 @@
         <span class="c1"># For new clients, register and add a handler for camera messages.</span>
         <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_connect</span>
         <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">ClientHandle</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">_ClientHandleState</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]))</span>
+            <span class="n">camera</span> <span class="o">=</span> <span class="n">CameraHandle</span><span class="p">(</span>
+                <span class="n">_CameraHandleState</span><span class="p">(</span>
+                    <span class="c1"># TODO: values are initially not valid.</span>
+                    <span class="n">conn</span><span class="p">,</span>
+                    <span class="n">wxyz</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+                    <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+                    <span class="n">fov</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                    <span class="n">aspect</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                    <span class="n">update_timestamp</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">ClientHandle</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">_ClientHandleState</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="p">[]))</span>
 
             <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span>
                 <span class="n">cb</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
@@ -309,13 +363,15 @@
                 <span class="n">client_id</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">ViewerCameraMessage</span>
             <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="n">client_id</span> <span class="o">==</span> <span class="n">client</span><span class="o">.</span><span class="n">client_id</span>
-                <span class="n">client</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_info</span> <span class="o">=</span> <span class="n">CameraState</span><span class="p">(</span>
+                <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">_CameraHandleState</span><span class="p">(</span>
+                    <span class="n">conn</span><span class="p">,</span>
                     <span class="n">message</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
                     <span class="n">message</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
                     <span class="n">message</span><span class="o">.</span><span class="n">fov</span><span class="p">,</span>
                     <span class="n">message</span><span class="o">.</span><span class="n">aspect</span><span class="p">,</span>
                     <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
                 <span class="p">)</span>
+
                 <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_cb</span><span class="p">:</span>
                     <span class="n">cb</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
 
