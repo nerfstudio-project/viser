@@ -1,10 +1,9 @@
 import { TreeView } from "@mui/lab";
 import Tabs from "@mui/material/Tabs";
 import Box from "@mui/material/Box";
-import React, { MutableRefObject, RefObject } from "react";
+import React, { useContext } from "react";
 import styled from "@emotion/styled";
 import Tab from "@mui/material/Tab";
-import { UseSceneTree } from "../SceneTree";
 import {
   ExpandLessRounded,
   SensorsRounded,
@@ -14,6 +13,7 @@ import { UseGui } from "./GuiState";
 import GeneratedControls from "./Generated";
 import ServerControls from "./Server";
 import { SceneNodeUI } from "./SceneTreeUI";
+import { ViewerContext } from "..";
 
 /* Icon and label telling us the current status of the websocket connection. */
 function ConnectionStatus(props: { useGui: UseGui }) {
@@ -36,12 +36,10 @@ function ConnectionStatus(props: { useGui: UseGui }) {
 
 /** Root component for control panel. Parents a set of control tabs.
  * This could be refactored+cleaned up a lot! */
-export default function ControlPanel(props: {
-  useSceneTree: UseSceneTree;
-  useGui: UseGui;
-  websocketRef: MutableRefObject<WebSocket | null>;
-  wrapperRef: RefObject<HTMLDivElement>;
-}) {
+export default function ControlPanel() {
+  const { useSceneTree, useGui, websocketRef, wrapperRef } =
+    useContext(ViewerContext)!;
+
   const ControlPanelWrapper = styled(Box)`
     box-sizing: border-box;
     width: 20em;
@@ -58,7 +56,7 @@ export default function ControlPanel(props: {
 
   const panelWrapperRef = React.useRef<HTMLDivElement>(null);
 
-  const showGenerated = props.useGui((state) => state.guiNames.length > 0);
+  const showGenerated = useGui((state) => state.guiNames.length > 0);
 
   return (
     <ControlPanelWrapper
@@ -90,10 +88,7 @@ export default function ControlPanel(props: {
       }}
       ref={panelWrapperRef}
     >
-      <ControlPanelHandle
-        panelWrapperRef={panelWrapperRef}
-        useGui={props.useGui}
-      />
+      <ControlPanelHandle panelWrapperRef={panelWrapperRef} useGui={useGui} />
       <Box
         component="div"
         sx={{
@@ -109,24 +104,18 @@ export default function ControlPanel(props: {
         >
           {showGenerated ? (
             <Box component="div" sx={{ padding: "0.5em 0.5em 1em 0.5em" }}>
-              <GeneratedControls
-                useGui={props.useGui}
-                websocketRef={props.websocketRef}
-              />
+              <GeneratedControls useGui={useGui} websocketRef={websocketRef} />
             </Box>
           ) : null}
           <Box component="div" sx={{ padding: "0.5em" }}>
-            <ServerControls
-              useGui={props.useGui}
-              wrapperRef={props.wrapperRef}
-            />
+            <ServerControls useGui={useGui} wrapperRef={wrapperRef} />
           </Box>
           <TreeView
             sx={{
               padding: "1em 2em 1em 1em",
             }}
           >
-            <SceneNodeUI name="" useSceneTree={props.useSceneTree} />
+            <SceneNodeUI name="" useSceneTree={useSceneTree} />
           </TreeView>
         </ControlPanelContents>
       </Box>

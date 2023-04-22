@@ -1,11 +1,11 @@
-import React, { MutableRefObject, RefObject } from "react";
+import React, { RefObject, useContext } from "react";
 import { PerspectiveCamera } from "three";
-import { UseGui } from "./ControlPanel/GuiState";
 import * as holdEvent from "hold-event";
 import { CameraControls } from "@react-three/drei";
 import { makeThrottledMessageSender } from "./WebsocketInterface";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { ViewerContext } from ".";
 
 export interface CameraPrimitives {
   synchronize: boolean;
@@ -14,16 +14,13 @@ export interface CameraPrimitives {
 }
 
 /** OrbitControls, but synchronized with the server and other panels. */
-export function SynchronizedCameraControls(props: {
-  globalCameras: MutableRefObject<CameraPrimitives>;
-  useGui: UseGui;
-  websocketRef: MutableRefObject<WebSocket | null>;
-}) {
+export function SynchronizedCameraControls() {
+  const viewer = useContext(ViewerContext)!;
   const camera = useThree((state) => state.camera as PerspectiveCamera);
   const cameraControlRef = React.useRef<CameraControls>(null);
 
   const sendCameraThrottled = makeThrottledMessageSender(
-    props.websocketRef,
+    viewer.websocketRef,
     20
   );
 
@@ -64,7 +61,7 @@ export function SynchronizedCameraControls(props: {
     sendCamera();
 
     // Match all cameras.
-    const globalCameras = props.globalCameras.current;
+    const globalCameras = viewer.globalCameras.current;
     if (globalCameras.synchronize) {
       globalCameras.synchronize = false;
 
@@ -87,18 +84,18 @@ export function SynchronizedCameraControls(props: {
       // Hack to prevent the cameraChangedCallback() functions of other camera controls from firing.
       setTimeout(() => (globalCameras.synchronize = true), 1);
     }
-  }, [props.globalCameras, camera, sendCamera]);
+  }, [viewer.globalCameras, camera, sendCamera]);
 
   // Send camera for new connections.
   // We add a small delay to give the server time to add a callback.
-  const connected = props.useGui((state) => state.websocketConnected);
+  const connected = viewer.useGui((state) => state.websocketConnected);
   React.useEffect(() => {
     if (!connected) return;
     setTimeout(() => cameraChangedCallback(), 50);
   }, [connected, cameraChangedCallback]);
 
   React.useEffect(() => {
-    const globalCameras = props.globalCameras.current;
+    const globalCameras = viewer.globalCameras.current;
 
     if (globalCameras.synchronize && globalCameras.cameras.length > 0) {
       const ours = cameraControlRef.current!;
@@ -134,7 +131,7 @@ export function SynchronizedCameraControls(props: {
         1
       );
     };
-  }, [cameraChangedCallback, camera, props.globalCameras]);
+  }, [cameraChangedCallback, camera, viewer.globalCameras]);
 
   // Keyboard controls.
   React.useEffect(() => {

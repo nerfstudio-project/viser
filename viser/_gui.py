@@ -40,7 +40,7 @@ class _GuiHandleState(Generic[T]):
     typ: Type[T]
     api: MessageApi
     value: T
-    last_updated: float
+    update_timestamp: float
 
     folder_labels: List[str]
     """Name of the folders this GUI input was placed into."""
@@ -130,7 +130,7 @@ class GuiHandle(Generic[T]):
         # Set internal state. We automatically convert numpy arrays to the expected
         # internal type. (eg 1D arrays to tuples)
         self._impl.value = type(self._impl.value)(value)  # type: ignore
-        self._impl.last_updated = time.time()
+        self._impl.update_timestamp = time.time()
 
         # Call update callbacks.
         for cb in self._impl.update_cb:
@@ -141,7 +141,7 @@ class GuiHandle(Generic[T]):
     @property
     def update_timestamp(self) -> float:
         """Get the last time that this input was updated."""
-        return self._impl.last_updated
+        return self._impl.update_timestamp
 
     @property
     def disabled(self) -> bool:

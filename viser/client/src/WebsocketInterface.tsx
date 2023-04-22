@@ -1,15 +1,15 @@
 import { pack, unpack } from "msgpackr";
-import React, { MutableRefObject, RefObject } from "react";
+import React, { MutableRefObject, useContext } from "react";
 import * as THREE from "three";
 import AwaitLock from "await-lock";
 import { TextureLoader } from "three";
-import { UseGui } from "./ControlPanel/GuiState";
 
-import { SceneNode, UseSceneTree } from "./SceneTree";
+import { SceneNode } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
 import { Message } from "./WebsocketMessages";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { PivotControls } from "@react-three/drei";
+import { ViewerContext } from ".";
 
 /** Send message over websocket. */
 export function sendWebsocketMessage(
@@ -50,26 +50,23 @@ export function makeThrottledMessageSender(
 }
 
 /** Returns a handler for all incoming messages. */
-function useMessageHandler(
-  useSceneTree: UseSceneTree,
-  useGui: UseGui,
-  wrapperRef: RefObject<HTMLDivElement>,
-  websocketRef: MutableRefObject<WebSocket | null>
-) {
-  const removeSceneNode = useSceneTree((state) => state.removeSceneNode);
-  const resetScene = useSceneTree((state) => state.resetScene);
-  const addSceneNode = useSceneTree((state) => state.addSceneNode);
-  const addGui = useGui((state) => state.addGui);
-  const removeGui = useGui((state) => state.removeGui);
-  const guiSet = useGui((state) => state.guiSet);
-  const setOrientation = useSceneTree((state) => state.setOrientation);
-  const setPosition = useSceneTree((state) => state.setPosition);
-  const setVisibility = useSceneTree((state) => state.setVisibility);
+function useMessageHandler() {
+  const viewer = useContext(ViewerContext)!;
+
+  const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
+  const resetScene = viewer.useSceneTree((state) => state.resetScene);
+  const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
+  const addGui = viewer.useGui((state) => state.addGui);
+  const removeGui = viewer.useGui((state) => state.removeGui);
+  const guiSet = viewer.useGui((state) => state.guiSet);
+  const setOrientation = viewer.useSceneTree((state) => state.setOrientation);
+  const setPosition = viewer.useSceneTree((state) => state.setPosition);
+  const setVisibility = viewer.useSceneTree((state) => state.setVisibility);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(node: SceneNode) {
-    const nodeFromName = useSceneTree.getState().nodeFromName;
+    const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
     const parent_name = node.name.split("/").slice(0, -1).join("/");
     if (!(parent_name in nodeFromName)) {
       addSceneNodeMakeParents(
@@ -204,7 +201,10 @@ function useMessageHandler(
       }
       case "TransformControlsMessage": {
         const name = message.name;
-        const sendDragMessage = makeThrottledMessageSender(websocketRef, 25);
+        const sendDragMessage = makeThrottledMessageSender(
+          viewer.websocketRef,
+          25
+        );
         addSceneNodeMakeParents(
           new SceneNode(message.name, (ref) => (
             <PivotControls
@@ -237,6 +237,84 @@ function useMessageHandler(
         );
         break;
       }
+      case "SetCameraOrientationMessage": {
+        const camera = viewer.globalCameras.current!.cameras[viewer.panelKey];
+        const cameraControls =
+          viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
+            .current!;
+
+        const R_world_camera = new THREE.Quaternion(
+          message.wxyz[1],
+          message.wxyz[2],
+          message.wxyz[3],
+          message.wxyz[0]
+        );
+
+        // Compute and apply a new up direction.
+        const up = new THREE.Vector3(0.0, -1.0, 0.0);
+        const position = new THREE.Vector3();
+        cameraControls.getPosition(position);
+        up.applyQuaternion(R_world_camera);
+        camera.up.set(up.x, up.y, up.z);
+
+        // Compute a look-at point, while holding the orbit distance constant.
+        const target = new THREE.Vector3();
+        cameraControls.getTarget(target);
+        target.sub(position);
+        target.set(0.0, 0.0, target.length());
+        target.applyQuaternion(R_world_camera);
+        target.add(position);
+
+        cameraControls.setLookAt(
+          position.x,
+          position.y,
+          position.z,
+          target.x,
+          target.y,
+          target.z
+        );
+
+        break;
+      }
+      case "SetCameraPositionMessage": {
+        const cameraControls =
+          viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
+            .current!;
+
+        // When setting camera position, we're going to shift the look-at point by the same amount as the position.
+        // This will hold the camera orientation constant.
+        const position = new THREE.Vector3();
+        const target = new THREE.Vector3();
+        cameraControls.getTarget(target);
+        cameraControls.getPosition(position);
+
+        const delta = new THREE.Vector3(
+          message.position[0],
+          message.position[1],
+          message.position[2]
+        );
+        delta.sub(position);
+        target.add(delta);
+
+        cameraControls.setLookAt(
+          message.position[0],
+          message.position[1],
+          message.position[2],
+          target.x,
+          target.y,
+          target.z
+        );
+        break;
+      }
+      case "SetCameraFovMessage": {
+        const camera = viewer.globalCameras.current!.cameras[viewer.panelKey];
+        // tan(fov / 2.0) = 0.5 * film height / focal length
+        // focal length = 0.5 * film height / tan(fov / 2.0)
+        camera.setFocalLength(
+          (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0)
+        );
+        break;
+      }
       case "SetOrientationMessage": {
         setOrientation(
           message.name,
@@ -262,13 +340,13 @@ function useMessageHandler(
       }
       // Add a background image.
       case "BackgroundImageMessage": {
-        if (wrapperRef.current != null) {
-          wrapperRef.current.style.backgroundImage = `url(data:${message.media_type};base64,${message.base64_data})`;
-          wrapperRef.current.style.backgroundSize = "cover";
-          wrapperRef.current.style.backgroundRepeat = "no-repeat";
-          wrapperRef.current.style.backgroundPosition = "center center";
+        if (viewer.wrapperRef.current != null) {
+          viewer.wrapperRef.current.style.backgroundImage = `url(data:${message.media_type};base64,${message.base64_data})`;
+          viewer.wrapperRef.current.style.backgroundSize = "cover";
+          viewer.wrapperRef.current.style.backgroundRepeat = "no-repeat";
+          viewer.wrapperRef.current.style.backgroundPosition = "center center";
 
-          useGui.setState({ backgroundAvailable: true });
+          viewer.useGui.setState({ backgroundAvailable: true });
         }
         break;
       }
@@ -314,10 +392,10 @@ function useMessageHandler(
       // Reset the entire scene, removing all scene nodes.
       case "ResetSceneMessage": {
         resetScene();
-        wrapperRef.current &&
-          (wrapperRef.current.style.backgroundImage = "none");
+        viewer.wrapperRef.current &&
+          (viewer.wrapperRef.current.style.backgroundImage = "none");
 
-        useGui.setState({ backgroundAvailable: false });
+        viewer.useGui.setState({ backgroundAvailable: false });
         break;
       }
       // Add a GUI input.
@@ -336,7 +414,8 @@ function useMessageHandler(
       }
       // Set the hidden state of a GUI input.
       case "GuiSetVisibleMessage": {
-        const currentConf = useGui.getState().guiConfigFromName[message.name];
+        const currentConf =
+          viewer.useGui.getState().guiConfigFromName[message.name];
         if (currentConf !== undefined) {
           addGui(message.name, {
             ...currentConf,
@@ -347,7 +426,8 @@ function useMessageHandler(
       }
       // Add a GUI input.
       case "GuiSetLevaConfMessage": {
-        const currentConf = useGui.getState().guiConfigFromName[message.name];
+        const currentConf =
+          viewer.useGui.getState().guiConfigFromName[message.name];
         if (currentConf !== undefined) {
           addGui(message.name, {
             ...currentConf,
@@ -370,24 +450,14 @@ function useMessageHandler(
 }
 
 /** Component for handling websocket connections. */
-export default function WebsocketInterface(props: {
-  panelKey: number;
-  useSceneTree: UseSceneTree;
-  useGui: UseGui;
-  websocketRef: MutableRefObject<WebSocket | null>;
-  wrapperRef: RefObject<HTMLDivElement>;
-}) {
-  const handleMessage = useMessageHandler(
-    props.useSceneTree,
-    props.useGui,
-    props.wrapperRef,
-    props.websocketRef
-  );
+export default function WebsocketInterface() {
+  const viewer = useContext(ViewerContext)!;
+  const handleMessage = useMessageHandler();
 
-  const server = props.useGui((state) => state.server);
-  const resetGui = props.useGui((state) => state.resetGui);
+  const server = viewer.useGui((state) => state.server);
+  const resetGui = viewer.useGui((state) => state.resetGui);
 
-  syncSearchParamServer(props.panelKey, server);
+  syncSearchParamServer(viewer.panelKey, server);
 
   React.useEffect(() => {
     // Lock for making sure messages are handled in order.
@@ -403,15 +473,15 @@ export default function WebsocketInterface(props: {
 
       ws.onopen = () => {
         console.log("Connected!" + server);
-        props.websocketRef.current = ws;
-        props.useGui.setState({ websocketConnected: true });
+        viewer.websocketRef.current = ws;
+        viewer.useGui.setState({ websocketConnected: true });
       };
 
       ws.onclose = () => {
         console.log("Disconnected! " + server);
-        props.websocketRef.current = null;
-        props.useGui.setState({ websocketConnected: false });
-        if (props.useGui.getState().guiNames.length > 0) resetGui();
+        viewer.websocketRef.current = null;
+        viewer.useGui.setState({ websocketConnected: false });
+        if (viewer.useGui.getState().guiNames.length > 0) resetGui();
 
         // Try to reconnect.
         timeout = setTimeout(tryConnect, 1000);
@@ -452,11 +522,11 @@ export default function WebsocketInterface(props: {
     return () => {
       done = true;
       clearTimeout(timeout);
-      props.useGui.setState({ websocketConnected: false });
+      viewer.useGui.setState({ websocketConnected: false });
       ws && ws.close();
       clearTimeout(timeout);
     };
-  }, [props, server, handleMessage, resetGui]);
+  }, [server, handleMessage, resetGui]);
 
   return <></>;
 }

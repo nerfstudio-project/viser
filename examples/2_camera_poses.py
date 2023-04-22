@@ -32,6 +32,6 @@ while True:
         print(f"\tposition: {camera.position}")
         print(f"\tfov: {camera.fov}")
         print(f"\taspect: {camera.aspect}")
-        print(f"\tlast update: {camera.last_updated}")
+        print(f"\tlast update: {camera.update_timestamp}")
 
     time.sleep(1.0)

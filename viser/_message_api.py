@@ -104,13 +104,10 @@ T = TypeVar("T")
 TVector = TypeVar("TVector", bound=tuple)
 
 
-def _cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
-    if isinstance(vector, tuple):
-        assert len(vector) == length
-        return cast(TVector, vector)
-    else:
+def cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
+    if not isinstance(vector, tuple):
         assert cast(onp.ndarray, vector).shape == (length,)
-        return cast(TVector, tuple(map(float, vector)))
+    return cast(TVector, tuple(map(float, vector)))
 
 
 IntOrFloat = TypeVar("IntOrFloat", int, float)
@@ -195,7 +192,7 @@ class MessageApi(abc.ABC):
         """Add a length-2 vector input to the GUI."""
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
-            _cast_vector(initial_value, length=2),
+            cast_vector(initial_value, length=2),
             leva_conf={
                 "value": initial_value,
                 "label": name,
@@ -213,7 +210,7 @@ class MessageApi(abc.ABC):
         """Add a length-3 vector input to the GUI."""
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
-            _cast_vector(initial_value, length=3),
+            cast_vector(initial_value, length=3),
             leva_conf={
                 "label": name,
                 "value": initial_value,
@@ -370,8 +367,8 @@ class MessageApi(abc.ABC):
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
     ) -> SceneNodeHandle:
-        wxyz_tup = _cast_vector(wxyz, length=4)
-        position_tup = _cast_vector(position, length=3)
+        wxyz_tup = cast_vector(wxyz, length=4)
+        position_tup = cast_vector(position, length=3)
         self._queue(
             _messages.FrameMessage(
                 name=name,
@@ -556,7 +553,7 @@ class MessageApi(abc.ABC):
 
         # Update state.
         handle_state.value = value
-        handle_state.last_updated = time.time()
+        handle_state.update_timestamp = time.time()
 
         # Trigger callbacks.
         for cb in handle_state.update_cb:
@@ -599,7 +596,7 @@ class MessageApi(abc.ABC):
             typ=type(initial_value),
             api=self,
             value=initial_value,
-            last_updated=time.time(),
+            update_timestamp=time.time(),
             folder_labels=self._gui_folder_labels,
             update_cb=[],
             leva_conf=leva_conf,

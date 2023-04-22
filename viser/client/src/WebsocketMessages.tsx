@@ -58,6 +58,18 @@ interface TransformControlsMessage {
   depth_test: boolean;
   opacity: number;
 }
+interface SetCameraOrientationMessage {
+  type: "SetCameraOrientationMessage";
+  wxyz: [number, number, number, number];
+}
+interface SetCameraPositionMessage {
+  type: "SetCameraPositionMessage";
+  position: [number, number, number];
+}
+interface SetCameraFovMessage {
+  type: "SetCameraFovMessage";
+  fov: number;
+}
 interface SetOrientationMessage {
   type: "SetOrientationMessage";
   name: string;
@@ -137,6 +149,9 @@ export type Message =
   | PointCloudMessage
   | MeshMessage
   | TransformControlsMessage
+  | SetCameraOrientationMessage
+  | SetCameraPositionMessage
+  | SetCameraFovMessage
   | SetOrientationMessage
   | SetPositionMessage
   | TransformControlsUpdateMessage
