@@ -10,6 +10,7 @@ import { Message } from "./WebsocketMessages";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { PivotControls } from "@react-three/drei";
 import { ViewerContext } from ".";
+import { useThree } from "@react-three/fiber";
 
 /** Send message over websocket. */
 export function sendWebsocketMessage(
@@ -49,9 +50,19 @@ export function makeThrottledMessageSender(
   return send;
 }
 
+/** Type guard for threejs textures. Meant to be used with `scene.background`. */
+function isTexture(
+  background: THREE.Color | THREE.Texture | THREE.CubeTexture | null
+): background is THREE.Texture {
+  return (
+    background !== null && (background as THREE.Texture).isTexture !== undefined
+  );
+}
+
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
+  const scene = useThree((state) => state.scene);
 
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
@@ -340,14 +351,14 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
-        if (viewer.wrapperRef.current != null) {
-          viewer.wrapperRef.current.style.backgroundImage = `url(data:${message.media_type};base64,${message.base64_data})`;
-          viewer.wrapperRef.current.style.backgroundSize = "cover";
-          viewer.wrapperRef.current.style.backgroundRepeat = "no-repeat";
-          viewer.wrapperRef.current.style.backgroundPosition = "center center";
+        const oldBackground = scene.background;
+        const texture = new TextureLoader().load(
+          `data:${message.media_type};base64,${message.base64_data}`
+        );
+        scene.background = texture;
+        scene.background.encoding = THREE.sRGBEncoding;
 
-          viewer.useGui.setState({ backgroundAvailable: true });
-        }
+        if (isTexture(oldBackground)) oldBackground.dispose();
         break;
       }
       // Add an image.
@@ -392,8 +403,10 @@ function useMessageHandler() {
       // Reset the entire scene, removing all scene nodes.
       case "ResetSceneMessage": {
         resetScene();
-        viewer.wrapperRef.current &&
-          (viewer.wrapperRef.current.style.backgroundImage = "none");
+
+        const oldBackground = scene.background;
+        scene.background = null;
+        if (isTexture(oldBackground)) oldBackground.dispose();
 
         viewer.useGui.setState({ backgroundAvailable: false });
         break;
