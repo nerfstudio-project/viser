@@ -1,4 +1,9 @@
-"""Visualization script for SMPLX.
+# mypy: disable-error-code="assignment"
+#
+# Asymmetric properties are supported in Pyright, but not yet in mypy.
+# - https://github.com/python/mypy/issues/3004
+# - https://github.com/python/mypy/pull/11643
+"""SMPL-X visualizer
 
 We need to install the smplx package and download a corresponding set of model
 parameters to run this script:
@@ -6,10 +11,9 @@ parameters to run this script:
 """
 
 import dataclasses
-import functools
 import time
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 import numpy as onp
 import smplx
@@ -21,34 +25,6 @@ from scipy.spatial.transform import Rotation
 from typing_extensions import Literal
 
 import viser
-
-
-# TODO we should refactor / generalize the transform code that's used across all of the
-# examples.
-def so3_from_quat(
-    wxyz: Union[Tuple[float, float, float, float], onp.ndarray]
-) -> onp.ndarray:
-    return Rotation.from_quat(onp.roll(onp.asarray(wxyz), -1)).as_rotvec()
-
-
-def quat_from_mat3(mat3: onp.ndarray) -> onp.ndarray:
-    # xyzw => wxyz
-    return onp.roll(Rotation.from_matrix(mat3).as_quat(), 1)
-
-
-def quat_from_so3(
-    *omegas: Tuple[float, float, float]
-) -> Tuple[float, float, float, float]:
-    # xyzw => wxyz
-    wxyz = onp.roll(
-        functools.reduce(
-            Rotation.__mul__,
-            [Rotation.from_rotvec(onp.array(omega)) for omega in omegas],
-        ).as_quat(),
-        1,
-    )
-    assert wxyz.shape == (4,)
-    return (wxyz[0], wxyz[1], wxyz[2], wxyz[3])
 
 
 def main(
@@ -72,9 +48,12 @@ def main(
     # Re-orient the model.
     server.add_frame(
         "/reoriented",
-        wxyz=quat_from_so3(
-            (0.0, 0.0, onp.pi),
-            (onp.pi / 2.0, 0.0, 0.0),
+        wxyz=onp.roll(
+            (
+                Rotation.from_rotvec(onp.array((0.0, 0.0, onp.pi)))
+                * Rotation.from_rotvec(onp.array((onp.pi / 2.0, 0.0, 0.0)))
+            ).as_quat(),
+            1,
         ),
         position=onp.zeros(3),
         show_axes=False,
@@ -123,12 +102,15 @@ def main(
 
         # Update per-joint frames, which are used for transform controls.
         for i in range(model.NUM_BODY_JOINTS + 1):
+            R = joint_transforms[parents[i], :3, :3]
             server.add_frame(
                 f"/reoriented/smpl/joint_{i}",
                 wxyz=(
                     (1.0, 0.0, 0.0, 0.0)
                     if i == 0
-                    else quat_from_mat3(joint_transforms[parents[i], :3, :3])
+                    else
+                    # xyzw => wxyz
+                    onp.roll(Rotation.from_matrix(R).as_quat(), 1)
                 ),
                 position=joint_positions[i],
                 show_axes=False,
@@ -218,7 +200,11 @@ def make_gui_elements(
                 # first sample on S^3 and then convert.
                 quat = onp.random.normal(loc=0.0, scale=1.0, size=(4,))
                 quat /= onp.linalg.norm(quat)
-                joint.value = so3_from_quat(quat)
+
+                # xyzw => wxyz => so(3)
+                joint.value = Rotation.from_quat(
+                    onp.roll(onp.asarray(quat), -1)
+                ).as_rotvec()
                 sync_transform_controls()
 
         gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]] = []
@@ -254,7 +240,9 @@ def make_gui_elements(
             def curry_callback(i: int) -> None:
                 @controls.on_update
                 def _(controls: viser.TransformControlsHandle) -> None:
-                    axisangle = so3_from_quat(controls.wxyz)
+                    axisangle = Rotation.from_quat(
+                        onp.roll(controls.wxyz, -1)
+                    ).as_rotvec()
                     gui_joints[i].value = (axisangle[0], axisangle[1], axisangle[2])
 
             curry_callback(i)
@@ -264,7 +252,7 @@ def make_gui_elements(
     def sync_transform_controls() -> None:
         """Sync transform controls when a joint angle changes."""
         for t, j in zip(transform_controls, gui_joints):
-            t.wxyz = quat_from_so3(j.value)
+            t.wxyz = onp.roll(Rotation.from_rotvec(j.value).as_quat(), 1)
 
     add_transform_controls(enabled=False)
 

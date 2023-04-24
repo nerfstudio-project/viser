@@ -1,12 +1,11 @@
 # mypy: disable-error-code="arg-type"
 #
-# assert_never() on the `axis` variable is waiting on PEP 675 support in mypy.
-# https://github.com/python/mypy/issues/12554
-#
-# In the meantime, it works great in Pyright/Pylance, which is more important.
+# assert_never() on the `axis` variable works in Pyright, but is waiting on PEP 675
+# support in mypy. https://github.com/python/mypy/issues/12554
+"""GUI callbacks
 
-"""Asynchronous usage of GUI elements: we can attach callbacks that are called as soon
-as we get updates."""
+Asynchronous usage of GUI elements: we can attach callbacks that are called as soon as
+we get updates."""
 
 import time
 
@@ -16,7 +15,7 @@ from typing_extensions import assert_never
 import viser
 
 
-def main():
+def main() -> None:
     server = viser.ViserServer()
 
     with server.gui_folder("Control"):

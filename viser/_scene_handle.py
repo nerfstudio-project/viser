@@ -3,6 +3,8 @@ from __future__ import annotations
 import dataclasses
 from typing import TYPE_CHECKING, Callable, List, Optional, Tuple
 
+import numpy as onp
+
 from . import _messages
 
 if TYPE_CHECKING:
@@ -32,8 +34,11 @@ class SceneNodeHandle:
         return self._impl.wxyz
 
     @wxyz.setter
-    def wxyz(self, wxyz: Tuple[float, float, float, float]) -> None:
-        self._impl.wxyz = wxyz
+    def wxyz(self, wxyz: Tuple[float, float, float, float] | onp.ndarray) -> None:
+        from ._message_api import cast_vector
+
+        wxyz_cast = cast_vector(wxyz, 3)
+        self._impl.wxyz = wxyz_cast
         self._impl.api._queue(
             _messages.SetOrientationMessage(self._impl.name, self._impl.wxyz)
         )
@@ -46,8 +51,11 @@ class SceneNodeHandle:
         return self._impl.position
 
     @position.setter
-    def position(self, position: Tuple[float, float, float]) -> None:
-        self._impl.position = position
+    def position(self, position: Tuple[float, float, float] | onp.ndarray) -> None:
+        from ._message_api import cast_vector
+
+        position_cast = cast_vector(position, 3)
+        self._impl.position = position_cast
         self._impl.api._queue(
             _messages.SetPositionMessage(self._impl.name, self._impl.position)
         )

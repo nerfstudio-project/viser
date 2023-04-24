@@ -273,3 +273,13 @@ class GuiSetLevaConfMessage(Message):
 
     name: str
     leva_conf: Any
+
+
+@dataclasses.dataclass
+class MessageGroupStart(Message):
+    """Sent server->client to indicate the start of a message group."""
+
+
+@dataclasses.dataclass
+class MessageGroupEnd(Message):
+    """Sent server->client to indicate the end of a message group."""

@@ -1,4 +1,6 @@
-"""Examples of basic UI elements that we can create, read from, and write to."""
+"""GUI basics
+
+Examples of basic UI elements that we can create, read from, and write to."""
 
 import time
 
@@ -11,14 +13,12 @@ def main():
     server = viser.ViserServer()
 
     # Add some common GUI elements: number inputs, sliders, vectors, checkboxes.
-    counter = 0
-
     with server.gui_folder("Read-only"):
-        gui_counter = server.add_gui_number("Counter", initial_value=counter)
+        gui_counter = server.add_gui_number("Counter", initial_value=0)
         gui_counter.disabled = True
 
         gui_slider = server.add_gui_slider(
-            "Slider", min=0, max=100, step=1, initial_value=counter
+            "Slider", min=0, max=100, step=1, initial_value=0
         )
         gui_slider.disabled = True
 
@@ -61,6 +61,7 @@ def main():
         "/controlled_frame", wxyz=(1.0, 0.0, 0.0, 0.0), position=(0.0, 0.0, 0.0)
     )
 
+    counter = 0
     while True:
         # We can set the value of an input to a particular value. Changes are
         # automatically reflected in connected clients.
@@ -84,7 +85,7 @@ def main():
         gui_rgba.disabled = gui_checkbox_disable.value
 
         counter += 1
-        time.sleep(1e-2)
+        time.sleep(0.01)
 
 
 if __name__ == "__main__":
