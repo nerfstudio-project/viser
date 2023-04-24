@@ -104,7 +104,7 @@ class _GuiHandle(Generic[T]):
         return self._impl.value
 
     @value.setter
-    def value(self, value: Union[T, onp.ndarray]) -> _GuiHandle[T]:
+    def value(self, value: Union[T, onp.ndarray]) -> None:
         if isinstance(value, onp.ndarray):
             assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
             value = tuple(map(float, value))  # type: ignore
@@ -124,8 +124,6 @@ class _GuiHandle(Generic[T]):
         for cb in self._impl.update_cb:
             cb(self)
 
-        return self
-
     @property
     def update_timestamp(self) -> float:
         """Get the last time that this input was updated."""
@@ -138,7 +136,7 @@ class _GuiHandle(Generic[T]):
         return self._impl.disabled
 
     @disabled.setter
-    def disabled(self, disabled: bool) -> _GuiHandle[T]:
+    def disabled(self, disabled: bool) -> None:
         if self._impl.is_button:
             self._impl.leva_conf["settings"]["disabled"] = disabled
             self._impl.api._queue(
@@ -150,7 +148,6 @@ class _GuiHandle(Generic[T]):
                 GuiSetLevaConfMessage(self._impl.name, self._impl.leva_conf),
             )
         self._impl.disabled = disabled
-        return self
 
     @property
     def visible(self) -> bool:
@@ -159,10 +156,9 @@ class _GuiHandle(Generic[T]):
         return self._impl.visible
 
     @visible.setter
-    def visible(self, visible: bool) -> _GuiHandle[T]:
+    def visible(self, visible: bool) -> None:
         self._impl.api._queue(GuiSetVisibleMessage(self._impl.name, visible=visible))
         self._impl.visible = visible
-        return self
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
