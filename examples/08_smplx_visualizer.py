@@ -160,12 +160,12 @@ def make_gui_elements(
         gui_reset_shape = server.add_gui_button("Reset Shape")
         gui_random_shape = server.add_gui_button("Random Shape")
 
-        @gui_reset_shape.on_update
+        @gui_reset_shape.on_click
         def _(_):
             for beta in gui_betas:
                 beta.value = 0.0
 
-        @gui_random_shape.on_update
+        @gui_random_shape.on_click
         def _(_):
             for beta in gui_betas:
                 beta.value = onp.random.normal(loc=0.0, scale=1.0)
@@ -187,13 +187,13 @@ def make_gui_elements(
         gui_reset_joints = server.add_gui_button("Reset Joints")
         gui_random_joints = server.add_gui_button("Random Joints")
 
-        @gui_reset_joints.on_update
+        @gui_reset_joints.on_click
         def _(_):
             for joint in gui_joints:
                 joint.value = (0.0, 0.0, 0.0)
                 sync_transform_controls()
 
-        @gui_random_joints.on_update
+        @gui_random_joints.on_click
         def _(_):
             for joint in gui_joints:
                 # It's hard to uniformly sample orientations directly in so(3), so we

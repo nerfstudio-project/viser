@@ -13,6 +13,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    cast,
 )
 
 import numpy as onp
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T")
+TGuiHandle = TypeVar("TGuiHandle", bound="_GuiHandle")
 
 
 @dataclasses.dataclass
@@ -45,7 +47,7 @@ class _GuiHandleState(Generic[T]):
     folder_labels: List[str]
     """Name of the folders this GUI input was placed into."""
 
-    update_cb: List[Callable[[GuiHandle[T]], None]]
+    update_cb: List[Callable[[Any], None]]
     """Registered functions to call when this input is updated."""
 
     leva_conf: Dict[str, Any]
@@ -75,23 +77,9 @@ class _GuiHandleState(Generic[T]):
 
 
 @dataclasses.dataclass
-class GuiHandle(Generic[T]):
-    """Handle for a particular GUI input in our visualizer.
-
-    Lets us get values, set values, and detect updates."""
-
+class _GuiHandle(Generic[T]):
     # Let's shove private implementation details in here...
     _impl: _GuiHandleState[T]
-
-    def on_update(
-        self, func: Callable[[GuiHandle[T]], None]
-    ) -> Callable[[GuiHandle[T]], None]:
-        """Attach a function to call when a GUI input is updated. Happens in a thread.
-
-        Callbacks are passed the originating GUI handle, which can be useful in loops.
-        """
-        self._impl.update_cb.append(func)
-        return func
 
     # Should we use @property for get_value / set_value, set_hidden, etc?
     #
@@ -116,7 +104,7 @@ class GuiHandle(Generic[T]):
         return self._impl.value
 
     @value.setter
-    def value(self, value: Union[T, onp.ndarray]) -> GuiHandle[T]:
+    def value(self, value: Union[T, onp.ndarray]) -> _GuiHandle[T]:
         if isinstance(value, onp.ndarray):
             assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
             value = tuple(map(float, value))  # type: ignore
@@ -150,7 +138,7 @@ class GuiHandle(Generic[T]):
         return self._impl.disabled
 
     @disabled.setter
-    def disabled(self, disabled: bool) -> GuiHandle[T]:
+    def disabled(self, disabled: bool) -> _GuiHandle[T]:
         if self._impl.is_button:
             self._impl.leva_conf["settings"]["disabled"] = disabled
             self._impl.api._queue(
@@ -171,7 +159,7 @@ class GuiHandle(Generic[T]):
         return self._impl.visible
 
     @visible.setter
-    def visible(self, visible: bool) -> GuiHandle[T]:
+    def visible(self, visible: bool) -> _GuiHandle[T]:
         self._impl.api._queue(GuiSetVisibleMessage(self._impl.name, visible=visible))
         self._impl.visible = visible
         return self
@@ -187,7 +175,39 @@ StringType = TypeVar("StringType", bound=str)
 
 
 @dataclasses.dataclass
+class GuiHandle(_GuiHandle[T], Generic[T]):
+    """Handle for a particular GUI input in our visualizer.
+
+    Lets us get values, set values, and detect updates."""
+
+    def on_update(
+        self: TGuiHandle, func: Callable[[TGuiHandle], None]
+    ) -> Callable[[TGuiHandle], None]:
+        """Attach a function to call when a GUI input is updated. Happens in a thread."""
+        self._impl.update_cb.append(func)
+        return func
+
+
+@dataclasses.dataclass
+class GuiButtonHandle(_GuiHandle[bool]):
+    """Handle for a button input in our visualizer.
+
+    Lets us detect clicks."""
+
+    def on_click(
+        self: TGuiHandle, func: Callable[[TGuiHandle], None]
+    ) -> Callable[[TGuiHandle], None]:
+        """Attach a function to call when a button is pressed. Happens in a thread."""
+        self._impl.update_cb.append(func)
+        return func
+
+
+@dataclasses.dataclass
 class GuiSelectHandle(GuiHandle[StringType], Generic[StringType]):
+    """Handle for a dropdown-style GUI input in our visualizer.
+
+    Lets us get values, set values, and detect updates."""
+
     _impl_options: List[StringType]
 
     @property
@@ -197,7 +217,7 @@ class GuiSelectHandle(GuiHandle[StringType], Generic[StringType]):
         For projects that care about typing: the static type of `options` should be
         consistent with the `StringType` associated with a handle. Literal types will be
         inferred where possible when handles are instantiated; for the most flexibility,
-        we can declare handles as `GuiHandle[str]`.
+        we can declare handles as `_GuiHandle[str]`.
         """
         return self._impl_options
 
