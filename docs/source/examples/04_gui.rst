@@ -5,7 +5,7 @@ GUI basics
 ==========================================
 
 
-Examples of basic UI elements that we can create, read from, and write to.
+Examples of basic GUI elements that we can create, read from, and write to.
 
 
 

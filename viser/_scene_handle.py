@@ -37,7 +37,7 @@ class SceneNodeHandle:
     def wxyz(self, wxyz: Tuple[float, float, float, float] | onp.ndarray) -> None:
         from ._message_api import cast_vector
 
-        wxyz_cast = cast_vector(wxyz, 3)
+        wxyz_cast = cast_vector(wxyz, 4)
         self._impl.wxyz = wxyz_cast
         self._impl.api._queue(
             _messages.SetOrientationMessage(self._impl.name, self._impl.wxyz)
