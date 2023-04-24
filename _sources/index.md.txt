@@ -48,12 +48,22 @@ URL (default: `http://localhost:8080`).
 <!-- prettier-ignore-start -->
 
 .. toctree::
+   :caption: API Reference
    :hidden:
    :maxdepth: 1
    :titlesonly:
 
    ./core.md
    ./infrastructure.md
+
+.. toctree::
+   :caption: Examples
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
+   :glob:
+
+   examples/*
 
 
 .. |build| image:: https://github.com/brentyi/viser/workflows/build/badge.svg
