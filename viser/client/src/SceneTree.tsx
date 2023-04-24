@@ -228,7 +228,6 @@ function SceneNodeUpdater(props: {
   const visible = props.useSceneTree(
     (state) => state.visibilityFromName[props.name]
   );
-  console.log(props.name, visible);
   const orientation = props.useSceneTree(
     (state) => state.orientationFromName[props.name]
   );
