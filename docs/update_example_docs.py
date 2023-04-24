@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import dataclasses
 import pathlib
-import shlex
 import shutil
 from typing import Iterable
 
@@ -18,7 +17,6 @@ class ExampleMetadata:
     index_with_zero: str
     source: str
     title: str
-    usages: Iterable[str]
     description: str
 
     @staticmethod
@@ -41,7 +39,6 @@ class ExampleMetadata:
             index_with_zero=index_with_zero,
             source=source.partition('"""')[2].partition('"""')[2].strip(),
             title=title,
-            usages=[],  # Unused.
             description=description.strip(),
         )
 
@@ -65,34 +62,6 @@ def main(
 
     for path in get_example_paths(examples_dir):
         ex = ExampleMetadata.from_path(path)
-        path_for_sphinx = pathlib.Path("..") / ".." / path.relative_to(REPO_ROOT)
-
-        usage_lines = []
-        for usage in ex.usages:
-            args = shlex.split(usage)
-            python_index = args.index("python")
-            sphinx_usage = shlex.join(
-                args[:python_index]
-                + ["python", path_for_sphinx.as_posix()]
-                + args[python_index + 2 :]
-            )
-
-            # Note that :kbd: in Sphinx does unnecessary stuff we want to avoid, see:
-            # https://github.com/sphinx-doc/sphinx/issues/7530
-            #
-            # Instead, we just use raw HTML.
-            assert "../../examples/" in sphinx_usage
-            command = sphinx_usage.replace("../../examples/", "")
-            usage_lines += [
-                "------------",
-                "",
-                ".. raw:: html",
-                "",
-                f"        <kbd>{command}</kbd>",
-                "",
-                f".. program-output:: {sphinx_usage}",
-                "",
-            ]
 
         relative_dir = path.parent.relative_to(examples_dir)
         target_dir = example_doc_dir / relative_dir
@@ -122,7 +91,6 @@ def main(
                     ),
                     "",
                 ]
-                + usage_lines
             )
         )
 
