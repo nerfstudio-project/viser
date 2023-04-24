@@ -60,7 +60,7 @@ Examples:
             with server.gui_folder("Joints"):
                 button = server.add_gui_button("Reset")
 
-                @button.on_update
+                @button.on_click
                 def _(_):
                     for g in gui_joints:
                         g.value = 0.0

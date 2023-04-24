@@ -285,8 +285,8 @@ we get updates.</p>
 <span class="linenos">64</span>    <span class="n">gui_location</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">draw_frame</span><span class="p">())</span>
 <span class="linenos">65</span>    <span class="n">gui_num_points</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">draw_points</span><span class="p">())</span>
 <span class="linenos">66</span>
-<span class="linenos">67</span>    <span class="nd">@gui_reset_scene</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">68</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiHandle</span><span class="p">[</span><span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">67</span>    <span class="nd">@gui_reset_scene</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos">68</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiButtonHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">69</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the scene when the reset button is clicked.&quot;&quot;&quot;</span>
 <span class="linenos">70</span>        <span class="n">gui_show</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="linenos">71</span>        <span class="n">gui_location</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.0</span>
@@ -296,8 +296,8 @@ we get updates.</p>
 <span class="linenos">75</span>        <span class="n">draw_frame</span><span class="p">()</span>
 <span class="linenos">76</span>        <span class="n">draw_points</span><span class="p">()</span>
 <span class="linenos">77</span>
-<span class="linenos">78</span>    <span class="nd">@gui_reset_camera</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">79</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiHandle</span><span class="p">[</span><span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">78</span>    <span class="nd">@gui_reset_camera</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos">79</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiButtonHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">80</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the camera when the camera reset button is clicked.&quot;&quot;&quot;</span>
 <span class="linenos">81</span>        <span class="k">for</span> <span class="nb">id</span><span class="p">,</span> <span class="n">client</span> <span class="ow">in</span> <span class="n">server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
 <span class="linenos">82</span>            <span class="n">client</span><span class="o">.</span><span class="n">camera</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">camera</span>

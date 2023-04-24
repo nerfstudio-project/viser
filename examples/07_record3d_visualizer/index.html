@@ -267,11 +267,11 @@
 <span class="linenos"> 47</span>        <span class="p">)</span>
 <span class="linenos"> 48</span>
 <span class="linenos"> 49</span>    <span class="c1"># Frame step buttons.</span>
-<span class="linenos"> 50</span>    <span class="nd">@gui_next_frame</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos"> 50</span>    <span class="nd">@gui_next_frame</span><span class="o">.</span><span class="n">on_click</span>
 <span class="linenos"> 51</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 52</span>        <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
 <span class="linenos"> 53</span>
-<span class="linenos"> 54</span>    <span class="nd">@gui_prev_frame</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos"> 54</span>    <span class="nd">@gui_prev_frame</span><span class="o">.</span><span class="n">on_click</span>
 <span class="linenos"> 55</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 56</span>        <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
 <span class="linenos"> 57</span>

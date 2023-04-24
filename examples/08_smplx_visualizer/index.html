@@ -372,12 +372,12 @@ parameters to run this script:</p>
 <span class="linenos">148</span>        <span class="n">gui_reset_shape</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Reset Shape&quot;</span><span class="p">)</span>
 <span class="linenos">149</span>        <span class="n">gui_random_shape</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Random Shape&quot;</span><span class="p">)</span>
 <span class="linenos">150</span>
-<span class="linenos">151</span>        <span class="nd">@gui_reset_shape</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos">151</span>        <span class="nd">@gui_reset_shape</span><span class="o">.</span><span class="n">on_click</span>
 <span class="linenos">152</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">153</span>            <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">gui_betas</span><span class="p">:</span>
 <span class="linenos">154</span>                <span class="n">beta</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.0</span>
 <span class="linenos">155</span>
-<span class="linenos">156</span>        <span class="nd">@gui_random_shape</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos">156</span>        <span class="nd">@gui_random_shape</span><span class="o">.</span><span class="n">on_click</span>
 <span class="linenos">157</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">158</span>            <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">gui_betas</span><span class="p">:</span>
 <span class="linenos">159</span>                <span class="n">beta</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
@@ -399,13 +399,13 @@ parameters to run this script:</p>
 <span class="linenos">175</span>        <span class="n">gui_reset_joints</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Reset Joints&quot;</span><span class="p">)</span>
 <span class="linenos">176</span>        <span class="n">gui_random_joints</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Random Joints&quot;</span><span class="p">)</span>
 <span class="linenos">177</span>
-<span class="linenos">178</span>        <span class="nd">@gui_reset_joints</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos">178</span>        <span class="nd">@gui_reset_joints</span><span class="o">.</span><span class="n">on_click</span>
 <span class="linenos">179</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">180</span>            <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">:</span>
 <span class="linenos">181</span>                <span class="n">joint</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 <span class="linenos">182</span>                <span class="n">sync_transform_controls</span><span class="p">()</span>
 <span class="linenos">183</span>
-<span class="linenos">184</span>        <span class="nd">@gui_random_joints</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos">184</span>        <span class="nd">@gui_random_joints</span><span class="o">.</span><span class="n">on_click</span>
 <span class="linenos">185</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">186</span>            <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">:</span>
 <span class="linenos">187</span>                <span class="c1"># It&#39;s hard to uniformly sample orientations directly in so(3), so we</span>

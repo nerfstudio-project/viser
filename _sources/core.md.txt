@@ -40,6 +40,11 @@ communicating with clients.
    :undoc-members:
    :inherited-members:
 
+.. autoapiclass:: viser.GuiButtonHandle
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autoapiclass:: viser.GuiSelectHandle
    :members:
    :undoc-members:

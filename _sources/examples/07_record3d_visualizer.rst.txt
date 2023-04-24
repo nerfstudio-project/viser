@@ -62,11 +62,11 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 )
 
             # Frame step buttons.
-            @gui_next_frame.on_update
+            @gui_next_frame.on_click
             def _(_) -> None:
                 gui_timestep.value = (gui_timestep.value + 1) % num_frames
 
-            @gui_prev_frame.on_update
+            @gui_prev_frame.on_click
             def _(_) -> None:
                 gui_timestep.value = (gui_timestep.value - 1) % num_frames
 
