@@ -510,6 +510,23 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.atomic">
+<span class="sig-name descname"><span class="pre">atomic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.atomic" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns a context where:</p>
+<ul class="simple">
+<li><p>All outgoing messages are grouped and applied by clients atomically.</p></li>
+<li><p>No incoming messages, like camera or GUI state updates, are processed.</p></li>
+</ul>
+<p>This can be helpful for things like animations, or when we want position and
+orientation updates to happen synchronously.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Generator[None, None, None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.get_clients">
 <span class="sig-name descname"><span class="pre">get_clients</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.get_clients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.get_clients" title="Permalink to this definition">#</a></dt>
 <dd><p>Creates and returns a copy of the mapping from connected client IDs to
@@ -538,28 +555,28 @@ also be nested.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.on_client_connect">
-<span class="sig-name descname"><span class="pre">on_client_connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.on_client_connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.on_client_connect" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_client_connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.on_client_connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.on_client_connect" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a callback to run for newly connected clients.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><em>ClientHandle</em></a><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><em>ClientHandle</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle">ClientHandle</a>], None]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.on_client_disconnect">
-<span class="sig-name descname"><span class="pre">on_client_disconnect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.on_client_disconnect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.on_client_disconnect" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_client_disconnect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.on_client_disconnect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.on_client_disconnect" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a callback to run when clients disconnect.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><em>ClientHandle</em></a><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><em>ClientHandle</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>None</p>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle">ClientHandle</a>], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -899,6 +916,23 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ClientHandle.atomic">
+<span class="sig-name descname"><span class="pre">atomic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.atomic" title="Permalink to this definition">#</a></dt>
+<dd><p>Returns a context where:</p>
+<ul class="simple">
+<li><p>All outgoing messages are grouped and applied by clients atomically.</p></li>
+<li><p>No incoming messages, like camera or GUI state updates, are processed.</p></li>
+</ul>
+<p>This can be helpful for things like animations, or when we want position and
+orientation updates to happen synchronously.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Generator[None, None, None]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ClientHandle.camera">
 <span class="sig-name descname"><span class="pre">camera</span></span><a class="headerlink" href="#viser.ClientHandle.camera" title="Permalink to this definition">#</a></dt>
@@ -920,20 +954,6 @@ also be nested.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>Generator[None, None, None]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ClientHandle.on_camera_update">
-<span class="sig-name descname"><span class="pre">on_camera_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ClientHandle.on_camera_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClientHandle.on_camera_update" title="Permalink to this definition">#</a></dt>
-<dd><p>Attach a callback to run when a new camera message is received.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>callback</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><em>ClientHandle</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle">ClientHandle</a>], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -986,6 +1006,20 @@ when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.CameraHandle.on_update">
+<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle.on_update" title="Permalink to this definition">#</a></dt>
+<dd><p>Attach a callback to run when a new camera message is received.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>callback</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><em>ClientHandle</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle">ClientHandle</a>], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1409,6 +1443,7 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ViserServer.add_mesh"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_mesh()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_point_cloud"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_point_cloud()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_transform_controls"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_transform_controls()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.atomic"><code class="docutils literal notranslate"><span class="pre">ViserServer.atomic()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.get_clients"><code class="docutils literal notranslate"><span class="pre">ViserServer.get_clients()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.gui_folder"><code class="docutils literal notranslate"><span class="pre">ViserServer.gui_folder()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.on_client_connect"><code class="docutils literal notranslate"><span class="pre">ViserServer.on_client_connect()</span></code></a></li>
@@ -1435,10 +1470,10 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ClientHandle.add_mesh"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_mesh()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_point_cloud"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_point_cloud()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_transform_controls"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_transform_controls()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.atomic"><code class="docutils literal notranslate"><span class="pre">ClientHandle.atomic()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.camera"><code class="docutils literal notranslate"><span class="pre">ClientHandle.camera</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.client_id"><code class="docutils literal notranslate"><span class="pre">ClientHandle.client_id</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.gui_folder"><code class="docutils literal notranslate"><span class="pre">ClientHandle.gui_folder()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ClientHandle.on_camera_update"><code class="docutils literal notranslate"><span class="pre">ClientHandle.on_camera_update()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.reset_scene"><code class="docutils literal notranslate"><span class="pre">ClientHandle.reset_scene()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.set_background_image"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_background_image()</span></code></a></li>
 </ul>
@@ -1446,6 +1481,7 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.CameraHandle"><code class="docutils literal notranslate"><span class="pre">CameraHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.CameraHandle.aspect"><code class="docutils literal notranslate"><span class="pre">CameraHandle.aspect</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.fov"><code class="docutils literal notranslate"><span class="pre">CameraHandle.fov</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle.on_update"><code class="docutils literal notranslate"><span class="pre">CameraHandle.on_update()</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.position"><code class="docutils literal notranslate"><span class="pre">CameraHandle.position</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">CameraHandle.update_timestamp</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">CameraHandle.wxyz</span></code></a></li>
