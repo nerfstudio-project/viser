@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import abc
 import functools
+import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast
 
 import msgpack
@@ -41,11 +42,17 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
         if len(args) >= 1:
             if len(args) >= 2 and args[1] == ...:
                 args = (args[0],) * len(value)
-            else:
-                assert len(value) == len(args)
+            elif len(value) != len(args):
+                warnings.warn(f"[viser] {value} does not match annotation {annotation}")
 
-            for i, inner_annotation in enumerate(args):
-                out.append(_prepare_for_serialization(value[i], inner_annotation))
+            for i, v in enumerate(value):
+                out.append(
+                    # Hack to be OK with wrong type annotations.
+                    # https://github.com/nerfstudio-project/nerfstudio/pull/1805
+                    _prepare_for_serialization(v, args[i])
+                    if i < len(args)
+                    else v
+                )
             return tuple(out)
 
     # For arrays, we serialize underlying data directly. The client is responsible for
