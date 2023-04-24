@@ -31,10 +31,10 @@ export function SynchronizedCameraControls() {
     // We put Z up to match the scene tree, and convert threejs camera convention
     // to the OpenCV one.
     const R_threecam_cam = new THREE.Quaternion();
-    const R_worldfix_world = new THREE.Quaternion();
+    const R_world_threeworld = new THREE.Quaternion();
     R_threecam_cam.setFromEuler(new THREE.Euler(Math.PI, 0.0, 0.0));
-    R_worldfix_world.setFromEuler(new THREE.Euler(Math.PI / 2.0, 0.0, 0.0));
-    const R_world_camera = R_worldfix_world.clone()
+    R_world_threeworld.setFromEuler(new THREE.Euler(Math.PI / 2.0, 0.0, 0.0));
+    const R_world_camera = R_world_threeworld.clone()
       .multiply(three_camera.quaternion)
       .multiply(R_threecam_cam);
 
@@ -48,7 +48,7 @@ export function SynchronizedCameraControls() {
       ],
       position: three_camera.position
         .clone()
-        .applyQuaternion(R_worldfix_world)
+        .applyQuaternion(R_world_threeworld)
         .toArray(),
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
@@ -56,6 +56,7 @@ export function SynchronizedCameraControls() {
   }, [camera, sendCameraThrottled]);
 
   // What do we need to when the camera moves?
+  sendCamera();
   const cameraChangedCallback = React.useCallback(() => {
     // If desired, send our camera via websocket.
     sendCamera();

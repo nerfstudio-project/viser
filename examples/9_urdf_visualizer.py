@@ -1,27 +1,23 @@
-"""Visualize a URDF file + its joints.
+"""URDF visualizer
 
-Requires yourdfpy and URDF. I've been using:
+Requires yourdfpy and URDF. Any URDF supported by yourdfpy should work.
+
+Examples:
     https://github.com/OrebroUniversity/yumi/blob/master/yumi_description/urdf/yumi.urdf
+    https://github.com/ankurhanda/robot-assets
 """
 import time
 from functools import partial
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import List
 
 import numpy as onp
 import trimesh
 import trimesh.transformations as tf
 import tyro
 import yourdfpy
-from scipy.spatial.transform import Rotation
 
 import viser
-
-
-def so3_from_quat(
-    wxyz: Union[Tuple[float, float, float, float], onp.ndarray]
-) -> onp.ndarray:
-    return Rotation.from_quat(onp.roll(onp.asarray(wxyz), -1)).as_rotvec()
 
 
 def main(urdf_path: Path):

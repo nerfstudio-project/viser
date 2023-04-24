@@ -31,9 +31,10 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     # Recursively handle tuples.
     if get_origin(annotation) is tuple:
         if isinstance(value, onp.ndarray):
-            assert (
-                False
-            ), f"Expected a tuple, but got an array... missing a cast somewhere? {value}"
+            assert False, (
+                "Expected a tuple, but got an array... missing a cast somewhere?"
+                f" {value}"
+            )
 
         out = []
         args = get_args(annotation)

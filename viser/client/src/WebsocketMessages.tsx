@@ -141,6 +141,12 @@ interface GuiSetLevaConfMessage {
   name: string;
   leva_conf: any;
 }
+interface MessageGroupStart {
+  type: "MessageGroupStart";
+}
+interface MessageGroupEnd {
+  type: "MessageGroupEnd";
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -165,4 +171,6 @@ export type Message =
   | GuiUpdateMessage
   | GuiSetVisibleMessage
   | GuiSetValueMessage
-  | GuiSetLevaConfMessage;
+  | GuiSetLevaConfMessage
+  | MessageGroupStart
+  | MessageGroupEnd;

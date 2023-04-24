@@ -134,9 +134,13 @@ export function useSceneTreeState() {
           }),
         resetScene: () =>
           set((state) => {
-            for (const [key, value] of Object.entries(cleanSceneTreeState)) {
-              /* @ts-ignore */
-              state[key] = value;
+            // For scene resets: we need to retain the objects created for the root and world frame nodes.
+            const origObjFromName = state.objFromName;
+            Object.assign(state, cleanSceneTreeState);
+            state.objFromName = origObjFromName;
+            for (const key of Object.keys(state.objFromName)) {
+              if (key !== "" && key !== "/WorldAxes")
+                delete state.objFromName[key];
             }
           }),
       }))
@@ -193,7 +197,7 @@ export const SceneNodeThreeObject = React.memo(
     const ref = React.useRef<THREE.Object3D>(null);
 
     React.useEffect(() => {
-      ref.current && setObj(props.name, ref.current);
+      setObj(props.name, ref.current!);
       return () => clearObj(props.name);
     });
 
@@ -224,6 +228,7 @@ function SceneNodeUpdater(props: {
   const visible = props.useSceneTree(
     (state) => state.visibilityFromName[props.name]
   );
+  console.log(props.name, visible);
   const orientation = props.useSceneTree(
     (state) => state.orientationFromName[props.name]
   );

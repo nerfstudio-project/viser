@@ -1,7 +1,9 @@
-"""Example for sending images to the web viewer.
+"""Images
+
+Example for sending images to the viewer.
 
 We can send backgrond images to display behind the viewer (useful for visualizing
-NeRFs), or images to display in 3D with respect to coordinate frames.
+NeRFs), or images to render as 3D textures.
 """
 
 import time

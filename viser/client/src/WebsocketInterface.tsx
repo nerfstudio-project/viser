@@ -261,20 +261,35 @@ function useMessageHandler() {
           message.wxyz[0]
         );
 
-        // Compute and apply a new up direction.
-        const up = new THREE.Vector3(0.0, -1.0, 0.0);
-        const position = new THREE.Vector3();
-        cameraControls.getPosition(position);
-        up.applyQuaternion(R_world_camera);
-        camera.up.set(up.x, up.y, up.z);
+        const R_cam_threecam = new THREE.Quaternion();
+        const R_threeworld_world = new THREE.Quaternion();
+        R_cam_threecam.setFromEuler(new THREE.Euler(-Math.PI, 0.0, 0.0));
+        R_threeworld_world.setFromEuler(
+          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
+        );
+        const R_threeworld_threecamera = R_threeworld_world.clone()
+          .multiply(R_world_camera)
+          .multiply(R_cam_threecam);
 
         // Compute a look-at point, while holding the orbit distance constant.
-        const target = new THREE.Vector3();
-        cameraControls.getTarget(target);
-        target.sub(position);
-        target.set(0.0, 0.0, target.length());
-        target.applyQuaternion(R_world_camera);
-        target.add(position);
+        const position = cameraControls.getPosition(new THREE.Vector3());
+        const currentTargetDist = cameraControls
+          .getTarget(new THREE.Vector3())
+          .sub(position)
+          .length();
+        const target = new THREE.Vector3(0.0, 0.0, -currentTargetDist)
+          .applyQuaternion(R_threeworld_threecamera)
+          .add(position);
+
+        // Compute and apply a new up direction.
+        // The goal here is simple: set the up direction s.t. the camera roll is correct,
+        // but keep the up direction as close to a world-frame vertical as possible.
+        const eps = 1e-7;
+        const facePlane = target.clone().sub(position).setY(eps).normalize();
+        const up = new THREE.Vector3(eps, 1.0, eps)
+          .projectOnPlane(facePlane)
+          .normalize();
+        camera.up.set(up.x, up.y, up.z);
 
         cameraControls.setLookAt(
           position.x,
@@ -284,7 +299,6 @@ function useMessageHandler() {
           target.y,
           target.z
         );
-
         break;
       }
       case "SetCameraPositionMessage": {
@@ -294,23 +308,29 @@ function useMessageHandler() {
 
         // When setting camera position, we're going to shift the look-at point by the same amount as the position.
         // This will hold the camera orientation constant.
-        const position = new THREE.Vector3();
-        const target = new THREE.Vector3();
-        cameraControls.getTarget(target);
-        cameraControls.getPosition(position);
+        const position_cur = new THREE.Vector3();
+        cameraControls.getPosition(position_cur);
 
-        const delta = new THREE.Vector3(
+        const position_cmd = new THREE.Vector3(
           message.position[0],
           message.position[1],
           message.position[2]
         );
-        delta.sub(position);
-        target.add(delta);
+        const R_worldthree_world = new THREE.Quaternion();
+        R_worldthree_world.setFromEuler(
+          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
+        );
+        position_cmd.applyQuaternion(R_worldthree_world);
+
+        const target = cameraControls
+          .getTarget(new THREE.Vector3())
+          .add(position_cmd)
+          .sub(position_cur);
 
         cameraControls.setLookAt(
-          message.position[0],
-          message.position[1],
-          message.position[2],
+          position_cmd.x,
+          position_cmd.y,
+          position_cmd.z,
           target.x,
           target.y,
           target.z
@@ -501,6 +521,8 @@ export default function WebsocketInterface() {
       };
 
       const messageQueue: Message[] = [];
+      const messageGroup: Message[] = [];
+      let grouping = false;
 
       // Handle batches of messages at 200Hz. This helps prevent some React errors from interrupting renders.
       setInterval(() => {
@@ -524,7 +546,17 @@ export default function WebsocketInterface() {
           orderLock.release();
         });
         try {
-          messageQueue.push(await messagePromise);
+          const message = await messagePromise;
+          if (message.type === "MessageGroupStart") grouping = true;
+          else if (message.type === "MessageGroupEnd") {
+            messageQueue.push(...messageGroup);
+            messageGroup.length = 0;
+            grouping = false;
+          } else if (grouping) {
+            messageGroup.push(message);
+          } else {
+            messageQueue.push(message);
+          }
         } finally {
           orderLock.acquired && orderLock.release();
         }

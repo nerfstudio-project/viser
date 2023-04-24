@@ -11,6 +11,7 @@ import abc
 import base64
 import contextlib
 import io
+import threading
 import time
 from typing import (
     TYPE_CHECKING,
@@ -133,6 +134,7 @@ class MessageApi(abc.ABC):
         )
 
         self._gui_folder_labels: List[str] = []
+        self._atomic_lock = threading.Lock()
 
     @contextlib.contextmanager
     def gui_folder(self, label: str) -> Generator[None, None, None]:
@@ -552,8 +554,9 @@ class MessageApi(abc.ABC):
             return
 
         # Update state.
-        handle_state.value = value
-        handle_state.update_timestamp = time.time()
+        with self._atomic_lock:
+            handle_state.value = value
+            handle_state.update_timestamp = time.time()
 
         # Trigger callbacks.
         for cb in handle_state.update_cb:
@@ -628,3 +631,19 @@ class MessageApi(abc.ABC):
             )
         )
         return GuiHandle(handle_state)
+
+    @contextlib.contextmanager
+    def atomic(self) -> Generator[None, None, None]:
+        """Returns a context where:
+        - All outgoing messages are grouped and applied by clients atomically.
+        - No incoming messages, like camera or GUI state updates, are processed.
+
+        This can be helpful for things like animations, or when we want position and
+        orientation updates to happen synchronously.
+        """
+        # Lock is needed for thread-safety.
+        self._atomic_lock.acquire()
+        self._queue(_messages.MessageGroupStart())
+        yield
+        self._queue(_messages.MessageGroupEnd())
+        self._atomic_lock.release()
