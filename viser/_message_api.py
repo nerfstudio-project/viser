@@ -33,7 +33,7 @@ import numpy.typing as onpt
 from typing_extensions import Literal, LiteralString, ParamSpec, assert_never
 
 from . import _messages, infra
-from ._gui import GuiHandle, GuiSelectHandle, _GuiHandleState
+from ._gui import GuiButtonHandle, GuiHandle, GuiSelectHandle, _GuiHandleState
 from ._scene_handle import (
     SceneNodeHandle,
     TransformControlsHandle,
@@ -144,16 +144,18 @@ class MessageApi(abc.ABC):
         yield
         assert self._gui_folder_labels.pop() == label
 
-    def add_gui_button(self, name: str) -> GuiHandle[bool]:
+    def add_gui_button(self, name: str) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
         it is clicked; to detect clicks, we can manually set it back to `False`.
 
         Currently, all button names need to be unique."""
-        return self._add_gui_impl(
-            name,
-            initial_value=False,
-            leva_conf={"type": "BUTTON", "settings": {}},
-            is_button=True,
+        return GuiButtonHandle(
+            self._add_gui_impl(
+                name,
+                initial_value=False,
+                leva_conf={"type": "BUTTON", "settings": {}},
+                is_button=True,
+            )._impl
         )
 
     def add_gui_checkbox(self, name: str, initial_value: bool) -> GuiHandle[bool]:

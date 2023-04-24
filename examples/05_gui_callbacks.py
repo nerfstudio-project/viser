@@ -73,8 +73,8 @@ def main() -> None:
     gui_location.on_update(lambda _: draw_frame())
     gui_num_points.on_update(lambda _: draw_points())
 
-    @gui_reset_scene.on_update
-    def _(_: viser.GuiHandle[bool]) -> None:
+    @gui_reset_scene.on_click
+    def _(_: viser.GuiButtonHandle) -> None:
         """Reset the scene when the reset button is clicked."""
         gui_show.value = True
         gui_location.value = 0.0
@@ -84,8 +84,8 @@ def main() -> None:
         draw_frame()
         draw_points()
 
-    @gui_reset_camera.on_update
-    def _(_: viser.GuiHandle[bool]) -> None:
+    @gui_reset_camera.on_click
+    def _(_: viser.GuiButtonHandle) -> None:
         """Reset the camera when the camera reset button is clicked."""
         for id, client in server.get_clients().items():
             client.camera = client.camera
