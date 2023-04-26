@@ -155,7 +155,7 @@ class _ClientHandleState:
 @dataclasses.dataclass
 class ClientHandle(MessageApi):
     """Handle for interacting with a specific client. Can be used to send messages to
-    individual clients, read camera information, etc."""
+    individual clients and read/write camera information."""
 
     client_id: int
     camera: CameraHandle
@@ -178,7 +178,11 @@ class _ViserServerState:
 
 
 class ViserServer(MessageApi):
-    """Viser server class. The primary interface for functionality in `viser`."""
+    """Viser server class. The primary interface for functionality in `viser`.
+
+    Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all
+    clients, including new clients that connect after a command is called.
+    """
 
     world_axes: SceneNodeHandle
     """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated

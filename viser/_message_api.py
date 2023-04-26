@@ -524,13 +524,15 @@ class MessageApi(abc.ABC):
 
         def sync_cb(client_id: ClientId, state: TransformControlsHandle) -> None:
             message_orientation = _messages.SetOrientationMessage(
-                name=name, wxyz=tuple(map(float, state._impl.wxyz))
+                name=name,
+                wxyz=tuple(map(float, state._impl.wxyz)),  # type: ignore
             )
             message_orientation.excluded_self_client = client_id
             self._queue(message_orientation)
 
             message_position = _messages.SetPositionMessage(
-                name=name, position=tuple(map(float, state._impl.position))
+                name=name,
+                position=tuple(map(float, state._impl.position)),  # type: ignore
             )
             message_position.excluded_self_client = client_id
             self._queue(message_position)

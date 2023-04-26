@@ -6,13 +6,14 @@ authors = ["brentyi <brentyi@berkeley.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.7,<3.11"
 websockets = ">=10.4"
 numpy = ">=1.0.0"
 msgpack = ">=1.0.0"
 imageio = ">=2.0.0"
 pyliblzfse = ">=0.4.1"
 scikit-image = ">=0.18.0"
+scipy = ">=1.7.3"
 tqdm = ">=4.0.0"
 tyro = ">=0.2.0"
 gdown = ">=4.6.6"
