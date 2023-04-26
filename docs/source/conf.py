@@ -220,7 +220,7 @@ autoapi_options = [
     "show-inheritance",
     # "show-inheritance-diagram",
     "special-members",
-    #  "show-module-summary",
+    "show-module-summary",
 ]
 autoapi_add_toctree_entry = False
 autoapi_generate_api_docs = False

@@ -9,6 +9,8 @@ interface ViewerCameraMessage {
   position: [number, number, number];
   fov: number;
   aspect: number;
+  look_at: [number, number, number];
+  up_direction: [number, number, number];
 }
 interface CameraFrustumMessage {
   type: "CameraFrustumMessage";
@@ -58,13 +60,17 @@ interface TransformControlsMessage {
   depth_test: boolean;
   opacity: number;
 }
-interface SetCameraOrientationMessage {
-  type: "SetCameraOrientationMessage";
-  wxyz: [number, number, number, number];
-}
 interface SetCameraPositionMessage {
   type: "SetCameraPositionMessage";
   position: [number, number, number];
+}
+interface SetCameraUpDirectionMessage {
+  type: "SetCameraUpDirectionMessage";
+  position: [number, number, number];
+}
+interface SetCameraLookAtMessage {
+  type: "SetCameraLookAtMessage";
+  look_at: [number, number, number];
 }
 interface SetCameraFovMessage {
   type: "SetCameraFovMessage";
@@ -155,8 +161,9 @@ export type Message =
   | PointCloudMessage
   | MeshMessage
   | TransformControlsMessage
-  | SetCameraOrientationMessage
   | SetCameraPositionMessage
+  | SetCameraUpDirectionMessage
+  | SetCameraLookAtMessage
   | SetCameraFovMessage
   | SetOrientationMessage
   | SetPositionMessage

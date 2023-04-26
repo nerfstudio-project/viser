@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 class _SceneNodeHandleState:
     name: str
     api: MessageApi
-    wxyz: Tuple[float, float, float, float] = (1.0, 0.0, 0.0, 0.0)
-    position: Tuple[float, float, float] = (0.0, 0.0, 0.0)
+    wxyz: onp.ndarray
+    position: onp.ndarray
     visible: bool = True
 
 
@@ -27,7 +27,7 @@ class SceneNodeHandle:
     _impl: _SceneNodeHandleState
 
     @property
-    def wxyz(self) -> Tuple[float, float, float, float]:
+    def wxyz(self) -> onp.ndarray:
         """Orientation of the scene node. This is the quaternion representation of the R
         in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
@@ -38,13 +38,13 @@ class SceneNodeHandle:
         from ._message_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
-        self._impl.wxyz = wxyz_cast
+        self._impl.wxyz = onp.asarray(wxyz)
         self._impl.api._queue(
-            _messages.SetOrientationMessage(self._impl.name, self._impl.wxyz)
+            _messages.SetOrientationMessage(self._impl.name, wxyz_cast)
         )
 
     @property
-    def position(self) -> Tuple[float, float, float]:
+    def position(self) -> onp.ndarray:
         """Position of the scene node. This is equivalent to the t in
         `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
@@ -55,9 +55,9 @@ class SceneNodeHandle:
         from ._message_api import cast_vector
 
         position_cast = cast_vector(position, 3)
-        self._impl.position = position_cast
+        self._impl.position = onp.asarray(position)
         self._impl.api._queue(
-            _messages.SetPositionMessage(self._impl.name, self._impl.position)
+            _messages.SetPositionMessage(self._impl.name, position_cast)
         )
 
     @property

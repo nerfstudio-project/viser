@@ -360,7 +360,11 @@ class MessageApi(abc.ABC):
                 color=_encode_rgb(color),
             )
         )
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle(
+            _SceneNodeHandleState(
+                name, self, wxyz=onp.array([1.0, 0.0, 0.0, 0.0]), position=onp.zeros(3)
+            )
+        )
 
     def add_frame(
         self,
@@ -384,7 +388,9 @@ class MessageApi(abc.ABC):
             )
         )
         return SceneNodeHandle(
-            _SceneNodeHandleState(name, self, wxyz=wxyz_tup, position=position_tup)
+            _SceneNodeHandleState(
+                name, self, wxyz=onp.asarray(wxyz), position=onp.asarray(position)
+            )
         )
 
     def add_point_cloud(
@@ -403,7 +409,11 @@ class MessageApi(abc.ABC):
                 point_size=point_size,
             )
         )
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle(
+            _SceneNodeHandleState(
+                name, self, wxyz=onp.array([1.0, 0.0, 0.0, 0.0]), position=onp.zeros(3)
+            )
+        )
 
     def add_mesh(
         self,
@@ -426,7 +436,11 @@ class MessageApi(abc.ABC):
                 wireframe=wireframe,
             )
         )
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle(
+            _SceneNodeHandleState(
+                name, self, wxyz=onp.array([1.0, 0.0, 0.0, 0.0]), position=onp.zeros(3)
+            )
+        )
 
     def set_background_image(
         self,
@@ -462,7 +476,11 @@ class MessageApi(abc.ABC):
                 render_height=render_height,
             )
         )
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle(
+            _SceneNodeHandleState(
+                name, self, wxyz=onp.array([1.0, 0.0, 0.0, 0.0]), position=onp.zeros(3)
+            )
+        )
 
     def add_transform_controls(
         self,
@@ -506,13 +524,13 @@ class MessageApi(abc.ABC):
 
         def sync_cb(client_id: ClientId, state: TransformControlsHandle) -> None:
             message_orientation = _messages.SetOrientationMessage(
-                name=name, wxyz=state._impl.wxyz
+                name=name, wxyz=tuple(map(float, state._impl.wxyz))
             )
             message_orientation.excluded_self_client = client_id
             self._queue(message_orientation)
 
             message_position = _messages.SetPositionMessage(
-                name=name, position=state._impl.position
+                name=name, position=tuple(map(float, state._impl.position))
             )
             message_position.excluded_self_client = client_id
             self._queue(message_position)
@@ -520,8 +538,8 @@ class MessageApi(abc.ABC):
         state = _SceneNodeHandleState(
             name=name,
             api=self,
-            wxyz=(1.0, 0.0, 0.0, 0.0),
-            position=(0.0, 0.0, 0.0),
+            wxyz=onp.array([1.0, 0.0, 0.0, 0.0]),
+            position=onp.array([0.0, 0.0, 0.0]),
         )
         state_aux = _TransformControlsState(
             last_updated=time.time(),
@@ -575,8 +593,8 @@ class MessageApi(abc.ABC):
             return
 
         # Update state.
-        handle._impl.wxyz = message.wxyz
-        handle._impl.position = message.position
+        handle._impl.wxyz = onp.array(message.wxyz)
+        handle._impl.position = onp.array(message.position)
         handle._impl_aux.last_updated = time.time()
 
         # Trigger callbacks.
@@ -644,8 +662,11 @@ class MessageApi(abc.ABC):
         orientation updates to happen synchronously.
         """
         # Lock is needed for thread-safety.
-        self._atomic_lock.acquire()
+        got_lock = self._atomic_lock.acquire(blocking=False)
+
         self._queue(_messages.MessageGroupStart())
         yield
         self._queue(_messages.MessageGroupEnd())
-        self._atomic_lock.release()
+
+        if got_lock:
+            self._atomic_lock.release()

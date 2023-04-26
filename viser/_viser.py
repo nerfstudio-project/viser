@@ -7,14 +7,17 @@ from pathlib import Path
 from typing import Callable, Dict, List, Tuple
 
 import numpy as onp
+import numpy.typing as npt
 from typing_extensions import override
 
 from . import infra
+from . import transforms as tf
 from ._message_api import MessageApi, cast_vector
 from ._messages import (
     SetCameraFovMessage,
-    SetCameraOrientationMessage,
+    SetCameraLookAtMessage,
     SetCameraPositionMessage,
+    SetCameraUpDirectionMessage,
     ViewerCameraMessage,
 )
 from ._scene_handle import SceneNodeHandle, _SceneNodeHandleState
@@ -25,10 +28,12 @@ class _CameraHandleState:
     """Information about a client's camera state."""
 
     connection: infra.ClientConnection
-    wxyz: Tuple[float, float, float, float]
-    position: Tuple[float, float, float]
+    wxyz: npt.NDArray[onp.float64]
+    position: npt.NDArray[onp.float64]
     fov: float
     aspect: float
+    look_at: npt.NDArray[onp.float64]
+    up_direction: npt.NDArray[onp.float64]
     update_timestamp: float
     camera_cb: List[Callable[[ClientHandle], None]]
 
@@ -38,7 +43,7 @@ class CameraHandle:
     _state: _CameraHandleState
 
     @property
-    def wxyz(self) -> Tuple[float, float, float, float]:
+    def wxyz(self) -> npt.NDArray[onp.float64]:
         """Corresponds to the R in `P_world = [R | t] p_camera`. Synchronized
         automatically when assigned."""
         assert self._state.update_timestamp != 0.0
@@ -49,13 +54,23 @@ class CameraHandle:
     # - https://github.com/python/mypy/pull/11643
     @wxyz.setter
     def wxyz(self, wxyz: Tuple[float, float, float, float] | onp.ndarray) -> None:
-        wxyz_cast = cast_vector(wxyz, 4)
-        self._state.wxyz = wxyz_cast
-        self._state.update_timestamp = time.time()
-        self._state.connection.send(SetCameraOrientationMessage(wxyz_cast))
+        R_world_camera = tf.SO3(onp.asarray(wxyz))
+        look_at = onp.array(
+            [
+                0.0,
+                0.0,
+                onp.linalg.norm(self.look_at - self.position),
+            ]
+        )
+        new_look_at = (R_world_camera @ look_at) + self.position
+        self.look_at = new_look_at
+
+        up_direction = R_world_camera @ onp.array([0.0, -1.0, 0.0])
+        self.up_direction = up_direction
+        self._state.wxyz = onp.asarray(wxyz)
 
     @property
-    def position(self) -> Tuple[float, float, float]:
+    def position(self) -> npt.NDArray[onp.float64]:
         """Corresponds to the t in `P_world = [R | t] p_camera`. Synchronized
         automatically when assigned."""
         assert self._state.update_timestamp != 0.0
@@ -63,8 +78,12 @@ class CameraHandle:
 
     @position.setter
     def position(self, position: Tuple[float, float, float] | onp.ndarray) -> None:
+        offset = onp.asarray(position) - onp.array(self.position)  # type: ignore
+
         position_cast = cast_vector(position, 3)
-        self._state.position = position_cast
+
+        self._state.position = onp.asarray(position)
+        self.look_at = onp.array(self._state.look_at) + offset
         self._state.update_timestamp = time.time()
         self._state.connection.send(SetCameraPositionMessage(position_cast))
 
@@ -91,6 +110,34 @@ class CameraHandle:
     def update_timestamp(self) -> float:
         assert self._state.update_timestamp != 0.0
         return self._state.update_timestamp
+
+    @property
+    def look_at(self) -> npt.NDArray[onp.float64]:
+        """Look at point for the camera. Synchronized automatically when set."""
+        assert self._state.update_timestamp != 0.0
+        return self._state.look_at
+
+    @look_at.setter
+    def look_at(self, look_at: Tuple[float, float, float] | onp.ndarray) -> None:
+        look_at_cast = cast_vector(look_at, 3)
+        self._state.look_at = onp.asarray(look_at)
+        self._state.update_timestamp = time.time()
+        self._state.connection.send(SetCameraLookAtMessage(look_at_cast))
+
+    @property
+    def up_direction(self) -> npt.NDArray[onp.float64]:
+        """Up direction for the camera. Synchronized automatically when set."""
+        assert self._state.update_timestamp != 0.0
+        return self._state.up_direction
+
+    @up_direction.setter
+    def up_direction(
+        self, up_direction: Tuple[float, float, float] | onp.ndarray
+    ) -> None:
+        up_direction_cast = cast_vector(up_direction, 3)
+        self._state.up_direction = onp.asarray(up_direction)
+        self._state.update_timestamp = time.time()
+        self._state.connection.send(SetCameraUpDirectionMessage(up_direction_cast))
 
     def on_update(
         self, callback: Callable[[ClientHandle], None]
@@ -157,10 +204,12 @@ class ViserServer(MessageApi):
                 _CameraHandleState(
                     # TODO: values are initially not valid.
                     conn,
-                    wxyz=(1.0, 0.0, 0.0, 0.0),
-                    position=(0.0, 0.0, 0.0),
+                    wxyz=onp.zeros(4),
+                    position=onp.zeros(3),
                     fov=0.0,
                     aspect=0.0,
+                    look_at=onp.zeros(3),
+                    up_direction=onp.zeros(3),
                     update_timestamp=0.0,
                     camera_cb=[],
                 )
@@ -171,22 +220,24 @@ class ViserServer(MessageApi):
             def handle_camera_message(
                 client_id: infra.ClientId, message: ViewerCameraMessage
             ) -> None:
-                assert client_id == client.client_id
+                nonlocal first
 
+                assert client_id == client.client_id
                 with self._atomic_lock:
                     client.camera._state = _CameraHandleState(
                         conn,
-                        message.wxyz,
-                        message.position,
+                        onp.array(message.wxyz),
+                        onp.array(message.position),
                         message.fov,
                         message.aspect,
+                        onp.array(message.look_at),
+                        onp.array(message.up_direction),
                         time.time(),
                         camera_cb=client.camera._state.camera_cb,
                     )
 
                 # We consider a client to be connected after the first camera message is
                 # received.
-                nonlocal first
                 if first:
                     with self._state.client_lock:
                         state.connected_clients[conn.client_id] = client
@@ -211,7 +262,14 @@ class ViserServer(MessageApi):
         # Start the server.
         server.start()
         self.reset_scene()
-        self.world_axes = SceneNodeHandle(_SceneNodeHandleState("/WorldAxes", self))
+        self.world_axes = SceneNodeHandle(
+            _SceneNodeHandleState(
+                "/WorldAxes",
+                self,
+                wxyz=onp.array([1.0, 0.0, 0.0, 0.0]),
+                position=onp.zeros(3),
+            )
+        )
         self.world_axes.visible = False
 
     def get_clients(self) -> Dict[int, ClientHandle]:

@@ -185,8 +185,14 @@ class Server(MessageHandler):
             client_connection = ClientConnection(client_id, client_state)
 
             def handle_incoming(message: Message) -> None:
-                self._handle_incoming_message(client_id, message)
-                client_connection._handle_incoming_message(client_id, message)
+                threading.Thread(
+                    target=lambda: self._handle_incoming_message(client_id, message)
+                ).start()
+                threading.Thread(
+                    target=lambda: client_connection._handle_incoming_message(
+                        client_id, message
+                    )
+                ).start()
 
             # New connection callbacks.
             for cb in self._client_connect_cb:

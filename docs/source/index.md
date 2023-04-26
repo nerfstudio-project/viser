@@ -55,6 +55,7 @@ URL (default: `http://localhost:8080`).
 
    ./core.md
    ./infrastructure.md
+   ./transforms.md
 
 .. toctree::
    :caption: Examples

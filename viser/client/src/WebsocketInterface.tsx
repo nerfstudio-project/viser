@@ -51,7 +51,7 @@ export function makeThrottledMessageSender(
 }
 
 /** Type guard for threejs textures. Meant to be used with `scene.background`. */
-function isTexture(
+export function isTexture(
   background: THREE.Color | THREE.Texture | THREE.CubeTexture | null
 ): background is THREE.Texture {
   return (
@@ -248,57 +248,40 @@ function useMessageHandler() {
         );
         break;
       }
-      case "SetCameraOrientationMessage": {
-        const camera = viewer.globalCameras.current!.cameras[viewer.panelKey];
+      case "SetCameraLookAtMessage": {
         const cameraControls =
           viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
             .current!;
 
-        const R_world_camera = new THREE.Quaternion(
-          message.wxyz[1],
-          message.wxyz[2],
-          message.wxyz[3],
-          message.wxyz[0]
-        );
-
-        const R_cam_threecam = new THREE.Quaternion();
         const R_threeworld_world = new THREE.Quaternion();
-        R_cam_threecam.setFromEuler(new THREE.Euler(-Math.PI, 0.0, 0.0));
         R_threeworld_world.setFromEuler(
           new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
         );
-        const R_threeworld_threecamera = R_threeworld_world.clone()
-          .multiply(R_world_camera)
-          .multiply(R_cam_threecam);
-
-        // Compute a look-at point, while holding the orbit distance constant.
-        const position = cameraControls.getPosition(new THREE.Vector3());
-        const currentTargetDist = cameraControls
-          .getTarget(new THREE.Vector3())
-          .sub(position)
-          .length();
-        const target = new THREE.Vector3(0.0, 0.0, -currentTargetDist)
-          .applyQuaternion(R_threeworld_threecamera)
-          .add(position);
-
-        // Compute and apply a new up direction.
-        // The goal here is simple: set the up direction s.t. the camera roll is correct,
-        // but keep the up direction as close to a world-frame vertical as possible.
-        const eps = 1e-7;
-        const facePlane = target.clone().sub(position).setY(eps).normalize();
-        const up = new THREE.Vector3(eps, 1.0, eps)
-          .projectOnPlane(facePlane)
-          .normalize();
-        camera.up.set(up.x, up.y, up.z);
-
-        cameraControls.setLookAt(
-          position.x,
-          position.y,
-          position.z,
-          target.x,
-          target.y,
-          target.z
+        const target = new THREE.Vector3(
+          message.look_at[0],
+          message.look_at[1],
+          message.look_at[2]
         );
+        target.applyQuaternion(R_threeworld_world);
+        cameraControls.setTarget(target.x, target.y, target.z);
+        break;
+      }
+      case "SetCameraUpDirectionMessage": {
+        const camera = viewer.globalCameras.current!.cameras[viewer.panelKey];
+        const cameraControls =
+          viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
+            .current!;
+        const R_threeworld_world = new THREE.Quaternion();
+        R_threeworld_world.setFromEuler(
+          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
+        );
+        const updir = new THREE.Vector3(
+          message.position[0],
+          message.position[1],
+          message.position[2]
+        ).applyQuaternion(R_threeworld_world);
+        camera.up.set(updir.x, updir.y, updir.z);
+        cameraControls.updateCameraUp();
         break;
       }
       case "SetCameraPositionMessage": {
@@ -306,11 +289,7 @@ function useMessageHandler() {
           viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
             .current!;
 
-        // When setting camera position, we're going to shift the look-at point by the same amount as the position.
-        // This will hold the camera orientation constant.
-        const position_cur = new THREE.Vector3();
-        cameraControls.getPosition(position_cur);
-
+        // Set the camera position. Note that this will shift the orientation as-well.
         const position_cmd = new THREE.Vector3(
           message.position[0],
           message.position[1],
@@ -322,18 +301,10 @@ function useMessageHandler() {
         );
         position_cmd.applyQuaternion(R_worldthree_world);
 
-        const target = cameraControls
-          .getTarget(new THREE.Vector3())
-          .add(position_cmd)
-          .sub(position_cur);
-
-        cameraControls.setLookAt(
+        cameraControls.setPosition(
           position_cmd.x,
           position_cmd.y,
-          position_cmd.z,
-          target.x,
-          target.y,
-          target.z
+          position_cmd.z
         );
         break;
       }
@@ -379,6 +350,7 @@ function useMessageHandler() {
         scene.background.encoding = THREE.sRGBEncoding;
 
         if (isTexture(oldBackground)) oldBackground.dispose();
+        viewer.useGui.setState({ backgroundAvailable: true });
         break;
       }
       // Add an image.
