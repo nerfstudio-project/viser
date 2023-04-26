@@ -172,10 +172,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/00_coordinate_frames/">Coordinate frames</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/01_image/">Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../examples/02_camera_poses/">Camera poses</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../examples/03_camera_commands/">Camera commands</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../examples/04_gui/">GUI basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../examples/05_gui_callbacks/">GUI callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/02_gui/">GUI basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/03_gui_callbacks/">GUI callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/04_camera_poses/">Camera poses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/05_camera_commands/">Camera commands</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/07_record3d_visualizer/">Record3D visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/08_smplx_visualizer/">SMPL-X visualizer</a></li>
@@ -366,7 +366,9 @@
             <span class="p">(</span>
                 <span class="n">onp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
                 <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">onp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_safe</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">theta_squared_safe</span><span class="p">)</span> <span class="o">*</span> <span class="n">skew_omega</span>
-                <span class="o">+</span> <span class="p">(</span><span class="n">theta_safe</span> <span class="o">-</span> <span class="n">onp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_safe</span><span class="p">))</span>
+                <span class="c1"># We can drop this type: ignore after upgrading numpy / dropping Python</span>
+                <span class="c1"># 3.7 support.</span>
+                <span class="o">+</span> <span class="p">(</span><span class="n">theta_safe</span> <span class="o">-</span> <span class="n">onp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_safe</span><span class="p">))</span> <span class="c1"># type: ignore</span>
                 <span class="o">/</span> <span class="p">(</span><span class="n">theta_squared_safe</span> <span class="o">*</span> <span class="n">theta_safe</span><span class="p">)</span>
                 <span class="o">*</span> <span class="p">(</span><span class="n">skew_omega</span> <span class="o">@</span> <span class="n">skew_omega</span><span class="p">)</span>
             <span class="p">),</span>

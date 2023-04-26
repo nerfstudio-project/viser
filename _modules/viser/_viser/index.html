@@ -172,10 +172,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/00_coordinate_frames/">Coordinate frames</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/01_image/">Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/02_camera_poses/">Camera poses</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/03_camera_commands/">Camera commands</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/04_gui/">GUI basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/05_gui_callbacks/">GUI callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/02_gui/">GUI basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/03_gui_callbacks/">GUI callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/04_camera_poses/">Camera poses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/05_camera_commands/">Camera commands</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/07_record3d_visualizer/">Record3D visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/08_smplx_visualizer/">SMPL-X visualizer</a></li>
@@ -372,7 +372,7 @@
 <div class="viewcode-block" id="ClientHandle"><a class="viewcode-back" href="../../../core/#viser.ClientHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">ClientHandle</span><span class="p">(</span><span class="n">MessageApi</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with a specific client. Can be used to send messages to</span>
-<span class="sd">    individual clients, read camera information, etc.&quot;&quot;&quot;</span>
+<span class="sd">    individual clients and read/write camera information.&quot;&quot;&quot;</span>
 
     <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">camera</span><span class="p">:</span> <span class="n">CameraHandle</span>
@@ -395,7 +395,11 @@
 
 
 <div class="viewcode-block" id="ViserServer"><a class="viewcode-back" href="../../../core/#viser.ViserServer">[docs]</a><span class="k">class</span> <span class="nc">ViserServer</span><span class="p">(</span><span class="n">MessageApi</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Viser server class. The primary interface for functionality in `viser`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Viser server class. The primary interface for functionality in `viser`.</span>
+
+<span class="sd">    Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all</span>
+<span class="sd">    clients, including new clients that connect after a command is called.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">world_axes</span><span class="p">:</span> <span class="n">SceneNodeHandle</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for manipulating the world frame axes (/WorldAxes), which is instantiated</span>

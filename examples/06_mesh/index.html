@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-<link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="Record3D visualizer" href="../07_record3d_visualizer/" /><link rel="prev" title="GUI callbacks" href="../05_gui_callbacks/" />
+<link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="Record3D visualizer" href="../07_record3d_visualizer/" /><link rel="prev" title="Camera commands" href="../05_camera_commands/" />
 
     <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
         <title>Meshes - viser</title>
@@ -173,10 +173,10 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../00_coordinate_frames/">Coordinate frames</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../01_image/">Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../02_camera_poses/">Camera poses</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../03_camera_commands/">Camera commands</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../04_gui/">GUI basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../05_gui_callbacks/">GUI callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02_gui/">GUI basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03_gui_callbacks/">GUI callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04_camera_poses/">Camera poses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../05_camera_commands/">Camera commands</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../07_record3d_visualizer/">Record3D visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../08_smplx_visualizer/">SMPL-X visualizer</a></li>
@@ -224,9 +224,9 @@
 <span class="linenos"> 3</span>
 <span class="linenos"> 4</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="linenos"> 5</span><span class="kn">import</span> <span class="nn">trimesh</span>
-<span class="linenos"> 6</span><span class="kn">from</span> <span class="nn">scipy.spatial.transform</span> <span class="kn">import</span> <span class="n">Rotation</span>
-<span class="linenos"> 7</span>
-<span class="linenos"> 8</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 8</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
 <span class="linenos"> 9</span>
 <span class="linenos">10</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/dragon.obj&quot;</span><span class="p">)</span>
 <span class="linenos">11</span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">)</span>
@@ -238,8 +238,8 @@
 <span class="linenos">17</span><span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos">18</span><span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
 <span class="linenos">19</span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/frame&quot;</span><span class="p">,</span>
-<span class="linenos">20</span>    <span class="c1"># so(3) =&gt; xyzw =&gt; wxyz</span>
-<span class="linenos">21</span>    <span class="n">wxyz</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">Rotation</span><span class="o">.</span><span class="n">from_rotvec</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)))</span><span class="o">.</span><span class="n">as_quat</span><span class="p">(),</span> <span class="mi">1</span><span class="p">),</span>
+<span class="linenos">20</span>    <span class="c1"># so(3) =&gt; wxyz</span>
+<span class="linenos">21</span>    <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
 <span class="linenos">22</span>    <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 <span class="linenos">23</span>    <span class="n">show_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="linenos">24</span><span class="p">)</span>
@@ -265,14 +265,14 @@
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../05_gui_callbacks/">
+          <a class="prev-page" href="../05_camera_commands/">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">GUI callbacks</div>
+                <div class="title">Camera commands</div>
                 
               </div>
             </a>

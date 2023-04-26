@@ -173,10 +173,10 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../00_coordinate_frames/">Coordinate frames</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../01_image/">Images</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../02_camera_poses/">Camera poses</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../03_camera_commands/">Camera commands</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../04_gui/">GUI basics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../05_gui_callbacks/">GUI callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../02_gui/">GUI basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../03_gui_callbacks/">GUI callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../04_camera_poses/">Camera poses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../05_camera_commands/">Camera commands</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../07_record3d_visualizer/">Record3D visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../08_smplx_visualizer/">SMPL-X visualizer</a></li>
@@ -231,11 +231,11 @@
 <span class="linenos"> 5</span>
 <span class="linenos"> 6</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="linenos"> 7</span><span class="kn">import</span> <span class="nn">trimesh</span>
-<span class="linenos"> 8</span><span class="kn">import</span> <span class="nn">trimesh.transformations</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="linenos"> 9</span><span class="kn">import</span> <span class="nn">tyro</span>
-<span class="linenos">10</span><span class="kn">import</span> <span class="nn">yourdfpy</span>
-<span class="linenos">11</span>
-<span class="linenos">12</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 8</span><span class="kn">import</span> <span class="nn">tyro</span>
+<span class="linenos"> 9</span><span class="kn">import</span> <span class="nn">yourdfpy</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos">12</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
 <span class="linenos">13</span>
 <span class="linenos">14</span>
 <span class="linenos">15</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">urdf_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
@@ -277,7 +277,7 @@
 <span class="linenos">51</span>                <span class="n">T_parent_child</span> <span class="o">=</span> <span class="n">urdf</span><span class="o">.</span><span class="n">get_transform</span><span class="p">(</span><span class="n">joint</span><span class="o">.</span><span class="n">child</span><span class="p">,</span> <span class="n">joint</span><span class="o">.</span><span class="n">parent</span><span class="p">)</span>
 <span class="linenos">52</span>                <span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
 <span class="linenos">53</span>                    <span class="n">frame_name_with_parents</span><span class="p">(</span><span class="n">joint</span><span class="o">.</span><span class="n">child</span><span class="p">),</span>
-<span class="linenos">54</span>                    <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">quaternion_from_matrix</span><span class="p">(</span><span class="n">T_parent_child</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]),</span>
+<span class="linenos">54</span>                    <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">T_parent_child</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
 <span class="linenos">55</span>                    <span class="n">position</span><span class="o">=</span><span class="n">T_parent_child</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
 <span class="linenos">56</span>                    <span class="n">show_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="linenos">57</span>                <span class="p">)</span>

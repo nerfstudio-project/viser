@@ -15,27 +15,14 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
 
         import time
         from pathlib import Path
-        from typing import List, Tuple
+        from typing import List
 
         import numpy as onp
-        import numpy.typing as onpt
         import tyro
-        from scipy.spatial.transform import Rotation
         from tqdm.auto import tqdm
 
         import viser
-
-
-        def quat_from_so3(omega: Tuple[float, float, float]) -> onp.ndarray:
-            # xyzw => wxyz
-            return onp.roll(Rotation.from_rotvec(onp.array(omega)).as_quat(), 1)
-
-
-        def quat_from_mat3(
-            mat3: onpt.NDArray[onp.float32],
-        ) -> onp.ndarray:
-            # xyzw => wxyz
-            return onp.roll(Rotation.from_matrix(mat3).as_quat(), 1)
+        import viser.transforms as tf
 
 
         def main(
@@ -91,7 +78,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
             # Load in frames.
             server.add_frame(
                 "/frames",
-                wxyz=quat_from_so3((onp.pi / 2.0, 0.0, 0.0)),
+                wxyz=tf.SO3.exp(onp.array([onp.pi / 2.0, 0.0, 0.0])).wxyz,
                 position=(0, 0, 0),
                 show_axes=False,
             )
@@ -105,7 +92,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 )
                 server.add_frame(
                     f"/frames/t{i}/camera",
-                    wxyz=quat_from_mat3(frame.T_world_camera[:3, :3]),
+                    wxyz=tf.SO3.from_matrix(frame.T_world_camera[:3, :3]).wxyz,
                     position=frame.T_world_camera[:3, 3],
                     axes_length=0.1,
                     axes_radius=0.005,
