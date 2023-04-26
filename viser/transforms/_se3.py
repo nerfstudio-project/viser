@@ -149,7 +149,9 @@ class SE3(_base.SEBase[SO3]):
             (
                 onp.eye(3)
                 + (1.0 - onp.cos(theta_safe)) / (theta_squared_safe) * skew_omega
-                + (theta_safe - onp.sin(theta_safe))
+                # We can drop this type: ignore after upgrading numpy / dropping Python
+                # 3.7 support.
+                + (theta_safe - onp.sin(theta_safe)) # type: ignore
                 / (theta_squared_safe * theta_safe)
                 * (skew_omega @ skew_omega)
             ),
