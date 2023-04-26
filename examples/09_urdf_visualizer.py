@@ -13,11 +13,11 @@ from typing import List
 
 import numpy as onp
 import trimesh
-import trimesh.transformations as tf
 import tyro
 import yourdfpy
 
 import viser
+import viser.transforms as tf
 
 
 def main(urdf_path: Path):
@@ -59,7 +59,7 @@ def main(urdf_path: Path):
                 T_parent_child = urdf.get_transform(joint.child, joint.parent)
                 server.add_frame(
                     frame_name_with_parents(joint.child),
-                    wxyz=tf.quaternion_from_matrix(T_parent_child[:3, :3]),
+                    wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
                     position=T_parent_child[:3, 3],
                     show_axes=False,
                 )

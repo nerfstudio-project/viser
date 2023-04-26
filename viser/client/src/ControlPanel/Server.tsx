@@ -2,12 +2,15 @@ import { button, LevaPanel, useControls, useCreateStore } from "leva";
 import Box from "@mui/material/Box";
 import { levaTheme } from "./Generated";
 import { UseGui } from "./GuiState";
-import { RefObject } from "react";
+import { RefObject, useContext } from "react";
+import { SceneContext } from "..";
+import { isTexture } from "../WebsocketInterface";
 
 export default function ServerControls(props: {
   useGui: UseGui;
   wrapperRef: RefObject<HTMLDivElement>;
 }) {
+  const scene = useContext(SceneContext);
   const server = props.useGui((state) => state.server);
   const label = props.useGui((state) => state.label);
   const backgroundAvailable = props.useGui(
@@ -30,12 +33,13 @@ export default function ServerControls(props: {
           const wrapper = props.wrapperRef.current;
           if (wrapper === null) return;
 
-          if (!wrapper.style.backgroundImage.startsWith("url(")) {
+          if (!isTexture(scene!.background)) {
             // This should never happen.
             alert("No background to download!");
             return;
           }
-          const data = wrapper.style.backgroundImage.split('"')[1];
+
+          const data = scene!.background.image;
           const link = document.createElement("a");
           link.download = "background";
           link.href = data;

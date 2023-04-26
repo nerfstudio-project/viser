@@ -27,6 +27,13 @@ export function SynchronizedCameraControls() {
   // Callback for sending cameras.
   const sendCamera = React.useCallback(() => {
     const three_camera = camera;
+    const camera_control = cameraControlRef.current;
+
+    if (camera_control === null) {
+      // Camera controls not yet ready, let's re-try later.
+      setTimeout(sendCamera, 10);
+      return;
+    }
 
     // We put Z up to match the scene tree, and convert threejs camera convention
     // to the OpenCV one.
@@ -38,6 +45,10 @@ export function SynchronizedCameraControls() {
       .multiply(three_camera.quaternion)
       .multiply(R_threecam_cam);
 
+    const look_at = camera_control
+      .getTarget(new THREE.Vector3())
+      .applyQuaternion(R_world_threeworld);
+    const up = three_camera.up.clone().applyQuaternion(R_world_threeworld);
     sendCameraThrottled({
       type: "ViewerCameraMessage",
       wxyz: [
@@ -52,6 +63,8 @@ export function SynchronizedCameraControls() {
         .toArray(),
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
+      look_at: [look_at.x, look_at.y, look_at.z],
+      up_direction: [up.x, up.y, up.z],
     });
   }, [camera, sendCameraThrottled]);
 

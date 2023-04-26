@@ -21,10 +21,10 @@ import smplx.joint_names
 import smplx.lbs
 import torch
 import tyro
-from scipy.spatial.transform import Rotation
 from typing_extensions import Literal
 
 import viser
+import viser.transforms as tf
 
 
 def main(
@@ -48,13 +48,10 @@ def main(
     # Re-orient the model.
     server.add_frame(
         "/reoriented",
-        wxyz=onp.roll(
-            (
-                Rotation.from_rotvec(onp.array((0.0, 0.0, onp.pi)))
-                * Rotation.from_rotvec(onp.array((onp.pi / 2.0, 0.0, 0.0)))
-            ).as_quat(),
-            1,
-        ),
+        wxyz=(
+            tf.SO3.exp(onp.array((0.0, 0.0, onp.pi)))
+            @ tf.SO3.exp(onp.array((onp.pi / 2.0, 0.0, 0.0)))
+        ).wxyz,
         position=onp.zeros(3),
         show_axes=False,
     )
@@ -105,13 +102,7 @@ def main(
             R = joint_transforms[parents[i], :3, :3]
             server.add_frame(
                 f"/reoriented/smpl/joint_{i}",
-                wxyz=(
-                    (1.0, 0.0, 0.0, 0.0)
-                    if i == 0
-                    else
-                    # xyzw => wxyz
-                    onp.roll(Rotation.from_matrix(R).as_quat(), 1)
-                ),
+                wxyz=((1.0, 0.0, 0.0, 0.0) if i == 0 else tf.SO3.from_matrix(R).wxyz),
                 position=joint_positions[i],
                 show_axes=False,
             )
@@ -202,9 +193,7 @@ def make_gui_elements(
                 quat /= onp.linalg.norm(quat)
 
                 # xyzw => wxyz => so(3)
-                joint.value = Rotation.from_quat(
-                    onp.roll(onp.asarray(quat), -1)
-                ).as_rotvec()
+                joint.value = tf.SO3(wxyz=quat).log()
                 sync_transform_controls()
 
         gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]] = []
@@ -240,9 +229,7 @@ def make_gui_elements(
             def curry_callback(i: int) -> None:
                 @controls.on_update
                 def _(controls: viser.TransformControlsHandle) -> None:
-                    axisangle = Rotation.from_quat(
-                        onp.roll(controls.wxyz, -1)
-                    ).as_rotvec()
+                    axisangle = tf.SO3(controls.wxyz).log()
                     gui_joints[i].value = (axisangle[0], axisangle[1], axisangle[2])
 
             curry_callback(i)
@@ -252,7 +239,7 @@ def make_gui_elements(
     def sync_transform_controls() -> None:
         """Sync transform controls when a joint angle changes."""
         for t, j in zip(transform_controls, gui_joints):
-            t.wxyz = onp.roll(Rotation.from_rotvec(j.value).as_quat(), 1)
+            t.wxyz = tf.SO3.exp(onp.array(j.value)).wxyz
 
     add_transform_controls(enabled=False)
 

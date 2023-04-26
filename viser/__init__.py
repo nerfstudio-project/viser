@@ -1,5 +1,6 @@
-# `viser.infra` should be imported explicitly.
+# `viser.infra` and `viser.transforms` should be imported explicitly.
 # from . import infra as infra
+# from . import transforms as transforms
 from . import extras as extras
 from ._message_api import GuiButtonHandle as GuiButtonHandle
 from ._message_api import GuiHandle as GuiHandle
