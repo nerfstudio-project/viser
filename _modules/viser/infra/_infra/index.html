@@ -166,6 +166,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../core/">Viser Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../infrastructure/">Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../transforms/">Transforms</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -401,8 +402,14 @@
             <span class="n">client_connection</span> <span class="o">=</span> <span class="n">ClientConnection</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">client_state</span><span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">handle_incoming</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
-                <span class="n">client_connection</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
+                    <span class="n">target</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+                <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
+                    <span class="n">target</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">client_connection</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span>
+                        <span class="n">client_id</span><span class="p">,</span> <span class="n">message</span>
+                    <span class="p">)</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
             <span class="c1"># New connection callbacks.</span>
             <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span>

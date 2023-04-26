@@ -165,6 +165,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../core/">Viser Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transforms/">Transforms</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -215,7 +216,7 @@
           
 <section class="genindex-section">
   <h1 id="index">Index</h1>
-  <div class="genindex-jumpbox"><a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#W"><strong>W</strong></a></div>
+  <div class="genindex-jumpbox"><a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#O"><strong>O</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#U"><strong>U</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#W"><strong>W</strong></a></div>
 </section>
 <section id="A" class="genindex-section">
   <h2>A</h2>
@@ -275,8 +276,6 @@
           <li><a href="../core/#viser.ViserServer.add_gui_slider">(viser.ViserServer method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.ClientHandle.add_gui_text">add_gui_text() (viser.ClientHandle method)</a>
 
         <ul>
@@ -313,12 +312,68 @@
           <li><a href="../core/#viser.ViserServer.add_point_cloud">(viser.ViserServer method)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.ClientHandle.add_transform_controls">add_transform_controls() (viser.ClientHandle method)</a>
 
         <ul>
           <li><a href="../core/#viser.ViserServer.add_transform_controls">(viser.ViserServer method)</a>
 </li>
         </ul></li>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.adjoint">adjoint() (viser.transforms.MatrixLieGroup method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.adjoint">(viser.transforms.SE2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.adjoint">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.adjoint">(viser.transforms.SEBase method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.adjoint">(viser.transforms.SO2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.adjoint">(viser.transforms.SO3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.adjoint">(viser.transforms.SOBase method)</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.apply">apply() (viser.transforms.MatrixLieGroup method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.apply">(viser.transforms.SE2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.apply">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.apply">(viser.transforms.SEBase method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.apply">(viser.transforms.SO2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.apply">(viser.transforms.SO3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.apply">(viser.transforms.SOBase method)</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.as_matrix">as_matrix() (viser.transforms.MatrixLieGroup method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.as_matrix">(viser.transforms.SE2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.as_matrix">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.as_matrix">(viser.transforms.SEBase method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.as_matrix">(viser.transforms.SO2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.as_matrix">(viser.transforms.SO3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.as_matrix">(viser.transforms.SOBase method)</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.SO3.as_quaternion_xyzw">as_quaternion_xyzw() (viser.transforms.SO3 method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SO2.as_radians">as_radians() (viser.transforms.SO2 method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SO3.as_rpy_radians">as_rpy_radians() (viser.transforms.SO3 method)</a>
+</li>
         <li><a href="../core/#viser.CameraHandle.aspect">aspect (viser.CameraHandle property)</a>
 </li>
         <li><a href="../core/#viser.ClientHandle.atomic">atomic() (viser.ClientHandle method)</a>
@@ -355,13 +410,19 @@
           <li><a href="../infrastructure/#viser.infra.ClientConnection.client_id">(viser.infra.ClientConnection attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../infrastructure/#viser.infra.ClientConnection">ClientConnection (class in viser.infra)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.ClientHandle">ClientHandle (class in viser)</a>
 </li>
         <li><a href="../infrastructure/#viser.infra.ClientId">ClientId (in module viser.infra)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SO3.compute_pitch_radians">compute_pitch_radians() (viser.transforms.SO3 method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SO3.compute_roll_radians">compute_roll_radians() (viser.transforms.SO3 method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SO3.compute_yaw_radians">compute_yaw_radians() (viser.transforms.SO3 method)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -391,6 +452,22 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../infrastructure/#viser.infra.Message.excluded_self_client">excluded_self_client (viser.infra.Message attribute)</a>
 </li>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.exp">exp() (viser.transforms.MatrixLieGroup class method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.exp">(viser.transforms.SE2 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.exp">(viser.transforms.SE3 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.exp">(viser.transforms.SEBase class method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.exp">(viser.transforms.SO2 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.exp">(viser.transforms.SO3 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.exp">(viser.transforms.SOBase class method)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -400,6 +477,62 @@
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.CameraHandle.fov">fov (viser.CameraHandle property)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.from_matrix">from_matrix() (viser.transforms.MatrixLieGroup class method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.from_matrix">(viser.transforms.SE2 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.from_matrix">(viser.transforms.SE3 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.from_matrix">(viser.transforms.SEBase class method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.from_matrix">(viser.transforms.SO2 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.from_matrix">(viser.transforms.SO3 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.from_matrix">(viser.transforms.SOBase class method)</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.SO3.from_quaternion_xyzw">from_quaternion_xyzw() (viser.transforms.SO3 static method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SO2.from_radians">from_radians() (viser.transforms.SO2 static method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SE2.from_rotation">from_rotation() (viser.transforms.SE2 class method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE3.from_rotation">(viser.transforms.SE3 class method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.from_rotation">(viser.transforms.SEBase class method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.SE2.from_rotation_and_translation">from_rotation_and_translation() (viser.transforms.SE2 static method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE3.from_rotation_and_translation">(viser.transforms.SE3 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.from_rotation_and_translation">(viser.transforms.SEBase class method)</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.SO3.from_rpy_radians">from_rpy_radians() (viser.transforms.SO3 static method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SE2.from_translation">from_translation() (viser.transforms.SE2 class method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE3.from_translation">(viser.transforms.SE3 class method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.from_translation">(viser.transforms.SEBase class method)</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.SO3.from_x_radians">from_x_radians() (viser.transforms.SO3 static method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SE2.from_xy_theta">from_xy_theta() (viser.transforms.SE2 static method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SO3.from_y_radians">from_y_radians() (viser.transforms.SO3 static method)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SO3.from_z_radians">from_z_radians() (viser.transforms.SO3 static method)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -433,10 +566,98 @@
   </tr></table>
 </section>
 
+<section id="I" class="genindex-section">
+  <h2>I</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.identity">identity() (viser.transforms.MatrixLieGroup class method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.identity">(viser.transforms.SE2 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.identity">(viser.transforms.SE3 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.identity">(viser.transforms.SEBase class method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.identity">(viser.transforms.SO2 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.identity">(viser.transforms.SO3 static method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.identity">(viser.transforms.SOBase class method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.inverse">inverse() (viser.transforms.MatrixLieGroup method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.inverse">(viser.transforms.SE2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.inverse">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.inverse">(viser.transforms.SEBase method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.inverse">(viser.transforms.SO2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.inverse">(viser.transforms.SO3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.inverse">(viser.transforms.SOBase method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="L" class="genindex-section">
+  <h2>L</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.log">log() (viser.transforms.MatrixLieGroup method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.log">(viser.transforms.SE2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.log">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.log">(viser.transforms.SEBase method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.log">(viser.transforms.SO2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.log">(viser.transforms.SO3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.log">(viser.transforms.SOBase method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../core/#viser.CameraHandle.look_at">look_at (viser.CameraHandle property)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
 <section id="M" class="genindex-section">
   <h2>M</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.matrix_dim">matrix_dim (viser.transforms.MatrixLieGroup attribute)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.matrix_dim">(viser.transforms.SE2 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.matrix_dim">(viser.transforms.SE3 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.matrix_dim">(viser.transforms.SEBase attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.matrix_dim">(viser.transforms.SO2 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.matrix_dim">(viser.transforms.SO3 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.matrix_dim">(viser.transforms.SOBase attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup">MatrixLieGroup (class in viser.transforms)</a>
+</li>
         <li><a href="../infrastructure/#viser.infra.Message">Message (class in viser.infra)</a>
 </li>
         <li><a href="../infrastructure/#viser.infra.MessageHandler">MessageHandler (class in viser.infra)</a>
@@ -448,6 +669,48 @@
 
         <ul>
           <li><a href="../infrastructure/#module-viser.infra">viser.infra</a>
+</li>
+          <li><a href="../transforms/#module-viser.transforms">viser.transforms</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.multiply">multiply() (viser.transforms.MatrixLieGroup method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.multiply">(viser.transforms.SE2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.multiply">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.multiply">(viser.transforms.SEBase method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.multiply">(viser.transforms.SO2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.multiply">(viser.transforms.SO3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.multiply">(viser.transforms.SOBase method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="N" class="genindex-section">
+  <h2>N</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.normalize">normalize() (viser.transforms.MatrixLieGroup method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.normalize">(viser.transforms.SE2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.normalize">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.normalize">(viser.transforms.SEBase method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.normalize">(viser.transforms.SO2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.normalize">(viser.transforms.SO3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.normalize">(viser.transforms.SOBase method)</a>
 </li>
         </ul></li>
     </ul></td>
@@ -493,6 +756,40 @@
 <section id="P" class="genindex-section">
   <h2>P</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.parameters">parameters() (viser.transforms.MatrixLieGroup method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.parameters">(viser.transforms.SE2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.parameters">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.parameters">(viser.transforms.SEBase method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.parameters">(viser.transforms.SO2 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.parameters">(viser.transforms.SO3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.parameters">(viser.transforms.SOBase method)</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.parameters_dim">parameters_dim (viser.transforms.MatrixLieGroup attribute)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.parameters_dim">(viser.transforms.SE2 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.parameters_dim">(viser.transforms.SE3 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.parameters_dim">(viser.transforms.SEBase attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.parameters_dim">(viser.transforms.SO2 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.parameters_dim">(viser.transforms.SO3 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.parameters_dim">(viser.transforms.SOBase attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.CameraHandle.position">position (viser.CameraHandle property)</a>
 
@@ -540,6 +837,14 @@
           <li><a href="../core/#viser.ViserServer.reset_scene">(viser.ViserServer method)</a>
 </li>
         </ul></li>
+        <li><a href="../transforms/#viser.transforms.SE2.rotation">rotation() (viser.transforms.SE2 method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE3.rotation">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.rotation">(viser.transforms.SEBase method)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -550,18 +855,46 @@
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.SceneNodeHandle">SceneNodeHandle (class in viser)</a>
 </li>
+        <li><a href="../transforms/#viser.transforms.SE2">SE2 (class in viser.transforms)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SE3">SE3 (class in viser.transforms)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SEBase">SEBase (class in viser.transforms)</a>
+</li>
         <li><a href="../infrastructure/#viser.infra.ClientConnection.send">send() (viser.infra.ClientConnection method)</a>
 </li>
         <li><a href="../infrastructure/#viser.infra.Message.serialize">serialize() (viser.infra.Message method)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../infrastructure/#viser.infra.Server">Server (class in viser.infra)</a>
 </li>
         <li><a href="../core/#viser.ClientHandle.set_background_image">set_background_image() (viser.ClientHandle method)</a>
 
         <ul>
           <li><a href="../core/#viser.ViserServer.set_background_image">(viser.ViserServer method)</a>
+</li>
+        </ul></li>
+        <li><a href="../transforms/#viser.transforms.SO2">SO2 (class in viser.transforms)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.SO3">SO3 (class in viser.transforms)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SOBase">SOBase (class in viser.transforms)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.space_dim">space_dim (viser.transforms.MatrixLieGroup attribute)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.space_dim">(viser.transforms.SE2 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.space_dim">(viser.transforms.SE3 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.space_dim">(viser.transforms.SEBase attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.space_dim">(viser.transforms.SO2 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.space_dim">(viser.transforms.SO3 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.space_dim">(viser.transforms.SOBase attribute)</a>
 </li>
         </ul></li>
         <li><a href="../infrastructure/#viser.infra.Server.start">start() (viser.infra.Server method)</a>
@@ -574,8 +907,34 @@
   <h2>T</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.MatrixLieGroup.tangent_dim">tangent_dim (viser.transforms.MatrixLieGroup attribute)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE2.tangent_dim">(viser.transforms.SE2 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SE3.tangent_dim">(viser.transforms.SE3 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.tangent_dim">(viser.transforms.SEBase attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO2.tangent_dim">(viser.transforms.SO2 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SO3.tangent_dim">(viser.transforms.SO3 attribute)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SOBase.tangent_dim">(viser.transforms.SOBase attribute)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.TransformControlsHandle">TransformControlsHandle (class in viser)</a>
 </li>
+        <li><a href="../transforms/#viser.transforms.SE2.translation">translation() (viser.transforms.SE2 method)</a>
+
+        <ul>
+          <li><a href="../transforms/#viser.transforms.SE3.translation">(viser.transforms.SE3 method)</a>
+</li>
+          <li><a href="../transforms/#viser.transforms.SEBase.translation">(viser.transforms.SEBase method)</a>
+</li>
+        </ul></li>
     </ul></td>
   </tr></table>
 </section>
@@ -584,6 +943,12 @@
   <h2>U</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.SO2.unit_complex">unit_complex (viser.transforms.SO2 attribute)</a>
+</li>
+        <li><a href="../transforms/#viser.transforms.SE2.unit_complex_xy">unit_complex_xy (viser.transforms.SE2 attribute)</a>
+</li>
+        <li><a href="../core/#viser.CameraHandle.up_direction">up_direction (viser.CameraHandle property)</a>
+</li>
         <li><a href="../core/#viser.CameraHandle.update_timestamp">update_timestamp (viser.CameraHandle property)</a>
 
         <ul>
@@ -619,6 +984,13 @@
           <li><a href="../infrastructure/#module-viser.infra">module</a>
 </li>
         </ul></li>
+        <li>
+    viser.transforms
+
+        <ul>
+          <li><a href="../transforms/#module-viser.transforms">module</a>
+</li>
+        </ul></li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../core/#viser.ViserServer">ViserServer (class in viser)</a>
@@ -652,7 +1024,13 @@
 </li>
           <li><a href="../core/#viser.TransformControlsHandle.wxyz">(viser.TransformControlsHandle property)</a>
 </li>
+          <li><a href="../transforms/#viser.transforms.SO3.wxyz">(viser.transforms.SO3 attribute)</a>
+</li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../transforms/#viser.transforms.SE3.wxyz_xyz">wxyz_xyz (viser.transforms.SE3 attribute)</a>
+</li>
     </ul></td>
   </tr></table>
 </section>

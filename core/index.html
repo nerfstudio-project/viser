@@ -167,6 +167,7 @@
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Viser Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transforms/">Transforms</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -1025,6 +1026,17 @@ when assigned.</p>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.CameraHandle.look_at">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">look_at</span></span><a class="headerlink" href="#viser.CameraHandle.look_at" title="Permalink to this definition">#</a></dt>
+<dd><p>Look at point for the camera. Synchronized automatically when set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.typing.NDArray[numpy.float64]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.CameraHandle.on_update">
 <span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle.on_update" title="Permalink to this definition">#</a></dt>
@@ -1046,7 +1058,18 @@ when assigned.</p>
 automatically when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[float, float, float]</p>
+<dd class="field-odd"><p>numpy.typing.NDArray[numpy.float64]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.CameraHandle.up_direction">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">up_direction</span></span><a class="headerlink" href="#viser.CameraHandle.up_direction" title="Permalink to this definition">#</a></dt>
+<dd><p>Up direction for the camera. Synchronized automatically when set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.typing.NDArray[numpy.float64]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1068,7 +1091,7 @@ automatically when assigned.</p>
 automatically when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[float, float, float, float]</p>
+<dd class="field-odd"><p>numpy.typing.NDArray[numpy.float64]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1086,7 +1109,7 @@ automatically when assigned.</p>
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[float, float, float]</p>
+<dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1120,7 +1143,7 @@ automatically when assigned.</p>
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[float, float, float, float]</p>
+<dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1152,7 +1175,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[float, float, float]</p>
+<dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1196,7 +1219,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Tuple[float, float, float, float]</p>
+<dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1572,8 +1595,10 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.CameraHandle"><code class="docutils literal notranslate"><span class="pre">CameraHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.CameraHandle.aspect"><code class="docutils literal notranslate"><span class="pre">CameraHandle.aspect</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.fov"><code class="docutils literal notranslate"><span class="pre">CameraHandle.fov</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle.look_at"><code class="docutils literal notranslate"><span class="pre">CameraHandle.look_at</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.on_update"><code class="docutils literal notranslate"><span class="pre">CameraHandle.on_update()</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.position"><code class="docutils literal notranslate"><span class="pre">CameraHandle.position</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle.up_direction"><code class="docutils literal notranslate"><span class="pre">CameraHandle.up_direction</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">CameraHandle.update_timestamp</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">CameraHandle.wxyz</span></code></a></li>
 </ul>

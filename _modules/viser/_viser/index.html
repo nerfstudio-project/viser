@@ -166,6 +166,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../core/">Viser Core</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../infrastructure/">Infrastructure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../transforms/">Transforms</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -223,14 +224,17 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
+<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
 <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">override</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">infra</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
 <span class="kn">from</span> <span class="nn">._message_api</span> <span class="kn">import</span> <span class="n">MessageApi</span><span class="p">,</span> <span class="n">cast_vector</span>
 <span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SetCameraFovMessage</span><span class="p">,</span>
-    <span class="n">SetCameraOrientationMessage</span><span class="p">,</span>
+    <span class="n">SetCameraLookAtMessage</span><span class="p">,</span>
     <span class="n">SetCameraPositionMessage</span><span class="p">,</span>
+    <span class="n">SetCameraUpDirectionMessage</span><span class="p">,</span>
     <span class="n">ViewerCameraMessage</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">._scene_handle</span> <span class="kn">import</span> <span class="n">SceneNodeHandle</span><span class="p">,</span> <span class="n">_SceneNodeHandleState</span>
@@ -241,10 +245,12 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about a client&#39;s camera state.&quot;&quot;&quot;</span>
 
     <span class="n">connection</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span>
-    <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
-    <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+    <span class="n">wxyz</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">position</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
     <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">aspect</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">look_at</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
+    <span class="n">up_direction</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
     <span class="n">update_timestamp</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">camera_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
 
@@ -254,7 +260,7 @@
     <span class="n">_state</span><span class="p">:</span> <span class="n">_CameraHandleState</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Corresponds to the R in `P_world = [R | t] p_camera`. Synchronized</span>
 <span class="sd">        automatically when assigned.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
@@ -265,13 +271,23 @@
     <span class="c1"># - https://github.com/python/mypy/pull/11643</span>
     <span class="nd">@wxyz</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">wxyz_cast</span> <span class="o">=</span> <span class="n">cast_vector</span><span class="p">(</span><span class="n">wxyz</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">wxyz_cast</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetCameraOrientationMessage</span><span class="p">(</span><span class="n">wxyz_cast</span><span class="p">))</span>
+        <span class="n">R_world_camera</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wxyz</span><span class="p">))</span>
+        <span class="n">look_at</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="mf">0.0</span><span class="p">,</span>
+                <span class="mf">0.0</span><span class="p">,</span>
+                <span class="n">onp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">look_at</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">),</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">new_look_at</span> <span class="o">=</span> <span class="p">(</span><span class="n">R_world_camera</span> <span class="o">@</span> <span class="n">look_at</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">new_look_at</span>
+
+        <span class="n">up_direction</span> <span class="o">=</span> <span class="n">R_world_camera</span> <span class="o">@</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">up_direction</span> <span class="o">=</span> <span class="n">up_direction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wxyz</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Corresponds to the t in `P_world = [R | t] p_camera`. Synchronized</span>
 <span class="sd">        automatically when assigned.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
@@ -279,8 +295,12 @@
 
     <span class="nd">@position</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">position</span><span class="p">)</span> <span class="o">-</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
         <span class="n">position_cast</span> <span class="o">=</span> <span class="n">cast_vector</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position_cast</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetCameraPositionMessage</span><span class="p">(</span><span class="n">position_cast</span><span class="p">))</span>
 
@@ -307,6 +327,34 @@
     <span class="k">def</span> <span class="nf">update_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Look at point for the camera. Synchronized automatically when set.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span>
+
+    <span class="nd">@look_at</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">look_at</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">look_at_cast</span> <span class="o">=</span> <span class="n">cast_vector</span><span class="p">(</span><span class="n">look_at</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">look_at</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetCameraLookAtMessage</span><span class="p">(</span><span class="n">look_at_cast</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">up_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Up direction for the camera. Synchronized automatically when set.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">up_direction</span>
+
+    <span class="nd">@up_direction</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">up_direction</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">up_direction</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">up_direction_cast</span> <span class="o">=</span> <span class="n">cast_vector</span><span class="p">(</span><span class="n">up_direction</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">up_direction</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">up_direction</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">SetCameraUpDirectionMessage</span><span class="p">(</span><span class="n">up_direction_cast</span><span class="p">))</span>
 
 <div class="viewcode-block" id="CameraHandle.on_update"><a class="viewcode-back" href="../../../core/#viser.CameraHandle.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
@@ -373,10 +421,12 @@
                 <span class="n">_CameraHandleState</span><span class="p">(</span>
                     <span class="c1"># TODO: values are initially not valid.</span>
                     <span class="n">conn</span><span class="p">,</span>
-                    <span class="n">wxyz</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-                    <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+                    <span class="n">wxyz</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>
+                    <span class="n">position</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
                     <span class="n">fov</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                     <span class="n">aspect</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                    <span class="n">look_at</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                    <span class="n">up_direction</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
                     <span class="n">update_timestamp</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                     <span class="n">camera_cb</span><span class="o">=</span><span class="p">[],</span>
                 <span class="p">)</span>
@@ -387,22 +437,24 @@
             <span class="k">def</span> <span class="nf">handle_camera_message</span><span class="p">(</span>
                 <span class="n">client_id</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">ViewerCameraMessage</span>
             <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="n">client_id</span> <span class="o">==</span> <span class="n">client</span><span class="o">.</span><span class="n">client_id</span>
+                <span class="k">nonlocal</span> <span class="n">first</span>
 
+                <span class="k">assert</span> <span class="n">client_id</span> <span class="o">==</span> <span class="n">client</span><span class="o">.</span><span class="n">client_id</span>
                 <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="p">:</span>
                     <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">_CameraHandleState</span><span class="p">(</span>
                         <span class="n">conn</span><span class="p">,</span>
-                        <span class="n">message</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
-                        <span class="n">message</span><span class="o">.</span><span class="n">position</span><span class="p">,</span>
+                        <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">wxyz</span><span class="p">),</span>
+                        <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">position</span><span class="p">),</span>
                         <span class="n">message</span><span class="o">.</span><span class="n">fov</span><span class="p">,</span>
                         <span class="n">message</span><span class="o">.</span><span class="n">aspect</span><span class="p">,</span>
+                        <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">look_at</span><span class="p">),</span>
+                        <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">up_direction</span><span class="p">),</span>
                         <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
                         <span class="n">camera_cb</span><span class="o">=</span><span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_cb</span><span class="p">,</span>
                     <span class="p">)</span>
 
                 <span class="c1"># We consider a client to be connected after the first camera message is</span>
                 <span class="c1"># received.</span>
-                <span class="k">nonlocal</span> <span class="n">first</span>
                 <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
                     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
                         <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="p">[</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">client</span>
@@ -427,7 +479,14 @@
         <span class="c1"># Start the server.</span>
         <span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span> <span class="o">=</span> <span class="n">SceneNodeHandle</span><span class="p">(</span><span class="n">_SceneNodeHandleState</span><span class="p">(</span><span class="s2">&quot;/WorldAxes&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span> <span class="o">=</span> <span class="n">SceneNodeHandle</span><span class="p">(</span>
+            <span class="n">_SceneNodeHandleState</span><span class="p">(</span>
+                <span class="s2">&quot;/WorldAxes&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="n">wxyz</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
+                <span class="n">position</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="ViserServer.get_clients"><a class="viewcode-back" href="../../../core/#viser.ViserServer.get_clients">[docs]</a>    <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
