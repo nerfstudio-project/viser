@@ -360,11 +360,7 @@ class MessageApi(abc.ABC):
                 color=_encode_rgb(color),
             )
         )
-        return SceneNodeHandle(
-            _SceneNodeHandleState(
-                name, self, wxyz=onp.array([1.0, 0.0, 0.0, 0.0]), position=onp.zeros(3)
-            )
-        )
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
 
     def add_frame(
         self,
@@ -393,6 +389,11 @@ class MessageApi(abc.ABC):
             )
         )
 
+    def add_label(self, name: str, text: str) -> SceneNodeHandle:
+        """Add a 2D label to the scene."""
+        self._queue(_messages.LabelMessage(name, text))
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+
     def add_point_cloud(
         self,
         name: str,
@@ -409,11 +410,7 @@ class MessageApi(abc.ABC):
                 point_size=point_size,
             )
         )
-        return SceneNodeHandle(
-            _SceneNodeHandleState(
-                name, self, wxyz=onp.array([1.0, 0.0, 0.0, 0.0]), position=onp.zeros(3)
-            )
-        )
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
 
     def add_mesh(
         self,
@@ -436,11 +433,7 @@ class MessageApi(abc.ABC):
                 wireframe=wireframe,
             )
         )
-        return SceneNodeHandle(
-            _SceneNodeHandleState(
-                name, self, wxyz=onp.array([1.0, 0.0, 0.0, 0.0]), position=onp.zeros(3)
-            )
-        )
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
 
     def set_background_image(
         self,
@@ -476,11 +469,7 @@ class MessageApi(abc.ABC):
                 render_height=render_height,
             )
         )
-        return SceneNodeHandle(
-            _SceneNodeHandleState(
-                name, self, wxyz=onp.array([1.0, 0.0, 0.0, 0.0]), position=onp.zeros(3)
-            )
-        )
+        return SceneNodeHandle(_SceneNodeHandleState(name, self))
 
     def add_transform_controls(
         self,

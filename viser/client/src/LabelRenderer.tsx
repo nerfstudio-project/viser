@@ -5,6 +5,8 @@ import { ViewerContext } from ".";
 
 /** Component for rendering text labels on scene nodes. */
 export default function LabelRenderer() {
+  // TODO: we shouldn't need any of this.
+  // Instead, the <Html /> component from @react-three/drei should be used.
   const { wrapperRef } = React.useContext(ViewerContext)!;
   const labelRenderer = new CSS2DRenderer();
 

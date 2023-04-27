@@ -8,9 +8,10 @@ import { SceneNode } from "./SceneTree";
 import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
 import { Message } from "./WebsocketMessages";
 import { syncSearchParamServer } from "./SearchParamsUtils";
-import { PivotControls } from "@react-three/drei";
+import { Html, PivotControls } from "@react-three/drei";
 import { ViewerContext } from ".";
 import { useThree } from "@react-three/fiber";
+import styled from "@emotion/styled";
 
 /** Send message over websocket. */
 export function sendWebsocketMessage(
@@ -351,6 +352,47 @@ function useMessageHandler() {
 
         if (isTexture(oldBackground)) oldBackground.dispose();
         viewer.useGui.setState({ backgroundAvailable: true });
+        break;
+      }
+      // Add a 2D label.
+      case "LabelMessage": {
+        const Label = styled.span`
+          background-color: rgba(255, 255, 255, 0.85);
+          padding: 0.2em;
+          border-radius: 0.2em;
+          border: 1px solid #777;
+          color: #333;
+
+          &:before {
+            content: "";
+            position: absolute;
+            top: -1em;
+            left: 1em;
+            width: 0;
+            height: 0;
+            border-left: 1px solid #777;
+            box-sizing: border-box;
+            height: 0.8em;
+            box-shadow: 0 0 1em 0.1em rgba(255, 255, 255, 1);
+          }
+        `;
+        addSceneNodeMakeParents(
+          new SceneNode(message.name, (ref) => {
+            return (
+              <Html ref={ref}>
+                <div
+                  style={{
+                    width: "10em",
+                    fontSize: "0.8em",
+                    transform: "translateX(-1em) translateY(1em)",
+                  }}
+                >
+                  <Label>{message.text}</Label>
+                </div>
+              </Html>
+            );
+          })
+        );
         break;
       }
       // Add an image.
