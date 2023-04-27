@@ -73,7 +73,7 @@ def _(client: viser.ClientHandle) -> None:
         return button
 
     buttons = []
-    for i in range(5):
+    for i in range(num_buttons):
         buttons.append(make_frame(i))
 
 

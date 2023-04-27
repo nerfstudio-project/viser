@@ -27,7 +27,7 @@ from ._scene_handle import SceneNodeHandle, _SceneNodeHandleState
 class _CameraHandleState:
     """Information about a client's camera state."""
 
-    connection: infra.ClientConnection
+    client: ClientHandle
     wxyz: npt.NDArray[onp.float64]
     position: npt.NDArray[onp.float64]
     fov: float
@@ -35,12 +35,17 @@ class _CameraHandleState:
     look_at: npt.NDArray[onp.float64]
     up_direction: npt.NDArray[onp.float64]
     update_timestamp: float
-    camera_cb: List[Callable[[ClientHandle], None]]
+    camera_cb: List[Callable[[CameraHandle], None]]
 
 
 @dataclasses.dataclass
 class CameraHandle:
     _state: _CameraHandleState
+
+    @property
+    def client(self) -> ClientHandle:
+        """Client that this camera corresponds to."""
+        return self._state.client
 
     @property
     def wxyz(self) -> npt.NDArray[onp.float64]:
@@ -85,7 +90,7 @@ class CameraHandle:
         self._state.position = onp.asarray(position)
         self.look_at = onp.array(self._state.look_at) + offset
         self._state.update_timestamp = time.time()
-        self._state.connection.send(SetCameraPositionMessage(position_cast))
+        self._state.client._queue(SetCameraPositionMessage(position_cast))
 
     @property
     def fov(self) -> float:
@@ -98,7 +103,7 @@ class CameraHandle:
     def fov(self, fov: float) -> None:
         self._state.fov = fov
         self._state.update_timestamp = time.time()
-        self._state.connection.send(SetCameraFovMessage(fov))
+        self._state.client._queue(SetCameraFovMessage(fov))
 
     @property
     def aspect(self) -> float:
@@ -122,7 +127,7 @@ class CameraHandle:
         look_at_cast = cast_vector(look_at, 3)
         self._state.look_at = onp.asarray(look_at)
         self._state.update_timestamp = time.time()
-        self._state.connection.send(SetCameraLookAtMessage(look_at_cast))
+        self._state.client._queue(SetCameraLookAtMessage(look_at_cast))
 
     @property
     def up_direction(self) -> npt.NDArray[onp.float64]:
@@ -137,11 +142,11 @@ class CameraHandle:
         up_direction_cast = cast_vector(up_direction, 3)
         self._state.up_direction = onp.asarray(up_direction)
         self._state.update_timestamp = time.time()
-        self._state.connection.send(SetCameraUpDirectionMessage(up_direction_cast))
+        self._state.client._queue(SetCameraUpDirectionMessage(up_direction_cast))
 
     def on_update(
-        self, callback: Callable[[ClientHandle], None]
-    ) -> Callable[[ClientHandle], None]:
+        self, callback: Callable[[CameraHandle], None]
+    ) -> Callable[[CameraHandle], None]:
         """Attach a callback to run when a new camera message is received."""
         self._state.camera_cb.append(callback)
         return callback
@@ -207,7 +212,7 @@ class ViserServer(MessageApi):
             camera = CameraHandle(
                 _CameraHandleState(
                     # TODO: values are initially not valid.
-                    conn,
+                    client=None,  # type: ignore
                     wxyz=onp.zeros(4),
                     position=onp.zeros(3),
                     fov=0.0,
@@ -219,6 +224,7 @@ class ViserServer(MessageApi):
                 )
             )
             client = ClientHandle(conn.client_id, camera, _ClientHandleState(conn))
+            camera._state.client = client
             first = True
 
             def handle_camera_message(
@@ -229,7 +235,7 @@ class ViserServer(MessageApi):
                 assert client_id == client.client_id
                 with self._atomic_lock:
                     client.camera._state = _CameraHandleState(
-                        conn,
+                        client,
                         onp.array(message.wxyz),
                         onp.array(message.position),
                         message.fov,
@@ -249,8 +255,8 @@ class ViserServer(MessageApi):
                         cb(client)
                     first = False
 
-                for cb in client.camera._state.camera_cb:
-                    cb(client)
+                for camera_cb in client.camera._state.camera_cb:
+                    camera_cb(client.camera)
 
             conn.register_handler(ViewerCameraMessage, handle_camera_message)
 
