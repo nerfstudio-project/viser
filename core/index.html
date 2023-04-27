@@ -1017,6 +1017,17 @@ also be nested.</p>
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="viser.CameraHandle.client">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">client</span></span><a class="headerlink" href="#viser.CameraHandle.client" title="Permalink to this definition">#</a></dt>
+<dd><p>Client that this camera corresponds to.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle">ClientHandle</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="viser.CameraHandle.fov">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fov</span></span><a class="headerlink" href="#viser.CameraHandle.fov" title="Permalink to this definition">#</a></dt>
 <dd><p>Vertical field of view of the camera, in radians. Synchronized automatically
@@ -1041,14 +1052,14 @@ when assigned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.CameraHandle.on_update">
-<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle.on_update" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.CameraHandle" title="viser.CameraHandle"><span class="pre">CameraHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle.on_update" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a callback to run when a new camera message is received.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>callback</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle"><em>ClientHandle</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>callback</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.CameraHandle" title="viser.CameraHandle"><em>CameraHandle</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClientHandle" title="viser.ClientHandle">ClientHandle</a>], None]</p>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.CameraHandle" title="viser.CameraHandle">CameraHandle</a>], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1596,6 +1607,7 @@ automatically when assigned.</p>
 </li>
 <li><a class="reference internal" href="#viser.CameraHandle"><code class="docutils literal notranslate"><span class="pre">CameraHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.CameraHandle.aspect"><code class="docutils literal notranslate"><span class="pre">CameraHandle.aspect</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle.client"><code class="docutils literal notranslate"><span class="pre">CameraHandle.client</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.fov"><code class="docutils literal notranslate"><span class="pre">CameraHandle.fov</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.look_at"><code class="docutils literal notranslate"><span class="pre">CameraHandle.look_at</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.on_update"><code class="docutils literal notranslate"><span class="pre">CameraHandle.on_update()</span></code></a></li>
