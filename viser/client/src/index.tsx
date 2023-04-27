@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { Environment } from "@react-three/drei";
 import * as THREE from "three";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useThree } from "@react-three/fiber";
 
 import { CameraPrimitives, SynchronizedCameraControls } from "./CameraControls";
 import React, { MutableRefObject, useRef, useState } from "react";
@@ -43,7 +43,8 @@ export const ViewerContext = React.createContext<null | {
   globalCameras: MutableRefObject<CameraPrimitives>;
 }>(null);
 
-export const SceneContext = React.createContext<THREE.Scene | null>(null);
+export const SceneContext =
+  React.createContext<React.MutableRefObject<THREE.Scene | null> | null>(null);
 
 const SingleViewer = React.memo(function SingleViewer(props: {
   panelKey: number;
@@ -94,10 +95,11 @@ const SingleViewer = React.memo(function SingleViewer(props: {
   const scene = new THREE.Scene();
   return (
     <ViewerContext.Provider value={viewer}>
-      <SceneContext.Provider value={scene}>
+      <SceneContext.Provider value={React.useRef<THREE.Scene | null>(null)}>
         <Wrapper ref={viewer.wrapperRef}>
           <ControlPanel />
-          <Viewport camera={{ position: [3.0, 3.0, -3.0] }} scene={scene}>
+          <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
+            <SceneContextSetter />
             <WebsocketInterface />
             <LabelRenderer />
             <SynchronizedCameraControls />
@@ -109,6 +111,13 @@ const SingleViewer = React.memo(function SingleViewer(props: {
     </ViewerContext.Provider>
   );
 });
+
+/** Component for helping us set the scene reference. */
+function SceneContextSetter() {
+  const sceneRef = React.useContext(SceneContext);
+  sceneRef!.current = useThree((state) => state.scene);
+  return <></>;
+}
 
 function Root() {
   const globalCameras = useRef<CameraPrimitives>({
