@@ -92,7 +92,6 @@ const SingleViewer = React.memo(function SingleViewer(props: {
     wrapperRef: React.useRef<HTMLDivElement>(null),
     globalCameras: props.globalCameras,
   };
-  const scene = new THREE.Scene();
   return (
     <ViewerContext.Provider value={viewer}>
       <SceneContext.Provider value={React.useRef<THREE.Scene | null>(null)}>
