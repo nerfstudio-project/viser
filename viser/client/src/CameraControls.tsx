@@ -81,10 +81,10 @@ export function SynchronizedCameraControls() {
 
       globalCameras.cameraControlRefs.forEach((other) => {
         if (cameraControlRef === other) return;
-        const position = new THREE.Vector3();
-        const target = new THREE.Vector3();
-        cameraControlRef.current!.getPosition(position);
-        cameraControlRef.current!.getTarget(target);
+        const position = cameraControlRef.current!.getPosition(
+          new THREE.Vector3()
+        );
+        const target = cameraControlRef.current!.getTarget(new THREE.Vector3());
         other.current!.setLookAt(
           position.x,
           position.y,
@@ -93,10 +93,17 @@ export function SynchronizedCameraControls() {
           target.y,
           target.z
         );
+
+        const up = cameraControlRef.current!.camera.up;
+        other.current!.camera.up.set(up.x, up.y, up.z);
+        other.current!.updateCameraUp();
       });
 
       // Hack to prevent the cameraChangedCallback() functions of other camera controls from firing.
-      setTimeout(() => (globalCameras.synchronize = true), 1);
+      //
+      // TODO: there are definitely better ways of doing this. The easiest may be to track a separate copy of camera
+      // parameters, which we compare against at the start of cameraChangeCallback().
+      setTimeout(() => (globalCameras.synchronize = true), 0);
     }
   }, [viewer.globalCameras, camera, sendCamera]);
 
@@ -148,6 +155,13 @@ export function SynchronizedCameraControls() {
   }, [cameraChangedCallback, camera, viewer.globalCameras]);
 
   // Keyboard controls.
+  //
+  // TODO: (critical) we should move this to the root component. Currently if
+  // we add 100 panes and remove 99 of them, we'll still have 100 event
+  // listeners. This should also be combined with some notion notion of the
+  // currently active pane, and only apply keyboard controls to that pane.
+  //
+  // Currently all panes listen to events all the time.
   React.useEffect(() => {
     const KEYCODE = {
       W: 87,
@@ -183,6 +197,7 @@ export function SynchronizedCameraControls() {
     const upKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_UP, 20);
     const downKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_DOWN, 20);
     leftKey.addEventListener("holding", (event) => {
+      console.log(cameraControls);
       cameraControls.rotate(
         -0.1 * THREE.MathUtils.DEG2RAD * event!.deltaTime,
         0,
@@ -211,7 +226,9 @@ export function SynchronizedCameraControls() {
       );
     });
 
-    // It seems like we should be disposing some event listeners, but we don't get errors despite not doing this. Worth revisiting.
+    // TODO: we currently don't remove any event listeners. This is a bit messy
+    // because KeyboardKeyHold attaches listeners directly to the
+    // document/window; it's unclear if we can remove these.
   });
 
   return (
