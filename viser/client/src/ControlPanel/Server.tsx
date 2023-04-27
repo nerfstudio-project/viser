@@ -33,13 +33,14 @@ export default function ServerControls(props: {
           const wrapper = props.wrapperRef.current;
           if (wrapper === null) return;
 
-          if (!isTexture(scene!.background)) {
+          if (!isTexture(scene!.current!.background)) {
             // This should never happen.
             alert("No background to download!");
             return;
           }
 
-          const data = scene!.background.image;
+          const data = scene!.current!.background.image.src;
+          console.log(data);
           const link = document.createElement("a");
           link.download = "background";
           link.href = data;
