@@ -63,6 +63,9 @@ export function SceneNodeUI(props: {
       color: #333;
     `;
     labelDiv.textContent = sceneNode.name;
+
+    // TODO: the <Html /> component from @react-three/drei should be used instead of
+    // vanilla threejs.
     const label = new CSS2DObject(labelDiv);
     labelRef.current = label;
 

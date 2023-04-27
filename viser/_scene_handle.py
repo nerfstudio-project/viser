@@ -15,8 +15,12 @@ if TYPE_CHECKING:
 class _SceneNodeHandleState:
     name: str
     api: MessageApi
-    wxyz: onp.ndarray
-    position: onp.ndarray
+    wxyz: onp.ndarray = dataclasses.field(
+        default_factory=lambda: onp.array([1.0, 0.0, 0.0, 0.0])
+    )
+    position: onp.ndarray = dataclasses.field(
+        default_factory=lambda: onp.array([0.0, 0.0, 0.0])
+    )
     visible: bool = True
 
 

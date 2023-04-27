@@ -74,6 +74,14 @@ class FrameMessage(Message):
 
 
 @dataclasses.dataclass
+class LabelMessage(Message):
+    """Add a 2D label to the scene."""
+
+    name: str
+    text: str
+
+
+@dataclasses.dataclass
 class PointCloudMessage(Message):
     """Point cloud message.
 

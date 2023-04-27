@@ -36,6 +36,7 @@ def _(client: viser.ClientHandle) -> None:
 
         # Create a coordinate frame, and a button to move to that frame.
         frame = client.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
+        client.add_label(f"/frame_{i}/label", text=f"Frame {i}")
         button = client.add_gui_button(f"Frame {i}")
 
         @button.on_click

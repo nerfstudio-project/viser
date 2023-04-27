@@ -29,6 +29,11 @@ interface FrameMessage {
   axes_length: number;
   axes_radius: number;
 }
+interface LabelMessage {
+  type: "LabelMessage";
+  name: string;
+  text: string;
+}
 interface PointCloudMessage {
   type: "PointCloudMessage";
   name: string;
@@ -158,6 +163,7 @@ export type Message =
   | ViewerCameraMessage
   | CameraFrustumMessage
   | FrameMessage
+  | LabelMessage
   | PointCloudMessage
   | MeshMessage
   | TransformControlsMessage
