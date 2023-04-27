@@ -461,6 +461,23 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.add_label">
+<span class="sig-name descname"><span class="pre">add_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_label" title="Permalink to this definition">#</a></dt>
+<dd><p>Add a 2D label to the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>text</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#viser.SceneNodeHandle" title="viser.SceneNodeHandle">viser.SceneNodeHandle</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_mesh">
 <span class="sig-name descname"><span class="pre">add_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">onp.ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(90,</span> <span class="pre">200,</span> <span class="pre">255)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wireframe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_mesh" title="Permalink to this definition">#</a></dt>
 <dd><p>Add a mesh to the scene.</p>
@@ -859,6 +876,23 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <li><p><strong>render_height</strong> (<em>float</em>) – </p></li>
 <li><p><strong>format</strong> (<em>typing_extensions.Literal</em><em>[</em><em>png</em><em>, </em><em>jpeg</em><em>]</em>) – </p></li>
 <li><p><strong>quality</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#viser.SceneNodeHandle" title="viser.SceneNodeHandle">viser.SceneNodeHandle</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ClientHandle.add_label">
+<span class="sig-name descname"><span class="pre">add_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.add_label" title="Permalink to this definition">#</a></dt>
+<dd><p>Add a 2D label to the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>text</strong> (<em>str</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
@@ -1567,6 +1601,7 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_vector2"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_vector2()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_vector3"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_vector3()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_image"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_image()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.add_label"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_label()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_mesh"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_mesh()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_point_cloud"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_point_cloud()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_transform_controls"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_transform_controls()</span></code></a></li>
@@ -1594,6 +1629,7 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_vector2"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_vector2()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_vector3"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_vector3()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_image"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_image()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.add_label"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_label()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_mesh"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_mesh()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_point_cloud"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_point_cloud()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_transform_controls"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_transform_controls()</span></code></a></li>

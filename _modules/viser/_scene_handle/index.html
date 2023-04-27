@@ -232,8 +232,12 @@
 <span class="k">class</span> <span class="nc">_SceneNodeHandleState</span><span class="p">:</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">api</span><span class="p">:</span> <span class="n">MessageApi</span>
-    <span class="n">wxyz</span><span class="p">:</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span>
-    <span class="n">position</span><span class="p">:</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">wxyz</span><span class="p">:</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="n">position</span><span class="p">:</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span>
+        <span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+    <span class="p">)</span>
     <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
 
