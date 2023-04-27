@@ -17,7 +17,7 @@ def _(client: viser.ClientHandle) -> None:
 
     # This will run whenever we get a new camera!
     @client.camera.on_update
-    def _(_: viser.ClientHandle) -> None:
+    def _(_: viser.CameraHandle) -> None:
         print(f"New camera on client {client.client_id}!")
 
     # Show the client ID in the GUI.
