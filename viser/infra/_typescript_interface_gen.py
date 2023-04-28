@@ -42,6 +42,7 @@ def _get_ts_type(typ: Type) -> str:
         typ = typ.__origin__
     if typ in _raw_type_mapping:
         return _raw_type_mapping[typ]
+    if typ is type(None): return "null"
 
     assert False, f"Unsupported type: {typ}"
 
