@@ -13,6 +13,7 @@ _raw_type_mapping = {
     str: "string",
     onp.ndarray: "ArrayBuffer",
     Any: "any",
+    None: "null",
 }
 
 
