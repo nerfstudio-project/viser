@@ -20,7 +20,7 @@ export class SceneNode {
 
   constructor(
     public name: string,
-    public make_object: MakeObject,
+    public makeObject: MakeObject,
     public cleanup?: () => void
   ) {
     this.children = [];
@@ -192,8 +192,11 @@ export const SceneNodeThreeObject = React.memo(
     name: string;
     useSceneTree: UseSceneTree;
   }) {
-    const sceneNode = props.useSceneTree(
-      (state) => state.nodeFromName[props.name]
+    const makeObject = props.useSceneTree(
+      (state) => state.nodeFromName[props.name].makeObject
+    );
+    const cleanup = props.useSceneTree(
+      (state) => state.nodeFromName[props.name].cleanup
     );
     const setObj = props.useSceneTree((state) => state.setObj);
     const clearObj = props.useSceneTree((state) => state.clearObj);
@@ -203,13 +206,13 @@ export const SceneNodeThreeObject = React.memo(
       setObj(props.name, ref.current!);
       return () => {
         clearObj(props.name);
-        sceneNode.cleanup && sceneNode.cleanup();
+        cleanup && cleanup();
       };
     });
 
     return (
       <>
-        {sceneNode.make_object(ref)}
+        {makeObject(ref)}
         <SceneNodeUpdater
           name={props.name}
           objRef={ref}
