@@ -537,7 +537,7 @@
         <span class="n">use_taylor</span> <span class="o">=</span> <span class="n">theta_squared</span> <span class="o">&lt;</span> <span class="n">get_epsilon</span><span class="p">(</span><span class="n">tangent</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
         <span class="c1"># Shim to avoid NaNs in onp.where branches, which cause failures for</span>
-        <span class="c1"># reverse-mode AD.</span>
+        <span class="c1"># reverse-mode AD. (note: this is needed in JAX, but not in numpy)</span>
         <span class="n">safe_theta</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
             <span class="n">onp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
                 <span class="n">use_taylor</span><span class="p">,</span>
@@ -578,7 +578,7 @@
         <span class="n">use_taylor</span> <span class="o">=</span> <span class="n">norm_sq</span> <span class="o">&lt;</span> <span class="n">get_epsilon</span><span class="p">(</span><span class="n">norm_sq</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
         <span class="c1"># Shim to avoid NaNs in onp.where branches, which cause failures for</span>
-        <span class="c1"># reverse-mode AD.</span>
+        <span class="c1"># reverse-mode AD. (note: this is needed in JAX, but not in numpy)</span>
         <span class="n">norm_safe</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
             <span class="n">onp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
                 <span class="n">use_taylor</span><span class="p">,</span>

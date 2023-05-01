@@ -347,7 +347,7 @@
         <span class="n">use_taylor</span> <span class="o">=</span> <span class="n">theta_squared</span> <span class="o">&lt;</span> <span class="n">get_epsilon</span><span class="p">(</span><span class="n">theta_squared</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
         <span class="c1"># Shim to avoid NaNs in onp.where branches, which cause failures for</span>
-        <span class="c1"># reverse-mode AD.</span>
+        <span class="c1"># reverse-mode AD. (note: this is needed in JAX, but not in numpy)</span>
         <span class="n">theta_squared_safe</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span>
             <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">],</span>
             <span class="n">onp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
@@ -390,7 +390,7 @@
         <span class="n">skew_omega</span> <span class="o">=</span> <span class="n">_skew</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span>
 
         <span class="c1"># Shim to avoid NaNs in onp.where branches, which cause failures for</span>
-        <span class="c1"># reverse-mode AD.</span>
+        <span class="c1"># reverse-mode AD. (note: this is needed in JAX, but not in numpy)</span>
         <span class="n">theta_squared_safe</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
             <span class="n">use_taylor</span><span class="p">,</span>
             <span class="mf">1.0</span><span class="p">,</span>  <span class="c1"># Any non-zero value should do here.</span>
