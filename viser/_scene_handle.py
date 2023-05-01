@@ -43,12 +43,12 @@ class SceneNodeHandle:
         # Suppress mypy errors from asymmetric setters. These are fine in pyright.
         # - https://github.com/python/mypy/issues/3004
         # - https://github.com/python/mypy/pull/11643
-        if type(wxyz) is not tuple or wxyz != (1.0, 0.0, 0.0, 0.0):
-            out.wxyz = wxyz  # type: ignore
-        if type(position) is not tuple or position != (0.0, 0.0, 0.0):
-            out.position = position  # type: ignore
-        if visible is not True:
-            out.visible = visible
+        #
+        # These will often be redundant, but are needed currently if the scene node
+        # already exists. We can think about how to make them less so in the future.
+        out.wxyz = wxyz  # type: ignore
+        out.position = position  # type: ignore
+        out.visible = visible
         return out
 
     @property
