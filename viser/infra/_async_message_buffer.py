@@ -1,9 +1,7 @@
 import asyncio
 import dataclasses
 from asyncio.events import AbstractEventLoop
-
-# For Python 3.7 support.
-from typing import OrderedDict
+from typing import Dict
 
 from ._messages import Message
 
@@ -16,12 +14,8 @@ class AsyncMessageBuffer:
 
     event_loop: AbstractEventLoop
     message_counter: int = 0
-    message_from_id: OrderedDict[int, Message] = dataclasses.field(
-        default_factory=OrderedDict
-    )
-    id_from_redundancy_key: OrderedDict[str, int] = dataclasses.field(
-        default_factory=OrderedDict
-    )
+    message_from_id: Dict[int, Message] = dataclasses.field(default_factory=dict)
+    id_from_redundancy_key: Dict[str, int] = dataclasses.field(default_factory=dict)
     message_event: asyncio.Event = dataclasses.field(default_factory=asyncio.Event)
     message_lock: asyncio.Lock = dataclasses.field(default_factory=asyncio.Lock)
 
