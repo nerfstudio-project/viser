@@ -78,13 +78,12 @@ class CameraHandle:
     @position.setter
     def position(self, position: Tuple[float, float, float] | onp.ndarray) -> None:
         offset = onp.asarray(position) - onp.array(self.position)  # type: ignore
-
-        position_cast = cast_vector(position, 3)
-
         self._state.position = onp.asarray(position)
-        self.look_at = onp.array(self._look_at) + offset
+        self.look_at = onp.array(self.look_at) + offset
         self._state.update_timestamp = time.time()
-        self._state.client._queue(_messages.SetCameraPositionMessage(position_cast))
+        self._state.client._queue(
+            _messages.SetCameraPositionMessage(cast_vector(position, 3))
+        )
 
     @property
     def fov(self) -> float:
@@ -114,14 +113,15 @@ class CameraHandle:
     def look_at(self) -> npt.NDArray[onp.float64]:
         """Look at point for the camera. Synchronized automatically when set."""
         assert self._state.update_timestamp != 0.0
-        return self._look_at
+        return self._state.look_at
 
     @look_at.setter
     def look_at(self, look_at: Tuple[float, float, float] | onp.ndarray) -> None:
-        look_at_cast = cast_vector(look_at, 3)
-        self._look_at = onp.asarray(look_at)
+        self._state.look_at = onp.asarray(look_at)
         self._state.update_timestamp = time.time()
-        self._state.client._queue(_messages.SetCameraLookAtMessage(look_at_cast))
+        self._state.client._queue(
+            _messages.SetCameraLookAtMessage(cast_vector(look_at, 3))
+        )
 
     @property
     def up_direction(self) -> npt.NDArray[onp.float64]:
@@ -133,11 +133,10 @@ class CameraHandle:
     def up_direction(
         self, up_direction: Tuple[float, float, float] | onp.ndarray
     ) -> None:
-        up_direction_cast = cast_vector(up_direction, 3)
         self._state.up_direction = onp.asarray(up_direction)
         self._state.update_timestamp = time.time()
         self._state.client._queue(
-            _messages.SetCameraUpDirectionMessage(up_direction_cast)
+            _messages.SetCameraUpDirectionMessage(cast_vector(up_direction, 3))
         )
 
     def on_update(

@@ -320,7 +320,7 @@ class SO3(_base.SOBase):
         use_taylor = theta_squared < get_epsilon(tangent.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD. (note: this is needed in JAX, but not in numpy)
         safe_theta = onp.sqrt(
             onp.where(
                 use_taylor,
@@ -361,7 +361,7 @@ class SO3(_base.SOBase):
         use_taylor = norm_sq < get_epsilon(norm_sq.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD. (note: this is needed in JAX, but not in numpy)
         norm_safe = onp.sqrt(
             onp.where(
                 use_taylor,
