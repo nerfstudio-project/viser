@@ -123,7 +123,7 @@ class SE2(_base.SEBase[SO2]):
         use_taylor = onp.abs(theta) < get_epsilon(tangent.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD. (note: this is needed in JAX, but not in numpy)
         safe_theta = cast(
             onpt.NDArray[onp.floating],
             onp.where(
@@ -177,7 +177,7 @@ class SE2(_base.SEBase[SO2]):
         use_taylor = onp.abs(cos_minus_one) < get_epsilon(theta.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD. (note: this is needed in JAX, but not in numpy)
         safe_cos_minus_one = onp.where(
             use_taylor,
             1.0,  # Any non-zero value should do here.
