@@ -233,7 +233,7 @@
 <span class="linenos">12</span>
 <span class="linenos">13</span>    <span class="c1"># This will run whenever we get a new camera!</span>
 <span class="linenos">14</span>    <span class="nd">@client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">15</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">15</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">CameraHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">16</span>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;New camera on client </span><span class="si">{</span><span class="n">client</span><span class="o">.</span><span class="n">client_id</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
 <span class="linenos">17</span>
 <span class="linenos">18</span>    <span class="c1"># Show the client ID in the GUI.</span>

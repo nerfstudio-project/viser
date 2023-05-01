@@ -217,26 +217,20 @@
           <h1>Source code for viser._viser</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
 <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">override</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">infra</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">infra</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
 <span class="kn">from</span> <span class="nn">._message_api</span> <span class="kn">import</span> <span class="n">MessageApi</span><span class="p">,</span> <span class="n">cast_vector</span>
-<span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SetCameraFovMessage</span><span class="p">,</span>
-    <span class="n">SetCameraLookAtMessage</span><span class="p">,</span>
-    <span class="n">SetCameraPositionMessage</span><span class="p">,</span>
-    <span class="n">SetCameraUpDirectionMessage</span><span class="p">,</span>
-    <span class="n">ViewerCameraMessage</span><span class="p">,</span>
-<span class="p">)</span>
 <span class="kn">from</span> <span class="nn">._scene_handle</span> <span class="kn">import</span> <span class="n">SceneNodeHandle</span><span class="p">,</span> <span class="n">_SceneNodeHandleState</span>
 
 
@@ -305,9 +299,9 @@
         <span class="n">position_cast</span> <span class="o">=</span> <span class="n">cast_vector</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_look_at</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">SetCameraPositionMessage</span><span class="p">(</span><span class="n">position_cast</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraPositionMessage</span><span class="p">(</span><span class="n">position_cast</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">fov</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -320,7 +314,7 @@
     <span class="k">def</span> <span class="nf">fov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">fov</span> <span class="o">=</span> <span class="n">fov</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">SetCameraFovMessage</span><span class="p">(</span><span class="n">fov</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraFovMessage</span><span class="p">(</span><span class="n">fov</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -337,14 +331,14 @@
     <span class="k">def</span> <span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Look at point for the camera. Synchronized automatically when set.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_look_at</span>
 
     <span class="nd">@look_at</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">look_at</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">look_at_cast</span> <span class="o">=</span> <span class="n">cast_vector</span><span class="p">(</span><span class="n">look_at</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">look_at</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_look_at</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">look_at</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">SetCameraLookAtMessage</span><span class="p">(</span><span class="n">look_at_cast</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraLookAtMessage</span><span class="p">(</span><span class="n">look_at_cast</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">up_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
@@ -359,7 +353,9 @@
         <span class="n">up_direction_cast</span> <span class="o">=</span> <span class="n">cast_vector</span><span class="p">(</span><span class="n">up_direction</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">up_direction</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">up_direction</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">SetCameraUpDirectionMessage</span><span class="p">(</span><span class="n">up_direction_cast</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraUpDirectionMessage</span><span class="p">(</span><span class="n">up_direction_cast</span><span class="p">)</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="CameraHandle.on_update"><a class="viewcode-back" href="../../../core/#viser.CameraHandle.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
@@ -389,14 +385,40 @@
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ClientHandle.atomic"><a class="viewcode-back" href="../../../core/#viser.ClientHandle.atomic">[docs]</a>    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+    <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where:</span>
+<span class="sd">        - All outgoing messages are grouped and applied by clients atomically.</span>
+<span class="sd">        - No incoming messages, like camera or GUI state updates, are processed.</span>
+
+<span class="sd">        This can be helpful for things like animations, or when we want position and</span>
+<span class="sd">        orientation updates to happen synchronously.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If called multiple times in the same thread, we ignore inner calls.</span>
+        <span class="n">thread_id</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">thread_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span><span class="p">:</span>
+            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">MessageGroupStart</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="n">thread_id</span>
+            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">yield</span>
+
+        <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">MessageGroupEnd</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div></div>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">_ViserServerState</span><span class="p">:</span>
     <span class="n">connection</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Server</span>
-    <span class="n">connected_clients</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]</span>
-    <span class="n">client_lock</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span>
+    <span class="n">connected_clients</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">client_lock</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ViserServer"><a class="viewcode-back" href="../../../core/#viser.ViserServer">[docs]</a><span class="k">class</span> <span class="nc">ViserServer</span><span class="p">(</span><span class="n">MessageApi</span><span class="p">):</span>
@@ -418,7 +440,7 @@
         <span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
 
-        <span class="n">state</span> <span class="o">=</span> <span class="n">_ViserServerState</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="p">{},</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">())</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">_ViserServerState</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">state</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
@@ -440,17 +462,23 @@
                     <span class="n">camera_cb</span><span class="o">=</span><span class="p">[],</span>
                 <span class="p">)</span>
             <span class="p">)</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">ClientHandle</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span> <span class="n">camera</span><span class="p">,</span> <span class="n">_ClientHandleState</span><span class="p">(</span><span class="n">conn</span><span class="p">))</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">ClientHandle</span><span class="p">(</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
+                <span class="n">camera</span><span class="p">,</span>
+                <span class="n">_ClientHandleState</span><span class="p">(</span><span class="n">conn</span><span class="p">),</span>
+            <span class="p">)</span>
             <span class="n">camera</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
             <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="k">def</span> <span class="nf">handle_camera_message</span><span class="p">(</span>
-                <span class="n">client_id</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">ViewerCameraMessage</span>
+                <span class="n">client_id</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">ViewerCameraMessage</span>
             <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">nonlocal</span> <span class="n">first</span>
 
                 <span class="k">assert</span> <span class="n">client_id</span> <span class="o">==</span> <span class="n">client</span><span class="o">.</span><span class="n">client_id</span>
-                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="p">:</span>
+
+                <span class="c1"># Update the client&#39;s camera.</span>
+                <span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="p">:</span>
                     <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">_CameraHandleState</span><span class="p">(</span>
                         <span class="n">client</span><span class="p">,</span>
                         <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">wxyz</span><span class="p">),</span>
@@ -468,14 +496,14 @@
                 <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
                     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
                         <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="p">[</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">client</span>
-                    <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span>
-                        <span class="n">cb</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span>
+                            <span class="n">cb</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
                     <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
 
                 <span class="k">for</span> <span class="n">camera_cb</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_cb</span><span class="p">:</span>
                     <span class="n">camera_cb</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="p">)</span>
 
-            <span class="n">conn</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="n">ViewerCameraMessage</span><span class="p">,</span> <span class="n">handle_camera_message</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">ViewerCameraMessage</span><span class="p">,</span> <span class="n">handle_camera_message</span><span class="p">)</span>
 
         <span class="c1"># Remove clients when they disconnect.</span>
         <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_disconnect</span>
@@ -522,7 +550,56 @@
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ViserServer.atomic"><a class="viewcode-back" href="../../../core/#viser.ViserServer.atomic">[docs]</a>    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+    <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where:</span>
+<span class="sd">        - All outgoing messages are grouped and applied by clients atomically.</span>
+<span class="sd">        - No incoming messages, like camera or GUI state updates, are processed.</span>
+
+<span class="sd">        This can be helpful for things like animations, or when we want position and</span>
+<span class="sd">        orientation updates to happen synchronously.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Acquire the global atomic lock.</span>
+        <span class="c1"># If called multiple times in the same thread, we ignore inner calls.</span>
+        <span class="n">thread_id</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">thread_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span><span class="p">:</span>
+            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="n">thread_id</span>
+            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">ExitStack</span><span class="p">()</span> <span class="k">as</span> <span class="n">stack</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
+                <span class="c1"># Grab each client&#39;s atomic lock.</span>
+                <span class="c1"># We don&#39;t need to do anything with `client._locked_thread_id`.</span>
+                <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">enter_context</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">MessageGroupStart</span><span class="p">())</span>
+
+            <span class="c1"># There&#39;s a possible race condition here if we write something like:</span>
+            <span class="c1">#</span>
+            <span class="c1"># with server.atomic():</span>
+            <span class="c1">#     client.add_frame(...)</span>
+            <span class="c1">#</span>
+            <span class="c1"># - We enter the server&#39;s atomic() context.</span>
+            <span class="c1"># - The server pushes a MessageGroupStart() to the broadcast buffer.</span>
+            <span class="c1"># - The client pushes a frame message to the client buffer.</span>
+            <span class="c1"># - For whatever reason the client buffer is handled before the broadcast</span>
+            <span class="c1"># buffer.</span>
+            <span class="c1">#</span>
+            <span class="c1"># The likelihood of this seems exceedingly low, but I don&#39;t think we have</span>
+            <span class="c1"># any actual guarantees here. Likely worth revisiting but super lower</span>
+            <span class="c1"># priority.</span>
+            <span class="k">yield</span>
+
+        <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">MessageGroupEnd</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div></div>
 </pre></div>
         </article>
       </div>

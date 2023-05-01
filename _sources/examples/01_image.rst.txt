@@ -33,30 +33,18 @@ NeRFs), or images to render as 3D textures.
         )
 
         # Add main image.
-        server.add_frame(
-            "/main",
-            wxyz=(1.0, 0.0, 0.0, 0.0),
-            position=(2.0, 2.0, 0.0),
-            show_axes=False,
-        )
         server.add_image(
-            "/main/img",
+            "/img",
             iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
             4.0,
             4.0,
             format="png",
-        )
-
-        # Add constantly changing noise image.
-        server.add_frame(
-            "/main/noise",
             wxyz=(1.0, 0.0, 0.0, 0.0),
-            position=(0.0, 0.0, -1e-2),
-            show_axes=False,
+            position=(2.0, 2.0, 0.0),
         )
         while True:
             server.add_image(
-                "/main/noise/img",
+                "/noise",
                 onp.random.randint(
                     0,
                     256,
@@ -66,5 +54,7 @@ NeRFs), or images to render as 3D textures.
                 4.0,
                 4.0,
                 format="jpeg",
+                wxyz=(1.0, 0.0, 0.0, 0.0),
+                position=(2.0, 2.0, -1e-2),
             )
             time.sleep(0.2)

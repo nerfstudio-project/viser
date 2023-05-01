@@ -247,6 +247,27 @@
 
     <span class="n">_impl</span><span class="p">:</span> <span class="n">_SceneNodeHandleState</span>
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_make</span><span class="p">(</span>
+        <span class="n">api</span><span class="p">:</span> <span class="n">MessageApi</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SceneNodeHandle</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">SceneNodeHandle</span><span class="p">(</span><span class="n">_SceneNodeHandleState</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">api</span><span class="p">))</span>
+
+        <span class="c1"># Suppress mypy errors from asymmetric setters. These are fine in pyright.</span>
+        <span class="c1"># - https://github.com/python/mypy/issues/3004</span>
+        <span class="c1"># - https://github.com/python/mypy/pull/11643</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">wxyz</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">wxyz</span> <span class="o">!=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">wxyz</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">position</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">tuple</span> <span class="ow">or</span> <span class="n">position</span> <span class="o">!=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="n">visible</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">visible</span>
+        <span class="k">return</span> <span class="n">out</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Orientation of the scene node. This is the quaternion representation of the R</span>
