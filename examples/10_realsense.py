@@ -116,8 +116,8 @@ def main():
             # Visualize.
             viser_server.add_point_cloud(
                 "/realsense",
-                position=positions * 10.0,
-                color=colors,
+                points=positions * 10.0,
+                colors=colors,
                 point_size=0.1,
             )
 

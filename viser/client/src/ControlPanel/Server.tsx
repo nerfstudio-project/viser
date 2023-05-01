@@ -1,36 +1,38 @@
 import { button, LevaPanel, useControls, useCreateStore } from "leva";
 import Box from "@mui/material/Box";
 import { levaTheme } from "./Generated";
-import { UseGui } from "./GuiState";
-import { RefObject, useContext } from "react";
-import { SceneContext } from "..";
+import { useContext, useState } from "react";
+import { SceneContext, ViewerContext } from "..";
 import { isTexture } from "../WebsocketInterface";
+import { Stats } from "@react-three/drei";
 
-export default function ServerControls(props: {
-  useGui: UseGui;
-  wrapperRef: RefObject<HTMLDivElement>;
-}) {
+export default function ServerControls() {
+  const { panelKey, useGui, wrapperRef } = useContext(ViewerContext)!;
+
   const scene = useContext(SceneContext);
-  const server = props.useGui((state) => state.server);
-  const label = props.useGui((state) => state.label);
-  const backgroundAvailable = props.useGui(
-    (state) => state.backgroundAvailable
-  );
 
+  const [showStats, setShowStats] = useState(false);
+
+  const server = useGui((state) => state.server);
+  const label = useGui((state) => state.label);
+  const backgroundAvailable = useGui((state) => state.backgroundAvailable);
+
+  // Hack around leva bug: https://github.com/pmndrs/leva/issues/253
+  const idPrefix = panelKey.toString() + ":";
   const levaStore = useCreateStore();
   useControls(
     {
       Label: {
         value: label,
-        onChange: (value) => props.useGui.setState({ label: value }),
+        onChange: (value) => useGui.setState({ label: value }),
       },
       Websocket: {
         value: server,
-        onChange: (value) => props.useGui.setState({ server: value }),
+        onChange: (value) => useGui.setState({ server: value }),
       },
       "Download Background": button(
         () => {
-          const wrapper = props.wrapperRef.current;
+          const wrapper = wrapperRef.current;
           if (wrapper === null) return;
 
           if (!isTexture(scene!.current!.background)) {
@@ -50,6 +52,12 @@ export default function ServerControls(props: {
         },
         { disabled: !backgroundAvailable }
       ),
+      // Note: statistics are currently global, not per-pane.
+      [idPrefix + "Statistics"]: {
+        label: "Statistics",
+        value: showStats,
+        onChange: (value) => setShowStats(value),
+      },
     },
     { store: levaStore },
     [backgroundAvailable]
@@ -75,6 +83,7 @@ export default function ServerControls(props: {
         store={levaStore}
         hideCopyButton
       />
+      {showStats ? <Stats parent={wrapperRef} className="stats-panel" /> : null}
     </Box>
   );
 }

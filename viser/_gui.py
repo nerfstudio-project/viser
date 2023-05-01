@@ -55,10 +55,10 @@ class _GuiHandleState(Generic[T]):
     is_button: bool
     """Indicates a button element, which requires special handling."""
 
-    sync_cb: Optional[Callable[[ClientId, T], None]] = None
+    sync_cb: Optional[Callable[[ClientId, T], None]]
     """Callback for synchronizing inputs across clients."""
 
-    cleanup_cb: Optional[Callable[[], Any]] = None
+    cleanup_cb: Optional[Callable[[], Any]]
     """Function to call when GUI element is removed."""
 
     # Encoder: run on outgoing message values.
@@ -66,13 +66,11 @@ class _GuiHandleState(Generic[T]):
     #
     # This helps us handle cases where types used by Leva don't match what we want to
     # expose as a Python API.
-    #
-    # noqa because ruff --fix currently breaks these lines.
-    encoder: Callable[[T], Any] = lambda x: x  # noqa
-    decoder: Callable[[Any], T] = lambda x: x  # noqa
+    encoder: Callable[[T], Any]
+    decoder: Callable[[Any], T]
 
-    disabled: bool = False
-    visible: bool = False
+    disabled: bool
+    visible: bool
 
 
 @dataclasses.dataclass
@@ -136,6 +134,9 @@ class _GuiHandle(Generic[T]):
 
     @disabled.setter
     def disabled(self, disabled: bool) -> None:
+        if disabled == self.disabled:
+            return
+
         if self._impl.is_button:
             self._impl.leva_conf["settings"]["disabled"] = disabled
             self._impl.api._queue(
@@ -156,6 +157,9 @@ class _GuiHandle(Generic[T]):
 
     @visible.setter
     def visible(self, visible: bool) -> None:
+        if visible == self.visible:
+            return
+
         self._impl.api._queue(GuiSetVisibleMessage(self._impl.name, visible=visible))
         self._impl.visible = visible
 

@@ -18,7 +18,11 @@ export class SceneNode {
 
   public children: string[];
 
-  constructor(public name: string, public make_object: MakeObject) {
+  constructor(
+    public name: string,
+    public make_object: MakeObject,
+    public cleanup?: () => void
+  ) {
     this.children = [];
   }
 }
@@ -43,10 +47,9 @@ export interface SceneTreeActions extends SceneTreeState {
 
 // Create default scene tree state.
 // By default, the y-axis is up. Let's rotate everything so Z is up instead.
-const rootFrameTemplate: MakeObject = (ref) => (
-  <CoordinateFrame
+const makeRoot: MakeObject = (ref) => (
+  <group
     ref={ref}
-    show_axes={false}
     quaternion={new THREE.Quaternion().setFromEuler(
       new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
     )}
@@ -54,7 +57,7 @@ const rootFrameTemplate: MakeObject = (ref) => (
 );
 const rootAxesTemplate: MakeObject = (ref) => <CoordinateFrame ref={ref} />;
 
-const rootNodeTemplate = new SceneNode("", rootFrameTemplate);
+const rootNodeTemplate = new SceneNode("", makeRoot);
 const rootAxesNode = new SceneNode("/WorldAxes", rootAxesTemplate);
 rootNodeTemplate.children.push("/WorldAxes");
 
@@ -198,7 +201,10 @@ export const SceneNodeThreeObject = React.memo(
 
     React.useEffect(() => {
       setObj(props.name, ref.current!);
-      return () => clearObj(props.name);
+      return () => {
+        clearObj(props.name);
+        sceneNode.cleanup && sceneNode.cleanup();
+      };
     });
 
     return (

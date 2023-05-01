@@ -37,8 +37,7 @@ function ConnectionStatus(props: { useGui: UseGui }) {
 /** Root component for control panel. Parents a set of control tabs.
  * This could be refactored+cleaned up a lot! */
 export default function ControlPanel() {
-  const { useSceneTree, useGui, websocketRef, wrapperRef } =
-    useContext(ViewerContext)!;
+  const { useSceneTree, useGui, websocketRef } = useContext(ViewerContext)!;
 
   const ControlPanelWrapper = styled(Box)`
     box-sizing: border-box;
@@ -108,7 +107,7 @@ export default function ControlPanel() {
             </Box>
           ) : null}
           <Box component="div" sx={{ padding: "0.5em" }}>
-            <ServerControls useGui={useGui} wrapperRef={wrapperRef} />
+            <ServerControls />
           </Box>
           <TreeView
             sx={{

@@ -3,7 +3,7 @@
 # TLiteralString overload on `add_gui_select()` is waiting on PEP 675 support in mypy.
 # https://github.com/python/mypy/issues/12554
 #
-# In the meantime, it works great in Pyright/Pylance, which is more important.
+# In the meantime, it works great in Pyright/Pylance!
 
 from __future__ import annotations
 
@@ -37,7 +37,6 @@ from ._gui import GuiButtonHandle, GuiHandle, GuiSelectHandle, _GuiHandleState
 from ._scene_handle import (
     SceneNodeHandle,
     TransformControlsHandle,
-    _SceneNodeHandleState,
     _TransformControlsState,
 )
 
@@ -134,7 +133,9 @@ class MessageApi(abc.ABC):
         )
 
         self._gui_folder_labels: List[str] = []
+
         self._atomic_lock = threading.Lock()
+        self._locked_thread_id = -1
 
     @contextlib.contextmanager
     def gui_folder(self, label: str) -> Generator[None, None, None]:
@@ -144,7 +145,12 @@ class MessageApi(abc.ABC):
         yield
         assert self._gui_folder_labels.pop() == label
 
-    def add_gui_button(self, name: str) -> GuiButtonHandle:
+    def add_gui_button(
+        self,
+        name: str,
+        disabled: bool = False,
+        visible: bool = True,
+    ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
         it is clicked; to detect clicks, we can manually set it back to `False`.
 
@@ -154,30 +160,52 @@ class MessageApi(abc.ABC):
                 name,
                 initial_value=False,
                 leva_conf={"type": "BUTTON", "settings": {}},
+                disabled=disabled,
+                visible=visible,
                 is_button=True,
             )._impl
         )
 
-    def add_gui_checkbox(self, name: str, initial_value: bool) -> GuiHandle[bool]:
+    def add_gui_checkbox(
+        self,
+        name: str,
+        initial_value: bool,
+        disabled: bool = False,
+        visible: bool = True,
+    ) -> GuiHandle[bool]:
         """Add a checkbox to the GUI."""
         assert isinstance(initial_value, bool)
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={"value": initial_value, "label": name},
+            disabled=disabled,
+            visible=visible,
         )
 
-    def add_gui_text(self, name: str, initial_value: str) -> GuiHandle[str]:
+    def add_gui_text(
+        self,
+        name: str,
+        initial_value: str,
+        disabled: bool = False,
+        visible: bool = True,
+    ) -> GuiHandle[str]:
         """Add a text input to the GUI."""
         assert isinstance(initial_value, str)
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={"value": initial_value, "label": name},
+            disabled=disabled,
+            visible=visible,
         )
 
     def add_gui_number(
-        self, name: str, initial_value: IntOrFloat
+        self,
+        name: str,
+        initial_value: IntOrFloat,
+        disabled: bool = False,
+        visible: bool = True,
     ) -> GuiHandle[IntOrFloat]:
         """Add a number input to the GUI."""
         assert isinstance(initial_value, (int, float))
@@ -185,6 +213,8 @@ class MessageApi(abc.ABC):
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
             leva_conf={"value": initial_value, "label": name},
+            disabled=disabled,
+            visible=visible,
         )
 
     def add_gui_vector2(
@@ -192,6 +222,8 @@ class MessageApi(abc.ABC):
         name: str,
         initial_value: Tuple[float, float] | onp.ndarray,
         step: Optional[float] = None,
+        disabled: bool = False,
+        visible: bool = True,
     ) -> GuiHandle[Tuple[float, float]]:
         """Add a length-2 vector input to the GUI."""
         return self._add_gui_impl(
@@ -202,6 +234,8 @@ class MessageApi(abc.ABC):
                 "label": name,
                 "step": step,
             },
+            disabled=disabled,
+            visible=visible,
         )
 
     def add_gui_vector3(
@@ -210,6 +244,8 @@ class MessageApi(abc.ABC):
         initial_value: Tuple[float, float, float] | onp.ndarray,
         step: Optional[float] = None,
         lock: bool = False,
+        disabled: bool = False,
+        visible: bool = True,
     ) -> GuiHandle[Tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI."""
         return self._add_gui_impl(
@@ -221,6 +257,8 @@ class MessageApi(abc.ABC):
                 "step": step,
                 "lock": lock,
             },
+            disabled=disabled,
+            visible=visible,
         )
 
     # Resolve type of value to a Literal whenever possible.
@@ -230,6 +268,8 @@ class MessageApi(abc.ABC):
         name: str,
         options: List[TLiteralString],
         initial_value: Optional[TLiteralString] = None,
+        disabled: bool = False,
+        visible: bool = True,
     ) -> GuiSelectHandle[TLiteralString]:
         ...
 
@@ -239,6 +279,8 @@ class MessageApi(abc.ABC):
         name: str,
         options: List[str],
         initial_value: Optional[str] = None,
+        disabled: bool = False,
+        visible: bool = True,
     ) -> GuiSelectHandle[str]:
         ...
 
@@ -247,6 +289,8 @@ class MessageApi(abc.ABC):
         name: str,
         options: List[TLiteralString] | List[str],
         initial_value: Optional[TLiteralString | str] = None,
+        disabled: bool = False,
+        visible: bool = True,
     ) -> GuiSelectHandle[TLiteralString] | GuiSelectHandle[str]:
         """Add a dropdown to the GUI."""
         assert len(options) > 0
@@ -261,6 +305,8 @@ class MessageApi(abc.ABC):
                     "label": name,
                     "options": options,
                 },
+                disabled=disabled,
+                visible=visible,
             )._impl,
             options,  # type: ignore
         )
@@ -272,6 +318,8 @@ class MessageApi(abc.ABC):
         max: IntOrFloat,
         step: Optional[IntOrFloat],
         initial_value: IntOrFloat,
+        disabled: bool = False,
+        visible: bool = True,
     ) -> GuiHandle[IntOrFloat]:
         """Add a slider to the GUI."""
         assert max >= min
@@ -289,12 +337,16 @@ class MessageApi(abc.ABC):
                 "max": max,
                 "step": step,
             },
+            disabled=disabled,
+            visible=visible,
         )
 
     def add_gui_rgb(
         self,
         name: str,
         initial_value: Tuple[int, int, int],
+        disabled: bool = False,
+        visible: bool = True,
     ) -> GuiHandle[Tuple[int, int, int]]:
         """Add an RGB picker to the GUI."""
         return self._add_gui_impl(
@@ -308,6 +360,8 @@ class MessageApi(abc.ABC):
                 },
                 "label": name,
             },
+            disabled=disabled,
+            visible=visible,
             encoder=lambda rgb: dict(zip("rgb", rgb)),
             decoder=lambda rgb_dict: (rgb_dict["r"], rgb_dict["g"], rgb_dict["b"]),
         )
@@ -316,6 +370,8 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         initial_value: Tuple[int, int, int, int],
+        disabled: bool = False,
+        visible: bool = True,
     ) -> GuiHandle[Tuple[int, int, int, int]]:
         """Add an RGBA picker to the GUI."""
         return self._add_gui_impl(
@@ -330,6 +386,8 @@ class MessageApi(abc.ABC):
                 },
                 "label": name,
             },
+            disabled=disabled,
+            visible=visible,
             encoder=lambda rgba: dict(zip("rgba", rgba)),
             decoder=lambda rgba_dict: (
                 rgba_dict["r"],
@@ -348,8 +406,16 @@ class MessageApi(abc.ABC):
         color: Tuple[int, int, int]
         | Tuple[float, float, float]
         | onp.ndarray = (80, 120, 255),
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> SceneNodeHandle:
-        """Add a frustum to the scene. Useful for visualizing cameras."""
+        """Add a frustum to the scene. Useful for visualizing cameras.
+
+        Like all cameras in the viser Python API, frustums follow the OpenCV [+Z forward,
+        +X right, +Y down] convention.
+
+        fov is vertical in radians; aspect is width over height."""
         self._queue(
             _messages.CameraFrustumMessage(
                 name=name,
@@ -360,57 +426,63 @@ class MessageApi(abc.ABC):
                 color=_encode_rgb(color),
             )
         )
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
     def add_frame(
         self,
         name: str,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         show_axes: bool = True,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> SceneNodeHandle:
-        wxyz_tup = cast_vector(wxyz, length=4)
-        position_tup = cast_vector(position, length=3)
+        cast_vector(wxyz, length=4)
+        cast_vector(position, length=3)
         self._queue(
+            # TODO: remove wxyz and position from this message for consistency.
             _messages.FrameMessage(
                 name=name,
-                wxyz=wxyz_tup,
-                position=position_tup,
                 show_axes=show_axes,
                 axes_length=axes_length,
                 axes_radius=axes_radius,
             )
         )
-        return SceneNodeHandle(
-            _SceneNodeHandleState(
-                name, self, wxyz=onp.asarray(wxyz), position=onp.asarray(position)
-            )
-        )
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
-    def add_label(self, name: str, text: str) -> SceneNodeHandle:
+    def add_label(
+        self,
+        name: str,
+        text: str,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> SceneNodeHandle:
         """Add a 2D label to the scene."""
         self._queue(_messages.LabelMessage(name, text))
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
     def add_point_cloud(
         self,
         name: str,
-        position: onp.ndarray,
-        color: onp.ndarray,
+        points: onp.ndarray,
+        colors: onp.ndarray,
         point_size: float = 0.1,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> SceneNodeHandle:
         """Add a point cloud to the scene."""
         self._queue(
             _messages.PointCloudMessage(
                 name=name,
-                position=position.astype(onp.float32),
-                color=_colors_to_uint8(color),
+                points=points.astype(onp.float32),
+                colors=_colors_to_uint8(colors),
                 point_size=point_size,
             )
         )
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
     def add_mesh(
         self,
@@ -421,6 +493,9 @@ class MessageApi(abc.ABC):
         | Tuple[float, float, float]
         | onp.ndarray = (90, 200, 255),
         wireframe: bool = False,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> SceneNodeHandle:
         """Add a mesh to the scene."""
         self._queue(
@@ -433,7 +508,7 @@ class MessageApi(abc.ABC):
                 wireframe=wireframe,
             )
         )
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
     def set_background_image(
         self,
@@ -457,6 +532,9 @@ class MessageApi(abc.ABC):
         render_height: float,
         format: Literal["png", "jpeg"] = "jpeg",
         quality: Optional[int] = None,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> SceneNodeHandle:
         """Add a 2D image to the scene. Rendered in 3D."""
         media_type, base64_data = _encode_image_base64(image, format, quality=quality)
@@ -469,7 +547,7 @@ class MessageApi(abc.ABC):
                 render_height=render_height,
             )
         )
-        return SceneNodeHandle(_SceneNodeHandleState(name, self))
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
     def add_transform_controls(
         self,
@@ -490,6 +568,9 @@ class MessageApi(abc.ABC):
         ] = ((-1000.0, 1000.0), (-1000.0, 1000.0), (-1000.0, 1000.0)),
         depth_test: bool = True,
         opacity: float = 1.0,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> TransformControlsHandle:
         """Add a transform gizmo for interacting with the scene."""
         # That decorator factory would be really helpful here...
@@ -526,18 +607,13 @@ class MessageApi(abc.ABC):
             message_position.excluded_self_client = client_id
             self._queue(message_position)
 
-        state = _SceneNodeHandleState(
-            name=name,
-            api=self,
-            wxyz=onp.array([1.0, 0.0, 0.0, 0.0]),
-            position=onp.array([0.0, 0.0, 0.0]),
-        )
+        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible)
         state_aux = _TransformControlsState(
             last_updated=time.time(),
             update_cb=[],
             sync_cb=sync_cb,
         )
-        handle = TransformControlsHandle(state, state_aux)
+        handle = TransformControlsHandle(node_handle._impl, state_aux)
         self._handle_from_transform_controls_name[name] = handle
         return handle
 
@@ -599,6 +675,8 @@ class MessageApi(abc.ABC):
         name: str,
         initial_value: T,
         leva_conf: dict,
+        disabled: bool,
+        visible: bool,
         is_button: bool = False,
         encoder: Callable[[T], Any] = lambda x: x,
         decoder: Callable[[Any], T] = lambda x: x,
@@ -615,8 +693,12 @@ class MessageApi(abc.ABC):
             update_cb=[],
             leva_conf=leva_conf,
             is_button=is_button,
+            sync_cb=None,
+            cleanup_cb=None,
             encoder=encoder,
             decoder=decoder,
+            disabled=False,
+            visible=True,
         )
         self._handle_state_from_gui_name[name] = handle_state
         handle_state.cleanup_cb = lambda: self._handle_state_from_gui_name.pop(name)
@@ -641,23 +723,12 @@ class MessageApi(abc.ABC):
                 leva_conf=leva_conf,
             )
         )
-        return GuiHandle(handle_state)
+        handle = GuiHandle(handle_state)
 
-    @contextlib.contextmanager
-    def atomic(self) -> Generator[None, None, None]:
-        """Returns a context where:
-        - All outgoing messages are grouped and applied by clients atomically.
-        - No incoming messages, like camera or GUI state updates, are processed.
+        # Set the disabled/visible fields. These will queue messages under-the-hood.
+        if disabled:
+            handle.disabled = disabled
+        if visible:
+            handle.visible = visible
 
-        This can be helpful for things like animations, or when we want position and
-        orientation updates to happen synchronously.
-        """
-        # Lock is needed for thread-safety.
-        got_lock = self._atomic_lock.acquire(blocking=False)
-
-        self._queue(_messages.MessageGroupStart())
-        yield
-        self._queue(_messages.MessageGroupEnd())
-
-        if got_lock:
-            self._atomic_lock.release()
+        return handle
