@@ -66,8 +66,6 @@ class FrameMessage(Message):
     corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`."""
 
     name: str
-    wxyz: Tuple[float, float, float, float]
-    position: Tuple[float, float, float]
     show_axes: bool = True
     axes_length: float = 0.5
     axes_radius: float = 0.025
@@ -91,18 +89,18 @@ class PointCloudMessage(Message):
     range [0,255]."""
 
     name: str
-    position: onpt.NDArray[onp.float32]
-    color: onpt.NDArray[onp.uint8]
+    points: onpt.NDArray[onp.float32]
+    colors: onpt.NDArray[onp.uint8]
     point_size: float = 0.1
 
     def __post_init__(self):
         # Check shapes.
-        assert self.position.shape == self.color.shape
-        assert self.position.shape[-1] == 3
+        assert self.points.shape == self.colors.shape
+        assert self.points.shape[-1] == 3
 
         # Check dtypes.
-        assert self.position.dtype == onp.float32
-        assert self.color.dtype == onp.uint8
+        assert self.points.dtype == onp.float32
+        assert self.colors.dtype == onp.uint8
 
 
 @dataclasses.dataclass

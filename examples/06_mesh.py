@@ -27,7 +27,7 @@ server.add_frame(
     position=(0.0, 0.0, 0.0),
     show_axes=False,
 )
-server.add_mesh(name="/frame/dragon", vertices=vertices, faces=faces)
 
 while True:
-    time.sleep(10.0)
+    server.add_mesh(name="/frame/dragon", vertices=vertices, faces=faces)
+    time.sleep(0.01)

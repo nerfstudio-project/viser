@@ -71,8 +71,9 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
             def _(_) -> None:
                 nonlocal prev_timestep
                 current_timestep = gui_timestep.value
-                frame_nodes[current_timestep].visible = True
-                frame_nodes[prev_timestep].visible = False
+                with server.atomic():
+                    frame_nodes[current_timestep].visible = True
+                    frame_nodes[prev_timestep].visible = False
                 prev_timestep = current_timestep
 
             # Load in frames.
@@ -86,23 +87,48 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
             for i in tqdm(range(num_frames)):
                 frame = loader.get_frame(i)
                 position, color = frame.get_point_cloud(downsample_factor)
+
+                # Add base frame.
                 frame_nodes.append(server.add_frame(f"/frames/t{i}", show_axes=False))
+
+                # Place the point cloud in the frame.
                 server.add_point_cloud(
-                    name=f"/frames/t{i}/pcd", position=position, color=color, point_size=0.01
+                    name=f"/frames/t{i}/point_cloud",
+                    points=position,
+                    colors=color,
+                    point_size=0.01,
                 )
-                server.add_frame(
-                    f"/frames/t{i}/camera",
-                    wxyz=tf.SO3.from_matrix(frame.T_world_camera[:3, :3]).wxyz,
-                    position=frame.T_world_camera[:3, 3],
-                    axes_length=0.1,
-                    axes_radius=0.005,
-                )
-                server.add_camera_frustum(
-                    f"/frames/t{i}/camera/frustum",
-                    fov=2 * onp.arctan2(frame.rgb.shape[0] / 2, frame.K[0, 0]),
-                    aspect=frame.rgb.shape[1] / frame.rgb.shape[0],
+
+                # Place the frustum.
+                fov = 2 * onp.arctan2(frame.rgb.shape[0] / 2, frame.K[0, 0])
+                aspect = frame.rgb.shape[1] / frame.rgb.shape[0]
+                frustum = server.add_camera_frustum(
+                    f"/frames/t{i}/frustum",
+                    fov=fov,
+                    aspect=aspect,
                     scale=0.15,
                 )
+                frustum.wxyz = tf.SO3.from_matrix(frame.T_world_camera[:3, :3]).wxyz
+                frustum.position = frame.T_world_camera[:3, 3]
+
+                # Add some axes.
+                server.add_frame(
+                    f"/frames/t{i}/frustum/axes",
+                    axes_length=0.05,
+                    axes_radius=0.005,
+                )
+
+                # Show the captured RGB image, and shift + orient it into the frustum.
+                height = 0.15 * onp.tan(fov / 2.0) * 2.0
+                img = server.add_image(
+                    f"/frames/t{i}/frustum/image",
+                    image=frame.rgb[::downsample_factor, ::downsample_factor],
+                    render_width=height * aspect,
+                    render_height=height,
+                    format="png",
+                )
+                img.wxyz = tf.SO3.exp(onp.array([onp.pi, 0.0, 0.0])).wxyz
+                img.position = (0.0, 0.0, 0.15)
 
             # Hide all but the current frame.
             for i, frame_node in enumerate(frame_nodes):
