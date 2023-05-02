@@ -50,14 +50,14 @@ def main(
     )
 
     # Set the point cloud.
-    position = onp.array([points3d[p_id].xyz for p_id in points3d])
-    color = onp.array([points3d[p_id].rgb for p_id in points3d])
+    points = onp.array([points3d[p_id].xyz for p_id in points3d])
+    colors = onp.array([points3d[p_id].rgb for p_id in points3d])
     if max_points is not None:
-        onp.random.shuffle(position)
-        onp.random.shuffle(color)
-        position = position[:max_points]
-        color = color[:max_points]
-    server.add_point_cloud(name="/colmap/pcd", position=position, color=color, point_size=point_size)
+        onp.random.shuffle(points)
+        onp.random.shuffle(colors)
+        points = points[:max_points]
+        colors = colors[:max_points]
+    server.add_point_cloud(name="/colmap/pcd", points=points, colors=colors, point_size=point_size)
 
     # Interpret the images and cameras.
     img_ids = [im.id for im in images.values()]
