@@ -1,6 +1,6 @@
 """COLMAP visualizer
 
-Visualize COLMAP sparse reconstruction outputs.
+Visualize COLMAP sparse reconstruction outputs. To get demo data, see `./assets/download_colmap_garden.sh`.
 """
 
 import time
@@ -18,8 +18,8 @@ from viser.extras.colmap import read_cameras_binary, read_images_binary, read_po
 
 
 def main(
-    colmap_path: Path = Path(__file__).parent / "assets/colmap_sparse",
-    images_path: Path = Path(__file__).parent / "assets/colmap_images",
+    colmap_path: Path = Path(__file__).parent / "assets/colmap_garden/sparse/0",
+    images_path: Path = Path(__file__).parent / "assets/colmap_garden/images_8",
     downsample_factor: int = 2,
     max_points: Optional[int] = 100000,
     max_frames: Optional[int] = 100,
@@ -66,9 +66,8 @@ def main(
         img_ids = sorted(img_ids[:max_frames])
 
     for img_id in tqdm(img_ids):
-        cam = cameras[img_id]
-        assert cam.id == img_id
         img = images[img_id]
+        cam = cameras[img.camera_id]
 
         image_filename = images_path / img.name
         # if doesn't exist, then skip
