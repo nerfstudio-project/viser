@@ -99,15 +99,6 @@ function useMessageHandler() {
           new SceneNode(message.name, (ref) => (
             <CoordinateFrame
               ref={ref}
-              position={new THREE.Vector3().fromArray(message.position)}
-              quaternion={
-                new THREE.Quaternion(
-                  message.wxyz[1],
-                  message.wxyz[2],
-                  message.wxyz[3],
-                  message.wxyz[0]
-                )
-              }
               show_axes={message.show_axes}
               axes_length={message.axes_length}
               axes_radius={message.axes_radius}
@@ -129,9 +120,9 @@ function useMessageHandler() {
           "position",
           new THREE.Float32BufferAttribute(
             new Float32Array(
-              message.position.buffer.slice(
-                message.position.byteOffset,
-                message.position.byteOffset + message.position.byteLength
+              message.points.buffer.slice(
+                message.points.byteOffset,
+                message.points.byteOffset + message.points.byteLength
               )
             ),
             3
@@ -142,24 +133,34 @@ function useMessageHandler() {
         // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
         geometry.setAttribute(
           "color",
-          new THREE.Uint8BufferAttribute(message.color, 3, true)
+          new THREE.Uint8BufferAttribute(message.colors, 3, true)
         );
 
         addSceneNodeMakeParents(
-          new SceneNode(message.name, (ref) => (
-            <points
-              ref={ref}
-              geometry={geometry}
-              material={pointCloudMaterial}
-            />
-          ))
+          new SceneNode(
+            message.name,
+            (ref) => (
+              <points
+                ref={ref}
+                geometry={geometry}
+                material={pointCloudMaterial}
+              />
+            ),
+            () => {
+              // TODO: we can switch to the react-three-fiber <bufferGeometry />,
+              // <pointsMaterial />, etc components to avoid manual
+              // disposal.
+              geometry.dispose();
+              pointCloudMaterial.dispose();
+            }
+          )
         );
         break;
       }
+
       // Add mesh
       case "MeshMessage": {
         const geometry = new THREE.BufferGeometry();
-        // TODO(hangg): Should expose color as well.
         const material = new THREE.MeshStandardMaterial({
           color: message.color,
           wireframe: message.wireframe,
@@ -190,9 +191,17 @@ function useMessageHandler() {
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
         addSceneNodeMakeParents(
-          new SceneNode(message.name, (ref) => (
-            <mesh ref={ref} geometry={geometry} material={material} />
-          ))
+          new SceneNode(
+            message.name,
+            (ref) => <mesh ref={ref} geometry={geometry} material={material} />,
+            () => {
+              // TODO: we can switch to the react-three-fiber <bufferGeometry />,
+              // <meshStandardMaterial />, etc components to avoid manual
+              // disposal.
+              geometry.dispose();
+              material.dispose();
+            }
+          )
         );
         break;
       }
@@ -343,15 +352,19 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
-        const oldBackground = scene.background;
-        const texture = new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_data}`
-        );
-        scene.background = texture;
-        scene.background.encoding = THREE.sRGBEncoding;
+        new TextureLoader().load(
+          `data:${message.media_type};base64,${message.base64_data}`,
+          (texture) => {
+            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
+            texture.encoding = THREE.sRGBEncoding;
 
-        if (isTexture(oldBackground)) oldBackground.dispose();
-        viewer.useGui.setState({ backgroundAvailable: true });
+            const oldBackground = scene.background;
+            scene.background = texture;
+            if (isTexture(oldBackground)) oldBackground.dispose();
+
+            viewer.useGui.setState({ backgroundAvailable: true });
+          }
+        );
         break;
       }
       // Add a 2D label.
@@ -400,26 +413,29 @@ function useMessageHandler() {
         // It's important that we load the texture outside of the node
         // construction callback; this prevents flickering by ensuring that the
         // texture is ready before the scene tree updates.
-        const colorMap = new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_data}`
-        );
-        addSceneNodeMakeParents(
-          new SceneNode(message.name, (ref) => {
-            return (
-              <mesh ref={ref}>
-                <planeGeometry
-                  attach="geometry"
-                  args={[message.render_width, message.render_height]}
-                />
-                <meshBasicMaterial
-                  attach="material"
-                  transparent={true}
-                  side={THREE.DoubleSide}
-                  map={colorMap}
-                />
-              </mesh>
+        new TextureLoader().load(
+          `data:${message.media_type};base64,${message.base64_data}`,
+          (texture) => {
+            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
+            addSceneNodeMakeParents(
+              new SceneNode(message.name, (ref) => {
+                return (
+                  <mesh ref={ref}>
+                    <planeGeometry
+                      attach="geometry"
+                      args={[message.render_width, message.render_height]}
+                    />
+                    <meshBasicMaterial
+                      attach="material"
+                      transparent={true}
+                      side={THREE.DoubleSide}
+                      map={texture}
+                    />
+                  </mesh>
+                );
+              })
             );
-          })
+          }
         );
         break;
       }

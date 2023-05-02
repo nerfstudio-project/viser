@@ -130,7 +130,7 @@ class SE3(_base.SEBase[SO3]):
         use_taylor = theta_squared < get_epsilon(theta_squared.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD. (note: this is needed in JAX, but not in numpy)
         theta_squared_safe = cast(
             onpt.NDArray[onp.floating],
             onp.where(
@@ -173,7 +173,7 @@ class SE3(_base.SEBase[SO3]):
         skew_omega = _skew(omega)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD. (note: this is needed in JAX, but not in numpy)
         theta_squared_safe = onp.where(
             use_taylor,
             1.0,  # Any non-zero value should do here.

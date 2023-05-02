@@ -1,25 +1,19 @@
 from __future__ import annotations
 
+import contextlib
 import dataclasses
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, Generator, List, Tuple
 
 import numpy as onp
 import numpy.typing as npt
 from typing_extensions import override
 
-from . import infra
+from . import _messages, infra
 from . import transforms as tf
 from ._message_api import MessageApi, cast_vector
-from ._messages import (
-    SetCameraFovMessage,
-    SetCameraLookAtMessage,
-    SetCameraPositionMessage,
-    SetCameraUpDirectionMessage,
-    ViewerCameraMessage,
-)
 from ._scene_handle import SceneNodeHandle, _SceneNodeHandleState
 
 
@@ -84,13 +78,12 @@ class CameraHandle:
     @position.setter
     def position(self, position: Tuple[float, float, float] | onp.ndarray) -> None:
         offset = onp.asarray(position) - onp.array(self.position)  # type: ignore
-
-        position_cast = cast_vector(position, 3)
-
         self._state.position = onp.asarray(position)
-        self.look_at = onp.array(self._state.look_at) + offset
+        self.look_at = onp.array(self.look_at) + offset
         self._state.update_timestamp = time.time()
-        self._state.client._queue(SetCameraPositionMessage(position_cast))
+        self._state.client._queue(
+            _messages.SetCameraPositionMessage(cast_vector(position, 3))
+        )
 
     @property
     def fov(self) -> float:
@@ -103,7 +96,7 @@ class CameraHandle:
     def fov(self, fov: float) -> None:
         self._state.fov = fov
         self._state.update_timestamp = time.time()
-        self._state.client._queue(SetCameraFovMessage(fov))
+        self._state.client._queue(_messages.SetCameraFovMessage(fov))
 
     @property
     def aspect(self) -> float:
@@ -124,10 +117,11 @@ class CameraHandle:
 
     @look_at.setter
     def look_at(self, look_at: Tuple[float, float, float] | onp.ndarray) -> None:
-        look_at_cast = cast_vector(look_at, 3)
         self._state.look_at = onp.asarray(look_at)
         self._state.update_timestamp = time.time()
-        self._state.client._queue(SetCameraLookAtMessage(look_at_cast))
+        self._state.client._queue(
+            _messages.SetCameraLookAtMessage(cast_vector(look_at, 3))
+        )
 
     @property
     def up_direction(self) -> npt.NDArray[onp.float64]:
@@ -139,10 +133,11 @@ class CameraHandle:
     def up_direction(
         self, up_direction: Tuple[float, float, float] | onp.ndarray
     ) -> None:
-        up_direction_cast = cast_vector(up_direction, 3)
         self._state.up_direction = onp.asarray(up_direction)
         self._state.update_timestamp = time.time()
-        self._state.client._queue(SetCameraUpDirectionMessage(up_direction_cast))
+        self._state.client._queue(
+            _messages.SetCameraUpDirectionMessage(cast_vector(up_direction, 3))
+        )
 
     def on_update(
         self, callback: Callable[[CameraHandle], None]
@@ -174,12 +169,38 @@ class ClientHandle(MessageApi):
         """Define how the message API should send messages."""
         self._state.connection.send(message)
 
+    @contextlib.contextmanager
+    def atomic(self) -> Generator[None, None, None]:
+        """Returns a context where:
+        - All outgoing messages are grouped and applied by clients atomically.
+        - No incoming messages, like camera or GUI state updates, are processed.
+
+        This can be helpful for things like animations, or when we want position and
+        orientation updates to happen synchronously.
+        """
+        # If called multiple times in the same thread, we ignore inner calls.
+        thread_id = threading.get_ident()
+        if thread_id == self._locked_thread_id:
+            got_lock = False
+        else:
+            self._atomic_lock.acquire()
+            self._queue(_messages.MessageGroupStart())
+            self._locked_thread_id = thread_id
+            got_lock = True
+
+        yield
+
+        if got_lock:
+            self._queue(_messages.MessageGroupEnd())
+            self._atomic_lock.release()
+            self._locked_thread_id = -1
+
 
 @dataclasses.dataclass
 class _ViserServerState:
     connection: infra.Server
-    connected_clients: Dict[int, ClientHandle]
-    client_lock: threading.Lock
+    connected_clients: Dict[int, ClientHandle] = dataclasses.field(default_factory=dict)
+    client_lock: threading.Lock = dataclasses.field(default_factory=threading.Lock)
 
 
 class ViserServer(MessageApi):
@@ -201,7 +222,7 @@ class ViserServer(MessageApi):
         )
         super().__init__(server)
 
-        state = _ViserServerState(server, {}, threading.Lock())
+        state = _ViserServerState(server)
         self._state = state
         self._client_connect_cb: List[Callable[[ClientHandle], None]] = []
         self._client_disconnect_cb: List[Callable[[ClientHandle], None]] = []
@@ -223,17 +244,23 @@ class ViserServer(MessageApi):
                     camera_cb=[],
                 )
             )
-            client = ClientHandle(conn.client_id, camera, _ClientHandleState(conn))
+            client = ClientHandle(
+                conn.client_id,
+                camera,
+                _ClientHandleState(conn),
+            )
             camera._state.client = client
             first = True
 
             def handle_camera_message(
-                client_id: infra.ClientId, message: ViewerCameraMessage
+                client_id: infra.ClientId, message: _messages.ViewerCameraMessage
             ) -> None:
                 nonlocal first
 
                 assert client_id == client.client_id
-                with self._atomic_lock:
+
+                # Update the client's camera.
+                with client._atomic_lock:
                     client.camera._state = _CameraHandleState(
                         client,
                         onp.array(message.wxyz),
@@ -251,14 +278,14 @@ class ViserServer(MessageApi):
                 if first:
                     with self._state.client_lock:
                         state.connected_clients[conn.client_id] = client
-                    for cb in self._client_connect_cb:
-                        cb(client)
+                        for cb in self._client_connect_cb:
+                            cb(client)
                     first = False
 
                 for camera_cb in client.camera._state.camera_cb:
                     camera_cb(client.camera)
 
-            conn.register_handler(ViewerCameraMessage, handle_camera_message)
+            conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
 
         # Remove clients when they disconnect.
         @server.on_client_disconnect
@@ -306,3 +333,52 @@ class ViserServer(MessageApi):
     def _queue(self, message: infra.Message) -> None:
         """Define how the message API should send messages."""
         self._state.connection.broadcast(message)
+
+    @contextlib.contextmanager
+    def atomic(self) -> Generator[None, None, None]:
+        """Returns a context where:
+        - All outgoing messages are grouped and applied by clients atomically.
+        - No incoming messages, like camera or GUI state updates, are processed.
+
+        This can be helpful for things like animations, or when we want position and
+        orientation updates to happen synchronously.
+        """
+        # Acquire the global atomic lock.
+        # If called multiple times in the same thread, we ignore inner calls.
+        thread_id = threading.get_ident()
+        if thread_id == self._locked_thread_id:
+            got_lock = False
+        else:
+            self._atomic_lock.acquire()
+            self._locked_thread_id = thread_id
+            got_lock = True
+
+        with contextlib.ExitStack() as stack:
+            if got_lock:
+                # Grab each client's atomic lock.
+                # We don't need to do anything with `client._locked_thread_id`.
+                for client in self.get_clients().values():
+                    stack.enter_context(client._atomic_lock)
+
+                self._queue(_messages.MessageGroupStart())
+
+            # There's a possible race condition here if we write something like:
+            #
+            # with server.atomic():
+            #     client.add_frame(...)
+            #
+            # - We enter the server's atomic() context.
+            # - The server pushes a MessageGroupStart() to the broadcast buffer.
+            # - The client pushes a frame message to the client buffer.
+            # - For whatever reason the client buffer is handled before the broadcast
+            # buffer.
+            #
+            # The likelihood of this seems exceedingly low, but I don't think we have
+            # any actual guarantees here. Likely worth revisiting but super lower
+            # priority.
+            yield
+
+        if got_lock:
+            self._queue(_messages.MessageGroupEnd())
+            self._atomic_lock.release()
+            self._locked_thread_id = -1

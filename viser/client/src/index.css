@@ -25,3 +25,9 @@ code {
   height: 100%;
   overflow: hidden;
 }
+
+/* Styling for threejs stats panel. Switches position: fixed to position:
+ * absolute, to respect parent + for better multi-pane layout. */
+.stats-panel {
+  position: absolute !important;
+}

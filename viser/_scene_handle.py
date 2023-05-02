@@ -30,6 +30,27 @@ class SceneNodeHandle:
 
     _impl: _SceneNodeHandleState
 
+    @staticmethod
+    def _make(
+        api: MessageApi,
+        name: str,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray,
+        position: Tuple[float, float, float] | onp.ndarray,
+        visible: bool,
+    ) -> SceneNodeHandle:
+        out = SceneNodeHandle(_SceneNodeHandleState(name, api))
+
+        # Suppress mypy errors from asymmetric setters. These are fine in pyright.
+        # - https://github.com/python/mypy/issues/3004
+        # - https://github.com/python/mypy/pull/11643
+        #
+        # These will often be redundant, but are needed currently if the scene node
+        # already exists. We can think about how to make them less so in the future.
+        out.wxyz = wxyz  # type: ignore
+        out.position = position  # type: ignore
+        out.visible = visible
+        return out
+
     @property
     def wxyz(self) -> onp.ndarray:
         """Orientation of the scene node. This is the quaternion representation of the R

@@ -1,9 +1,7 @@
 import asyncio
 import dataclasses
 from asyncio.events import AbstractEventLoop
-
-# For Python 3.7 support.
-from typing import OrderedDict
+from typing import Dict
 
 from ._messages import Message
 
@@ -16,13 +14,10 @@ class AsyncMessageBuffer:
 
     event_loop: AbstractEventLoop
     message_counter: int = 0
-    message_from_id: OrderedDict[int, Message] = dataclasses.field(
-        default_factory=OrderedDict
-    )
-    id_from_redundancy_key: OrderedDict[str, int] = dataclasses.field(
-        default_factory=OrderedDict
-    )
+    message_from_id: Dict[int, Message] = dataclasses.field(default_factory=dict)
+    id_from_redundancy_key: Dict[str, int] = dataclasses.field(default_factory=dict)
     message_event: asyncio.Event = dataclasses.field(default_factory=asyncio.Event)
+    message_lock: asyncio.Lock = dataclasses.field(default_factory=asyncio.Lock)
 
     def push(self, message: Message) -> None:
         """Push a new message to our buffer, and remove old redundant ones."""
@@ -53,10 +48,10 @@ class AsyncMessageBuffer:
         last_sent_id = -1
         while True:
             # Wait until there are new messages available.
-            most_recent_message_id = next(reversed(self.message_from_id))
+            most_recent_message_id = self.message_counter - 1
             while last_sent_id >= most_recent_message_id:
                 await self.message_event.wait()
-                most_recent_message_id = next(reversed(self.message_from_id))
+                most_recent_message_id = self.message_counter - 1
 
             # Try to yield the next message ID. Note that messages can be culled before
             # they're sent.

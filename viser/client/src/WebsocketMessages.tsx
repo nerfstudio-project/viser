@@ -23,8 +23,6 @@ interface CameraFrustumMessage {
 interface FrameMessage {
   type: "FrameMessage";
   name: string;
-  wxyz: [number, number, number, number];
-  position: [number, number, number];
   show_axes: boolean;
   axes_length: number;
   axes_radius: number;
@@ -37,8 +35,8 @@ interface LabelMessage {
 interface PointCloudMessage {
   type: "PointCloudMessage";
   name: string;
-  position: ArrayBuffer;
-  color: ArrayBuffer;
+  points: ArrayBuffer;
+  colors: ArrayBuffer;
   point_size: number;
 }
 interface MeshMessage {

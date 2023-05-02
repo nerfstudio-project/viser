@@ -33,14 +33,17 @@ corresponding client automatically.
             When a button is clicked, we move the camera to the corresponding frame.
             """
 
+            rng = onp.random.default_rng(0)
+
             def make_frame(i: int) -> viser.GuiButtonHandle:
                 # Sample a random orientation + position.
-                wxyz = onp.random.normal(size=4)
+                wxyz = rng.normal(size=4)
                 wxyz /= onp.linalg.norm(wxyz)
-                position = onp.random.uniform(-3.0, 3.0, size=(3,))
+                position = rng.uniform(-3.0, 3.0, size=(3,))
 
                 # Create a coordinate frame, and a button to move to that frame.
                 frame = client.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
+                client.add_label(f"/frame_{i}/label", text=f"Frame {i}")
                 button = client.add_gui_button(f"Frame {i}")
 
                 @button.on_click
@@ -78,7 +81,7 @@ corresponding client automatically.
                 return button
 
             buttons = []
-            for i in range(5):
+            for i in range(num_buttons):
                 buttons.append(make_frame(i))
 
 

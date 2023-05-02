@@ -21,24 +21,16 @@ const origin_material = new THREE.MeshBasicMaterial({ color: 0xecec00 });
 export const CoordinateFrame = React.forwardRef<
   THREE.Group,
   {
-    quaternion?: THREE.Quaternion;
-    position?: THREE.Vector3;
     show_axes?: boolean;
     axes_length?: number;
     axes_radius?: number;
   }
 >(function CoordinateFrame(
-  {
-    quaternion = undefined,
-    position = undefined,
-    show_axes = true,
-    axes_length = 0.5,
-    axes_radius = 0.0125,
-  },
+  { show_axes = true, axes_length = 0.5, axes_radius = 0.0125 },
   ref
 ) {
   return (
-    <group ref={ref} quaternion={quaternion} position={position}>
+    <group ref={ref}>
       {show_axes && (
         <>
           <mesh
@@ -93,6 +85,12 @@ frustum_points.push(-1, -1, 1);
 frustum_points.push(1 + jitter(), -1 + jitter(), 1 + jitter());
 frustum_points.push(1, 1, 1);
 
+const updir_points: number[] = [];
+updir_points.push(-0.5, -1.2, 1);
+updir_points.push(0.5, -1.2, 1);
+updir_points.push(0.0, -1.5, 1);
+updir_points.push(-0.5, -1.2, 1);
+
 /** Helper for visualizing camera frustums.
 
 Note that:
@@ -121,7 +119,21 @@ export const CameraFrustum = React.forwardRef<
         <meshLineMaterial
           attach="material"
           transparent
-          lineWidth={0.02}
+          lineWidth={0.015}
+          color={props.color}
+        />
+      </mesh>
+      <mesh
+        raycast={MeshLineRaycast}
+        scale={new THREE.Vector3(props.scale * x, props.scale * y, props.scale)}
+      >
+        {/* @ts-ignore */}
+        <meshLine attach="geometry" points={updir_points} />
+        {/* @ts-ignore */}
+        <meshLineMaterial
+          attach="material"
+          transparent
+          lineWidth={0.015}
           color={props.color}
         />
       </mesh>
