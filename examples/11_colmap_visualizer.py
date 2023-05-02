@@ -23,6 +23,7 @@ def main(
     downsample_factor: int = 2,
     max_points: Optional[int] = 100000,
     max_frames: Optional[int] = 100,
+    point_size: float = 0.01,
 ) -> None:
     """Visualize COLMAP sparse reconstruction outputs.
 
@@ -31,6 +32,7 @@ def main(
         downsample_factor: Downsample factor for the images.
         max_points: Maximum number of points to visualize.
         max_frames: Maximum number of frames to visualize.
+        point_size: Size of the points.
     """
     server = viser.ViserServer()
 
@@ -55,7 +57,7 @@ def main(
         onp.random.shuffle(color)
         position = position[:max_points]
         color = color[:max_points]
-    server.add_point_cloud(name="/colmap/pcd", position=position, color=color, point_size=0.01)
+    server.add_point_cloud(name="/colmap/pcd", position=position, color=color, point_size=point_size)
 
     # Interpret the images and cameras.
     img_ids = [im.id for im in images.values()]
