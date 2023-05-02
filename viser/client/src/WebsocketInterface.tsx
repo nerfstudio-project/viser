@@ -352,15 +352,19 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
-        const oldBackground = scene.background;
-        const texture = new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_data}`
-        );
-        scene.background = texture;
-        scene.background.encoding = THREE.sRGBEncoding;
+        new TextureLoader().load(
+          `data:${message.media_type};base64,${message.base64_data}`,
+          (texture) => {
+            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
+            texture.encoding = THREE.sRGBEncoding;
 
-        if (isTexture(oldBackground)) oldBackground.dispose();
-        viewer.useGui.setState({ backgroundAvailable: true });
+            const oldBackground = scene.background;
+            scene.background = texture;
+            if (isTexture(oldBackground)) oldBackground.dispose();
+
+            viewer.useGui.setState({ backgroundAvailable: true });
+          }
+        );
         break;
       }
       // Add a 2D label.
@@ -409,26 +413,29 @@ function useMessageHandler() {
         // It's important that we load the texture outside of the node
         // construction callback; this prevents flickering by ensuring that the
         // texture is ready before the scene tree updates.
-        const colorMap = new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_data}`
-        );
-        addSceneNodeMakeParents(
-          new SceneNode(message.name, (ref) => {
-            return (
-              <mesh ref={ref}>
-                <planeGeometry
-                  attach="geometry"
-                  args={[message.render_width, message.render_height]}
-                />
-                <meshBasicMaterial
-                  attach="material"
-                  transparent={true}
-                  side={THREE.DoubleSide}
-                  map={colorMap}
-                />
-              </mesh>
+        new TextureLoader().load(
+          `data:${message.media_type};base64,${message.base64_data}`,
+          (texture) => {
+            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
+            addSceneNodeMakeParents(
+              new SceneNode(message.name, (ref) => {
+                return (
+                  <mesh ref={ref}>
+                    <planeGeometry
+                      attach="geometry"
+                      args={[message.render_width, message.render_height]}
+                    />
+                    <meshBasicMaterial
+                      attach="material"
+                      transparent={true}
+                      side={THREE.DoubleSide}
+                      map={texture}
+                    />
+                  </mesh>
+                );
+              })
             );
-          })
+          }
         );
         break;
       }
