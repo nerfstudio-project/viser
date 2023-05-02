@@ -493,11 +493,11 @@
                 <span class="c1"># We consider a client to be connected after the first camera message is</span>
                 <span class="c1"># received.</span>
                 <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                    <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
                     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
                         <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="p">[</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">client</span>
                         <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span>
                             <span class="n">cb</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
-                    <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
 
                 <span class="k">for</span> <span class="n">camera_cb</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_cb</span><span class="p">:</span>
                     <span class="n">camera_cb</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="p">)</span>
