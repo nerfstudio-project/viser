@@ -276,11 +276,11 @@ class ViserServer(MessageApi):
                 # We consider a client to be connected after the first camera message is
                 # received.
                 if first:
+                    first = False
                     with self._state.client_lock:
                         state.connected_clients[conn.client_id] = client
                         for cb in self._client_connect_cb:
                             cb(client)
-                    first = False
 
                 for camera_cb in client.camera._state.camera_cb:
                     camera_cb(client.camera)
