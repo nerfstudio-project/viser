@@ -76,7 +76,7 @@ def _encode_rgb(
 def _encode_image_base64(
     image: onp.ndarray,
     format: Literal["png", "jpeg"],
-    quality: Optional[int] = None,
+    jpeg_quality: Optional[int] = None,
 ) -> Tuple[Literal["image/png", "image/jpeg"], str]:
     media_type: Literal["image/png", "image/jpeg"]
     image = _colors_to_uint8(image)
@@ -90,7 +90,7 @@ def _encode_image_base64(
                 data_buffer,
                 image[..., :3],  # Strip alpha.
                 extension=".jpeg",
-                quality=75 if quality is None else quality,
+                jpeg_quality=75 if jpeg_quality is None else jpeg_quality,
             )
         else:
             assert_never(format)
@@ -406,6 +406,9 @@ class MessageApi(abc.ABC):
         color: Tuple[int, int, int]
         | Tuple[float, float, float]
         | onp.ndarray = (80, 120, 255),
+        image: Optional[onp.ndarray] = None,
+        format: Literal["png", "jpeg"] = "jpeg",
+        jpeg_quality: Optional[int] = None,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -416,6 +419,15 @@ class MessageApi(abc.ABC):
         +X right, +Y down] convention.
 
         fov is vertical in radians; aspect is width over height."""
+
+        if image is not None:
+            media_type, base64_data = _encode_image_base64(
+                image, format, jpeg_quality=jpeg_quality
+            )
+        else:
+            media_type = None
+            base64_data = None
+
         self._queue(
             _messages.CameraFrustumMessage(
                 name=name,
@@ -424,6 +436,8 @@ class MessageApi(abc.ABC):
                 scale=scale,
                 # (255, 255, 255) => 0xffffff, etc
                 color=_encode_rgb(color),
+                image_media_type=media_type,
+                image_base64_data=base64_data,
             )
         )
         return SceneNodeHandle._make(self, name, wxyz, position, visible)
@@ -514,10 +528,12 @@ class MessageApi(abc.ABC):
         self,
         image: onp.ndarray,
         format: Literal["png", "jpeg"] = "jpeg",
-        quality: Optional[int] = None,
+        jpeg_quality: Optional[int] = None,
     ) -> None:
         """Set a background image for the scene. Useful for NeRF visualization."""
-        media_type, base64_data = _encode_image_base64(image, format, quality=quality)
+        media_type, base64_data = _encode_image_base64(
+            image, format, jpeg_quality=jpeg_quality
+        )
         self._queue(
             _messages.BackgroundImageMessage(
                 media_type=media_type, base64_data=base64_data
@@ -531,13 +547,15 @@ class MessageApi(abc.ABC):
         render_width: float,
         render_height: float,
         format: Literal["png", "jpeg"] = "jpeg",
-        quality: Optional[int] = None,
+        jpeg_quality: Optional[int] = None,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> SceneNodeHandle:
         """Add a 2D image to the scene. Rendered in 3D."""
-        media_type, base64_data = _encode_image_base64(image, format, quality=quality)
+        media_type, base64_data = _encode_image_base64(
+            image, format, jpeg_quality=jpeg_quality
+        )
         self._queue(
             _messages.ImageMessage(
                 name=name,
