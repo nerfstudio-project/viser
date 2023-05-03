@@ -42,9 +42,7 @@ we get updates.
                         "# Points", min=1000, max=200_000, step=1000, initial_value=10_000
                     )
 
-            with server.gui_folder("Reset"):
-                gui_reset_scene = server.add_gui_button("Reset Scene")
-                gui_reset_camera = server.add_gui_button("Reset Camera")
+            gui_reset_scene = server.add_gui_button("Reset Scene")
 
             def draw_frame() -> None:
                 axis = gui_axis.value
@@ -90,12 +88,6 @@ we get updates.
 
                 draw_frame()
                 draw_points()
-
-            @gui_reset_camera.on_click
-            def _(_: viser.GuiButtonHandle) -> None:
-                """Reset the camera when the camera reset button is clicked."""
-                for id, client in server.get_clients().items():
-                    client.camera = client.camera
 
             # Finally, let's add the initial frame + point cloud and just loop infinitely. :)
             draw_frame()
