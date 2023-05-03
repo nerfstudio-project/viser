@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple
 
 import numpy as onp
 import numpy.typing as onpt
@@ -56,6 +56,8 @@ class CameraFrustumMessage(Message):
     aspect: float
     scale: float
     color: int
+    image_media_type: Optional[Literal["image/jpeg", "image/png"]]
+    image_base64_data: Optional[str]
 
 
 @dataclasses.dataclass
