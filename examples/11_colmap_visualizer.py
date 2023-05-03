@@ -14,7 +14,11 @@ from tqdm.auto import tqdm
 
 import viser
 import viser.transforms as tf
-from viser.extras.colmap import read_cameras_binary, read_images_binary, read_points3d_binary
+from viser.extras.colmap import (
+    read_cameras_binary,
+    read_images_binary,
+    read_points3d_binary,
+)
 
 
 def main(
@@ -57,7 +61,9 @@ def main(
         onp.random.shuffle(colors)
         points = points[:max_points]
         colors = colors[:max_points]
-    server.add_point_cloud(name="/colmap/pcd", points=points, colors=colors, point_size=point_size)
+    server.add_point_cloud(
+        name="/colmap/pcd", points=points, colors=colors, point_size=point_size
+    )
 
     # Interpret the images and cameras.
     img_ids = [im.id for im in images.values()]
@@ -69,45 +75,37 @@ def main(
         img = images[img_id]
         cam = cameras[img.camera_id]
 
+        # Skip images that don't exist.
         image_filename = images_path / img.name
-        # if doesn't exist, then skip
         if not image_filename.exists():
             continue
 
-        rot = img.qvec2rotmat()
-        t = img.tvec.reshape(3, 1)
-        bottom = onp.array([0, 0, 0, 1.]).reshape(1, 4)
-        w2c = onp.concatenate([onp.concatenate([rot, t], 1), bottom], 0)
-        c2w = onp.linalg.inv(w2c)
+        T_world_camera = tf.SE3.from_rotation_and_translation(
+            tf.SO3(img.qvec), img.tvec
+        ).inverse()
         server.add_frame(f"/colmap/frames/t{img_id}", show_axes=False)
         server.add_frame(
             f"/colmap/frames/t{img_id}/camera",
-            wxyz=tf.SO3.from_matrix(c2w[:3, :3]).wxyz,
-            position=c2w[:3, 3],
+            wxyz=T_world_camera.rotation().wxyz,
+            position=T_world_camera.translation(),
             axes_length=0.1,
             axes_radius=0.005,
         )
-        # TODO: set these properly
-        H, W = 480, 640
-        focallen = 500
-        aspect = W / H
-        scale = 0.15
-        server.add_camera_frustum(
-            f"/colmap/frames/t{img_id}/camera/frustum",
-            fov=2 * onp.arctan2(H / 2, focallen),
-            aspect=aspect,
-            scale=scale,
-        )
+
+        # For pinhole cameras, cam.params will be (fx, fy, cx, cy).
+        if cam.model != "PINHOLE":
+            print(f"Expected pinhole camera, but got {cam.model}")
+
+        H, W = cam.height, cam.width
+        fy = cam.params[1]
         image = iio.imread(image_filename)
         image = image[::downsample_factor, ::downsample_factor]
-        # flip verticle dimension
-        image = image[::-1, :]
-        server.add_image(
-            f"/colmap/frames/t{img_id}/camera/image",
-            image,
-            render_width=scale * aspect,
-            render_height=scale,
-            format="png",
+        server.add_camera_frustum(
+            f"/colmap/frames/t{img_id}/camera/frustum",
+            fov=2 * onp.arctan2(H / 2, fy),
+            aspect=W / H,
+            scale=0.15,
+            image=image,
         )
 
     while True:

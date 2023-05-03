@@ -19,6 +19,8 @@ interface CameraFrustumMessage {
   aspect: number;
   scale: number;
   color: number;
+  image_media_type: "image/jpeg" | "image/png" | null;
+  image_base64_data: string | null;
 }
 interface FrameMessage {
   type: "FrameMessage";

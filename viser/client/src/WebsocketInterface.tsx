@@ -207,16 +207,48 @@ function useMessageHandler() {
       }
       // Add a camera frustum.
       case "CameraFrustumMessage": {
+        const texture =
+          message.image_media_type &&
+          message.image_base64_data &&
+          new TextureLoader().load(
+            `data:${message.image_media_type};base64,${message.image_base64_data}`
+          );
+
+        const height = message.scale * Math.tan(message.fov / 2.0) * 2.0;
+
         addSceneNodeMakeParents(
-          new SceneNode(message.name, (ref) => (
-            <CameraFrustum
-              ref={ref}
-              fov={message.fov}
-              aspect={message.aspect}
-              scale={message.scale}
-              color={message.color}
-            ></CameraFrustum>
-          ))
+          new SceneNode(
+            message.name,
+            (ref) => (
+              <group ref={ref}>
+                <CameraFrustum
+                  fov={message.fov}
+                  aspect={message.aspect}
+                  scale={message.scale}
+                  color={message.color}
+                />
+                {texture && (
+                  <mesh
+                    ref={ref}
+                    position={[0.0, 0.0, message.scale]}
+                    rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
+                  >
+                    <planeGeometry
+                      attach="geometry"
+                      args={[message.aspect * height, height]}
+                    />
+                    <meshBasicMaterial
+                      attach="material"
+                      transparent={true}
+                      side={THREE.DoubleSide}
+                      map={texture}
+                    />
+                  </mesh>
+                )}
+              </group>
+            ),
+            () => texture && texture.dispose()
+          )
         );
         break;
       }
@@ -418,22 +450,28 @@ function useMessageHandler() {
           (texture) => {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             addSceneNodeMakeParents(
-              new SceneNode(message.name, (ref) => {
-                return (
-                  <mesh ref={ref}>
-                    <planeGeometry
-                      attach="geometry"
-                      args={[message.render_width, message.render_height]}
-                    />
-                    <meshBasicMaterial
-                      attach="material"
-                      transparent={true}
-                      side={THREE.DoubleSide}
-                      map={texture}
-                    />
-                  </mesh>
-                );
-              })
+              new SceneNode(
+                message.name,
+                (ref) => {
+                  return (
+                    <group ref={ref}>
+                      <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
+                        <planeGeometry
+                          attach="geometry"
+                          args={[message.render_width, message.render_height]}
+                        />
+                        <meshBasicMaterial
+                          attach="material"
+                          transparent={true}
+                          side={THREE.DoubleSide}
+                          map={texture}
+                        />
+                      </mesh>
+                    </group>
+                  );
+                },
+                () => texture.dispose()
+              )
             );
           }
         );

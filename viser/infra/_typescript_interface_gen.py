@@ -14,6 +14,7 @@ _raw_type_mapping = {
     onp.ndarray: "ArrayBuffer",
     Any: "any",
     None: "null",
+    type(None): "null",
 }
 
 
