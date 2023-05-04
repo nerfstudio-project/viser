@@ -39,22 +39,22 @@ def main(
     cameras = read_cameras_binary(colmap_path / "cameras.bin")
     images = read_images_binary(colmap_path / "images.bin")
     points3d = read_points3d_binary(colmap_path / "points3D.bin")
+    gui_reset_up = server.add_gui_button("Reset up direction")
+
+    @gui_reset_up.on_click
+    def _(_) -> None:
+        for client in server.get_clients().values():
+            client.camera.up_direction = tf.SO3(client.camera.wxyz) @ onp.array(
+                [0.0, -1.0, 0.0]
+            )
 
     gui_points = server.add_gui_slider(
-        "Max points", min=10, max=len(points3d), step=1, initial_value=10_000
+        "Max points", min=10, max=len(points3d), step=1, initial_value=50_000
     )
     gui_frames = server.add_gui_slider(
-        "Max frames", min=10, max=len(points3d), step=1, initial_value=100
+        "Max frames", min=10, max=len(images), step=1, initial_value=100
     )
-    gui_point_size = server.add_gui_number("Point size", initial_value=0.03)
-
-    # Set a world rotation to make the scene upright.
-    server.add_frame(
-        "/colmap",
-        wxyz=tf.SO3.exp(onp.array([-onp.pi / 2.0, 0.0, 0.0])).wxyz,
-        position=(0, 0, 0),
-        show_axes=False,
-    )
+    gui_point_size = server.add_gui_number("Point size", initial_value=0.05)
 
     def visualize_colmap() -> None:
         """Send all COLMAP elements to viser for visualization. This could be optimized

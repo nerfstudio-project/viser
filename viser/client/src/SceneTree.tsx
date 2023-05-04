@@ -245,10 +245,17 @@ function SceneNodeUpdater(props: {
   );
   React.useEffect(() => {
     if (props.objRef.current === null) return;
-    props.objRef.current.visible = visible;
-    orientation && props.objRef.current.rotation.setFromQuaternion(orientation);
+    const obj = props.objRef.current;
+    obj.visible = visible;
+
+    orientation && obj.rotation && obj.rotation.setFromQuaternion(orientation);
     position &&
-      props.objRef.current.position.set(position.x, position.y, position.z);
+      obj.position &&
+      obj.position.set(position.x, position.y, position.z);
+
+    // Update matrices if necessary. This is necessary for PivotControls.
+    if (!obj.matrixAutoUpdate) obj.updateMatrix();
+    if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
   }, [props, visible, orientation, position]);
   return <></>;
 }
