@@ -323,7 +323,7 @@ function useMessageHandler() {
           message.position[2]
         ).applyQuaternion(R_threeworld_world);
         camera.up.set(updir.x, updir.y, updir.z);
-        cameraControls.updateCameraUp();
+        cameraControls.applyCameraUp();
         break;
       }
       case "SetCameraPositionMessage": {
