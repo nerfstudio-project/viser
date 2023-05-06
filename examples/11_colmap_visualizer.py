@@ -49,10 +49,10 @@ def main(
             )
 
     gui_points = server.add_gui_slider(
-        "Max points", min=10, max=len(points3d), step=1, initial_value=50_000
+        "Max points", min=1, max=len(points3d), step=1, initial_value=min(len(points3d), 50_000)
     )
     gui_frames = server.add_gui_slider(
-        "Max frames", min=10, max=len(images), step=1, initial_value=100
+        "Max frames", min=1, max=len(images), step=1, initial_value=min(len(images), 100)
     )
     gui_point_size = server.add_gui_number("Point size", initial_value=0.05)
 
