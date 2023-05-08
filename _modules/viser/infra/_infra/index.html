@@ -304,12 +304,22 @@
 
 <span class="sd">    To send messages to an individual client, we can use `on_client_connect()` to</span>
 <span class="sd">    retrieve client handles.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        host: Host to bind server to.</span>
+<span class="sd">        port: Port to bind server to.</span>
+<span class="sd">        message_class: Base class for message types. Subclasses of the message type</span>
+<span class="sd">            should have unique names. This argument is optional currently, but will be</span>
+<span class="sd">            required in the future.</span>
+<span class="sd">        http_server_root: Path to root for HTTP server.</span>
+<span class="sd">        verbose: Toggle for print messages.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">message_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Message</span><span class="p">]</span> <span class="o">=</span> <span class="n">Message</span><span class="p">,</span>
         <span class="n">http_server_root</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
@@ -321,6 +331,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_host</span> <span class="o">=</span> <span class="n">host</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_message_class</span> <span class="o">=</span> <span class="n">message_class</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_http_server_root</span> <span class="o">=</span> <span class="n">http_server_root</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span>
 
@@ -331,9 +342,7 @@
         <span class="n">ready_sem</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">ready_sem</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
         <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
-            <span class="n">target</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_worker</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span><span class="p">,</span> <span class="n">ready_sem</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_http_server_root</span>
-            <span class="p">),</span>
+            <span class="n">target</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_worker</span><span class="p">(</span><span class="n">ready_sem</span><span class="p">),</span>
             <span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
@@ -359,13 +368,12 @@
 <span class="sd">        is culled using the value of `message.redundancy_key()`.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_background_worker</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">ready_sem</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">,</span>
-        <span class="n">http_server_root</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_background_worker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ready_sem</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span>
+        <span class="n">message_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_message_class</span>
+        <span class="n">http_server_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_http_server_root</span>
+
         <span class="c1"># Need to make a new event loop for notebook compatbility.</span>
         <span class="n">event_loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">new_event_loop</span><span class="p">()</span>
         <span class="n">asyncio</span><span class="o">.</span><span class="n">set_event_loop</span><span class="p">(</span><span class="n">event_loop</span><span class="p">)</span>
@@ -424,7 +432,7 @@
                         <span class="n">websocket</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">client_state</span><span class="o">.</span><span class="n">message_buffer</span>
                     <span class="p">),</span>
                     <span class="n">_broadcast_producer</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="p">),</span>
-                    <span class="n">_consumer</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">handle_incoming</span><span class="p">),</span>
+                    <span class="n">_consumer</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">handle_incoming</span><span class="p">,</span> <span class="n">message_class</span><span class="p">),</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="p">(</span>
                 <span class="n">websockets</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionClosedOK</span><span class="p">,</span>
@@ -535,6 +543,7 @@
 <span class="k">async</span> <span class="k">def</span> <span class="nf">_consumer</span><span class="p">(</span>
     <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span>
     <span class="n">handle_message</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span>
+    <span class="n">message_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Message</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinite loop waiting for and then handling incoming messages.&quot;&quot;&quot;</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
