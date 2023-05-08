@@ -331,5 +331,5 @@ async def _consumer(
     while True:
         raw = await websocket.recv()
         assert isinstance(raw, bytes)
-        message = Message.deserialize(raw)
+        message = message_class.deserialize(raw)
         handle_message(message)
