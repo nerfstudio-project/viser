@@ -116,6 +116,7 @@ class MeshMessage(Message):
     faces: onpt.NDArray[onp.uint32]
     color: int
     wireframe: bool
+    side: Literal["front", "back", "double"] = "front"
 
     def __post_init__(self):
         # Check shapes.

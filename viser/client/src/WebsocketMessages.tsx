@@ -48,6 +48,7 @@ interface MeshMessage {
   faces: ArrayBuffer;
   color: number;
   wireframe: boolean;
+  side: "front" | "back" | "double";
 }
 interface TransformControlsMessage {
   type: "TransformControlsMessage";

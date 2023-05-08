@@ -164,6 +164,7 @@ function useMessageHandler() {
         const material = new THREE.MeshStandardMaterial({
           color: message.color,
           wireframe: message.wireframe,
+          side: {"front": THREE.FrontSide, "back": THREE.BackSide, "double": THREE.DoubleSide}[message.side],
         });
         geometry.setAttribute(
           "position",
