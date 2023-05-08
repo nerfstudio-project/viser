@@ -5,7 +5,6 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see `./assets/
 
 import time
 from pathlib import Path
-from typing import Optional
 
 import imageio.v3 as iio
 import numpy as onp

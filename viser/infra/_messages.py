@@ -88,8 +88,8 @@ class Message(abc.ABC):
         assert isinstance(out, bytes)
         return out
 
-    @staticmethod
-    def deserialize(message: bytes) -> Message:
+    @classmethod
+    def deserialize(cls, message: bytes) -> Message:
         """Convert bytes into a Python Message object."""
         mapping = msgpack.unpackb(message)
 
@@ -98,9 +98,7 @@ class Message(abc.ABC):
         mapping = {
             k: tuple(v) if isinstance(v, list) else v for k, v in mapping.items()
         }
-        message_type = Message._subclass_from_type_string()[
-            cast(str, mapping.pop("type"))
-        ]
+        message_type = cls._subclass_from_type_string()[cast(str, mapping.pop("type"))]
         return message_type(**mapping)
 
     @classmethod

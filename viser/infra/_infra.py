@@ -86,12 +86,22 @@ class Server(MessageHandler):
 
     To send messages to an individual client, we can use `on_client_connect()` to
     retrieve client handles.
+
+    Args:
+        host: Host to bind server to.
+        port: Port to bind server to.
+        message_class: Base class for message types. Subclasses of the message type
+            should have unique names. This argument is optional currently, but will be
+            required in the future.
+        http_server_root: Path to root for HTTP server.
+        verbose: Toggle for print messages.
     """
 
     def __init__(
         self,
         host: str,
         port: int,
+        message_class: Type[Message] = Message,
         http_server_root: Optional[Path] = None,
         verbose: bool = True,
     ):
@@ -103,6 +113,7 @@ class Server(MessageHandler):
 
         self._host = host
         self._port = port
+        self._message_class = message_class
         self._http_server_root = http_server_root
         self._verbose = verbose
 
@@ -113,9 +124,7 @@ class Server(MessageHandler):
         ready_sem = threading.Semaphore(value=1)
         ready_sem.acquire()
         threading.Thread(
-            target=lambda: self._background_worker(
-                self._host, self._port, ready_sem, self._http_server_root
-            ),
+            target=lambda: self._background_worker(ready_sem),
             daemon=True,
         ).start()
 
@@ -141,13 +150,12 @@ class Server(MessageHandler):
         is culled using the value of `message.redundancy_key()`."""
         self._broadcast_buffer.push(message)
 
-    def _background_worker(
-        self,
-        host: str,
-        port: int,
-        ready_sem: threading.Semaphore,
-        http_server_root: Optional[Path],
-    ) -> None:
+    def _background_worker(self, ready_sem: threading.Semaphore) -> None:
+        host = self._host
+        port = self._port
+        message_class = self._message_class
+        http_server_root = self._http_server_root
+
         # Need to make a new event loop for notebook compatbility.
         event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(event_loop)
@@ -206,7 +214,7 @@ class Server(MessageHandler):
                         websocket, client_id, client_state.message_buffer
                     ),
                     _broadcast_producer(websocket, client_id, self._broadcast_buffer),
-                    _consumer(websocket, handle_incoming),
+                    _consumer(websocket, handle_incoming, message_class),
                 )
             except (
                 websockets.exceptions.ConnectionClosedOK,
@@ -317,6 +325,7 @@ async def _broadcast_producer(
 async def _consumer(
     websocket: WebSocketServerProtocol,
     handle_message: Callable[[Message], None],
+    message_class: Type[Message],
 ) -> None:
     """Infinite loop waiting for and then handling incoming messages."""
     while True:

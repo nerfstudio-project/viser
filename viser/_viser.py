@@ -218,6 +218,7 @@ class ViserServer(MessageApi):
         server = infra.Server(
             host=host,
             port=port,
+            message_class=_messages.Message,
             http_server_root=Path(__file__).absolute().parent / "client" / "build",
         )
         super().__init__(server)
