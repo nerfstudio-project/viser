@@ -507,6 +507,7 @@ class MessageApi(abc.ABC):
         | Tuple[float, float, float]
         | onp.ndarray = (90, 200, 255),
         wireframe: bool = False,
+        side: Literal["front", "back", "double"] = "front",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -520,6 +521,7 @@ class MessageApi(abc.ABC):
                 # (255, 255, 255) => 0xffffff, etc
                 color=_encode_rgb(color),
                 wireframe=wireframe,
+                side=side
             )
         )
         return SceneNodeHandle._make(self, name, wxyz, position, visible)
