@@ -8,19 +8,19 @@ import { immerable } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-// The covariance/contravariance rules are too complicated here, so we just
-// type the reference with any.
-export type MakeObject = (ref: React.RefObject<any>) => React.ReactNode;
+export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
+  ref: React.RefObject<T>
+) => React.ReactNode;
 
 /** Scenes will consist of nodes, which form a tree. */
-export class SceneNode {
+export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
   [immerable] = true;
 
   public children: string[];
 
   constructor(
     public name: string,
-    public makeObject: MakeObject,
+    public makeObject: MakeObject<T>,
     public cleanup?: () => void
   ) {
     this.children = [];
@@ -47,7 +47,7 @@ export interface SceneTreeActions extends SceneTreeState {
 
 // Create default scene tree state.
 // By default, the y-axis is up. Let's rotate everything so Z is up instead.
-const makeRoot: MakeObject = (ref) => (
+const makeRoot: MakeObject<THREE.Group> = (ref) => (
   <group
     ref={ref}
     quaternion={new THREE.Quaternion().setFromEuler(
@@ -55,10 +55,19 @@ const makeRoot: MakeObject = (ref) => (
     )}
   />
 );
-const rootAxesTemplate: MakeObject = (ref) => <CoordinateFrame ref={ref} />;
+const rootAxesTemplate: MakeObject<THREE.Group> = (ref) => (
+  <CoordinateFrame ref={ref} />
+);
 
-const rootNodeTemplate = new SceneNode("", makeRoot);
-const rootAxesNode = new SceneNode("/WorldAxes", rootAxesTemplate);
+const rootNodeTemplate = new SceneNode(
+  "",
+  makeRoot
+) as SceneNode<THREE.Object3D>;
+
+const rootAxesNode = new SceneNode(
+  "/WorldAxes",
+  rootAxesTemplate
+) as SceneNode<THREE.Object3D>;
 rootNodeTemplate.children.push("/WorldAxes");
 
 const cleanSceneTreeState = {
@@ -187,7 +196,7 @@ function SceneNodeThreeChildren(props: {
 
 /** Component containing the three.js object and children for a particular scene node. */
 export const SceneNodeThreeObject = React.memo(
-  // This memo is very important for big scenes!!
+  // ^This memo is very important for big scenes!!
   function SceneNodeThreeObject(props: {
     name: string;
     useSceneTree: UseSceneTree;

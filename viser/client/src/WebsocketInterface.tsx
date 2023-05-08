@@ -77,12 +77,12 @@ function useMessageHandler() {
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
-  function addSceneNodeMakeParents(node: SceneNode) {
+  function addSceneNodeMakeParents(node: SceneNode<any>) {
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
     const parent_name = node.name.split("/").slice(0, -1).join("/");
     if (!(parent_name in nodeFromName)) {
       addSceneNodeMakeParents(
-        new SceneNode(parent_name, (ref) => (
+        new SceneNode<THREE.Group>(parent_name, (ref) => (
           <CoordinateFrame ref={ref} show_axes={false} />
         ))
       );
@@ -96,7 +96,7 @@ function useMessageHandler() {
       // Add a coordinate frame.
       case "FrameMessage": {
         addSceneNodeMakeParents(
-          new SceneNode(message.name, (ref) => (
+          new SceneNode<THREE.Group>(message.name, (ref) => (
             <CoordinateFrame
               ref={ref}
               show_axes={message.show_axes}
@@ -137,7 +137,7 @@ function useMessageHandler() {
         );
 
         addSceneNodeMakeParents(
-          new SceneNode(
+          new SceneNode<THREE.Points>(
             message.name,
             (ref) => (
               <points
@@ -192,7 +192,7 @@ function useMessageHandler() {
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
         addSceneNodeMakeParents(
-          new SceneNode(
+          new SceneNode<THREE.Mesh>(
             message.name,
             (ref) => <mesh ref={ref} geometry={geometry} material={material} />,
             () => {
@@ -218,7 +218,7 @@ function useMessageHandler() {
         const height = message.scale * Math.tan(message.fov / 2.0) * 2.0;
 
         addSceneNodeMakeParents(
-          new SceneNode(
+          new SceneNode<THREE.Group>(
             message.name,
             (ref) => (
               <group ref={ref}>
@@ -230,7 +230,6 @@ function useMessageHandler() {
                 />
                 {texture && (
                   <mesh
-                    ref={ref}
                     position={[0.0, 0.0, message.scale]}
                     rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
                   >
@@ -260,7 +259,7 @@ function useMessageHandler() {
           25
         );
         addSceneNodeMakeParents(
-          new SceneNode(message.name, (ref) => (
+          new SceneNode<THREE.Group>(message.name, (ref) => (
             <PivotControls
               ref={ref}
               scale={message.scale}
@@ -423,19 +422,22 @@ function useMessageHandler() {
           }
         `;
         addSceneNodeMakeParents(
-          new SceneNode(message.name, (ref) => {
+          new SceneNode<THREE.Group>(message.name, (ref) => {
+            // We wrap with <group /> because Html doesn't implement THREE.Object3D.
             return (
-              <Html ref={ref}>
-                <div
-                  style={{
-                    width: "10em",
-                    fontSize: "0.8em",
-                    transform: "translateX(-1em) translateY(1em)",
-                  }}
-                >
-                  <Label>{message.text}</Label>
-                </div>
-              </Html>
+              <group ref={ref}>
+                <Html>
+                  <div
+                    style={{
+                      width: "10em",
+                      fontSize: "0.8em",
+                      transform: "translateX(-1em) translateY(1em)",
+                    }}
+                  >
+                    <Label>{message.text}</Label>
+                  </div>
+                </Html>
+              </group>
             );
           })
         );
@@ -451,7 +453,7 @@ function useMessageHandler() {
           (texture) => {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             addSceneNodeMakeParents(
-              new SceneNode(
+              new SceneNode<THREE.Group>(
                 message.name,
                 (ref) => {
                   return (
