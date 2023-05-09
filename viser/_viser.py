@@ -321,18 +321,19 @@ class ViserServer(MessageApi):
     ) -> Callable[[ClientHandle], None]:
         """Attach a callback to run for newly connected clients."""
         with self._state.client_lock:
+            clients = self._state.connected_clients.copy().values()
             self._client_connect_cb.append(cb)
 
-            # Trigger callback on any currently-connected clients.
-            # If we have:
-            #
-            #     server = viser.ViserServer()
-            #     server.on_client_connect(...)
-            #
-            # This makes sure that the the callback is applied to any clients that
-            # connect between the two lines.
-            for client in self.get_clients.values():
-                cb(client)
+        # Trigger callback on any already-connected clients.
+        # If we have:
+        #
+        #     server = viser.ViserServer()
+        #     server.on_client_connect(...)
+        #
+        # This makes sure that the the callback is applied to any clients that
+        # connect between the two lines.
+        for client in clients:
+            cb(client)
         return cb
 
     def on_client_disconnect(
