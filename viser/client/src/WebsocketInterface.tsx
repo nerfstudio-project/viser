@@ -164,7 +164,11 @@ function useMessageHandler() {
         const material = new THREE.MeshStandardMaterial({
           color: message.color,
           wireframe: message.wireframe,
-          side: {"front": THREE.FrontSide, "back": THREE.BackSide, "double": THREE.DoubleSide}[message.side],
+          side: {
+            front: THREE.FrontSide,
+            back: THREE.BackSide,
+            double: THREE.DoubleSide,
+          }[message.side],
         });
         geometry.setAttribute(
           "position",
@@ -575,7 +579,13 @@ export default function WebsocketInterface() {
 
       ws = new WebSocket(server);
 
+      // Timeout is necessary when we're connecting to an SSH/tunneled port.
+      const retryTimeout = setTimeout(() => {
+        ws && ws.close();
+      }, 500);
+
       ws.onopen = () => {
+        clearTimeout(retryTimeout);
         console.log("Connected!" + server);
         viewer.websocketRef.current = ws;
         viewer.useGui.setState({ websocketConnected: true });
