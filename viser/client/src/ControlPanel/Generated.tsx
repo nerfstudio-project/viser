@@ -7,7 +7,6 @@ import {
   makeThrottledMessageSender,
   sendWebsocketMessage,
 } from "../WebsocketInterface";
-import { SceneContext } from "..";
 import { ViewerContext } from "..";
 
 export const levaTheme: LevaCustomTheme = {
@@ -187,7 +186,7 @@ export default function GeneratedControls(props: {
       }, 10);
 
       // Set Leva control.
-      set({ [name]: value });
+      set({ [name + "-" + panelKey]: value });
     });
   }, [guiSetQueue, applyGuiSetQueue, set]);
 
