@@ -323,8 +323,8 @@ class MessageApi(abc.ABC):
     ) -> GuiHandle[IntOrFloat]:
         """Add a slider to the GUI."""
         assert max >= min
-        if step is not None:
-            assert step <= (max - min)
+        if step is not None and step > max - min:
+            step = max - min
         assert max >= initial_value >= min
 
         return self._add_gui_impl(
@@ -723,6 +723,13 @@ class MessageApi(abc.ABC):
         self._handle_state_from_gui_name[name] = handle_state
         handle_state.cleanup_cb = lambda: self._handle_state_from_gui_name.pop(name)
 
+        self._queue(
+            _messages.GuiAddMessage(
+                name=name,
+                folder_labels=tuple(self._gui_folder_labels),
+                leva_conf=leva_conf,
+            )
+        )
         # For broadcasted GUI handles, we should synchronize all clients.
         # This will be a no-op for client handles.
         if not is_button:
@@ -736,13 +743,10 @@ class MessageApi(abc.ABC):
 
             handle_state.sync_cb = sync_other_clients
 
-        self._queue(
-            _messages.GuiAddMessage(
-                name=name,
-                folder_labels=tuple(self._gui_folder_labels),
-                leva_conf=leva_conf,
-            )
-        )
+            # Explicitly set the initial value of the GUI element. This is needed when
+            # the GUI element already exists on the front-end's Leva store.
+            self._queue(_messages.GuiSetValueMessage(name=name, value=initial_value))
+
         handle = GuiHandle(handle_state)
 
         # Set the disabled/visible fields. These will queue messages under-the-hood.

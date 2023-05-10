@@ -99,7 +99,7 @@ class Message(abc.ABC):
             k: tuple(v) if isinstance(v, list) else v for k, v in mapping.items()
         }
         message_type = cls._subclass_from_type_string()[cast(str, mapping.pop("type"))]
-        return message_type(**mapping)
+        return message_type(**mapping)  # type: ignore
 
     @classmethod
     @functools.lru_cache(maxsize=100)

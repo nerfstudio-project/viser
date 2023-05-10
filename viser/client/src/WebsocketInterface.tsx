@@ -594,7 +594,7 @@ export default function WebsocketInterface() {
       // Timeout is necessary when we're connecting to an SSH/tunneled port.
       const retryTimeout = setTimeout(() => {
         ws && ws.close();
-      }, 500);
+      }, 5000);
 
       ws.onopen = () => {
         clearTimeout(retryTimeout);
