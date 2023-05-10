@@ -113,6 +113,7 @@ function useMessageHandler() {
         const pointCloudMaterial = new THREE.PointsMaterial({
           size: message.point_size,
           vertexColors: true,
+          toneMapped: false,
         });
 
         // Reinterpret cast: uint8 buffer => float32 for positions.
@@ -133,7 +134,17 @@ function useMessageHandler() {
         // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
         geometry.setAttribute(
           "color",
-          new THREE.Uint8BufferAttribute(message.colors, 3, true)
+          new THREE.Float32BufferAttribute(
+            new Float32Array(new Uint8Array(message.colors)).map((value) => {
+              value = value / 255.0;
+              if (value <= 0.04045) {
+                return value / 12.92;
+              } else {
+                return Math.pow((value + 0.055) / 1.055, 2.4);
+              }
+            }),
+            3
+          )
         );
 
         addSceneNodeMakeParents(
@@ -472,6 +483,7 @@ function useMessageHandler() {
                           transparent={true}
                           side={THREE.DoubleSide}
                           map={texture}
+                          toneMapped={false}
                         />
                       </mesh>
                     </group>
