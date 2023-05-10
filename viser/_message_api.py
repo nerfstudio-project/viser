@@ -521,7 +521,7 @@ class MessageApi(abc.ABC):
                 # (255, 255, 255) => 0xffffff, etc
                 color=_encode_rgb(color),
                 wireframe=wireframe,
-                side=side
+                side=side,
             )
         )
         return SceneNodeHandle._make(self, name, wxyz, position, visible)

@@ -234,7 +234,7 @@ export function SynchronizedCameraControls() {
   return (
     <CameraControls
       ref={cameraControlRef}
-      minDistance={0.5}
+      minDistance={0.1}
       maxDistance={200.0}
       dollySpeed={0.3}
       smoothTime={0.0}
