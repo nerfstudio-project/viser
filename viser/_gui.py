@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
+import threading
 import time
 from typing import (
     TYPE_CHECKING,
@@ -119,7 +120,9 @@ class _GuiHandle(Generic[T]):
 
         # Call update callbacks.
         for cb in self._impl.update_cb:
-            cb(self)
+            # Pushing callbacks into separate threads helps prevent deadlocks when we
+            # have a lock in a callback. TODO: revisit other callbacks.
+            threading.Thread(target=lambda: cb(self)).start()
 
     @property
     def update_timestamp(self) -> float:
