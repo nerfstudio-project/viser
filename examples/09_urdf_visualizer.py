@@ -20,16 +20,16 @@ import viser
 import viser.transforms as tf
 
 
-def main(urdf_path: Path):
+def main(urdf_path: Path) -> None:
     urdf = yourdfpy.URDF.load(
         urdf_path,
         filename_handler=partial(yourdfpy.filename_handler_magic, dir=urdf_path.parent),
     )
     server = viser.ViserServer()
 
-    def frame_name_with_parents(frame_name: str):
+    def frame_name_with_parents(frame_name: str) -> str:
         frames = []
-        while frame_name != "world":
+        while frame_name != urdf.scene.graph.base_frame:
             frames.append(frame_name)
             frame_name = urdf.scene.graph.transforms.parents[frame_name]
         return "/" + "/".join(frames[::-1])
