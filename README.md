@@ -3,11 +3,11 @@
 </h1>
 
 **`pip install viser`** &nbsp;&nbsp;&bull;&nbsp;&nbsp; **[
-[API Reference](https://brentyi.github.io/viser) ]**
+[API Reference](https://nerfstudio-project.github.io/viser) ]**
 
-![pyright](https://github.com/brentyi/viser/workflows/pyright/badge.svg)
-![mypy](https://github.com/brentyi/viser/workflows/mypy/badge.svg)
-![typescript](https://github.com/brentyi/viser/workflows/typescript-compile/badge.svg)
+![pyright](https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg)
+![mypy](https://github.com/nerfstudio-project/viser/workflows/mypy/badge.svg)
+![typescript](https://github.com/nerfstudio-project/viser/workflows/typescript-compile/badge.svg)
 [![pypi](https://img.shields.io/pypi/pyversions/viser)](https://pypi.org/project/viser)
 
 ---
@@ -40,7 +40,7 @@ supports:
 
 ```bash
 # Clone the repository.
-git clone https://github.com/brentyi/viser.git
+git clone https://github.com/nerfstudio-project/viser.git
 
 # Install the package.
 # You can also install via pip: `pip install viser`.
