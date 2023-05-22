@@ -30,7 +30,7 @@ supports:
 
 ```bash
 # Clone the repository.
-git clone https://github.com/brentyi/viser.git
+git clone https://github.com/nerfstudio-project/viser.git
 
 # Install the package.
 # You can also install via pip: `pip install viser`.
@@ -67,18 +67,18 @@ URL (default: `http://localhost:8080`).
    examples/*
 
 
-.. |build| image:: https://github.com/brentyi/viser/workflows/build/badge.svg
+.. |build| image:: https://github.com/nerfstudio-project/viser/workflows/build/badge.svg
    :alt: Build status icon
-   :target: https://github.com/brentyi/viser
-.. |mypy| image:: https://github.com/brentyi/viser/workflows/mypy/badge.svg?branch=main
+   :target: https://github.com/nerfstudio-project/viser
+.. |mypy| image:: https://github.com/nerfstudio-project/viser/workflows/mypy/badge.svg?branch=main
    :alt: Mypy status icon
-   :target: https://github.com/brentyi/viser
-.. |pyright| image:: https://github.com/brentyi/viser/workflows/pyright/badge.svg?branch=main
+   :target: https://github.com/nerfstudio-project/viser
+.. |pyright| image:: https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg?branch=main
    :alt: Mypy status icon
-   :target: https://github.com/brentyi/viser
-.. |typescript| image:: https://github.com/brentyi/viser/workflows/typescript-compile/badge.svg
+   :target: https://github.com/nerfstudio-project/viser
+.. |typescript| image:: https://github.com/nerfstudio-project/viser/workflows/typescript-compile/badge.svg
    :alt: TypeScript status icon
-   :target: https://github.com/brentyi/viser
+   :target: https://github.com/nerfstudio-project/viser
 .. |versions| image:: https://img.shields.io/pypi/pyversions/viser
    :alt: Version icon
    :target: https://pypi.org/project/viser/
