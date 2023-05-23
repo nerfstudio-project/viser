@@ -94,7 +94,7 @@ updir_points.push(-0.5, -1.2, 1);
 /** Helper for visualizing camera frustums.
 
 Note that:
- - This is currently just a pyramid, note a frustum. :-)
+ - This is currently just a pyramid, not a frustum. :-)
  - We currently draw two redundant/overlapping lines. This could be optimized. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,
