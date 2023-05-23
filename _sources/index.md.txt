@@ -48,6 +48,15 @@ URL (default: `http://localhost:8080`).
 <!-- prettier-ignore-start -->
 
 .. toctree::
+   :caption: Notes
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
+
+   ./conventions.md
+   ./development.md
+
+.. toctree::
    :caption: API Reference
    :hidden:
    :maxdepth: 1

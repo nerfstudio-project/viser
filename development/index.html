@@ -2,10 +2,12 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../genindex/" /><link rel="search" title="Search" href="../search/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../genindex/" /><link rel="search" title="Search" href="../search/" /><link rel="next" title="Viser Core" href="../core/" /><link rel="prev" title="Frame Conventions" href="../conventions/" />
 
-    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 --><title>Python Module Index - viser</title>
-<link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
+        <title>Development - viser</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
@@ -137,7 +139,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -162,9 +164,9 @@
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Notes</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../conventions/">Frame Conventions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../development/">Development</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Development</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -205,7 +207,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -213,52 +216,163 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main">
-          
-<section class="domainindex-section">
-  <h1>Python Module Index</h1>
-  <div class="domainindex-jumpbox"><a href="#cap-v"><strong>v</strong></a></div>
+          <section id="development">
+<h1>Development<a class="headerlink" href="#development" title="Permalink to this heading">#</a></h1>
+<p>In this note, we outline current practices, tools, and workflows for <code class="docutils literal notranslate"><span class="pre">viser</span></code>
+development. We assume that the repository is cloned to <code class="docutils literal notranslate"><span class="pre">~/viser</span></code>.</p>
+<p>There’s a lot of improvement that can be made here. PRs for tooling are welcome.</p>
+<section id="python-install">
+<h2>Python install<a class="headerlink" href="#python-install" title="Permalink to this heading">#</a></h2>
+<p>We recommend an editable install for Python development, ideally in a virtual
+environment (eg via conda).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install package.</span>
+<span class="nb">cd</span><span class="w"> </span>~/viser
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+
+<span class="c1"># Install example dependencies.</span>
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>examples/requirements.txt
+</pre></div>
+</div>
+<p><em>Alternatively</em>, <code class="docutils literal notranslate"><span class="pre">poetry</span></code> can also be used:</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install poetry.</span>
+curl<span class="w"> </span>-sSL<span class="w"> </span>https://install.python-poetry.org<span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-
+
+<span class="c1"># Install package.</span>
+<span class="nb">cd</span><span class="w"> </span>~/viser
+poetry<span class="w"> </span>install
+
+<span class="c1"># Install example dependencies.</span>
+poetry<span class="w"> </span>run<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>examples/requirements.txt
+</pre></div>
+</div>
+<p>After installation, any of the example scripts (<code class="docutils literal notranslate"><span class="pre">~/viser/examples</span></code>) should be
+runnable. A few of them require downloading assets, which can be done via the
+scripts in <code class="docutils literal notranslate"><span class="pre">~/viser/examples/assets</span></code>.</p>
+<p><strong>Linting, formatting, type-checking.</strong></p>
+<p>You may need to install development tools manually:
+<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">mypy</span> <span class="pre">pyright</span> <span class="pre">black</span> <span class="pre">ruff</span></code>.</p>
+<p>It would be hard to write unit tests for <code class="docutils literal notranslate"><span class="pre">viser</span></code>. We rely on static typing for
+robustness. From the <code class="docutils literal notranslate"><span class="pre">~/viser</span></code> root directory, you can run:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pyright</span> <span class="pre">.</span> <span class="pre">&amp;&amp;</span> <span class="pre">mypy</span> <span class="pre">.</span></code></p></li>
+</ul>
+<p>For formatting and linting:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">black</span> <span class="pre">.</span> <span class="pre">&amp;&amp;</span> <span class="pre">ruff</span> <span class="pre">--fix</span> <span class="pre">.</span></code></p></li>
+</ul>
 </section>
-<table class="domainindex-table">
-  <tr class="pcap">
-    <td></td><td>&#160;</td><td></td>
-  </tr>
-  <tr class="cap" id="cap-v">
-    <td></td><td><strong>v</strong></td><td></td>
-  </tr>
-  <tr>
-    <td><img src="../_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-    <td>
-        <code class="xref">viser</code></td><td>
-    <em></em></td>
-  </tr>
-  <tr class="cg-1">
-    <td></td>
-    <td>&#160;&#160;&#160;
-        <a href="../infrastructure/#module-viser.infra"><code class="xref">viser.infra</code></a></td><td>
-    <em></em></td>
-  </tr>
-  <tr class="cg-1">
-    <td></td>
-    <td>&#160;&#160;&#160;
-        <a href="../transforms/#module-viser.transforms"><code class="xref">viser.transforms</code></a></td><td>
-    <em></em></td>
-  </tr>
-</table>
+<section id="message-updates">
+<h2>Message updates<a class="headerlink" href="#message-updates" title="Permalink to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">viser</span></code> frontend and backend communicate via a shared set of message
+definitions:</p>
+<ul class="simple">
+<li><p>On the server, these are defined as Python dataclasses in
+<code class="docutils literal notranslate"><span class="pre">~/viser/viser/_messages.py</span></code>.</p></li>
+<li><p>On the client, these are defined as TypeScript interfaces in
+<code class="docutils literal notranslate"><span class="pre">~/viser/viser/client/src/WebsocketMessages.tsx</span></code>.</p></li>
+</ul>
+<p>Note that there is a 1:1 correspondence between the dataclasses message types
+and the TypeScript ones.</p>
+<p>The TypeScript definitions should not be manually modified. Instead, changes
+should be made in Python and synchronized via the <code class="docutils literal notranslate"><span class="pre">sync_message_defs.py</span></code> script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span>
+<span class="n">python</span> <span class="n">sync_message_defs</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</section>
+<section id="client-development">
+<h2>Client development<a class="headerlink" href="#client-development" title="Permalink to this heading">#</a></h2>
+<p>For client development, we can start by launching a relevant Python script. The
+examples are a good place to start:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span><span class="o">/</span><span class="n">examples</span>
+<span class="n">python</span> <span class="mi">05</span><span class="n">_camera_commands</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>When a <code class="docutils literal notranslate"><span class="pre">viser</span></code> script is launched, two URLs will be printed:</p>
+<ul class="simple">
+<li><p>An HTTP URL, like <code class="docutils literal notranslate"><span class="pre">http://localhost:8080</span></code>, which can be used to open a
+<em>pre-built</em> version of the React frontend.</p></li>
+<li><p>A websocket URL, like <code class="docutils literal notranslate"><span class="pre">ws://localhost:8080</span></code>, which client applications can
+connect to.</p></li>
+</ul>
+<p>For client-side development, the HTTP URL to the pre-built frontend should be
+ignored. Instead, we want to launch a development version of the frontend, which
+will reflect changes we make to the client source files
+(<code class="docutils literal notranslate"><span class="pre">~/viser/viser/client/src</span></code>). This requires a few more steps.</p>
+<p><strong>Installing dependencies.</strong></p>
+<ol class="arabic">
+<li><p><a class="reference external" href="https://nodejs.dev/en/download/package-manager">Install nodejs.</a></p></li>
+<li><p><a class="reference external" href="https://yarnpkg.com/getting-started/install">Install yarn.</a></p></li>
+<li><p>Install dependencies.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span><span class="o">/</span><span class="n">viser</span><span class="o">/</span><span class="n">client</span>
+<span class="n">yarn</span> <span class="n">install</span>
+</pre></div>
+</div>
+</li>
+</ol>
+<p><strong>Launching client.</strong></p>
+<p>To launch the client, we can then simply run</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span><span class="o">/</span><span class="n">viser</span><span class="o">/</span><span class="n">client</span>
+<span class="n">yarn</span> <span class="n">start</span>
+</pre></div>
+</div>
+<p>from the <code class="docutils literal notranslate"><span class="pre">viser/viser/client</span></code> directory. After opening the client in a web
+browser, the websocket server address typically needs to be updated in the
+“Server” tab.</p>
+<p><strong>Building the client.</strong></p>
+<p>When changes to the client are finished, we can wrap up by (a) building the
+client and (b) committing the built viewer. This is what the printed HTTP server
+points to, and allows use of the viewer without installing all of the web
+dependencies.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span><span class="o">/</span><span class="n">viser</span><span class="o">/</span><span class="n">client</span>
+<span class="n">yarn</span> <span class="n">build</span>
+<span class="n">git</span> <span class="n">add</span> <span class="n">build</span>
+</pre></div>
+</div>
+<p>This manual build step and version control of the <code class="docutils literal notranslate"><span class="pre">build/</span></code> directory are
+unideal. Open to suggestions on how to improve this workflow.</p>
+<p><strong>Formatting.</strong></p>
+<p>We use <a class="reference external" href="https://prettier.io/docs/en/install.html">prettier</a>. This can be run via
+one of:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">prettier</span> <span class="pre">-w</span> <span class="pre">.</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">npx</span> <span class="pre">prettier</span> <span class="pre">-w</span> <span class="pre">.</span></code></p></li>
+</ul>
+<p>from <code class="docutils literal notranslate"><span class="pre">~/viser/client</span></code>.</p>
+</section>
+</section>
 
         </article>
       </div>
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="../core/">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Viser Core</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../conventions/">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Frame Conventions</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -284,8 +398,29 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Development</a><ul>
+<li><a class="reference internal" href="#python-install">Python install</a></li>
+<li><a class="reference internal" href="#message-updates">Message updates</a></li>
+<li><a class="reference internal" href="#client-development">Client development</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
