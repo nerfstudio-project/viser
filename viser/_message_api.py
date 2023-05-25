@@ -172,6 +172,7 @@ class MessageApi(abc.ABC):
         initial_value: bool,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiHandle[bool]:
         """Add a checkbox to the GUI."""
         assert isinstance(initial_value, bool)
@@ -181,6 +182,7 @@ class MessageApi(abc.ABC):
             leva_conf={"value": initial_value, "label": name},
             disabled=disabled,
             visible=visible,
+            hint=hint,
         )
 
     def add_gui_text(
@@ -189,6 +191,7 @@ class MessageApi(abc.ABC):
         initial_value: str,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiHandle[str]:
         """Add a text input to the GUI."""
         assert isinstance(initial_value, str)
@@ -198,6 +201,7 @@ class MessageApi(abc.ABC):
             leva_conf={"value": initial_value, "label": name},
             disabled=disabled,
             visible=visible,
+            hint=hint,
         )
 
     def add_gui_number(
@@ -206,6 +210,7 @@ class MessageApi(abc.ABC):
         initial_value: IntOrFloat,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiHandle[IntOrFloat]:
         """Add a number input to the GUI."""
         assert isinstance(initial_value, (int, float))
@@ -215,6 +220,7 @@ class MessageApi(abc.ABC):
             leva_conf={"value": initial_value, "label": name},
             disabled=disabled,
             visible=visible,
+            hint=hint,
         )
 
     def add_gui_vector2(
@@ -224,6 +230,7 @@ class MessageApi(abc.ABC):
         step: Optional[float] = None,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiHandle[Tuple[float, float]]:
         """Add a length-2 vector input to the GUI."""
         return self._add_gui_impl(
@@ -236,6 +243,7 @@ class MessageApi(abc.ABC):
             },
             disabled=disabled,
             visible=visible,
+            hint=hint,
         )
 
     def add_gui_vector3(
@@ -246,6 +254,7 @@ class MessageApi(abc.ABC):
         lock: bool = False,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiHandle[Tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI."""
         return self._add_gui_impl(
@@ -259,6 +268,7 @@ class MessageApi(abc.ABC):
             },
             disabled=disabled,
             visible=visible,
+            hint=hint,
         )
 
     # Resolve type of value to a Literal whenever possible.
@@ -270,6 +280,7 @@ class MessageApi(abc.ABC):
         initial_value: Optional[TLiteralString] = None,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiSelectHandle[TLiteralString]:
         ...
 
@@ -281,6 +292,7 @@ class MessageApi(abc.ABC):
         initial_value: Optional[str] = None,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiSelectHandle[str]:
         ...
 
@@ -291,6 +303,7 @@ class MessageApi(abc.ABC):
         initial_value: Optional[TLiteralString | str] = None,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiSelectHandle[TLiteralString] | GuiSelectHandle[str]:
         """Add a dropdown to the GUI."""
         assert len(options) > 0
@@ -307,6 +320,7 @@ class MessageApi(abc.ABC):
                 },
                 disabled=disabled,
                 visible=visible,
+                hint=hint,
             )._impl,
             options,  # type: ignore
         )
@@ -320,6 +334,7 @@ class MessageApi(abc.ABC):
         initial_value: IntOrFloat,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiHandle[IntOrFloat]:
         """Add a slider to the GUI."""
         assert max >= min
@@ -339,6 +354,7 @@ class MessageApi(abc.ABC):
             },
             disabled=disabled,
             visible=visible,
+            hint=hint,
         )
 
     def add_gui_rgb(
@@ -347,6 +363,7 @@ class MessageApi(abc.ABC):
         initial_value: Tuple[int, int, int],
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiHandle[Tuple[int, int, int]]:
         """Add an RGB picker to the GUI."""
         return self._add_gui_impl(
@@ -364,6 +381,7 @@ class MessageApi(abc.ABC):
             visible=visible,
             encoder=lambda rgb: dict(zip("rgb", rgb)),
             decoder=lambda rgb_dict: (rgb_dict["r"], rgb_dict["g"], rgb_dict["b"]),
+            hint=hint,
         )
 
     def add_gui_rgba(
@@ -372,6 +390,7 @@ class MessageApi(abc.ABC):
         initial_value: Tuple[int, int, int, int],
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional["str"] = None,
     ) -> GuiHandle[Tuple[int, int, int, int]]:
         """Add an RGBA picker to the GUI."""
         return self._add_gui_impl(
@@ -395,6 +414,7 @@ class MessageApi(abc.ABC):
                 rgba_dict["b"],
                 rgba_dict["a"],
             ),
+            hint=hint,
         )
 
     def add_camera_frustum(
@@ -700,8 +720,13 @@ class MessageApi(abc.ABC):
         is_button: bool = False,
         encoder: Callable[[T], Any] = lambda x: x,
         decoder: Callable[[Any], T] = lambda x: x,
+        hint: Optional[str] = None,
     ) -> GuiHandle[T]:
         """Private helper for adding a simple GUI element."""
+
+        if hint is not None:
+            assert not is_button
+            leva_conf["hint"] = hint
 
         handle_state = _GuiHandleState(
             name,
