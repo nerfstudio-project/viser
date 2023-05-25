@@ -312,6 +312,12 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.add_gui_button_group">
+<span class="sig-name descname"><span class="pre">add_gui_button_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_gui_button_group" title="Permalink to this definition">#</a></dt>
+<dd><p>Add a button group to the GUI. Button groups currently cannot be disabled.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_gui_checkbox">
 <span class="sig-name descname"><span class="pre">add_gui_checkbox</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_gui_checkbox" title="Permalink to this definition">#</a></dt>
 <dd><p>Add a checkbox to the GUI.</p>
@@ -779,6 +785,12 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dd class="field-even"><p><a class="reference internal" href="#viser.GuiButtonHandle" title="viser.GuiButtonHandle">viser.GuiButtonHandle</a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ClientHandle.add_gui_button_group">
+<span class="sig-name descname"><span class="pre">add_gui_button_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.add_gui_button_group" title="Permalink to this definition">#</a></dt>
+<dd><p>Add a button group to the GUI. Button groups currently cannot be disabled.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1689,6 +1701,7 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ViserServer.add_camera_frustum"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_camera_frustum()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_frame"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_frame()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_button"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_button()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.add_gui_button_group"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_button_group()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_checkbox"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_checkbox()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_number"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_number()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_rgb"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_rgb()</span></code></a></li>
@@ -1717,6 +1730,7 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ClientHandle.add_camera_frustum"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_camera_frustum()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_frame"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_frame()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_button"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_button()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.add_gui_button_group"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_button_group()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_checkbox"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_checkbox()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_number"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_number()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_rgb"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_rgb()</span></code></a></li>
