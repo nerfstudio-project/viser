@@ -19,6 +19,22 @@ tyro = ">=0.2.0"
 gdown = ">=4.6.6"
 rich = ">=13.3.3"
 
+# dev dependencies
+pyright = { version = ">=1.1.308", optional = true}
+mypy = { version = "=0.991", optional = true}
+ruff = { version = ">=0.0.267", optional = true}
+black = { version = ">=23.3.0", optional = true}
+
+# example dependencies
+smplx = { version = ">=0.1.28", optional = true}
+torch = { version = ">=1.13.1", optional = true}
+yourdfpy = { version = ">=0.0.53", optional = true}
+trimesh = { version = ">=3.21.7", optional = true}
+
+[tool.poetry.extras]
+dev = ["pyright", "mypy", "ruff", "black"]
+examples = ["smplx", "torch", "yourdfpy", "trimesh"]
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

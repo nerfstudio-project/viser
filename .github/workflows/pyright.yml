@@ -22,9 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
-          poetry install
-          poetry run pip install -r ./examples/requirements.txt
-          poetry run pip install pyright
+          poetry install --all-extras
       - name: Run pyright
         run: |
           poetry run pyright .
