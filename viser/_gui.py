@@ -225,7 +225,7 @@ class GuiButtonGroupHandle(_GuiHandle[StringType], Generic[StringType]):
     @disabled.setter
     def disabled(self, disabled: bool) -> None:
         """Button groups cannot be disabled."""
-        pass
+        assert not disabled, "Button groups cannot be disabled."
 
 @dataclasses.dataclass
 class GuiSelectHandle(GuiHandle[StringType], Generic[StringType]):
