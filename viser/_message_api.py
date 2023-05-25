@@ -117,6 +117,7 @@ def cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
 
 
 IntOrFloat = TypeVar("IntOrFloat", int, float)
+TString = TypeVar("TString", bound=str)
 TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 
 
@@ -341,6 +342,17 @@ class MessageApi(abc.ABC):
     def add_gui_select(
         self,
         name: str,
+        options: List[TString],
+        initial_value: Optional[TString] = None,
+        disabled: bool = False,
+        visible: bool = True,
+    ) -> GuiSelectHandle[TString]:
+        ...
+        
+    @overload
+    def add_gui_select(
+        self,
+        name: str,
         options: List[str],
         initial_value: Optional[str] = None,
         disabled: bool = False,
@@ -349,15 +361,16 @@ class MessageApi(abc.ABC):
     ) -> GuiSelectHandle[str]:
         ...
 
+
     def add_gui_select(
         self,
         name: str,
-        options: List[TLiteralString] | List[str],
-        initial_value: Optional[TLiteralString | str] = None,
+        options: List[TLiteralString] | List[TString] | List[str],
+        initial_value: Optional[TLiteralString | TString | str] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiSelectHandle[TLiteralString] | GuiSelectHandle[str]:
+    ) -> GuiSelectHandle[TLiteralString] | GuiSelectHandle[TString] | GuiSelectHandle[str]:
         """Add a dropdown to the GUI."""
         assert len(options) > 0
         if initial_value is None:
