@@ -181,7 +181,6 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         options: List[TLiteralString],
-        # disabled: bool = False,
         visible: bool = True,
     ) -> GuiButtonGroupHandle[TLiteralString]:
         ...
@@ -191,7 +190,6 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         options: List[str],
-        # disabled: bool = False,
         visible: bool = True,
     ) -> GuiButtonGroupHandle[str]:
         ...
@@ -200,7 +198,6 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         options: List[TLiteralString] | List[str],
-        # disabled: bool = False,
         visible: bool = True,
     ) -> GuiButtonGroupHandle[TLiteralString] | GuiButtonGroupHandle[str]:
         """Add a button group to the GUI. Button groups currently cannot be disabled."""
