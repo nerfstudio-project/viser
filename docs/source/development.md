@@ -39,8 +39,15 @@ scripts in `~/viser/examples/assets`.
 
 **Linting, formatting, type-checking.**
 
-You may need to install development tools manually:
-`pip install mypy pyright black ruff`.
+First install developer tools:
+
+```bash
+# Using pip.
+pip install -e .[dev]
+
+# Using poetry.
+poetry install -E dev
+```
 
 It would be hard to write unit tests for `viser`. We rely on static typing for
 robustness. From the `~/viser` root directory, you can run:
