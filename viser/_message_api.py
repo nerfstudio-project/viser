@@ -185,6 +185,15 @@ class MessageApi(abc.ABC):
         visible: bool = True,
     ) -> GuiButtonGroupHandle[TLiteralString]:
         ...
+        
+    @overload
+    def add_gui_button_group(
+        self,
+        name: str,
+        options: List[TString],
+        visible: bool = True,
+    ) -> GuiButtonGroupHandle[TString]:
+        ...
 
     @overload
     def add_gui_button_group(
@@ -198,9 +207,9 @@ class MessageApi(abc.ABC):
     def add_gui_button_group(
         self,
         name: str,
-        options: List[TLiteralString] | List[str],
+        options: List[TLiteralString] | List[TString] | List[str],
         visible: bool = True,
-    ) -> GuiButtonGroupHandle[TLiteralString] | GuiButtonGroupHandle[str]:
+    ) -> GuiButtonGroupHandle[TLiteralString] | GuiButtonGroupHandle[TString] | GuiButtonGroupHandle[str]:
         """Add a button group to the GUI. Button groups currently cannot be disabled."""
         assert len(options) > 0
         handle = self._add_gui_impl(
