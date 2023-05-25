@@ -236,7 +236,7 @@ environment (eg via conda).</p>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 
 <span class="c1"># Install example dependencies.</span>
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>examples/requirements.txt
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="o">[</span>examples<span class="o">]</span>
 </pre></div>
 </div>
 <p><em>Alternatively</em>, <code class="docutils literal notranslate"><span class="pre">poetry</span></code> can also be used:</p>
@@ -248,15 +248,21 @@ curl<span class="w"> </span>-sSL<span class="w"> </span>https://install.python-p
 poetry<span class="w"> </span>install
 
 <span class="c1"># Install example dependencies.</span>
-poetry<span class="w"> </span>run<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>examples/requirements.txt
+poetry<span class="w"> </span>install<span class="w"> </span>-E<span class="w"> </span>examples
 </pre></div>
 </div>
 <p>After installation, any of the example scripts (<code class="docutils literal notranslate"><span class="pre">~/viser/examples</span></code>) should be
 runnable. A few of them require downloading assets, which can be done via the
 scripts in <code class="docutils literal notranslate"><span class="pre">~/viser/examples/assets</span></code>.</p>
 <p><strong>Linting, formatting, type-checking.</strong></p>
-<p>You may need to install development tools manually:
-<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">mypy</span> <span class="pre">pyright</span> <span class="pre">black</span> <span class="pre">ruff</span></code>.</p>
+<p>First install developer tools:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using pip.</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="o">[</span>dev<span class="o">]</span>
+
+<span class="c1"># Using poetry. `--all-extras` is equivalent to `-E examples -E dev`.</span>
+poetry<span class="w"> </span>install<span class="w"> </span>--all-extras
+</pre></div>
+</div>
 <p>It would be hard to write unit tests for <code class="docutils literal notranslate"><span class="pre">viser</span></code>. We rely on static typing for
 robustness. From the <code class="docutils literal notranslate"><span class="pre">~/viser</span></code> root directory, you can run:</p>
 <ul class="simple">
