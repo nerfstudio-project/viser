@@ -16,7 +16,7 @@ cd ~/viser
 pip install -e .
 
 # Install example dependencies.
-pip install -r examples/requirements.txt
+pip install -e .[examples]
 ```
 
 _Alternatively_, `poetry` can also be used:
@@ -30,7 +30,7 @@ cd ~/viser
 poetry install
 
 # Install example dependencies.
-poetry run pip install -r examples/requirements.txt
+poetry install -E examples
 ```
 
 After installation, any of the example scripts (`~/viser/examples`) should be
@@ -39,8 +39,15 @@ scripts in `~/viser/examples/assets`.
 
 **Linting, formatting, type-checking.**
 
-You may need to install development tools manually:
-`pip install mypy pyright black ruff`.
+First install developer tools:
+
+```bash
+# Using pip.
+pip install -e .[dev]
+
+# Using poetry. `--all-extras` is equivalent to `-E examples -E dev`.
+poetry install --all-extras
+```
 
 It would be hard to write unit tests for `viser`. We rely on static typing for
 robustness. From the `~/viser` root directory, you can run:

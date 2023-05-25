@@ -48,7 +48,7 @@ cd ./viser
 pip install -e .
 
 # Run an example.
-pip install -r ./examples/requirements.txt
+pip install -e .[examples]
 python ./examples/4_gui.py
 ```
 

@@ -205,6 +205,29 @@ class GuiButtonHandle(_GuiHandle[bool]):
 
 
 @dataclasses.dataclass
+class GuiButtonGroupHandle(_GuiHandle[StringType], Generic[StringType]):
+    """Handle for a button group input in our visualizer.
+
+    Lets us detect clicks."""
+
+    def on_click(
+        self: TGuiHandle, func: Callable[[TGuiHandle], None]
+    ) -> Callable[[TGuiHandle], None]:
+        """Attach a function to call when a button is pressed. Happens in a thread."""
+        self._impl.update_cb.append(func)
+        return func
+
+    @property
+    def disabled(self) -> bool:
+        """Button groups cannot be disabled."""
+        return False
+    
+    @disabled.setter
+    def disabled(self, disabled: bool) -> None:
+        """Button groups cannot be disabled."""
+        assert not disabled, "Button groups cannot be disabled."
+
+@dataclasses.dataclass
 class GuiSelectHandle(GuiHandle[StringType], Generic[StringType]):
     """Handle for a dropdown-style GUI input in our visualizer.
 

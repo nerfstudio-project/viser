@@ -1,4 +1,0 @@
-smplx
-torch
-yourdfpy
-trimesh
