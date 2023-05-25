@@ -1,4 +1,11 @@
-import { button, folder, LevaPanel, useControls, useCreateStore } from "leva";
+import {
+  button,
+  buttonGroup,
+  folder,
+  LevaPanel,
+  useControls,
+  useCreateStore,
+} from "leva";
 import { LevaCustomTheme } from "leva/dist/declarations/src/styles";
 import { UseGui } from "./GuiState";
 import React, { MutableRefObject } from "react";
@@ -114,6 +121,23 @@ export default function GeneratedControls(props: {
           value: true,
         });
       }, levaConf["settings"]);
+    } else if (levaConf["type"] === "BUTTON_GROUP") {
+      // Add a button.
+      if (!visible) return;
+      const opts: { [key: string]: () => void } = {};
+      levaConf["opts"].forEach((option: string) => {
+        opts[option] = () => {
+          sendWebsocketMessage(props.websocketRef, {
+            type: "GuiUpdateMessage",
+            name: guiName,
+            value: option,
+          });
+        };
+      });
+      leafFolder[guiName] = buttonGroup({
+        label: levaConf["label"],
+        opts: opts,
+      });
     } else {
       // Add any other kind of input.
       const sendUpdate = makeThrottledMessageSender(props.websocketRef, 50);
@@ -152,7 +176,7 @@ export default function GeneratedControls(props: {
     guiConfigNode = rest;
 
     if (root || _is_folder_marker === true) {
-      const out: { [key: string]: any } = {};
+      const out: { [title: string]: any } = {};
       for (const [k, v] of Object.entries(guiConfigNode)) {
         out[k] = wrapFoldersInGuiConfigTree(v, false);
       }
@@ -199,7 +223,16 @@ export default function GeneratedControls(props: {
         "& input[type='checkbox']~label svg path": {
           stroke: "#fff !important",
         },
-        "& button": { color: "#fff !important", height: "2em" },
+        "& button:not(:only-child)": {
+          // Button groups.
+          color: "#777 !important",
+          backgroundColor: "#e5e5e5 !important",
+        },
+        "& button:only-child": {
+          // Single buttons.
+          color: "#fff !important",
+          height: "2em",
+        },
       }}
     >
       <LevaPanel

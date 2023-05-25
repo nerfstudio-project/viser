@@ -33,7 +33,13 @@ import numpy.typing as onpt
 from typing_extensions import Literal, LiteralString, ParamSpec, assert_never
 
 from . import _messages, infra
-from ._gui import GuiButtonHandle, GuiHandle, GuiSelectHandle, _GuiHandleState
+from ._gui import (
+    GuiButtonGroupHandle,
+    GuiButtonHandle,
+    GuiHandle,
+    GuiSelectHandle,
+    _GuiHandleState,
+)
 from ._scene_handle import (
     SceneNodeHandle,
     TransformControlsHandle,
@@ -155,6 +161,8 @@ class MessageApi(abc.ABC):
         it is clicked; to detect clicks, we can manually set it back to `False`.
 
         Currently, all button names need to be unique."""
+
+        # Re-wrap the GUI handle with a button interface.
         return GuiButtonHandle(
             self._add_gui_impl(
                 name,
@@ -165,6 +173,50 @@ class MessageApi(abc.ABC):
                 is_button=True,
             )._impl
         )
+
+    # The explicit overloads help pyright resolve the value type to a Literal whenever
+    # possible.
+    @overload
+    def add_gui_button_group(
+        self,
+        name: str,
+        options: List[TLiteralString],
+        visible: bool = True,
+    ) -> GuiButtonGroupHandle[TLiteralString]:
+        ...
+
+    @overload
+    def add_gui_button_group(
+        self,
+        name: str,
+        options: List[str],
+        visible: bool = True,
+    ) -> GuiButtonGroupHandle[str]:
+        ...
+
+    def add_gui_button_group(
+        self,
+        name: str,
+        options: List[TLiteralString] | List[str],
+        visible: bool = True,
+    ) -> GuiButtonGroupHandle[TLiteralString] | GuiButtonGroupHandle[str]:
+        """Add a button group to the GUI. Button groups currently cannot be disabled."""
+        assert len(options) > 0
+        handle = self._add_gui_impl(
+            name,
+            options[0],
+            leva_conf={
+                "type": "BUTTON_GROUP",
+                "label": name,
+                "opts": options,
+            },
+            disabled=False,
+            visible=visible,
+            is_button=True,
+        )
+
+        # Re-wrap the GUI handle with a button group interface.
+        return GuiButtonGroupHandle(_impl=handle._impl)
 
     def add_gui_checkbox(
         self,
@@ -261,7 +313,8 @@ class MessageApi(abc.ABC):
             visible=visible,
         )
 
-    # Resolve type of value to a Literal whenever possible.
+    # The explicit overloads help pyright resolve the value type to a Literal whenever
+    # possible.
     @overload
     def add_gui_select(
         self,
@@ -296,6 +349,8 @@ class MessageApi(abc.ABC):
         assert len(options) > 0
         if initial_value is None:
             initial_value = options[0]
+
+        # Re-wrap the GUI handle with a select interface.
         return GuiSelectHandle(
             self._add_gui_impl(
                 "/".join(self._gui_folder_labels + [name]),
