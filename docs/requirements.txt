@@ -5,3 +5,4 @@ sphinx-autoapi==2.1.0
 m2r2==0.3.2
 git+https://github.com/brentyi/sphinxcontrib-programoutput.git
 git+https://github.com/brentyi/ansi.git
+setuptools
