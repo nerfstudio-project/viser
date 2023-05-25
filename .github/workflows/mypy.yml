@@ -22,9 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
-          poetry install
-          poetry run pip install -r ./examples/requirements.txt
-          poetry run pip install mypy
+          poetry install --all-extras
       - name: Test with mypy
         run: |
           poetry run mypy --install-types --non-interactive .
