@@ -266,14 +266,11 @@ pre-commit<span class="w"> </span>install
 </pre></div>
 </div>
 <p>It would be hard to write unit tests for <code class="docutils literal notranslate"><span class="pre">viser</span></code>. We rely on static typing for
-robustness. From the <code class="docutils literal notranslate"><span class="pre">~/viser</span></code> root directory, you can run:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">pyright</span> <span class="pre">.</span> <span class="pre">&amp;&amp;</span> <span class="pre">mypy</span> <span class="pre">.</span></code></p></li>
-</ul>
-<p>For formatting and linting:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">black</span> <span class="pre">.</span> <span class="pre">&amp;&amp;</span> <span class="pre">ruff</span> <span class="pre">--fix</span> <span class="pre">.</span></code></p></li>
-</ul>
+robustness. To check your code, you can run the following:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># runs linting, formatting, and type-checking</span>
+viser-dev-checks
+</pre></div>
+</div>
 </section>
 <section id="message-updates">
 <h2>Message updates<a class="headerlink" href="#message-updates" title="Permalink to this heading">#</a></h2>
