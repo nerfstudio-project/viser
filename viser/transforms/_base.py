@@ -29,15 +29,7 @@ class MatrixLieGroup(abc.ABC):
     space_dim: ClassVar[int]
     """Dimension of coordinates that can be transformed."""
 
-    def __init__(
-        # Notes:
-        # - For the constructor signature to be consistent with subclasses, `parameters`
-        #   should be marked as positional-only. But this isn't possible in Python 3.7.
-        # - This method is implicitly overriden by the dataclass decorator and
-        #   should _not_ be marked abstract.
-        self,
-        parameters: onpt.NDArray[onp.floating],
-    ):
+    def __init__(self, parameters: onpt.NDArray[onp.floating], /):
         """Construct a group object from its underlying parameters."""
         raise NotImplementedError()
 
