@@ -6,7 +6,7 @@ authors = ["brentyi <brentyi@berkeley.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
+python = ">=3.8,<3.11"
 websockets = ">=10.4"
 numpy = ">=1.0.0"
 msgpack = ">=1.0.0"
@@ -36,6 +36,9 @@ trimesh = { version = ">=3.21.7", optional = true}
 dev = ["pyright", "mypy", "ruff", "black"]
 examples = ["smplx", "torch", "yourdfpy", "trimesh"]
 
+[tool.poetry.scripts]
+viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
@@ -44,7 +47,7 @@ build-backend = "poetry.core.masonry.api"
 profile = "black"
 
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.8"
 ignore_missing_imports = true
 warn_unused_configs = true
 
