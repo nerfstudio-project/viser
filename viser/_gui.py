@@ -229,7 +229,7 @@ class GuiButtonGroupHandle(_GuiHandle[StringType], Generic[StringType]):
 
 
 @dataclasses.dataclass
-class GuiSelectHandle(GuiHandle[StringType], Generic[StringType]):
+class GuiDropdownHandle(GuiHandle[StringType], Generic[StringType]):
     """Handle for a dropdown-style GUI input in our visualizer.
 
     Lets us get values, set values, and detect updates."""
