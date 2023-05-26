@@ -338,6 +338,12 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.add_gui_dropdown">
+<span class="sig-name descname"><span class="pre">add_gui_dropdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_gui_dropdown" title="Permalink to this definition">#</a></dt>
+<dd><p>Add a dropdown to the GUI.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_gui_number">
 <span class="sig-name descname"><span class="pre">add_gui_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IntOrFloat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_gui_number" title="Permalink to this definition">#</a></dt>
 <dd><p>Add a number input to the GUI.</p>
@@ -395,12 +401,6 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dd class="field-even"><p><a class="reference internal" href="#viser.GuiHandle" title="viser.GuiHandle">viser.GuiHandle</a>[Tuple[int, int, int, int]]</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ViserServer.add_gui_select">
-<span class="sig-name descname"><span class="pre">add_gui_select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_gui_select" title="Permalink to this definition">#</a></dt>
-<dd><p>Add a dropdown to the GUI.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -822,6 +822,12 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.ClientHandle.add_gui_dropdown">
+<span class="sig-name descname"><span class="pre">add_gui_dropdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.add_gui_dropdown" title="Permalink to this definition">#</a></dt>
+<dd><p>Add a dropdown to the GUI.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.ClientHandle.add_gui_number">
 <span class="sig-name descname"><span class="pre">add_gui_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">IntOrFloat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.add_gui_number" title="Permalink to this definition">#</a></dt>
 <dd><p>Add a number input to the GUI.</p>
@@ -879,12 +885,6 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dd class="field-even"><p><a class="reference internal" href="#viser.GuiHandle" title="viser.GuiHandle">viser.GuiHandle</a>[Tuple[int, int, int, int]]</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.ClientHandle.add_gui_select">
-<span class="sig-name descname"><span class="pre">add_gui_select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">TLiteralString</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.add_gui_select" title="Permalink to this definition">#</a></dt>
-<dd><p>Add a dropdown to the GUI.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1555,99 +1555,6 @@ automatically when assigned.</p>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiSelectHandle</span></span><a class="reference internal" href="../_modules/viser/_gui/#GuiSelectHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiSelectHandle" title="Permalink to this definition">#</a></dt>
-<dd><p>Handle for a dropdown-style GUI input in our visualizer.</p>
-<p>Lets us get values, set values, and detect updates.</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.disabled">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disabled</span></span><a class="headerlink" href="#viser.GuiSelectHandle.disabled" title="Permalink to this definition">#</a></dt>
-<dd><p>Allow/disallow user interaction with the input. Synchronized automatically
-when assigned.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.on_update">
-<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.on_update" title="Permalink to this definition">#</a></dt>
-<dd><p>Attach a function to call when a GUI input is updated. Happens in a thread.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>TGuiHandle</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[TGuiHandle], None]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.options">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">options</span></span><a class="headerlink" href="#viser.GuiSelectHandle.options" title="Permalink to this definition">#</a></dt>
-<dd><p>Options for our dropdown. Synchronized automatically when assigned.</p>
-<p>For projects that care about typing: the static type of <code class="docutils literal notranslate"><span class="pre">options</span></code> should be
-consistent with the <code class="docutils literal notranslate"><span class="pre">StringType</span></code> associated with a handle. Literal types will be
-inferred where possible when handles are instantiated; for the most flexibility,
-we can declare handles as <code class="docutils literal notranslate"><span class="pre">_GuiHandle[str]</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>List[StringType]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiSelectHandle.remove" title="Permalink to this definition">#</a></dt>
-<dd><p>Permanently remove this GUI element from the visualizer.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.update_timestamp">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><a class="headerlink" href="#viser.GuiSelectHandle.update_timestamp" title="Permalink to this definition">#</a></dt>
-<dd><p>Get the last time that this input was updated.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.value">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#viser.GuiSelectHandle.value" title="Permalink to this definition">#</a></dt>
-<dd><p>Value of the GUI input. Synchronized automatically when assigned.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>T</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiSelectHandle.visible">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.GuiSelectHandle.visible" title="Permalink to this definition">#</a></dt>
-<dd><p>Temporarily show or hide this GUI element from the visualizer. Synchronized
-automatically when assigned.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
 <!-- prettier-ignore-end --></section>
 
         </article>
@@ -1719,10 +1626,10 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_button"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_button()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_button_group"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_button_group()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_checkbox"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_checkbox()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.add_gui_dropdown"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_dropdown()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_number"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_number()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_rgb"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_rgb()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_rgba"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_rgba()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ViserServer.add_gui_select"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_select()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_slider"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_slider()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_text"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_text()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_vector2"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_vector2()</span></code></a></li>
@@ -1748,10 +1655,10 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_button"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_button()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_button_group"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_button_group()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_checkbox"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_checkbox()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.add_gui_dropdown"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_dropdown()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_number"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_number()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_rgb"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_rgb()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_rgba"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_rgba()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ClientHandle.add_gui_select"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_select()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_slider"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_slider()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_text"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_text()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_gui_vector2"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_gui_vector2()</span></code></a></li>
@@ -1813,16 +1720,6 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.update_timestamp</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.value</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle.visible"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle.visible</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.disabled"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.disabled</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.on_update"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.on_update()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.options"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.options</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.remove()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.update_timestamp</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.value</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiSelectHandle.visible"><code class="docutils literal notranslate"><span class="pre">GuiSelectHandle.visible</span></code></a></li>
 </ul>
 </li>
 </ul>
