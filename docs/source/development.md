@@ -50,13 +50,12 @@ poetry install --all-extras
 ```
 
 It would be hard to write unit tests for `viser`. We rely on static typing for
-robustness. From the `~/viser` root directory, you can run:
+robustness. To check your code, you can run the following:
 
-- `pyright . && mypy .`
-
-For formatting and linting:
-
-- `black . && ruff --fix .`
+```bash
+# runs linting, formatting, and type-checking
+viser-dev-checks
+```
 
 ## Message updates
 
