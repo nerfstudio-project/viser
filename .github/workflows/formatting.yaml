@@ -1,4 +1,4 @@
-name: Formatting
+name: formatting
 
 on:
   push:
