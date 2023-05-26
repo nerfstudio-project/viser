@@ -21,6 +21,6 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
           poetry install --all-extras
       - name: Run Ruff
-        run: ruff docs/ nerfstudio/ tests/
+        run: poetry run ruff docs/ viser/
       - name: Run Black
-        run: black docs/ nerfstudio/ tests/ --check
+        run: poetry run black docs/ viser/ --check
