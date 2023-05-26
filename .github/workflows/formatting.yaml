@@ -1,4 +1,4 @@
-name: pyright
+name: formatting
 
 on:
   push:
@@ -7,11 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  pyright:
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9"]
 
     steps:
       - uses: actions/checkout@v2
@@ -23,6 +20,7 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           poetry install --all-extras
-      - name: Run pyright
-        run: |
-          poetry run pyright .
+      - name: Run Ruff
+        run: poetry run ruff docs/ viser/
+      - name: Run Black
+        run: poetry run black docs/ viser/ --check

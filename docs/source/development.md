@@ -44,9 +44,11 @@ First install developer tools:
 ```bash
 # Using pip.
 pip install -e .[dev]
+pre-commit install
 
 # Using poetry. `--all-extras` is equivalent to `-E examples -E dev`.
 poetry install --all-extras
+pre-commit install
 ```
 
 It would be hard to write unit tests for `viser`. We rely on static typing for

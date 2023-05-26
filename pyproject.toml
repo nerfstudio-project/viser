@@ -6,7 +6,7 @@ authors = ["brentyi <brentyi@berkeley.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.7,<3.11"
+python = ">=3.8,<3.11"
 websockets = ">=10.4"
 numpy = ">=1.0.0"
 msgpack = ">=1.0.0"
@@ -22,8 +22,9 @@ rich = ">=13.3.3"
 # dev dependencies
 pyright = { version = ">=1.1.308", optional = true}
 mypy = { version = "=0.991", optional = true}
-ruff = { version = ">=0.0.267", optional = true}
-black = { version = ">=23.3.0", optional = true}
+ruff = { version = "==0.0.267", optional = true}
+black = { version = "==23.3.0", optional = true}
+pre-commit = { version = "3.3.2", optional = true}
 
 # example dependencies
 smplx = { version = ">=0.1.28", optional = true}
@@ -46,7 +47,7 @@ build-backend = "poetry.core.masonry.api"
 profile = "black"
 
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.8"
 ignore_missing_imports = true
 warn_unused_configs = true
 
