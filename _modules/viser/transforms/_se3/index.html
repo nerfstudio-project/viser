@@ -372,9 +372,7 @@
             <span class="p">(</span>
                 <span class="n">onp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
                 <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">onp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_safe</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">theta_squared_safe</span><span class="p">)</span> <span class="o">*</span> <span class="n">skew_omega</span>
-                <span class="c1"># We can drop this type: ignore after upgrading numpy / dropping Python</span>
-                <span class="c1"># 3.7 support.</span>
-                <span class="o">+</span> <span class="p">(</span><span class="n">theta_safe</span> <span class="o">-</span> <span class="n">onp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_safe</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+                <span class="o">+</span> <span class="p">(</span><span class="n">theta_safe</span> <span class="o">-</span> <span class="n">onp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_safe</span><span class="p">))</span>
                 <span class="o">/</span> <span class="p">(</span><span class="n">theta_squared_safe</span> <span class="o">*</span> <span class="n">theta_safe</span><span class="p">)</span>
                 <span class="o">*</span> <span class="p">(</span><span class="n">skew_omega</span> <span class="o">@</span> <span class="n">skew_omega</span><span class="p">)</span>
             <span class="p">),</span>

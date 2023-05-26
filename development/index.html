@@ -258,9 +258,11 @@ scripts in <code class="docutils literal notranslate"><span class="pre">~/viser/
 <p>First install developer tools:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using pip.</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="o">[</span>dev<span class="o">]</span>
+pre-commit<span class="w"> </span>install
 
 <span class="c1"># Using poetry. `--all-extras` is equivalent to `-E examples -E dev`.</span>
 poetry<span class="w"> </span>install<span class="w"> </span>--all-extras
+pre-commit<span class="w"> </span>install
 </pre></div>
 </div>
 <p>It would be hard to write unit tests for <code class="docutils literal notranslate"><span class="pre">viser</span></code>. We rely on static typing for
