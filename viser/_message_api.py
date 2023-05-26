@@ -348,7 +348,7 @@ class MessageApi(abc.ABC):
         visible: bool = True,
     ) -> GuiSelectHandle[TString]:
         ...
-        
+
     @overload
     def add_gui_select(
         self,
@@ -361,7 +361,6 @@ class MessageApi(abc.ABC):
     ) -> GuiSelectHandle[str]:
         ...
 
-
     def add_gui_select(
         self,
         name: str,
@@ -370,7 +369,11 @@ class MessageApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiSelectHandle[TLiteralString] | GuiSelectHandle[TString] | GuiSelectHandle[str]:
+    ) -> (
+        GuiSelectHandle[TLiteralString]
+        | GuiSelectHandle[TString]
+        | GuiSelectHandle[str]
+    ):
         """Add a dropdown to the GUI."""
         assert len(options) > 0
         if initial_value is None:
@@ -794,7 +797,7 @@ class MessageApi(abc.ABC):
 
         if hint is not None:
             assert not is_button
-            leva_conf = leva_conf.copy() # Avoid mutating input.
+            leva_conf = leva_conf.copy()  # Avoid mutating input.
             leva_conf["hint"] = hint
 
         handle_state = _GuiHandleState(
