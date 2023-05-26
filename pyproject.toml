@@ -22,8 +22,9 @@ rich = ">=13.3.3"
 # dev dependencies
 pyright = { version = ">=1.1.308", optional = true}
 mypy = { version = "=0.991", optional = true}
-ruff = { version = ">=0.0.267", optional = true}
-black = { version = ">=23.3.0", optional = true}
+ruff = { version = "==0.0.267", optional = true}
+black = { version = "==23.3.0", optional = true}
+pre-commit = { version = "3.3.2", optional = true}
 
 # example dependencies
 smplx = { version = ">=0.1.28", optional = true}
