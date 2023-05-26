@@ -1,6 +1,6 @@
 # mypy: disable-error-code="misc"
 #
-# TLiteralString overload on `add_gui_select()` is waiting on PEP 675 support in mypy.
+# TLiteralString overloads are waiting on PEP 675 support in mypy.
 # https://github.com/python/mypy/issues/12554
 #
 # In the meantime, it works great in Pyright/Pylance!
@@ -36,8 +36,8 @@ from . import _messages, infra
 from ._gui import (
     GuiButtonGroupHandle,
     GuiButtonHandle,
+    GuiDropdownHandle,
     GuiHandle,
-    GuiSelectHandle,
     _GuiHandleState,
 )
 from ._scene_handle import (
@@ -175,8 +175,11 @@ class MessageApi(abc.ABC):
             )._impl
         )
 
-    # The explicit overloads help pyright resolve the value type to a Literal whenever
-    # possible.
+    # The TLiteralString overload tells pyright to resolve the value type to a Literal
+    # whenever possible.
+    #
+    # TString is helpful when the input types are generic (could be str, could be
+    # Literal).
     @overload
     def add_gui_button_group(
         self,
@@ -190,17 +193,17 @@ class MessageApi(abc.ABC):
     def add_gui_button_group(
         self,
         name: str,
-        options: List[str],
+        options: List[TString],
         visible: bool = True,
-    ) -> GuiButtonGroupHandle[str]:
+    ) -> GuiButtonGroupHandle[TString]:
         ...
 
     def add_gui_button_group(
         self,
         name: str,
-        options: List[TLiteralString] | List[str],
+        options: List[TLiteralString] | List[TString],
         visible: bool = True,
-    ) -> GuiButtonGroupHandle[TLiteralString] | GuiButtonGroupHandle[str]:
+    ) -> GuiButtonGroupHandle[Any]:  # Return types are specified in overloads.
         """Add a button group to the GUI. Button groups currently cannot be disabled."""
         assert len(options) > 0
         handle = self._add_gui_impl(
@@ -324,10 +327,9 @@ class MessageApi(abc.ABC):
             hint=hint,
         )
 
-    # The explicit overloads help pyright resolve the value type to a Literal whenever
-    # possible.
+    # See add_gui_dropdown for notes on overloads.
     @overload
-    def add_gui_select(
+    def add_gui_dropdown(
         self,
         name: str,
         options: List[TLiteralString],
@@ -335,52 +337,36 @@ class MessageApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiSelectHandle[TLiteralString]:
+    ) -> GuiDropdownHandle[TLiteralString]:
         ...
 
     @overload
-    def add_gui_select(
+    def add_gui_dropdown(
         self,
         name: str,
         options: List[TString],
         initial_value: Optional[TString] = None,
         disabled: bool = False,
         visible: bool = True,
-    ) -> GuiSelectHandle[TString]:
+    ) -> GuiDropdownHandle[TString]:
         ...
 
-    @overload
-    def add_gui_select(
+    def add_gui_dropdown(
         self,
         name: str,
-        options: List[str],
-        initial_value: Optional[str] = None,
+        options: List[TLiteralString] | List[TString],
+        initial_value: Optional[TLiteralString | TString] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiSelectHandle[str]:
-        ...
-
-    def add_gui_select(
-        self,
-        name: str,
-        options: List[TLiteralString] | List[TString] | List[str],
-        initial_value: Optional[TLiteralString | TString | str] = None,
-        disabled: bool = False,
-        visible: bool = True,
-        hint: Optional[str] = None,
-    ) -> (
-        GuiSelectHandle[TLiteralString]
-        | GuiSelectHandle[TString]
-        | GuiSelectHandle[str]
-    ):
+    ) -> GuiDropdownHandle[Any]:  # Output type is specified in overloads.
         """Add a dropdown to the GUI."""
         assert len(options) > 0
         if initial_value is None:
             initial_value = options[0]
 
         # Re-wrap the GUI handle with a select interface.
-        return GuiSelectHandle(
+        return GuiDropdownHandle(
             self._add_gui_impl(
                 "/".join(self._gui_folder_labels + [name]),
                 initial_value,
@@ -393,7 +379,7 @@ class MessageApi(abc.ABC):
                 visible=visible,
                 hint=hint,
             )._impl,
-            options,  # type: ignore
+            options,
         )
 
     def add_gui_slider(
