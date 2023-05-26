@@ -18,8 +18,8 @@ def run_command(command: str, continue_on_fail: bool = False) -> bool:
     """Run a command kill actions if it fails
 
     Args:
-        command: command to run
-        continue_on_fail: whether to continue running commands if the current one fails.
+        command: Command to run.
+        continue_on_fail: Whether to continue running commands if the current one fails..
     """
     ret_code = subprocess.call(command, shell=True)
     if ret_code != 0:
@@ -37,16 +37,16 @@ def run_code_checks(
     """Runs formatting, linting, and type checking tests.
 
     Args:
-        continue_on_fail: Whether or not to continue running actions commands if the current one fails
-        skip_format_checks: Whether or not to skip format tests
-        skip_type_checks: Whether or not to skip type tests
+        continue_on_fail: Whether or not to continue running actions commands if the current one fails.
+        skip_format_checks: Whether or not to skip format tests.
+        skip_type_checks: Whether or not to skip type tests.
     """
 
     success = True
 
     assert (
         not skip_format_checks or not skip_type_checks
-    ), "Cannot skip format and type tests at the same time"
+    ), "Cannot skip format and type tests at the same time."
     tests = []
     if not skip_format_checks:
         tests += FORMAT_TESTS
