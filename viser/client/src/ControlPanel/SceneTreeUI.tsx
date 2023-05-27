@@ -4,6 +4,7 @@ import { VisibilityOffRounded, VisibilityRounded } from "@mui/icons-material";
 import React from "react";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { UseSceneTree } from "../SceneTree";
+import { ViewerContext } from "..";
 
 /** Control panel component for listing children of a scene node. */
 function SceneNodeUIChildren(props: {
@@ -37,14 +38,12 @@ export function SceneNodeUI(props: {
   const sceneNode = props.useSceneTree(
     (state) => state.nodeFromName[props.name]
   );
-  const threeObj = props.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.obj
-  );
-  const visible = props.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.visibility
-  );
+  const { objFromSceneNodeNameRef } = React.useContext(ViewerContext)!;
 
-  if (sceneNode == undefined) return <></>;
+  const visible = props.useSceneTree(
+    (state) => state.attributesFromName[props.name]?.visibility
+  );
+  if (sceneNode === undefined) return <></>;
 
   const setVisibility = props.useSceneTree((state) => state.setVisibility);
   const ToggleVisibilityIcon = visible
@@ -56,8 +55,8 @@ export function SceneNodeUI(props: {
   const labelRef = React.useRef<CSS2DObject>();
 
   React.useEffect(() => {
-    if (threeObj === undefined) return;
-    if (threeObj === null) return;
+    const threeObj = objFromSceneNodeNameRef.current[props.name];
+    if (!threeObj) return;
 
     const labelDiv = document.createElement("div");
     labelDiv.style.cssText = `
@@ -80,7 +79,7 @@ export function SceneNodeUI(props: {
     return () => {
       threeObj.remove(label);
     };
-  }, [threeObj, sceneNode.name, visible]);
+  }, [sceneNode.name, visible]);
 
   // Flag for indicating when we're dragging across hide/show icons. Makes it
   // easier to toggle visibility for many scene nodes at once.
@@ -88,6 +87,7 @@ export function SceneNodeUI(props: {
 
   const mouseEnter = (event: React.MouseEvent) => {
     // On hover, add an object label to the scene.
+    const threeObj = objFromSceneNodeNameRef.current[props.name];
     threeObj && labelRef.current && threeObj.add(labelRef.current);
     event.stopPropagation();
     if (event.buttons !== 0) {
@@ -97,6 +97,7 @@ export function SceneNodeUI(props: {
   };
   const mouseLeave = (event: React.MouseEvent) => {
     // Remove the object label.
+    const threeObj = objFromSceneNodeNameRef.current[props.name];
     threeObj && labelRef.current && threeObj.remove(labelRef.current);
     if (suppressMouseLeave.current) {
       suppressMouseLeave.current = false;

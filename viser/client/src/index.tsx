@@ -34,17 +34,21 @@ import {
   truncateSearchParamServers,
 } from "./SearchParamsUtils";
 
-export const ViewerContext = React.createContext<null | {
+type ViewerContextContents = {
   panelKey: number;
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: MutableRefObject<WebSocket | null>;
   wrapperRef: React.RefObject<HTMLDivElement>;
   globalCameras: MutableRefObject<CameraPrimitives>;
-}>(null);
-
-export const SceneContext =
-  React.createContext<React.MutableRefObject<THREE.Scene | null> | null>(null);
+  objFromSceneNodeNameRef: React.MutableRefObject<{
+    [name: string]: THREE.Object3D | undefined;
+  }>;
+  sceneRef: React.MutableRefObject<THREE.Scene | null>;
+};
+export const ViewerContext = React.createContext<null | ViewerContextContents>(
+  null
+);
 
 const SingleViewer = React.memo(function SingleViewer(props: {
   panelKey: number;
@@ -57,7 +61,7 @@ const SingleViewer = React.memo(function SingleViewer(props: {
     position: relative;
   `;
 
-  const Viewport = styled(Canvas)`
+  const CanvasStyled = styled(Canvas)`
     position: relative;
     z-index: 0;
 
@@ -84,36 +88,36 @@ const SingleViewer = React.memo(function SingleViewer(props: {
       : getDefaultServerFromUrl();
 
   // Values that can be globally accessed by components in a viewer.
-  const viewer = {
+  const viewer: ViewerContextContents = {
     panelKey: props.panelKey,
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
-    websocketRef: React.useRef<WebSocket | null>(null),
-    wrapperRef: React.useRef<HTMLDivElement>(null),
+    websocketRef: React.useRef(null),
+    wrapperRef: React.useRef(null),
     globalCameras: props.globalCameras,
+    objFromSceneNodeNameRef: React.useRef({}),
+    sceneRef: React.useRef(null),
   };
   return (
     <ViewerContext.Provider value={viewer}>
-      <SceneContext.Provider value={React.useRef<THREE.Scene | null>(null)}>
-        <Wrapper ref={viewer.wrapperRef}>
-          <ControlPanel />
-          <Viewport camera={{ position: [3.0, 3.0, -3.0] }}>
-            <SceneContextSetter />
-            <WebsocketInterface />
-            <LabelRenderer />
-            <SynchronizedCameraControls />
-            <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
-            <Environment preset="city" blur={1} />
-          </Viewport>
-        </Wrapper>
-      </SceneContext.Provider>
+      <Wrapper ref={viewer.wrapperRef}>
+        <ControlPanel />
+        <CanvasStyled camera={{ position: [3.0, 3.0, -3.0] }}>
+          <SceneContextSetter />
+          <WebsocketInterface />
+          <LabelRenderer />
+          <SynchronizedCameraControls />
+          <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
+          <Environment preset="city" blur={1} />
+        </CanvasStyled>
+      </Wrapper>
     </ViewerContext.Provider>
   );
 });
 
 /** Component for helping us set the scene reference. */
 function SceneContextSetter() {
-  const sceneRef = React.useContext(SceneContext);
+  const { sceneRef } = React.useContext(ViewerContext)!;
   sceneRef!.current = useThree((state) => state.scene);
   return <></>;
 }
