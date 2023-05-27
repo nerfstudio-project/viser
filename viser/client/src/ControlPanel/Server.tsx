@@ -2,14 +2,12 @@ import { button, LevaPanel, useControls, useCreateStore } from "leva";
 import Box from "@mui/material/Box";
 import { levaTheme } from "./Generated";
 import { useContext, useState } from "react";
-import { SceneContext, ViewerContext } from "..";
+import { ViewerContext } from "..";
 import { isTexture } from "../WebsocketInterface";
 import { Stats } from "@react-three/drei";
 
 export default function ServerControls() {
-  const { panelKey, useGui, wrapperRef } = useContext(ViewerContext)!;
-
-  const scene = useContext(SceneContext);
+  const { panelKey, useGui, wrapperRef, sceneRef } = useContext(ViewerContext)!;
 
   const [showStats, setShowStats] = useState(false);
 
@@ -35,13 +33,13 @@ export default function ServerControls() {
           const wrapper = wrapperRef.current;
           if (wrapper === null) return;
 
-          if (!isTexture(scene!.current!.background)) {
+          if (!isTexture(sceneRef!.current!.background)) {
             // This should never happen.
             alert("No background to download!");
             return;
           }
 
-          const data = scene!.current!.background.image.src;
+          const data = sceneRef!.current!.background.image.src;
           console.log(data);
           const link = document.createElement("a");
           link.download = "background";

@@ -4,6 +4,7 @@ import { VisibilityOffRounded, VisibilityRounded } from "@mui/icons-material";
 import React from "react";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
 import { UseSceneTree } from "../SceneTree";
+import { ViewerContext } from "..";
 
 /** Control panel component for listing children of a scene node. */
 function SceneNodeUIChildren(props: {
@@ -11,8 +12,9 @@ function SceneNodeUIChildren(props: {
   useSceneTree: UseSceneTree;
 }) {
   const children = props.useSceneTree(
-    (state) => state.nodeFromName[props.name].children
+    (state) => state.nodeFromName[props.name]?.children
   );
+  if (children === undefined) return <></>;
   return (
     <>
       {children.map((child_id) => {
@@ -36,11 +38,13 @@ export function SceneNodeUI(props: {
   const sceneNode = props.useSceneTree(
     (state) => state.nodeFromName[props.name]
   );
-  const threeObj = props.useSceneTree((state) => state.objFromName[props.name]);
+  const { objFromSceneNodeNameRef } = React.useContext(ViewerContext)!;
 
   const visible = props.useSceneTree(
-    (state) => state.visibilityFromName[props.name]
+    (state) => state.attributesFromName[props.name]?.visibility
   );
+  if (sceneNode === undefined) return <></>;
+
   const setVisibility = props.useSceneTree((state) => state.setVisibility);
   const ToggleVisibilityIcon = visible
     ? VisibilityRounded
@@ -51,8 +55,8 @@ export function SceneNodeUI(props: {
   const labelRef = React.useRef<CSS2DObject>();
 
   React.useEffect(() => {
-    if (threeObj === undefined) return;
-    if (threeObj === null) return;
+    const threeObj = objFromSceneNodeNameRef.current[props.name];
+    if (!threeObj) return;
 
     const labelDiv = document.createElement("div");
     labelDiv.style.cssText = `
@@ -72,12 +76,10 @@ export function SceneNodeUI(props: {
     if (itemRef.current && itemRef.current.matches(":hover")) {
       threeObj.add(label);
     }
-
-    threeObj.visible = visible;
     return () => {
       threeObj.remove(label);
     };
-  }, [threeObj, sceneNode.name, visible]);
+  }, [sceneNode.name, visible]);
 
   // Flag for indicating when we're dragging across hide/show icons. Makes it
   // easier to toggle visibility for many scene nodes at once.
@@ -85,7 +87,8 @@ export function SceneNodeUI(props: {
 
   const mouseEnter = (event: React.MouseEvent) => {
     // On hover, add an object label to the scene.
-    labelRef.current && threeObj.add(labelRef.current);
+    const threeObj = objFromSceneNodeNameRef.current[props.name];
+    threeObj && labelRef.current && threeObj.add(labelRef.current);
     event.stopPropagation();
     if (event.buttons !== 0) {
       suppressMouseLeave.current = true;
@@ -94,7 +97,8 @@ export function SceneNodeUI(props: {
   };
   const mouseLeave = (event: React.MouseEvent) => {
     // Remove the object label.
-    labelRef.current && threeObj.remove(labelRef.current);
+    const threeObj = objFromSceneNodeNameRef.current[props.name];
+    threeObj && labelRef.current && threeObj.remove(labelRef.current);
     if (suppressMouseLeave.current) {
       suppressMouseLeave.current = false;
       return;
