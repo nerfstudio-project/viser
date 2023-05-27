@@ -515,10 +515,12 @@
         <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_disconnect</span>
         <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
-                <span class="n">handle</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">conn</span><span class="o">.</span><span class="n">client_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="p">:</span>
+                    <span class="k">return</span>
 
-            <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span>
-                <span class="n">cb</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+                <span class="n">handle</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span>
+                    <span class="n">cb</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
 
         <span class="c1"># Start the server.</span>
         <span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
