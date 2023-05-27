@@ -11,8 +11,9 @@ function SceneNodeUIChildren(props: {
   useSceneTree: UseSceneTree;
 }) {
   const children = props.useSceneTree(
-    (state) => state.nodeFromName[props.name].children
+    (state) => state.nodeFromName[props.name]?.children
   );
+  if (children === undefined) return <></>;
   return (
     <>
       {children.map((child_id) => {
@@ -36,11 +37,15 @@ export function SceneNodeUI(props: {
   const sceneNode = props.useSceneTree(
     (state) => state.nodeFromName[props.name]
   );
-  const threeObj = props.useSceneTree((state) => state.objFromName[props.name]);
-
-  const visible = props.useSceneTree(
-    (state) => state.visibilityFromName[props.name]
+  const threeObj = props.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.obj
   );
+  const visible = props.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.visibility
+  );
+
+  if (sceneNode == undefined) return <></>;
+
   const setVisibility = props.useSceneTree((state) => state.setVisibility);
   const ToggleVisibilityIcon = visible
     ? VisibilityRounded
@@ -72,8 +77,6 @@ export function SceneNodeUI(props: {
     if (itemRef.current && itemRef.current.matches(":hover")) {
       threeObj.add(label);
     }
-
-    threeObj.visible = visible;
     return () => {
       threeObj.remove(label);
     };
@@ -85,7 +88,7 @@ export function SceneNodeUI(props: {
 
   const mouseEnter = (event: React.MouseEvent) => {
     // On hover, add an object label to the scene.
-    labelRef.current && threeObj.add(labelRef.current);
+    threeObj && labelRef.current && threeObj.add(labelRef.current);
     event.stopPropagation();
     if (event.buttons !== 0) {
       suppressMouseLeave.current = true;
@@ -94,7 +97,7 @@ export function SceneNodeUI(props: {
   };
   const mouseLeave = (event: React.MouseEvent) => {
     // Remove the object label.
-    labelRef.current && threeObj.remove(labelRef.current);
+    threeObj && labelRef.current && threeObj.remove(labelRef.current);
     if (suppressMouseLeave.current) {
       suppressMouseLeave.current = false;
       return;
