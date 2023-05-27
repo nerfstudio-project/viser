@@ -292,10 +292,12 @@ class ViserServer(MessageApi):
         @server.on_client_disconnect
         def _(conn: infra.ClientConnection) -> None:
             with self._state.client_lock:
-                handle = state.connected_clients.pop(conn.client_id)
+                if conn.client_id not in state.connected_clients:
+                    return
 
-            for cb in self._client_disconnect_cb:
-                cb(handle)
+                handle = state.connected_clients.pop(conn.client_id)
+                for cb in self._client_disconnect_cb:
+                    cb(handle)
 
         # Start the server.
         server.start()

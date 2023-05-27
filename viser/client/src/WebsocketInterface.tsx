@@ -209,7 +209,9 @@ function useMessageHandler() {
         addSceneNodeMakeParents(
           new SceneNode<THREE.Mesh>(
             message.name,
-            (ref) => <mesh ref={ref} geometry={geometry} material={material} />,
+            (ref) => {
+              return <mesh ref={ref} geometry={geometry} material={material} />;
+            },
             () => {
               // TODO: we can switch to the react-three-fiber <bufferGeometry />,
               // <meshStandardMaterial />, etc components to avoid manual
@@ -605,6 +607,7 @@ export default function WebsocketInterface() {
 
       ws.onclose = () => {
         console.log("Disconnected! " + server);
+        clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
         viewer.useGui.setState({ websocketConnected: false });
         if (viewer.useGui.getState().guiNames.length > 0) resetGui();
