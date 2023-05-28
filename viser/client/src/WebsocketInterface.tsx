@@ -68,6 +68,7 @@ function useMessageHandler() {
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
+  const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
   const removeGui = viewer.useGui((state) => state.removeGui);
   const guiSet = viewer.useGui((state) => state.guiSet);
@@ -93,6 +94,10 @@ function useMessageHandler() {
   // Return message handler.
   return (message: Message) => {
     switch (message.type) {
+      case "ThemeConfigurationMessage": {
+        setTheme(message);
+        break;
+      }
       // Add a coordinate frame.
       case "FrameMessage": {
         addSceneNodeMakeParents(

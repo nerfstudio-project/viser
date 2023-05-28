@@ -159,6 +159,10 @@ interface MessageGroupStart {
 interface MessageGroupEnd {
   type: "MessageGroupEnd";
 }
+interface ThemeConfigurationMessage {
+  type: "ThemeConfigurationMessage";
+  canvas_background_color: number;
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -187,4 +191,5 @@ export type Message =
   | GuiSetValueMessage
   | GuiSetLevaConfMessage
   | MessageGroupStart
-  | MessageGroupEnd;
+  | MessageGroupEnd
+  | ThemeConfigurationMessage;

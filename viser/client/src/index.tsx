@@ -98,11 +98,20 @@ const SingleViewer = React.memo(function SingleViewer(props: {
     objFromSceneNodeNameRef: React.useRef({}),
     sceneRef: React.useRef(null),
   };
+
+  const theme = viewer.useGui((state) => state.theme);
   return (
     <ViewerContext.Provider value={viewer}>
       <Wrapper ref={viewer.wrapperRef}>
         <ControlPanel />
-        <CanvasStyled camera={{ position: [3.0, 3.0, -3.0] }}>
+        <CanvasStyled
+          camera={{ position: [3.0, 3.0, -3.0] }}
+          style={{
+            backgroundColor:
+              // Convert int color to hex.
+              "#" + theme.canvas_background_color.toString(16).padStart(6, "0"),
+          }}
+        >
           <SceneContextSetter />
           <WebsocketInterface />
           <LabelRenderer />

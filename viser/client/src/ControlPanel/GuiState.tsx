@@ -1,6 +1,13 @@
 import React from "react";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { Message } from "../WebsocketMessages";
+
+// Individual message types are not exported, so we extract just one type from
+// the message union via an intersection.
+type ThemeConfigurationMessage = Message & {
+  type: "ThemeConfigurationMessage";
+};
 
 interface GuiConfig {
   levaConf: any;
@@ -9,6 +16,7 @@ interface GuiConfig {
 }
 
 interface GuiState {
+  theme: ThemeConfigurationMessage;
   label: string;
   server: string;
   websocketConnected: boolean;
@@ -19,6 +27,7 @@ interface GuiState {
 }
 
 interface GuiActions {
+  setTheme: (theme: ThemeConfigurationMessage) => void;
   addGui: (name: string, config: GuiConfig) => void;
   removeGui: (name: string) => void;
   resetGui: () => void;
@@ -27,6 +36,7 @@ interface GuiActions {
 }
 
 const cleanGuiState: GuiState = {
+  theme: { type: "ThemeConfigurationMessage", show_bottom_bar: false },
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.
   websocketConnected: false,
@@ -42,6 +52,10 @@ export function useGuiState(initialServer: string) {
       immer<GuiState & GuiActions>((set) => ({
         ...cleanGuiState,
         server: initialServer,
+        setTheme: (theme) =>
+          set((state) => {
+            state.theme = theme;
+          }),
         addGui: (name, guiConfig) =>
           set((state) => {
             state.guiNames.push(name);
