@@ -34,6 +34,10 @@ import {
   truncateSearchParamServers,
 } from "./SearchParamsUtils";
 
+import {
+  Titlebar
+} from "./Titlebar"
+
 type ViewerContextContents = {
   panelKey: number;
   useSceneTree: UseSceneTree;
@@ -157,6 +161,7 @@ function Root() {
         paddingBottom: "2.5em",
       }}
     >
+      <Titlebar></Titlebar>
       <PanelController
         panelCount={panelCount}
         setPanelCount={setPanelCount}
