@@ -163,6 +163,7 @@ function Root() {
         paddingBottom: "2.5em",
       }}
     >
+      <Titlebar></Titlebar>
       <PanelController
         panelCount={panelCount}
         setPanelCount={setPanelCount}
