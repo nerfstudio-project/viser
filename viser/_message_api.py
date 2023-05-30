@@ -132,11 +132,18 @@ class MessageApi(abc.ABC):
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
         ] = {}
+        self._handle_from_click_name: Dict[
+            str, SceneNodeHandle
+        ] = {}
 
         handler.register_handler(_messages.GuiUpdateMessage, self._handle_gui_updates)
         handler.register_handler(
             _messages.TransformControlsUpdateMessage,
             self._handle_transform_controls_updates,
+        )
+        handler.register_handler(
+            _messages.SceneNodeClickedMessage,
+            self._handle_click_updates,
         )
 
         self._gui_folder_labels: List[str] = []
@@ -588,6 +595,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        clickable: bool = False,
     ) -> SceneNodeHandle:
         """Add a mesh to the scene."""
         self._queue(
@@ -601,7 +609,9 @@ class MessageApi(abc.ABC):
                 side=side,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible, clickable)
+        self._handle_from_click_name[name] = node_handle
+        return node_handle
 
     def set_background_image(
         self,
@@ -766,6 +776,16 @@ class MessageApi(abc.ABC):
             cb(handle)
         if handle._impl_aux.sync_cb is not None:
             handle._impl_aux.sync_cb(client_id, handle)
+
+    def _handle_click_updates(
+        self, client_id: ClientId, message: _messages.SceneNodeClickedMessage
+    ) -> None:
+        """Callback for handling click messages."""
+        handle = self._handle_from_click_name.get(message.name, None)
+        if handle is None or handle._impl.click_cb is None:
+            return
+        for cb in handle._impl.click_cb:
+            cb(handle)
 
     def _add_gui_impl(
         self,

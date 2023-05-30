@@ -1,4 +1,5 @@
 import { createPortal } from "@react-three/fiber";
+import { useCursor } from '@react-three/drei'
 import React from "react";
 import * as THREE from "three";
 
@@ -8,6 +9,7 @@ import { immerable } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from ".";
+import { makeThrottledMessageSender } from "./WebsocketInterface";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>
@@ -39,6 +41,7 @@ interface SceneTreeState {
           visibility?: boolean;
           wxyz?: THREE.Quaternion;
           position?: THREE.Vector3;
+          clickable?: boolean;
         };
   };
 }
@@ -46,6 +49,7 @@ export interface SceneTreeActions extends SceneTreeState {
   setVisibility(name: string, visible: boolean): void;
   setOrientation(name: string, wxyz: THREE.Quaternion): void;
   setPosition(name: string, position: THREE.Vector3): void;
+  setClickable(name: string, clickable: boolean): void;
   addSceneNode(nodes: SceneNode): void;
   removeSceneNode(name: string): void;
   resetScene(): void;
@@ -104,6 +108,14 @@ export function useSceneTreeState() {
               ...state.attributesFromName[name],
 
               position: position,
+            };
+          }),
+        setClickable: (name, clickable) =>
+          set((state) => {
+            state.attributesFromName[name] = {
+              ...state.attributesFromName[name],
+
+              clickable: clickable,
             };
           }),
         addSceneNode: (node) =>
@@ -203,13 +215,13 @@ export function SceneNodeThreeObject(props: {
   const { makeObject, cleanup } = props.useSceneTree(
     (state) => state.nodeFromName[props.name]!
   );
-  const { visibility, wxyz, position } = props.useSceneTree(
+  const { visibility, wxyz, position, clickable } = props.useSceneTree(
     (state) => state.attributesFromName[props.name] || {}
   );
 
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
-  const { objFromSceneNodeNameRef } = React.useContext(ViewerContext)!;
+  const { objFromSceneNodeNameRef, websocketRef } = React.useContext(ViewerContext)!;
 
   React.useEffect(() => {
     if (obj === null) return;
@@ -234,9 +246,35 @@ export function SceneNodeThreeObject(props: {
     };
   }, [obj, cleanup]);
 
+  const sendClicksThrottled = makeThrottledMessageSender(
+    websocketRef,
+    50
+  );
+  const [hovered, setHovered] = React.useState(false);
+  useCursor(hovered);
+
   return (
     <>
-      {React.useMemo(() => makeObject(setRef), [makeObject, setRef])}
+      <group
+      onClick={(e)=>{
+        if (clickable) {
+          e.stopPropagation();
+          console.log("foo", props.name);
+          sendClicksThrottled({
+            type: "SceneNodeClickedMessage",
+            name: props.name,
+          });
+        }
+      }}
+      onPointerOver={() => {
+        if (clickable) setHovered(true);
+      }}
+      onPointerOut={() => {
+        if (clickable) setHovered(false);
+      }}
+      >{
+      React.useMemo(() => makeObject(setRef), [makeObject, setRef])
+      }</group>
       {obj !== null && (
         <SceneNodeThreeChildren
           name={props.name}

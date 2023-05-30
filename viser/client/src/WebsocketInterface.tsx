@@ -74,6 +74,7 @@ function useMessageHandler() {
   const setOrientation = viewer.useSceneTree((state) => state.setOrientation);
   const setPosition = viewer.useSceneTree((state) => state.setPosition);
   const setVisibility = viewer.useSceneTree((state) => state.setVisibility);
+  const setClickable = viewer.useSceneTree((state) => state.setClickable);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -507,6 +508,11 @@ function useMessageHandler() {
       // Set the visibility of a particular scene node.
       case "SetSceneNodeVisibilityMessage": {
         setVisibility(message.name, message.visible);
+        break;
+      }
+      // Set the clickability of a particular scene node.
+      case "SetSceneNodeClickableMessage": {
+        setClickable(message.name, message.clickable);
         break;
       }
       // Reset the entire scene, removing all scene nodes.
