@@ -10,7 +10,6 @@ import { Message } from "./WebsocketMessages";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { Html, PivotControls } from "@react-three/drei";
 import { ViewerContext } from ".";
-import { useThree } from "@react-three/fiber";
 import styled from "@emotion/styled";
 
 /** Send message over websocket. */
@@ -63,7 +62,6 @@ export function isTexture(
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
-  const scene = useThree((state) => state.scene);
 
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
@@ -412,8 +410,8 @@ function useMessageHandler() {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
 
-            const oldBackground = scene.background;
-            scene.background = texture;
+            const oldBackground = viewer.sceneRef.current!.background;
+            viewer.sceneRef.current!.background = texture;
             if (isTexture(oldBackground)) oldBackground.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
@@ -518,8 +516,8 @@ function useMessageHandler() {
       case "ResetSceneMessage": {
         resetScene();
 
-        const oldBackground = scene.background;
-        scene.background = null;
+        const oldBackground = viewer.sceneRef.current!.background;
+        viewer.sceneRef.current!.background = null;
         if (isTexture(oldBackground)) oldBackground.dispose();
 
         viewer.useGui.setState({ backgroundAvailable: false });
