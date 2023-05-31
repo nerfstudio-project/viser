@@ -2,6 +2,13 @@ import styled from "@emotion/styled";
 import { Environment } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
+import {
+  EffectComposer,
+  Outline,
+  Select,
+  Selection,
+} from "@react-three/postprocessing";
+import { BlendFunction } from "postprocessing";
 
 import { CameraPrimitives, SynchronizedCameraControls } from "./CameraControls";
 import React, { MutableRefObject, useContext, useRef, useState } from "react";
@@ -122,7 +129,19 @@ function ViewerCanvas() {
       <SceneContextSetter />
       <LabelRenderer />
       <SynchronizedCameraControls />
-      <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
+      <Selection>
+        <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
+        <EffectComposer enabled={true} autoClear={false}>
+          <Outline
+            hiddenEdgeColor={0xcccc00}
+            visibleEdgeColor={0xcccc00}
+            // hiddenEdgeColor={0x99c4ac}
+            blendFunction={BlendFunction.ALPHA} // set this to BlendFunction.ALPHA for dark outlines
+            edgeStrength={200}
+            blur
+          />
+        </EffectComposer>
+      </Selection>
       <Environment preset="city" blur={1} />
     </Canvas>
   );

@@ -1,5 +1,5 @@
 import { createPortal } from "@react-three/fiber";
-import { useCursor } from '@react-three/drei'
+import { useCursor } from "@react-three/drei";
 import React from "react";
 import * as THREE from "three";
 
@@ -10,6 +10,7 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from ".";
 import { makeThrottledMessageSender } from "./WebsocketInterface";
+import { Select } from "@react-three/postprocessing";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>
@@ -221,7 +222,8 @@ export function SceneNodeThreeObject(props: {
 
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
-  const { objFromSceneNodeNameRef, websocketRef } = React.useContext(ViewerContext)!;
+  const { objFromSceneNodeNameRef, websocketRef } =
+    React.useContext(ViewerContext)!;
 
   React.useEffect(() => {
     if (obj === null) return;
@@ -246,35 +248,34 @@ export function SceneNodeThreeObject(props: {
     };
   }, [obj, cleanup]);
 
-  const sendClicksThrottled = makeThrottledMessageSender(
-    websocketRef,
-    50
-  );
+  const sendClicksThrottled = makeThrottledMessageSender(websocketRef, 50);
   const [hovered, setHovered] = React.useState(false);
   useCursor(hovered);
 
   return (
     <>
       <group
-      onClick={(e)=>{
-        if (clickable) {
-          e.stopPropagation();
-          console.log("foo", props.name);
-          sendClicksThrottled({
-            type: "SceneNodeClickedMessage",
-            name: props.name,
-          });
-        }
-      }}
-      onPointerOver={() => {
-        if (clickable) setHovered(true);
-      }}
-      onPointerOut={() => {
-        if (clickable) setHovered(false);
-      }}
-      >{
-      React.useMemo(() => makeObject(setRef), [makeObject, setRef])
-      }</group>
+        onClick={(e) => {
+          if (clickable) {
+            e.stopPropagation();
+            console.log("foo", props.name);
+            sendClicksThrottled({
+              type: "SceneNodeClickedMessage",
+              name: props.name,
+            });
+          }
+        }}
+        onPointerOver={() => {
+          if (clickable) setHovered(true);
+        }}
+        onPointerOut={() => {
+          if (clickable) setHovered(false);
+        }}
+      >
+        <Select enabled={hovered}>
+          {React.useMemo(() => makeObject(setRef), [makeObject, setRef])}
+        </Select>
+      </group>
       {obj !== null && (
         <SceneNodeThreeChildren
           name={props.name}

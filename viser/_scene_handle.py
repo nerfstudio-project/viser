@@ -23,7 +23,7 @@ class _SceneNodeHandleState:
     )
     visible: bool = True
     clickable: bool = False
-    click_cb: Optional[List[Callable[[ClientId], None]]] = None
+    click_cb: Optional[List[Callable[[SceneNodeHandle], None]]] = None
 
 
 @dataclasses.dataclass
@@ -42,6 +42,7 @@ class SceneNodeHandle:
         clickable: bool = False,
     ) -> SceneNodeHandle:
         out = SceneNodeHandle(_SceneNodeHandleState(name, api))
+        api._handle_from_click_name[name] = out
 
         # Suppress mypy errors from asymmetric setters. These are fine in pyright.
         # - https://github.com/python/mypy/issues/3004
@@ -113,7 +114,9 @@ class SceneNodeHandle:
         )
         self._impl.visible = clickable
 
-    def on_click(self, func: Callable[[SceneNodeHandle], None]) -> None:
+    def on_click(
+        self, func: Callable[[SceneNodeHandle], None]
+    ) -> Callable[[SceneNodeHandle], None]:
         if self._impl.click_cb is None:
             self._impl.click_cb = []
         self._impl.click_cb.append(func)
