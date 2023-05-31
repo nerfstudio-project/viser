@@ -407,18 +407,12 @@ class MessageApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
     ) -> GuiHandle[IntOrFloat]:
-        """Add a slider to the GUI."""
+        """Add a slider to the GUI. Types of the min, max, step, and initial value should match."""
         assert max >= min
         if step is not None and step > max - min:
             step = max - min
         assert max >= initial_value >= min
-
-        # GUI callbacks cast incoming values to match the type of the initial value. If
-        # the min, max, or step is a float, we should cast to a float.
-        if type(initial_value) is int and (
-            type(min) is float or type(max) is float or type(step) is float
-        ):
-            initial_value = float(initial_value)  # type: ignore
+        assert type(min) == type(max) == type(step) == type(initial_value)
 
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
