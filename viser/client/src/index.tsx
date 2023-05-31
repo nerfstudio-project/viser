@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
 
 import { CameraPrimitives, SynchronizedCameraControls } from "./CameraControls";
-import React, { MutableRefObject, useRef, useState } from "react";
+import React, { MutableRefObject, useContext, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
 import ControlPanel from "./ControlPanel/ControlPanel";
@@ -61,14 +61,6 @@ const SingleViewer = React.memo(function SingleViewer(props: {
     position: relative;
   `;
 
-  const CanvasStyled = styled(Canvas)`
-    position: relative;
-    z-index: 0;
-
-    width: 100%;
-    height: 100%;
-  `;
-
   // Default server logic.
   function getDefaultServerFromUrl() {
     // https://localhost:8080/ => ws://localhost:8080
@@ -101,19 +93,40 @@ const SingleViewer = React.memo(function SingleViewer(props: {
   return (
     <ViewerContext.Provider value={viewer}>
       <Wrapper ref={viewer.wrapperRef}>
+        <WebsocketInterface />
         <ControlPanel />
-        <CanvasStyled camera={{ position: [3.0, 3.0, -3.0] }}>
-          <SceneContextSetter />
-          <WebsocketInterface />
-          <LabelRenderer />
-          <SynchronizedCameraControls />
-          <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
-          <Environment preset="city" blur={1} />
-        </CanvasStyled>
+        <ViewerCanvas />
       </Wrapper>
     </ViewerContext.Provider>
   );
 });
+
+function ViewerCanvas() {
+  const viewer = useContext(ViewerContext)!;
+  const canvas_background_color = viewer.useGui(
+    (state) => state.theme.canvas_background_color
+  );
+  return (
+    <Canvas
+      camera={{ position: [3.0, 3.0, -3.0] }}
+      style={{
+        backgroundColor:
+          // Convert int color to hex.
+          "#" + canvas_background_color.toString(16).padStart(6, "0"),
+        position: "relative",
+        zIndex: 0,
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      <SceneContextSetter />
+      <LabelRenderer />
+      <SynchronizedCameraControls />
+      <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
+      <Environment preset="city" blur={1} />
+    </Canvas>
+  );
+}
 
 /** Component for helping us set the scene reference. */
 function SceneContextSetter() {

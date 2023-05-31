@@ -314,3 +314,10 @@ class MessageGroupStart(Message):
 @dataclasses.dataclass
 class MessageGroupEnd(Message):
     """Sent server->client to indicate the end of a message group."""
+
+
+@dataclasses.dataclass
+class ThemeConfigurationMessage(Message):
+    """Message from server->client to configure parts of the GUI."""
+
+    canvas_background_color: int

@@ -10,7 +10,6 @@ import { Message } from "./WebsocketMessages";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { Html, PivotControls } from "@react-three/drei";
 import { ViewerContext } from ".";
-import { useThree } from "@react-three/fiber";
 import styled from "@emotion/styled";
 
 /** Send message over websocket. */
@@ -63,11 +62,11 @@ export function isTexture(
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
-  const scene = useThree((state) => state.scene);
 
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
+  const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
   const removeGui = viewer.useGui((state) => state.removeGui);
   const guiSet = viewer.useGui((state) => state.guiSet);
@@ -94,6 +93,10 @@ function useMessageHandler() {
   // Return message handler.
   return (message: Message) => {
     switch (message.type) {
+      case "ThemeConfigurationMessage": {
+        setTheme(message);
+        break;
+      }
       // Add a coordinate frame.
       case "FrameMessage": {
         addSceneNodeMakeParents(
@@ -408,8 +411,8 @@ function useMessageHandler() {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
 
-            const oldBackground = scene.background;
-            scene.background = texture;
+            const oldBackground = viewer.sceneRef.current!.background;
+            viewer.sceneRef.current!.background = texture;
             if (isTexture(oldBackground)) oldBackground.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
@@ -519,8 +522,8 @@ function useMessageHandler() {
       case "ResetSceneMessage": {
         resetScene();
 
-        const oldBackground = scene.background;
-        scene.background = null;
+        const oldBackground = viewer.sceneRef.current!.background;
+        viewer.sceneRef.current!.background = null;
         if (isTexture(oldBackground)) oldBackground.dispose();
 
         viewer.useGui.setState({ backgroundAvailable: false });
