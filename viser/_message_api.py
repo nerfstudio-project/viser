@@ -23,6 +23,7 @@ from typing import (
     Optional,
     Tuple,
     TypeVar,
+    Union,
     cast,
     overload,
 )
@@ -30,7 +31,7 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Literal, LiteralString, ParamSpec, assert_never
+from typing_extensions import Literal, LiteralString, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra
 from ._gui import (
@@ -64,11 +65,12 @@ def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
     return colors
 
 
-def _encode_rgb(
-    rgb: Tuple[int, int, int]
-    | Tuple[float, float, float]
-    | onp.ndarray = (80, 120, 255),
-) -> int:
+RgbTupleOrArray: TypeAlias = Union[
+    Tuple[int, int, int], Tuple[float, float, float], onp.ndarray
+]
+
+
+def _encode_rgb(rgb: RgbTupleOrArray) -> int:
     if isinstance(rgb, onp.ndarray):
         assert rgb.shape == (3,)
     rgb_fixed = tuple(
@@ -143,6 +145,18 @@ class MessageApi(abc.ABC):
 
         self._atomic_lock = threading.Lock()
         self._locked_thread_id = -1
+
+    def configure_theme(
+        self,
+        *,
+        canvas_background_color: RgbTupleOrArray = (255, 255, 255),
+    ) -> None:
+        """Configure the viser front-end's visual appearance."""
+        self._queue(
+            _messages.ThemeConfigurationMessage(
+                canvas_background_color=_encode_rgb(canvas_background_color)
+            ),
+        )
 
     @contextlib.contextmanager
     def gui_folder(self, label: str) -> Generator[None, None, None]:
@@ -480,9 +494,7 @@ class MessageApi(abc.ABC):
         fov: float,
         aspect: float,
         scale: float = 0.3,
-        color: Tuple[int, int, int]
-        | Tuple[float, float, float]
-        | onp.ndarray = (80, 120, 255),
+        color: RgbTupleOrArray = (80, 120, 255),
         image: Optional[onp.ndarray] = None,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: Optional[int] = None,
@@ -580,9 +592,7 @@ class MessageApi(abc.ABC):
         name: str,
         vertices: onp.ndarray,
         faces: onp.ndarray,
-        color: Tuple[int, int, int]
-        | Tuple[float, float, float]
-        | onp.ndarray = (90, 200, 255),
+        color: RgbTupleOrArray = (90, 200, 255),
         wireframe: bool = False,
         side: Literal["front", "back", "double"] = "front",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),

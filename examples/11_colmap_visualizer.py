@@ -33,6 +33,7 @@ def main(
         downsample_factor: Downsample factor for the images.
     """
     server = viser.ViserServer()
+    server.configure_theme(canvas_background_color=(230, 230, 230))
 
     # Load the colmap info.
     cameras = read_cameras_binary(colmap_path / "cameras.bin")
