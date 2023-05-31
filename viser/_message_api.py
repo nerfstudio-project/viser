@@ -399,6 +399,13 @@ class MessageApi(abc.ABC):
             step = max - min
         assert max >= initial_value >= min
 
+        # GUI callbacks cast incoming values to match the type of the initial value. If
+        # the min, max, or step is a float, we should cast to a float.
+        if type(initial_value) is int and (
+            type(min) is float or type(max) is float or type(step) is float
+        ):
+            initial_value = float(initial_value)  # type: ignore
+
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
             initial_value,
