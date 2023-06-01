@@ -5,7 +5,6 @@ import { Canvas, useThree } from "@react-three/fiber";
 import {
   EffectComposer,
   Outline,
-  Select,
   Selection,
 } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
@@ -133,9 +132,8 @@ function ViewerCanvas() {
         <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
         <EffectComposer enabled={true} autoClear={false}>
           <Outline
-            hiddenEdgeColor={0xcccc00}
-            visibleEdgeColor={0xcccc00}
-            // hiddenEdgeColor={0x99c4ac}
+            hiddenEdgeColor={0x000000}
+            visibleEdgeColor={0x000000}
             blendFunction={BlendFunction.ALPHA} // set this to BlendFunction.ALPHA for dark outlines
             edgeStrength={200}
             blur

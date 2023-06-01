@@ -17,8 +17,6 @@ import viser
 import viser.transforms as tf
 
 server = viser.ViserServer()
-server.configure_theme(canvas_background_color=(0, 0, 0))
-
 num_frames = 20
 
 

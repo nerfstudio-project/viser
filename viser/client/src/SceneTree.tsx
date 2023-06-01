@@ -250,39 +250,47 @@ export function SceneNodeThreeObject(props: {
 
   const sendClicksThrottled = makeThrottledMessageSender(websocketRef, 50);
   const [hovered, setHovered] = React.useState(false);
+  const objNode = React.useMemo(() => makeObject(setRef), [makeObject, setRef]);
+  const children = obj !== null && (
+    <SceneNodeThreeChildren
+      name={props.name}
+      useSceneTree={props.useSceneTree}
+      parent={obj}
+    />
+  );
   useCursor(hovered);
 
-  return (
-    <>
-      <group
-        onClick={(e) => {
-          if (clickable) {
+  if (clickable)
+    return (
+      <>
+        <group
+          onClick={(e) => {
             e.stopPropagation();
             console.log("foo", props.name);
             sendClicksThrottled({
               type: "SceneNodeClickedMessage",
               name: props.name,
             });
-          }
-        }}
-        onPointerOver={() => {
-          if (clickable) setHovered(true);
-        }}
-        onPointerOut={() => {
-          if (clickable) setHovered(false);
-        }}
-      >
-        <Select enabled={hovered}>
-          {React.useMemo(() => makeObject(setRef), [makeObject, setRef])}
-        </Select>
-      </group>
-      {obj !== null && (
-        <SceneNodeThreeChildren
-          name={props.name}
-          useSceneTree={props.useSceneTree}
-          parent={obj}
-        />
-      )}
-    </>
-  );
+          }}
+          onPointerOver={() => {
+            setHovered(true);
+          }}
+          onPointerOut={() => {
+            setHovered(false);
+          }}
+        >
+          <Select enabled={hovered}>{objNode}</Select>
+        </group>
+        {children}
+      </>
+    );
+  else {
+    hovered && setHovered(false);
+    return (
+      <>
+        {objNode}
+        {children}
+      </>
+    );
+  }
 }

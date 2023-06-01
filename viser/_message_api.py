@@ -790,7 +790,6 @@ class MessageApi(abc.ABC):
         self, client_id: ClientId, message: _messages.SceneNodeClickedMessage
     ) -> None:
         """Callback for handling click messages."""
-        print("Hi", message.name, self._handle_from_click_name)
         handle = self._handle_from_click_name.get(message.name, None)
         if handle is None or handle._impl.click_cb is None:
             return
