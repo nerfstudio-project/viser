@@ -12,6 +12,7 @@ from typing_extensions import Literal, override
 
 from . import infra
 
+
 class Message(infra.Message):
     @override
     def redundancy_key(self) -> str:
