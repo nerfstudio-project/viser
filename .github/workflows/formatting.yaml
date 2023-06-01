@@ -21,6 +21,6 @@ jobs:
           curl -sSL https://install.python-poetry.org | python3 -
           poetry install --all-extras
       - name: Run Ruff
-        run: poetry run ruff docs/ viser/
+        run: poetry run ruff docs/ viser/ examples/
       - name: Run Black
-        run: poetry run black docs/ viser/ --check
+        run: poetry run black docs/ viser/ examples/ --check
