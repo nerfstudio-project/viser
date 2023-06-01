@@ -4,14 +4,13 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union
 
 import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import Literal, override
 
 from . import infra
-
 
 class Message(infra.Message):
     @override
@@ -308,3 +307,5 @@ class ThemeConfigurationMessage(Message):
     """Message from server->client to configure parts of the GUI."""
 
     canvas_background_color: int
+    show_titlebar: bool
+    titlebar_content: str

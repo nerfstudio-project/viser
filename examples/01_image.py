@@ -14,6 +14,8 @@ import numpy as onp
 
 import viser
 
+from viser._message_api import TitlebarConfig, TitlebarPadding, TitlebarImage, TitlebarButton
+
 server = viser.ViserServer()
 
 # Add a background image.
@@ -21,6 +23,18 @@ server.set_background_image(
     iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
     format="png",
 )
+
+titlebarTheme = TitlebarConfig(left=[TitlebarButton(text="Getting Started", href="https://nerf.studio", variant='outlined'),
+                                     TitlebarButton(text="Github", icon="GitHub", href="https://github.com/nerfstudio-project/nerfstudio", variant='outlined'),
+                                     TitlebarButton(text="Documentation", icon="Description", href="https://docs.nerf.studio", variant='outlined'),
+                                     TitlebarButton(text="Viewport Controls", icon="Keyboard", href="https://docs.nerf.studio", variant='outlined'),
+                                     ], 
+                              right=[TitlebarImage(imageSource="https://docs.nerf.studio/en/latest/_static/imgs/logo.png", alt="NerfStudio Logo"), TitlebarPadding(width="5em")])
+
+server.configure_theme(canvas_background_color=(2, 230, 230),
+                       show_titlebar=True,
+                       titlebar_content=titlebarTheme
+                       );
 
 # Add main image.
 server.add_image(
