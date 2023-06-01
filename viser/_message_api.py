@@ -407,11 +407,12 @@ class MessageApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
     ) -> GuiHandle[IntOrFloat]:
-        """Add a slider to the GUI."""
+        """Add a slider to the GUI. Types of the min, max, step, and initial value should match."""
         assert max >= min
         if step is not None and step > max - min:
             step = max - min
         assert max >= initial_value >= min
+        assert type(min) == type(max) == type(step) == type(initial_value)
 
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
