@@ -13,6 +13,7 @@ import contextlib
 import io
 import threading
 import time
+import json
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -69,6 +70,28 @@ RgbTupleOrArray: TypeAlias = Union[
     Tuple[int, int, int], Tuple[float, float, float], onp.ndarray
 ]
 
+class TitlebarButton(dict):
+    def __init__(self, text: str=None, icon: str=None, href: str=None, variant:str=None) -> TitlebarButton:
+        super().__init__(self, text=text, icon=icon, href=href, variant=variant)
+
+class TitlebarImage(dict):
+    def __init__(self, imageSource: str=None, alt: str=None) -> TitlebarImage:
+        super().__init__(self, imageSource=imageSource, alt=alt)
+
+class TitlebarPadding(dict):
+    def __init__(self, width: str) -> TitlebarPadding:
+        super().__init__(self, width=width)
+
+TitlebarObject: TypeAlias = Union[TitlebarButton, TitlebarImage, TitlebarPadding]
+
+class TitlebarConfig():
+    def __init__(self, left: List[TitlebarObject]=[], center: List[TitlebarObject]=[], right: List[TitlebarObject]=[]) -> TitlebarConfig:
+        self.left: List[TitlebarObject] = left
+        self.center: List[TitlebarObject] = center
+        self.right: List[TitlebarObject] = right
+
+    def _encode(self):
+        return json.dumps([self.left, self.center, self.right])
 
 def _encode_rgb(rgb: RgbTupleOrArray) -> int:
     if isinstance(rgb, onp.ndarray):
@@ -80,6 +103,8 @@ def _encode_rgb(rgb: RgbTupleOrArray) -> int:
     assert len(rgb_fixed) == 3
     return int(rgb_fixed[0] * (256**2) + rgb_fixed[1] * 256 + rgb_fixed[2])
 
+def _encode_titlebar(objects: List[TitlebarObject]) -> Tuple[str, ...]:
+    return tuple([object._encode() for object in objects])
 
 def _encode_image_base64(
     image: onp.ndarray,
@@ -150,11 +175,15 @@ class MessageApi(abc.ABC):
         self,
         *,
         canvas_background_color: RgbTupleOrArray = (255, 255, 255),
+        show_titlebar: bool = False,
+        titlebar_content: Optional[TitlebarConfig] = None,
     ) -> None:
         """Configure the viser front-end's visual appearance."""
         self._queue(
             _messages.ThemeConfigurationMessage(
-                canvas_background_color=_encode_rgb(canvas_background_color)
+                canvas_background_color=_encode_rgb(canvas_background_color),
+                show_titlebar=show_titlebar,
+                titlebar_content= (titlebar_content._encode() if titlebar_content else None)
             ),
         )
 

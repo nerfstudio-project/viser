@@ -39,6 +39,8 @@ const cleanGuiState: GuiState = {
   theme: {
     type: "ThemeConfigurationMessage",
     canvas_background_color: 0xffffff,
+    show_titlebar: false,
+    titlebar_content: "[[], [], []]"
   },
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.

@@ -162,6 +162,8 @@ interface MessageGroupEnd {
 interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
   canvas_background_color: number;
+  show_titlebar: boolean;
+  titlebar_content: string;
 }
 
 export type Message =

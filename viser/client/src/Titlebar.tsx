@@ -1,6 +1,10 @@
 import Box from "@mui/material/Box";
-import { Button, Grid, Icon, SvgIcon } from "@mui/material";
-import { Server } from "ws";
+import { Button, Grid, Icon, IconButton, SvgIcon } from "@mui/material";
+import { useContext } from "react";
+import { ViewerContext } from ".";
+
+import * as Icons from '@mui/icons-material';
+type IconName = keyof typeof Icons;
 
 const buttonVariants = ['text', 'contained', 'outlined'];
 function isVariant(variant: unknown): variant is ('text' | 'contained' | 'outlined') {
@@ -16,10 +20,10 @@ interface TitlebarButtonProps {
 function isButtonData(obj: any): obj is TitlebarButtonProps {
     return (
         typeof obj === "object" &&
-        (obj.text === undefined || typeof obj.text === "string") &&
-        (obj.href === undefined || typeof obj.href === "string") &&
-        (obj.icon === undefined || typeof obj.icon === "string") &&
-        (obj.variant === undefined || typeof obj.variant === "string")
+        (obj.text === null || typeof obj.text === "string") &&
+        (obj.href === null || typeof obj.href === "string") &&
+        (obj.icon === null || typeof obj.icon === "string") &&
+        (obj.variant === null || typeof obj.variant === "string")
     );
 }
 
@@ -46,6 +50,14 @@ function isPaddingData(obj: any): obj is TitlebarPaddingProps {
 }
 
 export function TitlebarButton(props: TitlebarButtonProps) {
+    if (props.icon !== null && props.text === null) {
+        return (
+            <IconButton
+            href={props.href ?? ''}>
+                <SvgIcon component={Icons[props.icon as IconName] ?? null} />
+            </IconButton>
+        )
+    }
     return (
         <Button
             variant={isVariant(props.variant) ? props.variant : 'contained'}
@@ -57,9 +69,9 @@ export function TitlebarButton(props: TitlebarButtonProps) {
             }}
             size="small"
             target="_blank"
+            startIcon={props.icon ? (<SvgIcon component={Icons[props.icon as IconName] ?? null} />) : null}
         >
-            {props.icon !== undefined ? (<Icon style={{marginRight: '0.2em', fontSize: '1em'}}>{props.icon}</Icon>) : null}
-            <span style={{lineHeight: '1', marginTop: '0.25em'}}>{props.text ?? ''}</span>
+            {props.text ?? ''}
         </Button>
     )
 }
@@ -95,15 +107,22 @@ function renderTitlebarObject(object: TitlebarButtonProps | TitlebarImageProps |
     return null;
 }
 
-export function Titlebar(props: { useTitlebar: boolean; }) {
-
-    const left: Array<TitlebarButtonProps | TitlebarImageProps | TitlebarPaddingProps> = [{ text: "Getting Started", href: "https://docs.nerf.studio/en/latest/quickstart/viewer_quickstart.html", variant: "outlined" }, { text: "Github", icon: "github", href: "https://github.com/nerfstudio-project/nerfstudio", variant: "outlined" }, { text: "Documentation", icon: "description", href: "https://docs.nerf.studio/", variant: "outlined" }, { text: "Viewport Controls", icon: "keyboard", href: "https://viewer.nerf.studio/", variant: "outlined" }]
-    const center: Array<TitlebarButtonProps | TitlebarImageProps | TitlebarPaddingProps> = []
-    const right: Array<TitlebarButtonProps | TitlebarImageProps | TitlebarPaddingProps> = [{ imageSource: "https://docs.nerf.studio/en/latest/_images/logo.png", alt: "Nerfstudio Logo" }, {width: '5em'}]
-
-    if (!props.useTitlebar) {
+export function Titlebar() {
+    const viewer = useContext(ViewerContext)!;
+    const showTitlebar = viewer.useGui(
+        (state) => state.theme.show_titlebar
+    );
+    const content: Array<Array<TitlebarButtonProps | TitlebarImageProps | TitlebarPaddingProps>> = viewer.useGui(
+        (state) => JSON.parse(state.theme.titlebar_content)
+    )
+    
+    if (showTitlebar == null || content == null || !showTitlebar) {
         return null;
     }
+
+    const left = content[0];
+    const center = content[1];
+    const right = content[2];
 
     return (
         <Grid
@@ -117,7 +136,8 @@ export function Titlebar(props: { useTitlebar: boolean; }) {
                 direction: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
-                paddingX: "0.875em"
+                paddingX: "0.875em",
+                height: "2.5em"
             }}
         >
             <Grid item xs="auto" component="div"

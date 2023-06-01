@@ -61,8 +61,9 @@ const SingleViewer = React.memo(function SingleViewer(props: {
   // Layout and styles.
   const Wrapper = styled(Box)`
     width: 100%;
-    height: 100%;
+    height: 1px;
     position: relative;
+    flex: 1 0 auto;
   `;
 
   // Default server logic.
@@ -96,6 +97,7 @@ const SingleViewer = React.memo(function SingleViewer(props: {
   };
   return (
     <ViewerContext.Provider value={viewer}>
+      <Titlebar></Titlebar>
       <Wrapper ref={viewer.wrapperRef}>
         <WebsocketInterface />
         <ControlPanel />
@@ -161,7 +163,6 @@ function Root() {
         paddingBottom: "2.5em",
       }}
     >
-      <Titlebar useTitlebar ></Titlebar>
       <PanelController
         panelCount={panelCount}
         setPanelCount={setPanelCount}
@@ -190,6 +191,8 @@ function Root() {
                 borderBottom: isPortrait ? "1px solid" : null,
                 borderColor: "divider",
               },
+              display: "flex",
+              flexDirection: "column"
             }}
           >
             <SingleViewer panelKey={i} globalCameras={globalCameras} />
