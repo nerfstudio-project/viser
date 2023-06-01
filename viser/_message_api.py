@@ -70,28 +70,45 @@ RgbTupleOrArray: TypeAlias = Union[
     Tuple[int, int, int], Tuple[float, float, float], onp.ndarray
 ]
 
+
 class TitlebarButton(dict):
-    def __init__(self, text: Optional[str]=None, icon: Optional[str]=None, href: Optional[str]=None, variant: Optional[str]=None):
+    def __init__(
+        self,
+        text: Optional[str] = None,
+        icon: Optional[str] = None,
+        href: Optional[str] = None,
+        variant: Optional[str] = None,
+    ):
         super().__init__(self, text=text, icon=icon, href=href, variant=variant)
+
 
 class TitlebarImage(dict):
     def __init__(self, imageSource: str, alt: str):
         super().__init__(self, imageSource=imageSource, alt=alt)
 
+
 class TitlebarPadding(dict):
     def __init__(self, width: str):
         super().__init__(self, width=width)
 
+
 TitlebarObject: TypeAlias = Union[TitlebarButton, TitlebarImage, TitlebarPadding]
 
-class TitlebarConfig():
-    def __init__(self, left: List[TitlebarObject]=[], center: List[TitlebarObject]=[], right: List[TitlebarObject]=[]):
+
+class TitlebarConfig:
+    def __init__(
+        self,
+        left: List[TitlebarObject] = [],
+        center: List[TitlebarObject] = [],
+        right: List[TitlebarObject] = [],
+    ):
         self.left: List[TitlebarObject] = left
         self.center: List[TitlebarObject] = center
         self.right: List[TitlebarObject] = right
 
     def _encode(self):
         return json.dumps([self.left, self.center, self.right])
+
 
 def _encode_rgb(rgb: RgbTupleOrArray) -> int:
     if isinstance(rgb, onp.ndarray):
@@ -102,6 +119,7 @@ def _encode_rgb(rgb: RgbTupleOrArray) -> int:
     )
     assert len(rgb_fixed) == 3
     return int(rgb_fixed[0] * (256**2) + rgb_fixed[1] * 256 + rgb_fixed[2])
+
 
 def _encode_image_base64(
     image: onp.ndarray,
@@ -180,7 +198,9 @@ class MessageApi(abc.ABC):
             _messages.ThemeConfigurationMessage(
                 canvas_background_color=_encode_rgb(canvas_background_color),
                 show_titlebar=show_titlebar,
-                titlebar_content= (titlebar_content._encode() if titlebar_content else '')
+                titlebar_content=(
+                    titlebar_content._encode() if titlebar_content else ""
+                ),
             ),
         )
 
