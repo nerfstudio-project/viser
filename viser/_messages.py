@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple
 
 import numpy as onp
 import numpy.typing as onpt
