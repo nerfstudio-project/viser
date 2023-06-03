@@ -60,7 +60,7 @@ function SingleViewer() {
     searchParamKey
   );
   const initialServer =
-    servers.length > 1 ? servers[0] : getDefaultServerFromUrl();
+    servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
 
   // Values that can be globally accessed by components in a viewer.
   const viewer: ViewerContextContents = {
