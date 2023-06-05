@@ -907,7 +907,7 @@ class MessageApi(abc.ABC):
         # Set the disabled/visible fields. These will queue messages under-the-hood.
         if disabled:
             handle.disabled = disabled
-        if visible:
+        if not visible:
             handle.visible = visible
 
         return handle
