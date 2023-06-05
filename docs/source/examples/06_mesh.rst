@@ -30,7 +30,7 @@ Visualize a mesh. To get the demo data, see ``./assets/download_dragon_mesh.sh``
         print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
 
         server = viser.ViserServer()
-        server.add_mesh(
+        server.add_mesh_simple(
             name="/frame",
             vertices=vertices,
             faces=faces,
