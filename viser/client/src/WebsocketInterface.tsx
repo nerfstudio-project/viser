@@ -59,6 +59,21 @@ export function isTexture(
   );
 }
 
+/** Float **/
+function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
+  return new THREE.Float32BufferAttribute(
+    new Float32Array(new Uint8Array(colors)).map((value) => {
+      value = value / 255.0;
+      if (value <= 0.04045) {
+        return value / 12.92;
+      } else {
+        return Math.pow((value + 0.055) / 1.055, 2.4);
+      }
+    }),
+    3
+  );
+}
+
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
@@ -137,17 +152,7 @@ function useMessageHandler() {
         // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
         geometry.setAttribute(
           "color",
-          new THREE.Float32BufferAttribute(
-            new Float32Array(new Uint8Array(message.colors)).map((value) => {
-              value = value / 255.0;
-              if (value <= 0.04045) {
-                return value / 12.92;
-              } else {
-                return Math.pow((value + 0.055) / 1.055, 2.4);
-              }
-            }),
-            3
-          )
+          threeColorBufferFromUint8Buffer(message.colors)
         );
 
         addSceneNodeMakeParents(
@@ -176,7 +181,8 @@ function useMessageHandler() {
       case "MeshMessage": {
         const geometry = new THREE.BufferGeometry();
         const material = new THREE.MeshStandardMaterial({
-          color: message.color,
+          color: message.color || undefined,
+          vertexColors: message.vertex_colors !== null,
           wireframe: message.wireframe,
           side: {
             front: THREE.FrontSide,
@@ -196,6 +202,13 @@ function useMessageHandler() {
             3
           )
         );
+        if (message.vertex_colors !== null) {
+          geometry.setAttribute(
+            "color",
+            threeColorBufferFromUint8Buffer(message.vertex_colors)
+          );
+        }
+
         geometry.setIndex(
           new THREE.Uint32BufferAttribute(
             new Uint32Array(

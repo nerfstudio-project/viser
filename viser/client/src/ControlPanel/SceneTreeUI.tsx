@@ -41,7 +41,7 @@ export function SceneNodeUI(props: {
   const { objFromSceneNodeNameRef } = React.useContext(ViewerContext)!;
 
   const visible = props.useSceneTree(
-    (state) => state.attributesFromName[props.name]?.visibility
+    (state) => state.attributesFromName[props.name]?.visibility || true
   );
   if (sceneNode === undefined) return <></>;
 
