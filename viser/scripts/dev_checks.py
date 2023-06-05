@@ -4,9 +4,8 @@ import subprocess
 import sys
 
 import tyro
-from rich.style import Style
-
 from rich import console
+from rich.style import Style
 
 CONSOLE = console.Console()
 

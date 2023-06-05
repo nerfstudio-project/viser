@@ -45,7 +45,7 @@ class ExampleMetadata:
 
 def get_example_paths(examples_dir: pathlib.Path) -> Iterable[pathlib.Path]:
     return filter(
-        lambda p: not p.name.startswith("_"), sorted(examples_dir.glob("**/*.py"))
+        lambda p: not p.name.startswith("_"), sorted(examples_dir.glob("*.py"))
     )
 
 
