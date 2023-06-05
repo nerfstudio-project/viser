@@ -20,7 +20,7 @@ faces = mesh.faces
 print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
 
 server = viser.ViserServer()
-server.add_mesh(
+server.add_mesh_simple(
     name="/frame",
     vertices=vertices,
     faces=faces,
