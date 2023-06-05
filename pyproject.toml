@@ -18,6 +18,7 @@ tqdm = ">=4.0.0"
 tyro = ">=0.2.0"
 gdown = ">=4.6.6"
 rich = ">=13.3.3"
+trimesh = ">=3.21.7"
 
 # dev dependencies
 pyright = { version = ">=1.1.308", optional = true}
@@ -30,7 +31,6 @@ pre-commit = { version = "3.3.2", optional = true}
 smplx = { version = ">=0.1.28", optional = true}
 torch = { version = ">=1.13.1", optional = true}
 yourdfpy = { version = ">=0.0.53", optional = true}
-trimesh = { version = ">=3.21.7", optional = true}
 
 [tool.poetry.extras]
 dev = ["pyright", "mypy", "ruff", "black"]
