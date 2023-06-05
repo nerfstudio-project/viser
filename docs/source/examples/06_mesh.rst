@@ -30,14 +30,13 @@ Visualize a mesh. To get the demo data, see ``./assets/download_dragon_mesh.sh``
         print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
 
         server = viser.ViserServer()
-        server.add_frame(
+        server.add_mesh(
             name="/frame",
-            # so(3) => wxyz
+            vertices=vertices,
+            faces=faces,
             wxyz=tf.SO3.exp(onp.array([onp.pi / 2, 0.0, 0.0])).wxyz,
             position=(0.0, 0.0, 0.0),
-            show_axes=False,
         )
 
         while True:
-            server.add_mesh(name="/frame/dragon", vertices=vertices, faces=faces)
-            time.sleep(0.01)
+            time.sleep(10.0)

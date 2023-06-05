@@ -89,7 +89,7 @@ def main(
         )
 
         # Send mesh to visualizer.
-        server.add_mesh(
+        server.add_mesh_simple(
             "/reoriented/smpl",
             vertices=output.vertices.squeeze(axis=0).detach().cpu().numpy(),  # type: ignore
             faces=model.faces,

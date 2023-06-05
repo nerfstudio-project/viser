@@ -34,13 +34,11 @@ def main(urdf_path: Path) -> None:
             frame_name = urdf.scene.graph.transforms.parents[frame_name]
         return "/" + "/".join(frames[::-1])
 
-    for frame_name, value in urdf.scene.geometry.items():
-        assert isinstance(value, trimesh.Trimesh)
-        server.add_mesh(
+    for frame_name, mesh in urdf.scene.geometry.items():
+        assert isinstance(mesh, trimesh.Trimesh)
+        server.add_mesh_trimesh(
             frame_name_with_parents(frame_name) + "/mesh",
-            vertices=value.vertices,
-            faces=value.faces,
-            color=(150, 150, 150),
+            mesh,
         )
 
     gui_joints: List[viser.GuiHandle[float]] = []
