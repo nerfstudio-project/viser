@@ -46,7 +46,8 @@ interface MeshMessage {
   name: string;
   vertices: ArrayBuffer;
   faces: ArrayBuffer;
-  color: number;
+  color: number | null;
+  vertex_colors: ArrayBuffer | null;
   wireframe: boolean;
   side: "front" | "back" | "double";
 }

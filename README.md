@@ -17,6 +17,10 @@ tools like [Pangolin](https://github.com/stevenlovegrove/Pangolin),
 [rviz](https://wiki.ros.org/rviz/), and
 [meshcat](https://github.com/rdeits/meshcat).
 
+> **Warning**
+> `viser` is in a working state, but under development. Large changes may be made,
+> and backwards compatibility can't yet be guaranteed.
+
 As a standalone visualization tool, `viser` features include:
 
 - Web interface for easy use on remote machines.

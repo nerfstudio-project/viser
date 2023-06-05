@@ -114,7 +114,10 @@ class MeshMessage(Message):
     name: str
     vertices: onpt.NDArray[onp.float32]
     faces: onpt.NDArray[onp.uint32]
-    color: int
+
+    color: Optional[int]
+    vertex_colors: Optional[onpt.NDArray[onp.uint8]]
+
     wireframe: bool
     side: Literal["front", "back", "double"] = "front"
 
