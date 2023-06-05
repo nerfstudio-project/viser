@@ -4,26 +4,8 @@
 
 export const searchParamKey = "websocket";
 
-export function getServersFromSearchParams() {
-  return new URLSearchParams(window.location.search).getAll(searchParamKey);
-}
-
-export function syncSearchParamServer(panelKey: number, server: string) {
-  const serverParams = getServersFromSearchParams();
-
-  // Make sure our server search parameter list is long enough! This is hacky, but should always work if all panels have the same default server address.
-  while (panelKey >= serverParams.length) {
-    serverParams.push(server);
-  }
-
-  // Set the search parameter for this particular panel.
-  serverParams[panelKey] = server;
-
-  setServerParams(serverParams);
-}
-
-export function truncateSearchParamServers(length: number) {
-  setServerParams(getServersFromSearchParams().slice(0, length));
+export function syncSearchParamServer(server: string) {
+  setServerParams([server]);
 }
 
 function setServerParams(serverParams: string[]) {

@@ -14,7 +14,6 @@ import {
   makeThrottledMessageSender,
   sendWebsocketMessage,
 } from "../WebsocketInterface";
-import { ViewerContext } from "..";
 
 export const levaTheme: LevaCustomTheme = {
   colors: {
@@ -86,7 +85,6 @@ export default function GeneratedControls(props: {
 }) {
   const guiNames = props.useGui((state) => state.guiNames);
   const guiConfigFromName = props.useGui((state) => state.guiConfigFromName);
-  const panelKey = React.useContext(ViewerContext)!.panelKey.toString();
 
   // Add callbacks to guiConfigFromName.
   const suppressOnChange = React.useRef<{ [key: string]: boolean }>({});
@@ -142,13 +140,7 @@ export default function GeneratedControls(props: {
       // Add any other kind of input.
       const sendUpdate = makeThrottledMessageSender(props.websocketRef, 50);
 
-      // Leva uses the name of an input as its DOM id. We add the panel key as
-      // a suffix to make sure every input has a unique ID; this prevents
-      // interference from multiple panels connected to the same server.
-      // Matters especially for checkboxes.
-      //
-      // This isn't applied to buttons above because buttons in Leva have no `label` field.
-      leafFolder[guiName + "-" + panelKey] = {
+      leafFolder["_viser-generated-input-" + guiName] = {
         ...levaConf,
         onChange: (value: any, _propName: any, options: any) => {
           if (options.initial) return;
@@ -210,7 +202,7 @@ export default function GeneratedControls(props: {
       }, 10);
 
       // Set Leva control.
-      set({ [name + "-" + panelKey]: value });
+      set({ ["_viser-generated-input-" + name]: value });
     });
   }, [guiSetQueue, applyGuiSetQueue, set]);
 

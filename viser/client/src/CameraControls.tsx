@@ -1,4 +1,4 @@
-import React, { RefObject, useContext } from "react";
+import React, { useContext } from "react";
 import { PerspectiveCamera } from "three";
 import * as holdEvent from "hold-event";
 import { CameraControls } from "@react-three/drei";
@@ -6,12 +6,6 @@ import { makeThrottledMessageSender } from "./WebsocketInterface";
 import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { ViewerContext } from ".";
-
-export interface CameraPrimitives {
-  synchronize: boolean;
-  cameras: PerspectiveCamera[];
-  cameraControlRefs: RefObject<CameraControls>[];
-}
 
 /** OrbitControls, but synchronized with the server and other panels. */
 export function SynchronizedCameraControls() {
@@ -68,91 +62,20 @@ export function SynchronizedCameraControls() {
     });
   }, [camera, sendCameraThrottled]);
 
-  // What do we need to when the camera moves?
-  sendCamera();
-  const cameraChangedCallback = React.useCallback(() => {
-    // If desired, send our camera via websocket.
-    sendCamera();
-
-    // Match all cameras.
-    const globalCameras = viewer.globalCameras.current;
-    if (globalCameras.synchronize) {
-      globalCameras.synchronize = false;
-
-      globalCameras.cameraControlRefs.forEach((other) => {
-        if (cameraControlRef === other) return;
-        const position = cameraControlRef.current!.getPosition(
-          new THREE.Vector3()
-        );
-        const target = cameraControlRef.current!.getTarget(new THREE.Vector3());
-        other.current!.setLookAt(
-          position.x,
-          position.y,
-          position.z,
-          target.x,
-          target.y,
-          target.z
-        );
-
-        const up = cameraControlRef.current!.camera.up;
-        other.current!.camera.up.set(up.x, up.y, up.z);
-        other.current!.updateCameraUp();
-      });
-
-      // Hack to prevent the cameraChangedCallback() functions of other camera controls from firing.
-      //
-      // TODO: there are definitely better ways of doing this. The easiest may be to track a separate copy of camera
-      // parameters, which we compare against at the start of cameraChangeCallback().
-      setTimeout(() => (globalCameras.synchronize = true), 0);
-    }
-  }, [viewer.globalCameras, camera, sendCamera]);
-
   // Send camera for new connections.
   // We add a small delay to give the server time to add a callback.
   const connected = viewer.useGui((state) => state.websocketConnected);
   React.useEffect(() => {
     if (!connected) return;
-    setTimeout(() => cameraChangedCallback(), 50);
-  }, [connected, cameraChangedCallback]);
+    setTimeout(() => sendCamera(), 50);
+  }, [connected, sendCamera]);
 
   React.useEffect(() => {
-    const globalCameras = viewer.globalCameras.current;
-
-    if (globalCameras.synchronize && globalCameras.cameras.length > 0) {
-      const ours = cameraControlRef.current!;
-      const other = globalCameras.cameraControlRefs[0].current!;
-      const position = new THREE.Vector3();
-      const target = new THREE.Vector3();
-      other.getPosition(position);
-      other.getTarget(target);
-      ours.setLookAt(
-        position.x,
-        position.y,
-        position.z,
-        target.x,
-        target.y,
-        target.z
-      );
-    }
-
-    globalCameras.cameras.push(camera);
-    globalCameras.cameraControlRefs.push(cameraControlRef);
-
-    window.addEventListener("resize", cameraChangedCallback);
-
+    window.addEventListener("resize", sendCamera);
     return () => {
-      window.removeEventListener("resize", cameraChangedCallback);
-
-      // Remove ourself from camera list. Since we always add/remove panels
-      // from the end, a pop() would actually work as well here in constant
-      // time.
-      globalCameras.cameras.splice(globalCameras.cameras.indexOf(camera), 1);
-      globalCameras.cameraControlRefs.splice(
-        globalCameras.cameraControlRefs.indexOf(cameraControlRef),
-        1
-      );
+      window.removeEventListener("resize", sendCamera);
     };
-  }, [cameraChangedCallback, camera, viewer.globalCameras]);
+  }, [camera]);
 
   // Keyboard controls.
   //
@@ -180,16 +103,16 @@ export function SynchronizedCameraControls() {
     const sKey = new holdEvent.KeyboardKeyHold(KEYCODE.S, 20);
     const dKey = new holdEvent.KeyboardKeyHold(KEYCODE.D, 20);
     aKey.addEventListener("holding", (event) => {
-      cameraControls.truck(-0.01 * event!.deltaTime, 0, false);
+      cameraControls.truck(-0.002 * event!.deltaTime, 0, false);
     });
     dKey.addEventListener("holding", (event) => {
-      cameraControls.truck(0.01 * event!.deltaTime, 0, false);
+      cameraControls.truck(0.002 * event!.deltaTime, 0, false);
     });
     wKey.addEventListener("holding", (event) => {
-      cameraControls.forward(0.01 * event!.deltaTime, false);
+      cameraControls.forward(0.002 * event!.deltaTime, false);
     });
     sKey.addEventListener("holding", (event) => {
-      cameraControls.forward(-0.01 * event!.deltaTime, false);
+      cameraControls.forward(-0.002 * event!.deltaTime, false);
     });
 
     const leftKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_LEFT, 20);
@@ -239,7 +162,7 @@ export function SynchronizedCameraControls() {
       dollySpeed={0.3}
       smoothTime={0.0}
       draggingSmoothTime={0.0}
-      onChange={cameraChangedCallback}
+      onChange={sendCamera}
       makeDefault
     />
   );

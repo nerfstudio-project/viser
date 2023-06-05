@@ -311,9 +311,7 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraLookAtMessage": {
-        const cameraControls =
-          viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
-            .current!;
+        const cameraControls = viewer.cameraControlRef.current!;
 
         const R_threeworld_world = new THREE.Quaternion();
         R_threeworld_world.setFromEuler(
@@ -329,10 +327,8 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraUpDirectionMessage": {
-        const camera = viewer.globalCameras.current!.cameras[viewer.panelKey];
-        const cameraControls =
-          viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
-            .current!;
+        const camera = viewer.cameraRef.current!;
+        const cameraControls = viewer.cameraControlRef.current!;
         const R_threeworld_world = new THREE.Quaternion();
         R_threeworld_world.setFromEuler(
           new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
@@ -347,9 +343,7 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraPositionMessage": {
-        const cameraControls =
-          viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
-            .current!;
+        const cameraControls = viewer.cameraControlRef.current!;
 
         // Set the camera position. Note that this will shift the orientation as-well.
         const position_cmd = new THREE.Vector3(
@@ -371,7 +365,7 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraFovMessage": {
-        const camera = viewer.globalCameras.current!.cameras[viewer.panelKey];
+        const camera = viewer.cameraRef.current!;
         // tan(fov / 2.0) = 0.5 * film height / focal length
         // focal length = 0.5 * film height / tan(fov / 2.0)
         camera.setFocalLength(
@@ -582,7 +576,7 @@ export default function WebsocketInterface() {
   const server = viewer.useGui((state) => state.server);
   const resetGui = viewer.useGui((state) => state.resetGui);
 
-  syncSearchParamServer(viewer.panelKey, server);
+  syncSearchParamServer(server);
 
   React.useEffect(() => {
     // Lock for making sure messages are handled in order.
