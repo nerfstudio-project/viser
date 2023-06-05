@@ -11,7 +11,6 @@ import { ViewerContext } from ".";
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
   const camera = useThree((state) => state.camera as PerspectiveCamera);
-  const cameraControlRef = React.useRef<CameraControls>(null);
 
   const sendCameraThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
@@ -21,7 +20,7 @@ export function SynchronizedCameraControls() {
   // Callback for sending cameras.
   const sendCamera = React.useCallback(() => {
     const three_camera = camera;
-    const camera_control = cameraControlRef.current;
+    const camera_control = viewer.cameraControlRef.current;
 
     if (camera_control === null) {
       // Camera controls not yet ready, let's re-try later.
@@ -96,7 +95,7 @@ export function SynchronizedCameraControls() {
       ARROW_RIGHT: 39,
       ARROW_DOWN: 40,
     };
-    const cameraControls = cameraControlRef.current!;
+    const cameraControls = viewer.cameraControlRef.current!;
 
     const wKey = new holdEvent.KeyboardKeyHold(KEYCODE.W, 20);
     const aKey = new holdEvent.KeyboardKeyHold(KEYCODE.A, 20);
@@ -120,7 +119,6 @@ export function SynchronizedCameraControls() {
     const upKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_UP, 20);
     const downKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_DOWN, 20);
     leftKey.addEventListener("holding", (event) => {
-      console.log(cameraControls);
       cameraControls.rotate(
         -0.1 * THREE.MathUtils.DEG2RAD * event!.deltaTime,
         0,
@@ -156,7 +154,7 @@ export function SynchronizedCameraControls() {
 
   return (
     <CameraControls
-      ref={cameraControlRef}
+      ref={viewer.cameraControlRef}
       minDistance={0.1}
       maxDistance={200.0}
       dollySpeed={0.3}
