@@ -633,32 +633,46 @@ class MessageApi(abc.ABC):
     ) -> SceneNodeHandle:
         """Add a trimesh mesh to the scene."""
         if isinstance(mesh.visual, trimesh.visual.ColorVisuals):
-            vertex_colors = mesh.visual.vertex_colors
+            vertex_colors = mesh.visual.vertex_colors[:3]
+            self._queue(
+                _messages.MeshMessage(
+                    name,
+                    mesh.vertices.astype(onp.float32),
+                    mesh.faces.astype(onp.uint32),
+                    color=None,
+                    vertex_colors=(
+                        vertex_colors.view(onp.ndarray).astype(onp.uint8)[..., :3]
+                    ),
+                    wireframe=wireframe,
+                    side=side,
+                )
+            )
         elif isinstance(mesh.visual, trimesh.visual.TextureVisuals):
             # TODO: this needs to be implemented.
             import warnings
 
             warnings.warn(
-                "Texture visuals are not supported yet, we'll do our best with vertex colors!",
+                "Texture visuals are not fully supported yet!",
                 stacklevel=2,
             )
-            vertex_colors = mesh.visual.to_color().vertex_colors
+            self._queue(
+                _messages.MeshMessage(
+                    name,
+                    mesh.vertices.astype(onp.float32),
+                    mesh.faces.astype(onp.uint32),
+                    color=_encode_rgb(
+                        # Note that `vertex_colors` here is per-UV coordinate, not
+                        # per mesh vertex.
+                        mesh.visual.to_color().vertex_colors.flatten()[:3]
+                    ),
+                    vertex_colors=(None),
+                    wireframe=wireframe,
+                    side=side,
+                )
+            )
         else:
             assert False, f"Unsupported texture visuals: {mesh.visual}"
 
-        self._queue(
-            _messages.MeshMessage(
-                name,
-                mesh.vertices.astype(onp.float32),
-                mesh.faces.astype(onp.uint32),
-                color=None,
-                vertex_colors=(
-                    vertex_colors.view(onp.ndarray).astype(onp.uint8)[..., :3]
-                ),
-                wireframe=wireframe,
-                side=side,
-            )
-        )
         return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
     def set_background_image(
