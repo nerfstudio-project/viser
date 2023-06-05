@@ -31,7 +31,9 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
+import trimesh.visual
 from typing_extensions import Literal, LiteralString, ParamSpec, TypeAlias, assert_never
+from yourdfpy.urdf import trimesh
 
 from . import _messages, infra
 from ._gui import (
@@ -588,7 +590,11 @@ class MessageApi(abc.ABC):
         )
         return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
-    def add_mesh(
+    def add_mesh(self, *args, **kwargs) -> SceneNodeHandle:
+        """Deprecated alias for `add_mesh_simple()`."""
+        return self.add_mesh_simple(*args, **kwargs)
+
+    def add_mesh_simple(
         self,
         name: str,
         vertices: onp.ndarray,
@@ -608,6 +614,47 @@ class MessageApi(abc.ABC):
                 faces.astype(onp.uint32),
                 # (255, 255, 255) => 0xffffff, etc
                 color=_encode_rgb(color),
+                vertex_colors=None,
+                wireframe=wireframe,
+                side=side,
+            )
+        )
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+
+    def add_mesh_trimesh(
+        self,
+        name: str,
+        mesh: trimesh.Trimesh,
+        wireframe: bool = False,
+        side: Literal["front", "back", "double"] = "front",
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> SceneNodeHandle:
+        """Add a trimesh mesh to the scene."""
+        if isinstance(mesh.visual, trimesh.visual.ColorVisuals):
+            vertex_colors = mesh.visual.vertex_colors
+        elif isinstance(mesh.visual, trimesh.visual.TextureVisuals):
+            # TODO: this needs to be implemented.
+            import warnings
+
+            warnings.warn(
+                "Texture visuals are not supported yet, we'll do our best with vertex colors!",
+                stacklevel=2,
+            )
+            vertex_colors = mesh.visual.to_color().vertex_colors
+        else:
+            assert False, f"Unsupported texture visuals: {mesh.visual}"
+
+        self._queue(
+            _messages.MeshMessage(
+                name,
+                mesh.vertices.astype(onp.float32),
+                mesh.faces.astype(onp.uint32),
+                color=None,
+                vertex_colors=(
+                    vertex_colors.view(onp.ndarray).astype(onp.uint8)[..., :3]
+                ),
                 wireframe=wireframe,
                 side=side,
             )
