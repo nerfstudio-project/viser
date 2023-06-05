@@ -15,7 +15,6 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
 
         import time
         from pathlib import Path
-        from typing import Optional
 
         import imageio.v3 as iio
         import numpy as onp
@@ -44,6 +43,7 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                 downsample_factor: Downsample factor for the images.
             """
             server = viser.ViserServer()
+            server.configure_theme(canvas_background_color=(230, 230, 230))
 
             # Load the colmap info.
             cameras = read_cameras_binary(colmap_path / "cameras.bin")
@@ -59,10 +59,18 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                     )
 
             gui_points = server.add_gui_slider(
-                "Max points", min=10, max=len(points3d), step=1, initial_value=50_000
+                "Max points",
+                min=1,
+                max=len(points3d),
+                step=1,
+                initial_value=min(len(points3d), 50_000),
             )
             gui_frames = server.add_gui_slider(
-                "Max frames", min=10, max=len(images), step=1, initial_value=100
+                "Max frames",
+                min=1,
+                max=len(images),
+                step=1,
+                initial_value=min(len(images), 100),
             )
             gui_point_size = server.add_gui_number("Point size", initial_value=0.05)
 
