@@ -113,8 +113,12 @@ function ViewerCanvas() {
 
 /** Component for helping us set the scene reference. */
 function SceneContextSetter() {
-  const { sceneRef } = React.useContext(ViewerContext)!;
-  sceneRef!.current = useThree((state) => state.scene);
+  const { sceneRef, cameraRef } = React.useContext(ViewerContext)!;
+  sceneRef.current = useThree((state) => state.scene);
+  cameraRef.current = useThree(
+    (state) => state.camera as THREE.PerspectiveCamera
+  );
+  console.log(cameraRef.current);
   return <></>;
 }
 

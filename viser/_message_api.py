@@ -31,9 +31,9 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
+import trimesh
 import trimesh.visual
 from typing_extensions import Literal, LiteralString, ParamSpec, TypeAlias, assert_never
-from yourdfpy.urdf import trimesh
 
 from . import _messages, infra
 from ._gui import (
