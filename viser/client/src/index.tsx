@@ -127,7 +127,6 @@ function Root() {
         height: "100%",
         position: "relative",
         boxSizing: "border-box",
-        paddingBottom: "2.5em",
       }}
     >
       <Box
