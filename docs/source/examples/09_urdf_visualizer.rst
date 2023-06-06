@@ -77,20 +77,23 @@ Examples:
 
                 for joint_name, joint in urdf.joint_map.items():
                     assert isinstance(joint, yourdfpy.Joint)
+
+                    min = (
+                        joint.limit.lower
+                        if joint.limit is not None and joint.limit.lower is not None
+                        else -onp.pi
+                    )
+                    max = (
+                        joint.limit.upper
+                        if joint.limit is not None and joint.limit.upper is not None
+                        else onp.pi
+                    )
                     slider = server.add_gui_slider(
                         name=joint_name,
-                        min=(
-                            joint.limit.lower
-                            if joint.limit is not None and joint.limit.lower is not None
-                            else -onp.pi
-                        ),
-                        max=(
-                            joint.limit.upper
-                            if joint.limit is not None and joint.limit.upper is not None
-                            else onp.pi
-                        ),
+                        min=min,
+                        max=max,
                         step=1e-3,
-                        initial_value=0.0,
+                        initial_value=0.0 if min < 0 and max > 0 else (min + max) / 2.0,
                     )
                     if joint.limit is None:
                         slider.visible = False
