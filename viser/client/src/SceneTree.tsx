@@ -83,7 +83,10 @@ export function useSceneTreeState() {
     create(
       immer<SceneTreeState & SceneTreeActions>((set) => ({
         nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
-        attributesFromName: {},
+        attributesFromName: {
+          "": { visibility: true },
+          "/WorldAxes": { visibility: true },
+        },
         setVisibility: (name, visibility) =>
           set((state) => {
             state.attributesFromName[name] = {
@@ -122,6 +125,10 @@ export function useSceneTreeState() {
               state.nodeFromName[node.name] = node;
               state.nodeFromName[parent_name]!.children.push(node.name);
             }
+            state.attributesFromName[node.name] = {
+              visibility: true,
+              ...state.attributesFromName[node.name],
+            };
           }),
         removeSceneNode: (name) =>
           set((state) => {
