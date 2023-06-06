@@ -7,7 +7,7 @@ import {
   Outline,
   Selection,
 } from "@react-three/postprocessing";
-import { BlendFunction } from "postprocessing";
+import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
 import React from "react";
@@ -115,10 +115,12 @@ function ViewerCanvas() {
         <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
         <EffectComposer enabled={true} autoClear={false}>
           <Outline
-            hiddenEdgeColor={0x000000}
-            visibleEdgeColor={0x000000}
-            blendFunction={BlendFunction.ALPHA} // set this to BlendFunction.ALPHA for dark outlines
-            edgeStrength={200}
+            hiddenEdgeColor={0xfbff00}
+            visibleEdgeColor={0xfbff00}
+            blendFunction={BlendFunction.SCREEN} // set this to BlendFunction.ALPHA for dark outlines
+            kernelSize={KernelSize.MEDIUM}
+            edgeStrength={30.0}
+            height={480}
             blur
           />
         </EffectComposer>

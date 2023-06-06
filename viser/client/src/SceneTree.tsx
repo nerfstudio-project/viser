@@ -272,7 +272,8 @@ export function SceneNodeThreeObject(props: {
               name: props.name,
             });
           }}
-          onPointerOver={() => {
+          onPointerOver={(e) => {
+            e.stopPropagation();
             setHovered(true);
           }}
           onPointerOut={() => {

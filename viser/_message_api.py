@@ -136,9 +136,7 @@ class MessageApi(abc.ABC):
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
         ] = {}
-        self._handle_from_click_name: Dict[
-            str, SceneNodeHandle
-        ] = {}
+        self._handle_from_click_name: Dict[str, SceneNodeHandle] = {}
 
         handler.register_handler(_messages.GuiUpdateMessage, self._handle_gui_updates)
         handler.register_handler(
@@ -627,7 +625,9 @@ class MessageApi(abc.ABC):
                 side=side,
             )
         )
-        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible, clickable)
+        node_handle = SceneNodeHandle._make(
+            self, name, wxyz, position, visible, clickable
+        )
         return node_handle
 
     def add_mesh_trimesh(
