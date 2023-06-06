@@ -414,7 +414,18 @@ class MessageApi(abc.ABC):
         if step is not None and step > max - min:
             step = max - min
         assert max >= initial_value >= min
-        assert type(min) == type(max) == type(step) == type(initial_value)
+
+        # GUI callbacks cast incoming values to match the type of the initial value. If
+        # the min, max, or step is a float, we should cast to a float.
+        if type(initial_value) is int and (
+            type(min) is float or type(max) is float or type(step) is float
+        ):
+            initial_value = float(initial_value)  # type: ignore
+
+        # TODO: as of 6/5/2023, this assert will break something in nerfstudio. (at
+        # least LERF)
+        #
+        # assert type(min) == type(max) == type(step) == type(initial_value)
 
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
