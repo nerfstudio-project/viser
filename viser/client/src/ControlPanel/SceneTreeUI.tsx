@@ -38,12 +38,13 @@ export function SceneNodeUI(props: {
   const sceneNode = props.useSceneTree(
     (state) => state.nodeFromName[props.name]
   );
-  const { objFromSceneNodeNameRef } = React.useContext(ViewerContext)!;
 
-  const visible = props.useSceneTree(
-    (state) => state.attributesFromName[props.name]?.visibility || true
-  );
   if (sceneNode === undefined) return <></>;
+
+  const { objFromSceneNodeNameRef } = React.useContext(ViewerContext)!;
+  const visible = props.useSceneTree(
+    (state) => state.attributesFromName[props.name]?.visibility
+  );
 
   const setVisibility = props.useSceneTree((state) => state.setVisibility);
   const ToggleVisibilityIcon = visible
