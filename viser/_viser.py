@@ -184,14 +184,14 @@ class ClientHandle(MessageApi):
             got_lock = False
         else:
             self._atomic_lock.acquire()
-            self._queue(_messages.MessageGroupStart())
+            self._queue(_messages.GroupStartMessage())
             self._locked_thread_id = thread_id
             got_lock = True
 
         yield
 
         if got_lock:
-            self._queue(_messages.MessageGroupEnd())
+            self._queue(_messages.GroupEndMessage())
             self._atomic_lock.release()
             self._locked_thread_id = -1
 
@@ -376,7 +376,7 @@ class ViserServer(MessageApi):
                 for client in self.get_clients().values():
                     stack.enter_context(client._atomic_lock)
 
-                self._queue(_messages.MessageGroupStart())
+                self._queue(_messages.GroupStartMessage())
 
             # There's a possible race condition here if we write something like:
             #
@@ -384,7 +384,7 @@ class ViserServer(MessageApi):
             #     client.add_frame(...)
             #
             # - We enter the server's atomic() context.
-            # - The server pushes a MessageGroupStart() to the broadcast buffer.
+            # - The server pushes a GroupStartMessage() to the broadcast buffer.
             # - The client pushes a frame message to the client buffer.
             # - For whatever reason the client buffer is handled before the broadcast
             # buffer.
@@ -395,6 +395,6 @@ class ViserServer(MessageApi):
             yield
 
         if got_lock:
-            self._queue(_messages.MessageGroupEnd())
+            self._queue(_messages.GroupEndMessage())
             self._atomic_lock.release()
             self._locked_thread_id = -1

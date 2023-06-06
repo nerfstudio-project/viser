@@ -297,12 +297,12 @@ class GuiSetLevaConfMessage(Message):
 
 
 @dataclasses.dataclass
-class MessageGroupStart(Message):
+class GroupStartMessage(Message):
     """Sent server->client to indicate the start of a message group."""
 
 
 @dataclasses.dataclass
-class MessageGroupEnd(Message):
+class GroupEndMessage(Message):
     """Sent server->client to indicate the end of a message group."""
 
 
