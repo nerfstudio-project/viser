@@ -2,8 +2,7 @@
 // This file should not be manually modified.
 
 // For numpy arrays, we directly serialize the underlying data buffer.
-type ArrayBuffer = Uint8Array;
-interface ViewerCameraMessage {
+type ArrayBuffer = Uint8Array;interface ViewerCameraMessage {
   type: "ViewerCameraMessage";
   wxyz: [number, number, number, number];
   position: [number, number, number];
@@ -19,7 +18,7 @@ interface CameraFrustumMessage {
   aspect: number;
   scale: number;
   color: number;
-  image_media_type: "image/jpeg" | "image/png" | null;
+  image_media_type: 'image/jpeg' | 'image/png' | null;
   image_base64_data: string | null;
 }
 interface FrameMessage {
@@ -49,7 +48,7 @@ interface MeshMessage {
   color: number | null;
   vertex_colors: ArrayBuffer | null;
   wireframe: boolean;
-  side: "front" | "back" | "double";
+  side: 'front' | 'back' | 'double';
 }
 interface TransformControlsMessage {
   type: "TransformControlsMessage";
@@ -101,13 +100,13 @@ interface TransformControlsUpdateMessage {
 }
 interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
-  media_type: "image/jpeg" | "image/png";
+  media_type: 'image/jpeg' | 'image/png';
   base64_data: string;
 }
 interface ImageMessage {
   type: "ImageMessage";
   name: string;
-  media_type: "image/jpeg" | "image/png";
+  media_type: 'image/jpeg' | 'image/png';
   base64_data: string;
   render_width: number;
   render_height: number;
@@ -154,18 +153,18 @@ interface GuiSetLevaConfMessage {
   name: string;
   leva_conf: any;
 }
-interface MessageGroupStart {
-  type: "MessageGroupStart";
+interface GroupStartMessage {
+  type: "GroupStartMessage";
 }
-interface MessageGroupEnd {
-  type: "MessageGroupEnd";
+interface GroupEndMessage {
+  type: "GroupEndMessage";
 }
 interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
   canvas_background_color: number;
 }
 
-export type Message =
+export type Message = 
   | ViewerCameraMessage
   | CameraFrustumMessage
   | FrameMessage
@@ -191,6 +190,6 @@ export type Message =
   | GuiSetVisibleMessage
   | GuiSetValueMessage
   | GuiSetLevaConfMessage
-  | MessageGroupStart
-  | MessageGroupEnd
+  | GroupStartMessage
+  | GroupEndMessage
   | ThemeConfigurationMessage;
