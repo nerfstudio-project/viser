@@ -644,7 +644,7 @@ class MessageApi(abc.ABC):
     ) -> SceneNodeHandle:
         """Add a trimesh mesh to the scene."""
         if isinstance(mesh.visual, trimesh.visual.ColorVisuals):
-            vertex_colors = mesh.visual.vertex_colors[:3]
+            vertex_colors = mesh.visual.vertex_colors
             self._queue(
                 _messages.MeshMessage(
                     name,
