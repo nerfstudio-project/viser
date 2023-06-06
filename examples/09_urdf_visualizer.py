@@ -36,9 +36,14 @@ def main(urdf_path: Path) -> None:
 
     for frame_name, mesh in urdf.scene.geometry.items():
         assert isinstance(mesh, trimesh.Trimesh)
+        T_parent_child = urdf.get_transform(
+            frame_name, urdf.scene.graph.transforms.parents[frame_name]
+        )
         server.add_mesh_trimesh(
-            frame_name_with_parents(frame_name) + "/mesh",
+            frame_name_with_parents(frame_name),
             mesh,
+            wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
+            position=T_parent_child[:3, 3],
         )
 
     gui_joints: List[viser.GuiHandle[float]] = []
