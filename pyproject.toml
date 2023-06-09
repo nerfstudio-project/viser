@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "viser"
-version = "0.0.13"
+version = "0.0.13b"
 description = "3D visualization helper"
 authors = ["brentyi <brentyi@berkeley.edu>"]
 readme = "README.md"

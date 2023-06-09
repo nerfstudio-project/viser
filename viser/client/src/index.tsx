@@ -108,7 +108,7 @@ const SingleViewer = React.memo(function SingleViewer(props: {
           <LabelRenderer />
           <SynchronizedCameraControls />
           <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
-          <Environment preset="city" blur={1} />
+          <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
         </CanvasStyled>
       </Wrapper>
     </ViewerContext.Provider>
