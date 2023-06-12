@@ -22,6 +22,8 @@ import WebsocketInterface from "./WebsocketInterface";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 
+console.log("This is a test!")
+
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
