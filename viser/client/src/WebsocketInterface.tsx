@@ -523,7 +523,6 @@ function useMessageHandler() {
       // Set the clickability of a particular scene node.
       case "SetSceneNodeClickableMessage": {
         setClickable(message.name, message.clickable);
-        console.log(message.name);
         break;
       }
       // Reset the entire scene, removing all scene nodes.

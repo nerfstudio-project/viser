@@ -39,8 +39,7 @@ def _(client: viser.ClientHandle) -> None:
         frame = client.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
         client.add_label(f"/frame_{i}/label", text=f"Frame {i}")
 
-        frame.clickable = True
-
+        # Move the camera when we click a frame.
         @frame.on_click
         def _(_):
             T_world_current = tf.SE3.from_rotation_and_translation(

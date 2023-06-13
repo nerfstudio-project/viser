@@ -22,7 +22,6 @@ class _SceneNodeHandleState:
         default_factory=lambda: onp.array([0.0, 0.0, 0.0])
     )
     visible: bool = True
-    clickable: bool = False
     click_cb: Optional[List[Callable[[SceneNodeHandle], None]]] = None
 
 
@@ -39,7 +38,6 @@ class SceneNodeHandle:
         wxyz: Tuple[float, float, float, float] | onp.ndarray,
         position: Tuple[float, float, float] | onp.ndarray,
         visible: bool,
-        clickable: bool = False,
     ) -> SceneNodeHandle:
         out = SceneNodeHandle(_SceneNodeHandleState(name, api))
         api._handle_from_click_name[name] = out
@@ -53,7 +51,6 @@ class SceneNodeHandle:
         out.wxyz = wxyz  # type: ignore
         out.position = position  # type: ignore
         out.visible = visible
-        out.clickable = clickable
         return out
 
     @property
@@ -102,21 +99,12 @@ class SceneNodeHandle:
         )
         self._impl.visible = visible
 
-    @property
-    def clickable(self) -> bool:
-        """Whether the scene node is clickable or not. Synchronized to clients automatically when assigned."""
-        return self._impl.clickable
-
-    @clickable.setter
-    def clickable(self, clickable: bool) -> None:
-        self._impl.api._queue(
-            _messages.SetSceneNodeClickableMessage(self._impl.name, clickable)
-        )
-        self._impl.visible = clickable
-
     def on_click(
         self, func: Callable[[SceneNodeHandle], None]
     ) -> Callable[[SceneNodeHandle], None]:
+        self._impl.api._queue(
+            _messages.SetSceneNodeClickableMessage(self._impl.name, True)
+        )
         if self._impl.click_cb is None:
             self._impl.click_cb = []
         self._impl.click_cb.append(func)
