@@ -4,19 +4,12 @@ Click on meshes to select them. The index of the last clicked mesh is displayed 
 """
 
 import time
-from pathlib import Path
 
 import matplotlib
 import numpy as onp
 import trimesh.creation
 
 import viser
-import viser.transforms as tf
-
-grid_shape = (4, 5)
-server = viser.ViserServer()
-
-colormap = matplotlib.colormaps["tab20"]
 
 
 def add_swappable_mesh(i: int, j: int) -> None:
@@ -27,6 +20,8 @@ def add_swappable_mesh(i: int, j: int) -> None:
 
     Color is chosen based on the position (i, j) of the mesh in the grid.
     """
+
+    colormap = matplotlib.colormaps["tab20"]
 
     def create_mesh(counter: int) -> None:
         if counter == 0:
@@ -66,6 +61,9 @@ def add_swappable_mesh(i: int, j: int) -> None:
 
 
 if __name__ == "__main__":
+    grid_shape = (4, 5)
+    server = viser.ViserServer()
+
     with server.gui_folder("Last clicked"):
         x_value = server.add_gui_number(
             name="x",
