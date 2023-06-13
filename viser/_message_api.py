@@ -13,7 +13,6 @@ import contextlib
 import io
 import threading
 import time
-import json
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -34,7 +33,7 @@ import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import Literal, LiteralString, ParamSpec, TypeAlias, assert_never
 
-from . import _messages, infra
+from . import _messages, infra, theme
 from ._gui import (
     GuiButtonGroupHandle,
     GuiButtonHandle,
@@ -69,45 +68,6 @@ def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
 RgbTupleOrArray: TypeAlias = Union[
     Tuple[int, int, int], Tuple[float, float, float], onp.ndarray
 ]
-
-
-class TitlebarButton(dict):
-    def __init__(
-        self,
-        text: Optional[str] = None,
-        icon: Optional[str] = None,
-        href: Optional[str] = None,
-        variant: Optional[str] = None,
-    ):
-        super().__init__(self, text=text, icon=icon, href=href, variant=variant)
-
-
-class TitlebarImage(dict):
-    def __init__(self, imageSource: str, alt: str):
-        super().__init__(self, imageSource=imageSource, alt=alt)
-
-
-class TitlebarPadding(dict):
-    def __init__(self, width: str):
-        super().__init__(self, width=width)
-
-
-TitlebarObject: TypeAlias = Union[TitlebarButton, TitlebarImage, TitlebarPadding]
-
-
-class TitlebarConfig:
-    def __init__(
-        self,
-        left: List[TitlebarObject] = [],
-        center: List[TitlebarObject] = [],
-        right: List[TitlebarObject] = [],
-    ):
-        self.left: List[TitlebarObject] = left
-        self.center: List[TitlebarObject] = center
-        self.right: List[TitlebarObject] = right
-
-    def _encode(self):
-        return json.dumps([self.left, self.center, self.right])
 
 
 def _encode_rgb(rgb: RgbTupleOrArray) -> int:
@@ -190,17 +150,13 @@ class MessageApi(abc.ABC):
         self,
         *,
         canvas_background_color: RgbTupleOrArray = (255, 255, 255),
-        show_titlebar: bool = False,
-        titlebar_content: Optional[TitlebarConfig] = None,
+        titlebar_content: Optional[theme.TitlebarConfig] = None,
     ) -> None:
         """Configure the viser front-end's visual appearance."""
         self._queue(
             _messages.ThemeConfigurationMessage(
                 canvas_background_color=_encode_rgb(canvas_background_color),
-                show_titlebar=show_titlebar,
-                titlebar_content=(
-                    titlebar_content._encode() if titlebar_content else ""
-                ),
+                titlebar_content=titlebar_content,
             ),
         )
 

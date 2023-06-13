@@ -14,7 +14,7 @@ import numpy as onp
 
 import viser
 
-from viser._message_api import TitlebarConfig, TitlebarPadding, TitlebarImage, TitlebarButton
+from viser.theme import TitlebarConfig, TitlebarButton, TitlebarImage
 
 server = viser.ViserServer()
 
@@ -24,17 +24,44 @@ server.set_background_image(
     format="png",
 )
 
-titlebarTheme = TitlebarConfig(left=[TitlebarButton(text="Getting Started", href="https://nerf.studio", variant='outlined'),
-                                     TitlebarButton(text="Github", icon="GitHub", href="https://github.com/nerfstudio-project/nerfstudio", variant='outlined'),
-                                     TitlebarButton(text="Documentation", icon="Description", href="https://docs.nerf.studio", variant='outlined'),
-                                     TitlebarButton(text="Viewport Controls", icon="Keyboard", href="https://docs.nerf.studio", variant='outlined'),
-                                     ], 
-                              right=[TitlebarImage(imageSource="https://docs.nerf.studio/en/latest/_static/imgs/logo.png", alt="NerfStudio Logo"), TitlebarPadding(width="5em")])
+buttons = (
+    TitlebarButton(
+        text="Getting Started",
+        icon=None,
+        href="https://nerf.studio",
+        variant="outlined",
+    ),
+    TitlebarButton(
+        text="Github",
+        icon="GitHub",
+        href="https://github.com/nerfstudio-project/nerfstudio",
+        variant="outlined",
+    ),
+    TitlebarButton(
+        text="Documentation",
+        icon="Description",
+        href="https://docs.nerf.studio",
+        variant="outlined",
+    ),
+    TitlebarButton(
+        text="Viewport Controls",
+        icon="Keyboard",
+        href="https://docs.nerf.studio",
+        variant="outlined",
+    ),
+)
+image = TitlebarImage(
+    image_url="https://docs.nerf.studio/en/latest/_static/imgs/logo.png",
+    image_alt="NerfStudio Logo",
+    href=None,
+)
 
-server.configure_theme(canvas_background_color=(2, 230, 230),
-                       show_titlebar=True,
-                       titlebar_content=titlebarTheme
-                       );
+titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
+
+server.configure_theme(
+    canvas_background_color=(2, 230, 230),
+    titlebar_content=titlebar_theme,
+)
 
 # Add main image.
 server.add_image(
