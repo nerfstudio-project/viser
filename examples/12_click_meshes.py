@@ -12,55 +12,7 @@ import trimesh.creation
 import viser
 
 
-def add_swappable_mesh(i: int, j: int) -> None:
-    """Simple callback that swaps between:
-     - a gray box
-     - a colored box
-     - a colored sphere
-
-    Color is chosen based on the position (i, j) of the mesh in the grid.
-    """
-
-    colormap = matplotlib.colormaps["tab20"]
-
-    def create_mesh(counter: int) -> None:
-        if counter == 0:
-            mesh = trimesh.creation.box((0.5, 0.5, 0.5))
-        elif counter == 1:
-            mesh = trimesh.creation.box((0.5, 0.5, 0.5))
-        else:
-            mesh = trimesh.creation.icosphere(subdivisions=2, radius=0.4)
-
-        colors = colormap(
-            (i * grid_shape[1] + j + onp.random.rand(mesh.vertices.shape[0]))
-            / (grid_shape[0] * grid_shape[1])
-        )
-        if counter != 0:
-            assert mesh.visual is not None
-            mesh.visual.vertex_colors = colors
-
-        handle = server.add_mesh_trimesh(
-            name=f"/sphere_{i}_{j}",
-            mesh=mesh,
-            position=(i, j, 0.0),
-        )
-        handle.on_click(on_click)
-
-    def on_click(_: viser.SceneNodeHandle) -> None:
-        nonlocal counter
-        counter = (counter + 1) % 3
-        x_value.value = i
-        y_value.value = j
-
-        # The new mesh will replace the old one because the names (/sphere_{i}_{j}) are
-        # the same.
-        create_mesh(counter)
-
-    counter = 0
-    create_mesh(counter)
-
-
-if __name__ == "__main__":
+def main() -> None:
     grid_shape = (4, 5)
     server = viser.ViserServer()
 
@@ -78,9 +30,57 @@ if __name__ == "__main__":
             hint="y coordinate of the last clicked mesh",
         )
 
+    def add_swappable_mesh(i: int, j: int) -> None:
+        """Simple callback that swaps between:
+         - a gray box
+         - a colored box
+         - a colored sphere
+
+        Color is chosen based on the position (i, j) of the mesh in the grid.
+        """
+
+        colormap = matplotlib.colormaps["tab20"]
+
+        def create_mesh(counter: int) -> None:
+            if counter == 0:
+                mesh = trimesh.creation.box((0.5, 0.5, 0.5))
+            elif counter == 1:
+                mesh = trimesh.creation.box((0.5, 0.5, 0.5))
+            else:
+                mesh = trimesh.creation.icosphere(subdivisions=2, radius=0.4)
+
+            colors = colormap(
+                (i * grid_shape[1] + j + onp.random.rand(mesh.vertices.shape[0]))
+                / (grid_shape[0] * grid_shape[1])
+            )
+            if counter != 0:
+                assert mesh.visual is not None
+                mesh.visual.vertex_colors = colors
+
+            handle = server.add_mesh_trimesh(
+                name=f"/sphere_{i}_{j}",
+                mesh=mesh,
+                position=(i, j, 0.0),
+            )
+
+            @handle.on_click
+            def _(_: viser.SceneNodeHandle) -> None:
+                x_value.value = i
+                y_value.value = j
+
+                # The new mesh will replace the old one because the names (/sphere_{i}_{j}) are
+                # the same.
+                create_mesh((counter + 1) % 3)
+
+        create_mesh(0)
+
     for i in range(grid_shape[0]):
         for j in range(grid_shape[1]):
             add_swappable_mesh(i, j)
 
     while True:
         time.sleep(10.0)
+
+
+if __name__ == "__main__":
+    main()

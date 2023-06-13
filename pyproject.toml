@@ -39,6 +39,9 @@ examples = ["smplx", "torch", "yourdfpy", "trimesh"]
 [tool.poetry.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
 
+[tool.poetry.group.examples.dependencies]
+matplotlib = "^3.7.1"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
