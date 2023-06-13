@@ -40,7 +40,7 @@ class SceneNodeHandle:
         visible: bool,
     ) -> SceneNodeHandle:
         out = SceneNodeHandle(_SceneNodeHandleState(name, api))
-        api._handle_from_click_name[name] = out
+        api._handle_from_node_name[name] = out
 
         # Suppress mypy errors from asymmetric setters. These are fine in pyright.
         # - https://github.com/python/mypy/issues/3004
@@ -102,6 +102,12 @@ class SceneNodeHandle:
     def on_click(
         self, func: Callable[[SceneNodeHandle], None]
     ) -> Callable[[SceneNodeHandle], None]:
+        """Attach a callback for when a scene node is clicked.
+
+        TODO:
+        - Slow for point clouds.
+        - Not supported for 2D labels.
+        """
         self._impl.api._queue(
             _messages.SetSceneNodeClickableMessage(self._impl.name, True)
         )

@@ -136,7 +136,7 @@ class MessageApi(abc.ABC):
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
         ] = {}
-        self._handle_from_click_name: Dict[str, SceneNodeHandle] = {}
+        self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
 
         handler.register_handler(_messages.GuiUpdateMessage, self._handle_gui_updates)
         handler.register_handler(
@@ -860,7 +860,7 @@ class MessageApi(abc.ABC):
         self, client_id: ClientId, message: _messages.SceneNodeClickedMessage
     ) -> None:
         """Callback for handling click messages."""
-        handle = self._handle_from_click_name.get(message.name, None)
+        handle = self._handle_from_node_name.get(message.name, None)
         if handle is None or handle._impl.click_cb is None:
             return
         for cb in handle._impl.click_cb:
