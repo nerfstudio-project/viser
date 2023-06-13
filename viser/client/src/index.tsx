@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { CameraControls, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
@@ -6,8 +5,9 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { SynchronizedCameraControls } from "./CameraControls";
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { Box, MantineProvider } from "@mantine/core";
 
-import ControlPanel from "./ControlPanel/ControlPanel";
+// import ControlPanel from "./ControlPanel/ControlPanel";
 import LabelRenderer from "./LabelRenderer";
 import {
   SceneNodeThreeObject,
@@ -17,10 +17,10 @@ import {
 
 import "./index.css";
 
-import Box from "@mui/material/Box";
 import WebsocketInterface from "./WebsocketInterface";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
+import ControlPanel from "./ControlPanel/ControlPanel";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -39,13 +39,6 @@ export const ViewerContext = React.createContext<null | ViewerContextContents>(
 );
 
 function SingleViewer() {
-  // Layout and styles.
-  const Wrapper = styled(Box)`
-    width: 100%;
-    height: 100%;
-    position: relative;
-  `;
-
   // Default server logic.
   function getDefaultServerFromUrl() {
     // https://localhost:8080/ => ws://localhost:8080
@@ -75,11 +68,9 @@ function SingleViewer() {
   };
   return (
     <ViewerContext.Provider value={viewer}>
-      <Wrapper ref={viewer.wrapperRef}>
-        <WebsocketInterface />
-        <ControlPanel />
-        <ViewerCanvas />
-      </Wrapper>
+      <WebsocketInterface />
+      <ControlPanel />
+      <ViewerCanvas />
     </ViewerContext.Provider>
   );
 }
@@ -124,27 +115,23 @@ function SceneContextSetter() {
 
 function Root() {
   return (
-    <Box
-      component="div"
-      sx={{
-        width: "100%",
-        height: "100%",
-        position: "relative",
-        boxSizing: "border-box",
-      }}
+    <MantineProvider
+      withGlobalStyles
+      withNormalizeCSS
+      theme={{ colorScheme: "light" }}
     >
       <Box
         component="div"
         sx={{
           width: "100%",
           height: "100%",
-          boxSizing: "border-box",
           position: "relative",
+          boxSizing: "border-box",
         }}
       >
         <SingleViewer />
       </Box>
-    </Box>
+    </MantineProvider>
   );
 }
 
