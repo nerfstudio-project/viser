@@ -650,6 +650,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        clickable: bool = False,
     ) -> SceneNodeHandle:
         """Add a trimesh mesh to the scene."""
         if isinstance(mesh.visual, trimesh.visual.ColorVisuals):
@@ -693,7 +694,7 @@ class MessageApi(abc.ABC):
         else:
             assert False, f"Unsupported texture visuals: {mesh.visual}"
 
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return SceneNodeHandle._make(self, name, wxyz, position, visible, clickable)
 
     def set_background_image(
         self,
