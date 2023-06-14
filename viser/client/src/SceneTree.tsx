@@ -273,7 +273,6 @@ export function SceneNodeThreeObject(props: {
         <group
           onClick={(e) => {
             e.stopPropagation();
-            console.log("foo", props.name);
             sendClicksThrottled({
               type: "SceneNodeClickedMessage",
               name: props.name,
