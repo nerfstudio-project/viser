@@ -2,15 +2,11 @@ import React from "react";
 import { ViewerContext } from "..";
 import { isTexture } from "../WebsocketInterface";
 import { Stats } from "@react-three/drei";
-import { Modal, TextInput, Button, Stack, Switch } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import SceneTreeTable from "./SceneTreeTable";
-import { IconBinaryTree, IconPhoto } from "@tabler/icons-react";
+import { TextInput, Button, Stack, Switch } from "@mantine/core";
+import { IconPhoto } from "@tabler/icons-react";
 
 export default function ServerControls() {
   const viewer = React.useContext(ViewerContext)!;
-  const [sceneTreeOpened, { open: openSceneTree, close: closeSceneTree }] =
-    useDisclosure(false);
   const [showStats, setShowStats] = React.useState(false);
 
   function triggerBlur(event: React.KeyboardEvent<HTMLInputElement>) {
@@ -21,16 +17,6 @@ export default function ServerControls() {
 
   return (
     <>
-      <Modal
-        padding="0"
-        withCloseButton={false}
-        opened={sceneTreeOpened}
-        onClose={closeSceneTree}
-        size="xl"
-        centered
-      >
-        <SceneTreeTable />
-      </Modal>
       {showStats ? (
         <Stats parent={viewer.wrapperRef} className="stats-panel" />
       ) : null}
@@ -76,13 +62,6 @@ export default function ServerControls() {
           leftIcon={<IconPhoto size="1rem" />}
         >
           Download Background
-        </Button>
-        <Button
-          onClick={openSceneTree}
-          fullWidth
-          leftIcon={<IconBinaryTree size="1rem" />}
-        >
-          Scene Tree
         </Button>
         <Switch
           label="WebGL Statistics"

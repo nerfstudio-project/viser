@@ -1,15 +1,17 @@
 import {
   IconAdjustments,
+  IconBinaryTree2,
   IconCloudCheck,
   IconCloudOff,
   IconLink,
 } from "@tabler/icons-react";
-import { Tabs } from "@mantine/core";
+import { ScrollArea, Stack, Tabs } from "@mantine/core";
 import { ViewerContext } from "..";
 import FloatingPanel from "./FloatingPanel";
 import React from "react";
 import GeneratedControls from "./Generated";
 import ServerControls from "./Server";
+import SceneTreeTable from "./SceneTreeTable";
 
 /** Root component for control panel. Parents a set of control tabs. */
 export default function ControlPanel() {
@@ -19,27 +21,38 @@ export default function ControlPanel() {
         <ConnectionStatus />
       </FloatingPanel.Handle>
       <FloatingPanel.Contents>
-        <Tabs radius="xs" defaultValue="generated">
-          <Tabs.List>
-            <Tabs.Tab
-              value="generated"
-              icon={<IconAdjustments size="0.8rem" />}
-            >
-              Control
-            </Tabs.Tab>
-            <Tabs.Tab value="server" icon={<IconLink size="1rem" />}>
-              Server
-            </Tabs.Tab>
-          </Tabs.List>
+        <ScrollArea>
+          <Tabs radius="xs" defaultValue="generated">
+            <Tabs.List>
+              <Tabs.Tab
+                value="generated"
+                icon={<IconAdjustments size="0.8rem" />}
+              >
+                Control
+              </Tabs.Tab>
+              <Tabs.Tab value="server" icon={<IconLink size="1rem" />}>
+                Server
+              </Tabs.Tab>
+              <Tabs.Tab value="scene" icon={<IconBinaryTree2 size="1rem" />}>
+                Scene
+              </Tabs.Tab>
+            </Tabs.List>
 
-          <Tabs.Panel value="generated" pt="xs">
-            <GeneratedControls />
-          </Tabs.Panel>
+            <Tabs.Panel value="generated" pt="xs">
+              <GeneratedControls />
+            </Tabs.Panel>
 
-          <Tabs.Panel value="server" pt="xs">
-            <ServerControls />
-          </Tabs.Panel>
-        </Tabs>
+            <Tabs.Panel value="server" pt="xs">
+              <ServerControls />
+            </Tabs.Panel>
+
+            <Tabs.Panel value="scene" pt="xs">
+              <Stack>
+                <SceneTreeTable compact={true} />
+              </Stack>
+            </Tabs.Panel>
+          </Tabs>
+        </ScrollArea>
       </FloatingPanel.Contents>
     </FloatingPanel>
   );
