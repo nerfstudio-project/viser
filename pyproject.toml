@@ -31,16 +31,14 @@ pre-commit = { version = "3.3.2", optional = true}
 smplx = { version = ">=0.1.28", optional = true}
 torch = { version = ">=1.13.1", optional = true}
 yourdfpy = { version = ">=0.0.53", optional = true}
+matplotlib = { version = "^3.7.1", optional = true}
 
 [tool.poetry.extras]
 dev = ["pyright", "mypy", "ruff", "black"]
-examples = ["smplx", "torch", "yourdfpy", "trimesh"]
+examples = ["smplx", "torch", "yourdfpy", "trimesh", "matplotlib"]
 
 [tool.poetry.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
-
-[tool.poetry.group.examples.dependencies]
-matplotlib = "^3.7.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
