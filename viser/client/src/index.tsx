@@ -8,7 +8,6 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 
 import ControlPanel from "./ControlPanel/ControlPanel";
-import LabelRenderer from "./LabelRenderer";
 import {
   SceneNodeThreeObject,
   UseSceneTree,
@@ -105,7 +104,6 @@ function ViewerCanvas() {
       }}
     >
       <SceneContextSetter />
-      <LabelRenderer />
       <SynchronizedCameraControls />
       <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
       <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />

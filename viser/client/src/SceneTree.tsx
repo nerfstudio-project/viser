@@ -8,6 +8,7 @@ import { immerable } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from ".";
+import { Html } from "@react-three/drei";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>
@@ -39,6 +40,7 @@ interface SceneTreeState {
           visibility?: boolean;
           wxyz?: THREE.Quaternion;
           position?: THREE.Vector3;
+          labelVisibility?: boolean;
         };
   };
 }
@@ -49,6 +51,7 @@ export interface SceneTreeActions extends SceneTreeState {
   addSceneNode(nodes: SceneNode): void;
   removeSceneNode(name: string): void;
   resetScene(): void;
+  setLabelVisibility(name: string, labelVisibility: boolean): void;
 }
 
 // Create default scene tree state.
@@ -165,6 +168,13 @@ export function useSceneTreeState() {
             state.nodeFromName[""]!.children = ["/WorldAxes"];
             state.nodeFromName["/WorldAxes"]!.children = [];
           }),
+        setLabelVisibility: (name, labelVisibility) =>
+          set((state) => {
+            state.attributesFromName[name] = {
+              ...state.attributesFromName[name],
+              labelVisibility: labelVisibility,
+            };
+          }),
       }))
     )
   )[0];
@@ -210,7 +220,7 @@ export function SceneNodeThreeObject(props: {
   const { makeObject, cleanup } = props.useSceneTree(
     (state) => state.nodeFromName[props.name]!
   );
-  const { visibility, wxyz, position } = props.useSceneTree(
+  const { visibility, wxyz, position, labelVisibility } = props.useSceneTree(
     (state) => state.attributesFromName[props.name] || {}
   );
 
@@ -245,12 +255,40 @@ export function SceneNodeThreeObject(props: {
     <>
       {React.useMemo(() => makeObject(setRef), [makeObject, setRef])}
       {obj !== null && (
-        <SceneNodeThreeChildren
-          name={props.name}
-          useSceneTree={props.useSceneTree}
-          parent={obj}
-        />
+        <>
+          {(visibility && labelVisibility) ? 
+            <SceneNodeLabel text={props.name}/> : null
+          }
+          <SceneNodeThreeChildren
+            name={props.name}
+            useSceneTree={props.useSceneTree}
+            parent={obj}
+          />
+        </>
       )}
     </>
+  );
+}
+
+export type SceneNodeLabelProps = {
+  text: string;
+}
+
+export function SceneNodeLabel({ text }: SceneNodeLabelProps) {
+  if (text.trim() === "") {
+    return null;
+  }
+  return (
+    <Html>
+      <p style={
+        {
+          backgroundColor: "rgba(240, 240, 240, 0.9)",
+          color: "#777",
+          padding: "10px 15px",
+          borderRadius: "5px",
+          userSelect: "none",
+        }
+      }>{ text }</p>
+    </Html>
   );
 }
