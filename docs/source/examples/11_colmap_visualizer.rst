@@ -98,6 +98,15 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                 onp.random.shuffle(img_ids)
                 img_ids = sorted(img_ids[: gui_frames.value])
 
+                def attach_callback(
+                    frustum: viser.SceneNodeHandle, frame: viser.SceneNodeHandle
+                ) -> None:
+                    @frustum.on_click
+                    def _(_) -> None:
+                        for client in server.get_clients().values():
+                            client.camera.wxyz = frame.wxyz
+                            client.camera.position = frame.position
+
                 for img_id in tqdm(img_ids):
                     img = images[img_id]
                     cam = cameras[img.camera_id]
@@ -110,7 +119,7 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                     T_world_camera = tf.SE3.from_rotation_and_translation(
                         tf.SO3(img.qvec), img.tvec
                     ).inverse()
-                    server.add_frame(
+                    frame = server.add_frame(
                         f"/colmap/frame_{img_id}",
                         wxyz=T_world_camera.rotation().wxyz,
                         position=T_world_camera.translation(),
@@ -126,13 +135,14 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                     fy = cam.params[1]
                     image = iio.imread(image_filename)
                     image = image[::downsample_factor, ::downsample_factor]
-                    server.add_camera_frustum(
+                    frustum = server.add_camera_frustum(
                         f"/colmap/frame_{img_id}/frustum",
                         fov=2 * onp.arctan2(H / 2, fy),
                         aspect=W / H,
                         scale=0.15,
                         image=image,
                     )
+                    attach_callback(frustum, frame)
 
             need_update = True
 

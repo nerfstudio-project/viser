@@ -513,7 +513,7 @@ class MessageApi(abc.ABC):
         fov: float,
         aspect: float,
         scale: float = 0.3,
-        color: RgbTupleOrArray = (80, 120, 255),
+        color: RgbTupleOrArray = (20, 20, 20),
         image: Optional[onp.ndarray] = None,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: Optional[int] = None,
