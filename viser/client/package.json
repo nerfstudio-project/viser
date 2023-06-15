@@ -10,6 +10,7 @@
     "@mantine/hooks": "^6.0.13",
     "@react-three/drei": "^9.64.0",
     "@react-three/fiber": "^8.12.0",
+    "@react-three/postprocessing": "^2.14.7",
     "@reduxjs/toolkit": "^1.9.3",
     "@tabler/icons-react": "^2.22.0",
     "@testing-library/jest-dom": "^5.16.5",

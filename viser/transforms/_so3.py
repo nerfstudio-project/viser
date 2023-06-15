@@ -312,7 +312,6 @@ class SO3(_base.SOBase):
     def exp(tangent: onpt.NDArray[onp.floating]) -> SO3:
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/so3.hpp#L583
-
         assert tangent.shape == (3,)
 
         theta_squared = tangent @ tangent

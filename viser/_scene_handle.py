@@ -1,7 +1,12 @@
+# mypy: disable-error-code="assignment"
+#
+# Asymmetric properties are supported in Pyright, but not yet in mypy.
+# - https://github.com/python/mypy/issues/3004
+# - https://github.com/python/mypy/pull/11643
 from __future__ import annotations
 
 import dataclasses
-from typing import TYPE_CHECKING, Callable, List, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, List, Optional, Tuple, Type, TypeVar
 
 import numpy as onp
 
@@ -9,6 +14,10 @@ from . import _messages
 
 if TYPE_CHECKING:
     from ._message_api import ClientId, MessageApi
+
+
+TSceneNodeHandle = TypeVar("TSceneNodeHandle", bound="SceneNodeHandle")
+TSupportsVisibility = TypeVar("TSupportsVisibility", bound="_SupportsVisibility")
 
 
 @dataclasses.dataclass
@@ -22,33 +31,29 @@ class _SceneNodeHandleState:
         default_factory=lambda: onp.array([0.0, 0.0, 0.0])
     )
     visible: bool = True
+    # TODO: we should remove SceneNodeHandle as an argument here.
+    click_cb: Optional[List[Callable[[SceneNodeHandle], None]]] = None
 
 
 @dataclasses.dataclass
 class SceneNodeHandle:
-    """Handle for interacting with scene nodes."""
+    """Handle base class for interacting with scene nodes."""
 
     _impl: _SceneNodeHandleState
 
-    @staticmethod
+    @classmethod
     def _make(
+        cls: Type[TSceneNodeHandle],
         api: MessageApi,
         name: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray,
         position: Tuple[float, float, float] | onp.ndarray,
-        visible: bool,
-    ) -> SceneNodeHandle:
-        out = SceneNodeHandle(_SceneNodeHandleState(name, api))
+    ) -> TSceneNodeHandle:
+        out = cls(_SceneNodeHandleState(name, api))
+        api._handle_from_node_name[name] = out
 
-        # Suppress mypy errors from asymmetric setters. These are fine in pyright.
-        # - https://github.com/python/mypy/issues/3004
-        # - https://github.com/python/mypy/pull/11643
-        #
-        # These will often be redundant, but are needed currently if the scene node
-        # already exists. We can think about how to make them less so in the future.
-        out.wxyz = wxyz  # type: ignore
-        out.position = position  # type: ignore
-        out.visible = visible
+        out.wxyz = wxyz
+        out.position = position
         return out
 
     @property
@@ -85,6 +90,51 @@ class SceneNodeHandle:
             _messages.SetPositionMessage(self._impl.name, position_cast)
         )
 
+    def remove(self) -> None:
+        """Remove the node from the scene."""
+        self._impl.api._queue(_messages.RemoveSceneNodeMessage(self._impl.name))
+
+
+@dataclasses.dataclass
+class _SupportsClick(SceneNodeHandle):
+    def on_click(
+        self: TSceneNodeHandle, func: Callable[[TSceneNodeHandle], None]
+    ) -> Callable[[TSceneNodeHandle], None]:
+        """Attach a callback for when a scene node is clicked.
+
+        TODO:
+        - Slow for point clouds.
+        - Not supported for 2D labels.
+        """
+        self._impl.api._queue(
+            _messages.SetSceneNodeClickableMessage(self._impl.name, True)
+        )
+        if self._impl.click_cb is None:
+            self._impl.click_cb = []
+        self._impl.click_cb.append(func)  # type: ignore
+        return func
+
+
+@dataclasses.dataclass
+class _SupportsVisibility(SceneNodeHandle):
+    @classmethod
+    def _make(
+        cls: Type[TSupportsVisibility],
+        api: MessageApi,
+        name: str,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray,
+        position: Tuple[float, float, float] | onp.ndarray,
+        visible: bool = True,
+    ) -> TSupportsVisibility:
+        out = cls(_SceneNodeHandleState(name, api))
+        api._handle_from_node_name[name] = out
+
+        out.wxyz = wxyz
+        out.position = position
+        out.visible = visible
+
+        return out
+
     @property
     def visible(self) -> bool:
         """Whether the scene node is visible or not. Synchronized to clients automatically when assigned."""
@@ -97,9 +147,35 @@ class SceneNodeHandle:
         )
         self._impl.visible = visible
 
-    def remove(self) -> None:
-        """Remove the node from the scene."""
-        self._impl.api._queue(_messages.RemoveSceneNodeMessage(self._impl.name))
+
+@dataclasses.dataclass
+class CameraFrustumHandle(_SupportsClick, _SupportsVisibility):
+    """Handle for camera frustums."""
+
+
+@dataclasses.dataclass
+class PointCloudHandle(_SupportsVisibility):
+    """Handle for point clouds. Does not support click events."""
+
+
+@dataclasses.dataclass
+class FrameHandle(_SupportsClick, _SupportsVisibility):
+    """Handle for coordinate frames."""
+
+
+@dataclasses.dataclass
+class MeshHandle(_SupportsClick, _SupportsVisibility):
+    """Handle for mesh objects."""
+
+
+@dataclasses.dataclass
+class ImageHandle(_SupportsClick, _SupportsVisibility):
+    """Handle for 2D images, rendered in 3D."""
+
+
+@dataclasses.dataclass
+class LabelHandle(SceneNodeHandle):
+    """Handle for 2D label objects. Does not support click events or visibility toggling."""
 
 
 @dataclasses.dataclass
@@ -110,7 +186,7 @@ class _TransformControlsState:
 
 
 @dataclasses.dataclass
-class TransformControlsHandle(SceneNodeHandle):
+class TransformControlsHandle(_SupportsClick, _SupportsVisibility):
     """Handle for interacting with transform control gizmos."""
 
     _impl_aux: _TransformControlsState
