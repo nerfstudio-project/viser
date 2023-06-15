@@ -18,7 +18,7 @@ export default function ServerControls() {
   return (
     <>
       {showStats ? (
-        <Stats parent={viewer.wrapperRef} className="stats-panel" />
+        <Stats className="stats-panel" />
       ) : null}
       <Stack spacing="xs">
         <TextInput
@@ -39,9 +39,6 @@ export default function ServerControls() {
         />
         <Button
           onClick={() => {
-            const wrapper = viewer.wrapperRef.current;
-            if (wrapper === null) return;
-
             if (!isTexture(viewer.sceneRef.current!.background)) {
               // This should never happen.
               alert("No background to download!");
