@@ -255,16 +255,17 @@ export function SceneNodeThreeObject(props: {
     <>
       {React.useMemo(() => makeObject(setRef), [makeObject, setRef])}
       {obj !== null && (
-        <>
-          {(visibility && labelVisibility) ? 
-            <SceneNodeLabel text={props.name}/> : null
-          }
+        <group>
+          <SceneNodeLabel 
+            visible={visibility && labelVisibility}
+            text={props.name} 
+          />
           <SceneNodeThreeChildren
             name={props.name}
             useSceneTree={props.useSceneTree}
             parent={obj}
           />
-        </>
+        </group>
       )}
     </>
   );
@@ -272,10 +273,14 @@ export function SceneNodeThreeObject(props: {
 
 export type SceneNodeLabelProps = {
   text: string;
+  visible?: boolean;
 }
 
-export function SceneNodeLabel({ text }: SceneNodeLabelProps) {
-  if (text.trim() === "") {
+export function SceneNodeLabel({ text, visible }: SceneNodeLabelProps) {
+  if (!visible) {
+    return null;
+  }
+  if (text.trim() === "") { // Do not render label for object without name, e.g. root node
     return null;
   }
   return (
