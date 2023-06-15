@@ -1,4 +1,4 @@
-# WebSocket Infrastructure
+# Communication
 
 <!-- prettier-ignore-start -->
 
