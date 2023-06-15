@@ -235,11 +235,11 @@
 <section id="scene-tree-naming">
 <h2>Scene tree naming<a class="headerlink" href="#scene-tree-naming" title="Permalink to this heading">#</a></h2>
 <p>Each object that we add to the scene in viser is instantiated as a node in a
-scene tree. The hierarchical relationships in this tree are determined entirely
-by the names used in this tree.</p>
+scene tree. The structure of this tree is determined by the names assigned to
+the nodes.</p>
 <p>If we add a coordinate frame called <code class="docutils literal notranslate"><span class="pre">/base_link/shoulder/wrist</span></code>, it signifies
-that are three nodes: the <code class="docutils literal notranslate"><span class="pre">wrist</span></code> is a child of the <code class="docutils literal notranslate"><span class="pre">shoulder</span></code> which is a child
-of the <code class="docutils literal notranslate"><span class="pre">base_link</span></code>.</p>
+three nodes: the <code class="docutils literal notranslate"><span class="pre">wrist</span></code> is a child of the <code class="docutils literal notranslate"><span class="pre">shoulder</span></code> which is a child of the
+<code class="docutils literal notranslate"><span class="pre">base_link</span></code>.</p>
 <p>If we set the transformation of a given node like <code class="docutils literal notranslate"><span class="pre">/shoulder</span></code>, both it and all
 of its children will move. Its parent, <code class="docutils literal notranslate"><span class="pre">/base_link</span></code>, will be unaffected.</p>
 </section>
