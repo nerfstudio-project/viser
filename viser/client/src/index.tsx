@@ -2,6 +2,12 @@ import styled from "@emotion/styled";
 import { CameraControls, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
+import {
+  EffectComposer,
+  Outline,
+  Selection,
+} from "@react-three/postprocessing";
+import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
 import React from "react";
@@ -105,7 +111,20 @@ function ViewerCanvas() {
       <SceneContextSetter />
       <LabelRenderer />
       <SynchronizedCameraControls />
-      <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
+      <Selection>
+        <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
+        <EffectComposer enabled={true} autoClear={false}>
+          <Outline
+            hiddenEdgeColor={0xfbff00}
+            visibleEdgeColor={0xfbff00}
+            blendFunction={BlendFunction.SCREEN} // set this to BlendFunction.ALPHA for dark outlines
+            kernelSize={KernelSize.MEDIUM}
+            edgeStrength={30.0}
+            height={480}
+            blur
+          />
+        </EffectComposer>
+      </Selection>
       <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
     </Canvas>
   );
