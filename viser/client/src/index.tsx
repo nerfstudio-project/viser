@@ -13,8 +13,6 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { Box, MantineProvider } from "@mantine/core";
 
-// import ControlPanel from "./ControlPanel/ControlPanel";
-import LabelRenderer from "./LabelRenderer";
 import {
   SceneNodeThreeObject,
   UseSceneTree,
@@ -32,7 +30,6 @@ type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: React.MutableRefObject<WebSocket | null>;
-  wrapperRef: React.RefObject<HTMLDivElement>;
   objFromSceneNodeNameRef: React.MutableRefObject<{
     [name: string]: THREE.Object3D | undefined;
   }>;
@@ -66,7 +63,6 @@ function SingleViewer() {
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
     websocketRef: React.useRef(null),
-    wrapperRef: React.useRef(null),
     objFromSceneNodeNameRef: React.useRef({}),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
@@ -100,7 +96,6 @@ function ViewerCanvas() {
       }}
     >
       <SceneContextSetter />
-      <LabelRenderer />
       <SynchronizedCameraControls />
       <Selection>
         <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
