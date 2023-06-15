@@ -14,7 +14,7 @@ from typing_extensions import override
 from . import _messages, infra
 from . import transforms as tf
 from ._message_api import MessageApi, cast_vector
-from ._scene_handle import FrameHandle, SceneNodeHandle, _SceneNodeHandleState
+from ._scene_handle import FrameHandle, _SceneNodeHandleState
 
 
 @dataclasses.dataclass
