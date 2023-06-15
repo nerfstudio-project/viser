@@ -1,4 +1,4 @@
-# Infrastructure
+# WebSocket Infrastructure
 
 <!-- prettier-ignore-start -->
 

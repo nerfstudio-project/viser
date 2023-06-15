@@ -37,7 +37,7 @@ class _SceneNodeHandleState:
 
 @dataclasses.dataclass
 class SceneNodeHandle:
-    """Handle for interacting with scene nodes."""
+    """Handle base class for interacting with scene nodes."""
 
     _impl: _SceneNodeHandleState
 
@@ -124,7 +124,7 @@ class _SupportsVisibility(SceneNodeHandle):
         name: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray,
         position: Tuple[float, float, float] | onp.ndarray,
-        visible: bool,
+        visible: bool = True,
     ) -> TSupportsVisibility:
         out = cls(_SceneNodeHandleState(name, api))
         api._handle_from_node_name[name] = out
@@ -150,32 +150,32 @@ class _SupportsVisibility(SceneNodeHandle):
 
 @dataclasses.dataclass
 class CameraFrustumHandle(_SupportsClick, _SupportsVisibility):
-    ...
+    """Handle for camera frustums."""
 
 
 @dataclasses.dataclass
 class PointCloudHandle(_SupportsVisibility):
-    ...
+    """Handle for point clouds. Does not support click events."""
 
 
 @dataclasses.dataclass
 class FrameHandle(_SupportsClick, _SupportsVisibility):
-    ...
+    """Handle for coordinate frames."""
 
 
 @dataclasses.dataclass
 class MeshHandle(_SupportsClick, _SupportsVisibility):
-    ...
+    """Handle for mesh objects."""
 
 
 @dataclasses.dataclass
 class ImageHandle(_SupportsClick, _SupportsVisibility):
-    ...
+    """Handle for 2D images, rendered in 3D."""
 
 
 @dataclasses.dataclass
 class LabelHandle(SceneNodeHandle):
-    ...
+    """Handle for 2D label objects. Does not support click events or visibility toggling."""
 
 
 @dataclasses.dataclass

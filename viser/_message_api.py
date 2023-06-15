@@ -725,7 +725,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> ImageHandle:
         """Add a 2D image to the scene. Rendered in 3D."""
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
