@@ -44,8 +44,15 @@ from ._gui import (
     _GuiHandleState,
 )
 from ._scene_handle import (
+    CameraFrustumHandle,
+    FrameHandle,
+    ImageHandle,
+    LabelHandle,
+    MeshHandle,
+    PointCloudHandle,
     SceneNodeHandle,
     TransformControlsHandle,
+    _SupportsVisibility,
     _TransformControlsState,
 )
 
@@ -136,11 +143,16 @@ class MessageApi(abc.ABC):
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
         ] = {}
+        self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
 
         handler.register_handler(_messages.GuiUpdateMessage, self._handle_gui_updates)
         handler.register_handler(
             _messages.TransformControlsUpdateMessage,
             self._handle_transform_controls_updates,
+        )
+        handler.register_handler(
+            _messages.SceneNodeClickedMessage,
+            self._handle_click_updates,
         )
 
         self._gui_folder_labels: List[str] = []
@@ -508,14 +520,14 @@ class MessageApi(abc.ABC):
         fov: float,
         aspect: float,
         scale: float = 0.3,
-        color: RgbTupleOrArray = (80, 120, 255),
+        color: RgbTupleOrArray = (20, 20, 20),
         image: Optional[onp.ndarray] = None,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: Optional[int] = None,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> CameraFrustumHandle:
         """Add a frustum to the scene. Useful for visualizing cameras.
 
         Like all cameras in the viser Python API, frustums follow the OpenCV [+Z forward,
@@ -543,7 +555,7 @@ class MessageApi(abc.ABC):
                 image_base64_data=base64_data,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return CameraFrustumHandle._make(self, name, wxyz, position, visible)
 
     def add_frame(
         self,
@@ -554,7 +566,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> FrameHandle:
         cast_vector(wxyz, length=4)
         cast_vector(position, length=3)
         self._queue(
@@ -566,7 +578,7 @@ class MessageApi(abc.ABC):
                 axes_radius=axes_radius,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return FrameHandle._make(self, name, wxyz, position, visible)
 
     def add_label(
         self,
@@ -574,11 +586,10 @@ class MessageApi(abc.ABC):
         text: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
-        visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> LabelHandle:
         """Add a 2D label to the scene."""
         self._queue(_messages.LabelMessage(name, text))
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return LabelHandle._make(self, name, wxyz, position)
 
     def add_point_cloud(
         self,
@@ -589,7 +600,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> PointCloudHandle:
         """Add a point cloud to the scene."""
         self._queue(
             _messages.PointCloudMessage(
@@ -599,9 +610,9 @@ class MessageApi(abc.ABC):
                 point_size=point_size,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return PointCloudHandle._make(self, name, wxyz, position, visible)
 
-    def add_mesh(self, *args, **kwargs) -> SceneNodeHandle:
+    def add_mesh(self, *args, **kwargs) -> MeshHandle:
         """Deprecated alias for `add_mesh_simple()`."""
         return self.add_mesh_simple(*args, **kwargs)
 
@@ -616,7 +627,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> MeshHandle:
         """Add a mesh to the scene."""
         self._queue(
             _messages.MeshMessage(
@@ -630,7 +641,8 @@ class MessageApi(abc.ABC):
                 side=side,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        node_handle = MeshHandle._make(self, name, wxyz, position, visible)
+        return node_handle
 
     def add_mesh_trimesh(
         self,
@@ -641,7 +653,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> MeshHandle:
         """Add a trimesh mesh to the scene."""
         if isinstance(mesh.visual, trimesh.visual.ColorVisuals):
             vertex_colors = mesh.visual.vertex_colors
@@ -684,7 +696,7 @@ class MessageApi(abc.ABC):
         else:
             assert False, f"Unsupported texture visuals: {mesh.visual}"
 
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return MeshHandle._make(self, name, wxyz, position, visible)
 
     def set_background_image(
         self,
@@ -713,7 +725,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> ImageHandle:
         """Add a 2D image to the scene. Rendered in 3D."""
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
@@ -727,7 +739,7 @@ class MessageApi(abc.ABC):
                 render_height=render_height,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return ImageHandle._make(self, name, wxyz, position, visible)
 
     def add_transform_controls(
         self,
@@ -787,7 +799,7 @@ class MessageApi(abc.ABC):
             message_position.excluded_self_client = client_id
             self._queue(message_position)
 
-        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible)
+        node_handle = _SupportsVisibility._make(self, name, wxyz, position, visible)
         state_aux = _TransformControlsState(
             last_updated=time.time(),
             update_cb=[],
@@ -849,6 +861,16 @@ class MessageApi(abc.ABC):
             cb(handle)
         if handle._impl_aux.sync_cb is not None:
             handle._impl_aux.sync_cb(client_id, handle)
+
+    def _handle_click_updates(
+        self, client_id: ClientId, message: _messages.SceneNodeClickedMessage
+    ) -> None:
+        """Callback for handling click messages."""
+        handle = self._handle_from_node_name.get(message.name, None)
+        if handle is None or handle._impl.click_cb is None:
+            return
+        for cb in handle._impl.click_cb:
+            cb(handle)
 
     def _add_gui_impl(
         self,

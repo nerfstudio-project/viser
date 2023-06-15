@@ -244,6 +244,21 @@ class SetSceneNodeVisibilityMessage(Message):
 
 
 @dataclasses.dataclass
+class SetSceneNodeClickableMessage(Message):
+    """Set the clickability of a particular node in the scene."""
+
+    name: str
+    clickable: bool
+
+
+@dataclasses.dataclass
+class SceneNodeClickedMessage(Message):
+    """Message for clicked objects."""
+
+    name: str
+
+
+@dataclasses.dataclass
 class ResetSceneMessage(Message):
     """Reset scene."""
 
