@@ -99,7 +99,7 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                 img_ids = sorted(img_ids[: gui_frames.value])
 
                 def attach_callback(
-                    frustum: viser.SceneNodeHandle, frame: viser.SceneNodeHandle
+                    frustum: viser.CameraFrustumHandle, frame: viser.FrameHandle
                 ) -> None:
                     @frustum.on_click
                     def _(_) -> None:

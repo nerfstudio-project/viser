@@ -64,7 +64,7 @@ def main() -> None:
             )
 
             @handle.on_click
-            def _(_: viser.SceneNodeHandle) -> None:
+            def _(_) -> None:
                 x_value.value = i
                 y_value.value = j
 

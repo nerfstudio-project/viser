@@ -53,7 +53,7 @@ ignore_missing_imports = true
 warn_unused_configs = true
 
 [tool.pyright]
-exclude = ["./docs/**/*"]
+exclude = ["./docs/**/*", "./examples/assets/**/*"]
 
 [tool.ruff]
 select = [

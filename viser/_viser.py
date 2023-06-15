@@ -14,7 +14,7 @@ from typing_extensions import override
 from . import _messages, infra
 from . import transforms as tf
 from ._message_api import MessageApi, cast_vector
-from ._scene_handle import SceneNodeHandle, _SceneNodeHandleState
+from ._scene_handle import FrameHandle, SceneNodeHandle, _SceneNodeHandleState
 
 
 @dataclasses.dataclass
@@ -71,7 +71,11 @@ class CameraHandle:
     @property
     def position(self) -> npt.NDArray[onp.float64]:
         """Corresponds to the t in `P_world = [R | t] p_camera`. Synchronized
-        automatically when assigned."""
+        automatically when assigned.
+
+        The `look_at` point and `up_direction` vectors are maintained when updating
+        `position`, which means that updates to `position` will often also affect `wxyz`.
+        """
         assert self._state.update_timestamp != 0.0
         return self._state.position
 
@@ -210,7 +214,7 @@ class ViserServer(MessageApi):
     clients, including new clients that connect after a command is called.
     """
 
-    world_axes: SceneNodeHandle
+    world_axes: FrameHandle
     """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
     and then hidden by default."""
 
@@ -302,7 +306,7 @@ class ViserServer(MessageApi):
         # Start the server.
         server.start()
         self.reset_scene()
-        self.world_axes = SceneNodeHandle(
+        self.world_axes = FrameHandle(
             _SceneNodeHandleState(
                 "/WorldAxes",
                 self,
