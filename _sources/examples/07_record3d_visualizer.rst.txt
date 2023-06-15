@@ -22,6 +22,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
         from tqdm.auto import tqdm
 
         import viser
+        import viser.extras
         import viser.transforms as tf
 
 
@@ -91,7 +92,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 position=(0, 0, 0),
                 show_axes=False,
             )
-            frame_nodes: List[viser.SceneNodeHandle] = []
+            frame_nodes: List[viser.FrameHandle] = []
             for i in tqdm(range(num_frames)):
                 frame = loader.get_frame(i)
                 position, color = frame.get_point_cloud(downsample_factor)

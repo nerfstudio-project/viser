@@ -22,35 +22,31 @@ corresponding client automatically.
         import viser.transforms as tf
 
         server = viser.ViserServer()
-
-        num_buttons = 20
+        num_frames = 20
 
 
         @server.on_client_connect
         def _(client: viser.ClientHandle) -> None:
-            """For each client that connects, we create a set of random frames + a button for each frame.
+            """For each client that connects, we create a set of random frames + a click handler for each frame.
 
-            When a button is clicked, we move the camera to the corresponding frame.
+            When a frame is clicked, we move the camera to the corresponding frame.
             """
 
             rng = onp.random.default_rng(0)
 
-            def make_frame(i: int) -> viser.GuiButtonHandle:
+            def make_frame(i: int) -> None:
                 # Sample a random orientation + position.
                 wxyz = rng.normal(size=4)
                 wxyz /= onp.linalg.norm(wxyz)
                 position = rng.uniform(-3.0, 3.0, size=(3,))
 
-                # Create a coordinate frame, and a button to move to that frame.
+                # Create a coordinate frame and label.
                 frame = client.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
                 client.add_label(f"/frame_{i}/label", text=f"Frame {i}")
-                button = client.add_gui_button(f"Frame {i}")
 
-                @button.on_click
+                # Move the camera when we click a frame.
+                @frame.on_click
                 def _(_):
-                    for b in buttons:
-                        b.disabled = True
-
                     T_world_current = tf.SE3.from_rotation_and_translation(
                         tf.SO3(client.camera.wxyz), client.camera.position
                     )
@@ -75,14 +71,8 @@ corresponding client automatically.
                     # Mouse interactions should orbit around the frame origin.
                     client.camera.look_at = frame.position
 
-                    for b in buttons:
-                        b.disabled = False
-
-                return button
-
-            buttons = []
-            for i in range(num_buttons):
-                buttons.append(make_frame(i))
+            for i in range(num_frames):
+                make_frame(i)
 
 
         while True:

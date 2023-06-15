@@ -57,12 +57,23 @@ URL (default: `http://localhost:8080`).
    ./development.md
 
 .. toctree::
-   :caption: API Reference
+   :caption: API (Core)
    :hidden:
    :maxdepth: 1
    :titlesonly:
 
-   ./core.md
+   ./server.md
+   ./client_handles.md
+   ./gui_handles.md
+   ./scene_handles.md
+
+
+.. toctree::
+   :caption: API (Additional)
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
+
    ./infrastructure.md
    ./transforms.md
 
