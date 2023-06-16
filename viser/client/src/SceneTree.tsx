@@ -11,6 +11,7 @@ import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from ".";
 import { makeThrottledMessageSender } from "./WebsocketInterface";
 import { Select } from "@react-three/postprocessing";
+import { Html } from "@react-three/drei";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>
@@ -43,6 +44,7 @@ interface SceneTreeState {
           wxyz?: THREE.Quaternion;
           position?: THREE.Vector3;
           clickable?: boolean;
+          labelVisibility?: boolean;
         };
   };
 }
@@ -54,6 +56,7 @@ export interface SceneTreeActions extends SceneTreeState {
   addSceneNode(nodes: SceneNode): void;
   removeSceneNode(name: string): void;
   resetScene(): void;
+  setLabelVisibility(name: string, labelVisibility: boolean): void;
 }
 
 // Create default scene tree state.
@@ -178,6 +181,13 @@ export function useSceneTreeState() {
             state.nodeFromName[""]!.children = ["/WorldAxes"];
             state.nodeFromName["/WorldAxes"]!.children = [];
           }),
+        setLabelVisibility: (name, labelVisibility) =>
+          set((state) => {
+            state.attributesFromName[name] = {
+              ...state.attributesFromName[name],
+              labelVisibility: labelVisibility,
+            };
+          }),
       }))
     )
   )[0];
@@ -223,7 +233,7 @@ export function SceneNodeThreeObject(props: {
   const { makeObject, cleanup } = props.useSceneTree(
     (state) => state.nodeFromName[props.name]!
   );
-  const { visibility, wxyz, position, clickable } = props.useSceneTree(
+  const { visibility, wxyz, position, clickable, labelVisibility } = props.useSceneTree(
     (state) => state.attributesFromName[props.name] || {}
   );
 
@@ -257,7 +267,17 @@ export function SceneNodeThreeObject(props: {
 
   const sendClicksThrottled = makeThrottledMessageSender(websocketRef, 50);
   const [hovered, setHovered] = React.useState(false);
-  const objNode = React.useMemo(() => makeObject(setRef), [makeObject, setRef]);
+  const objNode = (
+    <group>
+      {React.useMemo(() => makeObject(setRef), [makeObject, setRef])}
+      {
+        <SceneNodeLabel 
+          visible={visibility && labelVisibility}
+          text={props.name} 
+        />
+      }
+    </group>
+  );
   const children = obj !== null && (
     <SceneNodeThreeChildren
       name={props.name}
@@ -265,6 +285,7 @@ export function SceneNodeThreeObject(props: {
       parent={obj}
     />
   );
+
   useCursor(hovered);
 
   if (clickable)
@@ -300,4 +321,29 @@ export function SceneNodeThreeObject(props: {
       </>
     );
   }
+}
+
+type SceneNodeLabelProps = {
+  text: string;
+  visible?: boolean;
+}
+
+export function SceneNodeLabel({ text, visible }: SceneNodeLabelProps) {
+  if (!visible || text.trim() === "") {
+    // Do not render label for object without name, e.g. root node
+    return null;
+  }
+  return (
+    <Html>
+      <p style={
+        {
+          backgroundColor: "rgba(240, 240, 240, 0.9)",
+          color: "#777",
+          padding: "10px 15px",
+          borderRadius: "5px",
+          userSelect: "none",
+        }
+      }>{ text }</p>
+    </Html>
+  );
 }
