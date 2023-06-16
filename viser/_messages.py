@@ -115,7 +115,10 @@ class MeshMessage(Message):
     name: str
     vertices: onpt.NDArray[onp.float32]
     faces: onpt.NDArray[onp.uint32]
-    color: int
+
+    color: Optional[int]
+    vertex_colors: Optional[onpt.NDArray[onp.uint8]]
+
     wireframe: bool
     side: Literal["front", "back", "double"] = "front"
 
@@ -239,6 +242,21 @@ class SetSceneNodeVisibilityMessage(Message):
 
     name: str
     visible: bool
+
+
+@dataclasses.dataclass
+class SetSceneNodeClickableMessage(Message):
+    """Set the clickability of a particular node in the scene."""
+
+    name: str
+    clickable: bool
+
+
+@dataclasses.dataclass
+class SceneNodeClickedMessage(Message):
+    """Message for clicked objects."""
+
+    name: str
 
 
 @dataclasses.dataclass

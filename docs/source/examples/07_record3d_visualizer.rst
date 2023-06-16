@@ -22,6 +22,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
         from tqdm.auto import tqdm
 
         import viser
+        import viser.extras
         import viser.transforms as tf
 
 
@@ -47,6 +48,9 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 gui_framerate = server.add_gui_slider(
                     "FPS", min=1, max=60, step=0.1, initial_value=loader.fps
                 )
+                gui_framerate_options = server.add_gui_button_group(
+                    "FPS options", ["10", "20", "30", "60"]
+                )
 
             # Frame step buttons.
             @gui_next_frame.on_click
@@ -63,6 +67,11 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 gui_timestep.disabled = gui_playing.value
                 gui_next_frame.disabled = gui_playing.value
                 gui_prev_frame.disabled = gui_playing.value
+
+            # Set the framerate when we click one of the options.
+            @gui_framerate_options.on_click
+            def _(_) -> None:
+                gui_framerate.value = int(gui_framerate_options.value)
 
             prev_timestep = gui_timestep.value
 
@@ -83,7 +92,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 position=(0, 0, 0),
                 show_axes=False,
             )
-            frame_nodes: List[viser.SceneNodeHandle] = []
+            frame_nodes: List[viser.FrameHandle] = []
             for i in tqdm(range(num_frames)):
                 frame = loader.get_frame(i)
                 position, color = frame.get_point_cloud(downsample_factor)

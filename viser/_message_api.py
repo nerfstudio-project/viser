@@ -32,6 +32,8 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
+import trimesh
+import trimesh.visual
 from typing_extensions import Literal, LiteralString, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
@@ -43,8 +45,15 @@ from ._gui import (
     _GuiHandleState,
 )
 from ._scene_handle import (
+    CameraFrustumHandle,
+    FrameHandle,
+    ImageHandle,
+    LabelHandle,
+    MeshHandle,
+    PointCloudHandle,
     SceneNodeHandle,
     TransformControlsHandle,
+    _SupportsVisibility,
     _TransformControlsState,
 )
 
@@ -174,11 +183,16 @@ class MessageApi(abc.ABC):
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
         ] = {}
+        self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
 
         handler.register_handler(_messages.GuiUpdateMessage, self._handle_gui_updates)
         handler.register_handler(
             _messages.TransformControlsUpdateMessage,
             self._handle_transform_controls_updates,
+        )
+        handler.register_handler(
+            _messages.SceneNodeClickedMessage,
+            self._handle_click_updates,
         )
 
         self._gui_folder_labels: List[str] = []
@@ -454,7 +468,18 @@ class MessageApi(abc.ABC):
         if step is not None and step > max - min:
             step = max - min
         assert max >= initial_value >= min
-        assert type(min) == type(max) == type(step) == type(initial_value)
+
+        # GUI callbacks cast incoming values to match the type of the initial value. If
+        # the min, max, or step is a float, we should cast to a float.
+        if type(initial_value) is int and (
+            type(min) is float or type(max) is float or type(step) is float
+        ):
+            initial_value = float(initial_value)  # type: ignore
+
+        # TODO: as of 6/5/2023, this assert will break something in nerfstudio. (at
+        # least LERF)
+        #
+        # assert type(min) == type(max) == type(step) == type(initial_value)
 
         return self._add_gui_impl(
             "/".join(self._gui_folder_labels + [name]),
@@ -537,14 +562,14 @@ class MessageApi(abc.ABC):
         fov: float,
         aspect: float,
         scale: float = 0.3,
-        color: RgbTupleOrArray = (80, 120, 255),
+        color: RgbTupleOrArray = (20, 20, 20),
         image: Optional[onp.ndarray] = None,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: Optional[int] = None,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> CameraFrustumHandle:
         """Add a frustum to the scene. Useful for visualizing cameras.
 
         Like all cameras in the viser Python API, frustums follow the OpenCV [+Z forward,
@@ -572,7 +597,7 @@ class MessageApi(abc.ABC):
                 image_base64_data=base64_data,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return CameraFrustumHandle._make(self, name, wxyz, position, visible)
 
     def add_frame(
         self,
@@ -583,7 +608,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> FrameHandle:
         cast_vector(wxyz, length=4)
         cast_vector(position, length=3)
         self._queue(
@@ -595,7 +620,7 @@ class MessageApi(abc.ABC):
                 axes_radius=axes_radius,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return FrameHandle._make(self, name, wxyz, position, visible)
 
     def add_label(
         self,
@@ -603,11 +628,10 @@ class MessageApi(abc.ABC):
         text: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
-        visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> LabelHandle:
         """Add a 2D label to the scene."""
         self._queue(_messages.LabelMessage(name, text))
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return LabelHandle._make(self, name, wxyz, position)
 
     def add_point_cloud(
         self,
@@ -618,7 +642,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> PointCloudHandle:
         """Add a point cloud to the scene."""
         self._queue(
             _messages.PointCloudMessage(
@@ -628,9 +652,13 @@ class MessageApi(abc.ABC):
                 point_size=point_size,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return PointCloudHandle._make(self, name, wxyz, position, visible)
 
-    def add_mesh(
+    def add_mesh(self, *args, **kwargs) -> MeshHandle:
+        """Deprecated alias for `add_mesh_simple()`."""
+        return self.add_mesh_simple(*args, **kwargs)
+
+    def add_mesh_simple(
         self,
         name: str,
         vertices: onp.ndarray,
@@ -641,7 +669,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> MeshHandle:
         """Add a mesh to the scene."""
         self._queue(
             _messages.MeshMessage(
@@ -650,11 +678,67 @@ class MessageApi(abc.ABC):
                 faces.astype(onp.uint32),
                 # (255, 255, 255) => 0xffffff, etc
                 color=_encode_rgb(color),
+                vertex_colors=None,
                 wireframe=wireframe,
                 side=side,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        node_handle = MeshHandle._make(self, name, wxyz, position, visible)
+        return node_handle
+
+    def add_mesh_trimesh(
+        self,
+        name: str,
+        mesh: trimesh.Trimesh,
+        wireframe: bool = False,
+        side: Literal["front", "back", "double"] = "front",
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> MeshHandle:
+        """Add a trimesh mesh to the scene."""
+        if isinstance(mesh.visual, trimesh.visual.ColorVisuals):
+            vertex_colors = mesh.visual.vertex_colors
+            self._queue(
+                _messages.MeshMessage(
+                    name,
+                    mesh.vertices.astype(onp.float32),
+                    mesh.faces.astype(onp.uint32),
+                    color=None,
+                    vertex_colors=(
+                        vertex_colors.view(onp.ndarray).astype(onp.uint8)[..., :3]
+                    ),
+                    wireframe=wireframe,
+                    side=side,
+                )
+            )
+        elif isinstance(mesh.visual, trimesh.visual.TextureVisuals):
+            # TODO: this needs to be implemented.
+            import warnings
+
+            warnings.warn(
+                "Texture visuals are not fully supported yet!",
+                stacklevel=2,
+            )
+            self._queue(
+                _messages.MeshMessage(
+                    name,
+                    mesh.vertices.astype(onp.float32),
+                    mesh.faces.astype(onp.uint32),
+                    color=_encode_rgb(
+                        # Note that `vertex_colors` here is per-UV coordinate, not
+                        # per mesh vertex.
+                        mesh.visual.to_color().vertex_colors.flatten()[:3]
+                    ),
+                    vertex_colors=(None),
+                    wireframe=wireframe,
+                    side=side,
+                )
+            )
+        else:
+            assert False, f"Unsupported texture visuals: {mesh.visual}"
+
+        return MeshHandle._make(self, name, wxyz, position, visible)
 
     def set_background_image(
         self,
@@ -683,7 +767,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> ImageHandle:
         """Add a 2D image to the scene. Rendered in 3D."""
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
@@ -697,7 +781,7 @@ class MessageApi(abc.ABC):
                 render_height=render_height,
             )
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return ImageHandle._make(self, name, wxyz, position, visible)
 
     def add_transform_controls(
         self,
@@ -757,7 +841,7 @@ class MessageApi(abc.ABC):
             message_position.excluded_self_client = client_id
             self._queue(message_position)
 
-        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible)
+        node_handle = _SupportsVisibility._make(self, name, wxyz, position, visible)
         state_aux = _TransformControlsState(
             last_updated=time.time(),
             update_cb=[],
@@ -819,6 +903,16 @@ class MessageApi(abc.ABC):
             cb(handle)
         if handle._impl_aux.sync_cb is not None:
             handle._impl_aux.sync_cb(client_id, handle)
+
+    def _handle_click_updates(
+        self, client_id: ClientId, message: _messages.SceneNodeClickedMessage
+    ) -> None:
+        """Callback for handling click messages."""
+        handle = self._handle_from_node_name.get(message.name, None)
+        if handle is None or handle._impl.click_cb is None:
+            return
+        for cb in handle._impl.click_cb:
+            cb(handle)
 
     def _add_gui_impl(
         self,
@@ -888,7 +982,7 @@ class MessageApi(abc.ABC):
         # Set the disabled/visible fields. These will queue messages under-the-hood.
         if disabled:
             handle.disabled = disabled
-        if visible:
+        if not visible:
             handle.visible = visible
 
         return handle

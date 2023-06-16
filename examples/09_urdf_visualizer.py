@@ -34,13 +34,16 @@ def main(urdf_path: Path) -> None:
             frame_name = urdf.scene.graph.transforms.parents[frame_name]
         return "/" + "/".join(frames[::-1])
 
-    for frame_name, value in urdf.scene.geometry.items():
-        assert isinstance(value, trimesh.Trimesh)
-        server.add_mesh(
-            frame_name_with_parents(frame_name) + "/mesh",
-            vertices=value.vertices,
-            faces=value.faces,
-            color=(150, 150, 150),
+    for frame_name, mesh in urdf.scene.geometry.items():
+        assert isinstance(mesh, trimesh.Trimesh)
+        T_parent_child = urdf.get_transform(
+            frame_name, urdf.scene.graph.transforms.parents[frame_name]
+        )
+        server.add_mesh_trimesh(
+            frame_name_with_parents(frame_name),
+            mesh,
+            wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
+            position=T_parent_child[:3, 3],
         )
 
     gui_joints: List[viser.GuiHandle[float]] = []
@@ -66,20 +69,23 @@ def main(urdf_path: Path) -> None:
 
         for joint_name, joint in urdf.joint_map.items():
             assert isinstance(joint, yourdfpy.Joint)
+
+            min = (
+                joint.limit.lower
+                if joint.limit is not None and joint.limit.lower is not None
+                else -onp.pi
+            )
+            max = (
+                joint.limit.upper
+                if joint.limit is not None and joint.limit.upper is not None
+                else onp.pi
+            )
             slider = server.add_gui_slider(
                 name=joint_name,
-                min=(
-                    joint.limit.lower
-                    if joint.limit is not None and joint.limit.lower is not None
-                    else -onp.pi
-                ),
-                max=(
-                    joint.limit.upper
-                    if joint.limit is not None and joint.limit.upper is not None
-                    else onp.pi
-                ),
+                min=min,
+                max=max,
                 step=1e-3,
-                initial_value=0.0,
+                initial_value=0.0 if min < 0 and max > 0 else (min + max) / 2.0,
             )
             if joint.limit is None:
                 slider.visible = False

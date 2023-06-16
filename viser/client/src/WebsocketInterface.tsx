@@ -59,6 +59,21 @@ export function isTexture(
   );
 }
 
+/** Float **/
+function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
+  return new THREE.Float32BufferAttribute(
+    new Float32Array(new Uint8Array(colors)).map((value) => {
+      value = value / 255.0;
+      if (value <= 0.04045) {
+        return value / 12.92;
+      } else {
+        return Math.pow((value + 0.055) / 1.055, 2.4);
+      }
+    }),
+    3
+  );
+}
+
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
@@ -73,6 +88,7 @@ function useMessageHandler() {
   const setOrientation = viewer.useSceneTree((state) => state.setOrientation);
   const setPosition = viewer.useSceneTree((state) => state.setPosition);
   const setVisibility = viewer.useSceneTree((state) => state.setVisibility);
+  const setClickable = viewer.useSceneTree((state) => state.setClickable);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -137,17 +153,7 @@ function useMessageHandler() {
         // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
         geometry.setAttribute(
           "color",
-          new THREE.Float32BufferAttribute(
-            new Float32Array(new Uint8Array(message.colors)).map((value) => {
-              value = value / 255.0;
-              if (value <= 0.04045) {
-                return value / 12.92;
-              } else {
-                return Math.pow((value + 0.055) / 1.055, 2.4);
-              }
-            }),
-            3
-          )
+          threeColorBufferFromUint8Buffer(message.colors)
         );
 
         addSceneNodeMakeParents(
@@ -176,7 +182,8 @@ function useMessageHandler() {
       case "MeshMessage": {
         const geometry = new THREE.BufferGeometry();
         const material = new THREE.MeshStandardMaterial({
-          color: message.color,
+          color: message.color || undefined,
+          vertexColors: message.vertex_colors !== null,
           wireframe: message.wireframe,
           side: {
             front: THREE.FrontSide,
@@ -196,6 +203,13 @@ function useMessageHandler() {
             3
           )
         );
+        if (message.vertex_colors !== null) {
+          geometry.setAttribute(
+            "color",
+            threeColorBufferFromUint8Buffer(message.vertex_colors)
+          );
+        }
+
         geometry.setIndex(
           new THREE.Uint32BufferAttribute(
             new Uint32Array(
@@ -311,9 +325,7 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraLookAtMessage": {
-        const cameraControls =
-          viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
-            .current!;
+        const cameraControls = viewer.cameraControlRef.current!;
 
         const R_threeworld_world = new THREE.Quaternion();
         R_threeworld_world.setFromEuler(
@@ -329,10 +341,8 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraUpDirectionMessage": {
-        const camera = viewer.globalCameras.current!.cameras[viewer.panelKey];
-        const cameraControls =
-          viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
-            .current!;
+        const camera = viewer.cameraRef.current!;
+        const cameraControls = viewer.cameraControlRef.current!;
         const R_threeworld_world = new THREE.Quaternion();
         R_threeworld_world.setFromEuler(
           new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
@@ -347,9 +357,7 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraPositionMessage": {
-        const cameraControls =
-          viewer.globalCameras.current!.cameraControlRefs[viewer.panelKey]
-            .current!;
+        const cameraControls = viewer.cameraControlRef.current!;
 
         // Set the camera position. Note that this will shift the orientation as-well.
         const position_cmd = new THREE.Vector3(
@@ -371,7 +379,7 @@ function useMessageHandler() {
         break;
       }
       case "SetCameraFovMessage": {
-        const camera = viewer.globalCameras.current!.cameras[viewer.panelKey];
+        const camera = viewer.cameraRef.current!;
         // tan(fov / 2.0) = 0.5 * film height / focal length
         // focal length = 0.5 * film height / tan(fov / 2.0)
         camera.setFocalLength(
@@ -512,6 +520,11 @@ function useMessageHandler() {
         setVisibility(message.name, message.visible);
         break;
       }
+      // Set the clickability of a particular scene node.
+      case "SetSceneNodeClickableMessage": {
+        setClickable(message.name, message.clickable);
+        break;
+      }
       // Reset the entire scene, removing all scene nodes.
       case "ResetSceneMessage": {
         resetScene();
@@ -582,7 +595,7 @@ export default function WebsocketInterface() {
   const server = viewer.useGui((state) => state.server);
   const resetGui = viewer.useGui((state) => state.resetGui);
 
-  syncSearchParamServer(viewer.panelKey, server);
+  syncSearchParamServer(server);
 
   React.useEffect(() => {
     // Lock for making sure messages are handled in order.

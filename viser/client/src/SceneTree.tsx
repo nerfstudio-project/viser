@@ -1,4 +1,5 @@
 import { createPortal } from "@react-three/fiber";
+import { useCursor } from "@react-three/drei";
 import React from "react";
 import * as THREE from "three";
 
@@ -8,6 +9,8 @@ import { immerable } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from ".";
+import { makeThrottledMessageSender } from "./WebsocketInterface";
+import { Select } from "@react-three/postprocessing";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>
@@ -39,6 +42,7 @@ interface SceneTreeState {
           visibility?: boolean;
           wxyz?: THREE.Quaternion;
           position?: THREE.Vector3;
+          clickable?: boolean;
         };
   };
 }
@@ -46,6 +50,7 @@ export interface SceneTreeActions extends SceneTreeState {
   setVisibility(name: string, visible: boolean): void;
   setOrientation(name: string, wxyz: THREE.Quaternion): void;
   setPosition(name: string, position: THREE.Vector3): void;
+  setClickable(name: string, clickable: boolean): void;
   addSceneNode(nodes: SceneNode): void;
   removeSceneNode(name: string): void;
   resetScene(): void;
@@ -83,7 +88,10 @@ export function useSceneTreeState() {
     create(
       immer<SceneTreeState & SceneTreeActions>((set) => ({
         nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
-        attributesFromName: {},
+        attributesFromName: {
+          "": { visibility: true },
+          "/WorldAxes": { visibility: true },
+        },
         setVisibility: (name, visibility) =>
           set((state) => {
             state.attributesFromName[name] = {
@@ -106,6 +114,14 @@ export function useSceneTreeState() {
               position: position,
             };
           }),
+        setClickable: (name, clickable) =>
+          set((state) => {
+            state.attributesFromName[name] = {
+              ...state.attributesFromName[name],
+
+              clickable: clickable,
+            };
+          }),
         addSceneNode: (node) =>
           set((state) => {
             const existingNode = state.nodeFromName[node.name];
@@ -122,6 +138,10 @@ export function useSceneTreeState() {
               state.nodeFromName[node.name] = node;
               state.nodeFromName[parent_name]!.children.push(node.name);
             }
+            state.attributesFromName[node.name] = {
+              visibility: true,
+              ...state.attributesFromName[node.name],
+            };
           }),
         removeSceneNode: (name) =>
           set((state) => {
@@ -155,7 +175,7 @@ export function useSceneTreeState() {
               if (key !== "" && key !== "/WorldAxes")
                 delete state.nodeFromName[key];
             }
-            state.nodeFromName[""]!.children = [];
+            state.nodeFromName[""]!.children = ["/WorldAxes"];
             state.nodeFromName["/WorldAxes"]!.children = [];
           }),
       }))
@@ -203,13 +223,14 @@ export function SceneNodeThreeObject(props: {
   const { makeObject, cleanup } = props.useSceneTree(
     (state) => state.nodeFromName[props.name]!
   );
-  const { visibility, wxyz, position } = props.useSceneTree(
+  const { visibility, wxyz, position, clickable } = props.useSceneTree(
     (state) => state.attributesFromName[props.name] || {}
   );
 
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
-  const { objFromSceneNodeNameRef } = React.useContext(ViewerContext)!;
+  const { objFromSceneNodeNameRef, websocketRef } =
+    React.useContext(ViewerContext)!;
 
   React.useEffect(() => {
     if (obj === null) return;
@@ -234,16 +255,49 @@ export function SceneNodeThreeObject(props: {
     };
   }, [obj, cleanup]);
 
-  return (
-    <>
-      {React.useMemo(() => makeObject(setRef), [makeObject, setRef])}
-      {obj !== null && (
-        <SceneNodeThreeChildren
-          name={props.name}
-          useSceneTree={props.useSceneTree}
-          parent={obj}
-        />
-      )}
-    </>
+  const sendClicksThrottled = makeThrottledMessageSender(websocketRef, 50);
+  const [hovered, setHovered] = React.useState(false);
+  const objNode = React.useMemo(() => makeObject(setRef), [makeObject, setRef]);
+  const children = obj !== null && (
+    <SceneNodeThreeChildren
+      name={props.name}
+      useSceneTree={props.useSceneTree}
+      parent={obj}
+    />
   );
+  useCursor(hovered);
+
+  if (clickable)
+    return (
+      <>
+        <group
+          onClick={(e) => {
+            e.stopPropagation();
+            sendClicksThrottled({
+              type: "SceneNodeClickedMessage",
+              name: props.name,
+            });
+          }}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            setHovered(true);
+          }}
+          onPointerOut={() => {
+            setHovered(false);
+          }}
+        >
+          <Select enabled={hovered}>{objNode}</Select>
+        </group>
+        {children}
+      </>
+    );
+  else {
+    hovered && setHovered(false);
+    return (
+      <>
+        {objNode}
+        {children}
+      </>
+    );
+  }
 }

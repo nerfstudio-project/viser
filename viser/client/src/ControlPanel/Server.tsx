@@ -7,7 +7,7 @@ import { isTexture } from "../WebsocketInterface";
 import { Stats } from "@react-three/drei";
 
 export default function ServerControls() {
-  const { panelKey, useGui, wrapperRef, sceneRef } = useContext(ViewerContext)!;
+  const { useGui, wrapperRef, sceneRef } = useContext(ViewerContext)!;
 
   const [showStats, setShowStats] = useState(false);
 
@@ -16,7 +16,8 @@ export default function ServerControls() {
   const backgroundAvailable = useGui((state) => state.backgroundAvailable);
 
   // Hack around leva bug: https://github.com/pmndrs/leva/issues/253
-  const idPrefix = panelKey.toString() + ":";
+  // (in case the user also makes an input called Statistics!)
+  const idPrefix = "_viser-server-";
   const levaStore = useCreateStore();
   useControls(
     {

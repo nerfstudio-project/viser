@@ -46,7 +46,8 @@ interface MeshMessage {
   name: string;
   vertices: ArrayBuffer;
   faces: ArrayBuffer;
-  color: number;
+  color: number | null;
+  vertex_colors: ArrayBuffer | null;
   wireframe: boolean;
   side: "front" | "back" | "double";
 }
@@ -119,6 +120,15 @@ interface SetSceneNodeVisibilityMessage {
   type: "SetSceneNodeVisibilityMessage";
   name: string;
   visible: boolean;
+}
+interface SetSceneNodeClickableMessage {
+  type: "SetSceneNodeClickableMessage";
+  name: string;
+  clickable: boolean;
+}
+interface SceneNodeClickedMessage {
+  type: "SceneNodeClickedMessage";
+  name: string;
 }
 interface ResetSceneMessage {
   type: "ResetSceneMessage";
@@ -194,6 +204,8 @@ export type Message =
   | ImageMessage
   | RemoveSceneNodeMessage
   | SetSceneNodeVisibilityMessage
+  | SetSceneNodeClickableMessage
+  | SceneNodeClickedMessage
   | ResetSceneMessage
   | GuiAddMessage
   | GuiRemoveMessage
