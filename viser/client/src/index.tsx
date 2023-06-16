@@ -14,7 +14,6 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 
 import ControlPanel from "./ControlPanel/ControlPanel";
-import LabelRenderer from "./LabelRenderer";
 import {
   SceneNodeThreeObject,
   UseSceneTree,
@@ -113,7 +112,6 @@ function ViewerCanvas() {
       }}
     >
       <SceneContextSetter />
-      <LabelRenderer />
       <SynchronizedCameraControls />
       <Selection>
         <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
