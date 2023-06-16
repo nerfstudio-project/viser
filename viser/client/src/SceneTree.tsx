@@ -271,16 +271,14 @@ export function SceneNodeThreeObject(props: {
   );
 }
 
-export type SceneNodeLabelProps = {
+type SceneNodeLabelProps = {
   text: string;
   visible?: boolean;
 }
 
 export function SceneNodeLabel({ text, visible }: SceneNodeLabelProps) {
-  if (!visible) {
-    return null;
-  }
-  if (text.trim() === "") { // Do not render label for object without name, e.g. root node
+  if (!visible || text.trim() === "") {
+    // Do not render label for object without name, e.g. root node
     return null;
   }
   return (
