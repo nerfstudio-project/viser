@@ -4,10 +4,7 @@ Viser is adding support for theming. Work-in-progress.
 """
 
 import time
-from pathlib import Path
 
-import imageio.v3 as iio
-import numpy as onp
 
 import viser
 from viser.theme import TitlebarButton, TitlebarConfig, TitlebarImage
