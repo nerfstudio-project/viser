@@ -1,18 +1,23 @@
 import { Button, Grid, IconButton, SvgIcon } from "@mui/material";
 import { useContext } from "react";
 import { ViewerContext } from ".";
+import { Message } from "./WebsocketMessages";
 
 import * as Icons from "@mui/icons-material";
+
+// Type helpers.
 type IconName = keyof typeof Icons;
+type ArrayElement<ArrayType extends readonly unknown[]> =
+  ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
+type NoNull<T> = Exclude<T, null>;
+type TitlebarContent = NoNull<
+  (Message & { type: "ThemeConfigurationMessage" })["titlebar_content"]
+>;
 
-interface TitlebarButtonProps {
-  text: string | null;
-  href: string | null;
-  icon: "GitHub" | "Description" | "Keyboard" | null;
-  variant: "text" | "contained" | "outlined" | null;
-}
-
-export function TitlebarButton(props: TitlebarButtonProps) {
+// We inherit props directly from message contents.
+export function TitlebarButton(
+  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>
+) {
   if (props.icon !== null && props.text === null) {
     return (
       <IconButton href={props.href ?? ""}>
@@ -42,46 +47,22 @@ export function TitlebarButton(props: TitlebarButtonProps) {
   );
 }
 
-interface TitlebarImageProps {
-  image_url: string;
-  image_alt: string;
-  href: string | null;
-}
-
-export function TitlebarImage(props: TitlebarImageProps | null) {
-  if (props == null) {
-    return null;
-  } else {
-    if (props.href == null) {
-      return (
-        <img
-          src={props.image_url}
-          alt={props.image_alt}
-          style={{
-            height: "2em",
-            marginLeft: "0.125em",
-            marginRight: "0.125em",
-          }}
-        />
-      );
-    }
-    return (
-      <a
-        href={props.href}
-        style={{ height: "2em", marginLeft: "0.125em", marginRight: "0.125em" }}
-      >
-        <img
-          src={props.image_url}
-          alt={props.image_alt}
-          style={{
-            height: "2em",
-            marginLeft: "0.125em",
-            marginRight: "0.125em",
-          }}
-        />
-      </a>
-    );
+export function TitlebarImage(props: NoNull<TitlebarContent["image"]>) {
+  const image = (
+    <img
+      src={props.image_url}
+      alt={props.image_alt}
+      style={{
+        height: "2em",
+        marginLeft: "0.125em",
+        marginRight: "0.125em",
+      }}
+    />
+  );
+  if (props.href == null) {
+    return image;
   }
+  return <a href={props.href}>{image}</a>;
 }
 
 export function Titlebar() {
@@ -136,7 +117,7 @@ export function Titlebar() {
           justifyContent: "right",
         }}
       >
-        {imageData != null ? TitlebarImage(imageData) : null}
+        {imageData !== null ? TitlebarImage(imageData) : null}
       </Grid>
     </Grid>
   );
