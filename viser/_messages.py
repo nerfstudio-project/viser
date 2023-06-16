@@ -11,6 +11,7 @@ import numpy.typing as onpt
 from typing_extensions import Literal, override
 
 from . import infra
+from . import theme
 
 
 class Message(infra.Message):
@@ -326,3 +327,4 @@ class ThemeConfigurationMessage(Message):
     """Message from server->client to configure parts of the GUI."""
 
     canvas_background_color: int
+    titlebar_content: Optional[theme.TitlebarConfig]

@@ -172,6 +172,17 @@ interface MessageGroupEnd {
 interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
   canvas_background_color: number;
+  titlebar_content: {
+    buttons:
+      | {
+          text: string | null;
+          icon: "GitHub" | "Description" | "Keyboard" | null;
+          href: string | null;
+          variant: "text" | "contained" | "outlined" | null;
+        }[]
+      | null;
+    image: { image_url: string; image_alt: string; href: string | null } | null;
+  } | null;
 }
 
 export type Message =

@@ -27,6 +27,8 @@ import WebsocketInterface from "./WebsocketInterface";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 
+import { Titlebar } from "./Titlebar";
+
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
@@ -47,8 +49,9 @@ function SingleViewer() {
   // Layout and styles.
   const Wrapper = styled(Box)`
     width: 100%;
-    height: 100%;
+    height: 1px;
     position: relative;
+    flex: 1 0 auto;
   `;
 
   // Default server logic.
@@ -80,6 +83,7 @@ function SingleViewer() {
   };
   return (
     <ViewerContext.Provider value={viewer}>
+      <Titlebar></Titlebar>
       <Wrapper ref={viewer.wrapperRef}>
         <WebsocketInterface />
         <ControlPanel />
@@ -157,6 +161,8 @@ function Root() {
           height: "100%",
           boxSizing: "border-box",
           position: "relative",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <SingleViewer />
