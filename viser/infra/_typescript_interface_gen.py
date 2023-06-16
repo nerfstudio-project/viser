@@ -2,7 +2,7 @@ import dataclasses
 from typing import Any, ClassVar, Type, Union, get_type_hints
 
 import numpy as onp
-from typing_extensions import Literal, get_args, get_origin
+from typing_extensions import Literal, get_args, get_origin, is_typeddict
 
 from ._messages import Message
 
@@ -32,12 +32,27 @@ def _get_ts_type(typ: Type) -> str:
                 get_args(typ),
             )
         )
+    if is_typeddict(typ):
+        hints = get_type_hints(typ)
+
+        def fmt(key):
+            val = hints[key]
+            ret = f"'{key}'" + ": " + _get_ts_type(val)
+            return ret
+
+        ret = "{" + ", ".join(map(fmt, hints)) + "}"
+        # ret = "{" + f"type: \'{typ.__name__}\', " + ", ".join(map(fmt, hints)) + "}"
+        return ret
     if get_origin(typ) is Union:
-        return " | ".join(
-            map(
-                _get_ts_type,
-                get_args(typ),
+        return (
+            "("
+            + " | ".join(
+                map(
+                    _get_ts_type,
+                    get_args(typ),
+                )
             )
+            + ")"
         )
 
     if hasattr(typ, "__origin__"):

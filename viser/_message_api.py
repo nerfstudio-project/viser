@@ -35,7 +35,7 @@ import trimesh
 import trimesh.visual
 from typing_extensions import Literal, LiteralString, ParamSpec, TypeAlias, assert_never
 
-from . import _messages, infra
+from . import _messages, infra, theme
 from ._gui import (
     GuiButtonGroupHandle,
     GuiButtonHandle,
@@ -164,11 +164,13 @@ class MessageApi(abc.ABC):
         self,
         *,
         canvas_background_color: RgbTupleOrArray = (255, 255, 255),
+        titlebar_content: Optional[theme.TitlebarConfig] = None,
     ) -> None:
         """Configure the viser front-end's visual appearance."""
         self._queue(
             _messages.ThemeConfigurationMessage(
-                canvas_background_color=_encode_rgb(canvas_background_color)
+                canvas_background_color=_encode_rgb(canvas_background_color),
+                titlebar_content=titlebar_content,
             ),
         )
 
