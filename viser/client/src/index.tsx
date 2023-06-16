@@ -26,6 +26,8 @@ import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 import ControlPanel from "./ControlPanel/ControlPanel";
 
+import { Titlebar } from "./Titlebar";
+
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
@@ -70,25 +72,29 @@ function SingleViewer() {
   };
   return (
     <ViewerContext.Provider value={viewer}>
-      <WebsocketInterface />
-      <ControlPanel />
-      <ViewerCanvas />
+      <Titlebar />
+      <Box
+        sx={{
+          width: "100%",
+          height: "1px",
+          position: "relative",
+          flex: "1 0 auto",
+        }}
+      >
+        <WebsocketInterface />
+        <ControlPanel />
+        <ViewerCanvas />
+      </Box>
     </ViewerContext.Provider>
   );
 }
 
 function ViewerCanvas() {
   const viewer = React.useContext(ViewerContext)!;
-  const canvas_background_color = viewer.useGui(
-    (state) => state.theme.canvas_background_color
-  );
   return (
     <Canvas
       camera={{ position: [3.0, 3.0, -3.0] }}
       style={{
-        backgroundColor:
-          // Convert int color to hex.
-          "#" + canvas_background_color.toString(16).padStart(6, "0"),
         position: "relative",
         zIndex: 0,
         width: "100%",
@@ -135,12 +141,12 @@ function Root() {
       theme={{ colorScheme: "light" }}
     >
       <Box
-        component="div"
         sx={{
           width: "100%",
           height: "100%",
           position: "relative",
-          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <SingleViewer />
