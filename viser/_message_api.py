@@ -13,7 +13,6 @@ import contextlib
 import io
 import threading
 import time
-import json
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -78,45 +77,6 @@ def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
 RgbTupleOrArray: TypeAlias = Union[
     Tuple[int, int, int], Tuple[float, float, float], onp.ndarray
 ]
-
-
-class TitlebarButton(dict):
-    def __init__(
-        self,
-        text: Optional[str] = None,
-        icon: Optional[str] = None,
-        href: Optional[str] = None,
-        variant: Optional[str] = None,
-    ):
-        super().__init__(self, text=text, icon=icon, href=href, variant=variant)
-
-
-class TitlebarImage(dict):
-    def __init__(self, imageSource: str, alt: str):
-        super().__init__(self, imageSource=imageSource, alt=alt)
-
-
-class TitlebarPadding(dict):
-    def __init__(self, width: str):
-        super().__init__(self, width=width)
-
-
-TitlebarObject: TypeAlias = Union[TitlebarButton, TitlebarImage, TitlebarPadding]
-
-
-class TitlebarConfig:
-    def __init__(
-        self,
-        left: List[TitlebarObject] = [],
-        center: List[TitlebarObject] = [],
-        right: List[TitlebarObject] = [],
-    ):
-        self.left: List[TitlebarObject] = left
-        self.center: List[TitlebarObject] = center
-        self.right: List[TitlebarObject] = right
-
-    def _encode(self):
-        return json.dumps([self.left, self.center, self.right])
 
 
 def _encode_rgb(rgb: RgbTupleOrArray) -> int:
