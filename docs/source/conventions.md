@@ -5,12 +5,12 @@ In this note, we describe the coordinate frame conventions used in `viser`.
 ## Scene tree naming
 
 Each object that we add to the scene in viser is instantiated as a node in a
-scene tree. The hierarchical relationships in this tree are determined entirely
-by the names used in this tree.
+scene tree. The structure of this tree is determined by the names assigned to
+the nodes.
 
 If we add a coordinate frame called `/base_link/shoulder/wrist`, it signifies
-that are three nodes: the `wrist` is a child of the `shoulder` which is a child
-of the `base_link`.
+three nodes: the `wrist` is a child of the `shoulder` which is a child of the
+`base_link`.
 
 If we set the transformation of a given node like `/shoulder`, both it and all
 of its children will move. Its parent, `/base_link`, will be unaffected.
