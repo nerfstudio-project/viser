@@ -178,7 +178,7 @@ StringType = TypeVar("StringType", bound=str)
 
 @dataclasses.dataclass
 class GuiHandle(_GuiHandle[T], Generic[T]):
-    """Handle for a particular GUI input in our visualizer.
+    """Handle for a general GUI inputs in our visualizer.
 
     Lets us get values, set values, and detect updates."""
 
