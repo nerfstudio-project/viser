@@ -171,7 +171,6 @@ interface MessageGroupEnd {
 }
 interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
-  canvas_background_color: number;
   titlebar_content: {
     buttons:
       | {
@@ -183,6 +182,7 @@ interface ThemeConfigurationMessage {
       | null;
     image: { image_url: string; image_alt: string; href: string | null } | null;
   } | null;
+  fixed_sidebar: boolean;
 }
 
 export type Message =
