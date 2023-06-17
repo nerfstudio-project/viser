@@ -326,5 +326,5 @@ class MessageGroupEnd(Message):
 class ThemeConfigurationMessage(Message):
     """Message from server->client to configure parts of the GUI."""
 
-    canvas_background_color: int
     titlebar_content: Optional[theme.TitlebarConfig]
+    fixed_sidebar: bool

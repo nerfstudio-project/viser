@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { ViewerContext } from ".";
 import { Message } from "./WebsocketMessages";
-import { Button, Grid } from "@mantine/core";
+import { Box, Button } from "@mantine/core";
 import {
   IconBrandGithub,
   IconFileDescription,
@@ -23,18 +23,18 @@ function assertUnreachable(x: never): never {
 export function TitlebarButton(
   props: ArrayElement<NoNull<TitlebarContent["buttons"]>>
 ) {
-  let icon = undefined;
+  let Icon = null;
   switch (props.icon) {
     case null:
       break;
     case "GitHub":
-      icon = <IconBrandGithub />;
+      Icon = IconBrandGithub;
       break;
     case "Description":
-      icon = <IconFileDescription />;
+      Icon = IconFileDescription;
       break;
     case "Keyboard":
-      icon = <IconKeyboard />;
+      Icon = IconKeyboard;
       break;
     default:
       assertUnreachable(props.icon);
@@ -44,10 +44,11 @@ export function TitlebarButton(
       component="a"
       variant="outline"
       href={props.href || undefined}
-      size="sm"
+      compact
       target="_blank"
-      leftIcon={icon}
-      mr="xs"
+      leftIcon={Icon === null ? null : <Icon size="1em" />}
+      ml="sm"
+      color="gray"
     >
       {props.text}
     </Button>
@@ -60,7 +61,7 @@ export function TitlebarImage(props: NoNull<TitlebarContent["image"]>) {
       src={props.image_url}
       alt={props.image_alt}
       style={{
-        height: "2em",
+        height: "1.8em",
         margin: "0 0.5em",
       }}
     />
@@ -83,37 +84,22 @@ export function Titlebar() {
   const imageData = content.image;
 
   return (
-    <Grid
+    <Box
+      p="xs"
       sx={(theme) => ({
         width: "100%",
-        justifyContent: "space-between",
+        margin: 0,
+        display: "flex",
         alignItems: "center",
         borderBottom: "1px solid",
-        margin: 0,
-        borderColor: theme.colors.gray[4],
+        borderColor:
+          theme.colorScheme == "light"
+            ? theme.colors.gray[4]
+            : theme.colors.dark[4],
       })}
     >
-      <Grid.Col
-        xs="auto"
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "left",
-          overflow: "visible",
-        }}
-      >
-        {buttons?.map((btn) => TitlebarButton(btn))}
-      </Grid.Col>
-      <Grid.Col
-        xs={3}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "right",
-        }}
-      >
-        {imageData !== null ? TitlebarImage(imageData) : null}
-      </Grid.Col>
-    </Grid>
+      {imageData !== null ? TitlebarImage(imageData) : null}
+      {buttons?.map((btn) => TitlebarButton(btn))}
+    </Box>
   );
 }

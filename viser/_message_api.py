@@ -163,14 +163,14 @@ class MessageApi(abc.ABC):
     def configure_theme(
         self,
         *,
-        canvas_background_color: RgbTupleOrArray = (255, 255, 255),
         titlebar_content: Optional[theme.TitlebarConfig] = None,
+        fixed_sidebar: bool = False,
     ) -> None:
         """Configure the viser front-end's visual appearance."""
         self._queue(
             _messages.ThemeConfigurationMessage(
-                canvas_background_color=_encode_rgb(canvas_background_color),
                 titlebar_content=titlebar_content,
+                fixed_sidebar=fixed_sidebar,
             ),
         )
 

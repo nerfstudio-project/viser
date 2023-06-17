@@ -3,11 +3,10 @@ import {
   IconBinaryTree2,
   IconCloudCheck,
   IconCloudOff,
-  IconLink,
+  IconTool,
 } from "@tabler/icons-react";
-import { ScrollArea, Stack, Tabs } from "@mantine/core";
+import { Tabs } from "@mantine/core";
 import { ViewerContext } from "..";
-import FloatingPanel from "./FloatingPanel";
 import React from "react";
 import GeneratedControls from "./Generated";
 import ServerControls from "./Server";
@@ -15,50 +14,43 @@ import SceneTreeTable from "./SceneTreeTable";
 
 /** Root component for control panel. Parents a set of control tabs. */
 export default function ControlPanel() {
+  const viewer = React.useContext(ViewerContext)!;
+  const showGenerated = viewer.useGui((state) => state.guiNames.length > 0);
+
   return (
-    <FloatingPanel>
-      <FloatingPanel.Handle>
-        <ConnectionStatus />
-      </FloatingPanel.Handle>
-      <FloatingPanel.Contents>
-        <ScrollArea>
-          <Tabs radius="xs" defaultValue="generated">
-            <Tabs.List>
-              <Tabs.Tab
-                value="generated"
-                icon={<IconAdjustments size="0.8rem" />}
-              >
-                Control
-              </Tabs.Tab>
-              <Tabs.Tab value="server" icon={<IconLink size="1rem" />}>
-                Server
-              </Tabs.Tab>
-              <Tabs.Tab value="scene" icon={<IconBinaryTree2 size="1rem" />}>
-                Scene
-              </Tabs.Tab>
-            </Tabs.List>
+    <Tabs radius="xs" defaultValue="server">
+      <Tabs.List>
+        {showGenerated ? (
+          <Tabs.Tab value="generated" icon={<IconAdjustments size="0.8rem" />}>
+            Control
+          </Tabs.Tab>
+        ) : null}
+        <Tabs.Tab value="server" icon={<IconTool size="1rem" />}>
+          Server
+        </Tabs.Tab>
+        <Tabs.Tab value="scene" icon={<IconBinaryTree2 size="1rem" />}>
+          Scene
+        </Tabs.Tab>
+      </Tabs.List>
 
-            <Tabs.Panel value="generated" pt="xs">
-              <GeneratedControls />
-            </Tabs.Panel>
+      {showGenerated ? (
+        <Tabs.Panel value="generated" pt="xs" p="sm">
+          <GeneratedControls />
+        </Tabs.Panel>
+      ) : null}
 
-            <Tabs.Panel value="server" pt="xs">
-              <ServerControls />
-            </Tabs.Panel>
+      <Tabs.Panel value="server" pt="xs" p="sm">
+        <ServerControls />
+      </Tabs.Panel>
 
-            <Tabs.Panel value="scene" pt="xs">
-              <Stack>
-                <SceneTreeTable compact={true} />
-              </Stack>
-            </Tabs.Panel>
-          </Tabs>
-        </ScrollArea>
-      </FloatingPanel.Contents>
-    </FloatingPanel>
+      <Tabs.Panel value="scene" pt="xs" p="sm">
+        <SceneTreeTable compact={true} />
+      </Tabs.Panel>
+    </Tabs>
   );
 }
 /* Icon and label telling us the current status of the websocket connection. */
-function ConnectionStatus() {
+export function ConnectionStatus() {
   const { useGui } = React.useContext(ViewerContext)!;
   const connected = useGui((state) => state.websocketConnected);
   const server = useGui((state) => state.server);
