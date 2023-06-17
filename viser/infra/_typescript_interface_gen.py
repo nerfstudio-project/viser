@@ -7,7 +7,7 @@ from typing_extensions import Literal, get_args, get_origin, is_typeddict
 try:
     from typing import Literal as LiteralAlt
 except ImportError:
-    LiteralAlt = Literal
+    LiteralAlt = Literal  # type: ignore
 
 from ._messages import Message
 
