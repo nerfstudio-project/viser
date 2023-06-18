@@ -5,7 +5,6 @@ Viser is adding support for theming. Work-in-progress.
 
 import time
 
-
 import viser
 from viser.theme import TitlebarButton, TitlebarConfig, TitlebarImage
 
@@ -30,12 +29,6 @@ buttons = (
         href="https://docs.nerf.studio",
         variant="outlined",
     ),
-    TitlebarButton(
-        text="Viewport Controls",
-        icon="Keyboard",
-        href="https://docs.nerf.studio",
-        variant="outlined",
-    ),
 )
 image = TitlebarImage(
     image_url="https://docs.nerf.studio/en/latest/_static/imgs/logo.png",
@@ -46,8 +39,8 @@ image = TitlebarImage(
 titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
 server.configure_theme(
-    canvas_background_color=(2, 230, 230),
     titlebar_content=titlebar_theme,
+    fixed_sidebar=True,
 )
 server.world_axes.visible = True
 

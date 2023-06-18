@@ -38,8 +38,8 @@ interface GuiActions {
 const cleanGuiState: GuiState = {
   theme: {
     type: "ThemeConfigurationMessage",
-    canvas_background_color: 0xffffff,
     titlebar_content: null,
+    fixed_sidebar: false,
   },
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.

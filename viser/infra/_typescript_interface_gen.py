@@ -4,6 +4,11 @@ from typing import Any, ClassVar, Type, Union, get_type_hints
 import numpy as onp
 from typing_extensions import Literal, get_args, get_origin, is_typeddict
 
+try:
+    from typing import Literal as LiteralAlt
+except ImportError:
+    LiteralAlt = Literal  # type: ignore
+
 from ._messages import Message
 
 _raw_type_mapping = {
@@ -25,7 +30,7 @@ def _get_ts_type(typ: Type) -> str:
             return _get_ts_type(args[0]) + "[]"
         else:
             return "[" + ", ".join(map(_get_ts_type, args)) + "]"
-    if get_origin(typ) is Literal:
+    if get_origin(typ) in (Literal, LiteralAlt):
         return " | ".join(
             map(
                 lambda lit: repr(lit).lower() if type(lit) is bool else repr(lit),
