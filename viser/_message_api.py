@@ -13,6 +13,7 @@ import contextlib
 import io
 import threading
 import time
+import uuid
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -139,7 +140,7 @@ class MessageApi(abc.ABC):
     invidividual clients."""
 
     def __init__(self, handler: infra.MessageHandler) -> None:
-        self._handle_state_from_gui_name: Dict[str, _GuiHandleState[Any]] = {}
+        self._gui_handle_state_from_id: Dict[str, _GuiHandleState[Any]] = {}
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
         ] = {}
@@ -184,21 +185,27 @@ class MessageApi(abc.ABC):
 
     def add_gui_button(
         self,
-        name: str,
+        label: str,
         disabled: bool = False,
         visible: bool = True,
     ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
-        it is clicked; to detect clicks, we can manually set it back to `False`.
-
-        Currently, all button names need to be unique."""
+        it is clicked; to detect clicks, we can manually set it back to `False`."""
 
         # Re-wrap the GUI handle with a button interface.
+        id = str(uuid.uuid4())
+        self._queue(
+            _messages.GuiAddButtonMessage(
+                order=0,
+                id=id,
+                label=label,
+                folder_labels=tuple(self._gui_folder_labels),
+            )
+        )
         return GuiButtonHandle(
             self._add_gui_impl(
-                name,
+                id,
                 initial_value=False,
-                leva_conf={"type": "BUTTON", "settings": {}},
                 disabled=disabled,
                 visible=visible,
                 is_button=True,
@@ -236,21 +243,22 @@ class MessageApi(abc.ABC):
     ) -> GuiButtonGroupHandle[Any]:  # Return types are specified in overloads.
         """Add a button group to the GUI. Button groups currently cannot be disabled."""
         assert len(options) > 0
-        handle = self._add_gui_impl(
-            name,
-            options[0],
-            leva_conf={
-                "type": "BUTTON_GROUP",
-                "label": name,
-                "opts": options,
-            },
-            disabled=False,
-            visible=visible,
-            is_button=True,
-        )
-
-        # Re-wrap the GUI handle with a button group interface.
-        return GuiButtonGroupHandle(_impl=handle._impl)
+        assert False
+        # handle = self._add_gui_impl(
+        #     name,
+        #     options[0],
+        #     leva_conf={
+        #         "type": "BUTTON_GROUP",
+        #         "label": name,
+        #         "opts": options,
+        #     },
+        #     disabled=False,
+        #     visible=visible,
+        #     is_button=True,
+        # )
+        #
+        # # Re-wrap the GUI handle with a button group interface.
+        # return GuiButtonGroupHandle(_impl=handle._impl)
 
     def add_gui_checkbox(
         self,
@@ -262,14 +270,16 @@ class MessageApi(abc.ABC):
     ) -> GuiHandle[bool]:
         """Add a checkbox to the GUI."""
         assert isinstance(initial_value, bool)
-        return self._add_gui_impl(
-            "/".join(self._gui_folder_labels + [name]),
-            initial_value,
-            leva_conf={"value": initial_value, "label": name},
-            disabled=disabled,
-            visible=visible,
-            hint=hint,
-        )
+        pass
+        # assert False
+        # return self._add_gui_impl(
+        #     "/".join(self._gui_folder_labels + [name]),
+        #     initial_value,
+        #     leva_conf={"value": initial_value, "label": name},
+        #     disabled=disabled,
+        #     visible=visible,
+        #     hint=hint,
+        # )
 
     def add_gui_text(
         self,
@@ -281,32 +291,82 @@ class MessageApi(abc.ABC):
     ) -> GuiHandle[str]:
         """Add a text input to the GUI."""
         assert isinstance(initial_value, str)
-        return self._add_gui_impl(
-            "/".join(self._gui_folder_labels + [name]),
-            initial_value,
-            leva_conf={"value": initial_value, "label": name},
-            disabled=disabled,
-            visible=visible,
-            hint=hint,
-        )
+        # assert False
+        pass
+        # return self._add_gui_impl(
+        #     "/".join(self._gui_folder_labels + [name]),
+        #     initial_value,
+        #     leva_conf={"value": initial_value, "label": name},
+        #     disabled=disabled,
+        #     visible=visible,
+        #     hint=hint,
+        # )
 
     def add_gui_number(
         self,
-        name: str,
+        label: str,
         initial_value: IntOrFloat,
+        min: Optional[IntOrFloat] = None,
+        max: Optional[IntOrFloat] = None,
+        step: Optional[IntOrFloat] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
     ) -> GuiHandle[IntOrFloat]:
-        """Add a number input to the GUI."""
+        """Add a number input to the GUI, with user-specifiable bound and precision parameters."""
         assert isinstance(initial_value, (int, float))
+
+        if step is None:
+
+            def _compute_step(x: Optional[float]) -> float:  # type: ignore
+                if x is None:
+                    return 1
+
+                # Some risky float stuff...
+                out = 0.0001
+                while out < 1.0 and onp.abs(x) % (out * 10) < 1e-6:
+                    out = out * 10
+                return out
+
+            step = float(  # type: ignore
+                onp.min(
+                    [
+                        _compute_step(initial_value),
+                        _compute_step(min),
+                        _compute_step(max),
+                    ]
+                )
+            )
+
+        # Determine precision from step.
+        assert step is not None
+        x = step
+        precision = 0
+        while onp.abs(int(x) - x) > 1e-7:
+            x = x * 10
+            precision += 1
+
+        # Re-wrap the GUI handle with a button interface.
+        id = str(uuid.uuid4())
+        self._queue(
+            _messages.GuiAddNumberMessage(
+                order=0,
+                id=id,
+                label=label,
+                folder_labels=tuple(self._gui_folder_labels),
+                initial_value=initial_value,
+                min=min,
+                max=max,
+                precision=precision,
+                step=step,
+            )
+        )
         return self._add_gui_impl(
-            "/".join(self._gui_folder_labels + [name]),
-            initial_value,
-            leva_conf={"value": initial_value, "label": name},
+            id,
+            initial_value=initial_value,
             disabled=disabled,
             visible=visible,
-            hint=hint,
+            is_button=False,
         )
 
     def add_gui_vector2(
@@ -319,18 +379,19 @@ class MessageApi(abc.ABC):
         hint: Optional[str] = None,
     ) -> GuiHandle[Tuple[float, float]]:
         """Add a length-2 vector input to the GUI."""
-        return self._add_gui_impl(
-            "/".join(self._gui_folder_labels + [name]),
-            cast_vector(initial_value, length=2),
-            leva_conf={
-                "value": initial_value,
-                "label": name,
-                "step": step,
-            },
-            disabled=disabled,
-            visible=visible,
-            hint=hint,
-        )
+        pass
+        # return self._add_gui_impl(
+        #     "/".join(self._gui_folder_labels + [name]),
+        #     cast_vector(initial_value, length=2),
+        #     leva_conf={
+        #         "value": initial_value,
+        #         "label": name,
+        #         "step": step,
+        #     },
+        #     disabled=disabled,
+        #     visible=visible,
+        #     hint=hint,
+        # )
 
     def add_gui_vector3(
         self,
@@ -343,19 +404,20 @@ class MessageApi(abc.ABC):
         hint: Optional[str] = None,
     ) -> GuiHandle[Tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI."""
-        return self._add_gui_impl(
-            "/".join(self._gui_folder_labels + [name]),
-            cast_vector(initial_value, length=3),
-            leva_conf={
-                "label": name,
-                "value": initial_value,
-                "step": step,
-                "lock": lock,
-            },
-            disabled=disabled,
-            visible=visible,
-            hint=hint,
-        )
+        pass
+        # return self._add_gui_impl(
+        #     "/".join(self._gui_folder_labels + [name]),
+        #     cast_vector(initial_value, length=3),
+        #     leva_conf={
+        #         "label": name,
+        #         "value": initial_value,
+        #         "step": step,
+        #         "lock": lock,
+        #     },
+        #     disabled=disabled,
+        #     visible=visible,
+        #     hint=hint,
+        # )
 
     # See add_gui_dropdown for notes on overloads.
     @overload
@@ -392,29 +454,30 @@ class MessageApi(abc.ABC):
     ) -> GuiDropdownHandle[Any]:  # Output type is specified in overloads.
         """Add a dropdown to the GUI."""
         assert len(options) > 0
-        if initial_value is None:
-            initial_value = options[0]
-
-        # Re-wrap the GUI handle with a select interface.
-        return GuiDropdownHandle(
-            self._add_gui_impl(
-                "/".join(self._gui_folder_labels + [name]),
-                initial_value,
-                leva_conf={
-                    "value": initial_value,
-                    "label": name,
-                    "options": options,
-                },
-                disabled=disabled,
-                visible=visible,
-                hint=hint,
-            )._impl,
-            options,
-        )
+        assert False
+        # if initial_value is None:
+        #     initial_value = options[0]
+        #
+        # # Re-wrap the GUI handle with a select interface.
+        # return GuiDropdownHandle(
+        #     self._add_gui_impl(
+        #         "/".join(self._gui_folder_labels + [name]),
+        #         initial_value,
+        #         leva_conf={
+        #             "value": initial_value,
+        #             "label": name,
+        #             "options": options,
+        #         },
+        #         disabled=disabled,
+        #         visible=visible,
+        #         hint=hint,
+        #     )._impl,
+        #     options,
+        # )
 
     def add_gui_slider(
         self,
-        name: str,
+        label: str,
         min: IntOrFloat,
         max: IntOrFloat,
         step: Optional[IntOrFloat],
@@ -441,19 +504,26 @@ class MessageApi(abc.ABC):
         #
         # assert type(min) == type(max) == type(step) == type(initial_value)
 
+        # Re-wrap the GUI handle with a button interface.
+        id = str(uuid.uuid4())
+        self._queue(
+            _messages.GuiAddSliderMessage(
+                order=0,
+                id=id,
+                label=label,
+                folder_labels=tuple(self._gui_folder_labels),
+                min=min,
+                max=max,
+                step=step,
+                initial_value=initial_value,
+            )
+        )
         return self._add_gui_impl(
-            "/".join(self._gui_folder_labels + [name]),
-            initial_value,
-            leva_conf={
-                "value": initial_value,
-                "label": name,
-                "min": min,
-                "max": max,
-                "step": step,
-            },
+            id,
+            initial_value=initial_value,
             disabled=disabled,
             visible=visible,
-            hint=hint,
+            is_button=False,
         )
 
     def add_gui_rgb(
@@ -465,23 +535,24 @@ class MessageApi(abc.ABC):
         hint: Optional[str] = None,
     ) -> GuiHandle[Tuple[int, int, int]]:
         """Add an RGB picker to the GUI."""
-        return self._add_gui_impl(
-            "/".join(self._gui_folder_labels + [name]),
-            initial_value,
-            leva_conf={
-                "value": {
-                    "r": initial_value[0],
-                    "g": initial_value[1],
-                    "b": initial_value[2],
-                },
-                "label": name,
-            },
-            disabled=disabled,
-            visible=visible,
-            encoder=lambda rgb: dict(zip("rgb", rgb)),
-            decoder=lambda rgb_dict: (rgb_dict["r"], rgb_dict["g"], rgb_dict["b"]),
-            hint=hint,
-        )
+        assert False
+        # return self._add_gui_impl(
+        #     "/".join(self._gui_folder_labels + [name]),
+        #     initial_value,
+        #     leva_conf={
+        #         "value": {
+        #             "r": initial_value[0],
+        #             "g": initial_value[1],
+        #             "b": initial_value[2],
+        #         },
+        #         "label": name,
+        #     },
+        #     disabled=disabled,
+        #     visible=visible,
+        #     encoder=lambda rgb: dict(zip("rgb", rgb)),
+        #     decoder=lambda rgb_dict: (rgb_dict["r"], rgb_dict["g"], rgb_dict["b"]),
+        #     hint=hint,
+        # )
 
     def add_gui_rgba(
         self,
@@ -492,29 +563,30 @@ class MessageApi(abc.ABC):
         hint: Optional[str] = None,
     ) -> GuiHandle[Tuple[int, int, int, int]]:
         """Add an RGBA picker to the GUI."""
-        return self._add_gui_impl(
-            "/".join(self._gui_folder_labels + [name]),
-            initial_value,
-            leva_conf={
-                "value": {
-                    "r": initial_value[0],
-                    "g": initial_value[1],
-                    "b": initial_value[2],
-                    "a": initial_value[3],
-                },
-                "label": name,
-            },
-            disabled=disabled,
-            visible=visible,
-            encoder=lambda rgba: dict(zip("rgba", rgba)),
-            decoder=lambda rgba_dict: (
-                rgba_dict["r"],
-                rgba_dict["g"],
-                rgba_dict["b"],
-                rgba_dict["a"],
-            ),
-            hint=hint,
-        )
+        assert False
+        # return self._add_gui_impl(
+        #     "/".join(self._gui_folder_labels + [name]),
+        #     initial_value,
+        #     leva_conf={
+        #         "value": {
+        #             "r": initial_value[0],
+        #             "g": initial_value[1],
+        #             "b": initial_value[2],
+        #             "a": initial_value[3],
+        #         },
+        #         "label": name,
+        #     },
+        #     disabled=disabled,
+        #     visible=visible,
+        #     encoder=lambda rgba: dict(zip("rgba", rgba)),
+        #     decoder=lambda rgba_dict: (
+        #         rgba_dict["r"],
+        #         rgba_dict["g"],
+        #         rgba_dict["b"],
+        #         rgba_dict["a"],
+        #     ),
+        #     hint=hint,
+        # )
 
     def add_camera_frustum(
         self,
@@ -824,7 +896,7 @@ class MessageApi(abc.ABC):
         self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
         """Callback for handling GUI messages."""
-        handle_state = self._handle_state_from_gui_name.get(message.name, None)
+        handle_state = self._gui_handle_state_from_id.get(message.id, None)
         if handle_state is None:
             return
 
@@ -876,9 +948,8 @@ class MessageApi(abc.ABC):
 
     def _add_gui_impl(
         self,
-        name: str,
+        id: str,
         initial_value: T,
-        leva_conf: dict,
         disabled: bool,
         visible: bool,
         is_button: bool = False,
@@ -888,20 +959,14 @@ class MessageApi(abc.ABC):
     ) -> GuiHandle[T]:
         """Private helper for adding a simple GUI element."""
 
-        if hint is not None:
-            assert not is_button
-            leva_conf = leva_conf.copy()  # Avoid mutating input.
-            leva_conf["hint"] = hint
-
         handle_state = _GuiHandleState(
-            name,
+            id,
             typ=type(initial_value),
             api=self,
             value=initial_value,
             update_timestamp=time.time(),
             folder_labels=self._gui_folder_labels,
             update_cb=[],
-            leva_conf=leva_conf,
             is_button=is_button,
             sync_cb=None,
             cleanup_cb=None,
@@ -910,23 +975,16 @@ class MessageApi(abc.ABC):
             disabled=False,
             visible=True,
         )
-        self._handle_state_from_gui_name[name] = handle_state
-        handle_state.cleanup_cb = lambda: self._handle_state_from_gui_name.pop(name)
+        self._gui_handle_state_from_id[id] = handle_state
+        handle_state.cleanup_cb = lambda: self._gui_handle_state_from_id.pop(id)
 
-        self._queue(
-            _messages.GuiAddMessage(
-                name=name,
-                folder_labels=tuple(self._gui_folder_labels),
-                leva_conf=leva_conf,
-            )
-        )
         # For broadcasted GUI handles, we should synchronize all clients.
         # This will be a no-op for client handles.
         if not is_button:
 
             def sync_other_clients(client_id: ClientId, value: Any) -> None:
                 message = _messages.GuiSetValueMessage(
-                    name=name, value=handle_state.encoder(value)
+                    id=id, value=handle_state.encoder(value)
                 )
                 message.excluded_self_client = client_id
                 self._queue(message)
@@ -935,7 +993,7 @@ class MessageApi(abc.ABC):
 
             # Explicitly set the initial value of the GUI element. This is needed when
             # the GUI element already exists on the front-end's Leva store.
-            self._queue(_messages.GuiSetValueMessage(name=name, value=initial_value))
+            self._queue(_messages.GuiSetValueMessage(id=id, value=initial_value))
 
         handle = GuiHandle(handle_state)
 

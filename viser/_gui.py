@@ -18,12 +18,7 @@ from typing import (
 
 import numpy as onp
 
-from ._messages import (
-    GuiRemoveMessage,
-    GuiSetLevaConfMessage,
-    GuiSetValueMessage,
-    GuiSetVisibleMessage,
-)
+from ._messages import GuiRemoveMessage, GuiSetValueMessage, GuiSetVisibleMessage
 from .infra import ClientId
 
 if TYPE_CHECKING:
@@ -49,9 +44,6 @@ class _GuiHandleState(Generic[T]):
 
     update_cb: List[Callable[[Any], None]]
     """Registered functions to call when this input is updated."""
-
-    leva_conf: Dict[str, Any]
-    """Input config for Leva."""
 
     is_button: bool
     """Indicates a button element, which requires special handling."""
@@ -140,16 +132,8 @@ class _GuiHandle(Generic[T]):
         if disabled == self.disabled:
             return
 
-        if self._impl.is_button:
-            self._impl.leva_conf["settings"]["disabled"] = disabled
-            self._impl.api._queue(
-                GuiSetLevaConfMessage(self._impl.name, self._impl.leva_conf),
-            )
-        else:
-            self._impl.leva_conf["disabled"] = disabled
-            self._impl.api._queue(
-                GuiSetLevaConfMessage(self._impl.name, self._impl.leva_conf),
-            )
+        # TODO
+        pass
         self._impl.disabled = disabled
 
     @property
@@ -252,15 +236,4 @@ class GuiDropdownHandle(GuiHandle[StringType], Generic[StringType]):
         self._impl_options = options
 
         # Make sure initial value is in options.
-        self._impl.leva_conf["options"] = options
-        if self._impl.leva_conf["value"] not in options:
-            self._impl.leva_conf["value"] = options[0]
-
-        # Update options.
-        self._impl.api._queue(
-            GuiSetLevaConfMessage(self._impl.name, self._impl.leva_conf),
-        )
-
-        # Make sure current value is in options.
-        if self.value not in options:
-            self.value = options[0]
+        assert False  # TODO

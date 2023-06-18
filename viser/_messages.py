@@ -10,8 +10,7 @@ import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import Literal, override
 
-from . import infra
-from . import theme
+from . import infra, theme
 
 
 class Message(infra.Message):
@@ -20,13 +19,18 @@ class Message(infra.Message):
         """Returns a unique key for this message, used for detecting redundant
         messages.
 
-        For example: if we send 1000 GuiSetValue messages for the same gui element, we
+        For example: if we send 1000 GuiSetValue messages for the same GUI element, we
         should only keep the latest messages.
         """
         parts = [type(self).__name__]
 
-        # GUI and scene node manipulation messages all have a "name" field.
+        # Scene node manipulation messages all have a "name" field.
         node_name = getattr(self, "name", None)
+        if node_name is not None:
+            parts.append(node_name)
+
+        # GUI messages all have an "id" field.
+        node_name = getattr(self, "id", None)
         if node_name is not None:
             parts.append(node_name)
 
@@ -265,26 +269,77 @@ class ResetSceneMessage(Message):
 
 
 @dataclasses.dataclass
-class GuiAddMessage(Message):
-    """Sent server->client to add a new GUI input."""
-
-    name: str
+class _GuiAddMessage(Message):
+    order: int
+    id: str
+    label: str
     folder_labels: Tuple[str, ...]
-    leva_conf: Any
+
+
+@dataclasses.dataclass
+class GuiAddButtonMessage(_GuiAddMessage):
+    ...
+
+
+@dataclasses.dataclass
+class GuiAddSliderMessage(_GuiAddMessage):
+    min: float
+    max: float
+    step: Optional[float]
+    initial_value: float
+
+
+@dataclasses.dataclass
+class GuiAddNumberMessage(_GuiAddMessage):
+    initial_value: float
+    precision: int
+    step: float
+    min: Optional[float]
+    max: Optional[float]
+
+
+@dataclasses.dataclass
+class GuiAddRgbMessage(_GuiAddMessage):
+    initial_value: Tuple[int, int, int]
+
+
+@dataclasses.dataclass
+class GuiAddRgbaMessage(_GuiAddMessage):
+    initial_value: Tuple[int, int, int, int]
+
+
+@dataclasses.dataclass
+class GuiAddCheckboxMessage(_GuiAddMessage):
+    initial_value: bool
+
+
+@dataclasses.dataclass
+class GuiAddVector2Message(_GuiAddMessage):
+    initial_value: Tuple[float, float]
+
+
+@dataclasses.dataclass
+class GuiAddVector3Message(_GuiAddMessage):
+    initial_value: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
+class GuiAddTextMessage(_GuiAddMessage):
+    initial_value: bool
 
 
 @dataclasses.dataclass
 class GuiRemoveMessage(Message):
     """Sent server->client to add a new GUI input."""
 
-    name: str
+    id: str
 
 
 @dataclasses.dataclass
 class GuiUpdateMessage(Message):
     """Sent client->server when a GUI input is changed."""
 
-    name: str
+    id: str
     value: Any
 
 
@@ -292,7 +347,7 @@ class GuiUpdateMessage(Message):
 class GuiSetVisibleMessage(Message):
     """Sent client->server when a GUI input is changed."""
 
-    name: str
+    id: str
     visible: bool
 
 
@@ -300,16 +355,8 @@ class GuiSetVisibleMessage(Message):
 class GuiSetValueMessage(Message):
     """Sent server->client to set the value of a particular input."""
 
-    name: str
+    id: str
     value: Any
-
-
-@dataclasses.dataclass
-class GuiSetLevaConfMessage(Message):
-    """Sent server->client to override some part of an input's Leva config."""
-
-    name: str
-    leva_conf: Any
 
 
 @dataclasses.dataclass

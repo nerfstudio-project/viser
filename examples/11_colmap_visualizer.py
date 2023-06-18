@@ -3,8 +3,10 @@
 Visualize COLMAP sparse reconstruction outputs. To get demo data, see `./assets/download_colmap_garden.sh`.
 """
 
+import dataclasses
 import time
 from pathlib import Path
+from typing import Any
 
 import imageio.v3 as iio
 import numpy as onp
@@ -33,7 +35,7 @@ def main(
         downsample_factor: Downsample factor for the images.
     """
     server = viser.ViserServer()
-    server.configure_theme(titlebar_content=None, fixed_sidebar=True)
+    # server.configure_theme(titlebar_content=None, fixed_sidebar=True)
 
     # Load the colmap info.
     cameras = read_cameras_binary(colmap_path / "cameras.bin")
