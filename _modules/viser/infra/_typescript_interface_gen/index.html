@@ -234,6 +234,11 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">get_args</span><span class="p">,</span> <span class="n">get_origin</span><span class="p">,</span> <span class="n">is_typeddict</span>
 
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Literal</span> <span class="k">as</span> <span class="n">LiteralAlt</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">LiteralAlt</span> <span class="o">=</span> <span class="n">Literal</span>  <span class="c1"># type: ignore</span>
+
 <span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="n">Message</span>
 
 <span class="n">_raw_type_mapping</span> <span class="o">=</span> <span class="p">{</span>
@@ -255,7 +260,7 @@
             <span class="k">return</span> <span class="n">_get_ts_type</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;[]&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_get_ts_type</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
-    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Literal</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Literal</span><span class="p">,</span> <span class="n">LiteralAlt</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="nb">map</span><span class="p">(</span>
                 <span class="k">lambda</span> <span class="n">lit</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="n">lit</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">lit</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">bool</span> <span class="k">else</span> <span class="nb">repr</span><span class="p">(</span><span class="n">lit</span><span class="p">),</span>
