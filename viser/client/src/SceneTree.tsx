@@ -198,10 +198,10 @@ export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
 
 function SceneNodeThreeChildren(props: {
   name: string;
-  useSceneTree: UseSceneTree;
   parent: THREE.Object3D;
 }) {
-  const children = props.useSceneTree(
+  const viewer = React.useContext(ViewerContext)!;
+  const children = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.children
   );
 
@@ -212,83 +212,79 @@ function SceneNodeThreeChildren(props: {
   return createPortal(
     <group>
       {children.map((child_id) => {
-        return (
-          <SceneNodeThreeObject
-            key={child_id}
-            name={child_id}
-            useSceneTree={props.useSceneTree}
-          />
-        );
+        return <SceneNodeThreeObject key={child_id} name={child_id} />;
       })}
     </group>,
     props.parent
   );
 }
 
-/** Component containing the three.js object and children for a particular scene node. */
-export function SceneNodeThreeObject(props: {
+/** Component for updating attributes of a scene node.
+ *
+ * This is intentionally factored into its own component to reduce re-renders
+ * of the full scene node + children.*/
+function SceneNodeAttributeHandler(props: {
+  obj: THREE.Object3D | null;
   name: string;
-  useSceneTree: UseSceneTree;
 }) {
-  const { makeObject, cleanup } = props.useSceneTree(
-    (state) => state.nodeFromName[props.name]!
-  );
-  const { visibility, wxyz, position, clickable, labelVisibility } = props.useSceneTree(
+  const viewer = React.useContext(ViewerContext)!;
+  const { visibility, wxyz, position, labelVisibility } = viewer.useSceneTree(
     (state) => state.attributesFromName[props.name] || {}
   );
 
-  const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
-
-  const { objFromSceneNodeNameRef, websocketRef } =
-    React.useContext(ViewerContext)!;
-
   React.useEffect(() => {
-    if (obj === null) return;
+    if (props.obj === null) return;
 
-    if (visibility !== undefined) obj.visible = visibility;
-    if (wxyz !== undefined) obj.rotation.setFromQuaternion(wxyz);
+    if (visibility !== undefined) props.obj.visible = visibility;
+    if (wxyz !== undefined) props.obj.rotation.setFromQuaternion(wxyz);
     if (position !== undefined)
-      obj.position.set(position.x, position.y, position.z);
+      props.obj.position.set(position.x, position.y, position.z);
 
     // Update matrices if necessary. This is necessary for PivotControls.
-    if (!obj.matrixAutoUpdate) obj.updateMatrix();
-    if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
-  }, [obj, visibility, wxyz, position]);
+    if (!props.obj.matrixAutoUpdate) props.obj.updateMatrix();
+    if (!props.obj.matrixWorldAutoUpdate) props.obj.updateMatrixWorld();
+  }, [visibility, wxyz, position, props.obj]);
 
-  React.useEffect(() => {
-    if (obj === null) return;
+  return (
+    <SceneNodeLabel visible={visibility && labelVisibility} text={props.name} />
+  );
+}
 
-    objFromSceneNodeNameRef.current[props.name] = obj;
-    return () => {
-      delete objFromSceneNodeNameRef.current[props.name];
-      cleanup && cleanup();
-    };
-  }, [obj, cleanup]);
+/** Component containing the three.js object and children for a particular scene node. */
+export function SceneNodeThreeObject(props: { name: string }) {
+  const viewer = React.useContext(ViewerContext)!;
+  const { makeObject, cleanup } = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]!
+  );
 
-  const sendClicksThrottled = makeThrottledMessageSender(websocketRef, 50);
+  const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
+  const { visibility, clickable } = viewer.useSceneTree(
+    (state) => state.attributesFromName[props.name] || {}
+  );
+
+  // Hover state for clickable nodes.
   const [hovered, setHovered] = React.useState(false);
-  const objNode = (
-    <group>
-      {React.useMemo(() => makeObject(setRef), [makeObject, setRef])}
-      {
-        <SceneNodeLabel 
-          visible={visibility && labelVisibility}
-          text={props.name} 
-        />
-      }
-    </group>
-  );
-  const children = obj !== null && (
-    <SceneNodeThreeChildren
-      name={props.name}
-      useSceneTree={props.useSceneTree}
-      parent={obj}
-    />
-  );
-
   useCursor(hovered);
 
-  if (clickable)
+  // Create object + children.
+  const objNode = React.useMemo(() => makeObject(setRef), [setRef]);
+  const children = React.useMemo(
+    () =>
+      obj === null ? null : (
+        <SceneNodeThreeChildren name={props.name} parent={obj} />
+      ),
+    [props.name, obj]
+  );
+
+  // Clean up when done.
+  React.useEffect(() => cleanup);
+
+  if (visibility && clickable) {
+    // Clickable scene nodes. We don't include children.
+    const sendClicksThrottled = makeThrottledMessageSender(
+      viewer.websocketRef,
+      50
+    );
     return (
       <>
         <group
@@ -309,14 +305,17 @@ export function SceneNodeThreeObject(props: {
         >
           <Select enabled={hovered}>{objNode}</Select>
         </group>
+        <SceneNodeAttributeHandler obj={obj} name={props.name} />
         {children}
       </>
     );
-  else {
+  } else {
+    // Not clickable => not hovered!
     hovered && setHovered(false);
     return (
       <>
         {objNode}
+        <SceneNodeAttributeHandler obj={obj} name={props.name} />
         {children}
       </>
     );
@@ -326,7 +325,7 @@ export function SceneNodeThreeObject(props: {
 type SceneNodeLabelProps = {
   text: string;
   visible?: boolean;
-}
+};
 
 export function SceneNodeLabel({ text, visible }: SceneNodeLabelProps) {
   if (!visible || text.trim() === "") {
@@ -335,15 +334,17 @@ export function SceneNodeLabel({ text, visible }: SceneNodeLabelProps) {
   }
   return (
     <Html>
-      <p style={
-        {
+      <p
+        style={{
           backgroundColor: "rgba(240, 240, 240, 0.9)",
           color: "#777",
           padding: "10px 15px",
           borderRadius: "5px",
           userSelect: "none",
-        }
-      }>{ text }</p>
+        }}
+      >
+        {text}
+      </p>
     </Html>
   );
 }
