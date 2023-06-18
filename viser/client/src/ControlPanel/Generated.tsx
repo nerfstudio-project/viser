@@ -7,13 +7,13 @@ import {
   useCreateStore,
 } from "leva";
 import { LevaCustomTheme } from "leva/dist/declarations/src/styles";
-import { UseGui } from "./GuiState";
-import React, { MutableRefObject } from "react";
-import Box from "@mui/material/Box";
+import React from "react";
 import {
   makeThrottledMessageSender,
   sendWebsocketMessage,
 } from "../WebsocketInterface";
+import { Box } from "@mantine/core";
+import { ViewerContext } from "..";
 
 export const levaTheme: LevaCustomTheme = {
   colors: {
@@ -79,12 +79,11 @@ export const levaTheme: LevaCustomTheme = {
 };
 
 /** One tab in the control panel. */
-export default function GeneratedControls(props: {
-  useGui: UseGui;
-  websocketRef: MutableRefObject<WebSocket | null>;
-}) {
-  const guiNames = props.useGui((state) => state.guiNames);
-  const guiConfigFromName = props.useGui((state) => state.guiConfigFromName);
+export default function GeneratedControls() {
+  const viewer = React.useContext(ViewerContext)!;
+
+  const guiNames = viewer.useGui((state) => state.guiNames);
+  const guiConfigFromName = viewer.useGui((state) => state.guiConfigFromName);
 
   // Add callbacks to guiConfigFromName.
   const suppressOnChange = React.useRef<{ [key: string]: boolean }>({});
@@ -113,7 +112,7 @@ export default function GeneratedControls(props: {
       // Add a button.
       if (!visible) return;
       leafFolder[guiName] = button(() => {
-        sendWebsocketMessage(props.websocketRef, {
+        sendWebsocketMessage(viewer.websocketRef, {
           type: "GuiUpdateMessage",
           name: guiName,
           value: true,
@@ -125,7 +124,7 @@ export default function GeneratedControls(props: {
       const opts: { [key: string]: () => void } = {};
       levaConf["opts"].forEach((option: string) => {
         opts[option] = () => {
-          sendWebsocketMessage(props.websocketRef, {
+          sendWebsocketMessage(viewer.websocketRef, {
             type: "GuiUpdateMessage",
             name: guiName,
             value: option,
@@ -138,7 +137,7 @@ export default function GeneratedControls(props: {
       });
     } else {
       // Add any other kind of input.
-      const sendUpdate = makeThrottledMessageSender(props.websocketRef, 50);
+      const sendUpdate = makeThrottledMessageSender(viewer.websocketRef, 50);
 
       leafFolder["_viser-generated-input-" + guiName] = {
         ...levaConf,
@@ -186,8 +185,8 @@ export default function GeneratedControls(props: {
   );
 
   // Logic for setting control inputs when items are put onto the guiSetQueue.
-  const guiSetQueue = props.useGui((state) => state.guiSetQueue);
-  const applyGuiSetQueue = props.useGui((state) => state.applyGuiSetQueue);
+  const guiSetQueue = viewer.useGui((state) => state.guiSetQueue);
+  const applyGuiSetQueue = viewer.useGui((state) => state.applyGuiSetQueue);
   const timeouts = React.useRef<{ [key: string]: NodeJS.Timeout }>({});
   React.useEffect(() => {
     if (Object.keys(guiSetQueue).length === 0) return;
@@ -209,7 +208,6 @@ export default function GeneratedControls(props: {
   // Leva theming is a bit limited, so we hack at styles here...
   return (
     <Box
-      component="div"
       sx={{
         "& label": { color: "#777" },
         "& input[type='checkbox']~label svg path": {

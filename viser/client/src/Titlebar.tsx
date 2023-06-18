@@ -1,48 +1,56 @@
-import { Button, Grid, IconButton, SvgIcon } from "@mui/material";
 import { useContext } from "react";
 import { ViewerContext } from ".";
 import { Message } from "./WebsocketMessages";
-
-import * as Icons from "@mui/icons-material";
+import { Box, Button } from "@mantine/core";
+import {
+  IconBrandGithub,
+  IconFileDescription,
+  IconKeyboard,
+} from "@tabler/icons-react";
 
 // Type helpers.
-type IconName = keyof typeof Icons;
 type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 type NoNull<T> = Exclude<T, null>;
 type TitlebarContent = NoNull<
   (Message & { type: "ThemeConfigurationMessage" })["titlebar_content"]
 >;
+function assertUnreachable(x: never): never {
+  throw new Error("Didn't expect to get here", x);
+}
 
 // We inherit props directly from message contents.
 export function TitlebarButton(
   props: ArrayElement<NoNull<TitlebarContent["buttons"]>>
 ) {
-  if (props.icon !== null && props.text === null) {
-    return (
-      <IconButton href={props.href ?? ""}>
-        <SvgIcon component={Icons[props.icon as IconName] ?? null} />
-      </IconButton>
-    );
+  let Icon = null;
+  switch (props.icon) {
+    case null:
+      break;
+    case "GitHub":
+      Icon = IconBrandGithub;
+      break;
+    case "Description":
+      Icon = IconFileDescription;
+      break;
+    case "Keyboard":
+      Icon = IconKeyboard;
+      break;
+    default:
+      assertUnreachable(props.icon);
   }
   return (
     <Button
-      variant={props.variant ?? "contained"}
-      href={props.href ?? ""}
-      sx={{
-        marginY: "0.4em",
-        marginX: "0.125em",
-        alignItems: "center",
-      }}
-      size="small"
+      component="a"
+      variant="outline"
+      href={props.href || undefined}
+      compact
       target="_blank"
-      startIcon={
-        props.icon ? (
-          <SvgIcon component={Icons[props.icon as IconName] ?? null} />
-        ) : null
-      }
+      leftIcon={Icon === null ? null : <Icon size="1em" />}
+      ml="sm"
+      color="gray"
     >
-      {props.text ?? ""}
+      {props.text}
     </Button>
   );
 }
@@ -53,9 +61,8 @@ export function TitlebarImage(props: NoNull<TitlebarContent["image"]>) {
       src={props.image_url}
       alt={props.image_alt}
       style={{
-        height: "2em",
-        marginLeft: "0.125em",
-        marginRight: "0.125em",
+        height: "1.8em",
+        margin: "0 0.5em",
       }}
     />
   );
@@ -77,48 +84,22 @@ export function Titlebar() {
   const imageData = content.image;
 
   return (
-    <Grid
-      container
-      sx={{
+    <Box
+      p="xs"
+      sx={(theme) => ({
         width: "100%",
-        zIndex: "1000",
-        backgroundColor: "rgba(255, 255, 255, 0.85)",
-        borderBottom: "1px solid",
-        borderBottomColor: "divider",
-        direction: "row",
-        justifyContent: "space-between",
+        margin: 0,
+        display: "flex",
         alignItems: "center",
-        paddingX: "0.875em",
-        height: "2.5em",
-      }}
+        borderBottom: "1px solid",
+        borderColor:
+          theme.colorScheme == "light"
+            ? theme.colors.gray[4]
+            : theme.colors.dark[4],
+      })}
     >
-      <Grid
-        item
-        xs="auto"
-        component="div"
-        sx={{
-          display: "flex",
-          direction: "row",
-          alignItems: "center",
-          justifyContent: "left",
-          overflow: "visible",
-        }}
-      >
-        {buttons?.map((btn) => TitlebarButton(btn))}
-      </Grid>
-      <Grid
-        item
-        xs={3}
-        component="div"
-        sx={{
-          display: "flex",
-          direction: "row",
-          alignItems: "center",
-          justifyContent: "right",
-        }}
-      >
-        {imageData !== null ? TitlebarImage(imageData) : null}
-      </Grid>
-    </Grid>
+      {imageData !== null ? TitlebarImage(imageData) : null}
+      {buttons?.map((btn) => TitlebarButton(btn))}
+    </Box>
   );
 }

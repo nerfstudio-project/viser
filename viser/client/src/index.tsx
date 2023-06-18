@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { CameraControls, Environment } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
@@ -12,8 +11,8 @@ import { BlendFunction, KernelSize } from "postprocessing";
 import { SynchronizedCameraControls } from "./CameraControls";
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { Box, MantineProvider, ScrollArea } from "@mantine/core";
 
-import ControlPanel from "./ControlPanel/ControlPanel";
 import {
   SceneNodeThreeObject,
   UseSceneTree,
@@ -22,18 +21,18 @@ import {
 
 import "./index.css";
 
-import Box from "@mui/material/Box";
 import WebsocketInterface from "./WebsocketInterface";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
+import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
 
 import { Titlebar } from "./Titlebar";
+import FloatingPanel from "./ControlPanel/FloatingPanel";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: React.MutableRefObject<WebSocket | null>;
-  wrapperRef: React.RefObject<HTMLDivElement>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
@@ -43,14 +42,6 @@ export const ViewerContext = React.createContext<null | ViewerContextContents>(
 );
 
 function SingleViewer() {
-  // Layout and styles.
-  const Wrapper = styled(Box)`
-    width: 100%;
-    height: 1px;
-    position: relative;
-    flex: 1 0 auto;
-  `;
-
   // Default server logic.
   function getDefaultServerFromUrl() {
     // https://localhost:8080/ => ws://localhost:8080
@@ -72,35 +63,89 @@ function SingleViewer() {
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
     websocketRef: React.useRef(null),
-    wrapperRef: React.useRef(null),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
   };
+  const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
   return (
     <ViewerContext.Provider value={viewer}>
-      <Titlebar></Titlebar>
-      <Wrapper ref={viewer.wrapperRef}>
+      <Titlebar />
+      <Box
+        sx={{
+          width: "100%",
+          height: "1px",
+          position: "relative",
+          flex: "1 0 auto",
+        }}
+      >
         <WebsocketInterface />
-        <ControlPanel />
-        <ViewerCanvas />
-      </Wrapper>
+        <Box
+          sx={(theme) => ({
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: fixed_sidebar ? "20em" : 0,
+            position: "absolute",
+            backgroundColor:
+              theme.colorScheme == "light" ? "#fff" : theme.colors.dark[9],
+          })}
+        >
+          <ViewerCanvas />
+        </Box>
+        {fixed_sidebar ? (
+          <Box
+            sx={(theme) => ({
+              width: "20em",
+              boxSizing: "border-box",
+              right: 0,
+              position: "absolute",
+              top: "0em",
+              bottom: "0em",
+              borderLeft: "1px solid",
+              borderColor:
+                theme.colorScheme == "light"
+                  ? theme.colors.gray[4]
+                  : theme.colors.dark[4],
+            })}
+          >
+            <ScrollArea type="always" sx={{height: "100%"}}>
+              <Box
+                p="sm"
+                sx={(theme) => ({
+                  backgroundColor:
+                    theme.colorScheme == "dark"
+                      ? theme.colors.dark[5]
+                      : theme.colors.gray[1],
+                  lineHeight: "1.5em",
+                  fontWeight: 400,
+                })}
+              >
+                <ConnectionStatus />
+              </Box>
+              <ControlPanel />
+            </ScrollArea>
+          </Box>
+        ) : (
+          <FloatingPanel>
+            <FloatingPanel.Handle>
+              <ConnectionStatus />
+            </FloatingPanel.Handle>
+            <FloatingPanel.Contents>
+              <ControlPanel />
+            </FloatingPanel.Contents>
+          </FloatingPanel>
+        )}
+      </Box>
     </ViewerContext.Provider>
   );
 }
 
 function ViewerCanvas() {
-  const viewer = React.useContext(ViewerContext)!;
-  const canvas_background_color = viewer.useGui(
-    (state) => state.theme.canvas_background_color
-  );
   return (
     <Canvas
       camera={{ position: [3.0, 3.0, -3.0] }}
       style={{
-        backgroundColor:
-          // Convert int color to hex.
-          "#" + canvas_background_color.toString(16).padStart(6, "0"),
         position: "relative",
         zIndex: 0,
         width: "100%",
@@ -141,21 +186,17 @@ function SceneContextSetter() {
 
 function Root() {
   return (
-    <Box
-      component="div"
-      sx={{
-        width: "100%",
-        height: "100%",
-        position: "relative",
-        boxSizing: "border-box",
+    <MantineProvider
+      withGlobalStyles
+      withNormalizeCSS
+      theme={{
+        colorScheme: "light",
       }}
     >
       <Box
-        component="div"
         sx={{
           width: "100%",
           height: "100%",
-          boxSizing: "border-box",
           position: "relative",
           display: "flex",
           flexDirection: "column",
@@ -163,7 +204,7 @@ function Root() {
       >
         <SingleViewer />
       </Box>
-    </Box>
+    </MantineProvider>
   );
 }
 
