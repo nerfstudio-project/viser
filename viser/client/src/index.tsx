@@ -33,9 +33,6 @@ type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: React.MutableRefObject<WebSocket | null>;
-  objFromSceneNodeNameRef: React.MutableRefObject<{
-    [name: string]: THREE.Object3D | undefined;
-  }>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
@@ -66,7 +63,6 @@ function SingleViewer() {
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
     websocketRef: React.useRef(null),
-    objFromSceneNodeNameRef: React.useRef({}),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
@@ -160,7 +156,7 @@ function ViewerCanvas() {
       <SceneContextSetter />
       <SynchronizedCameraControls />
       <Selection>
-        <SceneNodeThreeObject name="" useSceneTree={viewer.useSceneTree} />
+        <SceneNodeThreeObject name="" />
         <EffectComposer enabled={true} autoClear={false}>
           <Outline
             hiddenEdgeColor={0xfbff00}
