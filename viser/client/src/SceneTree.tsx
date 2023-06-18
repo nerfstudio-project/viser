@@ -267,7 +267,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
   useCursor(hovered);
 
   // Create object + children.
-  const objNode = React.useMemo(() => makeObject(setRef), [setRef]);
+  const objNode = React.useMemo(() => makeObject(setRef), [setRef, makeObject]);
   const children = React.useMemo(
     () =>
       obj === null ? null : (
