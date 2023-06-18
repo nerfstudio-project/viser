@@ -142,7 +142,6 @@ function SingleViewer() {
 }
 
 function ViewerCanvas() {
-  const viewer = React.useContext(ViewerContext)!;
   return (
     <Canvas
       camera={{ position: [3.0, 3.0, -3.0] }}

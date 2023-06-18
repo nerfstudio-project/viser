@@ -5,7 +5,7 @@ import {
   IconCloudOff,
   IconTool,
 } from "@tabler/icons-react";
-import { Tabs } from "@mantine/core";
+import { Tabs, TabsValue } from "@mantine/core";
 import { ViewerContext } from "..";
 import React from "react";
 import GeneratedControls from "./Generated";
@@ -17,8 +17,15 @@ export default function ControlPanel() {
   const viewer = React.useContext(ViewerContext)!;
   const showGenerated = viewer.useGui((state) => state.guiNames.length > 0);
 
+  const [tabState, setTabState] = React.useState<TabsValue>("server");
+
+  // Switch to generated tab once populated.
+  React.useEffect(() => {
+    showGenerated && setTabState("generated");
+  }, [showGenerated]);
+
   return (
-    <Tabs radius="xs" defaultValue="server">
+    <Tabs radius="xs" value={tabState} onTabChange={setTabState}>
       <Tabs.List>
         {showGenerated ? (
           <Tabs.Tab value="generated" icon={<IconAdjustments size="0.8rem" />}>
