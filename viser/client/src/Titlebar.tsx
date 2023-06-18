@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { ViewerContext } from ".";
-import { Message } from "./WebsocketMessages";
+import { ThemeConfigurationMessage } from "./WebsocketMessages";
 import { Box, Button } from "@mantine/core";
 import {
   IconBrandGithub,
@@ -12,9 +12,7 @@ import {
 type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 type NoNull<T> = Exclude<T, null>;
-type TitlebarContent = NoNull<
-  (Message & { type: "ThemeConfigurationMessage" })["titlebar_content"]
->;
+type TitlebarContent = NoNull<ThemeConfigurationMessage["titlebar_content"]>;
 function assertUnreachable(x: never): never {
   throw new Error("Didn't expect to get here", x);
 }

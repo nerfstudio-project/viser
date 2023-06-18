@@ -18,13 +18,13 @@ def main() -> None:
 
     with server.gui_folder("Last clicked"):
         x_value = server.add_gui_number(
-            name="x",
+            label="x",
             initial_value=0,
             disabled=True,
             hint="x coordinate of the last clicked mesh",
         )
         y_value = server.add_gui_number(
-            name="y",
+            label="y",
             initial_value=0,
             disabled=True,
             hint="y coordinate of the last clicked mesh",

@@ -81,7 +81,7 @@ def main(urdf_path: Path) -> None:
                 else onp.pi
             )
             slider = server.add_gui_slider(
-                name=joint_name,
+                label=joint_name,
                 min=min,
                 max=max,
                 step=1e-3,

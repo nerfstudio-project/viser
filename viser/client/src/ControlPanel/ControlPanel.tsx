@@ -8,17 +8,18 @@ import {
 import { Tabs } from "@mantine/core";
 import { ViewerContext } from "..";
 import React from "react";
-import GeneratedControls from "./Generated";
 import ServerControls from "./Server";
 import SceneTreeTable from "./SceneTreeTable";
+import Generated from "./Generated";
 
 /** Root component for control panel. Parents a set of control tabs. */
 export default function ControlPanel() {
   const viewer = React.useContext(ViewerContext)!;
-  const showGenerated = viewer.useGui((state) => state.guiNames.length > 0);
+  const showGenerated =
+    Object.keys(viewer.useGui((state) => state.guiConfigFromId)).length > 0;
 
   return (
-    <Tabs radius="xs" defaultValue="server">
+    <Tabs radius="xs" defaultValue={showGenerated ? "generated": "server"}>
       <Tabs.List>
         {showGenerated ? (
           <Tabs.Tab value="generated" icon={<IconAdjustments size="0.8rem" />}>
@@ -35,7 +36,7 @@ export default function ControlPanel() {
 
       {showGenerated ? (
         <Tabs.Panel value="generated" pt="xs" p="sm">
-          <GeneratedControls />
+          <Generated />
         </Tabs.Panel>
       ) : null}
 
