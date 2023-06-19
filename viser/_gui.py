@@ -67,6 +67,7 @@ class _GuiHandleState(Generic[T]):
     order: float
     id: str
     initial_value: T
+    hint: Optional[str]
 
 
 @dataclasses.dataclass
@@ -245,6 +246,7 @@ class GuiDropdownHandle(GuiHandle[StringType], Generic[StringType]):
                 id=self._impl.id,
                 label=self._impl.label,
                 folder_labels=self._impl.folder_labels,
+                hint=self._impl.hint,
                 initial_value=self._impl.initial_value,
                 options=self._impl_options,
             )

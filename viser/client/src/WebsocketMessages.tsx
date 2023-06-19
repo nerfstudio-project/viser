@@ -139,6 +139,7 @@ export interface _GuiAddMessageBase {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
 }
 export interface GuiAddButtonMessage {
   type: "GuiAddButtonMessage";
@@ -146,6 +147,7 @@ export interface GuiAddButtonMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: boolean;
 }
 export interface GuiAddSliderMessage {
@@ -154,6 +156,7 @@ export interface GuiAddSliderMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   min: number;
   max: number;
   step: number | null;
@@ -166,6 +169,7 @@ export interface GuiAddNumberMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: number;
   precision: number;
   step: number;
@@ -178,6 +182,7 @@ export interface GuiAddRgbMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: [number, number, number];
 }
 export interface GuiAddRgbaMessage {
@@ -186,6 +191,7 @@ export interface GuiAddRgbaMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: [number, number, number, number];
 }
 export interface GuiAddCheckboxMessage {
@@ -194,6 +200,7 @@ export interface GuiAddCheckboxMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: boolean;
 }
 export interface GuiAddVector2Message {
@@ -202,6 +209,7 @@ export interface GuiAddVector2Message {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: [number, number];
   min: [number, number] | null;
   max: [number, number] | null;
@@ -214,6 +222,7 @@ export interface GuiAddVector3Message {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: [number, number, number];
   min: [number, number, number] | null;
   max: [number, number, number] | null;
@@ -226,6 +235,7 @@ export interface GuiAddTextMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: string;
 }
 export interface GuiAddDropdownMessage {
@@ -234,6 +244,7 @@ export interface GuiAddDropdownMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: string;
   options: string[];
 }
@@ -243,6 +254,7 @@ export interface GuiAddButtonGroupMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  hint: string | null;
   initial_value: string;
   options: string[];
 }

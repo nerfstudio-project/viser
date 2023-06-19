@@ -274,6 +274,7 @@ class _GuiAddMessageBase(Message):
     id: str
     label: str
     folder_labels: Tuple[str, ...]
+    hint: Optional[str]
 
 
 @dataclasses.dataclass

@@ -15,6 +15,7 @@ import {
   Stack,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import { makeThrottledMessageSender } from "../WebsocketInterface";
 
@@ -144,47 +145,45 @@ function GeneratedInput({ conf }: { conf: GuiConfig }) {
       break;
     case "GuiAddSliderMessage":
       input = (
-        <>
-          <Flex justify="space-between">
-            <Box sx={{ flexGrow: 1 }}>
-              <Slider
-                id={conf.id}
-                size="sm"
-                pt="0.3rem"
-                showLabelOnHover={false}
-                min={conf.min}
-                max={conf.max}
-                step={conf.step ?? undefined}
-                precision={conf.precision}
-                value={value}
-                onChange={updateValue}
-                marks={[{ value: conf.min }, { value: conf.max }]}
-                disabled={disabled}
-              />
-              <Flex justify="space-between" sx={{ marginTop: "-0.2em" }}>
-                <Text fz="0.7rem" c="dimmed">
-                  {conf.min}
-                </Text>
-                <Text fz="0.7rem" c="dimmed">
-                  {conf.max}
-                </Text>
-              </Flex>
-            </Box>
-            <NumberInput
-              value={value}
-              onChange={updateValue}
-              size="xs"
+        <Flex justify="space-between">
+          <Box sx={{ flexGrow: 1 }}>
+            <Slider
+              id={conf.id}
+              size="sm"
+              pt="0.3rem"
+              showLabelOnHover={false}
               min={conf.min}
               max={conf.max}
-              hideControls
               step={conf.step ?? undefined}
               precision={conf.precision}
-              sx={{ width: "3rem", height: "1rem", minHeight: "1rem" }}
-              styles={{ input: { padding: "0.3rem" } }}
-              ml="xs"
+              value={value}
+              onChange={updateValue}
+              marks={[{ value: conf.min }, { value: conf.max }]}
+              disabled={disabled}
             />
-          </Flex>
-        </>
+            <Flex justify="space-between" sx={{ marginTop: "-0.2em" }}>
+              <Text fz="0.7rem" c="dimmed">
+                {conf.min}
+              </Text>
+              <Text fz="0.7rem" c="dimmed">
+                {conf.max}
+              </Text>
+            </Flex>
+          </Box>
+          <NumberInput
+            value={value}
+            onChange={updateValue}
+            size="xs"
+            min={conf.min}
+            max={conf.max}
+            hideControls
+            step={conf.step ?? undefined}
+            precision={conf.precision}
+            sx={{ width: "3rem", height: "1rem", minHeight: "1rem" }}
+            styles={{ input: { padding: "0.3rem" } }}
+            ml="xs"
+          />
+        </Flex>
       );
       break;
     case "GuiAddNumberMessage":
@@ -314,6 +313,13 @@ function GeneratedInput({ conf }: { conf: GuiConfig }) {
         </Flex>
       );
   }
+
+  if (conf.hint !== null)
+    input = (
+      <Tooltip label={conf.hint} multiline w="15rem" withArrow openDelay={500}>
+        {input}
+      </Tooltip>
+    );
 
   if (labeled)
     return <LabeledInput id={conf.id} label={conf.label} input={input} />;

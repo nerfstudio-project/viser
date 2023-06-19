@@ -229,6 +229,7 @@ class MessageApi(abc.ABC):
         label: str,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional[str] = None,
     ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
         it is clicked; to detect clicks, we can manually set it back to `False`."""
@@ -243,6 +244,7 @@ class MessageApi(abc.ABC):
                     id=id,
                     label=label,
                     folder_labels=tuple(self._gui_folder_labels),
+                    hint=hint,
                     initial_value=False,
                 ),
                 disabled=disabled,
@@ -263,6 +265,7 @@ class MessageApi(abc.ABC):
         options: Tuple[TLiteralString, ...],
         visible: bool = True,
         disabled: bool = False,
+        hint: Optional[str] = None,
     ) -> GuiButtonGroupHandle[TLiteralString]:
         ...
 
@@ -273,6 +276,7 @@ class MessageApi(abc.ABC):
         options: Tuple[TString, ...],
         visible: bool = True,
         disabled: bool = False,
+        hint: Optional[str] = None,
     ) -> GuiButtonGroupHandle[TString]:
         ...
 
@@ -282,6 +286,7 @@ class MessageApi(abc.ABC):
         options: Tuple[TLiteralString, ...] | Tuple[TString, ...],
         visible: bool = True,
         disabled: bool = False,
+        hint: Optional[str] = None,
     ) -> GuiButtonGroupHandle[Any]:  # Return types are specified in overloads.
         """Add a button group to the GUI."""
         initial_value = options[0]
@@ -294,6 +299,7 @@ class MessageApi(abc.ABC):
                     id=id,
                     label=label,
                     folder_labels=tuple(self._gui_folder_labels),
+                    hint=hint,
                     initial_value=initial_value,
                     options=options,
                 ),
@@ -320,6 +326,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                hint=hint,
                 initial_value=initial_value,
             ),
             disabled=disabled,
@@ -344,6 +351,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                hint=hint,
                 initial_value=initial_value,
             ),
             disabled=disabled,
@@ -387,6 +395,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                hint=hint,
                 initial_value=initial_value,
                 min=min,
                 max=max,
@@ -431,6 +440,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                hint=hint,
                 initial_value=initial_value,
                 min=min,
                 max=max,
@@ -475,6 +485,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                hint=hint,
                 initial_value=initial_value,
                 min=min,
                 max=max,
@@ -530,6 +541,7 @@ class MessageApi(abc.ABC):
                     id=id,
                     label=label,
                     folder_labels=tuple(self._gui_folder_labels),
+                    hint=hint,
                     initial_value=initial_value,
                     options=tuple(options),
                 ),
@@ -577,6 +589,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                hint=hint,
                 min=min,
                 max=max,
                 step=step,
@@ -605,6 +618,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                hint=hint,
                 initial_value=initial_value,
             ),
             disabled=disabled,
@@ -628,6 +642,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                hint=hint,
                 initial_value=initial_value,
             ),
             disabled=disabled,
@@ -1022,6 +1037,7 @@ class MessageApi(abc.ABC):
             id=message.id,
             order=message.order,
             initial_value=initial_value,
+            hint=message.hint,
         )
         self._gui_handle_state_from_id[handle_state.id] = handle_state
         handle_state.cleanup_cb = lambda: self._gui_handle_state_from_id.pop(
