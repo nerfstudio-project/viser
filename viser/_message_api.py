@@ -260,7 +260,7 @@ class MessageApi(abc.ABC):
     def add_gui_button_group(
         self,
         label: str,
-        options: Iterable[TLiteralString],
+        options: Tuple[TLiteralString, ...],
         visible: bool = True,
         disabled: bool = False,
     ) -> GuiButtonGroupHandle[TLiteralString]:
@@ -270,7 +270,7 @@ class MessageApi(abc.ABC):
     def add_gui_button_group(
         self,
         label: str,
-        options: Iterable[TString],
+        options: Tuple[TString, ...],
         visible: bool = True,
         disabled: bool = False,
     ) -> GuiButtonGroupHandle[TString]:
@@ -279,12 +279,12 @@ class MessageApi(abc.ABC):
     def add_gui_button_group(
         self,
         label: str,
-        options: Iterable[TLiteralString] | Iterable[TString],
+        options: Tuple[TLiteralString, ...] | Tuple[TString, ...],
         visible: bool = True,
         disabled: bool = False,
     ) -> GuiButtonGroupHandle[Any]:  # Return types are specified in overloads.
         """Add a button group to the GUI."""
-        initial_value = next(iter(options))
+        initial_value = options[0]
         id = _make_gui_id()
         return GuiButtonGroupHandle(
             self._create_gui_input(
@@ -295,7 +295,7 @@ class MessageApi(abc.ABC):
                     label=label,
                     folder_labels=tuple(self._gui_folder_labels),
                     initial_value=initial_value,
-                    options=tuple(options),
+                    options=options,
                 ),
                 disabled=disabled,
                 visible=visible,
@@ -490,7 +490,7 @@ class MessageApi(abc.ABC):
     def add_gui_dropdown(
         self,
         label: str,
-        options: Iterable[TLiteralString],
+        options: Tuple[TLiteralString, ...],
         initial_value: Optional[TLiteralString] = None,
         disabled: bool = False,
         visible: bool = True,
@@ -502,7 +502,7 @@ class MessageApi(abc.ABC):
     def add_gui_dropdown(
         self,
         label: str,
-        options: Iterable[TString],
+        options: Tuple[TString, ...],
         initial_value: Optional[TString] = None,
         disabled: bool = False,
         visible: bool = True,
@@ -512,7 +512,7 @@ class MessageApi(abc.ABC):
     def add_gui_dropdown(
         self,
         label: str,
-        options: Iterable[TLiteralString] | Iterable[TString],
+        options: Tuple[TLiteralString, ...] | Tuple[TString, ...],
         initial_value: Optional[TLiteralString | TString] = None,
         disabled: bool = False,
         visible: bool = True,
@@ -520,7 +520,7 @@ class MessageApi(abc.ABC):
     ) -> GuiDropdownHandle[Any]:  # Output type is specified in overloads.
         """Add a dropdown to the GUI."""
         if initial_value is None:
-            initial_value = next(iter(options))
+            initial_value = options[0]
         id = _make_gui_id()
         return GuiDropdownHandle(
             self._create_gui_input(

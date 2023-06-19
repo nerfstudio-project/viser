@@ -20,7 +20,7 @@ def main() -> None:
 
     with server.gui_folder("Control"):
         gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
-        gui_axis = server.add_gui_dropdown("Axis", ["x", "y", "z"])
+        gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
         gui_include_z = server.add_gui_checkbox("Z in dropdown", initial_value=True)
 
         @gui_include_z.on_update
