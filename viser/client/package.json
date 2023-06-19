@@ -26,7 +26,6 @@
     "hold-event": "^0.2.0",
     "immer": "^9.0.21",
     "isomorphic-ws": "^5.0.0",
-    "leva": "^0.9.34",
     "mantine-react-table": "^1.0.0-beta.11",
     "meshline": "^3.1.6",
     "msgpackr": "^1.8.5",

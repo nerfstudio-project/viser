@@ -7,10 +7,11 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Dict,
     Generic,
+    Iterable,
     List,
     Optional,
+    Tuple,
     Type,
     TypeVar,
     Union,
@@ -19,8 +20,9 @@ from typing import (
 import numpy as onp
 
 from ._messages import (
+    GuiAddDropdownMessage,
     GuiRemoveMessage,
-    GuiSetLevaConfMessage,
+    GuiSetDisabledMessage,
     GuiSetValueMessage,
     GuiSetVisibleMessage,
 )
@@ -38,20 +40,17 @@ TGuiHandle = TypeVar("TGuiHandle", bound="_GuiHandle")
 class _GuiHandleState(Generic[T]):
     """Internal API for GUI elements."""
 
-    name: str
+    label: str
     typ: Type[T]
     api: MessageApi
     value: T
     update_timestamp: float
 
-    folder_labels: List[str]
+    folder_labels: Tuple[str, ...]
     """Name of the folders this GUI input was placed into."""
 
     update_cb: List[Callable[[Any], None]]
     """Registered functions to call when this input is updated."""
-
-    leva_conf: Dict[str, Any]
-    """Input config for Leva."""
 
     is_button: bool
     """Indicates a button element, which requires special handling."""
@@ -62,16 +61,12 @@ class _GuiHandleState(Generic[T]):
     cleanup_cb: Optional[Callable[[], Any]]
     """Function to call when GUI element is removed."""
 
-    # Encoder: run on outgoing message values.
-    # Decoder: run on incoming message values.
-    #
-    # This helps us handle cases where types used by Leva don't match what we want to
-    # expose as a Python API.
-    encoder: Callable[[T], Any]
-    decoder: Callable[[Any], T]
-
     disabled: bool
     visible: bool
+
+    order: float
+    id: str
+    initial_value: T
 
 
 @dataclasses.dataclass
@@ -110,7 +105,7 @@ class _GuiHandle(Generic[T]):
         # Send to client, except for buttons.
         if not self._impl.is_button:
             self._impl.api._queue(
-                GuiSetValueMessage(self._impl.name, self._impl.encoder(value))  # type: ignore
+                GuiSetValueMessage(self._impl.id, value)  # type: ignore
             )
 
         # Set internal state. We automatically convert numpy arrays to the expected
@@ -140,16 +135,7 @@ class _GuiHandle(Generic[T]):
         if disabled == self.disabled:
             return
 
-        if self._impl.is_button:
-            self._impl.leva_conf["settings"]["disabled"] = disabled
-            self._impl.api._queue(
-                GuiSetLevaConfMessage(self._impl.name, self._impl.leva_conf),
-            )
-        else:
-            self._impl.leva_conf["disabled"] = disabled
-            self._impl.api._queue(
-                GuiSetLevaConfMessage(self._impl.name, self._impl.leva_conf),
-            )
+        self._impl.api._queue(GuiSetDisabledMessage(self._impl.id, disabled=disabled))
         self._impl.disabled = disabled
 
     @property
@@ -163,12 +149,12 @@ class _GuiHandle(Generic[T]):
         if visible == self.visible:
             return
 
-        self._impl.api._queue(GuiSetVisibleMessage(self._impl.name, visible=visible))
+        self._impl.api._queue(GuiSetVisibleMessage(self._impl.id, visible=visible))
         self._impl.visible = visible
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
-        self._impl.api._queue(GuiRemoveMessage(self._impl.name))
+        self._impl.api._queue(GuiRemoveMessage(self._impl.label))
         assert self._impl.cleanup_cb is not None
         self._impl.cleanup_cb()
 
@@ -234,10 +220,10 @@ class GuiDropdownHandle(GuiHandle[StringType], Generic[StringType]):
 
     Lets us get values, set values, and detect updates."""
 
-    _impl_options: List[StringType]
+    _impl_options: Tuple[StringType, ...]
 
     @property
-    def options(self) -> List[StringType]:
+    def options(self) -> Tuple[StringType, ...]:
         """Options for our dropdown. Synchronized automatically when assigned.
 
         For projects that care about typing: the static type of `options` should be
@@ -248,19 +234,21 @@ class GuiDropdownHandle(GuiHandle[StringType], Generic[StringType]):
         return self._impl_options
 
     @options.setter
-    def options(self, options: List[StringType]) -> None:
-        self._impl_options = options
+    def options(self, options: Iterable[StringType]) -> None:
+        self._impl_options = tuple(options)
+        if self._impl.initial_value not in self._impl_options:
+            self._impl.initial_value = self._impl_options[0]
 
-        # Make sure initial value is in options.
-        self._impl.leva_conf["options"] = options
-        if self._impl.leva_conf["value"] not in options:
-            self._impl.leva_conf["value"] = options[0]
-
-        # Update options.
         self._impl.api._queue(
-            GuiSetLevaConfMessage(self._impl.name, self._impl.leva_conf),
+            GuiAddDropdownMessage(
+                order=self._impl.order,
+                id=self._impl.id,
+                label=self._impl.label,
+                folder_labels=self._impl.folder_labels,
+                initial_value=self._impl.initial_value,
+                options=self._impl_options,
+            )
         )
 
-        # Make sure current value is in options.
-        if self.value not in options:
-            self.value = options[0]
+        if self.value not in self._impl_options:
+            self.value = self._impl_options[0]

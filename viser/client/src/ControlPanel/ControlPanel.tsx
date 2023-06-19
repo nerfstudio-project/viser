@@ -15,7 +15,9 @@ import SceneTreeTable from "./SceneTreeTable";
 /** Root component for control panel. Parents a set of control tabs. */
 export default function ControlPanel() {
   const viewer = React.useContext(ViewerContext)!;
-  const showGenerated = viewer.useGui((state) => state.guiNames.length > 0);
+
+  // TODO: will result in unnecessary re-renders
+  const showGenerated = Object.keys(viewer.useGui((state) => state.guiConfigFromId)).length > 0;
 
   const [tabState, setTabState] = React.useState<TabsValue>("server");
 

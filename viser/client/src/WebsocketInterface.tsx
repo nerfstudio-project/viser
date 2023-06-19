@@ -11,6 +11,7 @@ import { syncSearchParamServer } from "./SearchParamsUtils";
 import { Html, PivotControls } from "@react-three/drei";
 import { ViewerContext } from ".";
 import styled from "@emotion/styled";
+import { isGuiConfig } from "./ControlPanel/GuiState";
 
 /** Send message over websocket. */
 export function sendWebsocketMessage(
@@ -78,13 +79,17 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
 
+  // TODO: we should clean this up.
+  // https://github.com/nerfstudio-project/viser/issues/39
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
   const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
   const removeGui = viewer.useGui((state) => state.removeGui);
-  const guiSet = viewer.useGui((state) => state.guiSet);
+  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
+  const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
+  const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
   const setOrientation = viewer.useSceneTree((state) => state.setOrientation);
   const setPosition = viewer.useSceneTree((state) => state.setPosition);
   const setVisibility = viewer.useSceneTree((state) => state.setVisibility);
@@ -107,10 +112,15 @@ function useMessageHandler() {
 
   // Return message handler.
   return (message: Message) => {
+    if (isGuiConfig(message)) {
+      addGui(message);
+      return;
+    }
+
     switch (message.type) {
       case "ThemeConfigurationMessage": {
         setTheme(message);
-        break;
+        return;
       }
       // Add a coordinate frame.
       case "FrameMessage": {
@@ -124,7 +134,7 @@ function useMessageHandler() {
             />
           ))
         );
-        break;
+        return;
       }
       // Add a point cloud.
       case "PointCloudMessage": {
@@ -175,7 +185,7 @@ function useMessageHandler() {
             }
           )
         );
-        break;
+        return;
       }
 
       // Add mesh
@@ -238,7 +248,7 @@ function useMessageHandler() {
             }
           )
         );
-        break;
+        return;
       }
       // Add a camera frustum.
       case "CameraFrustumMessage": {
@@ -284,7 +294,7 @@ function useMessageHandler() {
             () => texture && texture.dispose()
           )
         );
-        break;
+        return;
       }
       case "TransformControlsMessage": {
         const name = message.name;
@@ -322,7 +332,7 @@ function useMessageHandler() {
             />
           ))
         );
-        break;
+        return;
       }
       case "SetCameraLookAtMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
@@ -338,7 +348,7 @@ function useMessageHandler() {
         );
         target.applyQuaternion(R_threeworld_world);
         cameraControls.setTarget(target.x, target.y, target.z);
-        break;
+        return;
       }
       case "SetCameraUpDirectionMessage": {
         const camera = viewer.cameraRef.current!;
@@ -354,7 +364,7 @@ function useMessageHandler() {
         ).applyQuaternion(R_threeworld_world);
         camera.up.set(updir.x, updir.y, updir.z);
         cameraControls.applyCameraUp();
-        break;
+        return;
       }
       case "SetCameraPositionMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
@@ -376,7 +386,7 @@ function useMessageHandler() {
           position_cmd.y,
           position_cmd.z
         );
-        break;
+        return;
       }
       case "SetCameraFovMessage": {
         const camera = viewer.cameraRef.current!;
@@ -385,7 +395,7 @@ function useMessageHandler() {
         camera.setFocalLength(
           (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0)
         );
-        break;
+        return;
       }
       case "SetOrientationMessage": {
         setOrientation(
@@ -397,7 +407,7 @@ function useMessageHandler() {
             message.wxyz[0]
           )
         );
-        break;
+        return;
       }
       case "SetPositionMessage": {
         setPosition(
@@ -408,7 +418,7 @@ function useMessageHandler() {
             message.position[2]
           )
         );
-        break;
+        return;
       }
       // Add a background image.
       case "BackgroundImageMessage": {
@@ -425,7 +435,7 @@ function useMessageHandler() {
             viewer.useGui.setState({ backgroundAvailable: true });
           }
         );
-        break;
+        return;
       }
       // Add a 2D label.
       case "LabelMessage": {
@@ -469,7 +479,7 @@ function useMessageHandler() {
             );
           })
         );
-        break;
+        return;
       }
       // Add an image.
       case "ImageMessage": {
@@ -507,23 +517,23 @@ function useMessageHandler() {
             );
           }
         );
-        break;
+        return;
       }
       // Remove a scene node by name.
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
-        break;
+        return;
       }
       // Set the visibility of a particular scene node.
       case "SetSceneNodeVisibilityMessage": {
         setVisibility(message.name, message.visible);
-        break;
+        return;
       }
       // Set the clickability of a particular scene node.
       case "SetSceneNodeClickableMessage": {
         setClickable(message.name, message.clickable);
-        break;
+        return;
       }
       // Reset the entire scene, removing all scene nodes.
       case "ResetSceneMessage": {
@@ -534,54 +544,31 @@ function useMessageHandler() {
         if (isTexture(oldBackground)) oldBackground.dispose();
 
         viewer.useGui.setState({ backgroundAvailable: false });
-        break;
-      }
-      // Add a GUI input.
-      case "GuiAddMessage": {
-        addGui(message.name, {
-          levaConf: message.leva_conf,
-          folderLabels: message.folder_labels,
-          visible: true,
-        });
-        break;
+        return;
       }
       // Set the value of a GUI input.
       case "GuiSetValueMessage": {
-        guiSet(message.name, message.value);
-        break;
+        setGuiValue(message.id, message.value);
+        return;
       }
       // Set the hidden state of a GUI input.
       case "GuiSetVisibleMessage": {
-        const currentConf =
-          viewer.useGui.getState().guiConfigFromName[message.name];
-        if (currentConf !== undefined) {
-          addGui(message.name, {
-            ...currentConf,
-            visible: message.visible,
-          });
-        }
-        break;
+        setGuiVisible(message.id, message.visible);
+        return;
       }
-      // Add a GUI input.
-      case "GuiSetLevaConfMessage": {
-        const currentConf =
-          viewer.useGui.getState().guiConfigFromName[message.name];
-        if (currentConf !== undefined) {
-          addGui(message.name, {
-            ...currentConf,
-            levaConf: message.leva_conf,
-          });
-        }
-        break;
+      // Set the disabled state of a GUI input.
+      case "GuiSetDisabledMessage": {
+        setGuiDisabled(message.id, message.disabled);
+        return;
       }
       // Remove a GUI input.
       case "GuiRemoveMessage": {
-        removeGui(message.name);
-        break;
+        removeGui(message.id);
+        return;
       }
       default: {
         console.log("Received message did not match any known types:", message);
-        break;
+        return;
       }
     }
   };
@@ -626,7 +613,7 @@ export default function WebsocketInterface() {
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
         viewer.useGui.setState({ websocketConnected: false });
-        if (viewer.useGui.getState().guiNames.length > 0) resetGui();
+        resetGui();
 
         // Try to reconnect.
         timeout = setTimeout(tryConnect, 1000);
