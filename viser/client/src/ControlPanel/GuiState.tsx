@@ -1,45 +1,44 @@
 import React from "react";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import {
-  ThemeConfigurationMessage,
-  GuiAddButtonMessage,
-  GuiAddCheckboxMessage,
-  GuiAddNumberMessage,
-  GuiAddRgbMessage,
-  GuiAddRgbaMessage,
-  GuiAddSliderMessage,
-  Message,
-  GuiAddTextMessage,
-} from "../WebsocketMessages";
+import * as Messages from "../WebsocketMessages";
 
 export type GuiConfig =
-  | GuiAddButtonMessage
-  | GuiAddCheckboxMessage
-  | GuiAddNumberMessage
-  | GuiAddRgbMessage
-  | GuiAddRgbaMessage
-  | GuiAddSliderMessage
-  | GuiAddTextMessage;
+  | Messages.GuiAddButtonMessage
+  | Messages.GuiAddCheckboxMessage
+  | Messages.GuiAddDropdownMessage
+  | Messages.GuiAddNumberMessage
+  | Messages.GuiAddRgbMessage
+  | Messages.GuiAddRgbaMessage
+  | Messages.GuiAddSliderMessage
+  | Messages.GuiAddButtonGroupMessage
+  | Messages.GuiAddTextMessage
+  | Messages.GuiAddVector2Message
+  | Messages.GuiAddVector3Message;
 
-export function isGuiConfig(message: Message): message is GuiConfig {
+export function isGuiConfig(message: Messages.Message): message is GuiConfig {
   return message.type.startsWith("GuiAdd");
 }
 
 interface GuiState {
-  theme: ThemeConfigurationMessage;
+  theme: Messages.ThemeConfigurationMessage;
   label: string;
   server: string;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
   guiConfigFromId: { [id: string]: GuiConfig };
   guiValueFromId: { [id: string]: any };
+  guiAttributeFromId: {
+    [id: string]: { visible?: boolean; disabled?: boolean } | undefined;
+  };
 }
 
 interface GuiActions {
-  setTheme: (theme: ThemeConfigurationMessage) => void;
+  setTheme: (theme: Messages.ThemeConfigurationMessage) => void;
   addGui: (config: GuiConfig) => void;
   setGuiValue: (id: string, value: any) => void;
+  setGuiVisible: (id: string, visible: boolean) => void;
+  setGuiDisabled: (id: string, visible: boolean) => void;
   removeGui: (name: string) => void;
   resetGui: () => void;
 }
@@ -56,6 +55,7 @@ const cleanGuiState: GuiState = {
   backgroundAvailable: false,
   guiConfigFromId: {},
   guiValueFromId: {},
+  guiAttributeFromId: {},
 };
 
 export function useGuiState(initialServer: string) {
@@ -75,6 +75,20 @@ export function useGuiState(initialServer: string) {
         setGuiValue: (id, value) =>
           set((state) => {
             state.guiValueFromId[id] = value;
+          }),
+        setGuiVisible: (id, visible) =>
+          set((state) => {
+            state.guiAttributeFromId[id] = {
+              ...state.guiAttributeFromId[id],
+              visible: visible,
+            };
+          }),
+        setGuiDisabled: (id, disabled) =>
+          set((state) => {
+            state.guiAttributeFromId[id] = {
+              ...state.guiAttributeFromId[id],
+              disabled: disabled,
+            };
           }),
         removeGui: (name) =>
           set((state) => {

@@ -269,7 +269,7 @@ class ResetSceneMessage(Message):
 
 
 @dataclasses.dataclass
-class _GuiAddMessage(Message):
+class _GuiAddMessageBase(Message):
     order: int
     id: str
     label: str
@@ -277,20 +277,23 @@ class _GuiAddMessage(Message):
 
 
 @dataclasses.dataclass
-class GuiAddButtonMessage(_GuiAddMessage):
-    ...
+class GuiAddButtonMessage(_GuiAddMessageBase):
+    # All GUI elements currently need an `initial_value` field.
+    # This makes our job on the frontend easier.
+    initial_value: bool
 
 
 @dataclasses.dataclass
-class GuiAddSliderMessage(_GuiAddMessage):
+class GuiAddSliderMessage(_GuiAddMessageBase):
     min: float
     max: float
     step: Optional[float]
     initial_value: float
+    precision: int
 
 
 @dataclasses.dataclass
-class GuiAddNumberMessage(_GuiAddMessage):
+class GuiAddNumberMessage(_GuiAddMessageBase):
     initial_value: float
     precision: int
     step: float
@@ -299,33 +302,53 @@ class GuiAddNumberMessage(_GuiAddMessage):
 
 
 @dataclasses.dataclass
-class GuiAddRgbMessage(_GuiAddMessage):
+class GuiAddRgbMessage(_GuiAddMessageBase):
     initial_value: Tuple[int, int, int]
 
 
 @dataclasses.dataclass
-class GuiAddRgbaMessage(_GuiAddMessage):
+class GuiAddRgbaMessage(_GuiAddMessageBase):
     initial_value: Tuple[int, int, int, int]
 
 
 @dataclasses.dataclass
-class GuiAddCheckboxMessage(_GuiAddMessage):
+class GuiAddCheckboxMessage(_GuiAddMessageBase):
     initial_value: bool
 
 
 @dataclasses.dataclass
-class GuiAddVector2Message(_GuiAddMessage):
+class GuiAddVector2Message(_GuiAddMessageBase):
     initial_value: Tuple[float, float]
+    min: Optional[Tuple[float, float]]
+    max: Optional[Tuple[float, float]]
+    step: float
+    precision: int
 
 
 @dataclasses.dataclass
-class GuiAddVector3Message(_GuiAddMessage):
+class GuiAddVector3Message(_GuiAddMessageBase):
     initial_value: Tuple[float, float, float]
+    min: Optional[Tuple[float, float, float]]
+    max: Optional[Tuple[float, float, float]]
+    step: float
+    precision: int
 
 
 @dataclasses.dataclass
-class GuiAddTextMessage(_GuiAddMessage):
-    initial_value: bool
+class GuiAddTextMessage(_GuiAddMessageBase):
+    initial_value: str
+
+
+@dataclasses.dataclass
+class GuiAddDropdownMessage(_GuiAddMessageBase):
+    initial_value: str
+    options: Tuple[str, ...]
+
+
+@dataclasses.dataclass
+class GuiAddButtonGroupMessage(_GuiAddMessageBase):
+    initial_value: str
+    options: Tuple[str, ...]
 
 
 @dataclasses.dataclass
@@ -349,6 +372,14 @@ class GuiSetVisibleMessage(Message):
 
     id: str
     visible: bool
+
+
+@dataclasses.dataclass
+class GuiSetDisabledMessage(Message):
+    """Sent client->server when a GUI input is changed."""
+
+    id: str
+    disabled: bool
 
 
 @dataclasses.dataclass

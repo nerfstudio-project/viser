@@ -133,8 +133,8 @@ export interface SceneNodeClickedMessage {
 export interface ResetSceneMessage {
   type: "ResetSceneMessage";
 }
-export interface _GuiAddMessage {
-  type: "_GuiAddMessage";
+export interface _GuiAddMessageBase {
+  type: "_GuiAddMessageBase";
   order: number;
   id: string;
   label: string;
@@ -146,6 +146,7 @@ export interface GuiAddButtonMessage {
   id: string;
   label: string;
   folder_labels: string[];
+  initial_value: boolean;
 }
 export interface GuiAddSliderMessage {
   type: "GuiAddSliderMessage";
@@ -157,6 +158,7 @@ export interface GuiAddSliderMessage {
   max: number;
   step: number | null;
   initial_value: number;
+  precision: number;
 }
 export interface GuiAddNumberMessage {
   type: "GuiAddNumberMessage";
@@ -201,6 +203,10 @@ export interface GuiAddVector2Message {
   label: string;
   folder_labels: string[];
   initial_value: [number, number];
+  min: [number, number] | null;
+  max: [number, number] | null;
+  step: number;
+  precision: number;
 }
 export interface GuiAddVector3Message {
   type: "GuiAddVector3Message";
@@ -209,6 +215,10 @@ export interface GuiAddVector3Message {
   label: string;
   folder_labels: string[];
   initial_value: [number, number, number];
+  min: [number, number, number] | null;
+  max: [number, number, number] | null;
+  step: number;
+  precision: number;
 }
 export interface GuiAddTextMessage {
   type: "GuiAddTextMessage";
@@ -216,7 +226,25 @@ export interface GuiAddTextMessage {
   id: string;
   label: string;
   folder_labels: string[];
-  initial_value: boolean;
+  initial_value: string;
+}
+export interface GuiAddDropdownMessage {
+  type: "GuiAddDropdownMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  initial_value: string;
+  options: string[];
+}
+export interface GuiAddButtonGroupMessage {
+  type: "GuiAddButtonGroupMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  initial_value: string;
+  options: string[];
 }
 export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
@@ -231,6 +259,11 @@ export interface GuiSetVisibleMessage {
   type: "GuiSetVisibleMessage";
   id: string;
   visible: boolean;
+}
+export interface GuiSetDisabledMessage {
+  type: "GuiSetDisabledMessage";
+  id: string;
+  disabled: boolean;
 }
 export interface GuiSetValueMessage {
   type: "GuiSetValueMessage";
@@ -281,7 +314,7 @@ export type Message =
   | SetSceneNodeClickableMessage
   | SceneNodeClickedMessage
   | ResetSceneMessage
-  | _GuiAddMessage
+  | _GuiAddMessageBase
   | GuiAddButtonMessage
   | GuiAddSliderMessage
   | GuiAddNumberMessage
@@ -291,9 +324,12 @@ export type Message =
   | GuiAddVector2Message
   | GuiAddVector3Message
   | GuiAddTextMessage
+  | GuiAddDropdownMessage
+  | GuiAddButtonGroupMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | GuiSetVisibleMessage
+  | GuiSetDisabledMessage
   | GuiSetValueMessage
   | MessageGroupStart
   | MessageGroupEnd

@@ -79,6 +79,8 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
 
+  // TODO: we should clean this up.
+  // https://github.com/nerfstudio-project/viser/issues/39
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
@@ -86,6 +88,8 @@ function useMessageHandler() {
   const addGui = viewer.useGui((state) => state.addGui);
   const removeGui = viewer.useGui((state) => state.removeGui);
   const setGuiValue = viewer.useGui((state) => state.setGuiValue);
+  const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
+  const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
   const setOrientation = viewer.useSceneTree((state) => state.setOrientation);
   const setPosition = viewer.useSceneTree((state) => state.setPosition);
   const setVisibility = viewer.useSceneTree((state) => state.setVisibility);
@@ -544,20 +548,17 @@ function useMessageHandler() {
       }
       // Set the value of a GUI input.
       case "GuiSetValueMessage": {
-        console.log("hi", message);
         setGuiValue(message.id, message.value);
         return;
       }
       // Set the hidden state of a GUI input.
       case "GuiSetVisibleMessage": {
-        // const currentConf =
-        //   viewer.useGui.getState().guiConfigFromId[message.name];
-        // if (currentConf !== undefined) {
-        //   addGui(message.name, {
-        //     ...currentConf,
-        //     visible: message.visible,
-        //   });
-        // }
+        setGuiVisible(message.id, message.visible);
+        return;
+      }
+      // Set the disabled state of a GUI input.
+      case "GuiSetDisabledMessage": {
+        setGuiDisabled(message.id, message.disabled);
         return;
       }
       // Remove a GUI input.
