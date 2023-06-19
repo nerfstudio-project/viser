@@ -50,7 +50,6 @@ export default function Generated() {
 
   return (
     <>
-      <Space h="xs" />
       <GeneratedFolder folder={guiTree} />
     </>
   );
@@ -58,27 +57,30 @@ export default function Generated() {
 
 function GeneratedFolder({ folder }: { folder: Folder }) {
   return (
-    <Stack spacing="xs">
+    <Stack spacing="xs" pt="0.25rem">
       {folder.inputs.map((conf) => (
         <GeneratedInput key={conf.id} conf={conf} />
       ))}
       <Accordion
         chevronPosition="right"
         multiple
-        defaultValue={Object.keys(folder.subfolders)}
+        defaultValue={[...Object.keys(folder.subfolders)]}
         styles={(theme) => ({
           label: { padding: "0.625rem 0.2rem" },
           item: { border: 0 },
           control: { paddingLeft: 0 },
           content: {
             borderLeft: "1px solid",
-            borderLeftColor: theme.colors.gray[4],
+            borderLeftColor:
+              theme.colorScheme == "light"
+                ? theme.colors.gray[3]
+                : theme.colors.dark[5],
             paddingRight: "0",
             paddingLeft: "0.5rem",
             paddingBottom: 0,
             paddingTop: 0,
             marginBottom: "0.5rem",
-            marginLeft: "0.1rem",
+            marginLeft: "0.05rem",
           },
         })}
       >

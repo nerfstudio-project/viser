@@ -39,7 +39,7 @@ interface GuiActions {
   setGuiValue: (id: string, value: any) => void;
   setGuiVisible: (id: string, visible: boolean) => void;
   setGuiDisabled: (id: string, visible: boolean) => void;
-  removeGui: (name: string) => void;
+  removeGui: (id: string) => void;
   resetGui: () => void;
 }
 
@@ -90,9 +90,11 @@ export function useGuiState(initialServer: string) {
               disabled: disabled,
             };
           }),
-        removeGui: (name) =>
+        removeGui: (id) =>
           set((state) => {
-            delete state.guiConfigFromId[name];
+            delete state.guiConfigFromId[id];
+            delete state.guiValueFromId[id];
+            delete state.guiAttributeFromId[id];
           }),
         resetGui: () =>
           set((state) => {

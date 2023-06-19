@@ -109,7 +109,7 @@ function SingleViewer() {
                   : theme.colors.dark[4],
             })}
           >
-            <ScrollArea type="always" sx={{height: "100%"}}>
+            <ScrollArea type="always" sx={{ height: "100%" }}>
               <Box
                 p="sm"
                 sx={(theme) => ({
