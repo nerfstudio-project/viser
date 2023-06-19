@@ -1,6 +1,6 @@
-import React from "react";
 import { Box, Paper } from "@mantine/core";
 import { IconCaretUp } from "@tabler/icons-react";
+import React from "react";
 
 const FloatingPanelRefContext =
   React.createContext<React.RefObject<HTMLDivElement> | null>(null);
@@ -112,8 +112,8 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     );
     newY = Math.max(newY, panelBoundaryPad);
 
-    panel.style.top = newY.toString() + "px";
-    panel.style.left = newX.toString() + "px";
+    panel.style.top = `${newY.toString()}px`;
+    panel.style.left = `${newX.toString()}px`;
 
     return [
       computePanelOffset(newX, panel.clientWidth, parent.clientWidth),
@@ -129,8 +129,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     const parent = panel.parentElement;
     if (parent === null) return;
 
-    panel.style.maxHeight =
-      (parent.clientHeight - panelBoundaryPad * 2).toString() + "px";
+    panel.style.maxHeight = `${(
+      parent.clientHeight -
+      panelBoundaryPad * 2
+    ).toString()}px`;
 
     const observer = new ResizeObserver(() => {
       if (unfixedOffset.current.x === undefined)
@@ -146,8 +148,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
           parent.clientHeight
         );
 
-      panel.style.maxHeight =
-        (parent.clientHeight - panelBoundaryPad * 2).toString() + "px";
+      panel.style.maxHeight = `${(
+        parent.clientHeight -
+        panelBoundaryPad * 2
+      ).toString()}px`;
 
       let newX = unfixedOffset.current.x;
       let newY = unfixedOffset.current.y;
@@ -167,7 +171,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
       color="red"
       sx={(theme) => ({
         backgroundColor:
-          theme.colorScheme == "dark"
+          theme.colorScheme === "dark"
             ? theme.colors.dark[5]
             : theme.colors.gray[1],
         lineHeight: "1.5em",
@@ -256,9 +260,5 @@ FloatingPanel.Contents = function FloatingPanelContents({
 }: {
   children: string | React.ReactNode;
 }) {
-  return (
-    <Box className="panel-contents">
-      {children}
-    </Box>
-  );
+  return <Box className="panel-contents">{children}</Box>;
 };

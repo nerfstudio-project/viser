@@ -1,17 +1,17 @@
+import AwaitLock from "await-lock";
 import { pack, unpack } from "msgpackr";
 import React, { MutableRefObject, useContext } from "react";
 import * as THREE from "three";
-import AwaitLock from "await-lock";
 import { TextureLoader } from "three";
 
-import { SceneNode } from "./SceneTree";
-import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
-import { Message } from "./WebsocketMessages";
-import { syncSearchParamServer } from "./SearchParamsUtils";
-import { Html, PivotControls } from "@react-three/drei";
 import { ViewerContext } from ".";
-import styled from "@emotion/styled";
 import { isGuiConfig } from "./ControlPanel/GuiState";
+import { SceneNode } from "./SceneTree";
+import { syncSearchParamServer } from "./SearchParamsUtils";
+import { CameraFrustum, CoordinateFrame } from "./ThreeAssets";
+import { Message } from "./WebsocketMessages";
+import styled from "@emotion/styled";
+import { Html, PivotControls } from "@react-three/drei";
 
 /** Send message over websocket. */
 export function sendWebsocketMessage(
@@ -53,10 +53,12 @@ export function makeThrottledMessageSender(
 
 /** Type guard for threejs textures. Meant to be used with `scene.background`. */
 export function isTexture(
-  background: THREE.Color | THREE.Texture | THREE.CubeTexture | null
+  background: THREE.Color | THREE.Texture | THREE.CubeTexture | null | undefined
 ): background is THREE.Texture {
   return (
-    background !== null && (background as THREE.Texture).isTexture !== undefined
+    background !== null &&
+    background !== undefined &&
+    (background as THREE.Texture).isTexture !== undefined
   );
 }
 
@@ -253,11 +255,12 @@ function useMessageHandler() {
       // Add a camera frustum.
       case "CameraFrustumMessage": {
         const texture =
-          message.image_media_type &&
-          message.image_base64_data &&
-          new TextureLoader().load(
-            `data:${message.image_media_type};base64,${message.image_base64_data}`
-          );
+          message.image_media_type !== null &&
+          message.image_base64_data !== null
+            ? new TextureLoader().load(
+                `data:${message.image_media_type};base64,${message.image_base64_data}`
+              )
+            : undefined;
 
         const height = message.scale * Math.tan(message.fov / 2.0) * 2.0;
 
@@ -291,7 +294,7 @@ function useMessageHandler() {
                 )}
               </group>
             ),
-            () => texture && texture.dispose()
+            () => texture?.dispose()
           )
         );
         return;
@@ -428,7 +431,7 @@ function useMessageHandler() {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
 
-            const oldBackground = viewer.sceneRef.current!.background;
+            const oldBackground = viewer.sceneRef.current?.background;
             viewer.sceneRef.current!.background = texture;
             if (isTexture(oldBackground)) oldBackground.dispose();
 
@@ -539,7 +542,7 @@ function useMessageHandler() {
       case "ResetSceneMessage": {
         resetScene();
 
-        const oldBackground = viewer.sceneRef.current!.background;
+        const oldBackground = viewer.sceneRef.current?.background;
         viewer.sceneRef.current!.background = null;
         if (isTexture(oldBackground)) oldBackground.dispose();
 
@@ -598,18 +601,18 @@ export default function WebsocketInterface() {
 
       // Timeout is necessary when we're connecting to an SSH/tunneled port.
       const retryTimeout = setTimeout(() => {
-        ws && ws.close();
+        ws?.close();
       }, 5000);
 
       ws.onopen = () => {
         clearTimeout(retryTimeout);
-        console.log("Connected!" + server);
+        console.log(`Connected!${server}`);
         viewer.websocketRef.current = ws;
         viewer.useGui.setState({ websocketConnected: true });
       };
 
       ws.onclose = () => {
-        console.log("Disconnected! " + server);
+        console.log(`Disconnected! ${server}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
         viewer.useGui.setState({ websocketConnected: false });
@@ -667,7 +670,7 @@ export default function WebsocketInterface() {
       done = true;
       clearTimeout(timeout);
       viewer.useGui.setState({ websocketConnected: false });
-      ws && ws.close();
+      ws?.close();
       clearTimeout(timeout);
     };
   }, [server, handleMessage, resetGui]);

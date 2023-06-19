@@ -1,17 +1,17 @@
-import { createPortal } from "@react-three/fiber";
 import { useCursor } from "@react-three/drei";
+import { createPortal } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
 import { CoordinateFrame } from "./ThreeAssets";
 
+import { ViewerContext } from ".";
+import { makeThrottledMessageSender } from "./WebsocketInterface";
+import { Html } from "@react-three/drei";
+import { Select } from "@react-three/postprocessing";
 import { immerable } from "immer";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { ViewerContext } from ".";
-import { makeThrottledMessageSender } from "./WebsocketInterface";
-import { Select } from "@react-three/postprocessing";
-import { Html } from "@react-three/drei";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>
@@ -139,7 +139,7 @@ export function useSceneTreeState() {
               // TODO: this assumes the parent exists. We could probably merge this with addSceneNodeMakeParents.
               const parent_name = node.name.split("/").slice(0, -1).join("/");
               state.nodeFromName[node.name] = node;
-              state.nodeFromName[parent_name]!.children.push(node.name);
+              state.nodeFromName[parent_name]?.children.push(node.name);
             }
             state.attributesFromName[node.name] = {
               visibility: true,
@@ -149,7 +149,7 @@ export function useSceneTreeState() {
         removeSceneNode: (name) =>
           set((state) => {
             if (!(name in state.nodeFromName)) {
-              console.log("Skipping scene node removal for " + name);
+              console.log(`Skipping scene node removal for ${name}`);
               return;
             }
 
@@ -157,7 +157,7 @@ export function useSceneTreeState() {
             const removeNames: string[] = [];
             function findChildrenRecursive(name: string) {
               removeNames.push(name);
-              state.nodeFromName[name]!.children.forEach(findChildrenRecursive);
+              state.nodeFromName[name]?.children.forEach(findChildrenRecursive);
             }
             findChildrenRecursive(name);
 
@@ -167,9 +167,11 @@ export function useSceneTreeState() {
 
             // Remove node from parent's children list.
             const parent_name = name.split("/").slice(0, -1).join("/");
-            state.nodeFromName[parent_name]!.children = state.nodeFromName[
-              parent_name
-            ]!.children.filter((child_name) => child_name !== name);
+            const node = state.nodeFromName[parent_name];
+            if (node)
+              node.children = node.children.filter(
+                (child_name) => child_name !== name
+              );
           }),
         resetScene: () =>
           set((state) => {

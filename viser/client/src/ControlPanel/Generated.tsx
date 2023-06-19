@@ -1,5 +1,5 @@
-import React from "react";
 import { ViewerContext } from "..";
+import { makeThrottledMessageSender } from "../WebsocketInterface";
 import { GuiConfig } from "./GuiState";
 import {
   Accordion,
@@ -11,13 +11,12 @@ import {
   NumberInput,
   Select,
   Slider,
-  Space,
   Stack,
   Text,
   TextInput,
   Tooltip,
 } from "@mantine/core";
-import { makeThrottledMessageSender } from "../WebsocketInterface";
+import React from "react";
 
 type Folder = {
   inputs: GuiConfig[];
@@ -72,7 +71,7 @@ function GeneratedFolder({ folder }: { folder: Folder }) {
           content: {
             borderLeft: "1px solid",
             borderLeftColor:
-              theme.colorScheme == "light"
+              theme.colorScheme === "light"
                 ? theme.colors.gray[3]
                 : theme.colors.dark[5],
             paddingRight: "0",
@@ -357,7 +356,7 @@ function VectorInput(
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
       {[...Array(props.n).keys()].map((i) => (
         <NumberInput
-          id={i == 0 ? props.id : undefined}
+          id={i === 0 ? props.id : undefined}
           key={i}
           value={props.value[i]}
           onChange={(v) => {

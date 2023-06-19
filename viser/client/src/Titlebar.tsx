@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import { ViewerContext } from ".";
 import { ThemeConfigurationMessage } from "./WebsocketMessages";
 import { Box, Button } from "@mantine/core";
@@ -7,6 +6,7 @@ import {
   IconFileDescription,
   IconKeyboard,
 } from "@tabler/icons-react";
+import { useContext } from "react";
 
 // Type helpers.
 type ArrayElement<ArrayType extends readonly unknown[]> =
@@ -91,7 +91,7 @@ export function Titlebar() {
         alignItems: "center",
         borderBottom: "1px solid",
         borderColor:
-          theme.colorScheme == "light"
+          theme.colorScheme === "light"
             ? theme.colors.gray[4]
             : theme.colors.dark[4],
       })}

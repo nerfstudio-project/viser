@@ -1,7 +1,7 @@
+import * as Messages from "../WebsocketMessages";
 import React from "react";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import * as Messages from "../WebsocketMessages";
 
 export type GuiConfig =
   | Messages.GuiAddButtonMessage
