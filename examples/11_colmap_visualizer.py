@@ -39,7 +39,10 @@ def main(
     cameras = read_cameras_binary(colmap_path / "cameras.bin")
     images = read_images_binary(colmap_path / "images.bin")
     points3d = read_points3d_binary(colmap_path / "points3D.bin")
-    gui_reset_up = server.add_gui_button("Reset up direction", hint="Set the camera control 'up' direction to the current camera's 'up'.")
+    gui_reset_up = server.add_gui_button(
+        "Reset up direction",
+        hint="Set the camera control 'up' direction to the current camera's 'up'.",
+    )
 
     @gui_reset_up.on_click
     def _(_) -> None:
