@@ -264,6 +264,8 @@ function GeneratedInput({ conf }: { conf: GuiConfig }) {
           value={value}
           data={conf.options}
           onChange={updateValue}
+          searchable
+          maxDropdownHeight={400}
         />
       );
       break;

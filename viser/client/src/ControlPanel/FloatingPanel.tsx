@@ -26,7 +26,6 @@ export default function FloatingPanel({
           top: "1em",
           right: "1em",
           margin: 0,
-          overflow: "auto",
           "&.hidden": {
             overflow: "hidden",
           },
@@ -41,7 +40,6 @@ export default function FloatingPanel({
             visibility: "hidden",
             height: "0 !important",
             border: "0",
-            overflow: "hidden",
             position: "absolute",
           },
           "& .expand-icon": {
@@ -168,7 +166,6 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 
   return (
     <Box
-      color="red"
       sx={(theme) => ({
         backgroundColor:
           theme.colorScheme === "dark"
