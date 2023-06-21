@@ -12,7 +12,7 @@ import { ViewerContext } from ".";
 import { makeThrottledMessageSender } from "./WebsocketInterface";
 import { Select } from "@react-three/postprocessing";
 import { Html } from "@react-three/drei";
-import { Box, Text } from "@mantine/core";
+import { Text } from "@mantine/core";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>
