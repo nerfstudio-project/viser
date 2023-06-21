@@ -27,6 +27,9 @@ export default function SceneTreeTable(props: { compact: boolean }) {
   );
   const nodeFromName = viewer.useSceneTree((state) => state.nodeFromName);
   const setVisibility = viewer.useSceneTree((state) => state.setVisibility);
+  const setLabelVisibility = viewer.useSceneTree(
+    (state) => state.setLabelVisibility
+  );
 
   // Debouncing to suppress onMouseEnter and onMouseDown events from
   // re-renders.
@@ -169,8 +172,14 @@ export default function SceneTreeTable(props: { compact: boolean }) {
           showRowsPerPage: false,
           showFirstLastPageButtons: false,
         }}
-        mantineTableBodyRowProps={({ row }) =>
-          row.subRows === undefined || row.subRows.length === 0
+        mantineTableBodyRowProps={({ row }) => ({
+          onPointerOver: () => {
+            setLabelVisibility(row.getValue("name"), true);
+          },
+          onPointerOut: () => {
+            setLabelVisibility(row.getValue("name"), false);
+          },
+          ...(row.subRows === undefined || row.subRows.length === 0
             ? {}
             : {
                 onClick: () => {
@@ -179,8 +188,8 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                 sx: {
                   cursor: "pointer",
                 },
-              }
-        }
+              }),
+        })}
         enableFullScreenToggle={false}
         // Show/hide buttons.
         renderTopToolbarCustomActions={
