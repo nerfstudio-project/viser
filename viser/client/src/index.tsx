@@ -156,7 +156,7 @@ function ViewerCanvas() {
       <SynchronizedCameraControls />
       <Selection>
         <SceneNodeThreeObject name="" />
-        <EffectComposer enabled={true} autoClear={false}>
+        {<EffectComposer enabled={true} autoClear={false}>
           <Outline
             hiddenEdgeColor={0xfbff00}
             visibleEdgeColor={0xfbff00}
@@ -166,8 +166,8 @@ function ViewerCanvas() {
             height={480}
             blur
           />
-        </EffectComposer>
-      </Selection>
+        </EffectComposer> }
+       </Selection>
       <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
     </Canvas>
   );

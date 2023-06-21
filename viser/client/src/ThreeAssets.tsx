@@ -1,9 +1,14 @@
+import { extend } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
-
+import {
+  MeshLineGeometry as MeshLine,
+  MeshLineMaterial,
+  raycast as MeshLineRaycast,
+} from "meshline";
 const origin_geom = new THREE.SphereGeometry(1.0);
 const origin_material = new THREE.MeshBasicMaterial({ color: 0xecec00 });
-
+extend({ MeshLine, MeshLineMaterial });
 /** Helper for adding coordinate frames as scene nodes. */
 export const CoordinateFrame = React.forwardRef<
   THREE.Group,
@@ -92,31 +97,69 @@ export const CameraFrustum = React.forwardRef<
 >(function CameraFrustum(props, ref) {
   const y = Math.tan(props.fov / 2.0);
   const x = y * props.aspect;
-  const z = 1.0;
-
-  function scaledLineNode(points: [number, number, number][]) {
-    points = points.map((xyz) => [xyz[0] * x, xyz[1] * y, xyz[2] * z]);
-    return [...Array(points.length - 1).keys()].map((i) => (
-      <CapsuleLine
-        key={i}
-        radius={0.02 * props.scale}
-        start={new THREE.Vector3()
-          .fromArray(points[i])
-          .multiplyScalar(props.scale)}
-        end={new THREE.Vector3()
-          .fromArray(points[i + 1])
-          .multiplyScalar(props.scale)}
-        color={props.color}
-      />
-    ));
-  }
-
   return (
     <group ref={ref}>
-      {scaledLineNode(frustum_points)}
-      {scaledLineNode(updir_points)}
+      <mesh
+        // raycast={MeshLineRaycast}
+        scale={new THREE.Vector3(props.scale * x, props.scale * y, props.scale)}
+      >
+        {/* @ts-ignore */}
+        <meshLine attach="geometry" points={frustum_points} />
+        {/* @ts-ignore */}
+        <meshLineMaterial
+          attach="material"
+          transparent
+          lineWidth={0.015}
+          color={props.color}
+        />
+      </mesh>
+      <mesh
+        raycast={MeshLineRaycast}
+        scale={new THREE.Vector3(props.scale * x, props.scale * y, props.scale)}
+      >
+        {/* @ts-ignore */}
+        <meshLine attach="geometry" points={updir_points} />
+        {/* @ts-ignore */}
+        <meshLineMaterial
+          attach="material"
+          transparent
+          lineWidth={0.015}
+          color={props.color}
+        />
+      </mesh>
     </group>
   );
+  // return <mesh 
+  //           ref={ref} 
+  //           geometry={new THREE.ConeGeometry(1, 1, 4)} 
+  //           material={new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true})}
+  //           scale={[x, y ,10*z]}
+  //           quaternion={new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI/2, Math.PI/4, 0, 'XYZ'))}
+  //         />;
+
+  // function scaledLineNode(points: [number, number, number][]) {
+  //   points = points.map((xyz) => [xyz[0] * x, xyz[1] * y, xyz[2] * z]);
+  //   return [...Array(points.length - 1).keys()].map((i) => (
+  //     <CapsuleLine
+  //       key={i}
+  //       radius={0.02 * props.scale}
+  //       start={new THREE.Vector3()
+  //         .fromArray(points[i])
+  //         .multiplyScalar(props.scale)}
+  //       end={new THREE.Vector3()
+  //         .fromArray(points[i + 1])
+  //         .multiplyScalar(props.scale)}
+  //       color={props.color}
+  //     />
+  //   ));
+  // }
+
+  // return (
+  //   <group ref={ref}>
+  //     {scaledLineNode(frustum_points)}
+  //     {scaledLineNode(updir_points)}
+  //   </group>
+  // );
 });
 
 function CapsuleLine(props: {
