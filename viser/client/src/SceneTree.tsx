@@ -12,6 +12,7 @@ import { ViewerContext } from ".";
 import { makeThrottledMessageSender } from "./WebsocketInterface";
 import { Select } from "@react-three/postprocessing";
 import { Html } from "@react-three/drei";
+import { Text } from "@mantine/core";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>
@@ -245,9 +246,7 @@ function SceneNodeAttributeHandler(props: {
     if (!props.obj.matrixWorldAutoUpdate) props.obj.updateMatrixWorld();
   }, [visibility, wxyz, position, props.obj]);
 
-  return (
-    <SceneNodeLabel visible={visibility && labelVisibility} text={props.name} />
-  );
+  return <SceneNodeLabel visible={labelVisibility} text={props.name} />;
 }
 
 /** Component containing the three.js object and children for a particular scene node. */
@@ -328,23 +327,22 @@ type SceneNodeLabelProps = {
 };
 
 export function SceneNodeLabel({ text, visible }: SceneNodeLabelProps) {
-  if (!visible || text.trim() === "") {
-    // Do not render label for object without name, e.g. root node
+  if (!visible) {
     return null;
   }
   return (
     <Html>
-      <p
+      <Text
         style={{
           backgroundColor: "rgba(240, 240, 240, 0.9)",
-          color: "#777",
-          padding: "10px 15px",
-          borderRadius: "5px",
+          borderRadius: "0.2rem",
           userSelect: "none",
         }}
+        px="xs"
+        py="0.1rem"
       >
         {text}
-      </p>
+      </Text>
     </Html>
   );
 }
