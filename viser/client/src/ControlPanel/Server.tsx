@@ -17,9 +17,7 @@ export default function ServerControls() {
 
   return (
     <>
-      {showStats ? (
-        <Stats className="stats-panel" />
-      ) : null}
+      {showStats ? <Stats className="stats-panel" /> : null}
       <Stack spacing="xs">
         <TextInput
           label="Label"
