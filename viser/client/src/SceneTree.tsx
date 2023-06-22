@@ -218,8 +218,6 @@ function SceneNodeThreeChildren(props: {
     function updateChildren() {
       const newChildren =
         viewer.useSceneTree.getState().nodeFromName[props.name]?.children;
-      console.log(newChildren);
-
       if (newChildren === undefined || children == newChildren) {
         return;
       }
