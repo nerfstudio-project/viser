@@ -1,14 +1,11 @@
-import { extend } from "@react-three/fiber";
+import { Instance, Instances } from "@react-three/drei";
 import React from "react";
 import * as THREE from "three";
-import {
-  MeshLineGeometry as MeshLine,
-  MeshLineMaterial,
-  raycast as MeshLineRaycast,
-} from "meshline";
-const origin_geom = new THREE.SphereGeometry(1.0);
-const origin_material = new THREE.MeshBasicMaterial({ color: 0xecec00 });
-extend({ MeshLine, MeshLineMaterial });
+
+const axisGeom = new THREE.CylinderGeometry(1.0, 1.0, 1.0, 16, 1);
+const originGeom = new THREE.SphereGeometry(1.0);
+const originMaterial = new THREE.MeshBasicMaterial({ color: 0xecec00 });
+
 /** Helper for adding coordinate frames as scene nodes. */
 export const CoordinateFrame = React.forwardRef<
   THREE.Group,
@@ -26,8 +23,8 @@ export const CoordinateFrame = React.forwardRef<
       {show_axes && (
         <>
           <mesh
-            geometry={origin_geom}
-            material={origin_material}
+            geometry={originGeom}
+            material={originMaterial}
             scale={
               new THREE.Vector3(
                 axes_radius * 2.5,
@@ -36,56 +33,34 @@ export const CoordinateFrame = React.forwardRef<
               )
             }
           />
-          <CapsuleLine
-            start={new THREE.Vector3()}
-            end={new THREE.Vector3(axes_length, 0.0, 0.0)}
-            radius={axes_radius}
-            color={0xcc0000}
-          />
-          <CapsuleLine
-            start={new THREE.Vector3()}
-            end={new THREE.Vector3(0.0, axes_length, 0.0)}
-            radius={axes_radius}
-            color={0x00cc00}
-          />
-          <CapsuleLine
-            start={new THREE.Vector3()}
-            end={new THREE.Vector3(0.0, 0.0, axes_length)}
-            radius={axes_radius}
-            color={0x0000cc}
-          />
+          <Instances geometry={axisGeom}>
+            <meshBasicMaterial />
+            <Instance
+              rotation={new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0)}
+              position={[0.5 * axes_length, 0.0, 0.0]}
+              scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
+              color={0xcc0000}
+            />
+            <Instance
+              position={[0.0, 0.5 * axes_length, 0.0]}
+              scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
+              color={0x00cc00}
+            />
+            <Instance
+              rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
+              position={[0.0, 0.0, 0.5 * axes_length]}
+              scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
+              color={0x0000cc}
+            />
+          </Instances>
         </>
       )}
     </group>
   );
 });
 
-// Camera frustum helper. We jitter to prevent z-fighting for overlapping lines.
-const jitter = () => Math.random() * 1e-5;
-const frustum_points: [number, number, number][] = [];
-frustum_points.push([0, 0, 0]);
-frustum_points.push([-1, -1, 1]);
-frustum_points.push([1, -1, 1]);
-frustum_points.push([0, 0, 0]);
-frustum_points.push([-1, 1, 1]);
-frustum_points.push([1, 1, 1]);
-frustum_points.push([0, 0, 0]);
-frustum_points.push([-1 + jitter(), 1 + jitter(), 1 + jitter()]);
-frustum_points.push([-1, -1, 1]);
-frustum_points.push([1 + jitter(), -1 + jitter(), 1 + jitter()]);
-frustum_points.push([1, 1, 1]);
-
-const updir_points: [number, number, number][] = [];
-updir_points.push([-0.5, -1.2, 1]);
-updir_points.push([0.5, -1.2, 1]);
-updir_points.push([0.0, -1.5, 1]);
-updir_points.push([-0.5, -1.2, 1]);
-
-/** Helper for visualizing camera frustums.
-
-Note that:
- - This is currently just a pyramid, not a frustum. :-)
- - We currently draw two redundant/overlapping lines. This could be optimized. */
+const lineGeom = new THREE.CylinderGeometry(1.0, 1.0, 1.0, 3, 1);
+/** Helper for visualizing camera frustums. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,
   {
@@ -97,40 +72,60 @@ export const CameraFrustum = React.forwardRef<
 >(function CameraFrustum(props, ref) {
   const y = Math.tan(props.fov / 2.0);
   const x = y * props.aspect;
+  const z = 1.0;
+
+  function scaledLineSegments(points: [number, number, number][]) {
+    points = points.map((xyz) => [xyz[0] * x, xyz[1] * y, xyz[2] * z]);
+    return [...Array(points.length - 1).keys()].map((i) => (
+      <LineSegmentInstance
+        key={i}
+        radius={0.015 * props.scale}
+        start={new THREE.Vector3()
+          .fromArray(points[i])
+          .multiplyScalar(props.scale)}
+        end={new THREE.Vector3()
+          .fromArray(points[i + 1])
+          .multiplyScalar(props.scale)}
+        color={props.color}
+      />
+    ));
+  }
+
   return (
     <group ref={ref}>
-      <mesh
-        scale={new THREE.Vector3(props.scale * x, props.scale * y, props.scale)}
-      >
-        {/* @ts-ignore */}
-        <meshLine attach="geometry" points={frustum_points} />
-        {/* @ts-ignore */}
-        <meshLineMaterial
-          attach="material"
-          transparent
-          lineWidth={0.015}
-          color={props.color}
-        />
-      </mesh>
-      <mesh
-        raycast={MeshLineRaycast}
-        scale={new THREE.Vector3(props.scale * x, props.scale * y, props.scale)}
-      >
-        {/* @ts-ignore */}
-        <meshLine attach="geometry" points={updir_points} />
-        {/* @ts-ignore */}
-        <meshLineMaterial
-          attach="material"
-          transparent
-          lineWidth={0.015}
-          color={props.color}
-        />
-      </mesh>
+      <Instances limit={9} geometry={lineGeom}>
+        <meshBasicMaterial color={props.color} />
+        {scaledLineSegments([
+          // Rectangle.
+          [-1, -1, 1],
+          [1, -1, 1],
+          [1, 1, 1],
+          [-1, 1, 1],
+          [-1, -1, 1],
+        ])}
+        {scaledLineSegments([
+          // Lines to origin.
+          [-1, -1, 1],
+          [0, 0, 0],
+          [1, -1, 1],
+        ])}
+        {scaledLineSegments([
+          // Lines to origin.
+          [-1, 1, 1],
+          [0, 0, 0],
+          [1, 1, 1],
+        ])}
+        {scaledLineSegments([
+          // Up direction.
+          [0.0, -1.2, 1.0],
+          [0.0, -0.9, 1.0],
+        ])}
+      </Instances>
     </group>
   );
 });
 
-function CapsuleLine(props: {
+function LineSegmentInstance(props: {
   start: THREE.Vector3;
   end: THREE.Vector3;
   radius: number;
@@ -157,12 +152,11 @@ function CapsuleLine(props: {
   );
   return (
     <>
-      <group position={midpoint} quaternion={orientation}>
-        <mesh>
-          <capsuleGeometry args={[props.radius, length, 4, 8]} />
-          <meshBasicMaterial color={props.color} />
-        </mesh>
-      </group>
+      <Instance
+        position={midpoint}
+        quaternion={orientation}
+        scale={[props.radius, length, props.radius]}
+      />
     </>
   );
 }

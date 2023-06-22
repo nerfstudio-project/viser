@@ -1,4 +1,9 @@
-import { CameraControls, Environment } from "@react-three/drei";
+import {
+  AdaptiveDpr,
+  AdaptiveEvents,
+  CameraControls,
+  Environment,
+} from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
 import {
@@ -40,6 +45,8 @@ type ViewerContextContents = {
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null
 );
+
+THREE.ColorManagement.enabled = true;
 
 function SingleViewer() {
   // Default server logic.
@@ -109,7 +116,7 @@ function SingleViewer() {
                   : theme.colors.dark[4],
             })}
           >
-            <ScrollArea type="always" sx={{height: "100%"}}>
+            <ScrollArea type="always" sx={{ height: "100%" }}>
               <Box
                 p="sm"
                 sx={(theme) => ({
@@ -151,7 +158,10 @@ function ViewerCanvas() {
         width: "100%",
         height: "100%",
       }}
+      performance={{ min: 0.95 }}
     >
+      <AdaptiveDpr pixelated />
+      <AdaptiveEvents />
       <SceneContextSetter />
       <SynchronizedCameraControls />
       <Selection>
