@@ -74,7 +74,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         name: childName,
         visible: (
           <ActionIcon
-            onMouseDown={(evt) => {
+            onMouseDown={() => {
               const isVisible =
                 viewer.nodeAttributesFromName.current[childName]?.visibility ??
                 true;
