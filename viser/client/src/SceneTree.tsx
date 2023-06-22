@@ -307,7 +307,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
   useFrame(() => {
     if (obj === null) return;
 
-    const { wxyz, position } =
+    const { wxyz, position, visibility } =
       viewer.useSceneTree.getState().attributesFromName[props.name] ?? {};
 
     let changed = false;
@@ -326,16 +326,13 @@ export function SceneNodeThreeObject(props: { name: string }) {
     if (changed && !obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
   });
 
-  const visibility = viewer.useSceneTree(
-    (state) => state.attributesFromName[props.name]?.visibility
-  );
-  const clickable = viewer.useSceneTree(
-    (state) => state.attributesFromName[props.name]?.clickable
-  );
-
   // Clean up when done.
   React.useEffect(() => cleanup);
 
+  // Clicking logic.
+  const clickable = viewer.useSceneTree(
+    (state) => state.attributesFromName[props.name]?.clickable
+  );
   const sendClicksThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
     50
@@ -344,13 +341,22 @@ export function SceneNodeThreeObject(props: { name: string }) {
   useCursor(hovered);
   if (!clickable && hovered) setHovered(false);
 
+  // Helper for checking transient visibility checks.
+  function isVisible() {
+    return (
+      viewer.useSceneTree.getState().attributesFromName[props.name]
+        ?.visibility ?? false
+    );
+  }
+
   return (
     <>
       <group
         onClick={
-          !(visibility && clickable)
+          !clickable
             ? undefined
             : (e) => {
+                if (!isVisible()) return;
                 e.stopPropagation();
                 sendClicksThrottled({
                   type: "SceneNodeClickedMessage",
@@ -359,15 +365,21 @@ export function SceneNodeThreeObject(props: { name: string }) {
               }
         }
         onPointerOver={
-          !(visibility && clickable)
+          !clickable
             ? undefined
             : (e) => {
+                if (!isVisible()) return;
                 e.stopPropagation();
                 setHovered(true);
               }
         }
         onPointerOut={
-          !(visibility && clickable) ? undefined : () => setHovered(false)
+          !clickable
+            ? undefined
+            : () => {
+                if (!isVisible()) return;
+                setHovered(false);
+              }
         }
       >
         <Select enabled={hovered}>{objNode}</Select>
