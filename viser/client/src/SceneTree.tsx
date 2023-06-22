@@ -258,8 +258,11 @@ export function SceneNodeThreeObject(props: { name: string }) {
   );
 
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
-  const { visibility, clickable } = viewer.useSceneTree(
-    (state) => state.attributesFromName[props.name] || {}
+  const visibility = viewer.useSceneTree(
+    (state) => state.attributesFromName[props.name]?.visibility
+  );
+  const clickable = viewer.useSceneTree(
+    (state) => state.attributesFromName[props.name]?.clickable
   );
 
   // Hover state for clickable nodes.
