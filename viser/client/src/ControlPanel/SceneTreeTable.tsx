@@ -54,7 +54,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
   debouncedReady.current = false;
   setTimeout(() => {
     debouncedReady.current = true;
-  }, 50);
+  }, 5);
 
   function getSceneTreeSubRows(
     parentName: string,
@@ -81,6 +81,13 @@ export default function SceneTreeTable(props: { compact: boolean }) {
               if (debouncedReady.current) {
                 setVisible(childName, !isVisible);
               }
+            }}
+            onClick={(evt) => {
+              // Don't propagate click events to the row containing the icon.
+              //
+              // If we don't stop propagation, clicking the visibility icon
+              // will also expand/collapse nodes in the scene tree.
+              evt.stopPropagation();
             }}
             onMouseEnter={(event) => {
               if (event.buttons !== 0) {
@@ -239,9 +246,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                       color="green"
                       disabled={disabled}
                       variant="filled"
-                      onClick={(evt) => {
-                        evt.stopPropagation();
-                        evt.preventDefault();
+                      onClick={() => {
                         table.getSelectedRowModel().flatRows.map((row) => {
                           setVisible(row.getValue("name"), true);
                         });
@@ -253,9 +258,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                       color="gray"
                       disabled={disabled}
                       variant="filled"
-                      onClick={(evt) => {
-                        evt.stopPropagation();
-                        evt.preventDefault();
+                      onClick={() => {
                         table.getSelectedRowModel().flatRows.map((row) => {
                           setVisible(row.getValue("name"), false);
                         });
