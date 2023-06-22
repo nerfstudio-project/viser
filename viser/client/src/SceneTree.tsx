@@ -1,4 +1,4 @@
-import { createPortal } from "@react-three/fiber";
+import { createPortal, useFrame } from "@react-three/fiber";
 import { useCursor } from "@react-three/drei";
 import React from "react";
 import * as THREE from "three";
@@ -12,6 +12,7 @@ import { ViewerContext } from ".";
 import { makeThrottledMessageSender } from "./WebsocketInterface";
 import { Select } from "@react-three/postprocessing";
 import { Html } from "@react-three/drei";
+import { Text } from "@mantine/core";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>
@@ -228,12 +229,17 @@ function SceneNodeAttributeHandler(props: {
   name: string;
 }) {
   const viewer = React.useContext(ViewerContext)!;
-  const { visibility, wxyz, position, labelVisibility } = viewer.useSceneTree(
-    (state) => state.attributesFromName[props.name] || {}
+  const labelVisibility = viewer.useSceneTree(
+    (state) => state.attributesFromName[props.name]?.labelVisibility
   );
-
-  React.useEffect(() => {
+  const visibility = viewer.useSceneTree(
+    (state) => state.attributesFromName[props.name]?.visibility
+  );
+  useFrame(() => {
     if (props.obj === null) return;
+
+    const { wxyz, position } =
+      viewer.useSceneTree.getState().attributesFromName[props.name] ?? {};
 
     if (visibility !== undefined) props.obj.visible = visibility;
     if (wxyz !== undefined) props.obj.rotation.setFromQuaternion(wxyz);
@@ -243,11 +249,9 @@ function SceneNodeAttributeHandler(props: {
     // Update matrices if necessary. This is necessary for PivotControls.
     if (!props.obj.matrixAutoUpdate) props.obj.updateMatrix();
     if (!props.obj.matrixWorldAutoUpdate) props.obj.updateMatrixWorld();
-  }, [visibility, wxyz, position, props.obj]);
+  });
 
-  return (
-    <SceneNodeLabel visible={visibility && labelVisibility} text={props.name} />
-  );
+  return <SceneNodeLabel visible={labelVisibility} text={props.name} />;
 }
 
 /** Component containing the three.js object and children for a particular scene node. */
@@ -331,23 +335,22 @@ type SceneNodeLabelProps = {
 };
 
 export function SceneNodeLabel({ text, visible }: SceneNodeLabelProps) {
-  if (!visible || text.trim() === "") {
-    // Do not render label for object without name, e.g. root node
+  if (!visible) {
     return null;
   }
   return (
     <Html>
-      <p
+      <Text
         style={{
           backgroundColor: "rgba(240, 240, 240, 0.9)",
-          color: "#777",
-          padding: "10px 15px",
-          borderRadius: "5px",
+          borderRadius: "0.2rem",
           userSelect: "none",
         }}
+        px="xs"
+        py="0.1rem"
       >
         {text}
-      </p>
+      </Text>
     </Html>
   );
 }
