@@ -256,9 +256,5 @@ FloatingPanel.Contents = function FloatingPanelContents({
 }: {
   children: string | React.ReactNode;
 }) {
-  return (
-    <Box className="panel-contents">
-      {children}
-    </Box>
-  );
+  return <Box className="panel-contents">{children}</Box>;
 };

@@ -213,7 +213,9 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                       color="green"
                       disabled={disabled}
                       variant="filled"
-                      onClick={() => {
+                      onClick={(evt) => {
+                        evt.stopPropagation();
+                        evt.preventDefault();
                         table.getSelectedRowModel().flatRows.map((row) => {
                           setVisibility(row.getValue("name"), true);
                         });
@@ -225,7 +227,9 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                       color="gray"
                       disabled={disabled}
                       variant="filled"
-                      onClick={() => {
+                      onClick={(evt) => {
+                        evt.stopPropagation();
+                        evt.preventDefault();
                         table.getSelectedRowModel().flatRows.map((row) => {
                           setVisibility(row.getValue("name"), false);
                         });
