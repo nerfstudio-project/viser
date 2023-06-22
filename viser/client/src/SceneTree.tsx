@@ -24,6 +24,7 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
   [immerable] = true;
 
   public children: string[];
+  public clickable: boolean;
 
   constructor(
     public name: string,
@@ -31,29 +32,16 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
     public cleanup?: () => void
   ) {
     this.children = [];
+    this.clickable = false;
   }
 }
 
 interface SceneTreeState {
   nodeFromName: { [name: string]: undefined | SceneNode };
-  // Assignable attributes are defined separately from the node itself. This
-  // ensures that assignments can happen before a node is created.
-  attributesFromName: {
-    [name: string]:
-      | undefined
-      | {
-          visibility?: boolean;
-          wxyz?: THREE.Quaternion;
-          position?: THREE.Vector3;
-          clickable?: boolean;
-          labelVisibility?: boolean;
-        };
-  };
+  // Putting this into SceneNode makes the scene tree table much harder to implement.
+  labelVisibleFromName: { [name: string]: boolean };
 }
 export interface SceneTreeActions extends SceneTreeState {
-  setVisibility(name: string, visible: boolean): void;
-  setOrientation(name: string, wxyz: THREE.Quaternion): void;
-  setPosition(name: string, position: THREE.Vector3): void;
   setClickable(name: string, clickable: boolean): void;
   addSceneNode(nodes: SceneNode): void;
   removeSceneNode(name: string): void;
@@ -94,39 +82,11 @@ export function useSceneTreeState() {
       subscribeWithSelector(
         immer<SceneTreeState & SceneTreeActions>((set) => ({
           nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
-          attributesFromName: {
-            "": { visibility: true },
-            "/WorldAxes": { visibility: true },
-          },
-          setVisibility: (name, visibility) =>
-            set((state) => {
-              state.attributesFromName[name] = {
-                ...state.attributesFromName[name],
-                visibility: visibility,
-              };
-            }),
-          setOrientation: (name, wxyz) =>
-            set((state) => {
-              state.attributesFromName[name] = {
-                ...state.attributesFromName[name],
-                wxyz: wxyz,
-              };
-            }),
-          setPosition: (name, position) =>
-            set((state) => {
-              state.attributesFromName[name] = {
-                ...state.attributesFromName[name],
-
-                position: position,
-              };
-            }),
+          labelVisibleFromName: {},
           setClickable: (name, clickable) =>
             set((state) => {
-              state.attributesFromName[name] = {
-                ...state.attributesFromName[name],
-
-                clickable: clickable,
-              };
+              const node = state.nodeFromName[name];
+              if (node !== undefined) node.clickable = clickable;
             }),
           addSceneNode: (node) =>
             set((state) => {
@@ -144,10 +104,6 @@ export function useSceneTreeState() {
                 state.nodeFromName[node.name] = node;
                 state.nodeFromName[parent_name]!.children.push(node.name);
               }
-              state.attributesFromName[node.name] = {
-                visibility: true,
-                ...state.attributesFromName[node.name],
-              };
             }),
           removeSceneNode: (name) =>
             set((state) => {
@@ -188,10 +144,7 @@ export function useSceneTreeState() {
             }),
           setLabelVisibility: (name, labelVisibility) =>
             set((state) => {
-              state.attributesFromName[name] = {
-                ...state.attributesFromName[name],
-                labelVisibility: labelVisibility,
-              };
+              state.labelVisibleFromName[name] = labelVisibility;
             }),
         }))
       )
@@ -256,10 +209,10 @@ function SceneNodeThreeChildren(props: {
 /** Component for updating attributes of a scene node. */
 function SceneNodeLabel(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
-  const labelVisibility = viewer.useSceneTree(
-    (state) => state.attributesFromName[props.name]?.labelVisibility
+  const labelVisible = viewer.useSceneTree(
+    (state) => state.labelVisibleFromName[props.name]
   );
-  return labelVisibility ? (
+  return labelVisible ? (
     <Html>
       <Text
         style={{
@@ -285,6 +238,9 @@ export function SceneNodeThreeObject(props: { name: string }) {
   const cleanup = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.cleanup
   );
+  const clickable =
+    viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
+    false;
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
   // Create object + children.
@@ -305,18 +261,20 @@ export function SceneNodeThreeObject(props: { name: string }) {
   useFrame(() => {
     if (obj === null) return;
 
-    const { wxyz, position, visibility } =
-      viewer.useSceneTree.getState().attributesFromName[props.name] ?? {};
+    const nodeAttributes = viewer.nodeAttributesFromName.current[props.name];
+    const wxyz = nodeAttributes?.wxyz;
+    const position = nodeAttributes?.position;
+    const visibility = nodeAttributes?.visibility;
 
     let changed = false;
     if (visibility !== undefined) obj.visible = visibility;
     if (wxyz !== undefined) {
       changed = true;
-      obj.rotation.setFromQuaternion(wxyz);
+      obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
     }
     if (position !== undefined) {
       changed = true;
-      obj.position.set(position.x, position.y, position.z);
+      obj.position.set(position[0], position[1], position[2]);
     }
 
     // Update matrices if necessary. This is necessary for PivotControls.
@@ -328,9 +286,6 @@ export function SceneNodeThreeObject(props: { name: string }) {
   React.useEffect(() => cleanup);
 
   // Clicking logic.
-  const clickable = viewer.useSceneTree(
-    (state) => state.attributesFromName[props.name]?.clickable
-  );
   const sendClicksThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
     50
@@ -341,49 +296,57 @@ export function SceneNodeThreeObject(props: { name: string }) {
 
   // Helper for checking transient visibility checks.
   function isVisible() {
-    return (
-      viewer.useSceneTree.getState().attributesFromName[props.name]
-        ?.visibility ?? false
-    );
+    const nodeAttributes = viewer.nodeAttributesFromName.current[props.name];
+    return nodeAttributes?.visibility ?? false;
   }
 
-  return (
-    <>
-      <group
-        onClick={
-          !clickable
-            ? undefined
-            : (e) => {
-                if (!isVisible()) return;
-                e.stopPropagation();
-                sendClicksThrottled({
-                  type: "SceneNodeClickedMessage",
-                  name: props.name,
-                });
-              }
-        }
-        onPointerOver={
-          !clickable
-            ? undefined
-            : (e) => {
-                if (!isVisible()) return;
-                e.stopPropagation();
-                setHovered(true);
-              }
-        }
-        onPointerOut={
-          !clickable
-            ? undefined
-            : () => {
-                if (!isVisible()) return;
-                setHovered(false);
-              }
-        }
-      >
-        <Select enabled={hovered}>{objNode}</Select>
-      </group>
-      <SceneNodeLabel name={props.name} />
-      {children}
-    </>
-  );
+  if (clickable) {
+    return (
+      <>
+        <group
+          onClick={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isVisible()) return;
+                  e.stopPropagation();
+                  sendClicksThrottled({
+                    type: "SceneNodeClickedMessage",
+                    name: props.name,
+                  });
+                }
+          }
+          onPointerOver={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isVisible()) return;
+                  e.stopPropagation();
+                  setHovered(true);
+                }
+          }
+          onPointerOut={
+            !clickable
+              ? undefined
+              : () => {
+                  if (!isVisible()) return;
+                  setHovered(false);
+                }
+          }
+        >
+          <Select enabled={hovered}>{objNode}</Select>
+        </group>
+        <SceneNodeLabel name={props.name} />
+        {children}
+      </>
+    );
+  } else {
+    return (
+      <>
+        {objNode}
+        <SceneNodeLabel name={props.name} />
+        {children}
+      </>
+    );
+  }
 }

@@ -41,6 +41,15 @@ type ViewerContextContents = {
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
+  nodeAttributesFromName: React.MutableRefObject<{
+    [name: string]:
+      | undefined
+      | {
+          wxyz?: [number, number, number, number];
+          position?: [number, number, number];
+          visibility?: boolean;
+        };
+  }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null
@@ -73,6 +82,8 @@ function SingleViewer() {
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
+    // Scene node attributes that aren't placed in the zustand state, for performance reasons.
+    nodeAttributesFromName: React.useRef({}),
   };
   const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
   return (
@@ -166,7 +177,7 @@ function ViewerCanvas() {
       <SynchronizedCameraControls />
       <Selection>
         <SceneNodeThreeObject name="" />
-        {<EffectComposer enabled={true} autoClear={false}>
+        <EffectComposer enabled={true} autoClear={false}>
           <Outline
             hiddenEdgeColor={0xfbff00}
             visibleEdgeColor={0xfbff00}
@@ -176,8 +187,8 @@ function ViewerCanvas() {
             height={480}
             blur
           />
-        </EffectComposer> }
-       </Selection>
+        </EffectComposer>
+      </Selection>
       <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
     </Canvas>
   );
