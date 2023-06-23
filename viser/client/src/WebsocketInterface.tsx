@@ -1,5 +1,6 @@
 import AwaitLock from "await-lock";
 import { pack, unpack } from "msgpackr";
+
 import React, { MutableRefObject, useContext } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
@@ -92,9 +93,6 @@ function useMessageHandler() {
   const setGuiValue = viewer.useGui((state) => state.setGuiValue);
   const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
   const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
-  const setOrientation = viewer.useSceneTree((state) => state.setOrientation);
-  const setPosition = viewer.useSceneTree((state) => state.setPosition);
-  const setVisibility = viewer.useSceneTree((state) => state.setVisibility);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
@@ -401,27 +399,22 @@ function useMessageHandler() {
         return;
       }
       case "SetOrientationMessage": {
-        setOrientation(
-          message.name,
-          new THREE.Quaternion(
-            message.wxyz[1],
-            message.wxyz[2],
-            message.wxyz[3],
-            message.wxyz[0]
-          )
-        );
-        return;
+        const attr = viewer.nodeAttributesFromName.current;
+        if (attr[message.name] === undefined) attr[message.name] = {};
+        attr[message.name]!.wxyz = message.wxyz;
+        break;
       }
       case "SetPositionMessage": {
-        setPosition(
-          message.name,
-          new THREE.Vector3(
-            message.position[0],
-            message.position[1],
-            message.position[2]
-          )
-        );
-        return;
+        const attr = viewer.nodeAttributesFromName.current;
+        if (attr[message.name] === undefined) attr[message.name] = {};
+        attr[message.name]!.position = message.position;
+        break;
+      }
+      case "SetSceneNodeVisibilityMessage": {
+        const attr = viewer.nodeAttributesFromName.current;
+        if (attr[message.name] === undefined) attr[message.name] = {};
+        attr[message.name]!.visibility = message.visible;
+        break;
       }
       // Add a background image.
       case "BackgroundImageMessage": {
@@ -526,11 +519,6 @@ function useMessageHandler() {
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
-        return;
-      }
-      // Set the visibility of a particular scene node.
-      case "SetSceneNodeVisibilityMessage": {
-        setVisibility(message.name, message.visible);
         return;
       }
       // Set the clickability of a particular scene node.

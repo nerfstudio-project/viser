@@ -27,6 +27,8 @@ export default function ControlPanel() {
     showGenerated && setTabState("generated");
   }, [showGenerated]);
 
+  const MemoizedTable = React.memo(SceneTreeTable);
+
   return (
     <Tabs radius="xs" value={tabState} onTabChange={setTabState}>
       <Tabs.List>
@@ -54,7 +56,7 @@ export default function ControlPanel() {
       </Tabs.Panel>
 
       <Tabs.Panel value="scene" pt="xs" p="sm">
-        <SceneTreeTable compact={true} />
+        <MemoizedTable compact={true} />
       </Tabs.Panel>
     </Tabs>
   );

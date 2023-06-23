@@ -1,4 +1,10 @@
-import { CameraControls, Environment } from "@react-three/drei";
+import {
+  AdaptiveDpr,
+  AdaptiveEvents,
+  CameraControls,
+  Environment,
+} from "@react-three/drei";
+import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
 import {
   EffectComposer,
@@ -6,7 +12,6 @@ import {
   Selection,
 } from "@react-three/postprocessing";
 import { BlendFunction, KernelSize } from "postprocessing";
-import * as THREE from "three";
 
 import { SynchronizedCameraControls } from "./CameraControls";
 import { Box, MantineProvider, ScrollArea } from "@mantine/core";
@@ -36,10 +41,21 @@ type ViewerContextContents = {
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
+  nodeAttributesFromName: React.MutableRefObject<{
+    [name: string]:
+      | undefined
+      | {
+          wxyz?: [number, number, number, number];
+          position?: [number, number, number];
+          visibility?: boolean;
+        };
+  }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null
 );
+
+THREE.ColorManagement.enabled = true;
 
 function SingleViewer() {
   // Default server logic.
@@ -66,6 +82,8 @@ function SingleViewer() {
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
+    // Scene node attributes that aren't placed in the zustand state, for performance reasons.
+    nodeAttributesFromName: React.useRef({}),
   };
   const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
   return (
@@ -151,7 +169,10 @@ function ViewerCanvas() {
         width: "100%",
         height: "100%",
       }}
+      performance={{ min: 0.95 }}
     >
+      <AdaptiveDpr pixelated />
+      <AdaptiveEvents />
       <SceneContextSetter />
       <SynchronizedCameraControls />
       <Selection>

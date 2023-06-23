@@ -22,18 +22,39 @@ interface SceneTreeTableRow {
 export default function SceneTreeTable(props: { compact: boolean }) {
   const viewer = React.useContext(ViewerContext)!;
 
-  const attributesFromName = viewer.useSceneTree(
-    (state) => state.attributesFromName
-  );
   const nodeFromName = viewer.useSceneTree((state) => state.nodeFromName);
-  const setVisibility = viewer.useSceneTree((state) => state.setVisibility);
+  const setLabelVisibility = viewer.useSceneTree(
+    (state) => state.setLabelVisibility
+  );
+  function setVisible(name: string, visible: boolean) {
+    const attrs = viewer.nodeAttributesFromName.current[name];
+    if (attrs !== undefined) {
+      attrs.visibility = visible;
+      rerenderTable();
+    }
+  }
+
+  // For performance, scene node visibility is stored in a ref instead of the
+  // zustand state. This means that re-renders for the table need to be
+  // triggered manually when visibilities are updated.
+  const [, setTime] = React.useState(Date.now());
+  function rerenderTable() {
+    setTime(Date.now());
+  }
+  React.useEffect(() => {
+    const interval = setInterval(rerenderTable, 500);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   // Debouncing to suppress onMouseEnter and onMouseDown events from
   // re-renders.
-  let debouncedReady = false;
+  const debouncedReady = React.useRef(false);
+  debouncedReady.current = false;
   setTimeout(() => {
-    debouncedReady = true;
-  }, 50);
+    debouncedReady.current = true;
+  }, 5);
 
   function getSceneTreeSubRows(
     parentName: string,
@@ -44,16 +65,9 @@ export default function SceneTreeTable(props: { compact: boolean }) {
     if (node === undefined) return [];
 
     return node.children.map((childName) => {
-      const isVisible = attributesFromName[childName]?.visibility
-        ? true
-        : false;
+      const isVisible =
+        viewer.nodeAttributesFromName.current[childName]?.visibility ?? true;
       const isVisibleEffective = isVisible && isParentVisible;
-
-      const mouseEnter = (event: React.MouseEvent) => {
-        if (event.buttons !== 0) {
-          debouncedReady && setVisibility(childName, !isVisible);
-        }
-      };
 
       const VisibleIcon = isVisible ? IconEye : IconEyeOff;
       return {
@@ -61,11 +75,33 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         visible: (
           <ActionIcon
             onMouseDown={() => {
-              debouncedReady && setVisibility(childName, !isVisible);
+              const isVisible =
+                viewer.nodeAttributesFromName.current[childName]?.visibility ??
+                true;
+              if (debouncedReady.current) {
+                setVisible(childName, !isVisible);
+              }
+            }}
+            onClick={(evt) => {
+              // Don't propagate click events to the row containing the icon.
+              //
+              // If we don't stop propagation, clicking the visibility icon
+              // will also expand/collapse nodes in the scene tree.
+              evt.stopPropagation();
+            }}
+            onMouseEnter={(event) => {
+              if (event.buttons !== 0) {
+                const isVisible =
+                  viewer.nodeAttributesFromName.current[childName]
+                    ?.visibility ?? true;
+                if (debouncedReady.current) {
+                  setVisible(childName, !isVisible);
+                }
+              }
             }}
             sx={{ opacity: isVisibleEffective ? "1.0" : "0.5" }}
           >
-            <VisibleIcon onMouseEnter={mouseEnter} />
+            <VisibleIcon />
           </ActionIcon>
         ),
         subRows: getSceneTreeSubRows(
@@ -169,8 +205,14 @@ export default function SceneTreeTable(props: { compact: boolean }) {
           showRowsPerPage: false,
           showFirstLastPageButtons: false,
         }}
-        mantineTableBodyRowProps={({ row }) =>
-          row.subRows === undefined || row.subRows.length === 0
+        mantineTableBodyRowProps={({ row }) => ({
+          onPointerOver: () => {
+            setLabelVisibility(row.getValue("name"), true);
+          },
+          onPointerOut: () => {
+            setLabelVisibility(row.getValue("name"), false);
+          },
+          ...(row.subRows === undefined || row.subRows.length === 0
             ? {}
             : {
                 onClick: () => {
@@ -179,8 +221,8 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                 sx: {
                   cursor: "pointer",
                 },
-              }
-        }
+              }),
+        })}
         enableFullScreenToggle={false}
         // Show/hide buttons.
         renderTopToolbarCustomActions={
@@ -206,7 +248,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                       variant="filled"
                       onClick={() => {
                         table.getSelectedRowModel().flatRows.map((row) => {
-                          setVisibility(row.getValue("name"), true);
+                          setVisible(row.getValue("name"), true);
                         });
                       }}
                     >
@@ -218,7 +260,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                       variant="filled"
                       onClick={() => {
                         table.getSelectedRowModel().flatRows.map((row) => {
-                          setVisibility(row.getValue("name"), false);
+                          setVisible(row.getValue("name"), false);
                         });
                       }}
                     >
