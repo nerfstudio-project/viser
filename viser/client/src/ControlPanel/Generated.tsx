@@ -199,6 +199,8 @@ function GeneratedInput({ conf }: { conf: GuiConfig }) {
           size="xs"
           onChange={updateValue}
           disabled={disabled}
+          stepHoldDelay={500}
+          stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
         />
       );
       break;
