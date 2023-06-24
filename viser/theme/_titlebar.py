@@ -7,7 +7,6 @@ class TitlebarButton(TypedDict):
     text: Optional[str]
     icon: Optional[Literal["GitHub", "Description", "Keyboard"]]
     href: Optional[str]
-    variant: Optional[Literal["text", "contained", "outlined"]]
 
 
 class TitlebarImage(TypedDict):

@@ -15,19 +15,16 @@ buttons = (
         text="Getting Started",
         icon=None,
         href="https://nerf.studio",
-        variant="outlined",
     ),
     TitlebarButton(
         text="Github",
         icon="GitHub",
         href="https://github.com/nerfstudio-project/nerfstudio",
-        variant="outlined",
     ),
     TitlebarButton(
         text="Documentation",
         icon="Description",
         href="https://docs.nerf.studio",
-        variant="outlined",
     ),
 )
 image = TitlebarImage(
@@ -35,6 +32,8 @@ image = TitlebarImage(
     image_alt="NerfStudio Logo",
     href="https://docs.nerf.studio/",
 )
+
+# image = None
 
 titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 

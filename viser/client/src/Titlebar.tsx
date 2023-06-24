@@ -1,12 +1,13 @@
 import { useContext } from "react";
 import { ViewerContext } from ".";
 import { Message } from "./WebsocketMessages";
-import { Box, Button } from "@mantine/core";
+import { Anchor, Box, Burger, Button, Container, Group, Header, NavLink, Navbar, Paper, Portal, Text, UnstyledButton } from "@mantine/core";
 import {
   IconBrandGithub,
   IconFileDescription,
   IconKeyboard,
 } from "@tabler/icons-react";
+import { useDisclosure } from "@mantine/hooks";
 
 // Type helpers.
 type ArrayElement<ArrayType extends readonly unknown[]> =
@@ -19,12 +20,9 @@ function assertUnreachable(x: never): never {
   throw new Error("Didn't expect to get here", x);
 }
 
-// We inherit props directly from message contents.
-export function TitlebarButton(
-  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>
-) {
+function getIcon(icon: ArrayElement<NoNull<TitlebarContent["buttons"]>>["icon"]) {
   let Icon = null;
-  switch (props.icon) {
+  switch (icon) {
     case null:
       break;
     case "GitHub":
@@ -37,16 +35,50 @@ export function TitlebarButton(
       Icon = IconKeyboard;
       break;
     default:
-      assertUnreachable(props.icon);
+      assertUnreachable(icon);
   }
+  return Icon;
+}
+
+
+// We inherit props directly from message contents.
+export function TitlebarButton(
+  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>
+) {
+  const Icon = getIcon(props.icon);
   return (
     <Button
       component="a"
-      variant="outline"
+      variant="default"
       href={props.href || undefined}
       compact
       target="_blank"
       leftIcon={Icon === null ? null : <Icon size="1em" />}
+      ml="sm"
+      color="gray"
+      sx={(theme) => ({
+        [theme.fn.smallerThan('sm')]: {
+          display: "none",
+        }
+      })}
+    >
+      {props.text}
+    </Button>
+  );
+}
+
+export function MobileTitlebarButton(
+  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>
+) {
+  const Icon = getIcon(props.icon);
+  return (
+  <Button
+      m="sm"
+      component="a"
+      variant="default"
+      href={props.href || undefined}
+      target="_blank"
+      leftIcon={Icon === null ? null : <Icon size="1.5em" />}
       ml="sm"
       color="gray"
     >
@@ -76,6 +108,8 @@ export function Titlebar() {
   const viewer = useContext(ViewerContext)!;
   const content = viewer.useGui((state) => state.theme.titlebar_content);
 
+  const [burgerOpen, burgerHandlers] = useDisclosure(false);
+
   if (content == null) {
     return null;
   }
@@ -84,22 +118,60 @@ export function Titlebar() {
   const imageData = content.image;
 
   return (
-    <Box
-      p="xs"
-      sx={(theme) => ({
-        width: "100%",
-        margin: 0,
+    <Header p="xs" height="3.2em" sx={(theme) => ({
+      margin: 0,
+      borderBottom: "1px solid",
+      borderColor:
+        theme.colorScheme == "light"
+          ? theme.colors.gray[4]
+          : theme.colors.dark[4],
+    })}>
+      <Container fluid sx={(theme) => ({
         display: "flex",
-        alignItems: "center",
-        borderBottom: "1px solid",
-        borderColor:
-          theme.colorScheme == "light"
-            ? theme.colors.gray[4]
-            : theme.colors.dark[4],
-      })}
-    >
-      {imageData !== null ? TitlebarImage(imageData) : null}
-      {buttons?.map((btn) => TitlebarButton(btn))}
-    </Box>
+        alignItems: "center"
+      })}>
+        <Group sx={(theme) => ({ marginRight: "auto" })}>
+          {imageData !== null ? TitlebarImage(imageData) : null}
+        </Group>
+        <Group sx={(theme) => ({
+          flexWrap: 'nowrap',
+          overflowX: "scroll",
+          msOverflowStyle: "none",
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": {
+            display: "none"
+          }
+        })}>
+          {buttons?.map((btn) => TitlebarButton(btn))}
+        </Group>
+        <Burger size="sm"
+          opened={burgerOpen}
+          onClick={burgerHandlers.toggle}
+          title={!burgerOpen ? "Open navigation" : "Close navigation"}
+          sx={(theme) => ({
+            [theme.fn.largerThan('sm')]: {
+              display: "none",
+            }
+          })}></Burger>
+      </Container>
+      <Paper sx={(theme) => ({
+        [theme.fn.largerThan('sm')]: {
+          display: "none"
+        },
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+        top: 0,
+        left: "-0.625rem",
+        zIndex: 10000000,
+        height: burgerOpen ? "calc(100vh - 2.375em)" : '0',
+        width: "100vw",
+        transition: "all 0.5s",
+        overflow: burgerOpen ? "scroll" : "hidden",
+        padding: burgerOpen ? "1rem" : "0"
+      })}>
+        {buttons?.map((btn) => MobileTitlebarButton(btn))}
+      </Paper>
+    </Header>
   );
 }
