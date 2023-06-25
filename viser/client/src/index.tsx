@@ -3,9 +3,10 @@ import {
   AdaptiveEvents,
   CameraControls,
   Environment,
+  useTexture
 } from "@react-three/drei";
 import * as THREE from "three";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   EffectComposer,
   Outline,
@@ -14,7 +15,7 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
-import React from "react";
+import React, { useRef, useContext} from "react";
 import { createRoot } from "react-dom/client";
 import { Box, MantineProvider, ScrollArea } from "@mantine/core";
 
@@ -33,6 +34,7 @@ import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
 
 import { Titlebar } from "./Titlebar";
 import FloatingPanel from "./ControlPanel/FloatingPanel";
+import { extend } from "dayjs";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -171,6 +173,7 @@ function ViewerCanvas() {
       }}
       performance={{ min: 0.95 }}
     >
+      <NeRFImage />
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
       <SceneContextSetter />
@@ -194,6 +197,56 @@ function ViewerCanvas() {
   );
 }
 
+function NeRFImage(){
+  // Create a fragment shader that composites depth using nerfDepth and nerfColor
+  const fragShader = `  
+  uniform sampler2D nerfColor;
+  uniform sampler2D nerfDepth;
+  void main() {
+    // TODO don't hardcode the texture size
+    vec2 point = gl_FragCoord.xy;
+    point.x = point.x / 1920.0;
+    point.y = point.y / 1200.0;
+    // TODO sampling is messed up, the coordinate frame of a texture is in the top left and I'm using
+    // middle coordinate origin I think
+    float depth = texture2D( nerfDepth, point ).x;
+    vec4 color = texture2D( nerfColor, point );
+    gl_FragColor = vec4(color.rgb, 1.0);
+    // TODO make sure the scale matches viser scale
+    gl_FragDepth = 1.0 - depth;
+  }`.trim();
+  const nerfMaterial = new THREE.ShaderMaterial({
+    fragmentShader: fragShader,
+    uniforms: {
+      nerfDepth: {value: null},
+      nerfColor: {value: null},
+    }
+  });
+  // For now just load a static texture, TODO make these update from nerf websocket
+  const img = useTexture("turtle.jpeg");
+  const depth = useTexture("turtle_depth.png");
+  nerfMaterial.uniforms.nerfColor.value = img;
+  nerfMaterial.uniforms.nerfDepth.value = depth;
+  const nerfMesh = useRef<THREE.Mesh>(null);
+  useFrame(({camera}) => {
+    // Update the position of the mesh based on the camera position
+    const lookdir = camera.getWorldDirection(new THREE.Vector3());
+    nerfMesh.current!.position.set(camera.position.x,camera.position.y,camera.position.z);
+    // TODO make the plane perfectly fill the screen, handle resizing, etc
+    nerfMesh.current!.position.addScaledVector(lookdir,1.0);
+    nerfMesh.current!.quaternion.copy(camera.quaternion);
+  });
+  return <mesh
+            ref={nerfMesh}
+            material={nerfMaterial}
+            matrixWorldAutoUpdate={false}
+          >
+            <planeGeometry
+              attach="geometry"
+              args={[1 , 1]}
+            />
+          </mesh>
+}
 /** Component for helping us set the scene reference. */
 function SceneContextSetter() {
   const { sceneRef, cameraRef } = React.useContext(ViewerContext)!;
