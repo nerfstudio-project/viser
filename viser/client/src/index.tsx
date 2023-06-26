@@ -199,24 +199,29 @@ function ViewerCanvas() {
 
 function NeRFImage(){
   // Create a fragment shader that composites depth using nerfDepth and nerfColor
+  const vertShader = `
+  varying vec2 vUv;
+
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+  `.trim();
   const fragShader = `  
+  varying vec2 vUv;
   uniform sampler2D nerfColor;
   uniform sampler2D nerfDepth;
   void main() {
-    // TODO don't hardcode the texture size
-    vec2 point = gl_FragCoord.xy;
-    point.x = point.x / 1920.0;
-    point.y = point.y / 1200.0;
-    // TODO sampling is messed up, the coordinate frame of a texture is in the top left and I'm using
-    // middle coordinate origin I think
-    float depth = texture2D( nerfDepth, point ).x;
-    vec4 color = texture2D( nerfColor, point );
+    float depth = texture2D( nerfDepth, vUv ).x;
+    vec4 color = texture2D( nerfColor, vUv );
     gl_FragColor = vec4(color.rgb, 1.0);
     // TODO make sure the scale matches viser scale
-    gl_FragDepth = 1.0 - depth;
+    // this 1.0-depth is just for the static depth image, for nerf it should just be depth
+    gl_FragDepth = 2.0*(1.0 - depth);
   }`.trim();
   const nerfMaterial = new THREE.ShaderMaterial({
     fragmentShader: fragShader,
+    vertexShader: vertShader,
     uniforms: {
       nerfDepth: {value: null},
       nerfColor: {value: null},
