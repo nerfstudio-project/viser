@@ -7,7 +7,6 @@ import {
   IconFileDescription,
   IconKeyboard,
 } from "@tabler/icons-react";
-import { useColorScheme } from "@mantine/hooks";
 
 // Type helpers.
 type ArrayElement<ArrayType extends readonly unknown[]> =

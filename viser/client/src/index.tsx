@@ -211,7 +211,7 @@ function Root() {
       withGlobalStyles
       withNormalizeCSS
       theme={{
-        colorScheme: "dark",
+        colorScheme: "light",
       }}
     >
       <Box
