@@ -180,7 +180,12 @@ interface ThemeConfigurationMessage {
           variant: "text" | "contained" | "outlined" | null;
         }[]
       | null;
-    image: { image_url: string; image_alt: string; href: string | null } | null;
+    image: {
+      image_url: string;
+      dark_image_url: string | null;
+      image_alt: string;
+      href: string | null;
+    } | null;
   } | null;
   fixed_sidebar: boolean;
 }

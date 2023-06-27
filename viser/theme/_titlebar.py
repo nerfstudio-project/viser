@@ -14,6 +14,7 @@ class TitlebarImage(TypedDict):
     """An image that appears on the titlebar."""
 
     image_url: str
+    dark_image_url: Optional[str]
     image_alt: str
     href: Optional[str]
 

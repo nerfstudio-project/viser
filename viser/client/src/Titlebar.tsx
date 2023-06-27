@@ -1,12 +1,13 @@
 import { useContext } from "react";
 import { ViewerContext } from ".";
 import { Message } from "./WebsocketMessages";
-import { Box, Button } from "@mantine/core";
+import { Box, Button, MantineTheme, useMantineTheme } from "@mantine/core";
 import {
   IconBrandGithub,
   IconFileDescription,
   IconKeyboard,
 } from "@tabler/icons-react";
+import { useColorScheme } from "@mantine/hooks";
 
 // Type helpers.
 type ArrayElement<ArrayType extends readonly unknown[]> =
@@ -55,17 +56,24 @@ export function TitlebarButton(
   );
 }
 
-export function TitlebarImage(props: NoNull<TitlebarContent["image"]>) {
+export function TitlebarImage(props: NoNull<TitlebarContent["image"]>, theme: MantineTheme) {
+  let imageSource: string;
+  if (props.dark_image_url == null || theme.colorScheme == "light") {
+    imageSource = props.image_url
+  } else {
+    imageSource = props.dark_image_url
+  }
   const image = (
     <img
-      src={props.image_url}
+      src={imageSource}
       alt={props.image_alt}
       style={{
         height: "1.8em",
         margin: "0 0.5em",
       }}
     />
-  );
+  )
+
   if (props.href == null) {
     return image;
   }
@@ -75,6 +83,7 @@ export function TitlebarImage(props: NoNull<TitlebarContent["image"]>) {
 export function Titlebar() {
   const viewer = useContext(ViewerContext)!;
   const content = viewer.useGui((state) => state.theme.titlebar_content);
+  const theme = useMantineTheme();
 
   if (content == null) {
     return null;
@@ -98,7 +107,7 @@ export function Titlebar() {
             : theme.colors.dark[4],
       })}
     >
-      {imageData !== null ? TitlebarImage(imageData) : null}
+      {imageData !== null ? TitlebarImage(imageData, theme) : null}
       {buttons?.map((btn) => TitlebarButton(btn))}
     </Box>
   );
