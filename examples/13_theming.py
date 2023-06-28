@@ -32,6 +32,7 @@ buttons = (
 )
 image = TitlebarImage(
     image_url="https://docs.nerf.studio/en/latest/_static/imgs/logo.png",
+    dark_image_url=None,
     image_alt="NerfStudio Logo",
     href="https://docs.nerf.studio/",
 )

@@ -55,12 +55,15 @@ export function TitlebarButton(
   );
 }
 
-export function TitlebarImage(props: NoNull<TitlebarContent["image"]>, theme: MantineTheme) {
+export function TitlebarImage(
+  props: NoNull<TitlebarContent["image"]>,
+  theme: MantineTheme
+) {
   let imageSource: string;
   if (props.dark_image_url == null || theme.colorScheme == "light") {
-    imageSource = props.image_url
+    imageSource = props.image_url;
   } else {
-    imageSource = props.dark_image_url
+    imageSource = props.dark_image_url;
   }
   const image = (
     <img
@@ -71,7 +74,7 @@ export function TitlebarImage(props: NoNull<TitlebarContent["image"]>, theme: Ma
         margin: "0 0.5em",
       }}
     />
-  )
+  );
 
   if (props.href == null) {
     return image;
