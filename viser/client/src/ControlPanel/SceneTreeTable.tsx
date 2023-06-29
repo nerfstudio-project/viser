@@ -1,4 +1,6 @@
+import { ViewerContext } from "..";
 import { ActionIcon, Modal } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import {
   IconCaretDown,
   IconCaretRight,
@@ -9,8 +11,6 @@ import {
 import { MantineReactTable } from "mantine-react-table";
 import { MRT_ColumnDef } from "mantine-react-table";
 import React from "react";
-import { ViewerContext } from "..";
-import { useDisclosure } from "@mantine/hooks";
 
 interface SceneTreeTableRow {
   name: string;
@@ -135,7 +135,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
               <CaretIcon
                 style={{
                   opacity: row.subRows?.length === 0 ? "0.0" : "0.4",
-                  marginLeft: (0.75 * row.depth).toString() + "em",
+                  marginLeft: `${(0.75 * row.depth).toString()}em`,
                 }}
                 size="1em"
               />
@@ -147,9 +147,9 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                   // selecting text when dragging over the hide/show icons.
                   <span key={index} style={{ userSelect: "none" }}>
                     <span style={{ opacity: "0.4" }}>
-                      {index == all.length - 1 ? "/" : "/" + part}
+                      {index === all.length - 1 ? "/" : `/${part}`}
                     </span>
-                    {index == all.length - 1 ? part : ""}
+                    {index === all.length - 1 ? part : ""}
                   </span>
                 ))}
             </>
@@ -239,7 +239,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                 //     table.getIsSomeRowsSelected()
                 //
                 const disabled =
-                  table.getFilteredSelectedRowModel().flatRows.length == 0;
+                  table.getFilteredSelectedRowModel().flatRows.length === 0;
                 return (
                   <div style={{ display: "flex", gap: "8px" }}>
                     <ActionIcon

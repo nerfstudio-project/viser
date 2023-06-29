@@ -1,16 +1,16 @@
-import React from "react";
 import { ViewerContext } from "..";
 import { isTexture } from "../WebsocketInterface";
+import { Button, Stack, Switch, TextInput } from "@mantine/core";
 import { Stats } from "@react-three/drei";
-import { TextInput, Button, Stack, Switch } from "@mantine/core";
 import { IconPhoto } from "@tabler/icons-react";
+import React from "react";
 
 export default function ServerControls() {
   const viewer = React.useContext(ViewerContext)!;
   const [showStats, setShowStats] = React.useState(false);
 
   function triggerBlur(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key != "Enter") return;
+    if (event.key !== "Enter") return;
     event.currentTarget.blur();
     event.currentTarget.focus();
   }
@@ -37,14 +37,13 @@ export default function ServerControls() {
         />
         <Button
           onClick={() => {
-            if (!isTexture(viewer.sceneRef.current!.background)) {
+            if (!isTexture(viewer.sceneRef.current?.background)) {
               // This should never happen.
               alert("No background to download!");
               return;
             }
 
-            const data = viewer.sceneRef.current!.background.image.src;
-            console.log(data);
+            const data = viewer.sceneRef.current?.background.image.src;
             const link = document.createElement("a");
             link.download = "background";
             link.href = data;

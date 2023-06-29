@@ -1,18 +1,18 @@
-import { createPortal, useFrame } from "@react-three/fiber";
 import { useCursor } from "@react-three/drei";
+import { createPortal, useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
 import { CoordinateFrame } from "./ThreeAssets";
 
+import { ViewerContext } from ".";
+import { makeThrottledMessageSender } from "./WebsocketInterface";
+import { Html } from "@react-three/drei";
+import { Select } from "@react-three/postprocessing";
 import { immerable } from "immer";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-import { ViewerContext } from ".";
-import { makeThrottledMessageSender } from "./WebsocketInterface";
-import { Select } from "@react-three/postprocessing";
-import { Html } from "@react-three/drei";
 import { Text } from "@mantine/core";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
