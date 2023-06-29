@@ -237,10 +237,11 @@
     <span class="n">TYPE_CHECKING</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">,</span>
-    <span class="n">Dict</span><span class="p">,</span>
     <span class="n">Generic</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
     <span class="n">List</span><span class="p">,</span>
     <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
     <span class="n">Type</span><span class="p">,</span>
     <span class="n">TypeVar</span><span class="p">,</span>
     <span class="n">Union</span><span class="p">,</span>
@@ -249,8 +250,9 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 
 <span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">GuiAddDropdownMessage</span><span class="p">,</span>
     <span class="n">GuiRemoveMessage</span><span class="p">,</span>
-    <span class="n">GuiSetLevaConfMessage</span><span class="p">,</span>
+    <span class="n">GuiSetDisabledMessage</span><span class="p">,</span>
     <span class="n">GuiSetValueMessage</span><span class="p">,</span>
     <span class="n">GuiSetVisibleMessage</span><span class="p">,</span>
 <span class="p">)</span>
@@ -268,20 +270,17 @@
 <span class="k">class</span> <span class="nc">_GuiHandleState</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal API for GUI elements.&quot;&quot;&quot;</span>
 
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">typ</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
     <span class="n">api</span><span class="p">:</span> <span class="n">MessageApi</span>
     <span class="n">value</span><span class="p">:</span> <span class="n">T</span>
     <span class="n">update_timestamp</span><span class="p">:</span> <span class="nb">float</span>
 
-    <span class="n">folder_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">folder_labels</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Name of the folders this GUI input was placed into.&quot;&quot;&quot;</span>
 
     <span class="n">update_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Registered functions to call when this input is updated.&quot;&quot;&quot;</span>
-
-    <span class="n">leva_conf</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Input config for Leva.&quot;&quot;&quot;</span>
 
     <span class="n">is_button</span><span class="p">:</span> <span class="nb">bool</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates a button element, which requires special handling.&quot;&quot;&quot;</span>
@@ -292,16 +291,13 @@
     <span class="n">cleanup_cb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to call when GUI element is removed.&quot;&quot;&quot;</span>
 
-    <span class="c1"># Encoder: run on outgoing message values.</span>
-    <span class="c1"># Decoder: run on incoming message values.</span>
-    <span class="c1">#</span>
-    <span class="c1"># This helps us handle cases where types used by Leva don&#39;t match what we want to</span>
-    <span class="c1"># expose as a Python API.</span>
-    <span class="n">encoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span>
-    <span class="n">decoder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">T</span><span class="p">]</span>
-
     <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span>
+
+    <span class="n">order</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">initial_value</span><span class="p">:</span> <span class="n">T</span>
+    <span class="n">hint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -340,7 +336,7 @@
         <span class="c1"># Send to client, except for buttons.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">is_button</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-                <span class="n">GuiSetValueMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">encoder</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+                <span class="n">GuiSetValueMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
             <span class="p">)</span>
 
         <span class="c1"># Set internal state. We automatically convert numpy arrays to the expected</span>
@@ -370,16 +366,7 @@
         <span class="k">if</span> <span class="n">disabled</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">disabled</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">is_button</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">leva_conf</span><span class="p">[</span><span class="s2">&quot;settings&quot;</span><span class="p">][</span><span class="s2">&quot;disabled&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">disabled</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-                <span class="n">GuiSetLevaConfMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">leva_conf</span><span class="p">),</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">leva_conf</span><span class="p">[</span><span class="s2">&quot;disabled&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">disabled</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-                <span class="n">GuiSetLevaConfMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">leva_conf</span><span class="p">),</span>
-            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiSetDisabledMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="n">disabled</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">disabled</span>
 
     <span class="nd">@property</span>
@@ -393,12 +380,12 @@
         <span class="k">if</span> <span class="n">visible</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">visible</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiSetVisibleMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="n">visible</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiSetVisibleMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="n">visible</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">visible</span>
 
     <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this GUI element from the visualizer.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">cleanup_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">cleanup_cb</span><span class="p">()</span>
 
@@ -464,10 +451,10 @@
 
 <span class="sd">    Lets us get values, set values, and detect updates.&quot;&quot;&quot;</span>
 
-    <span class="n">_impl_options</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">StringType</span><span class="p">]</span>
+    <span class="n">_impl_options</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">StringType</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">StringType</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">StringType</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Options for our dropdown. Synchronized automatically when assigned.</span>
 
 <span class="sd">        For projects that care about typing: the static type of `options` should be</span>
@@ -478,22 +465,25 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span>
 
     <span class="nd">@options</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">StringType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span> <span class="o">=</span> <span class="n">options</span>
+    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">StringType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">initial_value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">initial_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="c1"># Make sure initial value is in options.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">leva_conf</span><span class="p">[</span><span class="s2">&quot;options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">leva_conf</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">leva_conf</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-        <span class="c1"># Update options.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-            <span class="n">GuiSetLevaConfMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">leva_conf</span><span class="p">),</span>
+            <span class="n">GuiAddDropdownMessage</span><span class="p">(</span>
+                <span class="n">order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+                <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+                <span class="n">folder_labels</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">folder_labels</span><span class="p">,</span>
+                <span class="n">hint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">hint</span><span class="p">,</span>
+                <span class="n">initial_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">initial_value</span><span class="p">,</span>
+                <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="c1"># Make sure current value is in options.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 </pre></div>
         </article>
       </div>
