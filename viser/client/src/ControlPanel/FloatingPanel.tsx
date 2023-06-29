@@ -87,7 +87,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     parentSize: number
   ) =>
     Math.abs(panelPosition + panelSize / 2.0) <
-    Math.abs(panelPosition - parentSize + panelSize / 2.0)
+      Math.abs(panelPosition - parentSize + panelSize / 2.0)
       ? panelPosition
       : panelPosition - parentSize;
   const panelBoundaryPad = 15;
@@ -162,6 +162,61 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     };
   });
 
+  interface DragEvents { move: "touchmove" | "mousemove", end: "touchend" | "mousedown" }
+  const touchEvents: DragEvents = { move: "touchmove", end: "touchend" }
+  const mouseEvents: DragEvents = { move: "mousemove", end: "mousedown" }
+  const dragHandler = (event: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const state = dragInfo.current;
+    const panel = panelWrapperRef.current;
+    if (!panel) return;
+    if (event.type == "touchstart") {
+      event = event as React.TouchEvent<HTMLDivElement>;
+      state.startClientX = event.touches[0].clientX;
+      state.startClientY = event.touches[0].clientY;
+
+    }
+    else {
+      event = event as React.MouseEvent<HTMLDivElement, MouseEvent>;
+      state.startClientX = event.clientX;
+      state.startClientY = event.clientY;
+    }
+    state.startPosX = panel.offsetLeft;
+    state.startPosY = panel.offsetTop;
+    const eventNames = event.type == "touchstart" ? touchEvents : mouseEvents;
+    function dragListener(event: MouseEvent | TouchEvent) {
+      // Minimum motion.
+      let deltaX: number;
+      let deltaY: number;
+      if (event.type == "touchmove") {
+        event = event as TouchEvent;
+        deltaX = event.touches[0].clientX - state.startClientX;
+        deltaY = event.touches[0].clientY - state.startClientY;
+      }
+      else {
+        event = event as MouseEvent;
+        deltaX = event.clientX - state.startClientX;
+        deltaY = event.clientY - state.startClientY;
+      }
+      if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+
+      state.dragging = true;
+      const newX = state.startPosX + deltaX;
+      const newY = state.startPosY + deltaY;
+      [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
+        newX,
+        newY
+      );
+    }
+    window.addEventListener(eventNames.move, dragListener);
+    window.addEventListener(
+      eventNames.end,
+      () => {
+        window.removeEventListener(eventNames.move, dragListener);
+      },
+      { once: true }
+    );
+  }
+
   return (
     <Box
       color="red"
@@ -189,38 +244,8 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         if (!wrapper) return;
         wrapper.classList.toggle("hidden");
       }}
-      onMouseDown={(event) => {
-        const state = dragInfo.current;
-        const panel = panelWrapperRef.current;
-        if (!panel) return;
-        state.startClientX = event.clientX;
-        state.startClientY = event.clientY;
-        state.startPosX = panel.offsetLeft;
-        state.startPosY = panel.offsetTop;
-
-        function dragListener(event: MouseEvent) {
-          // Minimum motion.
-          const deltaX = event.clientX - state.startClientX;
-          const deltaY = event.clientY - state.startClientY;
-          if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-
-          state.dragging = true;
-          const newX = state.startPosX + deltaX;
-          const newY = state.startPosY + deltaY;
-          [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
-            newX,
-            newY
-          );
-        }
-        window.addEventListener("mousemove", dragListener);
-        window.addEventListener(
-          "mouseup",
-          () => {
-            window.removeEventListener("mousemove", dragListener);
-          },
-          { once: true }
-        );
-      }}
+      onTouchStart={(event) => { dragHandler(event) }}
+      onMouseDown={(event) => { dragHandler(event) }}
     >
       <Box
         component="div"
