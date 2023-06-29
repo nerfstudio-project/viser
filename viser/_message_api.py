@@ -25,6 +25,7 @@ from typing import (
     TypeVar,
     Union,
     cast,
+    Sequence,
     overload,
 )
 
@@ -254,7 +255,7 @@ class MessageApi(abc.ABC):
     def add_gui_button_group(
         self,
         label: str,
-        options: Tuple[TLiteralString, ...],
+        options: Sequence[TLiteralString],
         visible: bool = True,
         disabled: bool = False,
         hint: Optional[str] = None,
@@ -265,7 +266,7 @@ class MessageApi(abc.ABC):
     def add_gui_button_group(
         self,
         label: str,
-        options: Tuple[TString, ...],
+        options: Sequence[TString],
         visible: bool = True,
         disabled: bool = False,
         hint: Optional[str] = None,
@@ -275,7 +276,7 @@ class MessageApi(abc.ABC):
     def add_gui_button_group(
         self,
         label: str,
-        options: Tuple[TLiteralString, ...] | Tuple[TString, ...],
+        options: Sequence[TLiteralString] | Sequence[TString],
         visible: bool = True,
         disabled: bool = False,
         hint: Optional[str] = None,
@@ -293,7 +294,7 @@ class MessageApi(abc.ABC):
                     folder_labels=tuple(self._gui_folder_labels),
                     hint=hint,
                     initial_value=initial_value,
-                    options=options,
+                    options=tuple(options),
                 ),
                 disabled=disabled,
                 visible=visible,
@@ -493,7 +494,7 @@ class MessageApi(abc.ABC):
     def add_gui_dropdown(
         self,
         label: str,
-        options: Tuple[TLiteralString, ...],
+        options: Sequence[TLiteralString],
         initial_value: Optional[TLiteralString] = None,
         disabled: bool = False,
         visible: bool = True,
@@ -505,7 +506,7 @@ class MessageApi(abc.ABC):
     def add_gui_dropdown(
         self,
         label: str,
-        options: Tuple[TString, ...],
+        options: Sequence[TString],
         initial_value: Optional[TString] = None,
         disabled: bool = False,
         visible: bool = True,
@@ -515,7 +516,7 @@ class MessageApi(abc.ABC):
     def add_gui_dropdown(
         self,
         label: str,
-        options: Tuple[TLiteralString, ...] | Tuple[TString, ...],
+        options: Sequence[TLiteralString] | Sequence[TString],
         initial_value: Optional[TLiteralString | TString] = None,
         disabled: bool = False,
         visible: bool = True,
