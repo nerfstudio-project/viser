@@ -187,11 +187,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 
         const wrapper = panelWrapperRef.current;
         if (!wrapper) return;
-        if (wrapper.classList.contains("hidden")) {
-          wrapper.classList.remove("hidden");
-        } else {
-          wrapper.classList.add("hidden");
-        }
+        wrapper.classList.toggle("hidden");
       }}
       onMouseDown={(event) => {
         const state = dragInfo.current;

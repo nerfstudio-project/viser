@@ -16,7 +16,7 @@ import { BlendFunction, KernelSize } from "postprocessing";
 import { SynchronizedCameraControls } from "./CameraControls";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Box, MantineProvider, ScrollArea } from "@mantine/core";
+import { Aside, Box, MantineProvider, ScrollArea, useMantineTheme } from "@mantine/core";
 
 import {
   SceneNodeThreeObject,
@@ -33,6 +33,8 @@ import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
 
 import { Titlebar } from "./Titlebar";
 import FloatingPanel from "./ControlPanel/FloatingPanel";
+import { useMediaQuery } from "@mantine/hooks";
+import BottomPanel from "./ControlPanel/BottomPanel";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -43,12 +45,12 @@ type ViewerContextContents = {
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
-      | undefined
-      | {
-          wxyz?: [number, number, number, number];
-          position?: [number, number, number];
-          visibility?: boolean;
-        };
+    | undefined
+    | {
+      wxyz?: [number, number, number, number];
+      position?: [number, number, number];
+      visibility?: boolean;
+    };
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
@@ -86,6 +88,8 @@ function SingleViewer() {
     nodeAttributesFromName: React.useRef({}),
   };
   const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
+  const theme = useMantineTheme();
+  const smQuery = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
   return (
     <ViewerContext.Provider value={viewer}>
       <Titlebar />
@@ -103,7 +107,7 @@ function SingleViewer() {
             top: 0,
             bottom: 0,
             left: 0,
-            right: fixed_sidebar ? "20em" : 0,
+            right: (fixed_sidebar && !smQuery)  ? "20em" : 0,
             position: "absolute",
             backgroundColor:
               theme.colorScheme == "light" ? "#fff" : theme.colors.dark[9],
@@ -111,52 +115,76 @@ function SingleViewer() {
         >
           <ViewerCanvas />
         </Box>
-        {fixed_sidebar ? (
-          <Box
-            sx={(theme) => ({
-              width: "20em",
-              boxSizing: "border-box",
-              right: 0,
-              position: "absolute",
-              top: "0em",
-              bottom: "0em",
-              borderLeft: "1px solid",
-              borderColor:
-                theme.colorScheme == "light"
-                  ? theme.colors.gray[4]
-                  : theme.colors.dark[4],
-            })}
-          >
-            <ScrollArea type="always" sx={{ height: "100%" }}>
-              <Box
-                p="sm"
-                sx={(theme) => ({
-                  backgroundColor:
-                    theme.colorScheme == "dark"
-                      ? theme.colors.dark[5]
-                      : theme.colors.gray[1],
-                  lineHeight: "1.5em",
-                  fontWeight: 400,
-                })}
-              >
-                <ConnectionStatus />
-              </Box>
-              <ControlPanel />
-            </ScrollArea>
-          </Box>
-        ) : (
-          <FloatingPanel>
-            <FloatingPanel.Handle>
-              <ConnectionStatus />
-            </FloatingPanel.Handle>
-            <FloatingPanel.Contents>
-              <ControlPanel />
-            </FloatingPanel.Contents>
-          </FloatingPanel>
-        )}
+        <Panel fixed_sidebar={fixed_sidebar} smQuery={smQuery} />
       </Box>
     </ViewerContext.Provider>
   );
+}
+
+function Panel(props: { fixed_sidebar: boolean, smQuery: boolean }) {
+  if (props.smQuery) {
+    return (
+      <BottomPanel>
+        <BottomPanel.Handle>
+          <ConnectionStatus />
+        </BottomPanel.Handle>
+        <BottomPanel.Contents>
+          <ControlPanel />
+        </BottomPanel.Contents>
+      </BottomPanel>
+    )
+  }
+  else {
+    if (props.fixed_sidebar) {
+      return (
+        <Aside
+          hiddenBreakpoint={"sm"}
+          sx={(theme) => ({
+            width: "20em",
+            boxSizing: "border-box",
+            right: 0,
+            position: "absolute",
+            top: "0em",
+            bottom: "0em",
+            borderLeft: "1px solid",
+            borderColor:
+              theme.colorScheme == "light"
+                ? theme.colors.gray[4]
+                : theme.colors.dark[4],
+          })}
+        >
+          <ScrollArea type="always" sx={{ height: "100%" }}>
+            <Box
+              p="sm"
+              sx={(theme) => ({
+                backgroundColor:
+                  theme.colorScheme == "dark"
+                    ? theme.colors.dark[5]
+                    : theme.colors.gray[1],
+                lineHeight: "1.5em",
+                fontWeight: 400,
+              })}
+            >
+              <ConnectionStatus />
+            </Box>
+            <ControlPanel />
+          </ScrollArea>
+        </Aside>
+      )
+    }
+    else {
+      return (
+        <FloatingPanel>
+          <FloatingPanel.Handle>
+            <ConnectionStatus />
+          </FloatingPanel.Handle>
+          <FloatingPanel.Contents>
+            <ControlPanel />
+          </FloatingPanel.Contents>
+        </FloatingPanel>
+      )
+    }
+  }
 }
 
 function ViewerCanvas() {
