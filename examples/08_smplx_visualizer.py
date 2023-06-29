@@ -199,7 +199,7 @@ def make_gui_elements(
         gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]] = []
         for i in range(num_body_joints + 1):
             gui_joint = server.add_gui_vector3(
-                name=smplx.joint_names.JOINT_NAMES[i],
+                label=smplx.joint_names.JOINT_NAMES[i],
                 initial_value=(0.0, 0.0, 0.0),
                 step=0.05,
             )

@@ -1,238 +1,450 @@
-import {
-  button,
-  buttonGroup,
-  folder,
-  LevaPanel,
-  useControls,
-  useCreateStore,
-} from "leva";
-import { LevaCustomTheme } from "leva/dist/declarations/src/styles";
-import React from "react";
-import {
-  makeThrottledMessageSender,
-  sendWebsocketMessage,
-} from "../WebsocketInterface";
-import { Box } from "@mantine/core";
 import { ViewerContext } from "..";
+import { makeThrottledMessageSender } from "../WebsocketInterface";
+import { GuiConfig } from "./GuiState";
+import {
+  Accordion,
+  Box,
+  Button,
+  Checkbox,
+  ColorInput,
+  Flex,
+  NumberInput,
+  Select,
+  Slider,
+  Stack,
+  Text,
+  TextInput,
+  Tooltip,
+} from "@mantine/core";
+import React from "react";
 
-export const levaTheme: LevaCustomTheme = {
-  colors: {
-    elevation1: "#e5e5e5",
-    elevation2: "#ffffff",
-    elevation3: "#f5f5f5",
-    accent1: "#0066dc",
-    accent2: "#1976d2",
-    accent3: "#3c93ff",
-    folderWidgetColor: "#777",
-    highlight1: "#000000",
-    highlight2: "#1d1d1d",
-    highlight3: "#000000",
-    vivid1: "#ffcc00",
-  },
-  radii: {
-    xs: "2px",
-    sm: "3px",
-    lg: "10px",
-  },
-  space: {
-    sm: "6px",
-    md: "12px",
-    rowGap: "8px",
-    colGap: "8px",
-  },
-  fontSizes: {
-    root: "0.9em",
-  },
-  fonts: {
-    mono: "",
-    sans: "",
-  },
-  sizes: {
-    rootWidth: "350px",
-    controlWidth: "170px",
-    scrubberWidth: "10px",
-    scrubberHeight: "14px",
-    rowHeight: "24px",
-    numberInputMinWidth: "60px",
-    folderTitleHeight: "24px",
-    checkboxSize: "16px",
-    joystickWidth: "100px",
-    joystickHeight: "100px",
-    colorPickerWidth: "160px",
-    colorPickerHeight: "100px",
-    monitorHeight: "60px",
-    titleBarHeight: "39px",
-  },
-  borderWidths: {
-    root: "0px",
-    input: "1px",
-    focus: "1px",
-    hover: "1px",
-    active: "1px",
-    folder: "1px",
-  },
-  fontWeights: {
-    label: "normal",
-    folder: "normal",
-    button: "normal",
-  },
+type Folder = {
+  inputs: GuiConfig[];
+  subfolders: { [key: string]: Folder };
 };
 
-/** One tab in the control panel. */
-export default function GeneratedControls() {
+/** Root of generated inputs. */
+export default function Generated() {
   const viewer = React.useContext(ViewerContext)!;
+  const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
-  const guiNames = viewer.useGui((state) => state.guiNames);
-  const guiConfigFromName = viewer.useGui((state) => state.guiConfigFromName);
+  const guiTree: Folder = { inputs: [], subfolders: {} };
 
-  // Add callbacks to guiConfigFromName.
-  const suppressOnChange = React.useRef<{ [key: string]: boolean }>({});
+  [...Object.keys(guiConfigFromId)]
+    .sort((a, b) => guiConfigFromId[a].order - guiConfigFromId[b].order)
+    .forEach((id) => {
+      const conf = guiConfigFromId[id];
 
-  // We're going to try and build an object that looks like:
-  // {"folder name": {"input name": leva config}}
-  const guiConfigTree: { [key: string]: any } = {};
-
-  function getFolderContainer(folderLabels: string[]) {
-    let guiConfigNode = guiConfigTree;
-    folderLabels.forEach((label) => {
-      if (guiConfigNode[label] === undefined) {
-        guiConfigNode[label] = { _is_folder_marker: true };
-      }
-      guiConfigNode = guiConfigNode[label];
-    });
-    return guiConfigNode;
-  }
-
-  guiNames.forEach((guiName) => {
-    const { levaConf, folderLabels, visible } = guiConfigFromName[guiName];
-    const leafFolder = getFolderContainer(folderLabels);
-
-    // Hacky stuff that lives outside of TypeScript...
-    if (levaConf["type"] === "BUTTON") {
-      // Add a button.
-      if (!visible) return;
-      leafFolder[guiName] = button(() => {
-        sendWebsocketMessage(viewer.websocketRef, {
-          type: "GuiUpdateMessage",
-          name: guiName,
-          value: true,
-        });
-      }, levaConf["settings"]);
-    } else if (levaConf["type"] === "BUTTON_GROUP") {
-      // Add a button.
-      if (!visible) return;
-      const opts: { [key: string]: () => void } = {};
-      levaConf["opts"].forEach((option: string) => {
-        opts[option] = () => {
-          sendWebsocketMessage(viewer.websocketRef, {
-            type: "GuiUpdateMessage",
-            name: guiName,
-            value: option,
-          });
-        };
+      // Iterate into subfolder for this GUI element.
+      // Could be optimized.
+      let folder = guiTree;
+      conf.folder_labels.forEach((folder_label) => {
+        if (folder.subfolders[folder_label] === undefined)
+          folder.subfolders[folder_label] = { inputs: [], subfolders: {} };
+        folder = folder.subfolders[folder_label];
       });
-      leafFolder[guiName] = buttonGroup({
-        label: levaConf["label"],
-        opts: opts,
-      });
-    } else {
-      // Add any other kind of input.
-      const sendUpdate = makeThrottledMessageSender(viewer.websocketRef, 50);
 
-      leafFolder["_viser-generated-input-" + guiName] = {
-        ...levaConf,
-        onChange: (value: any, _propName: any, options: any) => {
-          if (options.initial) return;
-          if (suppressOnChange.current[guiName]) {
-            delete suppressOnChange.current[guiName];
-            return;
-          }
-          sendUpdate({
-            type: "GuiUpdateMessage",
-            name: guiName,
-            value: value,
-          });
-        },
-        render: () => visible,
-      };
-    }
-  });
-
-  // Recursively wrap folders in a GUI config tree with Leva's `folder()`.
-  function wrapFoldersInGuiConfigTree(
-    guiConfigNode: { [key: string]: any },
-    root: boolean
-  ) {
-    const { _is_folder_marker, ...rest } = guiConfigNode;
-    guiConfigNode = rest;
-
-    if (root || _is_folder_marker === true) {
-      const out: { [title: string]: any } = {};
-      for (const [k, v] of Object.entries(guiConfigNode)) {
-        out[k] = wrapFoldersInGuiConfigTree(v, false);
-      }
-      return root ? out : folder(out);
-    }
-    return guiConfigNode;
-  }
-
-  // Make Leva controls.
-  const levaStore = useCreateStore();
-  const [, set] = useControls(
-    () => wrapFoldersInGuiConfigTree(guiConfigTree, true) as any,
-    { store: levaStore },
-    [guiConfigTree]
-  );
-
-  // Logic for setting control inputs when items are put onto the guiSetQueue.
-  const guiSetQueue = viewer.useGui((state) => state.guiSetQueue);
-  const applyGuiSetQueue = viewer.useGui((state) => state.applyGuiSetQueue);
-  const timeouts = React.useRef<{ [key: string]: NodeJS.Timeout }>({});
-  React.useEffect(() => {
-    if (Object.keys(guiSetQueue).length === 0) return;
-    applyGuiSetQueue((name, value) => {
-      suppressOnChange.current[name] = true;
-
-      // Suppression timeout. Resolves some issues with onChange() not firing
-      // after we call set... this is hacky and should be revisited.
-      clearTimeout(timeouts.current[name]);
-      timeouts.current[name] = setTimeout(() => {
-        suppressOnChange.current[name] = false;
-      }, 10);
-
-      // Set Leva control.
-      set({ ["_viser-generated-input-" + name]: value });
+      folder.inputs.push(conf);
     });
-  }, [guiSetQueue, applyGuiSetQueue, set]);
 
-  // Leva theming is a bit limited, so we hack at styles here...
   return (
-    <Box
-      sx={{
-        "& label": { color: "#777" },
-        "& input[type='checkbox']~label svg path": {
-          stroke: "#fff !important",
-        },
-        "& button:not(:only-child)": {
-          // Button groups.
-          color: "#777 !important",
-          backgroundColor: "#e5e5e5 !important",
-        },
-        "& button:only-child": {
-          // Single buttons.
-          color: "#fff !important",
-          height: "2em",
-        },
-      }}
-    >
-      <LevaPanel
-        fill
-        flat
-        titleBar={false}
-        theme={levaTheme}
-        store={levaStore}
-        hideCopyButton
-      />
-    </Box>
+    <>
+      <GeneratedFolder folder={guiTree} />
+    </>
   );
+}
+
+function GeneratedFolder({ folder }: { folder: Folder }) {
+  return (
+    <Stack spacing="xs" pt="0.25rem">
+      {folder.inputs.map((conf) => (
+        <GeneratedInput key={conf.id} conf={conf} />
+      ))}
+      <Accordion
+        chevronPosition="right"
+        multiple
+        defaultValue={[...Object.keys(folder.subfolders)]}
+        styles={(theme) => ({
+          label: { padding: "0.625rem 0.2rem" },
+          item: { border: 0 },
+          control: { paddingLeft: 0 },
+          content: {
+            borderLeft: "1px solid",
+            borderLeftColor:
+              theme.colorScheme === "light"
+                ? theme.colors.gray[3]
+                : theme.colors.dark[5],
+            paddingRight: "0",
+            paddingLeft: "0.5rem",
+            paddingBottom: 0,
+            paddingTop: 0,
+            marginBottom: "0.5rem",
+            marginLeft: "0.05rem",
+          },
+        })}
+      >
+        {Object.keys(folder.subfolders).map((folder_label) => (
+          <Accordion.Item key={folder_label} value={folder_label}>
+            <Accordion.Control>{folder_label}</Accordion.Control>
+            <Accordion.Panel>
+              <GeneratedFolder folder={folder.subfolders[folder_label]} />
+            </Accordion.Panel>
+          </Accordion.Item>
+        ))}
+      </Accordion>
+    </Stack>
+  );
+}
+
+/** A single generated GUI element. */
+function GeneratedInput({ conf }: { conf: GuiConfig }) {
+  const viewer = React.useContext(ViewerContext)!;
+  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
+
+  function updateValue(value: any) {
+    setGuiValue(conf.id, value);
+    messageSender({ type: "GuiUpdateMessage", id: conf.id, value: value });
+  }
+
+  // TODO: the types here could potentially be made much stronger.
+  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
+  const value =
+    viewer.useGui((state) => state.guiValueFromId[conf.id]) ??
+    conf.initial_value;
+
+  let { visible, disabled } =
+    viewer.useGui((state) => state.guiAttributeFromId[conf.id]) || {};
+
+  visible = visible ?? true;
+  disabled = disabled ?? false;
+
+  if (!visible) return <></>;
+
+  let labeled = true;
+  let input = null;
+  switch (conf.type) {
+    case "GuiAddButtonMessage":
+      labeled = false;
+      input = (
+        <Button
+          id={conf.id}
+          fullWidth
+          onClick={() =>
+            messageSender({
+              type: "GuiUpdateMessage",
+              id: conf.id,
+              value: true,
+            })
+          }
+          style={{ height: "1.875rem" }}
+          disabled={disabled}
+          size="sm"
+        >
+          {conf.label}
+        </Button>
+      );
+      break;
+    case "GuiAddSliderMessage":
+      input = (
+        <Flex justify="space-between">
+          <Box sx={{ flexGrow: 1 }}>
+            <Slider
+              id={conf.id}
+              size="sm"
+              pt="0.3rem"
+              showLabelOnHover={false}
+              min={conf.min}
+              max={conf.max}
+              step={conf.step ?? undefined}
+              precision={conf.precision}
+              value={value}
+              onChange={updateValue}
+              marks={[{ value: conf.min }, { value: conf.max }]}
+              disabled={disabled}
+            />
+            <Flex justify="space-between" sx={{ marginTop: "-0.2em" }}>
+              <Text fz="0.7rem" c="dimmed">
+                {conf.min}
+              </Text>
+              <Text fz="0.7rem" c="dimmed">
+                {conf.max}
+              </Text>
+            </Flex>
+          </Box>
+          <NumberInput
+            value={value}
+            onChange={updateValue}
+            size="xs"
+            min={conf.min}
+            max={conf.max}
+            hideControls
+            step={conf.step ?? undefined}
+            precision={conf.precision}
+            sx={{ width: "3rem", height: "1rem", minHeight: "1rem" }}
+            styles={{ input: { padding: "0.3rem" } }}
+            ml="xs"
+          />
+        </Flex>
+      );
+      break;
+    case "GuiAddNumberMessage":
+      input = (
+        <NumberInput
+          id={conf.id}
+          value={value ?? conf.initial_value}
+          precision={conf.precision}
+          min={conf.min ?? undefined}
+          max={conf.max ?? undefined}
+          step={conf.step}
+          size="xs"
+          onChange={updateValue}
+          disabled={disabled}
+          stepHoldDelay={500}
+          stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
+        />
+      );
+      break;
+    case "GuiAddTextMessage":
+      input = (
+        <TextInput
+          value={value ?? conf.initial_value}
+          size="xs"
+          onChange={(value) => {
+            updateValue(value.target.value);
+          }}
+          disabled={disabled}
+        />
+      );
+      break;
+    case "GuiAddCheckboxMessage":
+      input = (
+        <Checkbox
+          id={conf.id}
+          checked={value ?? conf.initial_value}
+          size="xs"
+          onChange={(value) => {
+            updateValue(value.target.checked);
+          }}
+          disabled={disabled}
+        />
+      );
+      break;
+    case "GuiAddVector2Message":
+      input = (
+        <VectorInput
+          id={conf.id}
+          n={2}
+          value={value ?? conf.initial_value}
+          onChange={updateValue}
+          min={conf.min}
+          max={conf.max}
+          step={conf.step}
+          precision={conf.precision}
+          disabled={disabled}
+        />
+      );
+      break;
+    case "GuiAddVector3Message":
+      input = (
+        <VectorInput
+          id={conf.id}
+          n={3}
+          value={value ?? conf.initial_value}
+          onChange={updateValue}
+          min={conf.min}
+          max={conf.max}
+          step={conf.step}
+          precision={conf.precision}
+          disabled={disabled}
+        />
+      );
+      break;
+    case "GuiAddDropdownMessage":
+      input = (
+        <Select
+          id={conf.id}
+          value={value}
+          data={conf.options}
+          onChange={updateValue}
+          searchable
+          maxDropdownHeight={400}
+        />
+      );
+      break;
+    case "GuiAddRgbMessage":
+      input = (
+        <ColorInput
+          disabled={disabled}
+          size="xs"
+          value={rgbToHex(value)}
+          onChange={(v) => updateValue(hexToRgb(v))}
+          format="hex"
+        />
+      );
+      break;
+    case "GuiAddRgbaMessage":
+      input = (
+        <ColorInput
+          disabled={disabled}
+          size="xs"
+          value={rgbaToHex(value)}
+          onChange={(v) => updateValue(hexToRgba(v))}
+          format="hexa"
+        />
+      );
+      break;
+    case "GuiAddButtonGroupMessage":
+      input = (
+        <Flex justify="space-between" columnGap="xs">
+          {conf.options.map((option, index) => (
+            <Button
+              key={index}
+              onClick={() =>
+                messageSender({
+                  type: "GuiUpdateMessage",
+                  id: conf.id,
+                  value: option,
+                })
+              }
+              style={{ flexGrow: 1, width: 0 }}
+              disabled={disabled}
+              compact
+              size="sm"
+              variant="outline"
+            >
+              {option}
+            </Button>
+          ))}
+        </Flex>
+      );
+  }
+
+  if (conf.hint !== null)
+    input = (
+      <Tooltip label={conf.hint} multiline w="15rem" withArrow openDelay={500}>
+        {input}
+      </Tooltip>
+    );
+
+  if (labeled)
+    return <LabeledInput id={conf.id} label={conf.label} input={input} />;
+  else return input;
+}
+
+function VectorInput(
+  props:
+    | {
+        id: string;
+        n: 2;
+        value: [number, number];
+        min: [number, number] | null;
+        max: [number, number] | null;
+        step: number;
+        precision: number;
+        onChange: (value: number[]) => void;
+        disabled: boolean;
+      }
+    | {
+        id: string;
+        n: 3;
+        value: [number, number, number];
+        min: [number, number, number] | null;
+        max: [number, number, number] | null;
+        step: number;
+        precision: number;
+        onChange: (value: number[]) => void;
+        disabled: boolean;
+      }
+) {
+  return (
+    <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
+      {[...Array(props.n).keys()].map((i) => (
+        <NumberInput
+          id={i === 0 ? props.id : undefined}
+          key={i}
+          value={props.value[i]}
+          onChange={(v) => {
+            const updated = [...props.value];
+            updated[i] = v === "" ? 0.0 : v;
+            props.onChange(updated);
+          }}
+          size="xs"
+          styles={{
+            root: { flexGrow: 1, width: 0 },
+            input: {
+              paddingLeft: "0.3rem",
+              paddingRight: "1.1rem",
+              textAlign: "right",
+            },
+            rightSection: { width: "1.0rem" },
+            control: {
+              width: "0.875rem",
+            },
+          }}
+          precision={props.precision}
+          step={props.step}
+          min={props.min === null ? undefined : props.min[i]}
+          max={props.max === null ? undefined : props.max[i]}
+          disabled={props.disabled}
+        />
+      ))}
+    </Flex>
+  );
+}
+
+/** GUI input with a label horizontally placed to the left of it. */
+function LabeledInput(props: {
+  id: string;
+  label: string;
+  input: React.ReactNode;
+}) {
+  return (
+    <Flex align="center">
+      <Box w="6em" pr="xs">
+        <Text
+          c="dimmed"
+          fz="sm"
+          lh="1.15em"
+          unselectable="off"
+          sx={{ wordWrap: "break-word" }}
+        >
+          <label htmlFor={props.id}> {props.label}</label>
+        </Text>
+      </Box>
+      <Box sx={{ flexGrow: 1 }}>{props.input}</Box>
+    </Flex>
+  );
+}
+
+// Color conversion helpers.
+
+function rgbToHex([r, g, b]: [number, number, number]): string {
+  const hexR = r.toString(16).padStart(2, "0");
+  const hexG = g.toString(16).padStart(2, "0");
+  const hexB = b.toString(16).padStart(2, "0");
+  return `#${hexR}${hexG}${hexB}`;
+}
+
+function hexToRgb(hexColor: string): [number, number, number] {
+  const hex = hexColor.slice(1); // Remove the # in #ffffff.
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  return [r, g, b];
+}
+function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
+  const hexR = r.toString(16).padStart(2, "0");
+  const hexG = g.toString(16).padStart(2, "0");
+  const hexB = b.toString(16).padStart(2, "0");
+  const hexA = a.toString(16).padStart(2, "0");
+  return `#${hexR}${hexG}${hexB}${hexA}`;
+}
+
+function hexToRgba(hexColor: string): [number, number, number, number] {
+  const hex = hexColor.slice(1); // Remove the # in #ffffff.
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const a = parseInt(hex.substring(6, 8), 16);
+  return [r, g, b, a];
 }

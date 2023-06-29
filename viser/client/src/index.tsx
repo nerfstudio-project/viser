@@ -14,9 +14,9 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
+import { Box, MantineProvider, ScrollArea } from "@mantine/core";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Box, MantineProvider, ScrollArea } from "@mantine/core";
 
 import {
   SceneNodeThreeObject,
@@ -26,13 +26,13 @@ import {
 
 import "./index.css";
 
-import WebsocketInterface from "./WebsocketInterface";
+import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
-import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
+import WebsocketInterface from "./WebsocketInterface";
 
-import { Titlebar } from "./Titlebar";
 import FloatingPanel from "./ControlPanel/FloatingPanel";
+import { Titlebar } from "./Titlebar";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -106,7 +106,7 @@ function SingleViewer() {
             right: fixed_sidebar ? "20em" : 0,
             position: "absolute",
             backgroundColor:
-              theme.colorScheme == "light" ? "#fff" : theme.colors.dark[9],
+              theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
           })}
         >
           <ViewerCanvas />
@@ -122,7 +122,7 @@ function SingleViewer() {
               bottom: "0em",
               borderLeft: "1px solid",
               borderColor:
-                theme.colorScheme == "light"
+                theme.colorScheme === "light"
                   ? theme.colors.gray[4]
                   : theme.colors.dark[4],
             })}
@@ -132,7 +132,7 @@ function SingleViewer() {
                 p="sm"
                 sx={(theme) => ({
                   backgroundColor:
-                    theme.colorScheme == "dark"
+                    theme.colorScheme === "dark"
                       ? theme.colors.dark[5]
                       : theme.colors.gray[1],
                   lineHeight: "1.5em",
@@ -201,7 +201,6 @@ function SceneContextSetter() {
   cameraRef.current = useThree(
     (state) => state.camera as THREE.PerspectiveCamera
   );
-  console.log(cameraRef.current);
   return <></>;
 }
 

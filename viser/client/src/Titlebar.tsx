@@ -1,20 +1,18 @@
-import { useContext } from "react";
 import { ViewerContext } from ".";
-import { Message } from "./WebsocketMessages";
+import { ThemeConfigurationMessage } from "./WebsocketMessages";
 import { Box, Button } from "@mantine/core";
 import {
   IconBrandGithub,
   IconFileDescription,
   IconKeyboard,
 } from "@tabler/icons-react";
+import { useContext } from "react";
 
 // Type helpers.
 type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 type NoNull<T> = Exclude<T, null>;
-type TitlebarContent = NoNull<
-  (Message & { type: "ThemeConfigurationMessage" })["titlebar_content"]
->;
+type TitlebarContent = NoNull<ThemeConfigurationMessage["titlebar_content"]>;
 function assertUnreachable(x: never): never {
   throw new Error("Didn't expect to get here", x);
 }
@@ -93,7 +91,7 @@ export function Titlebar() {
         alignItems: "center",
         borderBottom: "1px solid",
         borderColor:
-          theme.colorScheme == "light"
+          theme.colorScheme === "light"
             ? theme.colors.gray[4]
             : theme.colors.dark[4],
       })}
