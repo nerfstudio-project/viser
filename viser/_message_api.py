@@ -132,14 +132,7 @@ def _compute_step(x: Optional[float]) -> float:  # type: ignore
         12.02 => 0.01
         0.004 => 0.001
     """
-    if x is None:
-        return 1
-
-    # Some risky float stuff...
-    out = 0.0001
-    while out < 1.0 and onp.abs(x) % (out * 10) < 1e-6:
-        out = out * 10
-    return out
+    return 1 if x is None else 10 ** (-_compute_precision_digits(x))
 
 
 def _compute_precision_digits(x: float) -> int:
@@ -147,15 +140,15 @@ def _compute_precision_digits(x: float) -> int:
 
     Example inputs/outputs:
         100 => 0
-        0.5 => 1
+        12 => 0
+        12.1 => 1
         10.2 => 1
         0.007 => 3
     """
-    precision = 0
-    while onp.abs(int(x) - x) > 1e-7 or precision >= 7:
-        x = x * 10
-        precision += 1
-    return precision
+    digits = 0
+    while x != round(x, ndigits=digits) and digits < 7:
+        digits += 1
+    return digits
 
 
 T = TypeVar("T")
