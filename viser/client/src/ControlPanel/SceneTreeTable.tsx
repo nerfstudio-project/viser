@@ -77,7 +77,6 @@ export default function SceneTreeTable(props: { compact: boolean }) {
               const isVisible =
                 viewer.nodeAttributesFromName.current[childName]?.visibility ??
                 true;
-              console.log("hi", debouncedReady.current, childName, isVisible);
               if (debouncedReady.current) {
                 setVisible(childName, !isVisible);
               }
