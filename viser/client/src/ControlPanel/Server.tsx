@@ -1,16 +1,15 @@
-import React from "react";
 import { ViewerContext } from "..";
-import { isTexture } from "../WebsocketInterface";
+import { Button, Stack, Switch, TextInput } from "@mantine/core";
 import { Stats } from "@react-three/drei";
-import { TextInput, Button, Stack, Switch } from "@mantine/core";
 import { IconPhoto } from "@tabler/icons-react";
+import React from "react";
 
 export default function ServerControls() {
   const viewer = React.useContext(ViewerContext)!;
   const [showStats, setShowStats] = React.useState(false);
 
   function triggerBlur(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key != "Enter") return;
+    if (event.key !== "Enter") return;
     event.currentTarget.blur();
     event.currentTarget.focus();
   }
@@ -36,27 +35,32 @@ export default function ServerControls() {
           onKeyDown={triggerBlur}
         />
         <Button
-          onClick={() => {
-            if (!isTexture(viewer.sceneRef.current!.background)) {
-              // This should never happen.
-              alert("No background to download!");
-              return;
-            }
+          onClick={async () => {
+            viewer.canvasRef.current?.toBlob(async (blob) => {
+              if (blob === null) {
+                console.error("Render failed!");
+                return;
+              }
 
-            const data = viewer.sceneRef.current!.background.image.src;
-            console.log(data);
-            const link = document.createElement("a");
-            link.download = "background";
-            link.href = data;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+              const href = URL.createObjectURL(blob);
+
+              // create "a" HTML element with href to file
+              const link = document.createElement('a');
+              link.href = href;
+
+              const filename = 'render.png';
+              link.download = filename;
+              document.body.appendChild(link);
+              link.click();
+              // clean up "a" element & remove ObjectURL
+              document.body.removeChild(link);
+              URL.revokeObjectURL(href);
+            });
           }}
           fullWidth
-          disabled={!viewer.useGui((state) => state.backgroundAvailable)}
           leftIcon={<IconPhoto size="1rem" />}
         >
-          Download Background
+          Export Canvas
         </Button>
         <Switch
           label="WebGL Statistics"

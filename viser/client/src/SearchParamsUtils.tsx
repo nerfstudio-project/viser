@@ -26,6 +26,6 @@ function setServerParams(serverParams: string[]) {
     // it. We're going to just not escape the string. :)
     serverParams.length === 0
       ? window.location.href.split("?")[0]
-      : "?" + serverParams.map((s) => searchParamKey + "=" + s).join("&")
+      : `?${serverParams.map((s) => `${searchParamKey}=${s}`).join("&")}`
   );
 }

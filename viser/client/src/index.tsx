@@ -14,9 +14,9 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
+import { Box, MantineProvider, ScrollArea } from "@mantine/core";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Box, MantineProvider, ScrollArea } from "@mantine/core";
 
 import {
   SceneNodeThreeObject,
@@ -26,29 +26,30 @@ import {
 
 import "./index.css";
 
-import WebsocketInterface from "./WebsocketInterface";
+import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
-import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
+import WebsocketInterface from "./WebsocketInterface";
 
-import { Titlebar } from "./Titlebar";
 import FloatingPanel from "./ControlPanel/FloatingPanel";
+import { Titlebar } from "./Titlebar";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: React.MutableRefObject<WebSocket | null>;
+  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
-      | undefined
-      | {
-          wxyz?: [number, number, number, number];
-          position?: [number, number, number];
-          visibility?: boolean;
-        };
+    | undefined
+    | {
+      wxyz?: [number, number, number, number];
+      position?: [number, number, number];
+      visibility?: boolean;
+    };
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
@@ -79,6 +80,7 @@ function SingleViewer() {
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
     websocketRef: React.useRef(null),
+    canvasRef: React.useRef(null),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
@@ -106,7 +108,7 @@ function SingleViewer() {
             right: fixed_sidebar ? "20em" : 0,
             position: "absolute",
             backgroundColor:
-              theme.colorScheme == "light" ? "#fff" : theme.colors.dark[9],
+              theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
           })}
         >
           <ViewerCanvas />
@@ -122,7 +124,7 @@ function SingleViewer() {
               bottom: "0em",
               borderLeft: "1px solid",
               borderColor:
-                theme.colorScheme == "light"
+                theme.colorScheme === "light"
                   ? theme.colors.gray[4]
                   : theme.colors.dark[4],
             })}
@@ -132,7 +134,7 @@ function SingleViewer() {
                 p="sm"
                 sx={(theme) => ({
                   backgroundColor:
-                    theme.colorScheme == "dark"
+                    theme.colorScheme === "dark"
                       ? theme.colors.dark[5]
                       : theme.colors.gray[1],
                   lineHeight: "1.5em",
@@ -160,9 +162,11 @@ function SingleViewer() {
 }
 
 function ViewerCanvas() {
+  const viewer = React.useContext(ViewerContext)!;
   return (
     <Canvas
       camera={{ position: [3.0, 3.0, -3.0] }}
+      gl={{ preserveDrawingBuffer: true }}
       style={{
         position: "relative",
         zIndex: 0,
@@ -170,6 +174,7 @@ function ViewerCanvas() {
         height: "100%",
       }}
       performance={{ min: 0.95 }}
+      ref={viewer.canvasRef}
     >
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
@@ -201,7 +206,6 @@ function SceneContextSetter() {
   cameraRef.current = useThree(
     (state) => state.camera as THREE.PerspectiveCamera
   );
-  console.log(cameraRef.current);
   return <></>;
 }
 
@@ -211,7 +215,7 @@ function Root() {
       withGlobalStyles
       withNormalizeCSS
       theme={{
-        colorScheme: "dark",
+        colorScheme: "light",
       }}
     >
       <Box

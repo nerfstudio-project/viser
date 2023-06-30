@@ -1,11 +1,11 @@
+import { ViewerContext } from ".";
+import { makeThrottledMessageSender } from "./WebsocketInterface";
+import { CameraControls } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
+import * as holdEvent from "hold-event";
 import React, { useContext } from "react";
 import { PerspectiveCamera } from "three";
-import * as holdEvent from "hold-event";
-import { CameraControls } from "@react-three/drei";
-import { makeThrottledMessageSender } from "./WebsocketInterface";
-import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { ViewerContext } from ".";
 
 /** OrbitControls, but synchronized with the server and other panels. */
 export function SynchronizedCameraControls() {
@@ -102,16 +102,16 @@ export function SynchronizedCameraControls() {
     const sKey = new holdEvent.KeyboardKeyHold(KEYCODE.S, 20);
     const dKey = new holdEvent.KeyboardKeyHold(KEYCODE.D, 20);
     aKey.addEventListener("holding", (event) => {
-      cameraControls.truck(-0.002 * event!.deltaTime, 0, false);
+      cameraControls.truck(-0.002 * event?.deltaTime, 0, false);
     });
     dKey.addEventListener("holding", (event) => {
-      cameraControls.truck(0.002 * event!.deltaTime, 0, false);
+      cameraControls.truck(0.002 * event?.deltaTime, 0, false);
     });
     wKey.addEventListener("holding", (event) => {
-      cameraControls.forward(0.002 * event!.deltaTime, false);
+      cameraControls.forward(0.002 * event?.deltaTime, false);
     });
     sKey.addEventListener("holding", (event) => {
-      cameraControls.forward(-0.002 * event!.deltaTime, false);
+      cameraControls.forward(-0.002 * event?.deltaTime, false);
     });
 
     const leftKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_LEFT, 20);
@@ -120,14 +120,14 @@ export function SynchronizedCameraControls() {
     const downKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_DOWN, 20);
     leftKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
-        -0.1 * THREE.MathUtils.DEG2RAD * event!.deltaTime,
+        -0.1 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
         true
       );
     });
     rightKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
-        0.1 * THREE.MathUtils.DEG2RAD * event!.deltaTime,
+        0.1 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
         true
       );
@@ -135,14 +135,14 @@ export function SynchronizedCameraControls() {
     upKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
-        -0.05 * THREE.MathUtils.DEG2RAD * event!.deltaTime,
+        -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         true
       );
     });
     downKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
-        0.05 * THREE.MathUtils.DEG2RAD * event!.deltaTime,
+        0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         true
       );
     });

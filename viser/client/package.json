@@ -26,7 +26,6 @@
     "hold-event": "^0.2.0",
     "immer": "^9.0.21",
     "isomorphic-ws": "^5.0.0",
-    "leva": "^0.9.34",
     "mantine-react-table": "^1.0.0-beta.11",
     "msgpackr": "^1.8.5",
     "prettier": "^2.8.7",
@@ -68,6 +67,7 @@
   "devDependencies": {
     "@redux-devtools/core": "^3.13.1",
     "@types/msgpack": "0.0.31",
+    "@types/wicg-file-system-access": "^2020.9.6",
     "@typescript-eslint/eslint-plugin": "^5.57.1",
     "@typescript-eslint/parser": "^5.57.1",
     "eslint": "^8.38.0",

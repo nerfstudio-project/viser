@@ -1,20 +1,18 @@
-import { useContext } from "react";
 import { ViewerContext } from ".";
-import { Message } from "./WebsocketMessages";
+import { ThemeConfigurationMessage } from "./WebsocketMessages";
 import { Box, Button, MantineTheme, useMantineTheme } from "@mantine/core";
 import {
   IconBrandGithub,
   IconFileDescription,
   IconKeyboard,
 } from "@tabler/icons-react";
+import { useContext } from "react";
 
 // Type helpers.
 type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 type NoNull<T> = Exclude<T, null>;
-type TitlebarContent = NoNull<
-  (Message & { type: "ThemeConfigurationMessage" })["titlebar_content"]
->;
+type TitlebarContent = NoNull<ThemeConfigurationMessage["titlebar_content"]>;
 function assertUnreachable(x: never): never {
   throw new Error("Didn't expect to get here", x);
 }
@@ -60,10 +58,10 @@ export function TitlebarImage(
   theme: MantineTheme
 ) {
   let imageSource: string;
-  if (props.dark_image_url == null || theme.colorScheme == "light") {
-    imageSource = props.image_url;
+  if (props.image_url_dark == null || theme.colorScheme == "light") {
+    imageSource = props.image_url_light;
   } else {
-    imageSource = props.dark_image_url;
+    imageSource = props.image_url_dark;
   }
   const image = (
     <img
@@ -104,7 +102,7 @@ export function Titlebar() {
         alignItems: "center",
         borderBottom: "1px solid",
         borderColor:
-          theme.colorScheme == "light"
+          theme.colorScheme === "light"
             ? theme.colors.gray[4]
             : theme.colors.dark[4],
       })}

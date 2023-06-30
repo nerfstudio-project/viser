@@ -20,12 +20,12 @@ def main() -> None:
 
     with server.gui_folder("Control"):
         gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
-        gui_axis = server.add_gui_dropdown("Axis", ["x", "y", "z"])
+        gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
         gui_include_z = server.add_gui_checkbox("Z in dropdown", initial_value=True)
 
         @gui_include_z.on_update
         def _(_) -> None:
-            gui_axis.options = ["x", "y", "z"] if gui_include_z.value else ["x", "y"]
+            gui_axis.options = ("x", "y", "z") if gui_include_z.value else ("x", "y")
 
         with server.gui_folder("Sliders"):
             gui_location = server.add_gui_slider(
