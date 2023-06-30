@@ -106,7 +106,7 @@ function SingleViewer() {
             top: 0,
             bottom: 0,
             left: 0,
-            right: (fixed_sidebar && !smQuery)  ? "20em" : 0,
+            right: (fixed_sidebar && !smQuery) ? "20em" : 0,
             position: "absolute",
             backgroundColor:
               theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
@@ -133,56 +133,54 @@ function Panel(props: { fixed_sidebar: boolean, smQuery: boolean }) {
       </BottomPanel>
     )
   }
-  else {
-    if (props.fixed_sidebar) {
-      return (
-        <Aside
-          hiddenBreakpoint={"sm"}
-          sx={(theme) => ({
-            width: "20em",
-            boxSizing: "border-box",
-            right: 0,
-            position: "absolute",
-            top: "0em",
-            bottom: "0em",
-            borderLeft: "1px solid",
-            borderColor:
-              theme.colorScheme == "light"
-                ? theme.colors.gray[4]
-                : theme.colors.dark[4],
-          })}
-        >
-          <ScrollArea type="always" sx={{ height: "100%" }}>
-            <Box
-              p="sm"
-              sx={(theme) => ({
-                backgroundColor:
-                  theme.colorScheme == "dark"
-                    ? theme.colors.dark[5]
-                    : theme.colors.gray[1],
-                lineHeight: "1.5em",
-                fontWeight: 400,
-              })}
-            >
-              <ConnectionStatus />
-            </Box>
-            <ControlPanel />
-          </ScrollArea>
-        </Aside>
-      )
-    }
-    else {
-      return (
-        <FloatingPanel>
-          <FloatingPanel.Handle>
+  else if (props.fixed_sidebar) {
+    return (
+      <Aside
+        hiddenBreakpoint={"sm"}
+        sx={(theme) => ({
+          width: "20em",
+          boxSizing: "border-box",
+          right: 0,
+          position: "absolute",
+          top: "0em",
+          bottom: "0em",
+          borderLeft: "1px solid",
+          borderColor:
+            theme.colorScheme == "light"
+              ? theme.colors.gray[4]
+              : theme.colors.dark[4],
+        })}
+      >
+        <ScrollArea type="always" sx={{ height: "100%" }}>
+          <Box
+            p="sm"
+            sx={(theme) => ({
+              backgroundColor:
+                theme.colorScheme == "dark"
+                  ? theme.colors.dark[5]
+                  : theme.colors.gray[1],
+              lineHeight: "1.5em",
+              fontWeight: 400,
+            })}
+          >
             <ConnectionStatus />
-          </FloatingPanel.Handle>
-          <FloatingPanel.Contents>
-            <ControlPanel />
-          </FloatingPanel.Contents>
-        </FloatingPanel>
-      )
-    }
+          </Box>
+          <ControlPanel />
+        </ScrollArea>
+      </Aside>
+    )
+  }
+  else {
+    return (
+      <FloatingPanel>
+        <FloatingPanel.Handle>
+          <ConnectionStatus />
+        </FloatingPanel.Handle>
+        <FloatingPanel.Contents>
+          <ControlPanel />
+        </FloatingPanel.Contents>
+      </FloatingPanel>
+    )
   }
 }
 

@@ -1,6 +1,7 @@
 import { Box, Paper } from "@mantine/core";
 import { IconCaretUp } from "@tabler/icons-react";
 import React from "react";
+import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 
 const FloatingPanelRefContext =
   React.createContext<React.RefObject<HTMLDivElement> | null>(null);
@@ -164,9 +165,6 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     };
   });
 
-  interface DragEvents { move: "touchmove" | "mousemove", end: "touchend" | "mouseup" }
-  const touchEvents: DragEvents = { move: "touchmove", end: "touchend" }
-  const mouseEvents: DragEvents = { move: "mousemove", end: "mouseup" }
   const dragHandler = (event: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const state = dragInfo.current;
     const panel = panelWrapperRef.current;
@@ -186,14 +184,14 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     const eventNames = event.type == "touchstart" ? touchEvents : mouseEvents;
     function dragListener(event: MouseEvent | TouchEvent) {
       // Minimum motion.
-      let deltaX: number;
-      let deltaY: number;
-      if (event.type == "touchmove") {
+      let deltaX = 0;
+      let deltaY = 0;
+      if (isTouchEvent(event)) {
         event = event as TouchEvent;
         deltaX = event.touches[0].clientX - state.startClientX;
         deltaY = event.touches[0].clientY - state.startClientY;
       }
-      else {
+      else if (isMouseEvent(event)) {
         event = event as MouseEvent;
         deltaX = event.clientX - state.startClientX;
         deltaY = event.clientY - state.startClientY;

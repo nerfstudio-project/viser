@@ -1,6 +1,7 @@
 import { Box, Paper } from "@mantine/core";
-import { IconCaretUp } from "@tabler/icons-react";
+import { IconCaretDown } from "@tabler/icons-react";
 import React from "react";
+import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 
 const BottomPanelRefContext =
   React.createContext<React.RefObject<HTMLDivElement> | null>(null);
@@ -66,26 +67,20 @@ BottomPanel.Handle = function FloatingPanelHandle({
     hidden: true
   });
 
-  interface DragEvents {move: "touchmove" | "mousemove", end: "touchend" | "mouseup"}
-  const touchEvents: DragEvents = {move: "touchmove", end: "touchend"}
-  const mouseEvents: DragEvents = {move: "mousemove", end: "mouseup"}
   const dragHandler = (event: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const state = dragInfo.current;
     const panel = panelWrapperRef.current;
-    if (!panel) return;
+    if (panel === null) return;
     state.startHeight = panel.clientHeight
     panel.style.transition = "none";
     let hidePanel = state.hidden;
     const eventNames = event.type == "touchstart" ? touchEvents : mouseEvents;
     function dragListener(event: TouchEvent | MouseEvent) {
-      // Minimum motion.
-      let pos: number;
-      if (event.type == "touchmove") {
-        event = event as TouchEvent;
+      let pos = 0;
+      if (isTouchEvent(event)) {
         pos = window.innerHeight - event.touches[0].clientY;
       }
-      else {
-        event = event as MouseEvent;
+      else if (isMouseEvent(event)) {
         pos = window.innerHeight - event.clientY;
       }
 
@@ -104,7 +99,7 @@ BottomPanel.Handle = function FloatingPanelHandle({
     }
     window.addEventListener(eventNames.move, dragListener);
     window.addEventListener(
-      (eventNames.end),
+      eventNames.end,
       () => {
         state.dragging = false;
         state.hidden = hidePanel;
@@ -140,7 +135,7 @@ BottomPanel.Handle = function FloatingPanelHandle({
       onClick={() => {
         const state = dragInfo.current;
         const panel = panelWrapperRef.current;
-        if (!panel) return;
+        if (panel === null) return;
 
         if (state.dragging) {
           state.dragging = false;
@@ -152,7 +147,7 @@ BottomPanel.Handle = function FloatingPanelHandle({
           panel.style.height = getHeight(panel) + 'px';
           state.hidden = false;
         } else {
-          panel.style.height = `3.5em`;
+          panel.style.height = "3.5em";
           state.hidden = true;
         }
       }}
@@ -178,7 +173,7 @@ BottomPanel.Handle = function FloatingPanelHandle({
           opacity: "0.5",
         }}
       >
-        <IconCaretUp className="expand-icon" />
+        <IconCaretDown className="expand-icon" />
       </Box>
     </Box>
   );
@@ -194,8 +189,8 @@ BottomPanel.Contents = function FloatingPanelContents({
   React.useEffect(() => {
     const panel = panelWrapperRef.current;
     const content = contentRef.current;
-    if (!panel) return;
-    if (!content) return;
+    if (panel === null) return;
+    if (content === null) return;
 
     const observer = new ResizeObserver(() => {
       if (!panel.classList.contains("hidden")) {
