@@ -35,8 +35,8 @@ export default function BottomPanel({
           left: 0,
           margin: 0,
           overflow: "hidden",
-          minHeight: "2.5em",
-          height: "2.5em",
+          minHeight: "3.5em",
+          height: "3.5em",
           transition: "height 0.3s linear",
           "& .expand-icon": {
             transform: "rotate(0)",
@@ -111,7 +111,7 @@ BottomPanel.Handle = function FloatingPanelHandle({
         window.removeEventListener(eventNames.move, dragListener);
         panel.style.transition = "height 0.3s linear";
         if (state.hidden) {
-          panel.style.height = "2.5em";
+          panel.style.height = "3.5em";
         }
         else {
           panel.style.height = getHeight(panel) + 'px';
@@ -129,7 +129,7 @@ BottomPanel.Handle = function FloatingPanelHandle({
           theme.colorScheme == "dark"
             ? theme.colors.dark[5]
             : theme.colors.gray[1],
-        lineHeight: "1.5em",
+        lineHeight: "2.5em",
         cursor: "pointer",
         position: "relative",
         fontWeight: 400,
@@ -152,7 +152,7 @@ BottomPanel.Handle = function FloatingPanelHandle({
           panel.style.height = getHeight(panel) + 'px';
           state.hidden = false;
         } else {
-          panel.style.height = `2.5em`;
+          panel.style.height = `3.5em`;
           state.hidden = true;
         }
       }}
