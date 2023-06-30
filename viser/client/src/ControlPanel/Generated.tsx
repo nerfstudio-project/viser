@@ -385,6 +385,8 @@ function VectorInput(
           step={props.step}
           min={props.min === null ? undefined : props.min[i]}
           max={props.max === null ? undefined : props.max[i]}
+          stepHoldDelay={500}
+          stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
           disabled={props.disabled}
         />
       ))}

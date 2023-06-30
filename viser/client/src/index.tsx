@@ -38,6 +38,7 @@ type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: React.MutableRefObject<WebSocket | null>;
+  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
@@ -79,6 +80,7 @@ function SingleViewer() {
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
     websocketRef: React.useRef(null),
+    canvasRef: React.useRef(null),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
@@ -160,9 +162,11 @@ function SingleViewer() {
 }
 
 function ViewerCanvas() {
+  const viewer = React.useContext(ViewerContext)!;
   return (
     <Canvas
       camera={{ position: [3.0, 3.0, -3.0] }}
+      gl={{ preserveDrawingBuffer: true }}
       style={{
         position: "relative",
         zIndex: 0,
@@ -170,6 +174,7 @@ function ViewerCanvas() {
         height: "100%",
       }}
       performance={{ min: 0.95 }}
+      ref={viewer.canvasRef}
     >
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
