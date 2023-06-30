@@ -320,9 +320,9 @@ function GeneratedInput({ conf }: { conf: GuiConfig }) {
   }
 
   if (conf.hint !== null)
-    input = (
+    input = ( // We need to add <Box /> for inputs that we can't assign refs to.
       <Tooltip label={conf.hint} multiline w="15rem" withArrow openDelay={500}>
-        {input}
+        <Box>{input}</Box>
       </Tooltip>
     );
 
