@@ -44,7 +44,7 @@
     "zustand": "^4.3.7"
   },
   "scripts": {
-    "start": "vite",
+    "start": "vite --host",
     "build": "tsc && vite build",
     "serve": "vite preview"
   },
@@ -69,10 +69,12 @@
   "devDependencies": {
     "@redux-devtools/core": "^3.13.1",
     "@types/msgpack": "0.0.31",
-    "@typescript-eslint/eslint-plugin": "^5.57.1",
-    "@typescript-eslint/parser": "^5.57.1",
-    "eslint": "^8.38.0",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "browserslist-to-esbuild": "^1.2.0",
+    "eslint": "^8.43.0",
     "eslint-plugin-react": "^7.32.2",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "vite-plugin-eslint": "^1.8.1"
   }
 }
