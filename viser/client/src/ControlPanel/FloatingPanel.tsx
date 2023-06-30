@@ -162,9 +162,9 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     };
   });
 
-  interface DragEvents { move: "touchmove" | "mousemove", end: "touchend" | "mousedown" }
+  interface DragEvents { move: "touchmove" | "mousemove", end: "touchend" | "mouseup" }
   const touchEvents: DragEvents = { move: "touchmove", end: "touchend" }
-  const mouseEvents: DragEvents = { move: "mousemove", end: "mousedown" }
+  const mouseEvents: DragEvents = { move: "mousemove", end: "mouseup" }
   const dragHandler = (event: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const state = dragInfo.current;
     const panel = panelWrapperRef.current;
@@ -173,7 +173,6 @@ FloatingPanel.Handle = function FloatingPanelHandle({
       event = event as React.TouchEvent<HTMLDivElement>;
       state.startClientX = event.touches[0].clientX;
       state.startClientY = event.touches[0].clientY;
-
     }
     else {
       event = event as React.MouseEvent<HTMLDivElement, MouseEvent>;
@@ -211,6 +210,9 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     window.addEventListener(
       eventNames.end,
       () => {
+        if (event.type == "touchstart") {
+          state.dragging = false;
+        }
         window.removeEventListener(eventNames.move, dragListener);
       },
       { once: true }

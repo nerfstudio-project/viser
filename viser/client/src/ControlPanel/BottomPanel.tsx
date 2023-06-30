@@ -66,9 +66,9 @@ BottomPanel.Handle = function FloatingPanelHandle({
     hidden: true
   });
 
-  interface DragEvents {move: "touchmove" | "mousemove", end: "touchend" | "mousedown"}
+  interface DragEvents {move: "touchmove" | "mousemove", end: "touchend" | "mouseup"}
   const touchEvents: DragEvents = {move: "touchmove", end: "touchend"}
-  const mouseEvents: DragEvents = {move: "mousemove", end: "mousedown"}
+  const mouseEvents: DragEvents = {move: "mousemove", end: "mouseup"}
   const dragHandler = (event: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const state = dragInfo.current;
     const panel = panelWrapperRef.current;
@@ -146,7 +146,6 @@ BottomPanel.Handle = function FloatingPanelHandle({
           state.dragging = false;
           return;
         }
-        console.log(panel.classList);
 
         panel.classList.toggle("hidden");
         if (state.hidden) {
