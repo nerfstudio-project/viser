@@ -14,10 +14,9 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
+import { Aside, Box, MantineProvider, ScrollArea, useMantineTheme } from "@mantine/core";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Aside, Box, MantineProvider, ScrollArea, useMantineTheme } from "@mantine/core";
-
 import {
   SceneNodeThreeObject,
   UseSceneTree,
@@ -26,13 +25,13 @@ import {
 
 import "./index.css";
 
-import WebsocketInterface from "./WebsocketInterface";
+import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
-import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
+import WebsocketInterface from "./WebsocketInterface";
 
-import { Titlebar } from "./Titlebar";
 import FloatingPanel from "./ControlPanel/FloatingPanel";
+import { Titlebar } from "./Titlebar";
 import { useMediaQuery } from "@mantine/hooks";
 import BottomPanel from "./ControlPanel/BottomPanel";
 
@@ -110,7 +109,7 @@ function SingleViewer() {
             right: (fixed_sidebar && !smQuery)  ? "20em" : 0,
             position: "absolute",
             backgroundColor:
-              theme.colorScheme == "light" ? "#fff" : theme.colors.dark[9],
+              theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
           })}
         >
           <ViewerCanvas />
@@ -229,7 +228,6 @@ function SceneContextSetter() {
   cameraRef.current = useThree(
     (state) => state.camera as THREE.PerspectiveCamera
   );
-  console.log(cameraRef.current);
   return <></>;
 }
 

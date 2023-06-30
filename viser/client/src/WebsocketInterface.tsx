@@ -1,17 +1,18 @@
+import AwaitLock from "await-lock";
 import { pack, unpack } from "msgpackr";
 
 import React, { MutableRefObject, useContext } from "react";
 import * as THREE from "three";
-import AwaitLock from "await-lock";
 import { TextureLoader } from "three";
 
-import { SceneNode } from "./SceneTree";
-import { CoordinateFrame, CameraFrustum } from "./ThreeAssets";
-import { Message } from "./WebsocketMessages";
-import { syncSearchParamServer } from "./SearchParamsUtils";
-import { Html, PivotControls } from "@react-three/drei";
 import { ViewerContext } from ".";
+import { isGuiConfig } from "./ControlPanel/GuiState";
+import { SceneNode } from "./SceneTree";
+import { syncSearchParamServer } from "./SearchParamsUtils";
+import { CameraFrustum, CoordinateFrame } from "./ThreeAssets";
+import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
+import { Html, PivotControls } from "@react-three/drei";
 
 /** Send message over websocket. */
 export function sendWebsocketMessage(
@@ -53,10 +54,12 @@ export function makeThrottledMessageSender(
 
 /** Type guard for threejs textures. Meant to be used with `scene.background`. */
 export function isTexture(
-  background: THREE.Color | THREE.Texture | THREE.CubeTexture | null
+  background: THREE.Color | THREE.Texture | THREE.CubeTexture | null | undefined
 ): background is THREE.Texture {
   return (
-    background !== null && (background as THREE.Texture).isTexture !== undefined
+    background !== null &&
+    background !== undefined &&
+    (background as THREE.Texture).isTexture !== undefined
   );
 }
 
@@ -79,13 +82,17 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
 
+  // TODO: we should clean this up.
+  // https://github.com/nerfstudio-project/viser/issues/39
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
   const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
   const removeGui = viewer.useGui((state) => state.removeGui);
-  const guiSet = viewer.useGui((state) => state.guiSet);
+  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
+  const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
+  const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
@@ -105,10 +112,15 @@ function useMessageHandler() {
 
   // Return message handler.
   return (message: Message) => {
+    if (isGuiConfig(message)) {
+      addGui(message);
+      return;
+    }
+
     switch (message.type) {
       case "ThemeConfigurationMessage": {
         setTheme(message);
-        break;
+        return;
       }
       // Add a coordinate frame.
       case "FrameMessage": {
@@ -122,7 +134,7 @@ function useMessageHandler() {
             />
           ))
         );
-        break;
+        return;
       }
       // Add a point cloud.
       case "PointCloudMessage": {
@@ -173,7 +185,7 @@ function useMessageHandler() {
             }
           )
         );
-        break;
+        return;
       }
 
       // Add mesh
@@ -236,16 +248,17 @@ function useMessageHandler() {
             }
           )
         );
-        break;
+        return;
       }
       // Add a camera frustum.
       case "CameraFrustumMessage": {
         const texture =
-          message.image_media_type &&
-          message.image_base64_data &&
-          new TextureLoader().load(
-            `data:${message.image_media_type};base64,${message.image_base64_data}`
-          );
+          message.image_media_type !== null &&
+          message.image_base64_data !== null
+            ? new TextureLoader().load(
+                `data:${message.image_media_type};base64,${message.image_base64_data}`
+              )
+            : undefined;
 
         const height = message.scale * Math.tan(message.fov / 2.0) * 2.0;
 
@@ -279,10 +292,10 @@ function useMessageHandler() {
                 )}
               </group>
             ),
-            () => texture && texture.dispose()
+            () => texture?.dispose()
           )
         );
-        break;
+        return;
       }
       case "TransformControlsMessage": {
         const name = message.name;
@@ -320,7 +333,7 @@ function useMessageHandler() {
             />
           ))
         );
-        break;
+        return;
       }
       case "SetCameraLookAtMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
@@ -336,7 +349,7 @@ function useMessageHandler() {
         );
         target.applyQuaternion(R_threeworld_world);
         cameraControls.setTarget(target.x, target.y, target.z);
-        break;
+        return;
       }
       case "SetCameraUpDirectionMessage": {
         const camera = viewer.cameraRef.current!;
@@ -352,7 +365,7 @@ function useMessageHandler() {
         ).applyQuaternion(R_threeworld_world);
         camera.up.set(updir.x, updir.y, updir.z);
         cameraControls.applyCameraUp();
-        break;
+        return;
       }
       case "SetCameraPositionMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
@@ -374,7 +387,7 @@ function useMessageHandler() {
           position_cmd.y,
           position_cmd.z
         );
-        break;
+        return;
       }
       case "SetCameraFovMessage": {
         const camera = viewer.cameraRef.current!;
@@ -383,7 +396,7 @@ function useMessageHandler() {
         camera.setFocalLength(
           (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0)
         );
-        break;
+        return;
       }
       case "SetOrientationMessage": {
         const attr = viewer.nodeAttributesFromName.current;
@@ -411,14 +424,14 @@ function useMessageHandler() {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
 
-            const oldBackground = viewer.sceneRef.current!.background;
+            const oldBackground = viewer.sceneRef.current?.background;
             viewer.sceneRef.current!.background = texture;
             if (isTexture(oldBackground)) oldBackground.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
           }
         );
-        break;
+        return;
       }
       // Add a 2D label.
       case "LabelMessage": {
@@ -462,7 +475,7 @@ function useMessageHandler() {
             );
           })
         );
-        break;
+        return;
       }
       // Add an image.
       case "ImageMessage": {
@@ -500,76 +513,53 @@ function useMessageHandler() {
             );
           }
         );
-        break;
+        return;
       }
       // Remove a scene node by name.
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
-        break;
+        return;
       }
       // Set the clickability of a particular scene node.
       case "SetSceneNodeClickableMessage": {
         setClickable(message.name, message.clickable);
-        break;
+        return;
       }
       // Reset the entire scene, removing all scene nodes.
       case "ResetSceneMessage": {
         resetScene();
 
-        const oldBackground = viewer.sceneRef.current!.background;
+        const oldBackground = viewer.sceneRef.current?.background;
         viewer.sceneRef.current!.background = null;
         if (isTexture(oldBackground)) oldBackground.dispose();
 
         viewer.useGui.setState({ backgroundAvailable: false });
-        break;
-      }
-      // Add a GUI input.
-      case "GuiAddMessage": {
-        addGui(message.name, {
-          levaConf: message.leva_conf,
-          folderLabels: message.folder_labels,
-          visible: true,
-        });
-        break;
+        return;
       }
       // Set the value of a GUI input.
       case "GuiSetValueMessage": {
-        guiSet(message.name, message.value);
-        break;
+        setGuiValue(message.id, message.value);
+        return;
       }
       // Set the hidden state of a GUI input.
       case "GuiSetVisibleMessage": {
-        const currentConf =
-          viewer.useGui.getState().guiConfigFromName[message.name];
-        if (currentConf !== undefined) {
-          addGui(message.name, {
-            ...currentConf,
-            visible: message.visible,
-          });
-        }
-        break;
+        setGuiVisible(message.id, message.visible);
+        return;
       }
-      // Add a GUI input.
-      case "GuiSetLevaConfMessage": {
-        const currentConf =
-          viewer.useGui.getState().guiConfigFromName[message.name];
-        if (currentConf !== undefined) {
-          addGui(message.name, {
-            ...currentConf,
-            levaConf: message.leva_conf,
-          });
-        }
-        break;
+      // Set the disabled state of a GUI input.
+      case "GuiSetDisabledMessage": {
+        setGuiDisabled(message.id, message.disabled);
+        return;
       }
       // Remove a GUI input.
       case "GuiRemoveMessage": {
-        removeGui(message.name);
-        break;
+        removeGui(message.id);
+        return;
       }
       default: {
         console.log("Received message did not match any known types:", message);
-        break;
+        return;
       }
     }
   };
@@ -599,22 +589,22 @@ export default function WebsocketInterface() {
 
       // Timeout is necessary when we're connecting to an SSH/tunneled port.
       const retryTimeout = setTimeout(() => {
-        ws && ws.close();
+        ws?.close();
       }, 5000);
 
       ws.onopen = () => {
         clearTimeout(retryTimeout);
-        console.log("Connected!" + server);
+        console.log(`Connected!${server}`);
         viewer.websocketRef.current = ws;
         viewer.useGui.setState({ websocketConnected: true });
       };
 
       ws.onclose = () => {
-        console.log("Disconnected! " + server);
+        console.log(`Disconnected! ${server}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
         viewer.useGui.setState({ websocketConnected: false });
-        if (viewer.useGui.getState().guiNames.length > 0) resetGui();
+        resetGui();
 
         // Try to reconnect.
         timeout = setTimeout(tryConnect, 1000);
@@ -668,7 +658,7 @@ export default function WebsocketInterface() {
       done = true;
       clearTimeout(timeout);
       viewer.useGui.setState({ websocketConnected: false });
-      ws && ws.close();
+      ws?.close();
       clearTimeout(timeout);
     };
   }, [server, handleMessage, resetGui]);

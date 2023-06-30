@@ -1,21 +1,19 @@
-import { useContext } from "react";
 import { ViewerContext } from ".";
-import { Message } from "./WebsocketMessages";
-import { Anchor, Box, Burger, Button, Container, Group, Header, NavLink, Navbar, Paper, Portal, Text, UnstyledButton } from "@mantine/core";
+import { ThemeConfigurationMessage } from "./WebsocketMessages";
+import { Burger, Button, Container, Group, Header, Paper } from "@mantine/core";
 import {
   IconBrandGithub,
   IconFileDescription,
   IconKeyboard,
 } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
+import { useContext } from "react";
 
 // Type helpers.
 type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 type NoNull<T> = Exclude<T, null>;
-type TitlebarContent = NoNull<
-  (Message & { type: "ThemeConfigurationMessage" })["titlebar_content"]
->;
+type TitlebarContent = NoNull<ThemeConfigurationMessage["titlebar_content"]>;
 function assertUnreachable(x: never): never {
   throw new Error("Didn't expect to get here", x);
 }
@@ -126,14 +124,14 @@ export function Titlebar() {
           ? theme.colors.gray[4]
           : theme.colors.dark[4],
     })}>
-      <Container fluid sx={(theme) => ({
+      <Container fluid sx={() => ({
         display: "flex",
         alignItems: "center"
       })}>
-        <Group sx={(theme) => ({ marginRight: "auto" })}>
+        <Group sx={() => ({ marginRight: "auto" })}>
           {imageData !== null ? TitlebarImage(imageData) : null}
         </Group>
-        <Group sx={(theme) => ({
+        <Group sx={() => ({
           flexWrap: 'nowrap',
           overflowX: "scroll",
           msOverflowStyle: "none",
