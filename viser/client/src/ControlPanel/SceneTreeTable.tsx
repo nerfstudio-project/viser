@@ -27,11 +27,10 @@ export default function SceneTreeTable(props: { compact: boolean }) {
     (state) => state.setLabelVisibility
   );
   function setVisible(name: string, visible: boolean) {
-    const attrs = viewer.nodeAttributesFromName.current[name];
-    if (attrs !== undefined) {
-      attrs.visibility = visible;
-      rerenderTable();
-    }
+    const attr = viewer.nodeAttributesFromName.current;
+    if (attr[name] === undefined) attr[name] = {};
+    attr[name]!.visibility = visible;
+    rerenderTable();
   }
 
   // For performance, scene node visibility is stored in a ref instead of the

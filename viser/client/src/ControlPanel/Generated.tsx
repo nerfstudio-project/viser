@@ -320,9 +320,9 @@ function GeneratedInput({ conf }: { conf: GuiConfig }) {
   }
 
   if (conf.hint !== null)
-    input = (
+    input = ( // We need to add <Box /> for inputs that we can't assign refs to.
       <Tooltip label={conf.hint} multiline w="15rem" withArrow openDelay={500}>
-        {input}
+        <Box>{input}</Box>
       </Tooltip>
     );
 
@@ -385,6 +385,8 @@ function VectorInput(
           step={props.step}
           min={props.min === null ? undefined : props.min[i]}
           max={props.max === null ? undefined : props.max[i]}
+          stepHoldDelay={500}
+          stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
           disabled={props.disabled}
         />
       ))}

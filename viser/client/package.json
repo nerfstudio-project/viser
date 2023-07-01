@@ -64,6 +64,7 @@
   "devDependencies": {
     "@redux-devtools/core": "^3.13.1",
     "@types/msgpack": "0.0.31",
+    "@types/wicg-file-system-access": "^2020.9.6",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
     "browserslist-to-esbuild": "^1.2.0",
