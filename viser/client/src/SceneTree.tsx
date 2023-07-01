@@ -262,24 +262,30 @@ export function SceneNodeThreeObject(props: { name: string }) {
     if (obj === null) return;
 
     const nodeAttributes = viewer.nodeAttributesFromName.current[props.name];
-    const wxyz = nodeAttributes?.wxyz;
-    const position = nodeAttributes?.position;
-    const visibility = nodeAttributes?.visibility;
+    if (nodeAttributes === undefined) return;
+
+    const visibility = nodeAttributes.visibility;
+    if (visibility !== undefined) {
+      obj.visible = visibility;
+    }
 
     let changed = false;
-    if (visibility !== undefined) obj.visible = visibility;
+    const wxyz = nodeAttributes.wxyz;
     if (wxyz !== undefined) {
       changed = true;
       obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
     }
+    const position = nodeAttributes.position;
     if (position !== undefined) {
       changed = true;
       obj.position.set(position[0], position[1], position[2]);
     }
 
     // Update matrices if necessary. This is necessary for PivotControls.
-    if (changed && !obj.matrixAutoUpdate) obj.updateMatrix();
-    if (changed && !obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
+    if (changed) {
+      if (!obj.matrixAutoUpdate) obj.updateMatrix();
+      if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
+    }
   });
 
   // Clean up when done.

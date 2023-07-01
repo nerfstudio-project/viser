@@ -301,7 +301,7 @@ function useMessageHandler() {
         const name = message.name;
         const sendDragMessage = makeThrottledMessageSender(
           viewer.websocketRef,
-          25
+          50
         );
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => (
@@ -320,14 +320,23 @@ function useMessageHandler() {
               depthTest={message.depth_test}
               opacity={message.opacity}
               onDrag={(l) => {
+                const attrs = viewer.nodeAttributesFromName.current;
+                if (attrs[message.name] === undefined) {
+                  attrs[message.name] = {};
+                }
+
                 const wxyz = new THREE.Quaternion();
                 wxyz.setFromRotationMatrix(l);
                 const position = new THREE.Vector3().setFromMatrixPosition(l);
+
+                const nodeAttributes = attrs[message.name]!;
+                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+                nodeAttributes.position = position.toArray();
                 sendDragMessage({
                   type: "TransformControlsUpdateMessage",
                   name: name,
-                  wxyz: [wxyz.w, wxyz.x, wxyz.y, wxyz.z],
-                  position: position.toArray(),
+                  wxyz: nodeAttributes.wxyz,
+                  position: nodeAttributes.position,
                 });
               }}
             />

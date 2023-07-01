@@ -1,5 +1,4 @@
 import { ViewerContext } from "..";
-import { isTexture } from "../WebsocketInterface";
 import { Button, Stack, Switch, TextInput } from "@mantine/core";
 import { Stats } from "@react-three/drei";
 import { IconPhoto } from "@tabler/icons-react";
@@ -36,26 +35,38 @@ export default function ServerControls() {
           onKeyDown={triggerBlur}
         />
         <Button
-          onClick={() => {
-            if (!isTexture(viewer.sceneRef.current?.background)) {
-              // This should never happen.
-              alert("No background to download!");
-              return;
-            }
+          onClick={async () => {
+            viewer.canvasRef.current?.toBlob(async (blob) => {
+              if (blob === null) {
+                console.error("Render failed!");
+                return;
+              }
 
-            const data = viewer.sceneRef.current?.background.image.src;
-            const link = document.createElement("a");
-            link.download = "background";
-            link.href = data;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+              let handle = null;
+              try {
+                handle = await showSaveFilePicker({
+                  suggestedName: "render.png",
+                  types: [
+                    {
+                      accept: { "image/png": [".png"] },
+                    },
+                  ],
+                });
+              } catch (e) {
+                console.log(e);
+              }
+
+              if (handle) {
+                const writableStream = await handle.createWritable();
+                await writableStream.write(blob);
+                await writableStream.close();
+              }
+            });
           }}
           fullWidth
-          disabled={!viewer.useGui((state) => state.backgroundAvailable)}
           leftIcon={<IconPhoto size="1rem" />}
         >
-          Download Background
+          Export Canvas
         </Button>
         <Switch
           label="WebGL Statistics"
