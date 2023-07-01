@@ -8,6 +8,9 @@ import browserslistToEsbuild from 'browserslist-to-esbuild'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), eslint(), viteTsconfigPaths(), svgrPlugin()],
+  server: {
+    port: 3000
+  },
   build: {
     outDir: 'build',
     target: browserslistToEsbuild()
