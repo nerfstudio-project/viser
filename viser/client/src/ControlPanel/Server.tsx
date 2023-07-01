@@ -42,6 +42,37 @@ export default function ServerControls() {
                 return;
               }
 
+              const supportsFileSystemAccess =
+                'showSaveFilePicker' in window &&
+                (() => {
+                  try {
+                    return window.self === window.top;
+                  } catch {
+                    return false;
+                  }
+                })();
+              // If the File System Access API is supported…
+              if (supportsFileSystemAccess) {
+                let handle = null;
+                try {
+                  handle = await window.showSaveFilePicker({
+                    suggestedName: "render.png",
+                    types: [
+                      {
+                        accept: { "image/png": [".png"] },
+                      },
+                    ],
+                  });
+                } catch (e) {
+                  console.log(e);
+                }
+                if (handle) {
+                  const writableStream = await handle.createWritable();
+                  await writableStream.write(blob);
+                  await writableStream.close();
+                }
+              }
+
               const href = URL.createObjectURL(blob);
 
               // create "a" HTML element with href to file
