@@ -36,32 +36,57 @@ export default function ServerControls() {
         />
         <Button
           onClick={async () => {
-            viewer.canvasRef.current?.toBlob(async (blob) => {
-              if (blob === null) {
-                console.error("Render failed!");
-                return;
-              }
+            const supportsFileSystemAccess =
+              "showSaveFilePicker" in window &&
+              (() => {
+                try {
+                  return window.self === window.top;
+                } catch {
+                  return false;
+                }
+              })();
 
-              let handle = null;
-              try {
-                handle = await showSaveFilePicker({
-                  suggestedName: "render.png",
-                  types: [
-                    {
-                      accept: { "image/png": [".png"] },
-                    },
-                  ],
-                });
-              } catch (e) {
-                console.log(e);
-              }
+            if (supportsFileSystemAccess) {
+              // File System Access API is supported. (eg Chrome)
+              const fileHandlePromise = window.showSaveFilePicker({
+                suggestedName: "render.png",
+                types: [
+                  {
+                    accept: { "image/png": [".png"] },
+                  },
+                ],
+              });
+              viewer.canvasRef.current?.toBlob(async (blob) => {
+                if (blob === null) {
+                  console.error("Export failed");
+                  return;
+                }
 
-              if (handle) {
+                const handle = await fileHandlePromise;
                 const writableStream = await handle.createWritable();
                 await writableStream.write(blob);
                 await writableStream.close();
-              }
-            });
+              });
+            } else {
+              // File System Access API is not supported. (eg Firefox)
+              viewer.canvasRef.current?.toBlob((blob) => {
+                if (blob === null) {
+                  console.error("Export failed");
+                  return;
+                }
+                const href = URL.createObjectURL(blob);
+
+                // Download a file by creating a link and then clicking it.
+                const link = document.createElement("a");
+                link.href = href;
+                const filename = "render.png";
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(href);
+              });
+            }
           }}
           fullWidth
           leftIcon={<IconPhoto size="1rem" />}

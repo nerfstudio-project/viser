@@ -44,12 +44,12 @@ type ViewerContextContents = {
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
-      | undefined
-      | {
-          wxyz?: [number, number, number, number];
-          position?: [number, number, number];
-          visibility?: boolean;
-        };
+    | undefined
+    | {
+      wxyz?: [number, number, number, number];
+      position?: [number, number, number];
+      visibility?: boolean;
+    };
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
