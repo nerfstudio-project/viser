@@ -42,6 +42,7 @@ type ViewerContextContents = {
   websocketRef: React.MutableRefObject<WebSocket | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
+  nerfMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
@@ -83,6 +84,7 @@ function SingleViewer() {
     websocketRef: React.useRef(null),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
+    nerfMaterialRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
     // Scene node attributes that aren't placed in the zustand state, for performance reasons.
     nodeAttributesFromName: React.useRef({}),
@@ -178,7 +180,7 @@ function ViewerCanvas() {
       <AdaptiveEvents />
       <SceneContextSetter />
       <SynchronizedCameraControls />
-      <Selection>
+      <Selection >
         <SceneNodeThreeObject name="" />
         <EffectComposer enabled={true} autoClear={false}>
           <Outline
@@ -217,7 +219,7 @@ function NeRFImage(){
     gl_FragColor = vec4(color.rgb, 1.0);
     // TODO make sure the scale matches viser scale
     // this 1.0-depth is just for the static depth image, for nerf it should just be depth
-    gl_FragDepth = 2.0*(1.0 - depth);
+    gl_FragDepth = 10.0*depth;
   }`.trim();
   const nerfMaterial = new THREE.ShaderMaterial({
     fragmentShader: fragShader,
@@ -227,6 +229,8 @@ function NeRFImage(){
       nerfColor: {value: null},
     }
   });
+  const { nerfMaterialRef } = React.useContext(ViewerContext)!;
+  nerfMaterialRef.current = nerfMaterial;
   // For now just load a static texture, TODO make these update from nerf websocket
   const img = useTexture("turtle.jpeg");
   const depth = useTexture("turtle_depth.png");
@@ -245,6 +249,7 @@ function NeRFImage(){
             ref={nerfMesh}
             material={nerfMaterial}
             matrixWorldAutoUpdate={false}
+            name="nerfImage"
           >
             <planeGeometry
               attach="geometry"

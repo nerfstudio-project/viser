@@ -103,6 +103,7 @@ interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
   media_type: "image/jpeg" | "image/png";
   base64_data: string;
+  base64_depth: string;
 }
 interface ImageMessage {
   type: "ImageMessage";

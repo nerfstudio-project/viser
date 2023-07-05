@@ -416,6 +416,16 @@ function useMessageHandler() {
             if (isTexture(oldBackground)) oldBackground.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
+
+            viewer.nerfMaterialRef.current!.uniforms.nerfColor.value = texture;
+          }
+        );
+        new TextureLoader().load(
+          `data:$image/png;base64,${message.base64_depth}`,
+          (texture) => {
+            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
+            texture.encoding = THREE.sRGBEncoding;
+            viewer.nerfMaterialRef.current!.uniforms.nerfDepth.value = texture;
           }
         );
         break;

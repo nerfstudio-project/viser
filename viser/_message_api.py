@@ -705,14 +705,18 @@ class MessageApi(abc.ABC):
         image: onp.ndarray,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: Optional[int] = None,
+        depthimg: onp.ndarray | None = None,
     ) -> None:
         """Set a background image for the scene. Useful for NeRF visualization."""
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
+        _, base64_depth = _encode_image_base64(
+            depthimg, "png"
+        )
         self._queue(
             _messages.BackgroundImageMessage(
-                media_type=media_type, base64_data=base64_data
+                media_type=media_type, base64_data=base64_data, base64_depth = base64_depth
             )
         )
 
