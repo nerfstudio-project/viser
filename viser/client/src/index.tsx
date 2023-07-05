@@ -14,7 +14,7 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
-import { Aside, Box, MantineProvider, ScrollArea, useMantineTheme } from "@mantine/core";
+import { Aside, Box, MantineProvider, MediaQuery, ScrollArea, useMantineTheme } from "@mantine/core";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -89,8 +89,6 @@ function SingleViewer() {
     nodeAttributesFromName: React.useRef({}),
   };
   const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
-  const theme = useMantineTheme();
-  const smQuery = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
   return (
     <ViewerContext.Provider value={viewer}>
       <Titlebar />
@@ -103,27 +101,31 @@ function SingleViewer() {
         }}
       >
         <WebsocketInterface />
-        <Box
-          sx={(theme) => ({
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: (fixed_sidebar && !smQuery) ? "20em" : 0,
-            position: "absolute",
-            backgroundColor:
-              theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
-          })}
-        >
-          <ViewerCanvas />
-        </Box>
-        <Panel fixed_sidebar={fixed_sidebar} smQuery={smQuery} />
+        <MediaQuery smallerThan={"sm"} styles={{ right: 0 }}>
+          <Box
+            sx={(theme) => ({
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: (fixed_sidebar) ? "20em" : 0,
+              position: "absolute",
+              backgroundColor:
+                theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
+            })}
+          >
+            <ViewerCanvas />
+          </Box>
+        </MediaQuery>
+        <Panel fixed_sidebar={fixed_sidebar} />
       </Box>
     </ViewerContext.Provider>
   );
 }
 
-function Panel(props: { fixed_sidebar: boolean, smQuery: boolean }) {
-  if (props.smQuery) {
+function Panel(props: { fixed_sidebar: boolean }) {
+  const theme = useMantineTheme();
+  const smQuery = useMediaQuery(`(max-width: ${theme.breakpoints.sm})`);
+  if (smQuery) {
     return (
       <BottomPanel>
         <BottomPanel.Handle>
