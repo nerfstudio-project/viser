@@ -298,7 +298,12 @@ export interface ThemeConfigurationMessage {
           href: string | null;
         }[]
       | null;
-    image: { image_url: string; image_alt: string; href: string | null } | null;
+    image: {
+      image_url_light: string;
+      image_url_dark: string | null;
+      image_alt: string;
+      href: string | null;
+    } | null;
   } | null;
   fixed_sidebar: boolean;
 }

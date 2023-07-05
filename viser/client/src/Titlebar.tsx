@@ -1,6 +1,6 @@
 import { ViewerContext } from ".";
 import { ThemeConfigurationMessage } from "./WebsocketMessages";
-import { Burger, Button, Container, Group, Header, Paper } from "@mantine/core";
+import { Burger, Button, Container, Group, Header, Paper, MantineTheme, useMantineTheme } from "@mantine/core";
 import {
   IconBrandGithub,
   IconFileDescription,
@@ -85,10 +85,19 @@ export function MobileTitlebarButton(
   );
 }
 
-export function TitlebarImage(props: NoNull<TitlebarContent["image"]>) {
+export function TitlebarImage(
+  props: NoNull<TitlebarContent["image"]>,
+  theme: MantineTheme
+) {
+  let imageSource: string;
+  if (props.image_url_dark == null || theme.colorScheme == "light") {
+    imageSource = props.image_url_light;
+  } else {
+    imageSource = props.image_url_dark;
+  }
   const image = (
     <img
-      src={props.image_url}
+      src={imageSource}
       alt={props.image_alt}
       style={{
         height: "1.8em",
@@ -96,6 +105,7 @@ export function TitlebarImage(props: NoNull<TitlebarContent["image"]>) {
       }}
     />
   );
+
   if (props.href == null) {
     return image;
   }
@@ -105,6 +115,7 @@ export function TitlebarImage(props: NoNull<TitlebarContent["image"]>) {
 export function Titlebar() {
   const viewer = useContext(ViewerContext)!;
   const content = viewer.useGui((state) => state.theme.titlebar_content);
+  const theme = useMantineTheme();
 
   const [burgerOpen, burgerHandlers] = useDisclosure(false);
 
@@ -129,7 +140,7 @@ export function Titlebar() {
         alignItems: "center"
       })}>
         <Group sx={() => ({ marginRight: "auto" })}>
-          {imageData !== null ? TitlebarImage(imageData) : null}
+          {imageData !== null ? TitlebarImage(imageData, theme) : null}
         </Group>
         <Group sx={() => ({
           flexWrap: 'nowrap',
