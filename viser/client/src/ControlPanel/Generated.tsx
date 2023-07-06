@@ -320,11 +320,18 @@ function GeneratedInput({ conf }: { conf: GuiConfig }) {
   }
 
   if (conf.hint !== null)
-    input = ( // We need to add <Box /> for inputs that we can't assign refs to.
-      <Tooltip label={conf.hint} multiline w="15rem" withArrow openDelay={500}>
-        <Box>{input}</Box>
-      </Tooltip>
-    );
+    input = // We need to add <Box /> for inputs that we can't assign refs to.
+      (
+        <Tooltip
+          label={conf.hint}
+          multiline
+          w="15rem"
+          withArrow
+          openDelay={500}
+        >
+          <Box>{input}</Box>
+        </Tooltip>
+      );
 
   if (labeled)
     return <LabeledInput id={conf.id} label={conf.label} input={input} />;

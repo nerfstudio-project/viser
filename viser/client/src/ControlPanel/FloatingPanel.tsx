@@ -1,6 +1,7 @@
 import { Box, Paper } from "@mantine/core";
 import { IconCaretUp } from "@tabler/icons-react";
 import React from "react";
+import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 
 const FloatingPanelRefContext =
   React.createContext<React.RefObject<HTMLDivElement> | null>(null);
@@ -164,6 +165,62 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     };
   });
 
+  const dragHandler = (
+    event:
+      | React.TouchEvent<HTMLDivElement>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const state = dragInfo.current;
+    const panel = panelWrapperRef.current;
+    if (!panel) return;
+    if (event.type == "touchstart") {
+      event = event as React.TouchEvent<HTMLDivElement>;
+      state.startClientX = event.touches[0].clientX;
+      state.startClientY = event.touches[0].clientY;
+    } else {
+      event = event as React.MouseEvent<HTMLDivElement, MouseEvent>;
+      state.startClientX = event.clientX;
+      state.startClientY = event.clientY;
+    }
+    state.startPosX = panel.offsetLeft;
+    state.startPosY = panel.offsetTop;
+    const eventNames = event.type == "touchstart" ? touchEvents : mouseEvents;
+    function dragListener(event: MouseEvent | TouchEvent) {
+      // Minimum motion.
+      let deltaX = 0;
+      let deltaY = 0;
+      if (isTouchEvent(event)) {
+        event = event as TouchEvent;
+        deltaX = event.touches[0].clientX - state.startClientX;
+        deltaY = event.touches[0].clientY - state.startClientY;
+      } else if (isMouseEvent(event)) {
+        event = event as MouseEvent;
+        deltaX = event.clientX - state.startClientX;
+        deltaY = event.clientY - state.startClientY;
+      }
+      if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+
+      state.dragging = true;
+      const newX = state.startPosX + deltaX;
+      const newY = state.startPosY + deltaY;
+      [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
+        newX,
+        newY
+      );
+    }
+    window.addEventListener(eventNames.move, dragListener);
+    window.addEventListener(
+      eventNames.end,
+      () => {
+        if (event.type == "touchstart") {
+          state.dragging = false;
+        }
+        window.removeEventListener(eventNames.move, dragListener);
+      },
+      { once: true }
+    );
+  };
+
   return (
     <Box
       sx={(theme) => ({
@@ -188,43 +245,13 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 
         const wrapper = panelWrapperRef.current;
         if (!wrapper) return;
-        if (wrapper.classList.contains("hidden")) {
-          wrapper.classList.remove("hidden");
-        } else {
-          wrapper.classList.add("hidden");
-        }
+        wrapper.classList.toggle("hidden");
+      }}
+      onTouchStart={(event) => {
+        dragHandler(event);
       }}
       onMouseDown={(event) => {
-        const state = dragInfo.current;
-        const panel = panelWrapperRef.current;
-        if (!panel) return;
-        state.startClientX = event.clientX;
-        state.startClientY = event.clientY;
-        state.startPosX = panel.offsetLeft;
-        state.startPosY = panel.offsetTop;
-
-        function dragListener(event: MouseEvent) {
-          // Minimum motion.
-          const deltaX = event.clientX - state.startClientX;
-          const deltaY = event.clientY - state.startClientY;
-          if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-
-          state.dragging = true;
-          const newX = state.startPosX + deltaX;
-          const newY = state.startPosY + deltaY;
-          [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
-            newX,
-            newY
-          );
-        }
-        window.addEventListener("mousemove", dragListener);
-        window.addEventListener(
-          "mouseup",
-          () => {
-            window.removeEventListener("mousemove", dragListener);
-          },
-          { once: true }
-        );
+        dragHandler(event);
       }}
     >
       <Box

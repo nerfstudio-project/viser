@@ -218,7 +218,7 @@ class ViserServer(MessageApi):
     """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
     and then hidden by default."""
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 8080):
+    def __init__(self, host: str = "0.0.0.0", port: int = 8080):
         server = infra.Server(
             host=host,
             port=port,
