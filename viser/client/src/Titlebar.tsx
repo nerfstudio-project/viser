@@ -1,6 +1,15 @@
 import { ViewerContext } from ".";
 import { ThemeConfigurationMessage } from "./WebsocketMessages";
-import { Burger, Button, Container, Group, Header, Paper, MantineTheme, useMantineTheme } from "@mantine/core";
+import {
+  Burger,
+  Button,
+  Container,
+  Group,
+  Header,
+  Paper,
+  MantineTheme,
+  useMantineTheme,
+} from "@mantine/core";
 import {
   IconBrandGithub,
   IconFileDescription,
@@ -18,7 +27,9 @@ function assertUnreachable(x: never): never {
   throw new Error("Didn't expect to get here", x);
 }
 
-function getIcon(icon: ArrayElement<NoNull<TitlebarContent["buttons"]>>["icon"]) {
+function getIcon(
+  icon: ArrayElement<NoNull<TitlebarContent["buttons"]>>["icon"]
+) {
   let Icon = null;
   switch (icon) {
     case null:
@@ -38,7 +49,6 @@ function getIcon(icon: ArrayElement<NoNull<TitlebarContent["buttons"]>>["icon"])
   return Icon;
 }
 
-
 // We inherit props directly from message contents.
 export function TitlebarButton(
   props: ArrayElement<NoNull<TitlebarContent["buttons"]>>
@@ -55,9 +65,9 @@ export function TitlebarButton(
       ml="sm"
       color="gray"
       sx={(theme) => ({
-        [theme.fn.smallerThan('sm')]: {
+        [theme.fn.smallerThan("sm")]: {
           display: "none",
-        }
+        },
       })}
     >
       {props.text}
@@ -70,7 +80,7 @@ export function MobileTitlebarButton(
 ) {
   const Icon = getIcon(props.icon);
   return (
-  <Button
+    <Button
       m="sm"
       component="a"
       variant="default"
@@ -127,58 +137,71 @@ export function Titlebar() {
   const imageData = content.image;
 
   return (
-    <Header p="xs" height="3.2em" sx={(theme) => ({
-      margin: 0,
-      borderBottom: "1px solid",
-      borderColor:
-        theme.colorScheme == "light"
-          ? theme.colors.gray[4]
-          : theme.colors.dark[4],
-    })}>
-      <Container fluid sx={() => ({
-        display: "flex",
-        alignItems: "center"
-      })}>
+    <Header
+      p="xs"
+      height="3.2em"
+      sx={(theme) => ({
+        margin: 0,
+        borderBottom: "1px solid",
+        borderColor:
+          theme.colorScheme == "light"
+            ? theme.colors.gray[4]
+            : theme.colors.dark[4],
+      })}
+    >
+      <Container
+        fluid
+        sx={() => ({
+          display: "flex",
+          alignItems: "center",
+        })}
+      >
         <Group sx={() => ({ marginRight: "auto" })}>
           {imageData !== null ? TitlebarImage(imageData, theme) : null}
         </Group>
-        <Group sx={() => ({
-          flexWrap: 'nowrap',
-          overflowX: "scroll",
-          msOverflowStyle: "none",
-          scrollbarWidth: "none",
-          "&::-webkit-scrollbar": {
-            display: "none"
-          }
-        })}>
+        <Group
+          sx={() => ({
+            flexWrap: "nowrap",
+            overflowX: "scroll",
+            msOverflowStyle: "none",
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+          })}
+        >
           {buttons?.map((btn) => TitlebarButton(btn))}
         </Group>
-        <Burger size="sm"
+        <Burger
+          size="sm"
           opened={burgerOpen}
           onClick={burgerHandlers.toggle}
           title={!burgerOpen ? "Open navigation" : "Close navigation"}
           sx={(theme) => ({
-            [theme.fn.largerThan('sm')]: {
+            [theme.fn.largerThan("sm")]: {
               display: "none",
-            }
-          })}></Burger>
+            },
+          })}
+        ></Burger>
       </Container>
-      <Paper sx={(theme) => ({
-        [theme.fn.largerThan('sm')]: {
-          display: "none"
-        },
-        display: "flex",
-        flexDirection: "column",
-        position: "relative",
-        top: 0,
-        left: "-0.625rem",
-        zIndex: 10000000,
-        height: burgerOpen ? "calc(100vh - 2.375em)" : '0',
-        width: "100vw",
-        transition: "all 0.5s",
-        overflow: burgerOpen ? "scroll" : "hidden",
-        padding: burgerOpen ? "1rem" : "0"
-      })}>
+      <Paper
+        sx={(theme) => ({
+          [theme.fn.largerThan("sm")]: {
+            display: "none",
+          },
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+          top: 0,
+          left: "-0.625rem",
+          zIndex: 10000000,
+          height: burgerOpen ? "calc(100vh - 2.375em)" : "0",
+          width: "100vw",
+          transition: "all 0.5s",
+          overflow: burgerOpen ? "scroll" : "hidden",
+          padding: burgerOpen ? "1rem" : "0",
+        })}
+      >
         {buttons?.map((btn) => MobileTitlebarButton(btn))}
       </Paper>
     </Header>

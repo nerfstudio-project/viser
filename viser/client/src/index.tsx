@@ -14,7 +14,14 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
-import { Aside, Box, MantineProvider, MediaQuery, ScrollArea, useMantineTheme } from "@mantine/core";
+import {
+  Aside,
+  Box,
+  MantineProvider,
+  MediaQuery,
+  ScrollArea,
+  useMantineTheme,
+} from "@mantine/core";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -45,12 +52,12 @@ type ViewerContextContents = {
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
-    | undefined
-    | {
-      wxyz?: [number, number, number, number];
-      position?: [number, number, number];
-      visibility?: boolean;
-    };
+      | undefined
+      | {
+          wxyz?: [number, number, number, number];
+          position?: [number, number, number];
+          visibility?: boolean;
+        };
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
@@ -107,7 +114,7 @@ function SingleViewer() {
               top: 0,
               bottom: 0,
               left: 0,
-              right: (fixed_sidebar) ? "20em" : 0,
+              right: fixed_sidebar ? "20em" : 0,
               position: "absolute",
               backgroundColor:
                 theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
@@ -135,9 +142,8 @@ function Panel(props: { fixed_sidebar: boolean }) {
           <ControlPanel />
         </BottomPanel.Contents>
       </BottomPanel>
-    )
-  }
-  else if (props.fixed_sidebar) {
+    );
+  } else if (props.fixed_sidebar) {
     return (
       <Aside
         hiddenBreakpoint={"sm"}
@@ -172,9 +178,8 @@ function Panel(props: { fixed_sidebar: boolean }) {
           <ControlPanel />
         </ScrollArea>
       </Aside>
-    )
-  }
-  else {
+    );
+  } else {
     return (
       <FloatingPanel>
         <FloatingPanel.Handle>
@@ -184,7 +189,7 @@ function Panel(props: { fixed_sidebar: boolean }) {
           <ControlPanel />
         </FloatingPanel.Contents>
       </FloatingPanel>
-    )
+    );
   }
 }
 

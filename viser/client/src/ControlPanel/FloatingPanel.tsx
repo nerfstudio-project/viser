@@ -86,7 +86,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     parentSize: number
   ) =>
     Math.abs(panelPosition + panelSize / 2.0) <
-      Math.abs(panelPosition - parentSize + panelSize / 2.0)
+    Math.abs(panelPosition - parentSize + panelSize / 2.0)
       ? panelPosition
       : panelPosition - parentSize;
   const panelBoundaryPad = 15;
@@ -165,7 +165,11 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     };
   });
 
-  const dragHandler = (event: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const dragHandler = (
+    event:
+      | React.TouchEvent<HTMLDivElement>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
     const state = dragInfo.current;
     const panel = panelWrapperRef.current;
     if (!panel) return;
@@ -173,8 +177,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
       event = event as React.TouchEvent<HTMLDivElement>;
       state.startClientX = event.touches[0].clientX;
       state.startClientY = event.touches[0].clientY;
-    }
-    else {
+    } else {
       event = event as React.MouseEvent<HTMLDivElement, MouseEvent>;
       state.startClientX = event.clientX;
       state.startClientY = event.clientY;
@@ -190,8 +193,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         event = event as TouchEvent;
         deltaX = event.touches[0].clientX - state.startClientX;
         deltaY = event.touches[0].clientY - state.startClientY;
-      }
-      else if (isMouseEvent(event)) {
+      } else if (isMouseEvent(event)) {
         event = event as MouseEvent;
         deltaX = event.clientX - state.startClientX;
         deltaY = event.clientY - state.startClientY;
@@ -217,7 +219,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
       },
       { once: true }
     );
-  }
+  };
 
   return (
     <Box
@@ -245,8 +247,12 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         if (!wrapper) return;
         wrapper.classList.toggle("hidden");
       }}
-      onTouchStart={(event) => { dragHandler(event) }}
-      onMouseDown={(event) => { dragHandler(event) }}
+      onTouchStart={(event) => {
+        dragHandler(event);
+      }}
+      onMouseDown={(event) => {
+        dragHandler(event);
+      }}
     >
       <Box
         component="div"

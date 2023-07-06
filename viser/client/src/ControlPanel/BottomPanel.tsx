@@ -6,15 +6,17 @@ import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 const BottomPanelRefContext =
   React.createContext<React.RefObject<HTMLDivElement> | null>(null);
 
-const pagePercent = (start: number, end: number) => { return (start - end) / window.innerHeight }
+const pagePercent = (start: number, end: number) => {
+  return (start - end) / window.innerHeight;
+};
 const getHeight = (element: HTMLElement) => {
   let size = 0;
-  const children = element.children
+  const children = element.children;
   for (let i = 0; i < children.length; i++) {
     size += children[i].clientHeight;
   }
   return size;
-}
+};
 
 export default function BottomPanel({
   children,
@@ -64,14 +66,18 @@ BottomPanel.Handle = function FloatingPanelHandle({
   const dragInfo = React.useRef({
     dragging: false,
     startHeight: 0,
-    hidden: true
+    hidden: true,
   });
 
-  const dragHandler = (event: React.TouchEvent<HTMLDivElement> | React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const dragHandler = (
+    event:
+      | React.TouchEvent<HTMLDivElement>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
     const state = dragInfo.current;
     const panel = panelWrapperRef.current;
     if (panel === null) return;
-    state.startHeight = panel.clientHeight
+    state.startHeight = panel.clientHeight;
     panel.style.transition = "none";
     let hidePanel = state.hidden;
     const eventNames = event.type == "touchstart" ? touchEvents : mouseEvents;
@@ -79,20 +85,23 @@ BottomPanel.Handle = function FloatingPanelHandle({
       let pos = 0;
       if (isTouchEvent(event)) {
         pos = window.innerHeight - event.touches[0].clientY;
-      }
-      else if (isMouseEvent(event)) {
+      } else if (isMouseEvent(event)) {
         pos = window.innerHeight - event.clientY;
       }
 
       state.dragging = true;
-      if (!panel) { return }
-      panel.style.height = pos + 'px'
+      if (!panel) {
+        return;
+      }
+      panel.style.height = pos + "px";
       const change = pagePercent(state.startHeight, panel.clientHeight);
       if ((!state.hidden && change > 0.1) || (state.hidden && change > -0.1)) {
         panel.classList.add("hidden");
         hidePanel = true;
-      }
-      else if ((!state.hidden && change <= 0.05) || (state.hidden && change <= -0.1)) {
+      } else if (
+        (!state.hidden && change <= 0.05) ||
+        (state.hidden && change <= -0.1)
+      ) {
         panel.classList.remove("hidden");
         hidePanel = false;
       }
@@ -107,14 +116,13 @@ BottomPanel.Handle = function FloatingPanelHandle({
         panel.style.transition = "height 0.3s linear";
         if (state.hidden) {
           panel.style.height = "3.5em";
-        }
-        else {
-          panel.style.height = getHeight(panel) + 'px';
+        } else {
+          panel.style.height = getHeight(panel) + "px";
         }
       },
       { once: true }
     );
-  }
+  };
 
   return (
     <Box
@@ -144,15 +152,19 @@ BottomPanel.Handle = function FloatingPanelHandle({
 
         panel.classList.toggle("hidden");
         if (state.hidden) {
-          panel.style.height = getHeight(panel) + 'px';
+          panel.style.height = getHeight(panel) + "px";
           state.hidden = false;
         } else {
           panel.style.height = "3.5em";
           state.hidden = true;
         }
       }}
-      onTouchStart={(event) => {dragHandler(event)}}
-      onMouseDown={(event) => {dragHandler(event)}}
+      onTouchStart={(event) => {
+        dragHandler(event);
+      }}
+      onMouseDown={(event) => {
+        dragHandler(event);
+      }}
     >
       <Box
         component="div"
@@ -194,15 +206,17 @@ BottomPanel.Contents = function FloatingPanelContents({
 
     const observer = new ResizeObserver(() => {
       if (!panel.classList.contains("hidden")) {
-        panel.style.height = getHeight(panel) + 'px';
+        panel.style.height = getHeight(panel) + "px";
       }
     });
     observer.observe(content);
     return () => {
       observer.disconnect();
     };
-  })
+  });
   return (
-    <Box className="panel-contents" ref={contentRef}>{children}</Box>
+    <Box className="panel-contents" ref={contentRef}>
+      {children}
+    </Box>
   );
 };
