@@ -101,7 +101,7 @@ function SingleViewer() {
         }}
       >
         <WebsocketInterface />
-        <MediaQuery smallerThan={"sm"} styles={{ right: 0 }}>
+        <MediaQuery smallerThan={"sm"} styles={{ right: 0, bottom: "3.5em" }}>
           <Box
             sx={(theme) => ({
               top: 0,
