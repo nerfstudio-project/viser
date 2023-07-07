@@ -7,6 +7,8 @@ export type GuiConfig =
   | Messages.GuiAddButtonMessage
   | Messages.GuiAddCheckboxMessage
   | Messages.GuiAddDropdownMessage
+  | Messages.GuiAddFolderMessage
+  | Messages.GuiAddTabsMessage
   | Messages.GuiAddNumberMessage
   | Messages.GuiAddRgbMessage
   | Messages.GuiAddRgbaMessage
@@ -26,6 +28,11 @@ interface GuiState {
   server: string;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
+  // We use an object whose values are always null to emulate a set.
+  // TODO: is there a less hacky way?
+  guiIdSetFromContainerId: {
+    [containerId: string]: { [configId: string]: null } | undefined;
+  };
   guiConfigFromId: { [id: string]: GuiConfig };
   guiValueFromId: { [id: string]: any };
   guiAttributeFromId: {
@@ -53,6 +60,7 @@ const cleanGuiState: GuiState = {
   server: "ws://localhost:8080", // Currently this will always be overridden.
   websocketConnected: false,
   backgroundAvailable: false,
+  guiIdSetFromContainerId: {},
   guiConfigFromId: {},
   guiValueFromId: {},
   guiAttributeFromId: {},
@@ -71,6 +79,10 @@ export function useGuiState(initialServer: string) {
         addGui: (guiConfig) =>
           set((state) => {
             state.guiConfigFromId[guiConfig.id] = guiConfig;
+            state.guiIdSetFromContainerId[guiConfig.container_id] = {
+              ...state.guiIdSetFromContainerId[guiConfig.container_id],
+              [guiConfig.id]: null,
+            };
           }),
         setGuiValue: (id, value) =>
           set((state) => {
@@ -92,13 +104,20 @@ export function useGuiState(initialServer: string) {
           }),
         removeGui: (id) =>
           set((state) => {
+            const guiConfig = state.guiConfigFromId[id];
+            delete state.guiIdSetFromContainerId[guiConfig.container_id]![
+              guiConfig.id
+            ];
             delete state.guiConfigFromId[id];
             delete state.guiValueFromId[id];
             delete state.guiAttributeFromId[id];
           }),
         resetGui: () =>
           set((state) => {
+            state.guiIdSetFromContainerId = {};
             state.guiConfigFromId = {};
+            state.guiValueFromId = {};
+            state.guiAttributeFromId = {};
           }),
       }))
     )

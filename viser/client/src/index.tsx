@@ -1,3 +1,4 @@
+// @refresh reset
 import {
   AdaptiveDpr,
   AdaptiveEvents,

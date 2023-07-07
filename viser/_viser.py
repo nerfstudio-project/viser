@@ -13,8 +13,11 @@ from typing_extensions import override
 
 from . import _messages, infra
 from . import transforms as tf
+from ._gui_api import GuiContainerApi
 from ._message_api import MessageApi, cast_vector
-from ._scene_handle import FrameHandle, _SceneNodeHandleState
+from ._scene_handles import FrameHandle, _SceneNodeHandleState
+
+ROOT_CONTAINER_ID = "root"
 
 
 @dataclasses.dataclass
@@ -157,7 +160,7 @@ class _ClientHandleState:
 
 
 @dataclasses.dataclass
-class ClientHandle(MessageApi):
+class ClientHandle(MessageApi, GuiContainerApi):
     """Handle for interacting with a specific client. Can be used to send messages to
     individual clients and read/write camera information."""
 
@@ -167,6 +170,16 @@ class ClientHandle(MessageApi):
 
     def __post_init__(self):
         super().__init__(self._state.connection)
+
+    @override
+    def _get_api(self) -> MessageApi:
+        """Message API to use."""
+        return self
+
+    @override
+    def _get_container_id(self) -> str:
+        """ID of container to put GUI elements into."""
+        return ROOT_CONTAINER_ID
 
     @override
     def _queue(self, message: infra.Message) -> None:
@@ -207,7 +220,7 @@ class _ViserServerState:
     client_lock: threading.Lock = dataclasses.field(default_factory=threading.Lock)
 
 
-class ViserServer(MessageApi):
+class ViserServer(MessageApi, GuiContainerApi):
     """Viser server class. The primary interface for functionality in `viser`.
 
     Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all
@@ -316,6 +329,21 @@ class ViserServer(MessageApi):
         )
         self.world_axes.visible = False
 
+    @override
+    def _get_api(self) -> MessageApi:
+        """Message API to use."""
+        return self
+
+    @override
+    def _get_container_id(self) -> str:
+        """ID of container to put GUI elements into."""
+        return ROOT_CONTAINER_ID
+
+    @override
+    def _queue(self, message: infra.Message) -> None:
+        """Define how the message API should send messages."""
+        self._state.connection.broadcast(message)
+
     def get_clients(self) -> Dict[int, ClientHandle]:
         """Creates and returns a copy of the mapping from connected client IDs to
         handles."""
@@ -348,11 +376,6 @@ class ViserServer(MessageApi):
         """Attach a callback to run when clients disconnect."""
         self._client_disconnect_cb.append(cb)
         return cb
-
-    @override
-    def _queue(self, message: infra.Message) -> None:
-        """Define how the message API should send messages."""
-        self._state.connection.broadcast(message)
 
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
