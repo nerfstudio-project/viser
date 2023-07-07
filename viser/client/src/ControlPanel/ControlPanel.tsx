@@ -1,16 +1,33 @@
+import { useDisclosure } from "@mantine/hooks";
 import { ViewerContext } from "..";
-import GeneratedControls from "./Generated";
+import GeneratedGuiContainer from "./Generated";
 import SceneTreeTable from "./SceneTreeTable";
 import ServerControls from "./Server";
-import { Tabs, TabsValue } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  CloseButton,
+  Collapse,
+  Paper,
+  Tabs,
+  TabsValue,
+  Tooltip,
+} from "@mantine/core";
 import {
   IconAdjustments,
+  IconX,
   IconBinaryTree2,
   IconCloudCheck,
   IconCloudOff,
+  IconSettings,
   IconTool,
+  IconArrowBack,
 } from "@tabler/icons-react";
 import React from "react";
+
+// Must match constant in Python.
+const ROOT_CONTAINER_ID = "root";
 
 /** Root component for control panel. Parents a set of control tabs. */
 export default function ControlPanel() {
@@ -29,37 +46,41 @@ export default function ControlPanel() {
 
   const MemoizedTable = React.memo(SceneTreeTable);
 
-  return (
-    <Tabs radius="xs" value={tabState} onTabChange={setTabState}>
-      <Tabs.List>
-        {showGenerated ? (
-          <Tabs.Tab value="generated" icon={<IconAdjustments size="0.8rem" />}>
-            Control
-          </Tabs.Tab>
-        ) : null}
-        <Tabs.Tab value="server" icon={<IconTool size="1rem" />}>
-          Server
-        </Tabs.Tab>
-        <Tabs.Tab value="scene" icon={<IconBinaryTree2 size="1rem" />}>
-          Scene
-        </Tabs.Tab>
-      </Tabs.List>
+  const [showSettings, { toggle }] = useDisclosure(false);
 
-      {showGenerated ? (
-        <Tabs.Panel value="generated" pt="xs" p="sm">
-          <GeneratedControls />
-        </Tabs.Panel>
-      ) : null}
-
-      <Tabs.Panel value="server" pt="xs" p="sm">
+  if (!showGenerated) {
+    return (
+      <Box p="sm">
         <ServerControls />
-      </Tabs.Panel>
-
-      <Tabs.Panel value="scene" pt="xs" p="sm">
-        <MemoizedTable compact={true} />
-      </Tabs.Panel>
-    </Tabs>
-  );
+      </Box>
+    );
+  } else {
+    return (
+      <>
+        <ActionIcon
+          onClick={toggle}
+          sx={{
+            position: "absolute",
+            right: "0.25em",
+            top: "0.375em",
+          }}
+        >
+          <Tooltip
+            label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
+          >
+            {showSettings ? <IconArrowBack /> : <IconAdjustments />}
+          </Tooltip>
+        </ActionIcon>
+        <Collapse in={!showSettings}>
+          <GeneratedGuiContainer containerId={ROOT_CONTAINER_ID} />
+        </Collapse>
+        <Collapse p="sm" in={showSettings}>
+          <ServerControls />
+        </Collapse>
+      </>
+    );
+    // <ServerControls />
+  }
 }
 /* Icon and label telling us the current status of the websocket connection. */
 export function ConnectionStatus() {
