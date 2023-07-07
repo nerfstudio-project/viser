@@ -14,7 +14,14 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
-import { Box, MantineProvider, ScrollArea } from "@mantine/core";
+import {
+  Aside,
+  Box,
+  MantineProvider,
+  MediaQuery,
+  ScrollArea,
+  useMantineTheme,
+} from "@mantine/core";
 import React from "react";
 
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
@@ -30,6 +37,8 @@ import WebsocketInterface from "./WebsocketInterface";
 
 import FloatingPanel from "./ControlPanel/FloatingPanel";
 import { Titlebar } from "./Titlebar";
+import BottomPanel from "./ControlPanel/BottomPanel";
+import { useMediaQuery } from "@mantine/hooks";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -97,65 +106,87 @@ function SingleViewer() {
         }}
       >
         <WebsocketInterface />
-        <Box
-          sx={(theme) => ({
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: fixed_sidebar ? "20em" : 0,
-            position: "absolute",
-            backgroundColor:
-              theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
-          })}
-        >
-          <ViewerCanvas />
-        </Box>
-        {fixed_sidebar ? (
+        <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
           <Box
             sx={(theme) => ({
-              width: "20em",
-              boxSizing: "border-box",
-              right: 0,
+              top: 0,
+              bottom: 0,
+              left: 0,
+              right: fixed_sidebar ? "20em" : 0,
               position: "absolute",
-              top: "0em",
-              bottom: "0em",
-              borderLeft: "1px solid",
-              borderColor:
-                theme.colorScheme === "light"
-                  ? theme.colors.gray[4]
-                  : theme.colors.dark[4],
+              backgroundColor:
+                theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
             })}
           >
-            <ScrollArea type="always" sx={{ height: "100%" }}>
-              <Box
-                p="sm"
-                sx={(theme) => ({
-                  backgroundColor:
-                    theme.colorScheme === "dark"
-                      ? theme.colors.dark[5]
-                      : theme.colors.gray[1],
-                  lineHeight: "1.5em",
-                  fontWeight: 400,
-                })}
-              >
-                <ConnectionStatus />
-              </Box>
-              <ControlPanel />
-            </ScrollArea>
+            <ViewerCanvas />
           </Box>
-        ) : (
-          <FloatingPanel>
-            <FloatingPanel.Handle>
-              <ConnectionStatus />
-            </FloatingPanel.Handle>
-            <FloatingPanel.Contents>
-              <ControlPanel />
-            </FloatingPanel.Contents>
-          </FloatingPanel>
-        )}
+        </MediaQuery>
+        <Panel fixed_sidebar={fixed_sidebar} />
       </Box>
     </ViewerContext.Provider>
   );
+}
+function Panel(props: { fixed_sidebar: boolean }) {
+  const theme = useMantineTheme();
+  const xsQuery = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`);
+  if (xsQuery) {
+    return (
+      <BottomPanel>
+        <BottomPanel.Handle>
+          <ConnectionStatus />
+        </BottomPanel.Handle>
+        <BottomPanel.Contents>
+          <ControlPanel />
+        </BottomPanel.Contents>
+      </BottomPanel>
+    );
+  } else if (props.fixed_sidebar) {
+    return (
+      <Aside
+        sx={(theme) => ({
+          width: "20em",
+          boxSizing: "border-box",
+          right: 0,
+          position: "absolute",
+          top: "0em",
+          bottom: "0em",
+          borderLeft: "1px solid",
+          borderColor:
+            theme.colorScheme == "light"
+              ? theme.colors.gray[4]
+              : theme.colors.dark[4],
+        })}
+      >
+        <ScrollArea type="always" sx={{ height: "100%" }}>
+          <Box
+            p="sm"
+            sx={(theme) => ({
+              backgroundColor:
+                theme.colorScheme == "dark"
+                  ? theme.colors.dark[5]
+                  : theme.colors.gray[1],
+              lineHeight: "1.5em",
+              fontWeight: 400,
+            })}
+          >
+            <ConnectionStatus />
+          </Box>
+          <ControlPanel />
+        </ScrollArea>
+      </Aside>
+    );
+  } else {
+    return (
+      <FloatingPanel>
+        <FloatingPanel.Handle>
+          <ConnectionStatus />
+        </FloatingPanel.Handle>
+        <FloatingPanel.Contents>
+          <ControlPanel />
+        </FloatingPanel.Contents>
+      </FloatingPanel>
+    );
+  }
 }
 
 function ViewerCanvas() {
