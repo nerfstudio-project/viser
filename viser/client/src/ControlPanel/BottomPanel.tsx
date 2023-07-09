@@ -37,16 +37,11 @@ export default function BottomPanel({
           bottom: 0,
           left: 0,
           margin: 0,
-          overflow: "hidden",
+          overflow: "scroll",
           minHeight: "3.5em",
+          maxHeight: "60%",
           height: "3.5em",
           transition: "height 0.3s linear",
-          "& .expand-icon": {
-            transform: "rotate(0)",
-          },
-          "&.hidden .expand-icon": {
-            transform: "rotate(180deg)",
-          },
         }}
         ref={panelWrapperRef}
         className="hidden"
@@ -136,8 +131,6 @@ BottomPanel.Handle = function FloatingPanelHandle({
         cursor: "pointer",
         position: "relative",
         fontWeight: 400,
-        boxSizing: "border-box",
-        overflow: "hidden",
         userSelect: "none",
       })}
       onClick={() => {
@@ -173,19 +166,6 @@ BottomPanel.Handle = function FloatingPanelHandle({
         }}
       >
         {children}
-      </Box>
-      <Box
-        component="div"
-        sx={{
-          position: "absolute",
-          top: "50%",
-          right: "0.5em",
-          transform: "translateY(-48%) scale(0.8)",
-          height: "1.5em",
-          opacity: "0.5",
-        }}
-      >
-        <IconCaretDown className="expand-icon" />
       </Box>
     </Box>
   );

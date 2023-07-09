@@ -226,8 +226,6 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         cursor: "pointer",
         position: "relative",
         fontWeight: 400,
-        boxSizing: "border-box",
-        overflow: "hidden",
         userSelect: "none",
       })}
       onClick={() => {
