@@ -3,8 +3,10 @@
 import { Box, Paper } from "@mantine/core";
 import { IconCaretUp } from "@tabler/icons-react";
 import React from "react";
-import FloatingPanelRefContext from "./FloatingPanelContext";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
+
+export const FloatingPanelRefContext =
+  React.createContext<React.RefObject<HTMLDivElement> | null>(null);
 
 /** Root component for control panel. Parents a set of control tabs.
  * This could be refactored+cleaned up a lot! */
