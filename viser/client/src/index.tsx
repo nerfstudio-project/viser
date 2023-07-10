@@ -210,16 +210,48 @@ function NeRFImage(){
   }
   `.trim();
   const fragShader = `  
+  precision lowp float;
+
   varying vec2 vUv;
   uniform sampler2D nerfColor;
   uniform sampler2D nerfDepth;
+  uniform float cameraNear;
+  uniform float cameraFar;
+
+  // depthSample from depthTexture.r, for instance
+  float linearDepth(float depthSample, float zNear, float zFar)
+  {
+      depthSample = 2.0 * depthSample - 1.0;
+      float zLinear = 2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
+      return zLinear;
+  }
+
+  // result suitable for assigning to gl_FragDepth
+  float depthSample(float linearDepth, float zNear, float zFar)
+  {
+      float nonLinearDepth = (zFar + zNear - 2.0 * zNear * zFar / linearDepth) / (zFar - zNear);
+      nonLinearDepth = (nonLinearDepth + 1.0) / 2.0;
+      return nonLinearDepth;
+  }
+
+  float readDepth( sampler2D depthSampler, vec2 coord, float zNear, float zFar) {
+    float depth = texture(depthSampler,coord).x;
+    // float nonLinearDepth = (1.0/depth - 1.0/zNear)/(1.0/zFar - 1.0/zNear);
+    float nonLinearDepth = depthSample(depth, zNear, zFar);
+    return nonLinearDepth;
+  }
+
   void main() {
-    float depth = texture2D( nerfDepth, vUv ).x;
-    vec4 color = texture2D( nerfColor, vUv );
-    gl_FragColor = vec4(color.rgb, 1.0);
-    // TODO make sure the scale matches viser scale
-    // this 1.0-depth is just for the static depth image, for nerf it should just be depth
-    gl_FragDepth = 10.0*depth;
+    vec4 color = texture( nerfColor, vUv );
+    gl_FragColor = vec4( color.rgb, 1.0 );
+
+    float depth = readDepth(nerfDepth, vUv, cameraNear, cameraFar);
+    if(depth < gl_FragCoord.z){
+      gl_FragDepth = depth;
+    }else{
+      //otherwise set infinite depth
+      gl_FragDepth = 1.0;
+    }
   }`.trim();
   const nerfMaterial = new THREE.ShaderMaterial({
     fragmentShader: fragShader,
@@ -227,23 +259,30 @@ function NeRFImage(){
     uniforms: {
       nerfDepth: {value: null},
       nerfColor: {value: null},
+      cameraNear: {value: null},
+      cameraFar: {value: null},
     }
   });
   const { nerfMaterialRef } = React.useContext(ViewerContext)!;
   nerfMaterialRef.current = nerfMaterial;
-  // For now just load a static texture, TODO make these update from nerf websocket
-  const img = useTexture("turtle.jpeg");
-  const depth = useTexture("turtle_depth.png");
-  nerfMaterial.uniforms.nerfColor.value = img;
-  nerfMaterial.uniforms.nerfDepth.value = depth;
   const nerfMesh = useRef<THREE.Mesh>(null);
   useFrame(({camera}) => {
+    //assert it is a perspective camera
+    if(!(camera instanceof THREE.PerspectiveCamera)){
+      console.error("Camera is not a perspective camera, cannot render NeRF image");
+      return;
+    }
     // Update the position of the mesh based on the camera position
     const lookdir = camera.getWorldDirection(new THREE.Vector3());
     nerfMesh.current!.position.set(camera.position.x,camera.position.y,camera.position.z);
-    // TODO make the plane perfectly fill the screen, handle resizing, etc
     nerfMesh.current!.position.addScaledVector(lookdir,1.0);
     nerfMesh.current!.quaternion.copy(camera.quaternion);
+    //resize the mesh based on size
+    const f = camera.getFocalLength();
+    nerfMesh.current!.scale.set(camera.getFilmWidth()/f,camera.getFilmHeight()/f,1.0);
+    //set the near/far uniforms
+    nerfMaterial.uniforms.cameraNear.value = camera.near;
+    nerfMaterial.uniforms.cameraFar.value = camera.far;
   });
   return <mesh
             ref={nerfMesh}
