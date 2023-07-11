@@ -18,10 +18,16 @@ import {
 } from "@tabler/icons-react";
 import React from "react";
 import BottomPanel from "./BottomPanel";
-import FloatingPanel from "./FloatingPanel";
+import FloatingPanel, { FloatingPanelContext } from "./FloatingPanel";
 
 // Must match constant in Python.
 const ROOT_CONTAINER_ID = "root";
+
+/** Hides contents when floating panel is collapsed. */
+function HideWhenCollapsed({ children }: { children: React.ReactNode }) {
+  const expanded = React.useContext(FloatingPanelContext)?.expanded ?? true;
+  return expanded ? children : null;
+}
 
 export default function ControlPanel(props: { fixed_sidebar: boolean }) {
   const theme = useMantineTheme();
@@ -35,30 +41,34 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
   const handleContents = (
     <>
       <ConnectionStatus />
-      {/* We can't apply translateY directly to the ActionIcon, since it's used by
+      <HideWhenCollapsed>
+        {/* We can't apply translateY directly to the ActionIcon, since it's used by
       Mantine for the active/click indicator. */}
-      <Box
-        sx={{
-          position: "absolute",
-          right: "0.5em",
-          top: "50%",
-          transform: "translateY(-50%)",
-          display: showGenerated ? undefined : "none",
-        }}
-      >
-        <ActionIcon
-          onClick={(evt) => {
-            evt.stopPropagation();
-            toggle();
+        <Box
+          sx={{
+            position: "absolute",
+            right: "0.5em",
+            top: "50%",
+            transform: "translateY(-50%)",
+            display: showGenerated ? undefined : "none",
           }}
         >
-          <Tooltip
-            label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
+          <ActionIcon
+            onClick={(evt) => {
+              evt.stopPropagation();
+              toggle();
+            }}
           >
-            {showSettings ? <IconArrowBack /> : <IconAdjustments />}
-          </Tooltip>
-        </ActionIcon>
-      </Box>
+            <Tooltip
+              label={
+                showSettings ? "Return to GUI" : "Connection & diagnostics"
+              }
+            >
+              {showSettings ? <IconArrowBack /> : <IconAdjustments />}
+            </Tooltip>
+          </ActionIcon>
+        </Box>
+      </HideWhenCollapsed>
     </>
   );
 

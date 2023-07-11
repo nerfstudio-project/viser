@@ -5,7 +5,7 @@ import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 import { useDisclosure } from "@mantine/hooks";
 
-const FloatingPanelContext = React.createContext<null | {
+export const FloatingPanelContext = React.createContext<null | {
   wrapperRef: React.RefObject<HTMLDivElement>;
   expanded: boolean;
   toggleExpanded: () => void;
