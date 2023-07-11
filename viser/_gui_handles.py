@@ -29,7 +29,7 @@ from ._messages import (
 from .infra import ClientId
 
 if TYPE_CHECKING:
-    from ._gui_api import GuiApi
+    from ._gui_api import GuiContainerApi
 
 
 T = TypeVar("T")
@@ -42,7 +42,7 @@ class _GuiHandleState(Generic[T]):
 
     label: str
     typ: Type[T]
-    container: GuiApi
+    container: GuiContainerApi
     value: T
     update_timestamp: float
 
