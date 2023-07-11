@@ -1,5 +1,5 @@
-import { ViewerContext } from "..";
-import { makeThrottledMessageSender } from "../WebsocketInterface";
+import { ViewerContext } from "../App";
+import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiConfig } from "./GuiState";
 import {
   Accordion,
