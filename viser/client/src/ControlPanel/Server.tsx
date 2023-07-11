@@ -1,4 +1,4 @@
-import { ViewerContext } from "..";
+import { ViewerContext } from "../App";
 import { Button, Divider, Stack, Switch, TextInput } from "@mantine/core";
 import { Stats } from "@react-three/drei";
 import { IconPhoto } from "@tabler/icons-react";

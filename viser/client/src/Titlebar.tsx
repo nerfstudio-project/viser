@@ -1,4 +1,4 @@
-import { ViewerContext } from ".";
+import { ViewerContext } from "./App";
 import { ThemeConfigurationMessage } from "./WebsocketMessages";
 import {
   Burger,
