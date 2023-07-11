@@ -18,6 +18,10 @@ export type GuiConfig =
   | Messages.GuiAddVector2Message
   | Messages.GuiAddVector3Message;
 
+export function isGuiConfig(message: Messages.Message): message is GuiConfig {
+  return message.type.startsWith("GuiAdd");
+}
+
 interface GuiState {
   theme: Messages.ThemeConfigurationMessage;
   label: string;

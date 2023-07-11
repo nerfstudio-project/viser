@@ -6,7 +6,6 @@ import * as THREE from "three";
 import { TextureLoader } from "three";
 
 import { ViewerContext } from "./App";
-import { isGuiConfig } from "./Utils";
 import { SceneNode } from "./SceneTree";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { CameraFrustum, CoordinateFrame } from "./ThreeAssets";
@@ -14,6 +13,7 @@ import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
+import { isGuiConfig } from "./ControlPanel/GuiState";
 
 /** Float **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
