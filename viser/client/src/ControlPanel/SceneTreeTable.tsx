@@ -1,4 +1,4 @@
-import { ViewerContext } from "..";
+import { ViewerContext } from "../App";
 import { ActionIcon, Modal } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {

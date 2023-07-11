@@ -1,9 +1,11 @@
+// @refresh reset
+
 import { Box, Paper } from "@mantine/core";
 import { IconCaretUp } from "@tabler/icons-react";
 import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 
-const FloatingPanelRefContext =
+export const FloatingPanelRefContext =
   React.createContext<React.RefObject<HTMLDivElement> | null>(null);
 
 /** Root component for control panel. Parents a set of control tabs.
@@ -89,6 +91,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     Math.abs(panelPosition - parentSize + panelSize / 2.0)
       ? panelPosition
       : panelPosition - parentSize;
+
   const panelBoundaryPad = 15;
   function setPanelLocation(x: number, y: number) {
     const panel = panelWrapperRef.current;
