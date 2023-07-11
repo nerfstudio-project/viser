@@ -117,6 +117,8 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
                 : theme.colors.gray[1],
             lineHeight: "1.5em",
             fontWeight: 400,
+            position: "relative",
+            zIndex: 1,
           })}
         >
           {handleContents}
