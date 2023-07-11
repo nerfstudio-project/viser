@@ -70,6 +70,7 @@
     "browserslist-to-esbuild": "^1.2.0",
     "eslint": "^8.43.0",
     "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-refresh": "^0.4.1",
     "typescript": "^5.0.4",
     "vite-plugin-eslint": "^1.8.1"
   }

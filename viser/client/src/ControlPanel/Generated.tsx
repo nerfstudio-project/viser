@@ -1,6 +1,6 @@
-import { ViewerContext } from "..";
-import { makeThrottledMessageSender } from "../WebsocketInterface";
 import { GuiAddFolderMessage, GuiAddTabsMessage } from "../WebsocketMessages";
+import { ViewerContext } from "../App";
+import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiConfig } from "./GuiState";
 import { Image, Tabs, TabsValue } from "@mantine/core";
 

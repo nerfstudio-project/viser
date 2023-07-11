@@ -1,6 +1,6 @@
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
-import { ViewerContext } from "..";
 import GeneratedGuiContainer from "./Generated";
+import { ViewerContext } from "../App";
 import ServerControls from "./Server";
 import {
   ActionIcon,

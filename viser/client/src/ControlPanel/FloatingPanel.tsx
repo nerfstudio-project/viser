@@ -1,5 +1,6 @@
+// @refresh reset
+
 import { Box, Collapse, Paper } from "@mantine/core";
-import { IconCaretUp } from "@tabler/icons-react";
 import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 import { useDisclosure } from "@mantine/hooks";
@@ -83,6 +84,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     Math.abs(panelPosition - parentSize + panelSize / 2.0)
       ? panelPosition
       : panelPosition - parentSize;
+
   const panelBoundaryPad = 15;
   function setPanelLocation(x: number, y: number) {
     const panel = panelWrapperRef.current;

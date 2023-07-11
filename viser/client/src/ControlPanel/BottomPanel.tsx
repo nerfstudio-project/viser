@@ -1,9 +1,8 @@
 import { Box, Paper } from "@mantine/core";
-import { IconCaretDown } from "@tabler/icons-react";
 import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 
-const BottomPanelRefContext =
+export const BottomPanelRefContext =
   React.createContext<React.RefObject<HTMLDivElement> | null>(null);
 
 const pagePercent = (start: number, end: number) => {
@@ -51,7 +50,7 @@ export default function BottomPanel({
     </BottomPanelRefContext.Provider>
   );
 }
-BottomPanel.Handle = function FloatingPanelHandle({
+BottomPanel.Handle = function BottomPanelHandle({
   children,
 }: {
   children: string | React.ReactNode;
@@ -171,13 +170,13 @@ BottomPanel.Handle = function FloatingPanelHandle({
   );
 };
 /** Contents of a panel. */
-BottomPanel.Contents = function FloatingPanelContents({
+BottomPanel.Contents = function BottomPanelContents({
   children,
 }: {
   children: string | React.ReactNode;
 }) {
-  const panelWrapperRef = React.useContext(BottomPanelRefContext)!;
   const contentRef = React.useRef<HTMLDivElement>(null);
+  const panelWrapperRef = React.useContext(BottomPanelRefContext)!;
   React.useEffect(() => {
     const panel = panelWrapperRef.current;
     const content = contentRef.current;
