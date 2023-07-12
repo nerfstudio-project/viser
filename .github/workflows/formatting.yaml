@@ -18,9 +18,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          poetry install --all-extras
+          pip install --upgrade pip
+          pip install -e ".[dev,examples]"
       - name: Run Ruff
-        run: poetry run ruff docs/ viser/ examples/
+        run: ruff docs/ viser/ examples/
       - name: Run Black
-        run: poetry run black docs/ viser/ examples/ --check
+        run: black docs/ viser/ examples/ --check
