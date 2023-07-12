@@ -54,12 +54,12 @@ examples = [
 [tool.setuptools.packages.find]
 exclude = [
     "tests*",
+    "docs*",
     "examples*",
-    "viser.client.node_modules*",
 ]
 
 [tool.setuptools.package-data]
-viser = ["py.typed"]
+viser = ["py.typed", "client/build/**/*"]
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
