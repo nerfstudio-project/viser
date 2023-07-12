@@ -1,48 +1,68 @@
-[tool.poetry]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "viser"
 version = "0.0.17"
-description = "3D visualization helper"
-authors = ["brentyi <brentyi@berkeley.edu>"]
+description = "3D visualization + Python"
 readme = "README.md"
+license = { text="MIT" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+dependencies = [
+    "websockets>=10.4",
+    "numpy>=1.0.0",
+    "msgpack>=1.0.0",
+    "imageio>=2.0.0",
+    "pyliblzfse>=0.4.1",
+    "scikit-image>=0.18.0",
+    "scipy>=1.7.3",
+    "tqdm>=4.0.0",
+    "tyro>=0.2.0",
+    "gdown>=4.6.6",
+    "rich>=13.3.3",
+    "trimesh>=3.21.7",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.8,<3.11"
-websockets = ">=10.4"
-numpy = ">=1.0.0"
-msgpack = ">=1.0.0"
-imageio = ">=2.0.0"
-pyliblzfse = ">=0.4.1"
-scikit-image = ">=0.18.0"
-scipy = ">=1.7.3"
-tqdm = ">=4.0.0"
-tyro = ">=0.2.0"
-gdown = ">=4.6.6"
-rich = ">=13.3.3"
-trimesh = ">=3.21.7"
+[project.optional-dependencies]
+dev = [
+    "pyright>=1.1.308",
+    "mypy>=1.4.1",
+    "ruff==0.0.267",
+    "black==23.3.0",
+    "pre-commit==3.3.2",
+]
+examples = [
+    "smplx>=0.1.28",
+    "torch>=1.13.1",
+    "yourdfpy>=0.0.53",
+    "matplotlib>=3.7.1",
+]
 
-# dev dependencies
-pyright = { version = ">=1.1.308", optional = true}
-mypy = { version = "=0.991", optional = true}
-ruff = { version = "==0.0.267", optional = true}
-black = { version = "==23.3.0", optional = true}
-pre-commit = { version = "3.3.2", optional = true}
+[project.urls]
+"GitHub" = "https://github.com/nerfstudio-project/viser"
 
-# example dependencies
-smplx = { version = ">=0.1.28", optional = true}
-torch = { version = ">=1.13.1", optional = true}
-yourdfpy = { version = ">=0.0.53", optional = true}
-matplotlib = { version = "^3.7.1", optional = true}
+[tool.setuptools.packages.find]
+exclude = [
+    "tests*",
+    "examples*",
+    "viser.client.node_modules*",
+]
 
-[tool.poetry.extras]
-dev = ["pyright", "mypy", "ruff", "black"]
-examples = ["smplx", "torch", "yourdfpy", "trimesh", "matplotlib"]
+[tool.setuptools.package-data]
+viser = ["py.typed"]
 
-[tool.poetry.scripts]
+[project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
