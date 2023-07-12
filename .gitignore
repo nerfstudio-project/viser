@@ -14,3 +14,4 @@ htmlcov
 .DS_Store
 .envrc
 .lvimrc
+viser/client/build
