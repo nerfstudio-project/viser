@@ -19,35 +19,17 @@ pip install -e .
 pip install -e .[examples]
 ```
 
-_Alternatively_, `poetry` can also be used:
-
-```Bash
-# Install poetry.
-curl -sSL https://install.python-poetry.org | python3 -
-
-# Install package.
-cd ~/viser
-poetry install
-
-# Install example dependencies.
-poetry install -E examples
-```
-
 After installation, any of the example scripts (`~/viser/examples`) should be
 runnable. A few of them require downloading assets, which can be done via the
 scripts in `~/viser/examples/assets`.
 
 **Linting, formatting, type-checking.**
 
-First install developer tools:
+First, install developer tools:
 
 ```bash
 # Using pip.
 pip install -e .[dev]
-pre-commit install
-
-# Using poetry. `--all-extras` is equivalent to `-E examples -E dev`.
-poetry install --all-extras
 pre-commit install
 ```
 
