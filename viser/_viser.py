@@ -412,7 +412,7 @@ class ViserServer(MessageApi):
             self._locked_thread_id = -1
 
 
-def _ensure_dependencies_installed():
+def _ensure_node_installed():
     npm_path = shutil.which("npm")
     yarn_path = shutil.which("yarn")
 
@@ -439,7 +439,10 @@ def _install_dependencies():
     args = ["npm", "install", "yarn"]
     newenv = os.environ.copy()
     newenv["PATH"] = newpath
-    subprocess.run(args=args, env=newenv)
+    confirmation_input = b"y\n"
+    yarn_install = subprocess.Popen(args=args, env=newenv)
+    yarn_install.communicate(confirmation_input)
+    yarn_install.wait()
 
     return newenv
 
@@ -448,7 +451,7 @@ def _build_client():
     curr_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     client_dir = os.path.join(curr_dir, "client")
 
-    env = _ensure_dependencies_installed()
+    env = _ensure_node_installed()
 
     args = ["npx", "yarn", "install"]
     installation = subprocess.Popen(args=args, env=env, cwd=client_dir)
