@@ -1,5 +1,5 @@
-import { ViewerContext } from ".";
-import { makeThrottledMessageSender } from "./WebsocketInterface";
+import { ViewerContext } from "./App";
+import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { CameraControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import * as holdEvent from "hold-event";

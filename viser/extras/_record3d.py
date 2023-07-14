@@ -24,10 +24,10 @@ class Record3dLoader:
         # Read metadata.
         metadata = json.loads(metadata_path.read_text())
 
-        K = np.array(metadata["K"], np.float32).reshape(3, 3).T
+        K: onp.ndarray = np.array(metadata["K"], np.float32).reshape(3, 3).T
         fps = metadata["fps"]
 
-        T_world_cameras = np.array(metadata["poses"], np.float32)
+        T_world_cameras: onp.ndarray = np.array(metadata["poses"], np.float32)
         T_world_cameras = np.concatenate(
             [
                 Rotation.from_quat(T_world_cameras[:, :4]).as_matrix(),
@@ -53,7 +53,7 @@ class Record3dLoader:
 
     def get_frame(self, index: int) -> Record3dFrame:
         # Read conf.
-        conf = np.frombuffer(
+        conf: onp.ndarray = np.frombuffer(
             liblzfse.decompress(self.conf_paths[index].read_bytes()), dtype=np.uint8
         )
         if conf.shape[0] == 640 * 480:
@@ -64,7 +64,7 @@ class Record3dLoader:
             assert False, f"Unexpected conf shape {conf.shape}"
 
         # Read depth.
-        depth = np.frombuffer(
+        depth: onp.ndarray = np.frombuffer(
             liblzfse.decompress(self.depth_paths[index].read_bytes()), dtype=np.float32
         ).copy()
         if depth.shape[0] == 640 * 480:

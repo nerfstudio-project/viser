@@ -296,7 +296,6 @@ export interface ThemeConfigurationMessage {
           text: string | null;
           icon: "GitHub" | "Description" | "Keyboard" | null;
           href: string | null;
-          variant: "text" | "contained" | "outlined" | null;
         }[]
       | null;
     image: {

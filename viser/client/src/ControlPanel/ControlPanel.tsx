@@ -1,4 +1,4 @@
-import { ViewerContext } from "..";
+import { ViewerContext } from "../App";
 import GeneratedControls from "./Generated";
 import SceneTreeTable from "./SceneTreeTable";
 import ServerControls from "./Server";
