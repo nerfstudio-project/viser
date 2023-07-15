@@ -6,97 +6,57 @@ Examples:
 - https://github.com/OrebroUniversity/yumi/blob/master/yumi_description/urdf/yumi.urdf
 - https://github.com/ankurhanda/robot-assets
 """
+from __future__ import annotations
+
 import time
-from functools import partial
 from pathlib import Path
 from typing import List
 
 import numpy as onp
-import trimesh
 import tyro
-import yourdfpy
 
 import viser
-import viser.transforms as tf
+from viser.extras import ViserUrdf
 
 
 def main(urdf_path: Path) -> None:
-    urdf = yourdfpy.URDF.load(
-        urdf_path,
-        filename_handler=partial(yourdfpy.filename_handler_magic, dir=urdf_path.parent),
-    )
     server = viser.ViserServer()
 
-    def frame_name_with_parents(frame_name: str) -> str:
-        frames = []
-        while frame_name != urdf.scene.graph.base_frame:
-            frames.append(frame_name)
-            frame_name = urdf.scene.graph.transforms.parents[frame_name]
-        return "/" + "/".join(frames[::-1])
+    # Create a helper for adding URDFs to Viser. This just adds meshes to the scene,
+    # helps us set the joint angles, etc.
+    urdf = ViserUrdf(server, urdf_path)
 
-    for frame_name, mesh in urdf.scene.geometry.items():
-        assert isinstance(mesh, trimesh.Trimesh)
-        T_parent_child = urdf.get_transform(
-            frame_name, urdf.scene.graph.transforms.parents[frame_name]
-        )
-        server.add_mesh_trimesh(
-            frame_name_with_parents(frame_name),
-            mesh,
-            wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
-            position=T_parent_child[:3, 3],
-        )
-
+    # Create joint angle sliders.
     gui_joints: List[viser.GuiHandle[float]] = []
-    with server.gui_folder("Joints"):
-        button = server.add_gui_button("Reset")
+    initial_angles: List[float] = []
+    for joint_name, (lower, upper) in urdf.get_joint_limits().items():
+        lower = lower if lower is not None else -onp.pi
+        upper = upper if upper is not None else onp.pi
+        initial_angle = 0.0 if lower < 0 and upper > 0 else (lower + upper) / 2.0
+        slider = server.add_gui_slider(
+            label=joint_name,
+            min=lower,
+            max=upper,
+            step=1e-3,
+            initial_value=initial_angle,
+        )
+        slider.on_update(  # When sliders move, we update the URDF configuration.
+            lambda _: urdf.update_cfg(onp.array([gui.value for gui in gui_joints]))
+        )
 
-        @button.on_click
-        def _(_):
-            for g in gui_joints:
-                g.value = 0.0
+        gui_joints.append(slider)
+        initial_angles.append(initial_angle)
 
-        def update_frames():
-            urdf.update_cfg(onp.array([gui.value for gui in gui_joints]))
-            for joint in urdf.joint_map.values():
-                assert isinstance(joint, yourdfpy.Joint)
-                T_parent_child = urdf.get_transform(joint.child, joint.parent)
-                server.add_frame(
-                    frame_name_with_parents(joint.child),
-                    wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
-                    position=T_parent_child[:3, 3],
-                    show_axes=False,
-                )
+    # Create joint reset button.
+    reset_button = server.add_gui_button("Reset")
 
-        for joint_name, joint in urdf.joint_map.items():
-            assert isinstance(joint, yourdfpy.Joint)
+    @reset_button.on_click
+    def _(_):
+        for g, initial_angle in zip(gui_joints, initial_angles):
+            g.value = initial_angle
 
-            min = (
-                joint.limit.lower
-                if joint.limit is not None and joint.limit.lower is not None
-                else -onp.pi
-            )
-            max = (
-                joint.limit.upper
-                if joint.limit is not None and joint.limit.upper is not None
-                else onp.pi
-            )
-            slider = server.add_gui_slider(
-                label=joint_name,
-                min=min,
-                max=max,
-                step=1e-3,
-                initial_value=0.0 if min < 0 and max > 0 else (min + max) / 2.0,
-            )
-            if joint.limit is None:
-                slider.visible = False
-
-            @slider.on_update
-            def _(_):
-                update_frames()
-
-            gui_joints.append(slider)
-
-    update_frames()
+    # Apply initial joint angles.
+    urdf.update_cfg(onp.array([gui.value for gui in gui_joints]))
 
     while True:
         time.sleep(10.0)
