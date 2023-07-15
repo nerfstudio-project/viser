@@ -1,38 +1,42 @@
+import * as Messages from "../WebsocketMessages";
 import React from "react";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
-import { Message } from "../WebsocketMessages";
 
-// Individual message types are not exported, so we extract just one type from
-// the message union via an intersection.
-type ThemeConfigurationMessage = Message & {
-  type: "ThemeConfigurationMessage";
-};
-
-interface GuiConfig {
-  levaConf: any;
-  folderLabels: string[];
-  visible: boolean;
-}
+export type GuiConfig =
+  | Messages.GuiAddButtonMessage
+  | Messages.GuiAddCheckboxMessage
+  | Messages.GuiAddDropdownMessage
+  | Messages.GuiAddNumberMessage
+  | Messages.GuiAddRgbMessage
+  | Messages.GuiAddRgbaMessage
+  | Messages.GuiAddSliderMessage
+  | Messages.GuiAddButtonGroupMessage
+  | Messages.GuiAddTextMessage
+  | Messages.GuiAddVector2Message
+  | Messages.GuiAddVector3Message;
 
 interface GuiState {
-  theme: ThemeConfigurationMessage;
+  theme: Messages.ThemeConfigurationMessage;
   label: string;
   server: string;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
-  guiNames: string[]; // Used to retain input ordering.
-  guiConfigFromName: { [key: string]: GuiConfig };
-  guiSetQueue: { [key: string]: any };
+  guiConfigFromId: { [id: string]: GuiConfig };
+  guiValueFromId: { [id: string]: any };
+  guiAttributeFromId: {
+    [id: string]: { visible?: boolean; disabled?: boolean } | undefined;
+  };
 }
 
 interface GuiActions {
-  setTheme: (theme: ThemeConfigurationMessage) => void;
-  addGui: (name: string, config: GuiConfig) => void;
-  removeGui: (name: string) => void;
+  setTheme: (theme: Messages.ThemeConfigurationMessage) => void;
+  addGui: (config: GuiConfig) => void;
+  setGuiValue: (id: string, value: any) => void;
+  setGuiVisible: (id: string, visible: boolean) => void;
+  setGuiDisabled: (id: string, visible: boolean) => void;
+  removeGui: (id: string) => void;
   resetGui: () => void;
-  guiSet: (name: string, value: any) => void;
-  applyGuiSetQueue: (apply: (name: string, value: any) => void) => void;
 }
 
 const cleanGuiState: GuiState = {
@@ -45,9 +49,9 @@ const cleanGuiState: GuiState = {
   server: "ws://localhost:8080", // Currently this will always be overridden.
   websocketConnected: false,
   backgroundAvailable: false,
-  guiNames: [],
-  guiConfigFromName: {},
-  guiSetQueue: {},
+  guiConfigFromId: {},
+  guiValueFromId: {},
+  guiAttributeFromId: {},
 };
 
 export function useGuiState(initialServer: string) {
@@ -60,34 +64,37 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.theme = theme;
           }),
-        addGui: (name, guiConfig) =>
+        addGui: (guiConfig) =>
           set((state) => {
-            state.guiNames.push(name);
-            state.guiConfigFromName[name] = guiConfig;
+            state.guiConfigFromId[guiConfig.id] = guiConfig;
           }),
-        removeGui: (name) =>
+        setGuiValue: (id, value) =>
           set((state) => {
-            state.guiNames.splice(state.guiNames.indexOf(name), 1);
-            delete state.guiConfigFromName[name];
+            state.guiValueFromId[id] = value;
+          }),
+        setGuiVisible: (id, visible) =>
+          set((state) => {
+            state.guiAttributeFromId[id] = {
+              ...state.guiAttributeFromId[id],
+              visible: visible,
+            };
+          }),
+        setGuiDisabled: (id, disabled) =>
+          set((state) => {
+            state.guiAttributeFromId[id] = {
+              ...state.guiAttributeFromId[id],
+              disabled: disabled,
+            };
+          }),
+        removeGui: (id) =>
+          set((state) => {
+            delete state.guiConfigFromId[id];
+            delete state.guiValueFromId[id];
+            delete state.guiAttributeFromId[id];
           }),
         resetGui: () =>
           set((state) => {
-            state.guiNames = [];
-            state.guiConfigFromName = {};
-          }),
-        guiSet: (name, value) =>
-          set((state) => {
-            state.guiSetQueue[name] = value;
-          }),
-        applyGuiSetQueue: (apply) =>
-          set((state) => {
-            for (const [key, value] of Object.entries(state.guiSetQueue)) {
-              // Linear runtime here could be improved.
-              if (state.guiNames.includes(key)) {
-                delete state.guiSetQueue[key];
-                apply(key, value);
-              }
-            }
+            state.guiConfigFromId = {};
           }),
       }))
     )

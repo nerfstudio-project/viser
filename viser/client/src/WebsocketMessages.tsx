@@ -3,7 +3,7 @@
 
 // For numpy arrays, we directly serialize the underlying data buffer.
 type ArrayBuffer = Uint8Array;
-interface ViewerCameraMessage {
+export interface ViewerCameraMessage {
   type: "ViewerCameraMessage";
   wxyz: [number, number, number, number];
   position: [number, number, number];
@@ -12,7 +12,7 @@ interface ViewerCameraMessage {
   look_at: [number, number, number];
   up_direction: [number, number, number];
 }
-interface CameraFrustumMessage {
+export interface CameraFrustumMessage {
   type: "CameraFrustumMessage";
   name: string;
   fov: number;
@@ -22,26 +22,26 @@ interface CameraFrustumMessage {
   image_media_type: "image/jpeg" | "image/png" | null;
   image_base64_data: string | null;
 }
-interface FrameMessage {
+export interface FrameMessage {
   type: "FrameMessage";
   name: string;
   show_axes: boolean;
   axes_length: number;
   axes_radius: number;
 }
-interface LabelMessage {
+export interface LabelMessage {
   type: "LabelMessage";
   name: string;
   text: string;
 }
-interface PointCloudMessage {
+export interface PointCloudMessage {
   type: "PointCloudMessage";
   name: string;
   points: ArrayBuffer;
   colors: ArrayBuffer;
   point_size: number;
 }
-interface MeshMessage {
+export interface MeshMessage {
   type: "MeshMessage";
   name: string;
   vertices: ArrayBuffer;
@@ -51,7 +51,7 @@ interface MeshMessage {
   wireframe: boolean;
   side: "front" | "back" | "double";
 }
-interface TransformControlsMessage {
+export interface TransformControlsMessage {
   type: "TransformControlsMessage";
   name: string;
   scale: number;
@@ -67,45 +67,45 @@ interface TransformControlsMessage {
   depth_test: boolean;
   opacity: number;
 }
-interface SetCameraPositionMessage {
+export interface SetCameraPositionMessage {
   type: "SetCameraPositionMessage";
   position: [number, number, number];
 }
-interface SetCameraUpDirectionMessage {
+export interface SetCameraUpDirectionMessage {
   type: "SetCameraUpDirectionMessage";
   position: [number, number, number];
 }
-interface SetCameraLookAtMessage {
+export interface SetCameraLookAtMessage {
   type: "SetCameraLookAtMessage";
   look_at: [number, number, number];
 }
-interface SetCameraFovMessage {
+export interface SetCameraFovMessage {
   type: "SetCameraFovMessage";
   fov: number;
 }
-interface SetOrientationMessage {
+export interface SetOrientationMessage {
   type: "SetOrientationMessage";
   name: string;
   wxyz: [number, number, number, number];
 }
-interface SetPositionMessage {
+export interface SetPositionMessage {
   type: "SetPositionMessage";
   name: string;
   position: [number, number, number];
 }
-interface TransformControlsUpdateMessage {
+export interface TransformControlsUpdateMessage {
   type: "TransformControlsUpdateMessage";
   name: string;
   wxyz: [number, number, number, number];
   position: [number, number, number];
 }
-interface BackgroundImageMessage {
+export interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
   media_type: "image/jpeg" | "image/png";
   base64_data: string;
   base64_depth: string;
 }
-interface ImageMessage {
+export interface ImageMessage {
   type: "ImageMessage";
   name: string;
   media_type: "image/jpeg" | "image/png";
@@ -113,64 +113,183 @@ interface ImageMessage {
   render_width: number;
   render_height: number;
 }
-interface RemoveSceneNodeMessage {
+export interface RemoveSceneNodeMessage {
   type: "RemoveSceneNodeMessage";
   name: string;
 }
-interface SetSceneNodeVisibilityMessage {
+export interface SetSceneNodeVisibilityMessage {
   type: "SetSceneNodeVisibilityMessage";
   name: string;
   visible: boolean;
 }
-interface SetSceneNodeClickableMessage {
+export interface SetSceneNodeClickableMessage {
   type: "SetSceneNodeClickableMessage";
   name: string;
   clickable: boolean;
 }
-interface SceneNodeClickedMessage {
+export interface SceneNodeClickedMessage {
   type: "SceneNodeClickedMessage";
   name: string;
 }
-interface ResetSceneMessage {
+export interface ResetSceneMessage {
   type: "ResetSceneMessage";
 }
-interface GuiAddMessage {
-  type: "GuiAddMessage";
-  name: string;
+export interface _GuiAddMessageBase {
+  type: "_GuiAddMessageBase";
+  order: number;
+  id: string;
+  label: string;
   folder_labels: string[];
-  leva_conf: any;
+  hint: string | null;
 }
-interface GuiRemoveMessage {
+export interface GuiAddButtonMessage {
+  type: "GuiAddButtonMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: boolean;
+}
+export interface GuiAddSliderMessage {
+  type: "GuiAddSliderMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  min: number;
+  max: number;
+  step: number | null;
+  initial_value: number;
+  precision: number;
+}
+export interface GuiAddNumberMessage {
+  type: "GuiAddNumberMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: number;
+  precision: number;
+  step: number;
+  min: number | null;
+  max: number | null;
+}
+export interface GuiAddRgbMessage {
+  type: "GuiAddRgbMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: [number, number, number];
+}
+export interface GuiAddRgbaMessage {
+  type: "GuiAddRgbaMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: [number, number, number, number];
+}
+export interface GuiAddCheckboxMessage {
+  type: "GuiAddCheckboxMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: boolean;
+}
+export interface GuiAddVector2Message {
+  type: "GuiAddVector2Message";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: [number, number];
+  min: [number, number] | null;
+  max: [number, number] | null;
+  step: number;
+  precision: number;
+}
+export interface GuiAddVector3Message {
+  type: "GuiAddVector3Message";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: [number, number, number];
+  min: [number, number, number] | null;
+  max: [number, number, number] | null;
+  step: number;
+  precision: number;
+}
+export interface GuiAddTextMessage {
+  type: "GuiAddTextMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: string;
+}
+export interface GuiAddDropdownMessage {
+  type: "GuiAddDropdownMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: string;
+  options: string[];
+}
+export interface GuiAddButtonGroupMessage {
+  type: "GuiAddButtonGroupMessage";
+  order: number;
+  id: string;
+  label: string;
+  folder_labels: string[];
+  hint: string | null;
+  initial_value: string;
+  options: string[];
+}
+export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
-  name: string;
+  id: string;
 }
-interface GuiUpdateMessage {
+export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
-  name: string;
+  id: string;
   value: any;
 }
-interface GuiSetVisibleMessage {
+export interface GuiSetVisibleMessage {
   type: "GuiSetVisibleMessage";
-  name: string;
+  id: string;
   visible: boolean;
 }
-interface GuiSetValueMessage {
+export interface GuiSetDisabledMessage {
+  type: "GuiSetDisabledMessage";
+  id: string;
+  disabled: boolean;
+}
+export interface GuiSetValueMessage {
   type: "GuiSetValueMessage";
-  name: string;
+  id: string;
   value: any;
 }
-interface GuiSetLevaConfMessage {
-  type: "GuiSetLevaConfMessage";
-  name: string;
-  leva_conf: any;
-}
-interface MessageGroupStart {
+export interface MessageGroupStart {
   type: "MessageGroupStart";
 }
-interface MessageGroupEnd {
+export interface MessageGroupEnd {
   type: "MessageGroupEnd";
 }
-interface ThemeConfigurationMessage {
+export interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
   titlebar_content: {
     buttons:
@@ -178,10 +297,14 @@ interface ThemeConfigurationMessage {
           text: string | null;
           icon: "GitHub" | "Description" | "Keyboard" | null;
           href: string | null;
-          variant: "text" | "contained" | "outlined" | null;
         }[]
       | null;
-    image: { image_url: string; image_alt: string; href: string | null } | null;
+    image: {
+      image_url_light: string;
+      image_url_dark: string | null;
+      image_alt: string;
+      href: string | null;
+    } | null;
   } | null;
   fixed_sidebar: boolean;
 }
@@ -208,12 +331,23 @@ export type Message =
   | SetSceneNodeClickableMessage
   | SceneNodeClickedMessage
   | ResetSceneMessage
-  | GuiAddMessage
+  | _GuiAddMessageBase
+  | GuiAddButtonMessage
+  | GuiAddSliderMessage
+  | GuiAddNumberMessage
+  | GuiAddRgbMessage
+  | GuiAddRgbaMessage
+  | GuiAddCheckboxMessage
+  | GuiAddVector2Message
+  | GuiAddVector3Message
+  | GuiAddTextMessage
+  | GuiAddDropdownMessage
+  | GuiAddButtonGroupMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | GuiSetVisibleMessage
+  | GuiSetDisabledMessage
   | GuiSetValueMessage
-  | GuiSetLevaConfMessage
   | MessageGroupStart
   | MessageGroupEnd
   | ThemeConfigurationMessage;

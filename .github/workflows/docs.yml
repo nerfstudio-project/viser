@@ -19,10 +19,10 @@ jobs:
       # Build documentation
       - name: Building documentation
         run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          poetry install
-          poetry run pip install -r docs/requirements.txt
-          poetry run sphinx-build docs/source docs/build -b dirhtml
+          pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install -r docs/requirements.txt
+          sphinx-build docs/source docs/build -b dirhtml
 
       # Deploy
       - name: Deploy to GitHub Pages
