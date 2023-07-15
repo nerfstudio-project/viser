@@ -1,8 +1,11 @@
-import React from "react";
+// @refresh reset
+
 import { Box, Paper } from "@mantine/core";
 import { IconCaretUp } from "@tabler/icons-react";
+import React from "react";
+import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 
-const FloatingPanelRefContext =
+export const FloatingPanelRefContext =
   React.createContext<React.RefObject<HTMLDivElement> | null>(null);
 
 /** Root component for control panel. Parents a set of control tabs.
@@ -26,7 +29,6 @@ export default function FloatingPanel({
           top: "1em",
           right: "1em",
           margin: 0,
-          overflow: "auto",
           "&.hidden": {
             overflow: "hidden",
           },
@@ -41,7 +43,6 @@ export default function FloatingPanel({
             visibility: "hidden",
             height: "0 !important",
             border: "0",
-            overflow: "hidden",
             position: "absolute",
           },
           "& .expand-icon": {
@@ -90,6 +91,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     Math.abs(panelPosition - parentSize + panelSize / 2.0)
       ? panelPosition
       : panelPosition - parentSize;
+
   const panelBoundaryPad = 15;
   function setPanelLocation(x: number, y: number) {
     const panel = panelWrapperRef.current;
@@ -112,8 +114,8 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     );
     newY = Math.max(newY, panelBoundaryPad);
 
-    panel.style.top = newY.toString() + "px";
-    panel.style.left = newX.toString() + "px";
+    panel.style.top = `${newY.toString()}px`;
+    panel.style.left = `${newX.toString()}px`;
 
     return [
       computePanelOffset(newX, panel.clientWidth, parent.clientWidth),
@@ -129,8 +131,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     const parent = panel.parentElement;
     if (parent === null) return;
 
-    panel.style.maxHeight =
-      (parent.clientHeight - panelBoundaryPad * 2).toString() + "px";
+    panel.style.maxHeight = `${(
+      parent.clientHeight -
+      panelBoundaryPad * 2
+    ).toString()}px`;
 
     const observer = new ResizeObserver(() => {
       if (unfixedOffset.current.x === undefined)
@@ -146,8 +150,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
           parent.clientHeight
         );
 
-      panel.style.maxHeight =
-        (parent.clientHeight - panelBoundaryPad * 2).toString() + "px";
+      panel.style.maxHeight = `${(
+        parent.clientHeight -
+        panelBoundaryPad * 2
+      ).toString()}px`;
 
       let newX = unfixedOffset.current.x;
       let newY = unfixedOffset.current.y;
@@ -162,12 +168,67 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     };
   });
 
+  const dragHandler = (
+    event:
+      | React.TouchEvent<HTMLDivElement>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const state = dragInfo.current;
+    const panel = panelWrapperRef.current;
+    if (!panel) return;
+    if (event.type == "touchstart") {
+      event = event as React.TouchEvent<HTMLDivElement>;
+      state.startClientX = event.touches[0].clientX;
+      state.startClientY = event.touches[0].clientY;
+    } else {
+      event = event as React.MouseEvent<HTMLDivElement, MouseEvent>;
+      state.startClientX = event.clientX;
+      state.startClientY = event.clientY;
+    }
+    state.startPosX = panel.offsetLeft;
+    state.startPosY = panel.offsetTop;
+    const eventNames = event.type == "touchstart" ? touchEvents : mouseEvents;
+    function dragListener(event: MouseEvent | TouchEvent) {
+      // Minimum motion.
+      let deltaX = 0;
+      let deltaY = 0;
+      if (isTouchEvent(event)) {
+        event = event as TouchEvent;
+        deltaX = event.touches[0].clientX - state.startClientX;
+        deltaY = event.touches[0].clientY - state.startClientY;
+      } else if (isMouseEvent(event)) {
+        event = event as MouseEvent;
+        deltaX = event.clientX - state.startClientX;
+        deltaY = event.clientY - state.startClientY;
+      }
+      if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+
+      state.dragging = true;
+      const newX = state.startPosX + deltaX;
+      const newY = state.startPosY + deltaY;
+      [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
+        newX,
+        newY
+      );
+    }
+    window.addEventListener(eventNames.move, dragListener);
+    window.addEventListener(
+      eventNames.end,
+      () => {
+        if (event.type == "touchstart") {
+          state.dragging = false;
+        }
+        window.removeEventListener(eventNames.move, dragListener);
+      },
+      { once: true }
+    );
+  };
+
   return (
     <Box
-      color="red"
       sx={(theme) => ({
         backgroundColor:
-          theme.colorScheme == "dark"
+          theme.colorScheme === "dark"
             ? theme.colors.dark[5]
             : theme.colors.gray[1],
         lineHeight: "1.5em",
@@ -187,43 +248,13 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 
         const wrapper = panelWrapperRef.current;
         if (!wrapper) return;
-        if (wrapper.classList.contains("hidden")) {
-          wrapper.classList.remove("hidden");
-        } else {
-          wrapper.classList.add("hidden");
-        }
+        wrapper.classList.toggle("hidden");
+      }}
+      onTouchStart={(event) => {
+        dragHandler(event);
       }}
       onMouseDown={(event) => {
-        const state = dragInfo.current;
-        const panel = panelWrapperRef.current;
-        if (!panel) return;
-        state.startClientX = event.clientX;
-        state.startClientY = event.clientY;
-        state.startPosX = panel.offsetLeft;
-        state.startPosY = panel.offsetTop;
-
-        function dragListener(event: MouseEvent) {
-          // Minimum motion.
-          const deltaX = event.clientX - state.startClientX;
-          const deltaY = event.clientY - state.startClientY;
-          if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-
-          state.dragging = true;
-          const newX = state.startPosX + deltaX;
-          const newY = state.startPosY + deltaY;
-          [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
-            newX,
-            newY
-          );
-        }
-        window.addEventListener("mousemove", dragListener);
-        window.addEventListener(
-          "mouseup",
-          () => {
-            window.removeEventListener("mousemove", dragListener);
-          },
-          { once: true }
-        );
+        dragHandler(event);
       }}
     >
       <Box

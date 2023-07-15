@@ -21,7 +21,7 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["react", "@typescript-eslint"],
+  plugins: ["react", "@typescript-eslint", "react-refresh"],
   ignorePatterns: ["build/", ".eslintrc.js"],
   rules: {
     // https://github.com/jsx-eslint/eslint-plugin-react/issues/3423
@@ -37,5 +37,6 @@ module.exports = {
         skipUndeclared: true,
       },
     ],
+    "react-refresh/only-export-components": "warn"
   },
 };

@@ -13,20 +13,16 @@
     "@react-three/postprocessing": "^2.14.7",
     "@reduxjs/toolkit": "^1.9.3",
     "@tabler/icons-react": "^2.22.0",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^14.4.3",
-    "@types/jest": "^29.5.0",
     "@types/node": "^18.15.11",
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",
     "@types/three": "^0.150.1",
+    "@vitejs/plugin-react": "^4.0.1",
     "await-lock": "^2.2.2",
     "dayjs": "^1.11.8",
     "hold-event": "^0.2.0",
     "immer": "^9.0.21",
     "isomorphic-ws": "^5.0.0",
-    "leva": "^0.9.34",
     "mantine-react-table": "^1.0.0-beta.11",
     "msgpackr": "^1.8.5",
     "prettier": "^2.8.7",
@@ -34,23 +30,23 @@
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.10.0",
-    "react-scripts": "^5.0.1",
     "redux": "^4.2.1",
     "three": "^0.151.3",
+    "vite": "^4.3.9",
+    "vite-plugin-svgr": "^3.2.0",
+    "vite-tsconfig-paths": "^4.2.0",
     "web-vitals": "^3.3.1",
     "ws": "^8.13.0",
     "zustand": "^4.3.7"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "vite --host",
+    "build": "tsc && vite build",
+    "serve": "vite preview"
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ]
   },
   "browserslist": {
@@ -68,10 +64,14 @@
   "devDependencies": {
     "@redux-devtools/core": "^3.13.1",
     "@types/msgpack": "0.0.31",
-    "@typescript-eslint/eslint-plugin": "^5.57.1",
-    "@typescript-eslint/parser": "^5.57.1",
-    "eslint": "^8.38.0",
+    "@types/wicg-file-system-access": "^2020.9.6",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "browserslist-to-esbuild": "^1.2.0",
+    "eslint": "^8.43.0",
     "eslint-plugin-react": "^7.32.2",
-    "typescript": "^5.0.4"
+    "eslint-plugin-react-refresh": "^0.4.1",
+    "typescript": "^5.0.4",
+    "vite-plugin-eslint": "^1.8.1"
   }
 }

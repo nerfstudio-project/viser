@@ -39,7 +39,7 @@ def main(
             "FPS", min=1, max=60, step=0.1, initial_value=loader.fps
         )
         gui_framerate_options = server.add_gui_button_group(
-            "FPS options", ["10", "20", "30", "60"]
+            "FPS options", ("10", "20", "30", "60")
         )
 
     # Frame step buttons.
