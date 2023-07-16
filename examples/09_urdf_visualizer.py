@@ -29,7 +29,7 @@ def main(urdf_path: Path) -> None:
     # Create joint angle sliders.
     gui_joints: List[viser.GuiHandle[float]] = []
     initial_angles: List[float] = []
-    for joint_name, (lower, upper) in urdf.get_joint_limits().items():
+    for joint_name, (lower, upper) in urdf.get_actuated_joint_limits().items():
         lower = lower if lower is not None else -onp.pi
         upper = upper if upper is not None else onp.pi
         initial_angle = 0.0 if lower < 0 and upper > 0 else (lower + upper) / 2.0

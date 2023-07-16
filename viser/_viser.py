@@ -5,8 +5,9 @@ import dataclasses
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Dict, Generator, List, Tuple
+from typing import Callable, Dict, Generator, List, Tuple, cast
 
+import msgpack
 import numpy as onp
 import numpy.typing as npt
 from typing_extensions import override
@@ -213,6 +214,11 @@ class ClientHandle(MessageApi, GuiContainerApi):
             self._locked_thread_id = -1
 
 
+# We can serialize the state of a ViserServer via a tuple of
+# (serialized message, timestamp) pairs.
+SerializedServerState = Tuple[Tuple[bytes, float], ...]
+
+
 @dataclasses.dataclass
 class _ViserServerState:
     connection: infra.Server
@@ -238,6 +244,7 @@ class ViserServer(MessageApi, GuiContainerApi):
             message_class=_messages.Message,
             http_server_root=Path(__file__).absolute().parent / "client" / "build",
         )
+        self._server = server
         super().__init__(server)
 
         state = _ViserServerState(server)
@@ -425,3 +432,15 @@ class ViserServer(MessageApi, GuiContainerApi):
             self._queue(_messages.MessageGroupEnd())
             self._atomic_lock.release()
             self._locked_thread_id = -1
+
+    def serialize_state(self) -> bytes:
+        """Serialize the state of a server, as bytes."""
+        state: SerializedServerState = tuple(
+            [
+                (stamped_message[0].serialize(), stamped_message[1])
+                for stamped_message in self._server._broadcast_buffer.stamped_message_from_id.copy().values()
+            ]
+        )
+        out = msgpack.packb(state)
+        assert isinstance(out, bytes)
+        return out

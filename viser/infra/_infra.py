@@ -182,7 +182,7 @@ class Server(MessageHandler):
                 rich.print(
                     f"[bold](viser)[/bold] Connection opened ({client_id},"
                     f" {total_connections} total),"
-                    f" {len(self._broadcast_buffer.message_from_id)} persistent"
+                    f" {len(self._broadcast_buffer.stamped_message_from_id)} persistent"
                     " messages"
                 )
 
