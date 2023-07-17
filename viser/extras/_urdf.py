@@ -18,19 +18,24 @@ class ViserUrdf:
         self,
         target: Union[viser.ViserServer, viser.ClientHandle],
         urdf_path: Path,
+        scale: float = 1.0,
         root_node_name: str = "/",
         mesh_color_override: Optional[Tuple[float, float, float]] = None,
     ) -> None:
         assert root_node_name.startswith("/")
         assert not root_node_name.endswith("/")
 
-        self._target = target
-        self._urdf: yourdfpy.URDF = yourdfpy.URDF.load(
+        urdf = yourdfpy.URDF.load(
             urdf_path,
             filename_handler=partial(
                 yourdfpy.filename_handler_magic, dir=urdf_path.parent
             ),
         )
+        assert isinstance(urdf, yourdfpy.URDF)
+
+        self._target = target
+        self._urdf = urdf
+        self._scale = scale
         self._root_node_name = root_node_name
 
         # Add coordinate frame for each joint.
@@ -45,7 +50,33 @@ class ViserUrdf:
                     show_axes=False,
                 )
             )
-        _add_urdf_meshes(target, self._urdf, self._root_node_name, mesh_color_override)
+
+        # Add the URDF's meshes/geometry to viser.
+        for link_name, mesh in urdf.scene.geometry.items():
+            assert isinstance(mesh, trimesh.Trimesh)
+            T_parent_child = urdf.get_transform(
+                link_name, urdf.scene.graph.transforms.parents[link_name]
+            )
+            name = _viser_name_from_frame(urdf, link_name, root_node_name)
+
+            # Scale the mesh. (this will mutate it)
+            mesh.apply_scale(self._scale)
+            if mesh_color_override is None:
+                target.add_mesh_trimesh(
+                    name,
+                    mesh,
+                    wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
+                    position=T_parent_child[:3, 3] * scale,
+                )
+            else:
+                target.add_mesh_simple(
+                    name,
+                    mesh.vertices,
+                    mesh.faces,
+                    color=mesh_color_override,
+                    wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
+                    position=T_parent_child[:3, 3] * scale,
+                )
 
     def update_cfg(self, configuration: onp.ndarray) -> None:
         """Update the joint angles of the visualized URDF."""
@@ -57,7 +88,7 @@ class ViserUrdf:
                 assert isinstance(joint, yourdfpy.Joint)
                 T_parent_child = self._urdf.get_transform(joint.child, joint.parent)
                 frame_handle.wxyz = tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz
-                frame_handle.position = T_parent_child[:3, 3]
+                frame_handle.position = T_parent_child[:3, 3] * self._scale
 
     def get_actuated_joint_limits(
         self,
@@ -76,37 +107,6 @@ class ViserUrdf:
     def get_actuated_joint_names(self) -> Tuple[str, ...]:
         """Returns a tuple of actuated joint names, in order."""
         return tuple(self._urdf.actuated_joint_names)
-
-
-def _add_urdf_meshes(
-    target: Union[viser.ViserServer, viser.ClientHandle],
-    urdf: yourdfpy.URDF,
-    root_node_name: str,
-    mesh_color_override: Optional[Tuple[float, float, float]],
-) -> None:
-    """Add meshes for a URDF file to viser."""
-    for link_name, mesh in urdf.scene.geometry.items():
-        assert isinstance(mesh, trimesh.Trimesh)
-        T_parent_child = urdf.get_transform(
-            link_name, urdf.scene.graph.transforms.parents[link_name]
-        )
-        name = _viser_name_from_frame(urdf, link_name, root_node_name)
-        if mesh_color_override is None:
-            target.add_mesh_trimesh(
-                name,
-                mesh,
-                wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
-                position=T_parent_child[:3, 3],
-            )
-        else:
-            target.add_mesh_simple(
-                name,
-                mesh.vertices,
-                mesh.faces,
-                color=mesh_color_override,
-                wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
-                position=T_parent_child[:3, 3],
-            )
 
 
 def _viser_name_from_frame(
