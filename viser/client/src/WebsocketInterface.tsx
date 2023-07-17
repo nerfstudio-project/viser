@@ -390,7 +390,17 @@ function useMessageHandler() {
             if (isTexture(oldBackground)) oldBackground.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
-
+          }
+        );
+        return;
+      }
+      // Add a camera-aligned RGBD image
+      case "PopupImageMessage": {
+        new TextureLoader().load(
+          `data:${message.media_type};base64,${message.base64_rgb}`,
+          (texture) => {
+            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
+            texture.encoding = THREE.sRGBEncoding;
             viewer.nerfMaterialRef.current!.uniforms.nerfColor.value = texture;
           }
         );
@@ -402,6 +412,7 @@ function useMessageHandler() {
             texture.minFilter = THREE.NearestFilter;
             texture.magFilter = THREE.LinearFilter;
             viewer.nerfMaterialRef.current!.uniforms.nerfDepth.value = texture;
+            viewer.nerfMaterialRef.current!.uniforms.depthScale.value = message.depth_scale;
           }
         );
         return;

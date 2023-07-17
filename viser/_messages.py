@@ -220,8 +220,15 @@ class BackgroundImageMessage(Message):
 
     media_type: Literal["image/jpeg", "image/png"]
     base64_data: str
-    base64_depth: str
 
+@dataclasses.dataclass
+class PopupImageMessage(Message):
+    """Message for rendering a camera-aligned RGBD image which occludes with objects."""
+
+    media_type: Literal["image/jpeg", "image/png"]
+    base64_rgb: str
+    base64_depth: str
+    depth_scale: float
 
 @dataclasses.dataclass
 class ImageMessage(Message):

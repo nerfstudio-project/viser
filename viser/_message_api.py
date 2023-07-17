@@ -457,6 +457,7 @@ class MessageApi(abc.ABC):
         hint: Optional[str] = None,
     ) -> GuiHandle[Tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI."""
+        print("add_gui_vector3",label,initial_value,min,max)
         initial_value = cast_vector(initial_value, 2)
         min = cast_vector(min, 3) if min is not None else None
         max = cast_vector(max, 3) if max is not None else None
@@ -826,23 +827,45 @@ class MessageApi(abc.ABC):
 
         return MeshHandle._make(self, name, wxyz, position, visible)
 
+    def set_popup_image(
+        self,
+        image: onp.ndarray,
+        depth_img: onp.ndarray[float] ,
+        format: Literal["png", "jpeg"] = "jpeg",
+        jpeg_quality: Optional[int] = None,
+    ) -> None:
+        """
+        Set a popup image for the scene. Useful for NeRF visualization.
+        
+        Expects depth_img to be a HxWx1 array of depth values in floating point
+        """
+        assert depth_img.dtype == onp.float32
+        media_type, base64_rgb = _encode_image_base64(
+            image, format, jpeg_quality=jpeg_quality
+        )
+        depth_scale = depth_img.max()
+        depth_img = ((depth_img / depth_scale) * 255).squeeze().astype(onp.uint8)
+        _, base64_depth = _encode_image_base64(
+            depth_img, "png"
+        )
+        self._queue(
+            _messages.PopupImageMessage(
+                media_type=media_type, base64_rgb=base64_rgb, base64_depth = base64_depth, depth_scale=depth_scale
+            )
+        )
     def set_background_image(
         self,
         image: onp.ndarray,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: Optional[int] = None,
-        depthimg: onp.ndarray | None = None,
     ) -> None:
         """Set a background image for the scene. Useful for NeRF visualization."""
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
-        _, base64_depth = _encode_image_base64(
-            depthimg, "png"
-        )
         self._queue(
             _messages.BackgroundImageMessage(
-                media_type=media_type, base64_data=base64_data, base64_depth = base64_depth
+                media_type=media_type, base64_data=base64_data
             )
         )
 
