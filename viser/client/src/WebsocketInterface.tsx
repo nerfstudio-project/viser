@@ -396,6 +396,7 @@ function useMessageHandler() {
       }
       // Add a camera-aligned RGBD image
       case "PopupImageMessage": {
+        viewer.nerfMaterialRef.current!.uniforms.enabled.value = true;
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {

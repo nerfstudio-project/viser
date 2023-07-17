@@ -241,14 +241,13 @@ function NeRFImage(){
   }
   `.trim();
   const fragShader = `  
-  precision lowp float;
-
   varying vec2 vUv;
   uniform sampler2D nerfColor;
   uniform sampler2D nerfDepth;
   uniform float cameraNear;
   uniform float cameraFar;
   uniform float depthScale;
+  uniform bool enabled;
 
   // depthSample from depthTexture.r, for instance
   float linearDepth(float depthSample, float zNear, float zFar)
@@ -273,6 +272,10 @@ function NeRFImage(){
   }
 
   void main() {
+    if (!enabled) {
+      // discard the pixel if we're not enabled
+      discard;
+    }
     vec4 color = texture( nerfColor, vUv );
     gl_FragColor = vec4( color.rgb, 1.0 );
 
@@ -284,10 +287,12 @@ function NeRFImage(){
       gl_FragDepth = 1.0;
     }
   }`.trim();
+  // initialize the nerfColor texture with all white and depth at infinity
   const nerfMaterial = new THREE.ShaderMaterial({
     fragmentShader: fragShader,
     vertexShader: vertShader,
     uniforms: {
+      enabled: {value: false},
       nerfDepth: {value: null},
       depthScale: {value: 1.0},
       nerfColor: {value: null},
