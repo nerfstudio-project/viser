@@ -248,6 +248,7 @@ function NeRFImage(){
   uniform sampler2D nerfDepth;
   uniform float cameraNear;
   uniform float cameraFar;
+  uniform float depthScale;
 
   // depthSample from depthTexture.r, for instance
   float linearDepth(float depthSample, float zNear, float zFar)
@@ -266,8 +267,7 @@ function NeRFImage(){
   }
 
   float readDepth( sampler2D depthSampler, vec2 coord, float zNear, float zFar) {
-    float depth = texture(depthSampler,coord).x;
-    // float nonLinearDepth = (1.0/depth - 1.0/zNear)/(1.0/zFar - 1.0/zNear);
+    float depth = texture(depthSampler,coord).x * depthScale;
     float nonLinearDepth = depthSample(depth, zNear, zFar);
     return nonLinearDepth;
   }
@@ -289,6 +289,7 @@ function NeRFImage(){
     vertexShader: vertShader,
     uniforms: {
       nerfDepth: {value: null},
+      depthScale: {value: 1.0},
       nerfColor: {value: null},
       cameraNear: {value: null},
       cameraFar: {value: null},
@@ -326,6 +327,7 @@ function NeRFImage(){
               args={[1 , 1]}
             />
           </mesh>
+}
 
 /** Component for helping us set the scene reference. */
 function SceneContextSetter() {
