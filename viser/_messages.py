@@ -277,7 +277,7 @@ class GuiAddFolderMessage(Message):
 
 
 @dataclasses.dataclass
-class GuiAddTabsMessage(Message):
+class GuiAddTabGroupMessage(Message):
     order: float
     id: str
     container_id: str
@@ -372,10 +372,15 @@ class GuiAddButtonGroupMessage(_GuiAddInputBase):
     initial_value: str
     options: Tuple[str, ...]
 
+@dataclasses.dataclass
+class GuiRemoveContainerChildrenMessage(Message):
+    """Sent server->client to recursively remove children of a GUI container."""
+
+    container_id: str
 
 @dataclasses.dataclass
 class GuiRemoveMessage(Message):
-    """Sent server->client to add a new GUI input."""
+    """Sent server->client to remove a GUI element."""
 
     id: str
 

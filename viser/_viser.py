@@ -13,11 +13,9 @@ from typing_extensions import override
 
 from . import _messages, infra
 from . import transforms as tf
-from ._gui_api import GuiContainerApi
+from ._gui_api import GuiApi
 from ._message_api import MessageApi, cast_vector
 from ._scene_handles import FrameHandle, _SceneNodeHandleState
-
-ROOT_CONTAINER_ID = "root"
 
 
 @dataclasses.dataclass
@@ -160,7 +158,7 @@ class _ClientHandleState:
 
 
 @dataclasses.dataclass
-class ClientHandle(MessageApi, GuiContainerApi):
+class ClientHandle(MessageApi, GuiApi):
     """Handle for interacting with a specific client. Can be used to send messages to
     individual clients and read/write camera information."""
 
@@ -175,11 +173,6 @@ class ClientHandle(MessageApi, GuiContainerApi):
     def _get_api(self) -> MessageApi:
         """Message API to use."""
         return self
-
-    @override
-    def _get_container_id(self) -> str:
-        """ID of container to put GUI elements into."""
-        return ROOT_CONTAINER_ID
 
     @override
     def _queue(self, message: infra.Message) -> None:
@@ -220,7 +213,7 @@ class _ViserServerState:
     client_lock: threading.Lock = dataclasses.field(default_factory=threading.Lock)
 
 
-class ViserServer(MessageApi, GuiContainerApi):
+class ViserServer(MessageApi, GuiApi):
     """Viser server class. The primary interface for functionality in `viser`.
 
     Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all
@@ -333,11 +326,6 @@ class ViserServer(MessageApi, GuiContainerApi):
     def _get_api(self) -> MessageApi:
         """Message API to use."""
         return self
-
-    @override
-    def _get_container_id(self) -> str:
-        """ID of container to put GUI elements into."""
-        return ROOT_CONTAINER_ID
 
     @override
     def _queue(self, message: infra.Message) -> None:

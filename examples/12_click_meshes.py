@@ -16,7 +16,7 @@ def main() -> None:
     grid_shape = (4, 5)
     server = viser.ViserServer()
 
-    with server.gui_folder("Last clicked"):
+    with server.add_gui_folder("Last clicked"):
         x_value = server.add_gui_number(
             label="x",
             initial_value=0,

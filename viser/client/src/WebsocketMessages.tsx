@@ -140,8 +140,8 @@ export interface GuiAddFolderMessage {
   label: string;
   container_id: string;
 }
-export interface GuiAddTabsMessage {
-  type: "GuiAddTabsMessage";
+export interface GuiAddTabGroupMessage {
+  type: "GuiAddTabGroupMessage";
   order: number;
   id: string;
   container_id: string;
@@ -275,6 +275,10 @@ export interface GuiAddButtonGroupMessage {
   initial_value: string;
   options: string[];
 }
+export interface GuiRemoveContainerChildrenMessage {
+  type: "GuiRemoveContainerChildrenMessage";
+  container_id: string;
+}
 export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
   id: string;
@@ -348,7 +352,7 @@ export type Message =
   | SceneNodeClickedMessage
   | ResetSceneMessage
   | GuiAddFolderMessage
-  | GuiAddTabsMessage
+  | GuiAddTabGroupMessage
   | _GuiAddInputBase
   | GuiAddButtonMessage
   | GuiAddSliderMessage
@@ -361,6 +365,7 @@ export type Message =
   | GuiAddTextMessage
   | GuiAddDropdownMessage
   | GuiAddButtonGroupMessage
+  | GuiRemoveContainerChildrenMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | GuiSetVisibleMessage
