@@ -426,7 +426,7 @@ def _install_dependencies():
     # Install node
     curr_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     client_dir = os.path.join(curr_dir, "client")
-    env_dir = os.path.join(client_dir, "env")
+    env_dir = os.path.join(client_dir, ".nodeenv")
     args = [sys.executable, "-m", "nodeenv", env_dir]
     subprocess.run(args)
 

@@ -71,9 +71,13 @@ profile = "black"
 python_version = "3.8"
 ignore_missing_imports = true
 warn_unused_configs = true
+exclude="viser/client/.nodeenv"
 
 [tool.pyright]
-exclude = ["./docs/**/*", "./examples/assets/**/*"]
+exclude = ["./docs/**/*", "./examples/assets/**/*", "./viser/client/.nodeenv"]
+
+[tool.black]
+exclude = "viser/client/.nodeenv"
 
 [tool.ruff]
 select = [
@@ -99,3 +103,4 @@ ignore = [
     "PLW0603",  # Globa statement updates are discouraged.
     "PLW2901",  # For loop variable overwritten.
 ]
+exclude = [ ".nodeenv" ]
