@@ -130,7 +130,6 @@ def make_gui_elements(
 
     tab_group = server.add_gui_tab_group()
 
-    print("HI")
     # GUI elements: mesh settings + visibility.
     with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
         gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
