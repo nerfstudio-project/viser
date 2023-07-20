@@ -11,14 +11,10 @@ import numpy as onp
 import numpy.typing as npt
 from typing_extensions import override
 
-from . import _messages, infra
+from . import _client_autobuild, _messages, infra
 from . import transforms as tf
 from ._message_api import MessageApi, cast_vector
 from ._scene_handle import FrameHandle, _SceneNodeHandleState
-import sys
-import os
-import subprocess
-import shutil
 
 
 @dataclasses.dataclass
@@ -231,9 +227,7 @@ class ViserServer(MessageApi):
         )
         super().__init__(server)
 
-        if not _build_exists():
-            print("No client build found. Building now...")
-            _build_client()
+        _client_autobuild.ensure_client_is_built()
 
         state = _ViserServerState(server)
         self._state = state
@@ -410,61 +404,3 @@ class ViserServer(MessageApi):
             self._queue(_messages.MessageGroupEnd())
             self._atomic_lock.release()
             self._locked_thread_id = -1
-
-
-def _ensure_node_installed():
-    npm_path = shutil.which("npm")
-    yarn_path = shutil.which("yarn")
-
-    if not npm_path or not yarn_path:
-        print("Node installation not found. Installing now...")
-        return _install_dependencies()
-    return os.environ.copy()
-
-
-def _install_dependencies():
-    # Install node
-    curr_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-    client_dir = os.path.join(curr_dir, "client")
-    env_dir = os.path.join(client_dir, ".nodeenv")
-    args = [sys.executable, "-m", "nodeenv", env_dir]
-    subprocess.run(args)
-
-    binary_path = os.path.join(env_dir, "bin")
-
-    # Create new path
-    path = os.environ.get("PATH", "")
-    newpath = f"{binary_path}{os.pathsep}{path}"
-
-    args = ["npm", "install", "yarn"]
-    newenv = os.environ.copy()
-    newenv["PATH"] = newpath
-    confirmation_input = b"y\n"
-    yarn_install = subprocess.Popen(args=args, env=newenv)
-    yarn_install.communicate(confirmation_input)
-    yarn_install.wait()
-
-    return newenv
-
-
-def _build_client():
-    curr_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-    client_dir = os.path.join(curr_dir, "client")
-
-    env = _ensure_node_installed()
-
-    args = ["npx", "yarn", "install"]
-    installation = subprocess.Popen(args=args, env=env, cwd=client_dir)
-    installation.wait()
-
-    args = ["npx", "yarn", "run", "build"]
-    client_build = subprocess.Popen(args=args, env=env, cwd=client_dir)
-    client_build.wait()
-
-
-def _build_exists():
-    curr_dir = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-    client_dir = os.path.join(curr_dir, "client")
-    build_dir = os.path.join(client_dir, "client", "build")
-
-    return os.path.isdir(build_dir)

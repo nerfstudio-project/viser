@@ -31,6 +31,7 @@ dependencies = [
     "gdown>=4.6.6",
     "rich>=13.3.3",
     "trimesh>=3.21.7",
+    "nodeenv>=1.8.0",
 ]
 
 [project.optional-dependencies]
