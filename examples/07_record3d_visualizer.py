@@ -28,7 +28,7 @@ def main(
     num_frames = min(max_frames, loader.num_frames())
 
     # Add playback UI.
-    with server.gui_folder("Playback"):
+    with server.add_gui_folder("Playback"):
         gui_timestep = server.add_gui_slider(
             "Timestep", min=0, max=num_frames - 1, step=1, initial_value=0
         )
