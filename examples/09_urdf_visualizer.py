@@ -28,21 +28,8 @@ def main(urdf_path: Path) -> None:
 
     # Create joint angle sliders.
     gui_joints: List[viser.GuiHandle[float]] = []
-    initial_angles: List[float] = []
-    for joint_name, (lower, upper) in urdf.get_actuated_joint_limits().items():
-        lower = lower if lower is not None else -onp.pi
-        upper = upper if upper is not None else onp.pi
-        initial_angle = 0.0 if lower < 0 and upper > 0 else (lower + upper) / 2.0
-        slider = server.add_gui_slider(
-            label=joint_name,
-            min=lower,
-            max=upper,
-            step=1e-3,
-            initial_value=initial_angle,
-        )
-        slider.on_update(  # When sliders move, we update the URDF configuration.
-            lambda _: urdf.update_cfg(onp.array([gui.value for gui in gui_joints]))
-        )
+    with server.add_gui_folder("Joints"):
+        server.add_gui_button("Reset")
 
         gui_joints.append(slider)
         initial_angles.append(initial_angle)

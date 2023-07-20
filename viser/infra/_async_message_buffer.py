@@ -1,6 +1,5 @@
 import asyncio
 import dataclasses
-import threading
 from asyncio.events import AbstractEventLoop
 from typing import AsyncGenerator, Dict
 

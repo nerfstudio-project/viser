@@ -14,7 +14,6 @@ from typing import (
     Awaitable,
     Callable,
     Dict,
-    Generic,
     List,
     NewType,
     Optional,
