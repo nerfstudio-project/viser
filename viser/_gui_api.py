@@ -6,12 +6,14 @@ from __future__ import annotations
 
 import abc
 import dataclasses
+import threading
 import time
 import uuid
 import warnings
 from typing import (
     TYPE_CHECKING,
     Any,
+    Dict,
     List,
     Optional,
     Sequence,
@@ -78,34 +80,35 @@ def _compute_precision_digits(x: float) -> int:
     return digits
 
 
-# Global override for placing GUI elements in containers.
-container_id_override: Optional[str] = None
-
-ROOT_CONTAINER_ID = "root"
-
-
 class GuiApi(abc.ABC):
+    _target_container_from_thread_id: Dict[int, str] = {}
+    """ID of container to put GUI elements into."""
+
     def __init__(self) -> None:
         super().__init__()
+
+    def _get_container_id(self) -> str:
+        """Get container ID associated with the current thread."""
+        return self._target_container_from_thread_id.get(threading.get_ident(), "root")
+
+    def _set_container_id(self, container_id: str) -> None:
+        """Set container ID associated with the current thread."""
+        self._target_container_from_thread_id[threading.get_ident()] = container_id
 
     @abc.abstractmethod
     def _get_api(self) -> MessageApi:
         """Message API to use."""
         ...
 
-    def _get_container_id(self) -> str:
-        """ID of container to put GUI elements into."""
-        if container_id_override is not None:
-            return container_id_override
-        return ROOT_CONTAINER_ID
+    if not TYPE_CHECKING:
 
-    def gui_folder(self, label: str) -> GuiFolderHandle:
-        """Deprecated."""
-        warnings.warn(
-            "gui_folder() is deprecated. Use add_gui_folder() instead!",
-            stacklevel=2,
-        )
-        return self.add_gui_folder(label)
+        def gui_folder(self, label: str) -> GuiFolderHandle:
+            """Deprecated."""
+            warnings.warn(
+                "gui_folder() is deprecated. Use add_gui_folder() instead!",
+                stacklevel=2,
+            )
+            return self.add_gui_folder(label)
 
     def add_gui_folder(self, label: str) -> GuiFolderHandle:
         """Add a folder, and return a handle that can be used to populate it."""
@@ -119,8 +122,8 @@ class GuiApi(abc.ABC):
             )
         )
         return GuiFolderHandle(
-            _api=self._get_api(),
-            _folder_id=folder_container_id,
+            _gui_api=self,
+            _container_id=folder_container_id,
         )
 
     def add_gui_tab_group(self) -> GuiTabGroupHandle:
@@ -131,7 +134,7 @@ class GuiApi(abc.ABC):
             _labels=[],
             _icons_base64=[],
             _tab_container_ids=[],
-            _api=self._get_api(),
+            _gui_api=self,
             _container_id=self._get_container_id(),
         )
 
@@ -625,7 +628,7 @@ class GuiTabGroupHandle:
     _labels: List[str]
     _icons_base64: List[Optional[str]]
     _tab_container_ids: List[str]
-    _api: MessageApi
+    _gui_api: GuiApi
     _container_id: str
 
     def add_tab(self, label: str, icon: Optional[Icon] = None) -> GuiTabHandle:
@@ -644,15 +647,17 @@ class GuiTabGroupHandle:
 
     def remove(self) -> None:
         """Remove this tab group and all contained GUI elements."""
-        self._api._queue(_messages.GuiRemoveMessage(self._tab_group_id))
-        for tab_container_id in self._tab_container_ids:
-            self._api._queue(
-                _messages.GuiRemoveContainerChildrenMessage(tab_container_id)
-            )
+        self._gui_api._get_api()._queue(_messages.GuiRemoveMessage(self._tab_group_id))
+        # Containers will be removed automatically by the client.
+        #
+        # for tab_container_id in self._tab_container_ids:
+        #     self._gui_api._get_api()._queue(
+        #         _messages.GuiRemoveContainerChildrenMessage(tab_container_id)
+        #     )
 
     def _sync_with_client(self) -> None:
         """Send a message that syncs tab state with the client."""
-        self._api._queue(
+        self._gui_api._get_api()._queue(
             _messages.GuiAddTabGroupMessage(
                 order=time.time(),
                 id=self._tab_group_id,
@@ -668,30 +673,24 @@ class GuiTabGroupHandle:
 class GuiFolderHandle:
     """Use as a context to place GUI elements into a folder."""
 
-    _api: MessageApi
-    _folder_id: str
+    _gui_api: GuiApi
+    _container_id: str
     _container_id_restore: Optional[str] = None
 
     def __enter__(self) -> None:
-        # For folders, we use the same ID for the container ID / folder ID.
-        global container_id_override
-        self._container_id_restore = container_id_override
-        container_id_override = self._folder_id
+        self._container_id_restore = self._gui_api._get_container_id()
+        self._gui_api._set_container_id(self._container_id)
 
     def __exit__(self, *args) -> None:
         del args
-        global container_id_override
-        container_id_override = self._container_id_restore
+        assert self._container_id_restore is not None
+        self._gui_api._set_container_id(self._container_id_restore)
+        self._container_id_restore = None
 
     def remove(self) -> None:
         """Permanently remove this folder and all contained GUI elements from the
         visualizer."""
-        self._api._queue(_messages.GuiRemoveMessage(self._folder_id))
-        # Containers corresponding to folders are removed automatically.
-        #
-        # self._parent._api._queue(
-        #     _messages.GuiRemoveContainerChildrenMessage(self._folder_id)
-        # )
+        self._gui_api._get_api()._queue(_messages.GuiRemoveMessage(self._container_id))
 
 
 @dataclasses.dataclass
@@ -703,14 +702,14 @@ class GuiTabHandle:
     _container_id_restore: Optional[str] = None
 
     def __enter__(self) -> None:
-        global container_id_override
-        self._container_id_restore = container_id_override
-        container_id_override = self._container_id
+        self._container_id_restore = self._parent._gui_api._get_container_id()
+        self._parent._gui_api._set_container_id(self._container_id)
 
     def __exit__(self, *args) -> None:
         del args
-        global container_id_override
-        container_id_override = self._container_id_restore
+        assert self._container_id_restore is not None
+        self._parent._gui_api._set_container_id(self._container_id_restore)
+        self._container_id_restore = None
 
     def remove(self) -> None:
         """Permanently remove this tab and all contained GUI elements from the
@@ -719,7 +718,10 @@ class GuiTabHandle:
         container_index = self._parent._tab_container_ids.index(self._container_id)
         assert container_index != -1, "Tab already removed!"
 
-        print(container_index)
+        # Container needs to be manually removed.
+        self._parent._gui_api._get_api()._queue(
+            _messages.GuiRemoveContainerChildrenMessage(self._container_id)
+        )
 
         self._parent._labels.pop(container_index)
         self._parent._icons_base64.pop(container_index)

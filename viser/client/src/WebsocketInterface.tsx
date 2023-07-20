@@ -42,6 +42,7 @@ function useMessageHandler() {
   const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
   const removeGui = viewer.useGui((state) => state.removeGui);
+  const removeGuiContainer = viewer.useGui((state) => state.removeGuiContainer);
   const setGuiValue = viewer.useGui((state) => state.setGuiValue);
   const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
   const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
@@ -516,6 +517,11 @@ function useMessageHandler() {
       // Remove a GUI input.
       case "GuiRemoveMessage": {
         removeGui(message.id);
+        return;
+      }
+      // Remove a GUI container.
+      case "GuiRemoveContainerChildrenMessage": {
+        removeGuiContainer(message.container_id);
         return;
       }
       default: {
