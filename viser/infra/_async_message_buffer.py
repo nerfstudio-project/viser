@@ -1,10 +1,7 @@
 import asyncio
 import dataclasses
-import time
 from asyncio.events import AbstractEventLoop
-from typing import Any, AsyncGenerator, Dict, Tuple, Type, TypedDict
-
-import msgpack
+from typing import AsyncGenerator, Dict
 
 from ._messages import Message
 

@@ -4,7 +4,6 @@ import asyncio
 import dataclasses
 import http.server
 import mimetypes
-import operator
 import threading
 import time
 from asyncio.events import AbstractEventLoop
@@ -333,6 +332,8 @@ async def _producer(
     """Infinite loop to send messages from a buffer."""
 
     async def get_next_wrapped() -> Message:
+        """Helper for ignoring messages where `excluded_self_client` matches our own
+        client ID."""
         out = None
         while out is None or out.excluded_self_client == client_id:
             out = await get_next()
@@ -394,9 +395,7 @@ class AsyncWindowCollector(Generic[T]):
             else:
                 elapsed = time.time() - window_start
                 (done, pending) = await asyncio.wait(
-                    [
-                        self.next_element,
-                    ],
+                    [self.next_element],
                     timeout=self.window_seconds - elapsed,
                 )
                 del pending
