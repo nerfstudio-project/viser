@@ -30,4 +30,19 @@ clients. When a GUI element is added to a client (for example, via
    :undoc-members:
    :inherited-members:
 
+.. autoapiclass:: viser.GuiFolderHandle
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoapiclass:: viser.GuiTabGroupHandle
+   :members:
+   :undoc-members:
+   :inherited-members:
+
+.. autoapiclass:: viser.GuiTabHandle
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 <!-- prettier-ignore-end -->
