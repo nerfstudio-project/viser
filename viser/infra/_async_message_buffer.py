@@ -1,5 +1,6 @@
 import asyncio
 import dataclasses
+import threading
 from asyncio.events import AbstractEventLoop
 from typing import AsyncGenerator, Dict
 
@@ -33,8 +34,7 @@ class AsyncMessageBuffer:
         if redundancy_key is not None and redundancy_key in self.id_from_redundancy_key:
             old_message_id = self.id_from_redundancy_key.pop(redundancy_key)
             self.message_from_id.pop(old_message_id)
-        else:
-            self.id_from_redundancy_key[redundancy_key] = new_message_id
+        self.id_from_redundancy_key[redundancy_key] = new_message_id
 
         # Notify consumers that a new message is available.
         self.event_loop.call_soon_threadsafe(self.message_event.set)
@@ -65,4 +65,4 @@ class AsyncMessageBuffer:
                 self.event_loop.call_soon_threadsafe(self.message_event.clear)
 
                 # Small sleep to invoke a yield.
-                await asyncio.sleep(1e-7)
+                await asyncio.sleep(1e-8)

@@ -331,20 +331,45 @@ async def _producer(
 ) -> None:
     """Infinite loop to send messages from a buffer."""
 
-    async def get_next_wrapped() -> Message:
-        """Helper for ignoring messages where `excluded_self_client` matches our own
-        client ID."""
-        out = None
-        while out is None or out.excluded_self_client == client_id:
-            out = await get_next()
-        return out
+    window: List[Message] = []
 
-    async for window in AsyncWindowCollector(get_next_wrapped):
-        serialized = msgpack.packb(
-            tuple(message.as_serializable_dict() for message in window)
-        )
-        assert isinstance(serialized, bytes)
-        await websocket.send(serialized)
+    def append_to_window(message: Message) -> None:
+        if message.excluded_self_client == client_id:
+            return
+        window.append(message)
+
+    window_start_time = time.time()
+    window_duration_sec = 1.0 / 60.0
+    window_max_length = 1024
+    next_message = asyncio.shield(get_next())
+
+    while True:
+        if len(window) == 0:
+            # Start a new window.
+            append_to_window(await next_message)
+            window_start_time = time.time()
+            next_message = asyncio.shield(get_next())
+        else:
+            # Continuing a window.
+            elapsed = time.time() - window_start_time
+            (done, pending) = await asyncio.wait(
+                [next_message], timeout=elapsed - window_duration_sec
+            )
+            del pending
+            if next_message in done:
+                append_to_window(await next_message)
+                next_message = asyncio.shield(get_next())
+
+        if (
+            time.time() - window_start_time > window_duration_sec
+            or len(window) >= window_max_length
+        ):
+            serialized = msgpack.packb(
+                tuple(message.as_serializable_dict() for message in window)
+            )
+            assert isinstance(serialized, bytes)
+            await websocket.send(serialized)
+            window.clear()
 
 
 async def _consumer(
@@ -358,55 +383,3 @@ async def _consumer(
         assert isinstance(raw, bytes)
         message = message_class.deserialize(raw)
         handle_message(message)
-
-
-T = TypeVar("T")
-
-
-class AsyncWindowCollector(Generic[T]):
-    """Async iterator that yields 'windows' of objects. This helps us batch messages
-    that are sent in rapid succession, which can significantly reduce client
-    overhead."""
-
-    def __init__(
-        self,
-        get_next: Callable[[], Awaitable[T]],
-        max_length: int = 128,
-        window_seconds: float = 1.0 / 60.0 - 1e-3,
-    ) -> None:
-        self.get_next = lambda: asyncio.shield(get_next())
-        self.max_length = max_length
-        self.window_seconds = window_seconds
-        self.next_element = self.get_next()
-
-    def __aiter__(self):
-        return self
-
-    async def __anext__(self) -> List[T]:
-        window: List[T] = []
-
-        asyncio.Future
-
-        window_start = 0.0
-        while True:
-            if len(window) == 0:
-                window.append(await self.next_element)
-                window_start = time.time()
-            else:
-                elapsed = time.time() - window_start
-                (done, pending) = await asyncio.wait(
-                    [self.next_element],
-                    timeout=self.window_seconds - elapsed,
-                )
-                del pending
-                if self.next_element in done:
-                    window.append(await self.next_element)
-                else:
-                    break
-
-            if len(window) >= self.max_length:
-                break
-
-            self.next_element = self.get_next()
-
-        return window
