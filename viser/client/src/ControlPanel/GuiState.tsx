@@ -108,6 +108,8 @@ export function useGuiState(initialServer: string) {
             const guiConfig = state.guiConfigFromId[id];
             if (guiConfig.type === "GuiAddFolderMessage")
               state.removeGuiContainer(guiConfig.id);
+            if (guiConfig.type === "GuiAddTabGroupMessage")
+              guiConfig.tab_container_ids.forEach(state.removeGuiContainer);
 
             delete state.guiIdSetFromContainerId[guiConfig.container_id]![
               guiConfig.id
