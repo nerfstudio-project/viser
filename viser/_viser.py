@@ -11,7 +11,7 @@ import numpy as onp
 import numpy.typing as npt
 from typing_extensions import override
 
-from . import _messages, infra
+from . import _client_autobuild, _messages, infra
 from . import transforms as tf
 from ._gui_api import GuiApi
 from ._message_api import MessageApi, cast_vector
@@ -232,6 +232,8 @@ class ViserServer(MessageApi, GuiApi):
             http_server_root=Path(__file__).absolute().parent / "client" / "build",
         )
         super().__init__(server)
+
+        _client_autobuild.ensure_client_is_built()
 
         state = _ViserServerState(server)
         self._state = state
