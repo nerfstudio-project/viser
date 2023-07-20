@@ -241,7 +241,7 @@
 <span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
 <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">override</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">infra</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_client_autobuild</span><span class="p">,</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">infra</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
 <span class="kn">from</span> <span class="nn">._message_api</span> <span class="kn">import</span> <span class="n">MessageApi</span><span class="p">,</span> <span class="n">cast_vector</span>
 <span class="kn">from</span> <span class="nn">._scene_handle</span> <span class="kn">import</span> <span class="n">FrameHandle</span><span class="p">,</span> <span class="n">_SceneNodeHandleState</span>
@@ -456,6 +456,8 @@
             <span class="n">http_server_root</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;client&quot;</span> <span class="o">/</span> <span class="s2">&quot;build&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+
+        <span class="n">_client_autobuild</span><span class="o">.</span><span class="n">ensure_client_is_built</span><span class="p">()</span>
 
         <span class="n">state</span> <span class="o">=</span> <span class="n">_ViserServerState</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">state</span>
