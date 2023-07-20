@@ -10,7 +10,7 @@ def ensure_client_is_built() -> None:
     """Ensure that the client is built."""
 
     if not (client_dir / "src").exists():
-        assert (build_dir / "index.html").exist(), (
+        assert (build_dir / "index.html").exists(), (
             "Something went wrong! At least one of the client source or build"
             " directories should be present."
         )
