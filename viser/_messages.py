@@ -372,11 +372,13 @@ class GuiAddButtonGroupMessage(_GuiAddInputBase):
     initial_value: str
     options: Tuple[str, ...]
 
+
 @dataclasses.dataclass
 class GuiRemoveContainerChildrenMessage(Message):
     """Sent server->client to recursively remove children of a GUI container."""
 
     container_id: str
+
 
 @dataclasses.dataclass
 class GuiRemoveMessage(Message):
