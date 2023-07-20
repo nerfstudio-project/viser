@@ -17,10 +17,7 @@ import { BlendFunction, KernelSize } from "postprocessing";
 import { SynchronizedCameraControls } from "./CameraControls";
 import { Box, MantineProvider, MediaQuery } from "@mantine/core";
 import React from "react";
-import {
-  SceneNodeThreeObject,
-  UseSceneTree,
-} from "./SceneTree";
+import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 
 import "./index.css";
 

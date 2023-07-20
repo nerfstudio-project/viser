@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import abc
-import contextlib
 import dataclasses
 import time
 import uuid
@@ -9,7 +8,6 @@ import warnings
 from typing import (
     TYPE_CHECKING,
     Any,
-    Generator,
     List,
     Optional,
     Sequence,
@@ -19,7 +17,7 @@ from typing import (
 )
 
 import numpy as onp
-from typing_extensions import LiteralString, override
+from typing_extensions import LiteralString
 
 from . import _messages
 from ._gui_handles import (
