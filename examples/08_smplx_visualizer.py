@@ -59,11 +59,7 @@ def main(
     # Main loop. We'll just keep read from the joints, deform the mesh, then sending the
     # updated mesh in a loop. This could be made a lot more efficient.
     gui_elements = make_gui_elements(
-        server,
-        num_betas=model.num_betas,
-        num_body_joints=int(model.NUM_BODY_JOINTS)
-        + int(model.NUM_FACE_JOINTS)
-        + int(model.NUM_HAND_JOINTS) * 2,
+        server, num_betas=model.num_betas, num_body_joints=model.NUM_BODY_JOINTS
     )
     while True:
         # Do nothing if no change.
@@ -71,10 +67,6 @@ def main(
             time.sleep(0.01)
             continue
         gui_elements.changed = False
-
-        full_pose = torch.from_numpy(
-            onp.array([j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
-        )
 
         # Get deformed mesh.
         output = model.forward(
@@ -85,16 +77,9 @@ def main(
             ),
             expression=None,
             return_verts=True,
-            body_pose=full_pose[:, : model.NUM_BODY_JOINTS],  # type: ignore
-            # left_hand_pose=full_pose[  # type: ignore
-            #     :, model.NUM_BODY_JOINTS : model.NUM_BODY_JOINTS + model.NUM_HAND_JOINTS
-            # ],
-            # right_hand_pose=full_pose[  # type: ignore
-            #     :,
-            #     model.NUM_BODY_JOINTS
-            #     + model.NUM_HAND_JOINTS : model.NUM_BODY_JOINTS
-            #     + model.NUM_HAND_JOINTS * 2,
-            # ],
+            body_pose=torch.from_numpy(
+                onp.array([j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
+            ),
             global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].value, dtype=onp.float32)[None, ...]),  # type: ignore
             return_full_pose=True,
         )
@@ -143,92 +128,93 @@ def make_gui_elements(
 
     tab_group = server.add_gui_tab_group()
 
+    tab_view = tab_group.add_tab("View", viser.Icon.VIEWFINDER)
+    tab_shape = tab_group.add_tab("Shape", viser.Icon.BOX)
+    tab_joints = tab_group.add_tab("Joints", viser.Icon.ANGLE)
+
     # GUI elements: mesh settings + visibility.
-    with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
-        gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
-        gui_wireframe = server.add_gui_checkbox("Wireframe", initial_value=False)
-        gui_show_controls = server.add_gui_checkbox("Handles", initial_value=False)
+    gui_rgb = tab_view.add_gui_rgb("Color", initial_value=(90, 200, 255))
+    gui_wireframe = tab_view.add_gui_checkbox("Wireframe", initial_value=False)
+    gui_show_controls = tab_view.add_gui_checkbox("Handles", initial_value=False)
 
-        @gui_rgb.on_update
-        def _(_):
-            out.changed = True
+    @gui_rgb.on_update
+    def _(_):
+        out.changed = True
 
-        @gui_wireframe.on_update
-        def _(_):
-            out.changed = True
+    @gui_wireframe.on_update
+    def _(_):
+        out.changed = True
 
-        @gui_show_controls.on_update
-        def _(_):
-            add_transform_controls(enabled=gui_show_controls.value)
+    @gui_show_controls.on_update
+    def _(_):
+        add_transform_controls(enabled=gui_show_controls.value)
 
     # GUI elements: shape parameters.
-    with tab_group.add_tab("Shape", viser.Icon.BOX):
-        gui_reset_shape = server.add_gui_button("Reset Shape")
-        gui_random_shape = server.add_gui_button("Random Shape")
+    gui_reset_shape = tab_shape.add_gui_button("Reset Shape")
+    gui_random_shape = tab_shape.add_gui_button("Random Shape")
 
-        @gui_reset_shape.on_click
+    @gui_reset_shape.on_click
+    def _(_):
+        for beta in gui_betas:
+            beta.value = 0.0
+
+    @gui_random_shape.on_click
+    def _(_):
+        for beta in gui_betas:
+            beta.value = onp.random.normal(loc=0.0, scale=1.0)
+
+    gui_betas = []
+    for i in range(num_betas):
+        beta = tab_shape.add_gui_slider(
+            f"beta{i}", min=-5.0, max=5.0, step=0.01, initial_value=0.0
+        )
+        gui_betas.append(beta)
+
+        @beta.on_update
         def _(_):
-            for beta in gui_betas:
-                beta.value = 0.0
-
-        @gui_random_shape.on_click
-        def _(_):
-            for beta in gui_betas:
-                beta.value = onp.random.normal(loc=0.0, scale=1.0)
-
-        gui_betas = []
-        for i in range(num_betas):
-            beta = server.add_gui_slider(
-                f"beta{i}", min=-5.0, max=5.0, step=0.01, initial_value=0.0
-            )
-            gui_betas.append(beta)
-
-            @beta.on_update
-            def _(_):
-                out.changed = True
+            out.changed = True
 
     # GUI elements: joint angles.
-    with tab_group.add_tab("Joints", viser.Icon.ANGLE):
-        gui_reset_joints = server.add_gui_button("Reset Joints")
-        gui_random_joints = server.add_gui_button("Random Joints")
+    gui_reset_joints = tab_joints.add_gui_button("Reset Joints")
+    gui_random_joints = tab_joints.add_gui_button("Random Joints")
 
-        @gui_reset_joints.on_click
+    @gui_reset_joints.on_click
+    def _(_):
+        for joint in gui_joints:
+            joint.value = (0.0, 0.0, 0.0)
+            sync_transform_controls()
+
+    @gui_random_joints.on_click
+    def _(_):
+        for joint in gui_joints:
+            # It's hard to uniformly sample orientations directly in so(3), so we
+            # first sample on S^3 and then convert.
+            quat = onp.random.normal(loc=0.0, scale=1.0, size=(4,))
+            quat /= onp.linalg.norm(quat)
+
+            # xyzw => wxyz => so(3)
+            joint.value = tf.SO3(wxyz=quat).log()
+            sync_transform_controls()
+
+    gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]] = []
+    for i in range(num_body_joints + 1):
+        gui_joint = tab_joints.add_gui_vector3(
+            label=smplx.joint_names.JOINT_NAMES[i],
+            initial_value=(0.0, 0.0, 0.0),
+            step=0.05,
+        )
+        gui_joints.append(gui_joint)
+
+        @gui_joint.on_update
         def _(_):
-            for joint in gui_joints:
-                joint.value = (0.0, 0.0, 0.0)
-                sync_transform_controls()
-
-        @gui_random_joints.on_click
-        def _(_):
-            for joint in gui_joints:
-                # It's hard to uniformly sample orientations directly in so(3), so we
-                # first sample on S^3 and then convert.
-                quat = onp.random.normal(loc=0.0, scale=1.0, size=(4,))
-                quat /= onp.linalg.norm(quat)
-
-                # xyzw => wxyz => so(3)
-                joint.value = tf.SO3(wxyz=quat).log()
-                sync_transform_controls()
-
-        gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]] = []
-        for i in range(num_body_joints + 1):
-            gui_joint = server.add_gui_vector3(
-                label=smplx.joint_names.JOINT_NAMES[i],
-                initial_value=(0.0, 0.0, 0.0),
-                step=0.05,
-            )
-            gui_joints.append(gui_joint)
-
-            @gui_joint.on_update
-            def _(_):
-                sync_transform_controls()
-                out.changed = True
+            sync_transform_controls()
+            out.changed = True
 
     # Transform control gizmos on joints.
     transform_controls: List[viser.TransformControlsHandle] = []
 
     def add_transform_controls(enabled: bool) -> List[viser.TransformControlsHandle]:
-        for i in range(1 + num_body_joints):
+        for i in range(num_body_joints + 1):
             controls = server.add_transform_controls(
                 f"/reoriented/smpl/joint_{i}/controls",
                 depth_test=False,
@@ -273,7 +259,6 @@ def joint_transforms_and_parents_from_smpl(model, output):
     J_posed, A = smplx.lbs.batch_rigid_transform(rot_mats, J, model.parents)  # type: ignore
     transforms = A.detach().cpu().numpy().squeeze(axis=0)  # type: ignore
     parents = model.parents.detach().cpu().numpy()  # type: ignore
-    print(transforms.shape)
     return transforms, parents
 
 

@@ -4,6 +4,7 @@ import contextlib
 import dataclasses
 import threading
 import time
+from collections import deque
 from pathlib import Path
 from typing import Callable, Dict, Generator, List, Tuple, cast
 
@@ -155,6 +156,7 @@ class CameraHandle:
 
 @dataclasses.dataclass
 class _ClientHandleState:
+    server: infra.Server
     connection: infra.ClientConnection
 
 
@@ -176,15 +178,16 @@ class ClientHandle(MessageApi, GuiApi):
         return self
 
     @override
-    def _queue(self, message: infra.Message) -> None:
+    def _queue_unsafe(self, message: _messages.Message) -> None:
         """Define how the message API should send messages."""
         self._state.connection.send(message)
 
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
         """Returns a context where:
-        - All outgoing messages are grouped and applied by clients atomically.
         - No incoming messages, like camera or GUI state updates, are processed.
+        - `viser` will attempt to group outgoing messages, which will then be sent after
+          the context is exited.
 
         This can be helpful for things like animations, or when we want position and
         orientation updates to happen synchronously.
@@ -195,14 +198,12 @@ class ClientHandle(MessageApi, GuiApi):
             got_lock = False
         else:
             self._atomic_lock.acquire()
-            self._queue(_messages.MessageGroupStart())
             self._locked_thread_id = thread_id
             got_lock = True
 
         yield
 
         if got_lock:
-            self._queue(_messages.MessageGroupEnd())
             self._atomic_lock.release()
             self._locked_thread_id = -1
 
@@ -265,7 +266,7 @@ class ViserServer(MessageApi, GuiApi):
             client = ClientHandle(
                 conn.client_id,
                 camera,
-                _ClientHandleState(conn),
+                _ClientHandleState(server, conn),
             )
             camera._state.client = client
             first = True
@@ -335,9 +336,9 @@ class ViserServer(MessageApi, GuiApi):
         return self
 
     @override
-    def _queue(self, message: infra.Message) -> None:
+    def _queue_unsafe(self, message: _messages.Message) -> None:
         """Define how the message API should send messages."""
-        self._state.connection.broadcast(message)
+        self._server.broadcast(message)
 
     def get_clients(self) -> Dict[int, ClientHandle]:
         """Creates and returns a copy of the mapping from connected client IDs to
@@ -398,37 +399,8 @@ class ViserServer(MessageApi, GuiApi):
                 for client in self.get_clients().values():
                     stack.enter_context(client._atomic_lock)
 
-                self._queue(_messages.MessageGroupStart())
-
-            # There's a possible race condition here if we write something like:
-            #
-            # with server.atomic():
-            #     client.add_frame(...)
-            #
-            # - We enter the server's atomic() context.
-            # - The server pushes a MessageGroupStart() to the broadcast buffer.
-            # - The client pushes a frame message to the client buffer.
-            # - For whatever reason the client buffer is handled before the broadcast
-            # buffer.
-            #
-            # The likelihood of this seems exceedingly low, but I don't think we have
-            # any actual guarantees here. Likely worth revisiting but super lower
-            # priority.
             yield
 
         if got_lock:
-            self._queue(_messages.MessageGroupEnd())
             self._atomic_lock.release()
             self._locked_thread_id = -1
-
-    def serialize_state(self) -> bytes:
-        """Serialize the state of a server, as bytes."""
-        state: SerializedServerState = tuple(
-            [
-                (stamped_message[0].serialize(), stamped_message[1])
-                for stamped_message in self._server._broadcast_buffer.stamped_message_from_id.copy().values()
-            ]
-        )
-        out = msgpack.packb(state)
-        assert isinstance(out, bytes)
-        return out

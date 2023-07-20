@@ -4,11 +4,27 @@ import asyncio
 import dataclasses
 import http.server
 import mimetypes
+import operator
 import threading
+import time
 from asyncio.events import AbstractEventLoop
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Callable, Dict, List, NewType, Optional, Tuple, Type, TypeVar
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    NewType,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
+import msgpack
 import rich
 import websockets.connection
 import websockets.datastructures
@@ -117,6 +133,8 @@ class Server(MessageHandler):
         self._http_server_root = http_server_root
         self._verbose = verbose
 
+        self._thread_executor = ThreadPoolExecutor(max_workers=32)
+
     def start(self) -> None:
         """Start the server."""
 
@@ -182,7 +200,7 @@ class Server(MessageHandler):
                 rich.print(
                     f"[bold](viser)[/bold] Connection opened ({client_id},"
                     f" {total_connections} total),"
-                    f" {len(self._broadcast_buffer.stamped_message_from_id)} persistent"
+                    f" {len(self._broadcast_buffer.message_from_id)} persistent"
                     " messages"
                 )
 
@@ -193,14 +211,14 @@ class Server(MessageHandler):
             client_connection = ClientConnection(client_id, client_state)
 
             def handle_incoming(message: Message) -> None:
-                threading.Thread(
-                    target=lambda: self._handle_incoming_message(client_id, message)
-                ).start()
-                threading.Thread(
-                    target=lambda: client_connection._handle_incoming_message(
+                self._thread_executor.submit(
+                    lambda: self._handle_incoming_message(client_id, message)
+                )
+                self._thread_executor.submit(
+                    lambda: client_connection._handle_incoming_message(
                         client_id, message
                     )
-                ).start()
+                )
 
             # New connection callbacks.
             for cb in self._client_connect_cb:
@@ -210,10 +228,16 @@ class Server(MessageHandler):
                 # For each client: infinite loop over producers (which send messages)
                 # and consumers (which receive messages).
                 await asyncio.gather(
-                    _single_connection_producer(
-                        websocket, client_id, client_state.message_buffer
+                    _producer(
+                        websocket,
+                        client_id,
+                        client_state.message_buffer.get,
                     ),
-                    _broadcast_producer(websocket, client_id, self._broadcast_buffer),
+                    _producer(
+                        websocket,
+                        client_id,
+                        self._broadcast_buffer.__aiter__().__anext__,
+                    ),
                     _consumer(websocket, handle_incoming, message_class),
                 )
             except (
@@ -301,25 +325,25 @@ class Server(MessageHandler):
         event_loop.run_forever()
 
 
-async def _single_connection_producer(
-    websocket: WebSocketServerProtocol, client_id: ClientId, buffer: asyncio.Queue
+async def _producer(
+    websocket: WebSocketServerProtocol,
+    client_id: ClientId,
+    get_next: Callable[[], Awaitable[Message]],
 ) -> None:
-    """Infinite loop to send messages from the client buffer."""
-    while True:
-        message = await buffer.get()
-        if message.excluded_self_client == client_id:
-            continue
-        await websocket.send(message.serialize())
+    """Infinite loop to send messages from a buffer."""
 
+    async def get_next_wrapped() -> Message:
+        out = None
+        while out is None or out.excluded_self_client == client_id:
+            out = await get_next()
+        return out
 
-async def _broadcast_producer(
-    websocket: WebSocketServerProtocol, client_id: ClientId, buffer: AsyncMessageBuffer
-) -> None:
-    """Infinite loop to send messages from the broadcast buffer."""
-    async for message in buffer:
-        if message.excluded_self_client == client_id:
-            continue
-        await websocket.send(message.serialize())
+    async for window in AsyncWindowCollector(get_next_wrapped):
+        serialized = msgpack.packb(
+            tuple(message.as_serializable_dict() for message in window)
+        )
+        assert isinstance(serialized, bytes)
+        await websocket.send(serialized)
 
 
 async def _consumer(
@@ -333,3 +357,57 @@ async def _consumer(
         assert isinstance(raw, bytes)
         message = message_class.deserialize(raw)
         handle_message(message)
+
+
+T = TypeVar("T")
+
+
+class AsyncWindowCollector(Generic[T]):
+    """Async iterator that yields 'windows' of objects. This helps us batch messages
+    that are sent in rapid succession, which can significantly reduce client
+    overhead."""
+
+    def __init__(
+        self,
+        get_next: Callable[[], Awaitable[T]],
+        max_length: int = 128,
+        window_seconds: float = 1.0 / 60.0 - 1e-3,
+    ) -> None:
+        self.get_next = lambda: asyncio.shield(get_next())
+        self.max_length = max_length
+        self.window_seconds = window_seconds
+        self.next_element = self.get_next()
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self) -> List[T]:
+        window: List[T] = []
+
+        asyncio.Future
+
+        window_start = 0.0
+        while True:
+            if len(window) == 0:
+                window.append(await self.next_element)
+                window_start = time.time()
+            else:
+                elapsed = time.time() - window_start
+                (done, pending) = await asyncio.wait(
+                    [
+                        self.next_element,
+                    ],
+                    timeout=self.window_seconds - elapsed,
+                )
+                del pending
+                if self.next_element in done:
+                    window.append(await self.next_element)
+                else:
+                    break
+
+            if len(window) >= self.max_length:
+                break
+
+            self.next_element = self.get_next()
+
+        return window

@@ -14,6 +14,7 @@ import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
+import { useFrame } from "@react-three/fiber";
 
 /** Float **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -536,6 +537,16 @@ export default function WebsocketInterface() {
 
   syncSearchParamServer(server);
 
+  const messageQueue: Message[] = [];
+
+  useFrame(() => {
+    // Handle messages before every frame.
+    // Place this directly in ws.onmessage can cause race conditions!
+    const numMessages = messageQueue.length;
+    const processBatch = messageQueue.splice(0, numMessages);
+    processBatch.forEach(handleMessage);
+  });
+
   React.useEffect(() => {
     // Lock for making sure messages are handled in order.
     const orderLock = new AwaitLock();
@@ -571,23 +582,11 @@ export default function WebsocketInterface() {
         timeout = setTimeout(tryConnect, 1000);
       };
 
-      const messageQueue: Message[] = [];
-      const messageGroup: Message[] = [];
-      let grouping = false;
-
-      // Handle batches of messages at 200Hz. This helps prevent some React errors from interrupting renders.
-      setInterval(() => {
-        const numMessages = messageQueue.length;
-        const processBatch = messageQueue.slice(0, numMessages);
-        messageQueue.splice(0, numMessages);
-        processBatch.forEach(handleMessage);
-      }, 5);
-
       ws.onmessage = async (event) => {
         // Reduce websocket backpressure.
-        const messagePromise = new Promise<Message>((resolve) => {
+        const messagePromise = new Promise<Message[]>((resolve) => {
           (event.data.arrayBuffer() as Promise<ArrayBuffer>).then((buffer) => {
-            resolve(unpack(new Uint8Array(buffer)) as Message);
+            resolve(unpack(new Uint8Array(buffer)) as Message[]);
           });
         });
 
@@ -597,17 +596,7 @@ export default function WebsocketInterface() {
           orderLock.release();
         });
         try {
-          const message = await messagePromise;
-          if (message.type === "MessageGroupStart") grouping = true;
-          else if (message.type === "MessageGroupEnd") {
-            messageQueue.push(...messageGroup);
-            messageGroup.length = 0;
-            grouping = false;
-          } else if (grouping) {
-            messageGroup.push(message);
-          } else {
-            messageQueue.push(message);
-          }
+          messageQueue.push(...(await messagePromise));
         } finally {
           orderLock.acquired && orderLock.release();
         }

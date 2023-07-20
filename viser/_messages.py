@@ -418,16 +418,6 @@ class GuiSetValueMessage(Message):
 
 
 @dataclasses.dataclass
-class MessageGroupStart(Message):
-    """Sent server->client to indicate the start of a message group."""
-
-
-@dataclasses.dataclass
-class MessageGroupEnd(Message):
-    """Sent server->client to indicate the end of a message group."""
-
-
-@dataclasses.dataclass
 class ThemeConfigurationMessage(Message):
     """Message from server->client to configure parts of the GUI."""
 

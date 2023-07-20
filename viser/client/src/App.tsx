@@ -17,10 +17,7 @@ import { BlendFunction, KernelSize } from "postprocessing";
 import { SynchronizedCameraControls } from "./CameraControls";
 import { Box, MantineProvider, MediaQuery } from "@mantine/core";
 import React from "react";
-import {
-  SceneNodeThreeObject,
-  UseSceneTree,
-} from "./SceneTree";
+import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 
 import "./index.css";
 
@@ -97,7 +94,6 @@ function SingleViewer() {
           flex: "1 0 auto",
         }}
       >
-        <WebsocketInterface />
         <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
           <Box
             sx={(theme) => ({
@@ -110,7 +106,9 @@ function SingleViewer() {
                 theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
             })}
           >
-            <ViewerCanvas />
+            <ViewerCanvas>
+              <WebsocketInterface />
+            </ViewerCanvas>
           </Box>
         </MediaQuery>
         <ControlPanel fixed_sidebar={fixed_sidebar} />
@@ -119,7 +117,7 @@ function SingleViewer() {
   );
 }
 
-function ViewerCanvas() {
+function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
   return (
     <Canvas
@@ -134,6 +132,7 @@ function ViewerCanvas() {
       performance={{ min: 0.95 }}
       ref={viewer.canvasRef}
     >
+      {children}
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
       <SceneContextSetter />
