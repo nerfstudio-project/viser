@@ -1,4 +1,5 @@
 import base64
+import tarfile
 from pathlib import Path
 
 from ._icons_enum import Icon
@@ -10,6 +11,11 @@ def base64_from_icon(icon: Icon) -> str:
     """Read an icon and encode it via base64."""
     icon_name = icon.value
     assert isinstance(icon_name, str)
-    icon_file = ICONS_DIR / f"{icon_name}.svg"
-    assert icon_file.exists(), f"Icon {icon_name} does not exist!"
-    return base64.b64encode(icon_file.read_bytes()).decode("ascii")
+    icons_tarball = ICONS_DIR / "tabler-icons.tar"
+
+    with tarfile.open(icons_tarball) as tar:
+        icon_file = tar.extractfile(f"{icon_name}.svg")
+        assert icon_file is not None
+        out = icon_file.read()
+
+    return base64.b64encode(out).decode("ascii")
