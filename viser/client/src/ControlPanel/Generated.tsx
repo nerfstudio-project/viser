@@ -319,7 +319,7 @@ function GeneratedFolder({
       pt={first ? "sm" : undefined}
       pb="xs"
       px="sm"
-      defaultValue={[conf.label]}
+      defaultValue={["folder"]}
       styles={(theme) => ({
         label: { padding: "0.5rem 0.4rem" },
         item: { border: 0 },
@@ -336,7 +336,7 @@ function GeneratedFolder({
         },
       })}
     >
-      <Accordion.Item value={conf.label}>
+      <Accordion.Item value="folder">
         <Accordion.Control>{conf.label}</Accordion.Control>
         <Accordion.Panel>
           <GeneratedGuiContainer containerId={conf.id} />
