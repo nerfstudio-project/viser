@@ -1,3 +1,7 @@
+# mypy: disable-error-code="misc"
+#
+# We suppress overload errors that depend on LiteralString support.
+# - https://github.com/python/mypy/issues/12554
 from __future__ import annotations
 
 import abc
