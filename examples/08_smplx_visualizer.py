@@ -59,11 +59,7 @@ def main(
     # Main loop. We'll just keep read from the joints, deform the mesh, then sending the
     # updated mesh in a loop. This could be made a lot more efficient.
     gui_elements = make_gui_elements(
-        server,
-        num_betas=model.num_betas,
-        num_body_joints=int(model.NUM_BODY_JOINTS)
-        + int(model.NUM_FACE_JOINTS)
-        + int(model.NUM_HAND_JOINTS) * 2,
+        server, num_betas=model.num_betas, num_body_joints=int(model.NUM_BODY_JOINTS)
     )
     while True:
         # Do nothing if no change.
@@ -86,15 +82,6 @@ def main(
             expression=None,
             return_verts=True,
             body_pose=full_pose[:, : model.NUM_BODY_JOINTS],  # type: ignore
-            # left_hand_pose=full_pose[  # type: ignore
-            #     :, model.NUM_BODY_JOINTS : model.NUM_BODY_JOINTS + model.NUM_HAND_JOINTS
-            # ],
-            # right_hand_pose=full_pose[  # type: ignore
-            #     :,
-            #     model.NUM_BODY_JOINTS
-            #     + model.NUM_HAND_JOINTS : model.NUM_BODY_JOINTS
-            #     + model.NUM_HAND_JOINTS * 2,
-            # ],
             global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].value, dtype=onp.float32)[None, ...]),  # type: ignore
             return_full_pose=True,
         )
@@ -143,6 +130,7 @@ def make_gui_elements(
 
     tab_group = server.add_gui_tab_group()
 
+    print("HI")
     # GUI elements: mesh settings + visibility.
     with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
         gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
@@ -273,7 +261,6 @@ def joint_transforms_and_parents_from_smpl(model, output):
     J_posed, A = smplx.lbs.batch_rigid_transform(rot_mats, J, model.parents)  # type: ignore
     transforms = A.detach().cpu().numpy().squeeze(axis=0)  # type: ignore
     parents = model.parents.detach().cpu().numpy()  # type: ignore
-    print(transforms.shape)
     return transforms, parents
 
 
