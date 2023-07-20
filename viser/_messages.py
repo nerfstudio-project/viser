@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union
 
 import numpy as onp
 import numpy.typing as onpt
@@ -269,23 +269,44 @@ class ResetSceneMessage(Message):
 
 
 @dataclasses.dataclass
-class _GuiAddMessageBase(Message):
+class GuiAddFolderMessage(Message):
     order: float
     id: str
     label: str
-    folder_labels: Tuple[str, ...]
-    hint: Optional[str]
+    container_id: str
 
 
 @dataclasses.dataclass
-class GuiAddButtonMessage(_GuiAddMessageBase):
+class GuiAddTabGroupMessage(Message):
+    order: float
+    id: str
+    container_id: str
+    tab_labels: Tuple[str, ...]
+    tab_icons_base64: Tuple[Union[str, None], ...]
+    tab_container_ids: Tuple[str, ...]
+
+
+@dataclasses.dataclass
+class _GuiAddInputBase(Message):
+    """Base message type containing fields commonly used by GUI inputs."""
+
+    order: float
+    id: str
+    label: str
+    container_id: str
+    hint: Optional[str]
+    initial_value: Any
+
+
+@dataclasses.dataclass
+class GuiAddButtonMessage(_GuiAddInputBase):
     # All GUI elements currently need an `initial_value` field.
     # This makes our job on the frontend easier.
     initial_value: bool
 
 
 @dataclasses.dataclass
-class GuiAddSliderMessage(_GuiAddMessageBase):
+class GuiAddSliderMessage(_GuiAddInputBase):
     min: float
     max: float
     step: Optional[float]
@@ -294,7 +315,7 @@ class GuiAddSliderMessage(_GuiAddMessageBase):
 
 
 @dataclasses.dataclass
-class GuiAddNumberMessage(_GuiAddMessageBase):
+class GuiAddNumberMessage(_GuiAddInputBase):
     initial_value: float
     precision: int
     step: float
@@ -303,22 +324,22 @@ class GuiAddNumberMessage(_GuiAddMessageBase):
 
 
 @dataclasses.dataclass
-class GuiAddRgbMessage(_GuiAddMessageBase):
+class GuiAddRgbMessage(_GuiAddInputBase):
     initial_value: Tuple[int, int, int]
 
 
 @dataclasses.dataclass
-class GuiAddRgbaMessage(_GuiAddMessageBase):
+class GuiAddRgbaMessage(_GuiAddInputBase):
     initial_value: Tuple[int, int, int, int]
 
 
 @dataclasses.dataclass
-class GuiAddCheckboxMessage(_GuiAddMessageBase):
+class GuiAddCheckboxMessage(_GuiAddInputBase):
     initial_value: bool
 
 
 @dataclasses.dataclass
-class GuiAddVector2Message(_GuiAddMessageBase):
+class GuiAddVector2Message(_GuiAddInputBase):
     initial_value: Tuple[float, float]
     min: Optional[Tuple[float, float]]
     max: Optional[Tuple[float, float]]
@@ -327,7 +348,7 @@ class GuiAddVector2Message(_GuiAddMessageBase):
 
 
 @dataclasses.dataclass
-class GuiAddVector3Message(_GuiAddMessageBase):
+class GuiAddVector3Message(_GuiAddInputBase):
     initial_value: Tuple[float, float, float]
     min: Optional[Tuple[float, float, float]]
     max: Optional[Tuple[float, float, float]]
@@ -336,25 +357,32 @@ class GuiAddVector3Message(_GuiAddMessageBase):
 
 
 @dataclasses.dataclass
-class GuiAddTextMessage(_GuiAddMessageBase):
+class GuiAddTextMessage(_GuiAddInputBase):
     initial_value: str
 
 
 @dataclasses.dataclass
-class GuiAddDropdownMessage(_GuiAddMessageBase):
+class GuiAddDropdownMessage(_GuiAddInputBase):
     initial_value: str
     options: Tuple[str, ...]
 
 
 @dataclasses.dataclass
-class GuiAddButtonGroupMessage(_GuiAddMessageBase):
+class GuiAddButtonGroupMessage(_GuiAddInputBase):
     initial_value: str
     options: Tuple[str, ...]
+
+
+@dataclasses.dataclass
+class GuiRemoveContainerChildrenMessage(Message):
+    """Sent server->client to recursively remove children of a GUI container."""
+
+    container_id: str
 
 
 @dataclasses.dataclass
 class GuiRemoveMessage(Message):
-    """Sent server->client to add a new GUI input."""
+    """Sent server->client to remove a GUI element."""
 
     id: str
 

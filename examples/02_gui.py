@@ -13,7 +13,7 @@ def main():
     server = viser.ViserServer()
 
     # Add some common GUI elements: number inputs, sliders, vectors, checkboxes.
-    with server.gui_folder("Read-only"):
+    with server.add_gui_folder("Read-only"):
         gui_counter = server.add_gui_number(
             "Counter",
             initial_value=0,
@@ -29,7 +29,7 @@ def main():
             disabled=True,
         )
 
-    with server.gui_folder("Editable"):
+    with server.add_gui_folder("Editable"):
         gui_vector2 = server.add_gui_vector2(
             "Position",
             initial_value=(0.0, 0.0),
@@ -41,7 +41,7 @@ def main():
             step=0.25,
             lock=True,
         )
-        with server.gui_folder("Text toggle"):
+        with server.add_gui_folder("Text toggle"):
             gui_checkbox_hide = server.add_gui_checkbox(
                 "Hide",
                 initial_value=False,

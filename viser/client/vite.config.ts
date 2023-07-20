@@ -1,9 +1,9 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import viteTsconfigPaths from 'vite-tsconfig-paths';
-import svgrPlugin from 'vite-plugin-svgr';
-import eslint from 'vite-plugin-eslint'
-import browserslistToEsbuild from 'browserslist-to-esbuild'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import viteTsconfigPaths from "vite-tsconfig-paths";
+import svgrPlugin from "vite-plugin-svgr";
+import eslint from "vite-plugin-eslint";
+import browserslistToEsbuild from "browserslist-to-esbuild";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,7 +13,7 @@ export default defineConfig({
     hmr: { port: 1025 }
   },
   build: {
-    outDir: 'build',
-    target: browserslistToEsbuild()
+    outDir: "build",
+    target: browserslistToEsbuild(),
   },
 });

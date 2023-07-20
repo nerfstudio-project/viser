@@ -1,68 +1,143 @@
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
+import GeneratedGuiContainer from "./Generated";
 import { ViewerContext } from "../App";
-import GeneratedControls from "./Generated";
-import SceneTreeTable from "./SceneTreeTable";
 import ServerControls from "./Server";
-import { Tabs, TabsValue } from "@mantine/core";
+import {
+  ActionIcon,
+  Aside,
+  Box,
+  Collapse,
+  Tooltip,
+  useMantineTheme,
+} from "@mantine/core";
 import {
   IconAdjustments,
-  IconBinaryTree2,
   IconCloudCheck,
   IconCloudOff,
-  IconTool,
+  IconArrowBack,
 } from "@tabler/icons-react";
 import React from "react";
+import BottomPanel from "./BottomPanel";
+import FloatingPanel, { FloatingPanelContext } from "./FloatingPanel";
 
-/** Root component for control panel. Parents a set of control tabs. */
-export default function ControlPanel() {
-  const viewer = React.useContext(ViewerContext)!;
+// Must match constant in Python.
+const ROOT_CONTAINER_ID = "root";
+
+/** Hides contents when floating panel is collapsed. */
+function HideWhenCollapsed({ children }: { children: React.ReactNode }) {
+  const expanded = React.useContext(FloatingPanelContext)?.expanded ?? true;
+  return expanded ? children : null;
+}
+
+export default function ControlPanel(props: { fixed_sidebar: boolean }) {
+  const theme = useMantineTheme();
+  const useMobileView = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`);
 
   // TODO: will result in unnecessary re-renders
+  const viewer = React.useContext(ViewerContext)!;
   const showGenerated =
     Object.keys(viewer.useGui((state) => state.guiConfigFromId)).length > 0;
-
-  const [tabState, setTabState] = React.useState<TabsValue>("server");
-
-  // Switch to generated tab once populated.
-  React.useEffect(() => {
-    showGenerated && setTabState("generated");
-  }, [showGenerated]);
-
-  const MemoizedTable = React.memo(SceneTreeTable);
-
-  return (
-    <Tabs radius="xs" value={tabState} onTabChange={setTabState}>
-      <Tabs.List>
-        {showGenerated ? (
-          <Tabs.Tab value="generated" icon={<IconAdjustments size="0.8rem" />}>
-            Control
-          </Tabs.Tab>
-        ) : null}
-        <Tabs.Tab value="server" icon={<IconTool size="1rem" />}>
-          Server
-        </Tabs.Tab>
-        <Tabs.Tab value="scene" icon={<IconBinaryTree2 size="1rem" />}>
-          Scene
-        </Tabs.Tab>
-      </Tabs.List>
-
-      {showGenerated ? (
-        <Tabs.Panel value="generated" pt="xs" p="sm">
-          <GeneratedControls />
-        </Tabs.Panel>
-      ) : null}
-
-      <Tabs.Panel value="server" pt="xs" p="sm">
-        <ServerControls />
-      </Tabs.Panel>
-
-      <Tabs.Panel value="scene" pt="xs" p="sm">
-        <MemoizedTable compact={true} />
-      </Tabs.Panel>
-    </Tabs>
+  const [showSettings, { toggle }] = useDisclosure(false);
+  const handleContents = (
+    <>
+      <ConnectionStatus />
+      <HideWhenCollapsed>
+        {/* We can't apply translateY directly to the ActionIcon, since it's used by
+      Mantine for the active/click indicator. */}
+        <Box
+          sx={{
+            position: "absolute",
+            right: "0.5em",
+            top: "50%",
+            transform: "translateY(-50%)",
+            display: showGenerated ? undefined : "none",
+          }}
+        >
+          <ActionIcon
+            onClick={(evt) => {
+              evt.stopPropagation();
+              toggle();
+            }}
+          >
+            <Tooltip
+              label={
+                showSettings ? "Return to GUI" : "Connection & diagnostics"
+              }
+            >
+              {showSettings ? <IconArrowBack /> : <IconAdjustments />}
+            </Tooltip>
+          </ActionIcon>
+        </Box>
+      </HideWhenCollapsed>
+    </>
   );
+
+  const panelContents = (
+    <>
+      <Collapse in={!showGenerated || showSettings} p="xs">
+        <ServerControls />
+      </Collapse>
+      <Collapse in={showGenerated && !showSettings}>
+        <GeneratedGuiContainer containerId={ROOT_CONTAINER_ID} />
+      </Collapse>
+    </>
+  );
+
+  if (useMobileView) {
+    return (
+      <BottomPanel>
+        <BottomPanel.Handle>{handleContents}</BottomPanel.Handle>
+        <BottomPanel.Contents>{panelContents}</BottomPanel.Contents>
+      </BottomPanel>
+    );
+  } else if (props.fixed_sidebar) {
+    return (
+      <Aside
+        hiddenBreakpoint={"xs"}
+        sx={(theme) => ({
+          width: "20em",
+          boxSizing: "border-box",
+          right: 0,
+          position: "absolute",
+          top: "0em",
+          bottom: "0em",
+          borderLeft: "1px solid",
+          borderColor:
+            theme.colorScheme == "light"
+              ? theme.colors.gray[4]
+              : theme.colors.dark[4],
+        })}
+      >
+        <Box
+          p="sm"
+          sx={(theme) => ({
+            backgroundColor:
+              theme.colorScheme == "dark"
+                ? theme.colors.dark[5]
+                : theme.colors.gray[1],
+            lineHeight: "1.5em",
+            fontWeight: 400,
+            position: "relative",
+            zIndex: 1,
+          })}
+        >
+          {handleContents}
+        </Box>
+        {panelContents}
+      </Aside>
+    );
+  } else {
+    return (
+      <FloatingPanel>
+        <FloatingPanel.Handle>{handleContents}</FloatingPanel.Handle>
+        <FloatingPanel.Contents>{panelContents}</FloatingPanel.Contents>
+      </FloatingPanel>
+    );
+  }
 }
+
 /* Icon and label telling us the current status of the websocket connection. */
-export function ConnectionStatus() {
+function ConnectionStatus() {
   const { useGui } = React.useContext(ViewerContext)!;
   const connected = useGui((state) => state.websocketConnected);
   const server = useGui((state) => state.server);

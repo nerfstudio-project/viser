@@ -6,7 +6,6 @@ import * as THREE from "three";
 import { TextureLoader } from "three";
 
 import { ViewerContext } from "./App";
-import { isGuiConfig } from "./Utils";
 import { SceneNode } from "./SceneTree";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { CameraFrustum, CoordinateFrame } from "./ThreeAssets";
@@ -14,6 +13,7 @@ import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
+import { isGuiConfig } from "./ControlPanel/GuiState";
 
 /** Float **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -42,6 +42,7 @@ function useMessageHandler() {
   const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
   const removeGui = viewer.useGui((state) => state.removeGui);
+  const removeGuiContainer = viewer.useGui((state) => state.removeGuiContainer);
   const setGuiValue = viewer.useGui((state) => state.setGuiValue);
   const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
   const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
@@ -516,6 +517,11 @@ function useMessageHandler() {
       // Remove a GUI input.
       case "GuiRemoveMessage": {
         removeGui(message.id);
+        return;
+      }
+      // Remove a GUI container.
+      case "GuiRemoveContainerChildrenMessage": {
+        removeGuiContainer(message.container_id);
         return;
       }
       default: {

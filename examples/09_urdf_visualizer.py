@@ -47,7 +47,7 @@ def main(urdf_path: Path) -> None:
         )
 
     gui_joints: List[viser.GuiHandle[float]] = []
-    with server.gui_folder("Joints"):
+    with server.add_gui_folder("Joints"):
         button = server.add_gui_button("Reset")
 
         @button.on_click

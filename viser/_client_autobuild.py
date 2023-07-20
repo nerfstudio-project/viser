@@ -47,7 +47,7 @@ def _install_sandboxed_node() -> Path:
     environment root."""
     env_dir = client_dir / ".nodeenv"
     if (env_dir / "bin" / "npx").exists():
-        print("[viser] nodejs already set up!")
+        print("[viser] nodejs is set up!")
         return env_dir
 
     subprocess.run([sys.executable, "-m", "nodeenv", "--node=20.4.0", env_dir])
