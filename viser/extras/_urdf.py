@@ -23,7 +23,7 @@ class ViserUrdf:
         mesh_color_override: Optional[Tuple[float, float, float]] = None,
     ) -> None:
         assert root_node_name.startswith("/")
-        assert not root_node_name.endswith("/")
+        assert len(root_node_name) == 1 or not root_node_name.endswith("/")
 
         urdf = yourdfpy.URDF.load(
             urdf_path,
@@ -132,7 +132,7 @@ def _viser_name_from_frame(
     this would map a name like "elbow" to "base_link/shoulder/elbow".
     """
     assert root_node_name.startswith("/")
-    assert not root_node_name.endswith("/")
+    assert len(root_node_name) == 1 or not root_node_name.endswith("/")
 
     frames = []
     while frame_name != urdf.scene.graph.base_frame:
