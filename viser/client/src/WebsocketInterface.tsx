@@ -602,7 +602,8 @@ export default function WebsocketInterface() {
           orderLock.release();
         });
         try {
-          messageQueue.push(...(await messagePromise));
+          const messages = await messagePromise;
+          messageQueue.push(...messages);
         } finally {
           orderLock.acquired && orderLock.release();
         }

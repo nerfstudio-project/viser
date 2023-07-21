@@ -5,7 +5,6 @@ import dataclasses
 import http.server
 import mimetypes
 import threading
-import time
 from asyncio.events import AbstractEventLoop
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -17,6 +16,7 @@ from typing import (
     List,
     NewType,
     Optional,
+    Sequence,
     Tuple,
     Type,
     TypeVar,
@@ -33,7 +33,7 @@ from rich.panel import Panel
 from rich.table import Table
 from websockets.legacy.server import WebSocketServerProtocol
 
-from ._async_message_buffer import AsyncMessageBuffer
+from ._async_message_buffer import AsyncMessageBuffer, MessageWindow
 from ._messages import Message
 
 
@@ -226,15 +226,14 @@ class Server(MessageHandler):
                 # For each client: infinite loop over producers (which send messages)
                 # and consumers (which receive messages).
                 await asyncio.gather(
-                    _producer(
+                    _client_producer(
                         websocket,
                         client_id,
                         client_state.message_buffer.get,
                     ),
-                    _producer(
+                    _broadcast_producer(
                         websocket,
-                        client_id,
-                        self._broadcast_buffer.__aiter__().__anext__,
+                        self._broadcast_buffer.window_generator(client_id).__anext__,
                     ),
                     _consumer(websocket, handle_incoming, message_class),
                 )
@@ -323,52 +322,39 @@ class Server(MessageHandler):
         event_loop.run_forever()
 
 
-async def _producer(
+async def _client_producer(
     websocket: WebSocketServerProtocol,
     client_id: ClientId,
     get_next: Callable[[], Awaitable[Message]],
 ) -> None:
-    """Infinite loop to send messages from a buffer."""
+    """Infinite loop to send messages from a buffer to a single client."""
 
-    window: List[Message] = []
-
-    def append_to_window(message: Message) -> None:
-        if message.excluded_self_client == client_id:
-            return
-        window.append(message)
-
-    window_start_time = time.time()
-    window_duration_sec = 1.0 / 60.0
-    window_max_length = 1024
-    next_message = asyncio.shield(get_next())
+    window = MessageWindow()
 
     while True:
-        if len(window) == 0:
-            # Start a new window.
-            append_to_window(await next_message)
-            window_start_time = time.time()
-            next_message = asyncio.shield(get_next())
-        else:
-            # Continuing a window.
-            elapsed = time.time() - window_start_time
-            (done, pending) = await asyncio.wait(
-                [next_message], timeout=elapsed - window_duration_sec
-            )
-            del pending
-            if next_message in done:
-                append_to_window(await next_message)
-                next_message = asyncio.shield(get_next())
-
-        if (
-            time.time() - window_start_time > window_duration_sec
-            or len(window) >= window_max_length
-        ):
+        await window.wait_and_append_to_window(get_next())
+        outgoing = window.get_window_to_send()
+        if outgoing is not None:
             serialized = msgpack.packb(
-                tuple(message.as_serializable_dict() for message in window)
+                tuple(message.as_serializable_dict() for message in outgoing)
             )
             assert isinstance(serialized, bytes)
             await websocket.send(serialized)
-            window.clear()
+
+
+async def _broadcast_producer(
+    websocket: WebSocketServerProtocol,
+    get_next_window: Callable[[], Awaitable[Sequence[Message]]],
+) -> None:
+    """Infinite loop to broadcast windows of messages from a buffer."""
+
+    while True:
+        outgoing = await get_next_window()
+        serialized = msgpack.packb(
+            tuple(message.as_serializable_dict() for message in outgoing)
+        )
+        assert isinstance(serialized, bytes)
+        await websocket.send(serialized)
 
 
 async def _consumer(

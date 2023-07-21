@@ -1,7 +1,8 @@
 import asyncio
 import dataclasses
+import time
 from asyncio.events import AbstractEventLoop
-from typing import AsyncGenerator, Dict
+from typing import AsyncGenerator, Awaitable, Dict, List, Optional, Sequence
 
 from ._messages import Message
 
@@ -21,7 +22,6 @@ class AsyncMessageBuffer:
 
     def push(self, message: Message) -> None:
         """Push a new message to our buffer, and remove old redundant ones."""
-
         # Add message to buffer.
         new_message_id = self.message_counter
         self.message_from_id[new_message_id] = message
@@ -38,13 +38,16 @@ class AsyncMessageBuffer:
         # Notify consumers that a new message is available.
         self.event_loop.call_soon_threadsafe(self.message_event.set)
 
-    async def __aiter__(self) -> AsyncGenerator[Message, None]:
+    async def window_generator(
+        self, ignore_client_id: int
+    ) -> AsyncGenerator[Sequence[Message], None]:
         """Async iterator over messages. Loops infinitely, and waits when no messages
         are available."""
         # Wait for a first message to arrive.
         if len(self.message_from_id) == 0:
             await self.message_event.wait()
 
+        window = MessageWindow()
         last_sent_id = -1
         while True:
             # Wait until there are new messages available.
@@ -57,11 +60,64 @@ class AsyncMessageBuffer:
             # they're sent.
             last_sent_id += 1
             message = self.message_from_id.get(last_sent_id, None)
-            if message is not None:
-                yield message
-                # TODO: it's likely OK for now, but feels sketchy to be sharing the same
-                # message event across all consumers.
+            if message is not None and message.excluded_self_client != ignore_client_id:
+                window.append_to_window(message)
                 self.event_loop.call_soon_threadsafe(self.message_event.clear)
 
-                # Small sleep to invoke a yield.
+                # Sleep to yield.
                 await asyncio.sleep(1e-8)
+
+            out = window.get_window_to_send()
+            if out is not None:
+                yield out
+
+
+@dataclasses.dataclass
+class MessageWindow:
+    """Helper for building windows of messages to send to clients."""
+
+    window_duration_sec: float = 1.0 / 60.0
+    window_max_length: int = 1024
+
+    _window_start_time: float = -1
+    _window: List[Message] = dataclasses.field(default_factory=list)
+
+    def append_to_window(self, message: Message) -> None:
+        """Append a message to our window."""
+        if len(self._window) == 0:
+            self._window_start_time = time.time()
+        self._window.append(message)
+
+    async def wait_and_append_to_window(self, message: Awaitable[Message]) -> None:
+        """Async version of `append_to_window()`."""
+        message = asyncio.shield(message)
+        if len(self._window) == 0:
+            self.append_to_window(await message)
+        else:
+            elapsed = time.time() - self._window_start_time
+            (done, pending) = await asyncio.wait(
+                [message], timeout=elapsed - self.window_duration_sec
+            )
+            del pending
+            if message in done:
+                self.append_to_window(await message)
+
+    def get_window_to_send(self) -> Optional[Sequence[Message]]:
+        """Returns window of messages if ready. Otherwise, returns None."""
+        # Are we ready to send?
+        ready = False
+        if (
+            len(self._window) > 0
+            and time.time() - self._window_start_time >= self.window_duration_sec
+        ):
+            ready = True
+        elif len(self._window) >= self.window_max_length:
+            ready = True
+
+        # Clear window and return if ready.
+        if ready:
+            out = tuple(self._window)
+            self._window.clear()
+            return out
+        else:
+            return None
