@@ -51,9 +51,9 @@ def _(client: viser.ClientHandle) -> None:
 
             T_current_target = T_world_current.inverse() @ T_world_target
 
-            for j in range(50):
+            for j in range(20):
                 T_world_set = T_world_current @ tf.SE3.exp(
-                    T_current_target.log() * j / 49.0
+                    T_current_target.log() * j / 19.0
                 )
 
                 # Important bit: we atomically set both the orientation and the position
@@ -61,7 +61,7 @@ def _(client: viser.ClientHandle) -> None:
                 with client.atomic():
                     client.camera.wxyz = T_world_set.rotation().wxyz
                     client.camera.position = T_world_set.translation()
-                time.sleep(0.01)
+                time.sleep(1.0 / 60.0)
 
             # Mouse interactions should orbit around the frame origin.
             client.camera.look_at = frame.position

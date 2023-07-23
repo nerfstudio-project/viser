@@ -327,7 +327,19 @@ function useMessageHandler() {
           message.position[2]
         ).applyQuaternion(R_threeworld_world);
         camera.up.set(updir.x, updir.y, updir.z);
-        cameraControls.applyCameraUp();
+
+        // Back up position.
+        const prevPosition = new THREE.Vector3();
+        cameraControls.getPosition(prevPosition);
+
+        cameraControls.updateCameraUp();
+
+        // Restore position, which gets unexpectedly mutated in updateCameraUp().
+        cameraControls.setPosition(
+          prevPosition.x,
+          prevPosition.y,
+          prevPosition.z
+        );
         return;
       }
       case "SetCameraPositionMessage": {

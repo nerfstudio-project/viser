@@ -2,7 +2,7 @@ import asyncio
 import dataclasses
 import time
 from asyncio.events import AbstractEventLoop
-from typing import AsyncGenerator, Awaitable, Dict, List, Optional, Sequence
+from typing import AsyncGenerator, Awaitable, Dict, Optional, Sequence
 
 from ._messages import Message
 
@@ -39,7 +39,7 @@ class AsyncMessageBuffer:
         self.event_loop.call_soon_threadsafe(self.message_event.set)
 
     async def window_generator(
-        self, ignore_client_id: int
+        self, client_id: int
     ) -> AsyncGenerator[Sequence[Message], None]:
         """Async iterator over messages. Loops infinitely, and waits when no messages
         are available."""
@@ -47,20 +47,28 @@ class AsyncMessageBuffer:
         if len(self.message_from_id) == 0:
             await self.message_event.wait()
 
-        window = MessageWindow()
+        window = MessageWindow(client_id=client_id)
         last_sent_id = -1
         while True:
             # Wait until there are new messages available.
             most_recent_message_id = self.message_counter - 1
             while last_sent_id >= most_recent_message_id:
-                await self.message_event.wait()
-                most_recent_message_id = self.message_counter - 1
+                next_message = self.message_event.wait()
+                try:
+                    await asyncio.wait_for(
+                        next_message, timeout=window.max_time_until_ready()
+                    )
+                    most_recent_message_id = self.message_counter - 1
+                except asyncio.TimeoutError:
+                    out = window.get_window_to_send()
+                    if out is not None:
+                        yield out
 
             # Try to yield the next message ID. Note that messages can be culled before
             # they're sent.
             last_sent_id += 1
             message = self.message_from_id.get(last_sent_id, None)
-            if message is not None and message.excluded_self_client != ignore_client_id:
+            if message is not None:
                 window.append_to_window(message)
                 self.event_loop.call_soon_threadsafe(self.message_event.clear)
 
@@ -76,31 +84,49 @@ class AsyncMessageBuffer:
 class MessageWindow:
     """Helper for building windows of messages to send to clients."""
 
+    client_id: int
+    """Client that this window will be sent to. Used for ignoring certain messages."""
+
     window_duration_sec: float = 1.0 / 60.0
-    window_max_length: int = 1024
+    window_max_length: int = 256
 
     _window_start_time: float = -1
-    _window: List[Message] = dataclasses.field(default_factory=list)
+    _window: Dict[str, Message] = dataclasses.field(default_factory=dict)
+    """We use a redundancy key -> message dictionary to track our window. This helps us
+    eliminate redundant messages."""
 
     def append_to_window(self, message: Message) -> None:
         """Append a message to our window."""
+        if message.excluded_self_client == self.client_id:
+            return
         if len(self._window) == 0:
             self._window_start_time = time.time()
-        self._window.append(message)
+        self._window[message.redundancy_key()] = message
 
-    async def wait_and_append_to_window(self, message: Awaitable[Message]) -> None:
-        """Async version of `append_to_window()`."""
-        message = asyncio.shield(message)
+    async def wait_and_append_to_window(self, message: Awaitable[Message]) -> bool:
+        """Async version of `append_to_window()`. Returns `True` if successful, `False`
+        if timed out."""
         if len(self._window) == 0:
             self.append_to_window(await message)
-        else:
-            elapsed = time.time() - self._window_start_time
-            (done, pending) = await asyncio.wait(
-                [message], timeout=elapsed - self.window_duration_sec
-            )
-            del pending
-            if message in done:
-                self.append_to_window(await message)
+            return True
+
+        message = asyncio.shield(message)
+        (done, pending) = await asyncio.wait(
+            [message], timeout=self.max_time_until_ready()
+        )
+        del pending
+        if message in done:
+            self.append_to_window(await message)
+            return True
+        return False
+
+    def max_time_until_ready(self) -> Optional[float]:
+        """Returns the maximum amount of time, in seconds, until we're ready to send the
+        current window. If the window is empty, returns `None`."""
+        if len(self._window) == 0:
+            return None
+        elapsed = time.time() - self._window_start_time
+        return max(0.0, self.window_duration_sec - elapsed)
 
     def get_window_to_send(self) -> Optional[Sequence[Message]]:
         """Returns window of messages if ready. Otherwise, returns None."""
@@ -115,9 +141,8 @@ class MessageWindow:
             ready = True
 
         # Clear window and return if ready.
-        if ready:
-            out = tuple(self._window)
-            self._window.clear()
-            return out
-        else:
+        if not ready:
             return None
+        out = tuple(self._window.values())
+        self._window.clear()
+        return out

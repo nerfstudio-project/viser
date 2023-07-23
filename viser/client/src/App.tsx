@@ -82,6 +82,14 @@ function SingleViewer() {
     // Scene node attributes that aren't placed in the zustand state, for performance reasons.
     nodeAttributesFromName: React.useRef({}),
   };
+
+  // Memoize the websocket interface so it isn't remounted when the theme or
+  // viewer context changes.
+  const memoizedWebsocketInterface = React.useMemo(
+    () => <WebsocketInterface />,
+    []
+  );
+
   const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
   return (
     <ViewerContext.Provider value={viewer}>
@@ -106,9 +114,7 @@ function SingleViewer() {
                 theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
             })}
           >
-            <ViewerCanvas>
-              <WebsocketInterface />
-            </ViewerCanvas>
+            <ViewerCanvas>{memoizedWebsocketInterface}</ViewerCanvas>
           </Box>
         </MediaQuery>
         <ControlPanel fixed_sidebar={fixed_sidebar} />

@@ -292,7 +292,6 @@ class Server(MessageHandler):
                         serve,
                         host,
                         port,
-                        compression=None,
                         process_request=(
                             viser_http_server if http_server_root is not None else None
                         ),
@@ -329,10 +328,11 @@ async def _client_producer(
 ) -> None:
     """Infinite loop to send messages from a buffer to a single client."""
 
-    window = MessageWindow()
-
+    window = MessageWindow(client_id=client_id)
+    message_future = asyncio.ensure_future(get_next())
     while True:
-        await window.wait_and_append_to_window(get_next())
+        if await window.wait_and_append_to_window(message_future):
+            message_future = asyncio.ensure_future(get_next())
         outgoing = window.get_window_to_send()
         if outgoing is not None:
             serialized = msgpack.packb(
@@ -347,7 +347,6 @@ async def _broadcast_producer(
     get_next_window: Callable[[], Awaitable[Sequence[Message]]],
 ) -> None:
     """Infinite loop to broadcast windows of messages from a buffer."""
-
     while True:
         outgoing = await get_next_window()
         serialized = msgpack.packb(
