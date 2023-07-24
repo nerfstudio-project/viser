@@ -249,8 +249,7 @@
 
 
 <span class="k">def</span> <span class="nf">_prepare_for_serialization</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare any special types for serialization. Currently just maps numpy arrays to</span>
-<span class="sd">    their underlying data buffers.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare any special types for serialization.&quot;&quot;&quot;</span>
 
     <span class="c1"># Coerce some scalar types: if we&#39;ve annotated as float / int but we get an</span>
     <span class="c1"># onp.float32 / onp.int64, for example, we should cast automatically.</span>
@@ -308,14 +307,13 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Don&#39;t send this message to a particular client. Useful when a client wants to</span>
 <span class="sd">    send synchronization information to other clients.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Message.serialize"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.serialize">[docs]</a>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+<div class="viewcode-block" id="Message.as_serializable_dict"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.as_serializable_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_serializable_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a Python Message object into bytes.&quot;&quot;&quot;</span>
         <span class="n">hints</span> <span class="o">=</span> <span class="n">get_type_hints_cached</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
-        <span class="n">mapping</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">k</span><span class="p">:</span> <span class="n">_prepare_for_serialization</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">hints</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
         <span class="p">}</span>
-        <span class="n">out</span> <span class="o">=</span> <span class="n">msgpack</span><span class="o">.</span><span class="n">packb</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="o">**</span><span class="n">mapping</span><span class="p">})</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
         <span class="k">return</span> <span class="n">out</span></div>
 
 <div class="viewcode-block" id="Message.deserialize"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.deserialize">[docs]</a>    <span class="nd">@classmethod</span>

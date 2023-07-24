@@ -384,6 +384,7 @@
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">_ClientHandleState</span><span class="p">:</span>
+    <span class="n">server</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Server</span>
     <span class="n">connection</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span>
 
 
@@ -405,15 +406,16 @@
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_queue_unsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ClientHandle.atomic"><a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.atomic">[docs]</a>    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where:</span>
-<span class="sd">        - All outgoing messages are grouped and applied by clients atomically.</span>
 <span class="sd">        - No incoming messages, like camera or GUI state updates, are processed.</span>
+<span class="sd">        - `viser` will attempt to group outgoing messages, which will then be sent after</span>
+<span class="sd">          the context is exited.</span>
 
 <span class="sd">        This can be helpful for things like animations, or when we want position and</span>
 <span class="sd">        orientation updates to happen synchronously.</span>
@@ -424,16 +426,19 @@
             <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">MessageGroupStart</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="n">thread_id</span>
             <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="k">yield</span>
 
         <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">MessageGroupEnd</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div></div>
+
+
+<span class="c1"># We can serialize the state of a ViserServer via a tuple of</span>
+<span class="c1"># (serialized message, timestamp) pairs.</span>
+<span class="n">SerializedServerState</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -461,6 +466,7 @@
             <span class="n">message_class</span><span class="o">=</span><span class="n">_messages</span><span class="o">.</span><span class="n">Message</span><span class="p">,</span>
             <span class="n">http_server_root</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;client&quot;</span> <span class="o">/</span> <span class="s2">&quot;build&quot;</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span> <span class="o">=</span> <span class="n">server</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
 
         <span class="n">_client_autobuild</span><span class="o">.</span><span class="n">ensure_client_is_built</span><span class="p">()</span>
@@ -490,7 +496,7 @@
             <span class="n">client</span> <span class="o">=</span> <span class="n">ClientHandle</span><span class="p">(</span>
                 <span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
                 <span class="n">camera</span><span class="p">,</span>
-                <span class="n">_ClientHandleState</span><span class="p">(</span><span class="n">conn</span><span class="p">),</span>
+                <span class="n">_ClientHandleState</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">conn</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="n">camera</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
             <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
@@ -560,9 +566,9 @@
         <span class="k">return</span> <span class="bp">self</span>
 
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_queue_unsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ViserServer.get_clients"><a class="viewcode-back" href="../../../server/#viser.ViserServer.get_clients">[docs]</a>    <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates and returns a copy of the mapping from connected client IDs to</span>
@@ -623,26 +629,9 @@
                 <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
                     <span class="n">stack</span><span class="o">.</span><span class="n">enter_context</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">MessageGroupStart</span><span class="p">())</span>
-
-            <span class="c1"># There&#39;s a possible race condition here if we write something like:</span>
-            <span class="c1">#</span>
-            <span class="c1"># with server.atomic():</span>
-            <span class="c1">#     client.add_frame(...)</span>
-            <span class="c1">#</span>
-            <span class="c1"># - We enter the server&#39;s atomic() context.</span>
-            <span class="c1"># - The server pushes a MessageGroupStart() to the broadcast buffer.</span>
-            <span class="c1"># - The client pushes a frame message to the client buffer.</span>
-            <span class="c1"># - For whatever reason the client buffer is handled before the broadcast</span>
-            <span class="c1"># buffer.</span>
-            <span class="c1">#</span>
-            <span class="c1"># The likelihood of this seems exceedingly low, but I don&#39;t think we have</span>
-            <span class="c1"># any actual guarantees here. Likely worth revisiting but super lower</span>
-            <span class="c1"># priority.</span>
             <span class="k">yield</span>
 
         <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">MessageGroupEnd</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div></div>
 </pre></div>

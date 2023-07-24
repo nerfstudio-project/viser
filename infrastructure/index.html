@@ -297,6 +297,17 @@ you’re building a web-based application from scratch.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
 <p>Base message type for server/client communication.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.Message.as_serializable_dict">
+<span class="sig-name descname"><span class="pre">as_serializable_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_messages/#Message.as_serializable_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Message.as_serializable_dict" title="Permalink to this definition">#</a></dt>
+<dd><p>Convert a Python Message object into bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.Message.deserialize">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_messages/#Message.deserialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Message.deserialize" title="Permalink to this definition">#</a></dt>
 <dd><p>Convert bytes into a Python Message object.</p>
@@ -338,17 +349,6 @@ should only keep the latest message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Message.serialize">
-<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_messages/#Message.serialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Message.serialize" title="Permalink to this definition">#</a></dt>
-<dd><p>Convert a Python Message object into bytes.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>bytes</p>
 </dd>
 </dl>
 </dd></dl>
@@ -562,11 +562,11 @@ is culled using the value of <code class="docutils literal notranslate"><span cl
 </li>
 <li><a class="reference internal" href="#viser.infra.ClientId"><code class="docutils literal notranslate"><span class="pre">ClientId</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Message"><code class="docutils literal notranslate"><span class="pre">Message</span></code></a><ul>
+<li><a class="reference internal" href="#viser.infra.Message.as_serializable_dict"><code class="docutils literal notranslate"><span class="pre">Message.as_serializable_dict()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Message.deserialize"><code class="docutils literal notranslate"><span class="pre">Message.deserialize()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Message.excluded_self_client"><code class="docutils literal notranslate"><span class="pre">Message.excluded_self_client</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Message.get_subclasses"><code class="docutils literal notranslate"><span class="pre">Message.get_subclasses()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Message.redundancy_key"><code class="docutils literal notranslate"><span class="pre">Message.redundancy_key()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.Message.serialize"><code class="docutils literal notranslate"><span class="pre">Message.serialize()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.infra.MessageHandler"><code class="docutils literal notranslate"><span class="pre">MessageHandler</span></code></a><ul>

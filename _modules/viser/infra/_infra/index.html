@@ -236,9 +236,23 @@
 <span class="kn">import</span> <span class="nn">mimetypes</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">from</span> <span class="nn">asyncio.events</span> <span class="kn">import</span> <span class="n">AbstractEventLoop</span>
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">NewType</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Awaitable</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">NewType</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+<span class="p">)</span>
 
+<span class="kn">import</span> <span class="nn">msgpack</span>
 <span class="kn">import</span> <span class="nn">rich</span>
 <span class="kn">import</span> <span class="nn">websockets.connection</span>
 <span class="kn">import</span> <span class="nn">websockets.datastructures</span>
@@ -249,7 +263,7 @@
 <span class="kn">from</span> <span class="nn">rich.table</span> <span class="kn">import</span> <span class="n">Table</span>
 <span class="kn">from</span> <span class="nn">websockets.legacy.server</span> <span class="kn">import</span> <span class="n">WebSocketServerProtocol</span>
 
-<span class="kn">from</span> <span class="nn">._async_message_buffer</span> <span class="kn">import</span> <span class="n">AsyncMessageBuffer</span>
+<span class="kn">from</span> <span class="nn">._async_message_buffer</span> <span class="kn">import</span> <span class="n">AsyncMessageBuffer</span><span class="p">,</span> <span class="n">MessageWindow</span>
 <span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="n">Message</span>
 
 
@@ -347,6 +361,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_http_server_root</span> <span class="o">=</span> <span class="n">http_server_root</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+
 <div class="viewcode-block" id="Server.start"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the server.&quot;&quot;&quot;</span>
 
@@ -423,14 +439,14 @@
             <span class="n">client_connection</span> <span class="o">=</span> <span class="n">ClientConnection</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">client_state</span><span class="p">)</span>
 
             <span class="k">def</span> <span class="nf">handle_incoming</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
-                    <span class="n">target</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
-                <span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-                <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
-                    <span class="n">target</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">client_connection</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+                    <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+                    <span class="k">lambda</span><span class="p">:</span> <span class="n">client_connection</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span>
                         <span class="n">client_id</span><span class="p">,</span> <span class="n">message</span>
                     <span class="p">)</span>
-                <span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+                <span class="p">)</span>
 
             <span class="c1"># New connection callbacks.</span>
             <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span>
@@ -440,10 +456,15 @@
                 <span class="c1"># For each client: infinite loop over producers (which send messages)</span>
                 <span class="c1"># and consumers (which receive messages).</span>
                 <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
-                    <span class="n">_single_connection_producer</span><span class="p">(</span>
-                        <span class="n">websocket</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">client_state</span><span class="o">.</span><span class="n">message_buffer</span>
+                    <span class="n">_client_producer</span><span class="p">(</span>
+                        <span class="n">websocket</span><span class="p">,</span>
+                        <span class="n">client_id</span><span class="p">,</span>
+                        <span class="n">client_state</span><span class="o">.</span><span class="n">message_buffer</span><span class="o">.</span><span class="n">get</span><span class="p">,</span>
                     <span class="p">),</span>
-                    <span class="n">_broadcast_producer</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="p">),</span>
+                    <span class="n">_broadcast_producer</span><span class="p">(</span>
+                        <span class="n">websocket</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">window_generator</span><span class="p">(</span><span class="n">client_id</span><span class="p">)</span><span class="o">.</span><span class="fm">__anext__</span><span class="p">,</span>
+                    <span class="p">),</span>
                     <span class="n">_consumer</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">handle_incoming</span><span class="p">,</span> <span class="n">message_class</span><span class="p">),</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="p">(</span>
@@ -501,7 +522,6 @@
                         <span class="n">serve</span><span class="p">,</span>
                         <span class="n">host</span><span class="p">,</span>
                         <span class="n">port</span><span class="p">,</span>
-                        <span class="n">compression</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">process_request</span><span class="o">=</span><span class="p">(</span>
                             <span class="n">viser_http_server</span> <span class="k">if</span> <span class="n">http_server_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
                         <span class="p">),</span>
@@ -531,25 +551,39 @@
         <span class="n">event_loop</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span></div>
 
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">_single_connection_producer</span><span class="p">(</span>
-    <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Queue</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">_client_producer</span><span class="p">(</span>
+    <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span>
+    <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span>
+    <span class="n">get_next</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Message</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinite loop to send messages from the client buffer.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinite loop to send messages from a buffer to a single client.&quot;&quot;&quot;</span>
+
+    <span class="n">window</span> <span class="o">=</span> <span class="n">MessageWindow</span><span class="p">(</span><span class="n">client_id</span><span class="o">=</span><span class="n">client_id</span><span class="p">)</span>
+    <span class="n">message_future</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">get_next</span><span class="p">())</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="k">await</span> <span class="n">buffer</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">excluded_self_client</span> <span class="o">==</span> <span class="n">client_id</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">serialize</span><span class="p">())</span>
+        <span class="k">if</span> <span class="k">await</span> <span class="n">window</span><span class="o">.</span><span class="n">wait_and_append_to_window</span><span class="p">(</span><span class="n">message_future</span><span class="p">):</span>
+            <span class="n">message_future</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">ensure_future</span><span class="p">(</span><span class="n">get_next</span><span class="p">())</span>
+        <span class="n">outgoing</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">get_window_to_send</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">outgoing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">serialized</span> <span class="o">=</span> <span class="n">msgpack</span><span class="o">.</span><span class="n">packb</span><span class="p">(</span>
+                <span class="nb">tuple</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">as_serializable_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">outgoing</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">serialized</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+            <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">_broadcast_producer</span><span class="p">(</span>
-    <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">buffer</span><span class="p">:</span> <span class="n">AsyncMessageBuffer</span>
+    <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span>
+    <span class="n">get_next_window</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="n">Message</span><span class="p">]]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinite loop to send messages from the broadcast buffer.&quot;&quot;&quot;</span>
-    <span class="k">async</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">buffer</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">excluded_self_client</span> <span class="o">==</span> <span class="n">client_id</span><span class="p">:</span>
-            <span class="k">continue</span>
-        <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">serialize</span><span class="p">())</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinite loop to broadcast windows of messages from a buffer.&quot;&quot;&quot;</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">outgoing</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_next_window</span><span class="p">()</span>
+        <span class="n">serialized</span> <span class="o">=</span> <span class="n">msgpack</span><span class="o">.</span><span class="n">packb</span><span class="p">(</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">as_serializable_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">outgoing</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">serialized</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+        <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">_consumer</span><span class="p">(</span>

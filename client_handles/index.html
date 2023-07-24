@@ -682,8 +682,9 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <span class="sig-name descname"><span class="pre">atomic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ClientHandle.atomic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClientHandle.atomic" title="Permalink to this definition">#</a></dt>
 <dd><p>Returns a context where:</p>
 <ul class="simple">
-<li><p>All outgoing messages are grouped and applied by clients atomically.</p></li>
 <li><p>No incoming messages, like camera or GUI state updates, are processed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">viser</span></code> will attempt to group outgoing messages, which will then be sent after
+the context is exited.</p></li>
 </ul>
 <p>This can be helpful for things like animations, or when we want position and
 orientation updates to happen synchronously.</p>
