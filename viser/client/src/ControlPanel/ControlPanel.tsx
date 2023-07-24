@@ -51,6 +51,7 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
             top: "50%",
             transform: "translateY(-50%)",
             display: showGenerated ? undefined : "none",
+            zIndex: 100,
           }}
         >
           <ActionIcon

@@ -12,6 +12,7 @@ import base64
 import io
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeVar, Union, cast
 
 import imageio.v3 as iio
@@ -133,6 +134,7 @@ class MessageApi(abc.ABC):
 
         self._atomic_lock = threading.Lock()
         self._locked_thread_id = -1
+        self._queue_thread = ThreadPoolExecutor(max_workers=1)
 
     def configure_theme(
         self,
@@ -447,8 +449,20 @@ class MessageApi(abc.ABC):
         """Reset the scene."""
         self._queue(_messages.ResetSceneMessage())
 
-    @abc.abstractmethod
     def _queue(self, message: _messages.Message) -> None:
+        """Wrapped method for sending messages safely."""
+        # This implementation will retain message ordering because _queue_thread has
+        # just 1 worker.
+        self._queue_thread.submit(lambda: self._queue_blocking(message))
+
+    def _queue_blocking(self, message: _messages.Message) -> None:
+        """Wrapped method for sending messages safely. Blocks until ready to send."""
+        self._atomic_lock.acquire()
+        self._queue_unsafe(message)
+        self._atomic_lock.release()
+
+    @abc.abstractmethod
+    def _queue_unsafe(self, message: _messages.Message) -> None:
         """Abstract method for sending messages."""
         ...
 
