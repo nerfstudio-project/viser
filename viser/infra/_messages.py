@@ -19,8 +19,7 @@ else:
 
 
 def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
-    """Prepare any special types for serialization. Currently just maps numpy arrays to
-    their underlying data buffers."""
+    """Prepare any special types for serialization."""
 
     # Coerce some scalar types: if we've annotated as float / int but we get an
     # onp.float32 / onp.int64, for example, we should cast automatically.
@@ -78,14 +77,13 @@ class Message(abc.ABC):
     """Don't send this message to a particular client. Useful when a client wants to
     send synchronization information to other clients."""
 
-    def serialize(self) -> bytes:
+    def as_serializable_dict(self) -> Dict[str, Any]:
         """Convert a Python Message object into bytes."""
         hints = get_type_hints_cached(type(self))
-        mapping = {
+        out = {
             k: _prepare_for_serialization(v, hints[k]) for k, v in vars(self).items()
         }
-        out = msgpack.packb({"type": type(self).__name__, **mapping})
-        assert isinstance(out, bytes)
+        out["type"] = type(self).__name__
         return out
 
     @classmethod

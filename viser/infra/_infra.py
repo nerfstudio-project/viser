@@ -6,9 +6,23 @@ import http.server
 import mimetypes
 import threading
 from asyncio.events import AbstractEventLoop
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Callable, Dict, List, NewType, Optional, Tuple, Type, TypeVar
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    NewType,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
+import msgpack
 import rich
 import websockets.connection
 import websockets.datastructures
@@ -19,7 +33,7 @@ from rich.panel import Panel
 from rich.table import Table
 from websockets.legacy.server import WebSocketServerProtocol
 
-from ._async_message_buffer import AsyncMessageBuffer
+from ._async_message_buffer import AsyncMessageBuffer, MessageWindow
 from ._messages import Message
 
 
@@ -117,6 +131,8 @@ class Server(MessageHandler):
         self._http_server_root = http_server_root
         self._verbose = verbose
 
+        self._thread_executor = ThreadPoolExecutor(max_workers=32)
+
     def start(self) -> None:
         """Start the server."""
 
@@ -193,14 +209,14 @@ class Server(MessageHandler):
             client_connection = ClientConnection(client_id, client_state)
 
             def handle_incoming(message: Message) -> None:
-                threading.Thread(
-                    target=lambda: self._handle_incoming_message(client_id, message)
-                ).start()
-                threading.Thread(
-                    target=lambda: client_connection._handle_incoming_message(
+                self._thread_executor.submit(
+                    lambda: self._handle_incoming_message(client_id, message)
+                )
+                self._thread_executor.submit(
+                    lambda: client_connection._handle_incoming_message(
                         client_id, message
                     )
-                ).start()
+                )
 
             # New connection callbacks.
             for cb in self._client_connect_cb:
@@ -210,10 +226,15 @@ class Server(MessageHandler):
                 # For each client: infinite loop over producers (which send messages)
                 # and consumers (which receive messages).
                 await asyncio.gather(
-                    _single_connection_producer(
-                        websocket, client_id, client_state.message_buffer
+                    _client_producer(
+                        websocket,
+                        client_id,
+                        client_state.message_buffer.get,
                     ),
-                    _broadcast_producer(websocket, client_id, self._broadcast_buffer),
+                    _broadcast_producer(
+                        websocket,
+                        self._broadcast_buffer.window_generator(client_id).__anext__,
+                    ),
                     _consumer(websocket, handle_incoming, message_class),
                 )
             except (
@@ -271,7 +292,6 @@ class Server(MessageHandler):
                         serve,
                         host,
                         port,
-                        compression=None,
                         process_request=(
                             viser_http_server if http_server_root is not None else None
                         ),
@@ -301,25 +321,39 @@ class Server(MessageHandler):
         event_loop.run_forever()
 
 
-async def _single_connection_producer(
-    websocket: WebSocketServerProtocol, client_id: ClientId, buffer: asyncio.Queue
+async def _client_producer(
+    websocket: WebSocketServerProtocol,
+    client_id: ClientId,
+    get_next: Callable[[], Awaitable[Message]],
 ) -> None:
-    """Infinite loop to send messages from the client buffer."""
+    """Infinite loop to send messages from a buffer to a single client."""
+
+    window = MessageWindow(client_id=client_id)
+    message_future = asyncio.ensure_future(get_next())
     while True:
-        message = await buffer.get()
-        if message.excluded_self_client == client_id:
-            continue
-        await websocket.send(message.serialize())
+        if await window.wait_and_append_to_window(message_future):
+            message_future = asyncio.ensure_future(get_next())
+        outgoing = window.get_window_to_send()
+        if outgoing is not None:
+            serialized = msgpack.packb(
+                tuple(message.as_serializable_dict() for message in outgoing)
+            )
+            assert isinstance(serialized, bytes)
+            await websocket.send(serialized)
 
 
 async def _broadcast_producer(
-    websocket: WebSocketServerProtocol, client_id: ClientId, buffer: AsyncMessageBuffer
+    websocket: WebSocketServerProtocol,
+    get_next_window: Callable[[], Awaitable[Sequence[Message]]],
 ) -> None:
-    """Infinite loop to send messages from the broadcast buffer."""
-    async for message in buffer:
-        if message.excluded_self_client == client_id:
-            continue
-        await websocket.send(message.serialize())
+    """Infinite loop to broadcast windows of messages from a buffer."""
+    while True:
+        outgoing = await get_next_window()
+        serialized = msgpack.packb(
+            tuple(message.as_serializable_dict() for message in outgoing)
+        )
+        assert isinstance(serialized, bytes)
+        await websocket.send(serialized)
 
 
 async def _consumer(
