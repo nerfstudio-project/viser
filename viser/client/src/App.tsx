@@ -28,6 +28,7 @@ import WebsocketInterface from "./WebsocketInterface";
 
 import { Titlebar } from "./Titlebar";
 import { useSceneTreeState } from "./SceneTreeState";
+import { PlaybackFromFile } from "./PlaybackFromFile";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -90,6 +91,11 @@ function SingleViewer() {
     []
   );
 
+  // Playback mode for embedding viser.
+  const playbackPath = new URLSearchParams(window.location.search).get(
+    "playbackPath"
+  );
+
   const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
   return (
     <ViewerContext.Provider value={viewer}>
@@ -102,7 +108,10 @@ function SingleViewer() {
           flex: "1 0 auto",
         }}
       >
-        <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
+        <MediaQuery
+          smallerThan={"xs"}
+          styles={{ right: 0, bottom: playbackPath === null ? "3.5em" : 0 }}
+        >
           <Box
             sx={(theme) => ({
               top: 0,
@@ -114,10 +123,18 @@ function SingleViewer() {
                 theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
             })}
           >
-            <ViewerCanvas>{memoizedWebsocketInterface}</ViewerCanvas>
+            <ViewerCanvas>
+              {playbackPath === null ? (
+                memoizedWebsocketInterface
+              ) : (
+                <PlaybackFromFile fileUrl={playbackPath} />
+              )}
+            </ViewerCanvas>
           </Box>
         </MediaQuery>
-        <ControlPanel fixed_sidebar={fixed_sidebar} />
+        {playbackPath === null ? (
+          <ControlPanel fixed_sidebar={fixed_sidebar} />
+        ) : null}
       </Box>
     </ViewerContext.Provider>
   );
@@ -157,7 +174,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           />
         </EffectComposer>
       </Selection>
-      <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
+      <Environment path="hdri/" files="potsdamer_platz_1k.hdr" />
     </Canvas>
   );
 }
