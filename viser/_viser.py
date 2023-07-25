@@ -5,8 +5,9 @@ import dataclasses
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Dict, Generator, List, Tuple
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
+import msgpack
 import numpy as onp
 import numpy.typing as npt
 from typing_extensions import override
@@ -317,8 +318,11 @@ class ViserServer(MessageApi, GuiApi):
                 for cb in self._client_disconnect_cb:
                     cb(handle)
 
-        # Start the server.
         server.start()
+        self._initial_reset()
+
+    def _initial_reset(self) -> None:
+        # Start the server.
         self.reset_scene()
         self.world_axes = FrameHandle(
             _SceneNodeHandleState(
@@ -404,3 +408,63 @@ class ViserServer(MessageApi, GuiApi):
         if got_lock:
             self._atomic_lock.release()
             self._locked_thread_id = -1
+
+    _record: Optional[RecordHandle] = None
+
+    def record(self, output_path: Path) -> RecordHandle:
+        """Record and serialize broadcasted messages."""
+        return RecordHandle(self, output_path)
+
+    @override
+    def _queue(self, message: _messages.Message) -> None:
+        """Wrapped method for sending messages safely."""
+        if self._record is not None:
+            self._record._message_buffer.append(
+                (self._record._time, message.as_serializable_dict())
+            )
+        super()._queue(message)
+
+
+@dataclasses.dataclass
+class RecordHandle:
+    """Handle for recording messages for playback later."""
+
+    _server: ViserServer
+    _output_path: Path
+    _time = 0.0
+    _message_buffer: List[Tuple[float, Dict[str, Any]]] = dataclasses.field(
+        default_factory=list
+    )
+    """Buffer for recording messages. `None` when not recording."""
+    _loop_start_index: Optional[int] = None
+    """Index to loop back to after playback ends."""
+
+    def __enter__(self) -> RecordHandle:
+        """Start recording."""
+        print(f"[viser] Started recording.")
+        self._server._record = self
+        self._server._initial_reset()
+        return self
+
+    def __exit__(self, *unused) -> None:
+        """Done!"""
+        del unused
+        del self._server
+        out = msgpack.packb(
+            {
+                "loopStartIndex": self._loop_start_index,
+                "durationSeconds": self._time,
+                "messages": self._message_buffer,
+            }
+        )
+        assert isinstance(out, bytes)
+        self._output_path.write_bytes(out)
+        print(f"[viser] Wrote recording to {self._output_path}.")
+
+    def start_loop(self) -> None:
+        """Add a sleep to the current recording."""
+        self._loop_start_index = len(self._message_buffer)
+
+    def sleep(self, seconds: float) -> None:
+        """Add a sleep to the current recording."""
+        self._time += seconds

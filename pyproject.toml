@@ -57,6 +57,7 @@ exclude = [
     "tests*",
     "docs*",
     "examples*",
+    "build*",
 ]
 
 [tool.setuptools.package-data]
