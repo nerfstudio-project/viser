@@ -444,6 +444,19 @@ class RecordHandle:
         print(f"[viser] Started recording.")
         self._server._record = self
         self._server._initial_reset()
+
+        if False:  # TODO(adam): comment this out
+            for (
+                message
+            ) in self._server._server._broadcast_buffer.message_from_id.copy().values():
+                if "Gui" in type(message).__name__:
+                    continue
+                self._message_buffer.append(
+                    (
+                        self._time,
+                        message.as_serializable_dict(),
+                    )
+                )
         return self
 
     def __exit__(self, *unused) -> None:
