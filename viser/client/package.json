@@ -25,6 +25,7 @@
     "isomorphic-ws": "^5.0.0",
     "mantine-react-table": "^1.0.0-beta.11",
     "msgpackr": "^1.8.5",
+    "pako": "^2.1.0",
     "prettier": "^2.8.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -64,6 +65,7 @@
   "devDependencies": {
     "@redux-devtools/core": "^3.13.1",
     "@types/msgpack": "0.0.31",
+    "@types/pako": "^2.0.0",
     "@types/wicg-file-system-access": "^2020.9.6",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",
