@@ -37,7 +37,11 @@ def _(client: viser.ClientHandle) -> None:
 
         # Create a coordinate frame and label.
         frame = client.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
-        client.add_label(f"/frame_{i}/label", text=f"Frame {i}")
+        client.add_3d_gui(f"/frame_{i}/gui")
+        # with frame:
+        #     client.add_gui_button("Click me")
+        print("hello", i)
+        # client.add_label(f"/frame_{i}/label", text=f"Frame {i}")
 
         # Move the camera when we click a frame.
         @frame.on_click
