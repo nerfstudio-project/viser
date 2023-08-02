@@ -27,15 +27,17 @@ def ensure_client_is_built() -> None:
         print("[viser] Client build looks out of date. Building now...")
         build = True
 
-    # Install nodejs and build if necessary.
+    # Install nodejs and build if necessary. We assume bash is installed.
     if build:
         env_dir = _install_sandboxed_node()
         npx_path = env_dir / "bin" / "npx"
         subprocess.run(
             args=(
+                "bash -c '"
                 f"source {env_dir / 'bin' / 'activate'};"
                 f"{npx_path} yarn install;"
                 "yarn run build;"
+                "'"
             ),
             cwd=client_dir,
             shell=True,
