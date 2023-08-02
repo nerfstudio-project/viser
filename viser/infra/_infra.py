@@ -351,7 +351,9 @@ async def _client_producer(
                 await websocket.send(serialized)
             elif client_api_version == 0:
                 for msg in outgoing:
-                    await websocket.send(msg.as_serializable_dict())
+                    serialized = msgpack.packb(msg.as_serializable_dict())
+                    assert isinstance(serialized, bytes)
+                    await websocket.send(serialized)
             else:
                 assert_never(client_api_version)
 
@@ -372,7 +374,9 @@ async def _broadcast_producer(
             await websocket.send(serialized)
         elif client_api_version == 0:
             for msg in outgoing:
-                await websocket.send(msg.as_serializable_dict())
+                serialized = msgpack.packb(msg.as_serializable_dict())
+                assert isinstance(serialized, bytes)
+                await websocket.send(serialized)
         else:
             assert_never(client_api_version)
 
