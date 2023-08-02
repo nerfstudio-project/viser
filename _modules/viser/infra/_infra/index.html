@@ -581,7 +581,9 @@
                 <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">client_api_version</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">outgoing</span><span class="p">:</span>
-                    <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">as_serializable_dict</span><span class="p">())</span>
+                    <span class="n">serialized</span> <span class="o">=</span> <span class="n">msgpack</span><span class="o">.</span><span class="n">packb</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">as_serializable_dict</span><span class="p">())</span>
+                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">serialized</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+                    <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">assert_never</span><span class="p">(</span><span class="n">client_api_version</span><span class="p">)</span>
 
@@ -602,7 +604,9 @@
             <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">client_api_version</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">outgoing</span><span class="p">:</span>
-                <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">as_serializable_dict</span><span class="p">())</span>
+                <span class="n">serialized</span> <span class="o">=</span> <span class="n">msgpack</span><span class="o">.</span><span class="n">packb</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">as_serializable_dict</span><span class="p">())</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">serialized</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+                <span class="k">await</span> <span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">serialized</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">assert_never</span><span class="p">(</span><span class="n">client_api_version</span><span class="p">)</span>
 
