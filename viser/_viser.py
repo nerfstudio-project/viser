@@ -236,6 +236,7 @@ class ViserServer(MessageApi, GuiApi):
             port=port,
             message_class=_messages.Message,
             http_server_root=Path(__file__).absolute().parent / "client" / "build",
+            client_api_version=1,
         )
         self._server = server
         super().__init__(server)
