@@ -53,7 +53,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
   debouncedReady.current = false;
   setTimeout(() => {
     debouncedReady.current = true;
-  }, 5);
+  }, 50);
 
   function getSceneTreeSubRows(
     parentName: string,
