@@ -14,6 +14,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    Literal,
     NewType,
     Optional,
     Sequence,
@@ -109,6 +110,8 @@ class Server(MessageHandler):
             required in the future.
         http_server_root: Path to root for HTTP server.
         verbose: Toggle for print messages.
+        client_api_version: Flag for backwards compatibility. 0 sends individual
+            messages. 1 sends windowed messages.
     """
 
     def __init__(
@@ -118,6 +121,7 @@ class Server(MessageHandler):
         message_class: Type[Message] = Message,
         http_server_root: Optional[Path] = None,
         verbose: bool = True,
+        client_api_version: Literal[0, 1] = 0,
     ):
         super().__init__()
 
@@ -130,6 +134,7 @@ class Server(MessageHandler):
         self._message_class = message_class
         self._http_server_root = http_server_root
         self._verbose = verbose
+        self._client_api_version = client_api_version
 
         self._thread_executor = ThreadPoolExecutor(max_workers=32)
 
@@ -230,10 +235,12 @@ class Server(MessageHandler):
                         websocket,
                         client_id,
                         client_state.message_buffer.get,
+                        self._client_api_version,
                     ),
                     _broadcast_producer(
                         websocket,
                         self._broadcast_buffer.window_generator(client_id).__anext__,
+                        self._client_api_version,
                     ),
                     _consumer(websocket, handle_incoming, message_class),
                 )
@@ -325,6 +332,7 @@ async def _client_producer(
     websocket: WebSocketServerProtocol,
     client_id: ClientId,
     get_next: Callable[[], Awaitable[Message]],
+    client_api_version: int,
 ) -> None:
     """Infinite loop to send messages from a buffer to a single client."""
 
@@ -335,25 +343,34 @@ async def _client_producer(
             message_future = asyncio.ensure_future(get_next())
         outgoing = window.get_window_to_send()
         if outgoing is not None:
-            serialized = msgpack.packb(
-                tuple(message.as_serializable_dict() for message in outgoing)
-            )
-            assert isinstance(serialized, bytes)
-            await websocket.send(serialized)
+            if client_api_version:
+                serialized = msgpack.packb(
+                    tuple(message.as_serializable_dict() for message in outgoing)
+                )
+                assert isinstance(serialized, bytes)
+                await websocket.send(serialized)
+            else:
+                for msg in outgoing:
+                    await websocket.send(msg.as_serializable_dict())
 
 
 async def _broadcast_producer(
     websocket: WebSocketServerProtocol,
     get_next_window: Callable[[], Awaitable[Sequence[Message]]],
+    client_api_version: int,
 ) -> None:
     """Infinite loop to broadcast windows of messages from a buffer."""
     while True:
         outgoing = await get_next_window()
-        serialized = msgpack.packb(
-            tuple(message.as_serializable_dict() for message in outgoing)
-        )
-        assert isinstance(serialized, bytes)
-        await websocket.send(serialized)
+        if client_api_version:
+            serialized = msgpack.packb(
+                tuple(message.as_serializable_dict() for message in outgoing)
+            )
+            assert isinstance(serialized, bytes)
+            await websocket.send(serialized)
+        else:
+            for msg in outgoing:
+                await websocket.send(msg.as_serializable_dict())
 
 
 async def _consumer(
