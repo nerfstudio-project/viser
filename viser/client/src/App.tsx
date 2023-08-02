@@ -28,6 +28,7 @@ import WebsocketInterface from "./WebsocketInterface";
 
 import { Titlebar } from "./Titlebar";
 import { useSceneTreeState } from "./SceneTreeState";
+import { useDisclosure } from "@mantine/hooks";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -39,12 +40,12 @@ type ViewerContextContents = {
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
-      | undefined
-      | {
-          wxyz?: [number, number, number, number];
-          position?: [number, number, number];
-          visibility?: boolean;
-        };
+    | undefined
+    | {
+      wxyz?: [number, number, number, number];
+      position?: [number, number, number];
+      visibility?: boolean;
+    };
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
@@ -100,16 +101,14 @@ function SingleViewer() {
           height: "1px",
           position: "relative",
           flex: "1 0 auto",
+          display: "flex"
         }}
       >
         <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
           <Box
             sx={(theme) => ({
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: fixed_sidebar ? "20em" : 0,
-              position: "absolute",
+              width: '1px',
+              flex: "1 0 auto",
               backgroundColor:
                 theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
             })}

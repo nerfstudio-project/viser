@@ -147,6 +147,7 @@ export function Titlebar() {
           theme.colorScheme == "light"
             ? theme.colors.gray[4]
             : theme.colors.dark[4],
+        zIndex: 299
       })}
     >
       <Container
