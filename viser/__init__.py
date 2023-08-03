@@ -1,3 +1,4 @@
+from ._gui_api import Gui3dContainerHandle as Gui3dContainerHandle
 from ._gui_api import GuiFolderHandle as GuiFolderHandle
 from ._gui_api import GuiTabGroupHandle as GuiTabGroupHandle
 from ._gui_api import GuiTabHandle as GuiTabHandle

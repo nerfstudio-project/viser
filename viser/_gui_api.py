@@ -33,10 +33,10 @@ from ._gui_handles import (
     GuiHandle,
     _GuiHandleState,
 )
-from ._scene_handles import SceneNodeHandle
 from ._icons import base64_from_icon
 from ._icons_enum import Icon
 from ._message_api import MessageApi, cast_vector
+from ._scene_handles import SceneNodeHandle
 
 if TYPE_CHECKING:
     from .infra import ClientId
@@ -111,12 +111,12 @@ class GuiApi(abc.ABC):
             )
             return self.add_gui_folder(label)
 
-    def add_3d_gui(
+    def add_gui_3d_container(
         self,
         name: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
-    ) -> Gui3DHandle:
+    ) -> Gui3dContainerHandle:
         """Add a 3D gui to the scene."""
         print("here")
         container_id = _make_unique_id()
@@ -127,9 +127,10 @@ class GuiApi(abc.ABC):
                 container_id=container_id,
             )
         )
+        assert isinstance(self, MessageApi)
         node_handle = SceneNodeHandle._make(self, name, wxyz, position)
-        return Gui3DHandle(node_handle._impl, self, container_id)
-    
+        return Gui3dContainerHandle(node_handle._impl, self, container_id)
+
     def add_gui_folder(self, label: str) -> GuiFolderHandle:
         """Add a folder, and return a handle that can be used to populate it."""
         folder_container_id = _make_unique_id()
@@ -688,8 +689,9 @@ class GuiTabGroupHandle:
             )
         )
 
+
 @dataclasses.dataclass
-class Gui3DHandle(SceneNodeHandle):
+class Gui3dContainerHandle(SceneNodeHandle):
     """Use as a context to place GUI elements into a folder."""
 
     _gui_api: GuiApi
@@ -707,9 +709,17 @@ class Gui3DHandle(SceneNodeHandle):
         self._container_id_restore = None
 
     def remove(self) -> None:
-        """Permanently remove this folder and all contained GUI elements from the
+        """Permanently remove this GUI container
         visualizer."""
-        self._gui_api._get_api()._queue(_messages.GuiRemoveMessage(self._container_id))
+
+        # Call scene node remove.
+        super().remove()
+
+        # Clean up contained GUI elements.
+        self._gui_api._get_api()._queue(
+            _messages.GuiRemoveContainerChildrenMessage(self._container_id)
+        )
+
 
 @dataclasses.dataclass
 class GuiFolderHandle:
