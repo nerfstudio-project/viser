@@ -232,7 +232,7 @@ class ViserServer(MessageApi, GuiApi):
 
     def __init__(self, host: str = "0.0.0.0", port: int = 8080, share: bool = False):
         if share:
-            print(start_tunnel(port, connection_timeout=10.0))
+            start_tunnel(port)
 
         server = infra.Server(
             host=host,
