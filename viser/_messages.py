@@ -425,3 +425,4 @@ class ThemeConfigurationMessage(Message):
 
     titlebar_content: Optional[theme.TitlebarConfig]
     control_type: Union[Literal["floating"], Literal["collapsible"], Literal["fixed"]]
+    dark_mode: bool

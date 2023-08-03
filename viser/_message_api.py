@@ -143,12 +143,14 @@ class MessageApi(abc.ABC):
         control_type: Union[
             Literal["floating"], Literal["collapsible"], Literal["fixed"]
         ] = "floating",
+        dark_mode: bool = False,
     ) -> None:
         """Configure the viser front-end's visual appearance."""
         self._queue(
             _messages.ThemeConfigurationMessage(
                 titlebar_content=titlebar_content,
                 control_type=control_type,
+                dark_mode=dark_mode,
             ),
         )
 

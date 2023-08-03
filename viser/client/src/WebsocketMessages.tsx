@@ -321,6 +321,7 @@ export interface ThemeConfigurationMessage {
     } | null;
   } | null;
   control_type: "floating" | "collapsible" | "fixed";
+  dark_mode: boolean;
 }
 
 export type Message =

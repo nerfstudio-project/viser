@@ -56,6 +56,7 @@ const cleanGuiState: GuiState = {
     type: "ThemeConfigurationMessage",
     titlebar_content: null,
     control_type: 'floating'
+    dark_mode: false,
   },
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.
