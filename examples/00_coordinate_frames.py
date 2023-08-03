@@ -11,7 +11,7 @@ import time
 
 import viser
 
-server = viser.ViserServer()
+server = viser.ViserServer(share=True)
 
 while True:
     # Add some coordinate frames to the scene. These will be visualized in the viewer.
