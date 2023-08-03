@@ -6,10 +6,8 @@ import {
   ActionIcon,
   Aside,
   Box,
-  Button,
   Collapse,
   Tooltip,
-  UnstyledButton,
   useMantineTheme,
 } from "@mantine/core";
 import {
@@ -23,6 +21,7 @@ import {
 import React from "react";
 import BottomPanel from "./BottomPanel";
 import FloatingPanel, { FloatingPanelContext } from "./FloatingPanel";
+import { ThemeConfigurationMessage } from "../WebsocketMessages";
 
 // Must match constant in Python.
 const ROOT_CONTAINER_ID = "root";
@@ -33,7 +32,7 @@ function HideWhenCollapsed({ children }: { children: React.ReactNode }) {
   return expanded ? children : null;
 }
 
-export default function ControlPanel(props: { fixed_sidebar: boolean }) {
+export default function ControlPanel(props: { control_type: ThemeConfigurationMessage["control_type"] }) {
   const theme = useMantineTheme();
   const useMobileView = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`);
 
@@ -52,7 +51,7 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
         <Box
           sx={{
             position: "absolute",
-            right: props.fixed_sidebar ? "2.5em" : "0.5em",
+            right: props.control_type === 'collapsible' ? "2.5em" : "0.5em",
             top: "50%",
             transform: "translateY(-50%)",
             display: showGenerated ? undefined : "none",
@@ -81,7 +80,7 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
           right: "0.5em",
           top: "50%",
           transform: "translateY(-50%)",
-          display: props.fixed_sidebar && !useMobileView ? undefined : "none",
+          display: props.control_type === 'collapsible' && !useMobileView ? undefined : "none",
           zIndex: 100,
         }}
       >
@@ -150,7 +149,7 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
         <BottomPanel.Contents>{panelContents}</BottomPanel.Contents>
       </BottomPanel>
     );
-  } else if (props.fixed_sidebar) {
+  } else if (props.control_type !== 'floating') {
     return (
       <>
         <Box
@@ -180,7 +179,7 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
           })}
         >
           <Box
-            sx={(theme) => ({
+            sx={() => ({
               width: "20em"
             })}>
             <Box

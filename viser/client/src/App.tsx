@@ -28,7 +28,6 @@ import WebsocketInterface from "./WebsocketInterface";
 
 import { Titlebar } from "./Titlebar";
 import { useSceneTreeState } from "./SceneTreeState";
-import { useDisclosure } from "@mantine/hooks";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -91,7 +90,7 @@ function SingleViewer() {
     []
   );
 
-  const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
+  const control_type = viewer.useGui((state) => state.theme.control_type);
   return (
     <ViewerContext.Provider value={viewer}>
       <Titlebar />
@@ -116,7 +115,7 @@ function SingleViewer() {
             <ViewerCanvas>{memoizedWebsocketInterface}</ViewerCanvas>
           </Box>
         </MediaQuery>
-        <ControlPanel fixed_sidebar={fixed_sidebar} />
+        <ControlPanel control_type={control_type} />
       </Box>
     </ViewerContext.Provider>
   );

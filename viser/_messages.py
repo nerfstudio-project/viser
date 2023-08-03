@@ -424,4 +424,4 @@ class ThemeConfigurationMessage(Message):
     """Message from server->client to configure parts of the GUI."""
 
     titlebar_content: Optional[theme.TitlebarConfig]
-    fixed_sidebar: bool
+    control_type: Union[Literal["floating"], Literal["collapsible"], Literal["fixed"]]

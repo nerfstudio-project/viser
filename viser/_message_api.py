@@ -13,18 +13,20 @@ import io
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeVar, Union, cast
+from typing import Any, cast, Dict, Optional, Tuple, TYPE_CHECKING, TypeVar, Union
 
 import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
 import trimesh
 import trimesh.visual
-from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
+from typing_extensions import assert_never, Literal, ParamSpec, TypeAlias
 
 from . import _messages, infra, theme
-from ._gui_handles import GuiHandle, _GuiHandleState
+from ._gui_handles import _GuiHandleState, GuiHandle
 from ._scene_handles import (
+    _SupportsVisibility,
+    _TransformControlsState,
     CameraFrustumHandle,
     FrameHandle,
     ImageHandle,
@@ -33,8 +35,6 @@ from ._scene_handles import (
     PointCloudHandle,
     SceneNodeHandle,
     TransformControlsHandle,
-    _SupportsVisibility,
-    _TransformControlsState,
 )
 
 if TYPE_CHECKING:
@@ -140,13 +140,15 @@ class MessageApi(abc.ABC):
         self,
         *,
         titlebar_content: Optional[theme.TitlebarConfig] = None,
-        fixed_sidebar: bool = False,
+        control_type: Union[
+            Literal["floating"], Literal["collapsible"], Literal["fixed"]
+        ] = "floating",
     ) -> None:
         """Configure the viser front-end's visual appearance."""
         self._queue(
             _messages.ThemeConfigurationMessage(
                 titlebar_content=titlebar_content,
-                fixed_sidebar=fixed_sidebar,
+                control_type=control_type,
             ),
         )
 
