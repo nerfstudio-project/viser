@@ -92,34 +92,44 @@ function SingleViewer() {
 
   const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
   return (
-    <ViewerContext.Provider value={viewer}>
-      <Titlebar />
-      <Box
-        sx={{
-          width: "100%",
-          height: "1px",
-          position: "relative",
-          flex: "1 0 auto",
-        }}
-      >
-        <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
-          <Box
-            sx={(theme) => ({
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: fixed_sidebar ? "20em" : 0,
-              position: "absolute",
-              backgroundColor:
-                theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
-            })}
-          >
-            <ViewerCanvas>{memoizedWebsocketInterface}</ViewerCanvas>
-          </Box>
-        </MediaQuery>
-        <ControlPanel fixed_sidebar={fixed_sidebar} />
-      </Box>
-    </ViewerContext.Provider>
+    <MantineProvider
+      withGlobalStyles
+      withNormalizeCSS
+      theme={{
+        colorScheme: viewer.useGui((state) => state.theme.dark_mode)
+          ? "dark"
+          : "light",
+      }}
+    >
+      <ViewerContext.Provider value={viewer}>
+        <Titlebar />
+        <Box
+          sx={{
+            width: "100%",
+            height: "1px",
+            position: "relative",
+            flex: "1 0 auto",
+          }}
+        >
+          <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
+            <Box
+              sx={(theme) => ({
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: fixed_sidebar ? "20em" : 0,
+                position: "absolute",
+                backgroundColor:
+                  theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
+              })}
+            >
+              <ViewerCanvas>{memoizedWebsocketInterface}</ViewerCanvas>
+            </Box>
+          </MediaQuery>
+          <ControlPanel fixed_sidebar={fixed_sidebar} />
+        </Box>
+      </ViewerContext.Provider>
+    </MantineProvider>
   );
 }
 
@@ -174,24 +184,16 @@ function SceneContextSetter() {
 
 export function Root() {
   return (
-    <MantineProvider
-      withGlobalStyles
-      withNormalizeCSS
-      theme={{
-        colorScheme: "light",
+    <Box
+      sx={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <SingleViewer />
-      </Box>
-    </MantineProvider>
+      <SingleViewer />
+    </Box>
   );
 }

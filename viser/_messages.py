@@ -425,3 +425,4 @@ class ThemeConfigurationMessage(Message):
 
     titlebar_content: Optional[theme.TitlebarConfig]
     fixed_sidebar: bool
+    dark_mode: bool
