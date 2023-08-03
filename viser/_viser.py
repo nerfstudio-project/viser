@@ -16,6 +16,7 @@ from . import transforms as tf
 from ._gui_api import GuiApi
 from ._message_api import MessageApi, cast_vector
 from ._scene_handles import FrameHandle, _SceneNodeHandleState
+from ._tunnel import start_tunnel
 
 
 @dataclasses.dataclass
@@ -229,7 +230,10 @@ class ViserServer(MessageApi, GuiApi):
     """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
     and then hidden by default."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8080):
+    def __init__(self, host: str = "0.0.0.0", port: int = 8080, share: bool = False):
+        if share:
+            print(start_tunnel(port, connection_timeout=10.0))
+
         server = infra.Server(
             host=host,
             port=port,
