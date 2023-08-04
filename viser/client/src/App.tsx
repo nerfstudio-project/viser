@@ -48,7 +48,7 @@ type ViewerContextContents = {
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
-  null
+  null,
 );
 
 THREE.ColorManagement.enabled = true;
@@ -65,7 +65,7 @@ function SingleViewer() {
     return server;
   }
   const servers = new URLSearchParams(window.location.search).getAll(
-    searchParamKey
+    searchParamKey,
   );
   const initialServer =
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
@@ -87,10 +87,10 @@ function SingleViewer() {
   // viewer context changes.
   const memoizedWebsocketInterface = React.useMemo(
     () => <WebsocketInterface />,
-    []
+    [],
   );
 
-  const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
+  const control_layout = viewer.useGui((state) => state.theme.control_layout);
   return (
     <MantineProvider
       withGlobalStyles
@@ -117,7 +117,7 @@ function SingleViewer() {
                 top: 0,
                 bottom: 0,
                 left: 0,
-                right: fixed_sidebar ? "20em" : 0,
+                right: control_layout === "fixed" ? "20em" : 0,
                 position: "absolute",
                 backgroundColor:
                   theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
@@ -126,7 +126,7 @@ function SingleViewer() {
               <ViewerCanvas>{memoizedWebsocketInterface}</ViewerCanvas>
             </Box>
           </MediaQuery>
-          <ControlPanel fixed_sidebar={fixed_sidebar} />
+          <ControlPanel control_layout={control_layout} />
         </Box>
       </ViewerContext.Provider>
     </MantineProvider>
@@ -177,7 +177,7 @@ function SceneContextSetter() {
   const { sceneRef, cameraRef } = React.useContext(ViewerContext)!;
   sceneRef.current = useThree((state) => state.scene);
   cameraRef.current = useThree(
-    (state) => state.camera as THREE.PerspectiveCamera
+    (state) => state.camera as THREE.PerspectiveCamera,
   );
   return <></>;
 }

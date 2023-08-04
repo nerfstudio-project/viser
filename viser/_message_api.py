@@ -140,14 +140,14 @@ class MessageApi(abc.ABC):
         self,
         *,
         titlebar_content: Optional[theme.TitlebarConfig] = None,
-        fixed_sidebar: bool = False,
+        control_layout: Literal["floating", "collapsible", "fixed"] = "floating",
         dark_mode: bool = False,
     ) -> None:
         """Configure the viser front-end's visual appearance."""
         self._queue(
             _messages.ThemeConfigurationMessage(
                 titlebar_content=titlebar_content,
-                fixed_sidebar=fixed_sidebar,
+                control_layout=control_layout,
                 dark_mode=dark_mode,
             ),
         )
