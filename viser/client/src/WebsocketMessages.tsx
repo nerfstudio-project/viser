@@ -320,7 +320,7 @@ export interface ThemeConfigurationMessage {
       href: string | null;
     } | null;
   } | null;
-  fixed_sidebar: boolean;
+  control_layout: "floating" | "collapsible" | "fixed";
   dark_mode: boolean;
 }
 
