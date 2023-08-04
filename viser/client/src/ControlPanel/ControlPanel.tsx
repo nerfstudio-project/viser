@@ -32,7 +32,9 @@ function HideWhenCollapsed({ children }: { children: React.ReactNode }) {
   return expanded ? children : null;
 }
 
-export default function ControlPanel(props: { control_type: ThemeConfigurationMessage["control_type"] }) {
+export default function ControlPanel(props: {
+  control_layout: ThemeConfigurationMessage["control_layout"];
+}) {
   const theme = useMantineTheme();
   const useMobileView = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`);
 
@@ -51,7 +53,7 @@ export default function ControlPanel(props: { control_type: ThemeConfigurationMe
         <Box
           sx={{
             position: "absolute",
-            right: props.control_type === 'collapsible' ? "2.5em" : "0.5em",
+            right: props.control_layout === "collapsible" ? "2.5em" : "0.5em",
             top: "50%",
             transform: "translateY(-50%)",
             display: showGenerated ? undefined : "none",
@@ -80,7 +82,10 @@ export default function ControlPanel(props: { control_type: ThemeConfigurationMe
           right: "0.5em",
           top: "50%",
           transform: "translateY(-50%)",
-          display: props.control_type === 'collapsible' && !useMobileView ? undefined : "none",
+          display:
+            props.control_layout === "collapsible" && !useMobileView
+              ? undefined
+              : "none",
           zIndex: 100,
         }}
       >
@@ -90,46 +95,36 @@ export default function ControlPanel(props: { control_type: ThemeConfigurationMe
             toggleCollapse();
           }}
         >
-          <Tooltip
-            label={
-              "Collapse Sidebar"
-            }
-          >
-            {<IconChevronRight />}
-          </Tooltip>
+          <Tooltip label={"Collapse Sidebar"}>{<IconChevronRight />}</Tooltip>
         </ActionIcon>
       </Box>
     </>
   );
 
   const collapsedView = (
-    <div style={{
-      borderTopLeftRadius: '15%',
-      borderBottomLeftRadius: '15%',
-      borderTopRightRadius: 0,
-      borderBottomRightRadius: 0,
-      backgroundColor:
-        theme.colorScheme == "dark"
-          ? theme.colors.dark[5]
-          : theme.colors.gray[2],
-      padding: '0.5em'
-    }}>
+    <div
+      style={{
+        borderTopLeftRadius: "15%",
+        borderBottomLeftRadius: "15%",
+        borderTopRightRadius: 0,
+        borderBottomRightRadius: 0,
+        backgroundColor:
+          theme.colorScheme == "dark"
+            ? theme.colors.dark[5]
+            : theme.colors.gray[2],
+        padding: "0.5em",
+      }}
+    >
       <ActionIcon
         onClick={(evt) => {
           evt.stopPropagation();
           toggleCollapse();
         }}
       >
-        <Tooltip
-          label={
-            "Show Sidebar"
-          }
-        >
-          {<IconChevronLeft />}
-        </Tooltip>
+        <Tooltip label={"Show Sidebar"}>{<IconChevronLeft />}</Tooltip>
       </ActionIcon>
     </div>
-  )
+  );
 
   const panelContents = (
     <>
@@ -149,39 +144,42 @@ export default function ControlPanel(props: { control_type: ThemeConfigurationMe
         <BottomPanel.Contents>{panelContents}</BottomPanel.Contents>
       </BottomPanel>
     );
-  } else if (props.control_type !== 'floating') {
+  } else if (props.control_layout !== "floating") {
     return (
       <>
         <Box
           sx={{
             position: "absolute",
-            right: collapsed ? "0em" : '-2.5em',
+            right: collapsed ? "0em" : "-2.5em",
             top: "0.5em",
             transitionProperty: "right",
             transitionDuration: "0.5s",
-            transitionDelay: "0.25s"
+            transitionDelay: "0.25s",
           }}
         >
           {collapsedView}
         </Box>
         <Aside
           hiddenBreakpoint={"xs"}
+          fixed
           sx={(theme) => ({
             width: collapsed ? 0 : "20em",
+            bottom: 0,
+            overflow: "scroll",
             boxSizing: "border-box",
             borderLeft: "1px solid",
-            overflow: "visible",
             borderColor:
               theme.colorScheme == "light"
                 ? theme.colors.gray[4]
                 : theme.colors.dark[4],
-            transition: "width 0.5s 0s"
+            transition: "width 0.5s 0s",
           })}
         >
           <Box
             sx={() => ({
-              width: "20em"
-            })}>
+              width: "20em",
+            })}
+          >
             <Box
               p="sm"
               sx={(theme) => ({
@@ -199,7 +197,7 @@ export default function ControlPanel(props: { control_type: ThemeConfigurationMe
             </Box>
             {panelContents}
           </Box>
-        </Aside >
+        </Aside>
       </>
     );
   } else {
@@ -221,11 +219,13 @@ function ConnectionStatus() {
 
   const StatusIcon = connected ? IconCloudCheck : IconCloudOff;
   return (
-    <span style={{ display: 'flex', alignItems: 'center', width: 'max-content' }}>
+    <span
+      style={{ display: "flex", alignItems: "center", width: "max-content" }}
+    >
       <StatusIcon
         color={connected ? "#0b0" : "#b00"}
         style={{
-          transform: 'translateY(-0.05em)',
+          transform: "translateY(-0.05em)",
           width: "1.2em",
           height: "1.2em",
         }}

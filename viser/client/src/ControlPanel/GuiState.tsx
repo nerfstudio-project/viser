@@ -55,7 +55,7 @@ const cleanGuiState: GuiState = {
   theme: {
     type: "ThemeConfigurationMessage",
     titlebar_content: null,
-    control_type: 'floating'
+    control_layout: 'floating',
     dark_mode: false,
   },
   label: "",

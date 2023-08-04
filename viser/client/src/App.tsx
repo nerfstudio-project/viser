@@ -39,12 +39,12 @@ type ViewerContextContents = {
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
-    | undefined
-    | {
-      wxyz?: [number, number, number, number];
-      position?: [number, number, number];
-      visibility?: boolean;
-    };
+      | undefined
+      | {
+          wxyz?: [number, number, number, number];
+          position?: [number, number, number];
+          visibility?: boolean;
+        };
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
@@ -90,7 +90,7 @@ function SingleViewer() {
     []
   );
 
-  const control_type = viewer.useGui((state) => state.theme.control_type);
+  const control_layout = viewer.useGui((state) => state.theme.control_layout);
   return (
     <MantineProvider
       withGlobalStyles
@@ -117,7 +117,7 @@ function SingleViewer() {
                 top: 0,
                 bottom: 0,
                 left: 0,
-                right: fixed_sidebar ? "20em" : 0,
+                right: control_layout === "fixed" ? "20em" : 0,
                 position: "absolute",
                 backgroundColor:
                   theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
@@ -126,7 +126,7 @@ function SingleViewer() {
               <ViewerCanvas>{memoizedWebsocketInterface}</ViewerCanvas>
             </Box>
           </MediaQuery>
-          <ControlPanel control_type={control_type} />
+          <ControlPanel control_layout={control_layout} />
         </Box>
       </ViewerContext.Provider>
     </MantineProvider>
