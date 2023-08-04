@@ -15,6 +15,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    Literal,
 )
 
 import numpy as onp
@@ -48,6 +49,9 @@ class _GuiHandleState(Generic[T]):
 
     folder_labels: Tuple[str, ...]
     """Name of the folders this GUI input was placed into."""
+
+    destination: Literal["CONTROL_PANEL", "MODAL"]
+    """Desination this GUI input was placed into."""
 
     update_cb: List[Callable[[Any], None]]
     """Registered functions to call when this input is updated."""

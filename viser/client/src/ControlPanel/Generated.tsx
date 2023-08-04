@@ -23,17 +23,38 @@ type Folder = {
   subfolders: { [key: string]: Folder };
 };
 
+enum Destination {
+  CONTROL_PANEL,
+  MODAL,
+}
+
+const DestinationLabels = {
+  "CONTROL_PANEL": Destination.CONTROL_PANEL,
+  "MODAL": Destination.MODAL,
+};
+
 /** Root of generated inputs. */
-export default function Generated() {
+export default function Generated({
+  destination,
+}: {
+  destination: string;
+}) {
   const viewer = React.useContext(ViewerContext)!;
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
   const guiTree: Folder = { inputs: [], subfolders: {} };
 
+  const destinationLabel = (DestinationLabels as any)[destination] || Destination.CONTROL_PANEL;
+
   [...Object.keys(guiConfigFromId)]
     .sort((a, b) => guiConfigFromId[a].order - guiConfigFromId[b].order)
     .forEach((id) => {
       const conf = guiConfigFromId[id];
+
+      // Skip GUI element if it does not belong in this destination
+      const guiDestination = DestinationLabels[conf.destination]
+      if (destinationLabel !== guiDestination)
+        return;
 
       // Iterate into subfolder for this GUI element.
       // Could be optimized.
@@ -282,6 +303,8 @@ function GeneratedInput({ conf }: { conf: GuiConfig }) {
         />
       );
       break;
+    case "GuiAddModal":
+      return;
     case "GuiAddRgbaMessage":
       input = (
         <ColorInput
@@ -361,7 +384,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      }
+      },
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>

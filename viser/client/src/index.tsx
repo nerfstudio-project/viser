@@ -39,6 +39,7 @@ import WebsocketInterface from "./WebsocketInterface";
 
 import FloatingPanel from "./ControlPanel/FloatingPanel";
 import { Titlebar } from "./Titlebar";
+import { ViserModal } from "./Modal";
 import { useMediaQuery } from "@mantine/hooks";
 import BottomPanel from "./ControlPanel/BottomPanel";
 
@@ -61,7 +62,7 @@ type ViewerContextContents = {
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
-  null
+  null,
 );
 
 THREE.ColorManagement.enabled = true;
@@ -78,7 +79,7 @@ function SingleViewer() {
     return server;
   }
   const servers = new URLSearchParams(window.location.search).getAll(
-    searchParamKey
+    searchParamKey,
   );
   const initialServer =
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
@@ -99,6 +100,7 @@ function SingleViewer() {
   return (
     <ViewerContext.Provider value={viewer}>
       <Titlebar />
+      <ViserModal />
       <Box
         sx={{
           width: "100%",
@@ -236,7 +238,7 @@ function SceneContextSetter() {
   const { sceneRef, cameraRef } = React.useContext(ViewerContext)!;
   sceneRef.current = useThree((state) => state.scene);
   cameraRef.current = useThree(
-    (state) => state.camera as THREE.PerspectiveCamera
+    (state) => state.camera as THREE.PerspectiveCamera,
   );
   return <></>;
 }

@@ -191,6 +191,7 @@ class MessageApi(abc.ABC):
         )
 
         self._gui_folder_labels: List[str] = []
+        self._gui_destination: Literal["CONTROL_PANEL", "MODAL"] = "CONTROL_PANEL"
 
         self._atomic_lock = threading.Lock()
         self._locked_thread_id = -1
@@ -217,6 +218,15 @@ class MessageApi(abc.ABC):
         yield
         assert self._gui_folder_labels.pop() == label
 
+    @contextlib.contextmanager
+    def gui_destination(self, destination: str) -> Generator[None, None, None]:
+        """Context for placing all GUI elements into a particular location."""
+        cached_destination = self._gui_destination
+        self._gui_destination = destination
+        yield
+        assert self._gui_destination == destination
+        self._gui_destination = cached_destination
+
     def add_gui_button(
         self,
         label: str,
@@ -237,6 +247,7 @@ class MessageApi(abc.ABC):
                     id=id,
                     label=label,
                     folder_labels=tuple(self._gui_folder_labels),
+                    destination=self._gui_destination,
                     hint=hint,
                     initial_value=False,
                 ),
@@ -292,6 +303,7 @@ class MessageApi(abc.ABC):
                     id=id,
                     label=label,
                     folder_labels=tuple(self._gui_folder_labels),
+                    destination=self._gui_destination,
                     hint=hint,
                     initial_value=initial_value,
                     options=tuple(options),
@@ -319,6 +331,33 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                destination=self._gui_destination,
+                hint=hint,
+                initial_value=initial_value,
+            ),
+            disabled=disabled,
+            visible=visible,
+        )
+
+    def add_modal(
+        self,
+        label: str,
+        initial_value: str,
+        disabled: bool = False,
+        visible: bool = True,
+        hint: Optional[str] = None,
+    ) -> GuiHandle[bool]:
+        """Add a modal to the GUI."""
+        assert isinstance(initial_value, str)
+        id = _make_gui_id()
+        return self._create_gui_input(
+            initial_value,
+            message=_messages.GuiAddModal(
+                order=time.time(),
+                id=id,
+                label=label,
+                folder_labels=tuple(),
+                destination="MODAL",
                 hint=hint,
                 initial_value=initial_value,
             ),
@@ -344,6 +383,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                destination=self._gui_destination,
                 hint=hint,
                 initial_value=initial_value,
             ),
@@ -388,6 +428,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                destination=self._gui_destination,
                 hint=hint,
                 initial_value=initial_value,
                 min=min,
@@ -433,6 +474,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                destination=self._gui_destination,
                 hint=hint,
                 initial_value=initial_value,
                 min=min,
@@ -478,6 +520,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                destination=self._gui_destination,
                 hint=hint,
                 initial_value=initial_value,
                 min=min,
@@ -534,6 +577,7 @@ class MessageApi(abc.ABC):
                     id=id,
                     label=label,
                     folder_labels=tuple(self._gui_folder_labels),
+                    destination=self._gui_destination,
                     hint=hint,
                     initial_value=initial_value,
                     options=tuple(options),
@@ -582,6 +626,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                destination=self._gui_destination,
                 hint=hint,
                 min=min,
                 max=max,
@@ -611,6 +656,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                destination=self._gui_destination,
                 hint=hint,
                 initial_value=initial_value,
             ),
@@ -635,6 +681,7 @@ class MessageApi(abc.ABC):
                 id=id,
                 label=label,
                 folder_labels=tuple(self._gui_folder_labels),
+                destination=self._gui_destination,
                 hint=hint,
                 initial_value=initial_value,
             ),
@@ -1021,6 +1068,7 @@ class MessageApi(abc.ABC):
             value=initial_value,
             update_timestamp=time.time(),
             folder_labels=message.folder_labels,
+            destination=message.destination,
             update_cb=[],
             is_button=is_button,
             sync_cb=None,

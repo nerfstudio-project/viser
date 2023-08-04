@@ -274,6 +274,7 @@ class _GuiAddMessageBase(Message):
     id: str
     label: str
     folder_labels: Tuple[str, ...]
+    destination: Literal["CONTROL_PANEL", "MODAL"]
     hint: Optional[str]
 
 
@@ -316,6 +317,9 @@ class GuiAddRgbaMessage(_GuiAddMessageBase):
 class GuiAddCheckboxMessage(_GuiAddMessageBase):
     initial_value: bool
 
+@dataclasses.dataclass
+class GuiAddModal(_GuiAddMessageBase):
+    initial_value: str
 
 @dataclasses.dataclass
 class GuiAddVector2Message(_GuiAddMessageBase):
