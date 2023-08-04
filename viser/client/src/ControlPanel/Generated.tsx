@@ -386,27 +386,27 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
 function VectorInput(
   props:
     | {
-        id: string;
-        n: 2;
-        value: [number, number];
-        min: [number, number] | null;
-        max: [number, number] | null;
-        step: number;
-        precision: number;
-        onChange: (value: number[]) => void;
-        disabled: boolean;
-      }
+      id: string;
+      n: 2;
+      value: [number, number];
+      min: [number, number] | null;
+      max: [number, number] | null;
+      step: number;
+      precision: number;
+      onChange: (value: number[]) => void;
+      disabled: boolean;
+    }
     | {
-        id: string;
-        n: 3;
-        value: [number, number, number];
-        min: [number, number, number] | null;
-        max: [number, number, number] | null;
-        step: number;
-        precision: number;
-        onChange: (value: number[]) => void;
-        disabled: boolean;
-      },
+      id: string;
+      n: 3;
+      value: [number, number, number];
+      min: [number, number, number] | null;
+      max: [number, number, number] | null;
+      step: number;
+      precision: number;
+      onChange: (value: number[]) => void;
+      disabled: boolean;
+    },
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
