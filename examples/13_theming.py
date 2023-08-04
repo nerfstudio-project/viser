@@ -38,10 +38,7 @@ image = TitlebarImage(
 
 titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
-server.configure_theme(
-    titlebar_content=titlebar_theme,
-    fixed_sidebar=True,
-)
+server.configure_theme(titlebar_content=titlebar_theme, control_layout="fixed")
 server.world_axes.visible = True
 
 while True:

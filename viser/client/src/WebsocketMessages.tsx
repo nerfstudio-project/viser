@@ -303,12 +303,6 @@ export interface GuiSetValueMessage {
   id: string;
   value: any;
 }
-export interface MessageGroupStart {
-  type: "MessageGroupStart";
-}
-export interface MessageGroupEnd {
-  type: "MessageGroupEnd";
-}
 export interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
   titlebar_content: {
@@ -326,7 +320,8 @@ export interface ThemeConfigurationMessage {
       href: string | null;
     } | null;
   } | null;
-  fixed_sidebar: boolean;
+  control_layout: "floating" | "collapsible" | "fixed";
+  dark_mode: boolean;
 }
 
 export type Message =
@@ -371,6 +366,4 @@ export type Message =
   | GuiSetVisibleMessage
   | GuiSetDisabledMessage
   | GuiSetValueMessage
-  | MessageGroupStart
-  | MessageGroupEnd
   | ThemeConfigurationMessage;
