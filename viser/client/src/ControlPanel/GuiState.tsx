@@ -16,7 +16,8 @@ export type GuiConfig =
   | Messages.GuiAddButtonGroupMessage
   | Messages.GuiAddTextMessage
   | Messages.GuiAddVector2Message
-  | Messages.GuiAddVector3Message;
+  | Messages.GuiAddVector3Message
+  | Messages.GuiAddMarkdownMessage;
 
 export function isGuiConfig(message: Messages.Message): message is GuiConfig {
   return message.type.startsWith("GuiAdd");

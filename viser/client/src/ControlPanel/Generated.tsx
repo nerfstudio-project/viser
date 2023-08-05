@@ -22,6 +22,8 @@ import {
   Tooltip,
 } from "@mantine/core";
 import React from "react";
+import Markdown from "../Markdown";
+import { ErrorBoundary } from "react-error-boundary";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -60,6 +62,14 @@ function GeneratedInput({ conf, first }: { conf: GuiConfig; first: boolean }) {
     return <GeneratedFolder conf={conf} first={first} />;
   if (conf.type == "GuiAddTabGroupMessage")
     return <GeneratedTabGroup conf={conf} />;
+  if (conf.type == "GuiAddMarkdownMessage")
+    return (
+      <Box pt={first ? "sm" : undefined} pb="xs" px="sm">
+        <ErrorBoundary fallback={<Text align="center">Markdown Failed to Render</Text>}>
+          <Markdown>{conf.markdown}</Markdown>
+        </ErrorBoundary>
+      </Box>
+    )
 
   // Handle GUI input types.
   const viewer = React.useContext(ViewerContext)!;

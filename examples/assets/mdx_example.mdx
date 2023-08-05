@@ -1,0 +1,97 @@
+## Markdown in Viser
+
+---
+
+Viser has full support for the GFM markdown spec, including **bold**, _italics_, ~~strikethrough~~, and many other features.
+
+Here's a [masked link](https://github.com/nerfstudio-project/viser). Not a fan? Here's a normal one: https://pypi.org/project/viser/
+
+Anywhere where you can insert GUI elements, you can also insert `images`, `blockquotes`, `lists`, `tables`, `task lists`, and `(unstyled) code blocks`.
+
+In inline code blocks, you can show off colors with color chips: `#FED363` `hsl(0, 0%, 82%)` `rgb(255, 255, 255)`
+
+Adding images from a remote origin is simple. For remote images, you must specify the image in the `images` prop of markdown, and then reference it
+in your markdown as follows:
+
+<section>
+  ![Viser Logo](http://nerfstudio-project.github.io/viser/_static/viser.svg)
+  ![Cal Logo](cal_logo)
+</section>
+
+Tables follow the standard markdown spec:
+
+| Application                                          | Description                                        |
+| ---------------------------------------------------- | -------------------------------------------------- |
+| [Nerfstudio](https://nerf.studio)                    | A collaboration friendly studio for NeRFs          |
+| [Viser](https://nerfstudio-project.github.io/viser/) | An interactive 3D visualization toolbox for Python |
+
+Code blocks, while being not nearly as exciting as some of the things presented, work as expected. Currently, while you can specify a language and metadata
+in your blocks, they will remain unused by the Markdown renderer.
+
+```python
+"""Markdown Demonstration
+
+Viser GUI has MDX 2 support (WIP)
+"""
+
+import time
+from pathlib import Path
+
+import imageio.v3 as iio
+import viser
+
+server = viser.ViserServer()
+server.world_axes.visible = True
+
+with open("./assets/mdx_example.mdx", "r") as mkdn:
+    markdown = server.add_gui_markdown(
+        markdown=mkdn.read(),
+        images={"cal_logo": iio.imread(Path(__file__).parent / "assets/Cal_logo.png")},
+    )
+
+button = server.add_gui_button("Remove Markdown")
+
+
+@button.on_click
+def _(_):
+    markdown.remove()
+
+
+while True:
+    time.sleep(10.0)
+```
+
+_woah, that's meta_
+
+The best part? MDX is extensible and JS capable. While we do not currently support any custom mantine components directly, going forward it could be
+possible to configure your own layouts in JSX from directly within your markdown. For now, you still have the freedom to do things like this (although
+there is no guarantee that styling will look good once you stray from the standard markdown spec):
+
+<figure>
+  <img
+    src="cal_logo"
+    alt="Cal Logo"
+    style={{ width: "100%", height: "auto" }}
+  />
+  <figcaption style={{ textAlign: "center" }}>This is the Cal Logo</figcaption>
+</figure>
+
+Or this:
+
+This page loaded on {(new Date()).toString()}
+
+**Note**: Be careful when playing with JSX, it's very easy to break markdown.
+
+So that's MDX in Viser. It has support for:
+
+- [x] CommonMark and GFM standards
+  - bold, italics, strikethrough, images, blockquotes, tables, task lists, code blocks, inline code
+- [x] Color chips
+- [x] JSX enhanced components
+- [ ] Prism highlighted code blocks and code block tabs
+- [ ] Exposed Mantine in markdown
+- [ ] Ability to hide Markdown from Python instead of just deleting it
+
+> Oh yes, mdx PR would be exciting
+>
+> <Cite> &#8212; Brent Yi </Cite>

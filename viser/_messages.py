@@ -277,6 +277,14 @@ class GuiAddFolderMessage(Message):
 
 
 @dataclasses.dataclass
+class GuiAddMarkdownMessage(Message):
+    order: float
+    id: str
+    markdown: str
+    container_id: str
+
+
+@dataclasses.dataclass
 class GuiAddTabGroupMessage(Message):
     order: float
     id: str

@@ -22,8 +22,11 @@ from typing import (
     overload,
 )
 
+
+import re
 import numpy as onp
 from typing_extensions import LiteralString
+import urllib.parse
 
 from . import _messages
 from ._gui_handles import (
@@ -35,7 +38,7 @@ from ._gui_handles import (
 )
 from ._icons import base64_from_icon
 from ._icons_enum import Icon
-from ._message_api import MessageApi, cast_vector
+from ._message_api import _encode_image_base64, MessageApi, cast_vector
 
 if TYPE_CHECKING:
     from .infra import ClientId
@@ -78,6 +81,36 @@ def _compute_precision_digits(x: float) -> int:
     while x != round(x, ndigits=digits) and digits < 7:
         digits += 1
     return digits
+
+
+def _get_repls(images: Dict[str, onp.ndarray]):
+    def _markdown_repl(match: re.Match[str]) -> str:
+        url = match.group(2)
+
+        if url in images:
+            data_uri = _encode_image_base64(images[url], "png")
+            url = urllib.parse.quote(f"{data_uri[1]}")
+            return f"![{match.group(1)}](data:{data_uri[0]};base64,{url})"
+        else:
+            return match.group()
+
+    def _src_repl(match: re.Match[str]) -> str:
+        url = match.group(1)
+
+        if url in images:
+            data_uri = _encode_image_base64(images[url], "png")
+            url = urllib.parse.quote(f"{data_uri[1]}")
+            return f'src="data:{data_uri[0]};base64,{url}"'
+        else:
+            return match.group()
+
+    return [_markdown_repl, _src_repl]
+
+
+def _parse_markdown(markdown: str, images: Dict[str, onp.ndarray]) -> str:
+    repls = _get_repls(images)
+    phase1 = re.sub("\!\[([^]]*)\]\(([^]]*)\)", repls[0], markdown)
+    return re.sub('src="([^"]*)"', repls[1], phase1)
 
 
 class GuiApi(abc.ABC):
@@ -136,6 +169,27 @@ class GuiApi(abc.ABC):
             _tab_container_ids=[],
             _gui_api=self,
             _container_id=self._get_container_id(),
+        )
+
+    def add_gui_markdown(
+        self, markdown: str, images: Optional[Dict[str, onp.ndarray]]
+    ) -> GuiMarkdownHandle:
+        """Add markdown to the GUI."""
+        if images is not None and len(images):
+            markdown = _parse_markdown(markdown, images)
+
+        markdown_id = _make_unique_id()
+        self._get_api()._queue(
+            _messages.GuiAddMarkdownMessage(
+                order=time.time(),
+                id=markdown_id,
+                markdown=markdown,
+                container_id=self._get_container_id(),
+            )
+        )
+        return GuiMarkdownHandle(
+            _gui_api=self,
+            _markdown_id=markdown_id,
         )
 
     def add_gui_button(
@@ -728,3 +782,18 @@ class GuiTabHandle:
         self._parent._tab_container_ids.pop(container_index)
 
         self._parent._sync_with_client()
+
+
+@dataclasses.dataclass
+class GuiMarkdownHandle:
+    """Use to remove markdown."""
+
+    _gui_api: GuiApi
+    _markdown_id: str
+
+    # I'm not sure if there's interest but maybe having programatic visibility in the future
+    # could be worth looking into.
+
+    def remove(self) -> None:
+        """Permanently remove this markdown from the visualizer."""
+        self._gui_api._get_api()._queue(_messages.GuiRemoveMessage(self._markdown_id))
