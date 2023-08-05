@@ -12,18 +12,22 @@ import viser
 server = viser.ViserServer()
 server.world_axes.visible = True
 
-with open("./assets/mdx_example.mdx", "r") as mkdn:
-    markdown = server.add_gui_markdown(
-        markdown=mkdn.read(),
-        images={"cal_logo": iio.imread(Path(__file__).parent / "assets/Cal_logo.png")},
-    )
 
-button = server.add_gui_button("Remove Markdown")
+@server.on_client_connect
+def _(client: viser.ClientHandle) -> None:
+    with open("./assets/mdx_example.mdx", "r") as mkdn:
+        markdown = client.add_gui_markdown(
+            markdown=mkdn.read(),
+            images={
+                "cal_logo": iio.imread(Path(__file__).parent / "assets/Cal_logo.png")
+            },
+        )
 
+    button = client.add_gui_button("Remove Markdown")
 
-@button.on_click
-def _(_):
-    markdown.remove()
+    @button.on_click
+    def _(_):
+        markdown.remove()
 
 
 while True:
