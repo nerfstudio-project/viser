@@ -1,4 +1,6 @@
-from ._gui_api import GuiContainerHandle as GuiContainerHandle
+from ._gui_api import GuiFolderHandle as GuiFolderHandle
+from ._gui_api import GuiTabGroupHandle as GuiTabGroupHandle
+from ._gui_api import GuiTabHandle as GuiTabHandle
 from ._gui_handles import GuiButtonGroupHandle as GuiButtonGroupHandle
 from ._gui_handles import GuiButtonHandle as GuiButtonHandle
 from ._gui_handles import GuiDropdownHandle as GuiDropdownHandle

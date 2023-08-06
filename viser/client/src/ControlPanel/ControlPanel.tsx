@@ -15,10 +15,13 @@ import {
   IconCloudCheck,
   IconCloudOff,
   IconArrowBack,
+  IconChevronLeft,
+  IconChevronRight,
 } from "@tabler/icons-react";
 import React from "react";
 import BottomPanel from "./BottomPanel";
 import FloatingPanel, { FloatingPanelContext } from "./FloatingPanel";
+import { ThemeConfigurationMessage } from "../WebsocketMessages";
 
 // Must match constant in Python.
 const ROOT_CONTAINER_ID = "root";
@@ -29,15 +32,14 @@ function HideWhenCollapsed({ children }: { children: React.ReactNode }) {
   return expanded ? children : null;
 }
 
-export default function ControlPanel(props: { fixed_sidebar: boolean }) {
   const theme = useMantineTheme();
   const useMobileView = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`);
-
   // TODO: will result in unnecessary re-renders
   const viewer = React.useContext(ViewerContext)!;
   const showGenerated =
     Object.keys(viewer.useGui((state) => state.guiConfigFromId)).length > 0;
   const [showSettings, { toggle }] = useDisclosure(false);
+  const [collapsed, { toggle: toggleCollapse }] = useDisclosure(false);
   const handleContents = (
     <>
       <ConnectionStatus />
@@ -47,10 +49,11 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
         <Box
           sx={{
             position: "absolute",
-            right: "0.5em",
+            right: props.control_layout === "collapsible" ? "2.5em" : "0.5em",
             top: "50%",
             transform: "translateY(-50%)",
             display: showGenerated ? undefined : "none",
+            zIndex: 100,
           }}
         >
           <ActionIcon
@@ -69,7 +72,54 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
           </ActionIcon>
         </Box>
       </HideWhenCollapsed>
+      <Box
+        sx={{
+          position: "absolute",
+          right: "0.5em",
+          top: "50%",
+          transform: "translateY(-50%)",
+          display:
+            props.control_layout === "collapsible" && !useMobileView
+              ? undefined
+              : "none",
+          zIndex: 100,
+        }}
+      >
+        <ActionIcon
+          onClick={(evt) => {
+            evt.stopPropagation();
+            toggleCollapse();
+          }}
+        >
+          <Tooltip label={"Collapse Sidebar"}>{<IconChevronRight />}</Tooltip>
+        </ActionIcon>
+      </Box>
     </>
+  );
+
+  const collapsedView = (
+    <div
+      style={{
+        borderTopLeftRadius: "15%",
+        borderBottomLeftRadius: "15%",
+        borderTopRightRadius: 0,
+        borderBottomRightRadius: 0,
+        backgroundColor:
+          theme.colorScheme == "dark"
+            ? theme.colors.dark[5]
+            : theme.colors.gray[2],
+        padding: "0.5em",
+      }}
+    >
+      <ActionIcon
+        onClick={(evt) => {
+          evt.stopPropagation();
+          toggleCollapse();
+        }}
+      >
+        <Tooltip label={"Show Sidebar"}>{<IconChevronLeft />}</Tooltip>
+      </ActionIcon>
+    </div>
   );
 
   const panelContents = (
@@ -90,41 +140,61 @@ export default function ControlPanel(props: { fixed_sidebar: boolean }) {
         <BottomPanel.Contents>{panelContents}</BottomPanel.Contents>
       </BottomPanel>
     );
-  } else if (props.fixed_sidebar) {
+  } else if (props.control_layout !== "floating") {
     return (
-      <Aside
-        hiddenBreakpoint={"xs"}
-        sx={(theme) => ({
-          width: "20em",
-          boxSizing: "border-box",
-          right: 0,
-          position: "absolute",
-          top: "0em",
-          bottom: "0em",
-          borderLeft: "1px solid",
-          borderColor:
-            theme.colorScheme == "light"
-              ? theme.colors.gray[4]
-              : theme.colors.dark[4],
-        })}
-      >
+      <>
         <Box
-          p="sm"
+          sx={{
+            position: "absolute",
+            right: collapsed ? "0em" : "-2.5em",
+            top: "0.5em",
+            transitionProperty: "right",
+            transitionDuration: "0.5s",
+            transitionDelay: "0.25s",
+          }}
+        >
+          {collapsedView}
+        </Box>
+        <Aside
+          hiddenBreakpoint={"xs"}
+          fixed
           sx={(theme) => ({
-            backgroundColor:
-              theme.colorScheme == "dark"
-                ? theme.colors.dark[5]
-                : theme.colors.gray[1],
-            lineHeight: "1.5em",
-            fontWeight: 400,
-            position: "relative",
-            zIndex: 1,
+            width: collapsed ? 0 : "20em",
+            bottom: 0,
+            overflow: "scroll",
+            boxSizing: "border-box",
+            borderLeft: "1px solid",
+            borderColor:
+              theme.colorScheme == "light"
+                ? theme.colors.gray[4]
+                : theme.colors.dark[4],
+            transition: "width 0.5s 0s",
           })}
         >
-          {handleContents}
-        </Box>
-        {panelContents}
-      </Aside>
+          <Box
+            sx={() => ({
+              width: "20em",
+            })}
+          >
+            <Box
+              p="sm"
+              sx={(theme) => ({
+                backgroundColor:
+                  theme.colorScheme == "dark"
+                    ? theme.colors.dark[5]
+                    : theme.colors.gray[1],
+                lineHeight: "1.5em",
+                fontWeight: 400,
+                position: "relative",
+                zIndex: 1,
+              })}
+            >
+              {handleContents}
+            </Box>
+            {panelContents}
+          </Box>
+        </Aside>
+      </>
     );
   } else {
     return (
@@ -145,17 +215,19 @@ function ConnectionStatus() {
 
   const StatusIcon = connected ? IconCloudCheck : IconCloudOff;
   return (
-    <>
+    <span
+      style={{ display: "flex", alignItems: "center", width: "max-content" }}
+    >
       <StatusIcon
         color={connected ? "#0b0" : "#b00"}
         style={{
-          transform: "translateY(0.1em) scale(1.2)",
-          width: "1em",
-          height: "1em",
+          transform: "translateY(-0.05em)",
+          width: "1.2em",
+          height: "1.2em",
         }}
       />
       &nbsp; &nbsp;
       {label === "" ? server : label}
-    </>
+    </span>
   );
 }

@@ -1,4 +1,7 @@
-import { GuiAddFolderMessage, GuiAddTabsMessage } from "../WebsocketMessages";
+import {
+  GuiAddFolderMessage,
+  GuiAddTabGroupMessage,
+} from "../WebsocketMessages";
 import { ViewerContext } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiConfig } from "./GuiState";
@@ -28,23 +31,26 @@ export default function GeneratedGuiContainer({
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId]
+    (state) => state.guiIdSetFromContainerId[containerId],
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
   // Render each GUI element in this container.
-  return guiIdSet === undefined ? null : (
-    <>
-      {[...Object.keys(guiIdSet)]
-        .map((id) => guiConfigFromId[id])
-        .sort((a, b) => a.order - b.order)
-        .map((conf, index) => {
-          return (
-            <GeneratedInput conf={conf} key={conf.id} first={index == 0} />
-          );
-        })}
-    </>
-  );
+  const out =
+    guiIdSet === undefined ? null : (
+      <>
+        {[...Object.keys(guiIdSet)]
+          .map((id) => guiConfigFromId[id])
+          .sort((a, b) => a.order - b.order)
+          .map((conf, index) => {
+            return (
+              <GeneratedInput conf={conf} key={conf.id} first={index == 0} />
+            );
+          })}
+      </>
+    );
+
+  return out;
 }
 
 /** A single generated GUI element. */
@@ -52,7 +58,8 @@ function GeneratedInput({ conf, first }: { conf: GuiConfig; first: boolean }) {
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
     return <GeneratedFolder conf={conf} first={first} />;
-  if (conf.type == "GuiAddTabsMessage") return <GeneratedTabs conf={conf} />;
+  if (conf.type == "GuiAddTabGroupMessage")
+    return <GeneratedTabGroup conf={conf} />;
 
   // Handle GUI input types.
   const viewer = React.useContext(ViewerContext)!;
@@ -329,7 +336,7 @@ function GeneratedFolder({
         },
       })}
     >
-      <Accordion.Item value={"folder"}>
+      <Accordion.Item value="folder">
         <Accordion.Control>{conf.label}</Accordion.Control>
         <Accordion.Panel>
           <GeneratedGuiContainer containerId={conf.id} />
@@ -339,7 +346,7 @@ function GeneratedFolder({
   );
 }
 
-function GeneratedTabs({ conf }: { conf: GuiAddTabsMessage }) {
+function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
   const [tabState, setTabState] = React.useState<TabsValue>("0");
   const icons = conf.tab_icons_base64;
 
@@ -399,7 +406,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      }
+      },
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>

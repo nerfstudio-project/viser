@@ -20,7 +20,7 @@ def main() -> None:
 
     gui_reset_scene = server.add_gui_button("Reset Scene")
 
-    with server.gui_folder("Control"):
+    with server.add_gui_folder("Control"):
         gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
         gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
         gui_include_z = server.add_gui_checkbox("Z in dropdown", initial_value=True)
@@ -29,7 +29,7 @@ def main() -> None:
         def _(_) -> None:
             gui_axis.options = ("x", "y", "z") if gui_include_z.value else ("x", "y")
 
-        with server.gui_folder("Sliders"):
+        with server.add_gui_folder("Sliders"):
             gui_location = server.add_gui_slider(
                 "Location", min=-5.0, max=5.0, step=0.05, initial_value=0.0
             )
