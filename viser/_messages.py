@@ -285,7 +285,7 @@ class GuiAddFolderMessage(Message):
 
 
 @dataclasses.dataclass
-class GuiAddTabsMessage(Message):
+class GuiAddTabGroupMessage(Message):
     order: float
     id: str
     container_id: str
@@ -382,8 +382,15 @@ class GuiAddButtonGroupMessage(_GuiAddInputBase):
 
 
 @dataclasses.dataclass
+class GuiRemoveContainerChildrenMessage(Message):
+    """Sent server->client to recursively remove children of a GUI container."""
+
+    container_id: str
+
+
+@dataclasses.dataclass
 class GuiRemoveMessage(Message):
-    """Sent server->client to add a new GUI input."""
+    """Sent server->client to remove a GUI element."""
 
     id: str
 
@@ -421,18 +428,9 @@ class GuiSetValueMessage(Message):
 
 
 @dataclasses.dataclass
-class MessageGroupStart(Message):
-    """Sent server->client to indicate the start of a message group."""
-
-
-@dataclasses.dataclass
-class MessageGroupEnd(Message):
-    """Sent server->client to indicate the end of a message group."""
-
-
-@dataclasses.dataclass
 class ThemeConfigurationMessage(Message):
     """Message from server->client to configure parts of the GUI."""
 
     titlebar_content: Optional[theme.TitlebarConfig]
-    fixed_sidebar: bool
+    control_layout: Literal["floating", "collapsible", "fixed"]
+    dark_mode: bool

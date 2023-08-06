@@ -8,7 +8,7 @@ export type GuiConfig =
   | Messages.GuiAddCheckboxMessage
   | Messages.GuiAddDropdownMessage
   | Messages.GuiAddFolderMessage
-  | Messages.GuiAddTabsMessage
+  | Messages.GuiAddTabGroupMessage
   | Messages.GuiAddNumberMessage
   | Messages.GuiAddRgbMessage
   | Messages.GuiAddRgbaMessage
@@ -47,6 +47,7 @@ interface GuiActions {
   setGuiVisible: (id: string, visible: boolean) => void;
   setGuiDisabled: (id: string, visible: boolean) => void;
   removeGui: (id: string) => void;
+  removeGuiContainer: (containerId: string) => void;
   resetGui: () => void;
 }
 
@@ -54,7 +55,8 @@ const cleanGuiState: GuiState = {
   theme: {
     type: "ThemeConfigurationMessage",
     titlebar_content: null,
-    fixed_sidebar: false,
+    control_layout: "floating",
+    dark_mode: false,
   },
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.
@@ -105,12 +107,30 @@ export function useGuiState(initialServer: string) {
         removeGui: (id) =>
           set((state) => {
             const guiConfig = state.guiConfigFromId[id];
+            if (guiConfig.type === "GuiAddFolderMessage")
+              state.removeGuiContainer(guiConfig.id);
+            if (guiConfig.type === "GuiAddTabGroupMessage")
+              guiConfig.tab_container_ids.forEach(state.removeGuiContainer);
+
             delete state.guiIdSetFromContainerId[guiConfig.container_id]![
               guiConfig.id
             ];
             delete state.guiConfigFromId[id];
             delete state.guiValueFromId[id];
             delete state.guiAttributeFromId[id];
+          }),
+        removeGuiContainer: (containerId) =>
+          set((state) => {
+            const guiIdSet = state.guiIdSetFromContainerId[containerId];
+            if (guiIdSet === undefined) {
+              console.log(
+                "Tried to remove but could not find container ID",
+                containerId,
+              );
+              return;
+            }
+            Object.keys(guiIdSet).forEach(state.removeGui);
+            delete state.guiIdSetFromContainerId[containerId];
           }),
         resetGui: () =>
           set((state) => {
@@ -119,8 +139,8 @@ export function useGuiState(initialServer: string) {
             state.guiValueFromId = {};
             state.guiAttributeFromId = {};
           }),
-      }))
-    )
+      })),
+    ),
   )[0];
 }
 

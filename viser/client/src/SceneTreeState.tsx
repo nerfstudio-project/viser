@@ -25,7 +25,7 @@ const makeRoot: MakeObject<THREE.Group> = (ref) => (
   <group
     ref={ref}
     quaternion={new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
+      new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
     )}
   />
 );
@@ -35,12 +35,12 @@ const rootAxesTemplate: MakeObject<THREE.Group> = (ref) => (
 
 const rootNodeTemplate = new SceneNode(
   "",
-  makeRoot
+  makeRoot,
 ) as SceneNode<THREE.Object3D>;
 
 const rootAxesNode = new SceneNode(
   "/WorldAxes",
-  rootAxesTemplate
+  rootAxesTemplate,
 ) as SceneNode<THREE.Object3D>;
 rootNodeTemplate.children.push("/WorldAxes");
 
@@ -87,7 +87,7 @@ export function useSceneTreeState() {
               function findChildrenRecursive(name: string) {
                 removeNames.push(name);
                 state.nodeFromName[name]!.children.forEach(
-                  findChildrenRecursive
+                  findChildrenRecursive,
                 );
               }
               findChildrenRecursive(name);
@@ -116,8 +116,8 @@ export function useSceneTreeState() {
             set((state) => {
               state.labelVisibleFromName[name] = labelVisibility;
             }),
-        }))
-      )
-    )
+        })),
+      ),
+    ),
   )[0];
 }

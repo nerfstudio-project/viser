@@ -148,8 +148,8 @@ export interface GuiAddFolderMessage {
   label: string;
   container_id: string;
 }
-export interface GuiAddTabsMessage {
-  type: "GuiAddTabsMessage";
+export interface GuiAddTabGroupMessage {
+  type: "GuiAddTabGroupMessage";
   order: number;
   id: string;
   container_id: string;
@@ -283,6 +283,10 @@ export interface GuiAddButtonGroupMessage {
   initial_value: string;
   options: string[];
 }
+export interface GuiRemoveContainerChildrenMessage {
+  type: "GuiRemoveContainerChildrenMessage";
+  container_id: string;
+}
 export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
   id: string;
@@ -307,12 +311,6 @@ export interface GuiSetValueMessage {
   id: string;
   value: any;
 }
-export interface MessageGroupStart {
-  type: "MessageGroupStart";
-}
-export interface MessageGroupEnd {
-  type: "MessageGroupEnd";
-}
 export interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
   titlebar_content: {
@@ -330,7 +328,8 @@ export interface ThemeConfigurationMessage {
       href: string | null;
     } | null;
   } | null;
-  fixed_sidebar: boolean;
+  control_layout: "floating" | "collapsible" | "fixed";
+  dark_mode: boolean;
 }
 
 export type Message =
@@ -357,7 +356,7 @@ export type Message =
   | SceneNodeClickedMessage
   | ResetSceneMessage
   | GuiAddFolderMessage
-  | GuiAddTabsMessage
+  | GuiAddTabGroupMessage
   | _GuiAddInputBase
   | GuiAddButtonMessage
   | GuiAddSliderMessage
@@ -370,11 +369,10 @@ export type Message =
   | GuiAddTextMessage
   | GuiAddDropdownMessage
   | GuiAddButtonGroupMessage
+  | GuiRemoveContainerChildrenMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | GuiSetVisibleMessage
   | GuiSetDisabledMessage
   | GuiSetValueMessage
-  | MessageGroupStart
-  | MessageGroupEnd
   | ThemeConfigurationMessage;

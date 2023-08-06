@@ -59,7 +59,7 @@ def main(
     # Main loop. We'll just keep read from the joints, deform the mesh, then sending the
     # updated mesh in a loop. This could be made a lot more efficient.
     gui_elements = make_gui_elements(
-        server, num_betas=model.num_betas, num_body_joints=model.NUM_BODY_JOINTS
+        server, num_betas=model.num_betas, num_body_joints=int(model.NUM_BODY_JOINTS)
     )
     while True:
         # Do nothing if no change.
@@ -67,6 +67,10 @@ def main(
             time.sleep(0.01)
             continue
         gui_elements.changed = False
+
+        full_pose = torch.from_numpy(
+            onp.array([j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
+        )
 
         # Get deformed mesh.
         output = model.forward(
@@ -77,9 +81,7 @@ def main(
             ),
             expression=None,
             return_verts=True,
-            body_pose=torch.from_numpy(
-                onp.array([j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
-            ),
+            body_pose=full_pose[:, : model.NUM_BODY_JOINTS],  # type: ignore
             global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].value, dtype=onp.float32)[None, ...]),  # type: ignore
             return_full_pose=True,
         )
@@ -128,30 +130,28 @@ def make_gui_elements(
 
     tab_group = server.add_gui_tab_group()
 
-    tab_view = tab_group.add_tab("View", viser.Icon.VIEWFINDER)
-    tab_shape = tab_group.add_tab("Shape", viser.Icon.BOX)
-    tab_joints = tab_group.add_tab("Joints", viser.Icon.ANGLE)
-
     # GUI elements: mesh settings + visibility.
-    gui_rgb = tab_view.add_gui_rgb("Color", initial_value=(90, 200, 255))
-    gui_wireframe = tab_view.add_gui_checkbox("Wireframe", initial_value=False)
-    gui_show_controls = tab_view.add_gui_checkbox("Handles", initial_value=False)
+    with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
+        gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
+        gui_wireframe = server.add_gui_checkbox("Wireframe", initial_value=False)
+        gui_show_controls = server.add_gui_checkbox("Handles", initial_value=False)
 
     @gui_rgb.on_update
     def _(_):
         out.changed = True
 
-    @gui_wireframe.on_update
-    def _(_):
-        out.changed = True
+        @gui_wireframe.on_update
+        def _(_):
+            out.changed = True
 
-    @gui_show_controls.on_update
-    def _(_):
-        add_transform_controls(enabled=gui_show_controls.value)
+        @gui_show_controls.on_update
+        def _(_):
+            add_transform_controls(enabled=gui_show_controls.value)
 
     # GUI elements: shape parameters.
-    gui_reset_shape = tab_shape.add_gui_button("Reset Shape")
-    gui_random_shape = tab_shape.add_gui_button("Random Shape")
+    with tab_group.add_tab("Shape", viser.Icon.BOX):
+        gui_reset_shape = server.add_gui_button("Reset Shape")
+        gui_random_shape = server.add_gui_button("Random Shape")
 
     @gui_reset_shape.on_click
     def _(_):
@@ -175,8 +175,9 @@ def make_gui_elements(
             out.changed = True
 
     # GUI elements: joint angles.
-    gui_reset_joints = tab_joints.add_gui_button("Reset Joints")
-    gui_random_joints = tab_joints.add_gui_button("Random Joints")
+    with tab_group.add_tab("Joints", viser.Icon.ANGLE):
+        gui_reset_joints = server.add_gui_button("Reset Joints")
+        gui_random_joints = server.add_gui_button("Random Joints")
 
     @gui_reset_joints.on_click
     def _(_):
@@ -214,7 +215,7 @@ def make_gui_elements(
     transform_controls: List[viser.TransformControlsHandle] = []
 
     def add_transform_controls(enabled: bool) -> List[viser.TransformControlsHandle]:
-        for i in range(num_body_joints + 1):
+        for i in range(1 + num_body_joints):
             controls = server.add_transform_controls(
                 f"/reoriented/smpl/joint_{i}/controls",
                 depth_test=False,
