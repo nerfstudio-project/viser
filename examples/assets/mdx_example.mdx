@@ -10,12 +10,13 @@ Anywhere where you can insert GUI elements, you can also insert `images`, `block
 
 In inline code blocks, you can show off colors with color chips: `#FED363` `hsl(0, 0%, 82%)` `rgb(255, 255, 255)`
 
-Adding images from a remote origin is simple. For remote images, you must specify the image in the `images` prop of markdown, and then reference it
-in your markdown as follows:
+Adding images from a remote origin is simple. For remote images, you should specify a `image_root` that corresponds to the `Path` object that you'd like
+your relative images to be scoped to when initializing your markdown. If no such `image_root` is provided, the file system will be scoped to the directory
+that Viser is installed in.
 
 <section>
   ![Viser Logo](http://nerfstudio-project.github.io/viser/_static/viser.svg)
-  ![Cal Logo](cal_logo)
+  ![Cal Logo](../examples/assets/Cal_logo.png)
 </section>
 
 Tables follow the standard markdown spec:
@@ -37,24 +38,24 @@ Viser GUI has MDX 2 support (WIP)
 import time
 from pathlib import Path
 
-import imageio.v3 as iio
 import viser
 
 server = viser.ViserServer()
 server.world_axes.visible = True
 
-with open("./assets/mdx_example.mdx", "r") as mkdn:
-    markdown = server.add_gui_markdown(
-        markdown=mkdn.read(),
-        images={"cal_logo": iio.imread(Path(__file__).parent / "assets/Cal_logo.png")},
-    )
 
-button = server.add_gui_button("Remove Markdown")
+@server.on_client_connect
+def _(client: viser.ClientHandle) -> None:
+    with open("./assets/mdx_example.mdx", "r") as mkdn:
+        markdown = client.add_gui_markdown(
+            markdown=mkdn.read(), image_root=Path(__file__).parent
+        )
 
+    button = client.add_gui_button("Remove Markdown")
 
-@button.on_click
-def _(_):
-    markdown.remove()
+    @button.on_click
+    def _(_):
+        markdown.remove()
 
 
 while True:
@@ -69,7 +70,7 @@ there is no guarantee that styling will look good once you stray from the standa
 
 <figure>
   <img
-    src="cal_logo"
+    src="./assets/Cal_logo.png"
     alt="Cal Logo"
     style={{ width: "100%", height: "auto" }}
   />

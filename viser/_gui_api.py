@@ -19,9 +19,10 @@ from typing import (
     TypeVar,
     overload,
 )
-
+from pathlib import Path
 
 import re
+import imageio.v3 as iio
 import numpy as onp
 from typing_extensions import LiteralString
 import urllib.parse
@@ -78,32 +79,41 @@ def _compute_precision_digits(x: float) -> int:
     return digits
 
 
-def _get_repls(images: Dict[str, onp.ndarray]):
-    def _markdown_repl(match: re.Match[str]) -> str:
-        url = match.group(2)
+def _get_repls(image_root: Optional[Path]):
+    root_selected = True
+    if image_root is None:
+        root_selected = False
+        image_root = Path(__file__).parent
 
-        if url in images:
-            data_uri = _encode_image_base64(images[url], "png")
+    def _get_uri(match: re.Match[str], group: int) -> str:
+        url = match.group(group)
+
+        if not url.startswith("http") and not root_selected:
+            warnings.warn(
+                "No image_root provided. All relative paths will be scoped to viser's installation path.",
+                stacklevel=2,
+            )
+        try:
+            image = iio.imread(image_root / url)
+            data_uri = _encode_image_base64(image, "png")
             url = urllib.parse.quote(f"{data_uri[1]}")
-            return f"![{match.group(1)}](data:{data_uri[0]};base64,{url})"
-        else:
-            return match.group()
+            return f"data:{data_uri[0]};base64,{url}"
+        except (IOError, FileNotFoundError):
+            return match.group(group)
+
+    def _markdown_repl(match: re.Match[str]) -> str:
+        uri = _get_uri(match, 2)
+        return f"![{match.group(1)}]({uri})"
 
     def _src_repl(match: re.Match[str]) -> str:
-        url = match.group(1)
-
-        if url in images:
-            data_uri = _encode_image_base64(images[url], "png")
-            url = urllib.parse.quote(f"{data_uri[1]}")
-            return f'src="data:{data_uri[0]};base64,{url}"'
-        else:
-            return match.group()
+        uri = _get_uri(match, 1)
+        return f'src="{uri}"'
 
     return [_markdown_repl, _src_repl]
 
 
-def _parse_markdown(markdown: str, images: Dict[str, onp.ndarray]) -> str:
-    repls = _get_repls(images)
+def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
+    repls = _get_repls(image_root)
     phase1 = re.sub(r"\!\[([^]]*)\]\(([^]]*)\)", repls[0], markdown)
     return re.sub(r'src="([^"]*)"', repls[1], phase1)
 
@@ -167,11 +177,10 @@ class GuiApi(abc.ABC):
         )
 
     def add_gui_markdown(
-        self, markdown: str, images: Optional[Dict[str, onp.ndarray]]
+        self, markdown: str, image_root: Optional[Path]
     ) -> GuiMarkdownHandle:
         """Add markdown to the GUI."""
-        if images is not None and len(images):
-            markdown = _parse_markdown(markdown, images)
+        markdown = _parse_markdown(markdown, image_root)
 
         markdown_id = _make_unique_id()
         self._get_api()._queue(

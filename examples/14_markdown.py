@@ -6,7 +6,6 @@ Viser GUI has MDX 2 support (WIP)
 import time
 from pathlib import Path
 
-import imageio.v3 as iio
 import viser
 
 server = viser.ViserServer()
@@ -17,10 +16,7 @@ server.world_axes.visible = True
 def _(client: viser.ClientHandle) -> None:
     with open("./assets/mdx_example.mdx", "r") as mkdn:
         markdown = client.add_gui_markdown(
-            markdown=mkdn.read(),
-            images={
-                "cal_logo": iio.imread(Path(__file__).parent / "assets/Cal_logo.png")
-            },
+            markdown=mkdn.read(), image_root=Path(__file__).parent
         )
 
     button = client.add_gui_button("Remove Markdown")
