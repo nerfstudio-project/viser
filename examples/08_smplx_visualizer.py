@@ -35,7 +35,7 @@ def main(
     num_expression_coeffs: int = 10,
     ext: Literal["npz", "pkl"] = "npz",
 ) -> None:
-    server = viser.ViserServer(share=True)
+    server = viser.ViserServer()
     model = smplx.create(
         model_path=str(model_path),
         model_type=model_type,
