@@ -1,22 +1,7 @@
-import { Box, Paper } from "@mantine/core";
-import { IconCaretDown } from "@tabler/icons-react";
+import { Box, Collapse, Paper } from "@mantine/core";
 import React from "react";
-import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
-
-export const BottomPanelRefContext =
-  React.createContext<React.RefObject<HTMLDivElement> | null>(null);
-
-const pagePercent = (start: number, end: number) => {
-  return (start - end) / window.innerHeight;
-};
-const getHeight = (element: HTMLElement) => {
-  let size = 0;
-  const children = element.children;
-  for (let i = 0; i < children.length; i++) {
-    size += children[i].clientHeight;
-  }
-  return size;
-};
+import { FloatingPanelContext } from "./FloatingPanel";
+import { useDisclosure } from "@mantine/hooks";
 
 export default function BottomPanel({
   children,
@@ -24,8 +9,15 @@ export default function BottomPanel({
   children: string | React.ReactNode;
 }) {
   const panelWrapperRef = React.useRef<HTMLDivElement>(null);
+  const [expanded, { toggle: toggleExpanded }] = useDisclosure(true);
   return (
-    <BottomPanelRefContext.Provider value={panelWrapperRef}>
+    <FloatingPanelContext.Provider
+      value={{
+        wrapperRef: panelWrapperRef,
+        expanded: expanded,
+        toggleExpanded: toggleExpanded,
+      }}
+    >
       <Paper
         radius="0"
         withBorder
@@ -37,23 +29,16 @@ export default function BottomPanel({
           bottom: 0,
           left: 0,
           margin: 0,
-          overflow: "hidden",
+          overflow: "scroll",
           minHeight: "3.5em",
-          height: "3.5em",
+          maxHeight: "60%",
           transition: "height 0.3s linear",
-          "& .expand-icon": {
-            transform: "rotate(0)",
-          },
-          "&.hidden .expand-icon": {
-            transform: "rotate(180deg)",
-          },
         }}
         ref={panelWrapperRef}
-        className="hidden"
       >
         {children}
       </Paper>
-    </BottomPanelRefContext.Provider>
+    </FloatingPanelContext.Provider>
   );
 }
 BottomPanel.Handle = function BottomPanelHandle({
@@ -61,69 +46,7 @@ BottomPanel.Handle = function BottomPanelHandle({
 }: {
   children: string | React.ReactNode;
 }) {
-  const panelWrapperRef = React.useContext(BottomPanelRefContext)!;
-  // Things to track for dragging.
-  const dragInfo = React.useRef({
-    dragging: false,
-    startHeight: 0,
-    hidden: true,
-  });
-
-  const dragHandler = (
-    event:
-      | React.TouchEvent<HTMLDivElement>
-      | React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => {
-    const state = dragInfo.current;
-    const panel = panelWrapperRef.current;
-    if (panel === null) return;
-    state.startHeight = panel.clientHeight;
-    panel.style.transition = "none";
-    let hidePanel = state.hidden;
-    const eventNames = event.type == "touchstart" ? touchEvents : mouseEvents;
-    function dragListener(event: TouchEvent | MouseEvent) {
-      let pos = 0;
-      if (isTouchEvent(event)) {
-        pos = window.innerHeight - event.touches[0].clientY;
-      } else if (isMouseEvent(event)) {
-        pos = window.innerHeight - event.clientY;
-      }
-
-      state.dragging = true;
-      if (!panel) {
-        return;
-      }
-      panel.style.height = pos + "px";
-      const change = pagePercent(state.startHeight, panel.clientHeight);
-      if ((!state.hidden && change > 0.1) || (state.hidden && change > -0.1)) {
-        panel.classList.add("hidden");
-        hidePanel = true;
-      } else if (
-        (!state.hidden && change <= 0.05) ||
-        (state.hidden && change <= -0.1)
-      ) {
-        panel.classList.remove("hidden");
-        hidePanel = false;
-      }
-    }
-    window.addEventListener(eventNames.move, dragListener);
-    window.addEventListener(
-      eventNames.end,
-      () => {
-        state.dragging = false;
-        state.hidden = hidePanel;
-        window.removeEventListener(eventNames.move, dragListener);
-        panel.style.transition = "height 0.3s linear";
-        if (state.hidden) {
-          panel.style.height = "3.5em";
-        } else {
-          panel.style.height = getHeight(panel) + "px";
-        }
-      },
-      { once: true }
-    );
-  };
-
+  const panelContext = React.useContext(FloatingPanelContext)!;
   return (
     <Box
       color="red"
@@ -136,34 +59,10 @@ BottomPanel.Handle = function BottomPanelHandle({
         cursor: "pointer",
         position: "relative",
         fontWeight: 400,
-        boxSizing: "border-box",
-        overflow: "hidden",
         userSelect: "none",
       })}
       onClick={() => {
-        const state = dragInfo.current;
-        const panel = panelWrapperRef.current;
-        if (panel === null) return;
-
-        if (state.dragging) {
-          state.dragging = false;
-          return;
-        }
-
-        panel.classList.toggle("hidden");
-        if (state.hidden) {
-          panel.style.height = getHeight(panel) + "px";
-          state.hidden = false;
-        } else {
-          panel.style.height = "3.5em";
-          state.hidden = true;
-        }
-      }}
-      onTouchStart={(event) => {
-        dragHandler(event);
-      }}
-      onMouseDown={(event) => {
-        dragHandler(event);
+        panelContext.toggleExpanded();
       }}
     >
       <Box
@@ -174,19 +73,6 @@ BottomPanel.Handle = function BottomPanelHandle({
       >
         {children}
       </Box>
-      <Box
-        component="div"
-        sx={{
-          position: "absolute",
-          top: "50%",
-          right: "0.5em",
-          transform: "translateY(-48%) scale(0.8)",
-          height: "1.5em",
-          opacity: "0.5",
-        }}
-      >
-        <IconCaretDown className="expand-icon" />
-      </Box>
     </Box>
   );
 };
@@ -196,27 +82,6 @@ BottomPanel.Contents = function BottomPanelContents({
 }: {
   children: string | React.ReactNode;
 }) {
-  const contentRef = React.useRef<HTMLDivElement>(null);
-  const panelWrapperRef = React.useContext(BottomPanelRefContext)!;
-  React.useEffect(() => {
-    const panel = panelWrapperRef.current;
-    const content = contentRef.current;
-    if (panel === null) return;
-    if (content === null) return;
-
-    const observer = new ResizeObserver(() => {
-      if (!panel.classList.contains("hidden")) {
-        panel.style.height = getHeight(panel) + "px";
-      }
-    });
-    observer.observe(content);
-    return () => {
-      observer.disconnect();
-    };
-  });
-  return (
-    <Box className="panel-contents" ref={contentRef}>
-      {children}
-    </Box>
-  );
+  const panelContext = React.useContext(FloatingPanelContext)!;
+  return <Collapse in={panelContext.expanded}>{children}</Collapse>;
 };
