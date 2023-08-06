@@ -18,6 +18,8 @@ import viser
 def main() -> None:
     server = viser.ViserServer()
 
+    gui_reset_scene = server.add_gui_button("Reset Scene")
+
     with server.gui_folder("Control"):
         gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
         gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
@@ -34,8 +36,6 @@ def main() -> None:
             gui_num_points = server.add_gui_slider(
                 "# Points", min=1000, max=200_000, step=1000, initial_value=10_000
             )
-
-    gui_reset_scene = server.add_gui_button("Reset Scene")
 
     def draw_frame() -> None:
         axis = gui_axis.value
