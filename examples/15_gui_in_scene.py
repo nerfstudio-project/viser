@@ -5,6 +5,9 @@
 # - https://github.com/python/mypy/pull/11643
 """3D GUI Elements
 
+`add_3d_gui_container()` allows standard GUI elements to be incorporated directly into a
+3D scene. In this example, we click on coordinate frames to show actions that can be
+performed on them.
 """
 
 import time
