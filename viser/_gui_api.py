@@ -36,7 +36,6 @@ from ._gui_handles import (
 from ._icons import base64_from_icon
 from ._icons_enum import Icon
 from ._message_api import MessageApi, cast_vector
-from ._scene_handles import SceneNodeHandle
 
 if TYPE_CHECKING:
     from .infra import ClientId
