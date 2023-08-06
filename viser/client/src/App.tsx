@@ -29,7 +29,7 @@ import WebsocketInterface from "./WebsocketInterface";
 import { Titlebar } from "./Titlebar";
 import { useSceneTreeState } from "./SceneTreeState";
 
-type ViewerContextContents = {
+export type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: React.MutableRefObject<WebSocket | null>;
