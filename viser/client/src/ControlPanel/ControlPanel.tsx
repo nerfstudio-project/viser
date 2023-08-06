@@ -32,6 +32,9 @@ function HideWhenCollapsed({ children }: { children: React.ReactNode }) {
   return expanded ? children : null;
 }
 
+export default function ControlPanel(props: {
+  control_layout: ThemeConfigurationMessage["control_layout"];
+}) {
   const theme = useMantineTheme();
   const useMobileView = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`);
   // TODO: will result in unnecessary re-renders
