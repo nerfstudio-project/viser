@@ -5,10 +5,8 @@
 from __future__ import annotations
 
 import abc
-import dataclasses
 import threading
 import time
-import uuid
 import warnings
 from typing import (
     TYPE_CHECKING,
@@ -30,14 +28,16 @@ import urllib.parse
 
 from . import _messages
 from ._gui_handles import (
+    _make_unique_id,
     GuiButtonGroupHandle,
     GuiButtonHandle,
     GuiDropdownHandle,
     GuiHandle,
     _GuiHandleState,
+    GuiFolderHandle,
+    GuiTabGroupHandle,
+    GuiMarkdownHandle,
 )
-from ._icons import base64_from_icon
-from ._icons_enum import Icon
 from ._message_api import _encode_image_base64, MessageApi, cast_vector
 
 if TYPE_CHECKING:
@@ -47,11 +47,6 @@ IntOrFloat = TypeVar("IntOrFloat", int, float)
 TString = TypeVar("TString", bound=str)
 TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 T = TypeVar("T")
-
-
-def _make_unique_id() -> str:
-    """Return a unique ID for referencing GUI elements."""
-    return str(uuid.uuid4())
 
 
 def _compute_step(x: Optional[float]) -> float:  # type: ignore
@@ -674,126 +669,3 @@ class GuiApi(abc.ABC):
             handle.visible = visible
 
         return handle
-
-
-@dataclasses.dataclass(frozen=True)
-class GuiTabGroupHandle:
-    _tab_group_id: str
-    _labels: List[str]
-    _icons_base64: List[Optional[str]]
-    _tab_container_ids: List[str]
-    _gui_api: GuiApi
-    _container_id: str
-
-    def add_tab(self, label: str, icon: Optional[Icon] = None) -> GuiTabHandle:
-        """Add a tab. Returns a handle we can use to add GUI elements to it."""
-
-        id = _make_unique_id()
-
-        # We may want to make this thread-safe in the future.
-        self._labels.append(label)
-        self._icons_base64.append(None if icon is None else base64_from_icon(icon))
-        self._tab_container_ids.append(id)
-
-        self._sync_with_client()
-
-        return GuiTabHandle(_parent=self, _container_id=id)
-
-    def remove(self) -> None:
-        """Remove this tab group and all contained GUI elements."""
-        self._gui_api._get_api()._queue(_messages.GuiRemoveMessage(self._tab_group_id))
-        # Containers will be removed automatically by the client.
-        #
-        # for tab_container_id in self._tab_container_ids:
-        #     self._gui_api._get_api()._queue(
-        #         _messages.GuiRemoveContainerChildrenMessage(tab_container_id)
-        #     )
-
-    def _sync_with_client(self) -> None:
-        """Send a message that syncs tab state with the client."""
-        self._gui_api._get_api()._queue(
-            _messages.GuiAddTabGroupMessage(
-                order=time.time(),
-                id=self._tab_group_id,
-                container_id=self._container_id,
-                tab_labels=tuple(self._labels),
-                tab_icons_base64=tuple(self._icons_base64),
-                tab_container_ids=tuple(self._tab_container_ids),
-            )
-        )
-
-
-@dataclasses.dataclass
-class GuiFolderHandle:
-    """Use as a context to place GUI elements into a folder."""
-
-    _gui_api: GuiApi
-    _container_id: str
-    _container_id_restore: Optional[str] = None
-
-    def __enter__(self) -> None:
-        self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._container_id)
-
-    def __exit__(self, *args) -> None:
-        del args
-        assert self._container_id_restore is not None
-        self._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
-
-    def remove(self) -> None:
-        """Permanently remove this folder and all contained GUI elements from the
-        visualizer."""
-        self._gui_api._get_api()._queue(_messages.GuiRemoveMessage(self._container_id))
-
-
-@dataclasses.dataclass
-class GuiTabHandle:
-    """Use as a context to place GUI elements into a tab."""
-
-    _parent: GuiTabGroupHandle
-    _container_id: str
-    _container_id_restore: Optional[str] = None
-
-    def __enter__(self) -> None:
-        self._container_id_restore = self._parent._gui_api._get_container_id()
-        self._parent._gui_api._set_container_id(self._container_id)
-
-    def __exit__(self, *args) -> None:
-        del args
-        assert self._container_id_restore is not None
-        self._parent._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
-
-    def remove(self) -> None:
-        """Permanently remove this tab and all contained GUI elements from the
-        visualizer."""
-        # We may want to make this thread-safe in the future.
-        container_index = self._parent._tab_container_ids.index(self._container_id)
-        assert container_index != -1, "Tab already removed!"
-
-        # Container needs to be manually removed.
-        self._parent._gui_api._get_api()._queue(
-            _messages.GuiRemoveContainerChildrenMessage(self._container_id)
-        )
-
-        self._parent._labels.pop(container_index)
-        self._parent._icons_base64.pop(container_index)
-        self._parent._tab_container_ids.pop(container_index)
-
-        self._parent._sync_with_client()
-
-
-@dataclasses.dataclass
-class GuiMarkdownHandle:
-    """Use to remove markdown."""
-
-    _gui_api: GuiApi
-    _markdown_id: str
-
-    # I'm not sure if there's interest but maybe having programatic visibility in the future
-    # could be worth looking into.
-
-    def remove(self) -> None:
-        """Permanently remove this markdown from the visualizer."""
-        self._gui_api._get_api()._queue(_messages.GuiRemoveMessage(self._markdown_id))
