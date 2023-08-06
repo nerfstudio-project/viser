@@ -111,26 +111,6 @@ class GuiApi(abc.ABC):
             )
             return self.add_gui_folder(label)
 
-    def add_gui_3d_container(
-        self,
-        name: str,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
-    ) -> Gui3dContainerHandle:
-        """Add a 3D gui to the scene."""
-        print("here")
-        container_id = _make_unique_id()
-        self._get_api()._queue(
-            _messages.Gui3DMessage(
-                order=time.time(),
-                name=name,
-                container_id=container_id,
-            )
-        )
-        assert isinstance(self, MessageApi)
-        node_handle = SceneNodeHandle._make(self, name, wxyz, position)
-        return Gui3dContainerHandle(node_handle._impl, self, container_id)
-
     def add_gui_folder(self, label: str) -> GuiFolderHandle:
         """Add a folder, and return a handle that can be used to populate it."""
         folder_container_id = _make_unique_id()
@@ -687,37 +667,6 @@ class GuiTabGroupHandle:
                 tab_icons_base64=tuple(self._icons_base64),
                 tab_container_ids=tuple(self._tab_container_ids),
             )
-        )
-
-
-@dataclasses.dataclass
-class Gui3dContainerHandle(SceneNodeHandle):
-    """Use as a context to place GUI elements into a folder."""
-
-    _gui_api: GuiApi
-    _container_id: str
-    _container_id_restore: Optional[str] = None
-
-    def __enter__(self) -> None:
-        self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._container_id)
-
-    def __exit__(self, *args) -> None:
-        del args
-        assert self._container_id_restore is not None
-        self._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
-
-    def remove(self) -> None:
-        """Permanently remove this GUI container
-        visualizer."""
-
-        # Call scene node remove.
-        super().remove()
-
-        # Clean up contained GUI elements.
-        self._gui_api._get_api()._queue(
-            _messages.GuiRemoveContainerChildrenMessage(self._container_id)
         )
 
 

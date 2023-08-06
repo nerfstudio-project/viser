@@ -3,10 +3,8 @@
 # Asymmetric properties are supported in Pyright, but not yet in mypy.
 # - https://github.com/python/mypy/issues/3004
 # - https://github.com/python/mypy/pull/11643
-"""Camera commands
+"""3D GUI Elements
 
-In addition to reads, camera parameters also support writes. These are synced to the
-corresponding client automatically.
 """
 
 import time
@@ -31,6 +29,7 @@ def _(client: viser.ClientHandle) -> None:
     rng = onp.random.default_rng(0)
 
     displayed_3d_container: Optional[viser.Gui3dContainerHandle] = None
+    displayed_index: Optional[int] = None
 
     def make_frame(i: int) -> None:
         # Sample a random orientation + position.
@@ -40,20 +39,28 @@ def _(client: viser.ClientHandle) -> None:
 
         # Create a coordinate frame and label.
         frame = client.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
-        client.add_label(f"/frame_{i}/label", text=f"Frame {i}")
 
         # Move the camera when we click a frame.
         @frame.on_click
         def _(_):
             nonlocal displayed_3d_container
+            nonlocal displayed_index
+
+            # Close previously opened GUI.
             if displayed_3d_container is not None:
                 displayed_3d_container.remove()
 
-            displayed_3d_container = client.add_gui_3d_container(f"/frame_{i}/gui")
+            # Don't re-show the same GUI element.
+            if displayed_index == i:
+                return
+
+            displayed_index = i
+
+            displayed_3d_container = client.add_3d_gui_container(f"/frame_{i}/gui")
             with displayed_3d_container:
                 go_to = client.add_gui_button("Go to")
                 randomize_orientation = client.add_gui_button("Randomize orientation")
-                close = client.add_gui_button("[Close]")
+                close = client.add_gui_button("Close GUI")
 
             @go_to.on_click
             def _(_) -> None:
@@ -90,10 +97,12 @@ def _(client: viser.ClientHandle) -> None:
             @close.on_click
             def _(_) -> None:
                 nonlocal displayed_3d_container
+                nonlocal displayed_index
                 if displayed_3d_container is None:
                     return
                 displayed_3d_container.remove()
                 displayed_3d_container = None
+                displayed_index = None
 
     for i in range(num_frames):
         make_frame(i)
