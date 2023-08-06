@@ -104,8 +104,8 @@ def _get_repls(images: Dict[str, onp.ndarray]):
 
 def _parse_markdown(markdown: str, images: Dict[str, onp.ndarray]) -> str:
     repls = _get_repls(images)
-    phase1 = re.sub("\!\[([^]]*)\]\(([^]]*)\)", repls[0], markdown)
-    return re.sub('src="([^"]*)"', repls[1], phase1)
+    phase1 = re.sub(r"\!\[([^]]*)\]\(([^]]*)\)", repls[0], markdown)
+    return re.sub(r'src="([^"]*)"', repls[1], phase1)
 
 
 class GuiApi(abc.ABC):
