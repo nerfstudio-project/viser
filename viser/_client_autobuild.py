@@ -30,14 +30,14 @@ def ensure_client_is_built() -> None:
 
     # Do we need to re-trigger a build?
     build = False
-    if _check_process("Viser Viewer"):
+    if not (build_dir / "index.html").exists():
+        rich.print("[bold](viser)[/bold] No client build found. Building now...")
+        build = True
+    elif _check_process("Viser Viewer"):
         rich.print(
             "[bold](viser)[/bold] A Viser viewer is already running. Skipping build check..."
         )
         build = False
-    if not (build_dir / "index.html").exists():
-        rich.print("[bold](viser)[/bold] No client build found. Building now...")
-        build = True
     elif _modified_time_recursive(client_dir / "src") > _modified_time_recursive(
         build_dir
     ):
