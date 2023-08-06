@@ -360,7 +360,7 @@ class GuiApi(abc.ABC):
         id = _make_unique_id()
 
         if step is None:
-            possible_steps = []
+            possible_steps: List[float] = []
             possible_steps.extend([_compute_step(x) for x in initial_value])
             if min is not None:
                 possible_steps.extend([_compute_step(x) for x in min])
@@ -405,7 +405,7 @@ class GuiApi(abc.ABC):
         id = _make_unique_id()
 
         if step is None:
-            possible_steps = []
+            possible_steps: List[float] = []
             possible_steps.extend([_compute_step(x) for x in initial_value])
             if min is not None:
                 possible_steps.extend([_compute_step(x) for x in min])

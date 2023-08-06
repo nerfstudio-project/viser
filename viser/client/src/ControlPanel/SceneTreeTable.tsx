@@ -24,7 +24,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
 
   const nodeFromName = viewer.useSceneTree((state) => state.nodeFromName);
   const setLabelVisibility = viewer.useSceneTree(
-    (state) => state.setLabelVisibility
+    (state) => state.setLabelVisibility,
   );
   function setVisible(name: string, visible: boolean) {
     const attr = viewer.nodeAttributesFromName.current;
@@ -53,12 +53,12 @@ export default function SceneTreeTable(props: { compact: boolean }) {
   debouncedReady.current = false;
   setTimeout(() => {
     debouncedReady.current = true;
-  }, 5);
+  }, 50);
 
   function getSceneTreeSubRows(
     parentName: string,
     parentCount: number,
-    isParentVisible: boolean
+    isParentVisible: boolean,
   ): SceneTreeTableRow[] {
     const node = nodeFromName[parentName];
     if (node === undefined) return [];
@@ -106,7 +106,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         subRows: getSceneTreeSubRows(
           childName,
           parentCount + 1,
-          isVisibleEffective
+          isVisibleEffective,
         ),
       };
     });
@@ -156,7 +156,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         },
       },
     ],
-    []
+    [],
   );
 
   const [sceneTreeOpened, { open: openSceneTree, close: closeSceneTree }] =
