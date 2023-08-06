@@ -2,7 +2,7 @@ import {
   GuiAddFolderMessage,
   GuiAddTabGroupMessage,
 } from "../WebsocketMessages";
-import { ViewerContext } from "../App";
+import { ViewerContext, ViewerContextContents } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiConfig } from "./GuiState";
 import { Image, Tabs, TabsValue } from "@mantine/core";
@@ -26,12 +26,15 @@ import React from "react";
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
   containerId,
+  viewer,
 }: {
   containerId: string;
+  viewer?: ViewerContextContents;
 }) {
-  const viewer = React.useContext(ViewerContext)!;
+  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
+
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId],
+    (state) => state.guiIdSetFromContainerId[containerId]
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
@@ -44,7 +47,12 @@ export default function GeneratedGuiContainer({
           .sort((a, b) => a.order - b.order)
           .map((conf, index) => {
             return (
-              <GeneratedInput conf={conf} key={conf.id} first={index == 0} />
+              <GeneratedInput
+                conf={conf}
+                key={conf.id}
+                first={index == 0}
+                viewer={viewer}
+              />
             );
           })}
       </>
@@ -54,7 +62,15 @@ export default function GeneratedGuiContainer({
 }
 
 /** A single generated GUI element. */
-function GeneratedInput({ conf, first }: { conf: GuiConfig; first: boolean }) {
+function GeneratedInput({
+  conf,
+  first,
+  viewer,
+}: {
+  conf: GuiConfig;
+  first: boolean;
+  viewer?: ViewerContextContents;
+}) {
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
     return <GeneratedFolder conf={conf} first={first} />;
@@ -62,7 +78,8 @@ function GeneratedInput({ conf, first }: { conf: GuiConfig; first: boolean }) {
     return <GeneratedTabGroup conf={conf} />;
 
   // Handle GUI input types.
-  const viewer = React.useContext(ViewerContext)!;
+  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
+
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
   function updateValue(value: any) {
     setGuiValue(conf.id, value);
@@ -406,7 +423,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      },
+      }
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
