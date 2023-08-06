@@ -42,6 +42,7 @@ export function SynchronizedCameraControls() {
       .getTarget(new THREE.Vector3())
       .applyQuaternion(R_world_threeworld);
     const up = three_camera.up.clone().applyQuaternion(R_world_threeworld);
+    const initial_position = three_camera.position.clone().applyQuaternion(R_world_threeworld);
     sendCameraThrottled({
       type: "ViewerCameraMessage",
       wxyz: [
@@ -50,10 +51,7 @@ export function SynchronizedCameraControls() {
         R_world_camera.y,
         R_world_camera.z,
       ],
-      position: three_camera.position
-        .clone()
-        .applyQuaternion(R_world_threeworld)
-        .toArray(),
+      position: initial_position.toArray(),
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
       look_at: [look_at.x, look_at.y, look_at.z],
@@ -94,6 +92,9 @@ export function SynchronizedCameraControls() {
       ARROW_UP: 38,
       ARROW_RIGHT: 39,
       ARROW_DOWN: 40,
+      SPACE: 32,
+      Q: 81,
+      E: 69,
     };
     const cameraControls = viewer.cameraControlRef.current!;
 
@@ -101,17 +102,27 @@ export function SynchronizedCameraControls() {
     const aKey = new holdEvent.KeyboardKeyHold(KEYCODE.A, 20);
     const sKey = new holdEvent.KeyboardKeyHold(KEYCODE.S, 20);
     const dKey = new holdEvent.KeyboardKeyHold(KEYCODE.D, 20);
+    const qKey = new holdEvent.KeyboardKeyHold(KEYCODE.Q, 20);
+    const eKey = new holdEvent.KeyboardKeyHold(KEYCODE.E, 20);
+    // const spaceKey = new holdEvent.KeyboardKeyHold(KEYCODE.SPACE, 20);
+
     aKey.addEventListener("holding", (event) => {
-      cameraControls.truck(-0.002 * event?.deltaTime, 0, false);
+      cameraControls.truck(-0.002 * event?.deltaTime, 0, true);
     });
     dKey.addEventListener("holding", (event) => {
-      cameraControls.truck(0.002 * event?.deltaTime, 0, false);
+      cameraControls.truck(0.002 * event?.deltaTime, 0, true);
     });
     wKey.addEventListener("holding", (event) => {
-      cameraControls.forward(0.002 * event?.deltaTime, false);
+      cameraControls.forward(0.002 * event?.deltaTime, true);
     });
     sKey.addEventListener("holding", (event) => {
-      cameraControls.forward(-0.002 * event?.deltaTime, false);
+      cameraControls.forward(-0.002 * event?.deltaTime, true);
+    });
+    qKey.addEventListener("holding", (event) => {
+      cameraControls.elevate(0.002 * event?.deltaTime, true);
+    });
+    eKey.addEventListener("holding", (event) => {
+      cameraControls.elevate(-0.002 * event?.deltaTime, true);
     });
 
     const leftKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_LEFT, 20);
@@ -120,14 +131,14 @@ export function SynchronizedCameraControls() {
     const downKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_DOWN, 20);
     leftKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
-        -0.1 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
+        -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
         true,
       );
     });
     rightKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
-        0.1 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
+        0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
         true,
       );
@@ -145,6 +156,15 @@ export function SynchronizedCameraControls() {
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         true,
       );
+    });
+
+    const spaceKey = new holdEvent.KeyboardKeyHold(KEYCODE.SPACE, 20);
+    spaceKey.addEventListener("holding", (event) => {
+      for (let i = 0; i < 10; i++) {
+        cameraControls.forward(0.002 * event?.deltaTime, true);
+      }
+      // cameraControls.moveTo(0, 0, 0, true);
+      // cameraControls.rotateTo(0, 0, true);
     });
 
     // TODO: we currently don't remove any event listeners. This is a bit messy
