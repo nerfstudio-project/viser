@@ -9,6 +9,7 @@ from ._gui_handles import GuiHandle as GuiHandle
 from ._icons_enum import Icon as Icon
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle
 from ._scene_handles import FrameHandle as FrameHandle
+from ._scene_handles import Gui3dContainerHandle as Gui3dContainerHandle
 from ._scene_handles import ImageHandle as ImageHandle
 from ._scene_handles import LabelHandle as LabelHandle
 from ._scene_handles import MeshHandle as MeshHandle

@@ -87,6 +87,15 @@ class LabelMessage(Message):
 
 
 @dataclasses.dataclass
+class Gui3DMessage(Message):
+    """Add a 3D gui element to the scene."""
+
+    order: float
+    name: str
+    container_id: str
+
+
+@dataclasses.dataclass
 class PointCloudMessage(Message):
     """Point cloud message.
 

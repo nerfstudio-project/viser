@@ -34,6 +34,12 @@ export interface LabelMessage {
   name: string;
   text: string;
 }
+export interface Gui3DMessage {
+  type: "Gui3DMessage";
+  order: number;
+  name: string;
+  container_id: string;
+}
 export interface PointCloudMessage {
   type: "PointCloudMessage";
   name: string;
@@ -336,6 +342,7 @@ export type Message =
   | CameraFrustumMessage
   | FrameMessage
   | LabelMessage
+  | Gui3DMessage
   | PointCloudMessage
   | MeshMessage
   | TransformControlsMessage
