@@ -70,7 +70,7 @@ function MdxTable(props: React.ComponentPropsWithoutRef<typeof Table>) {
 }
 
 function MdxImage(props: React.ComponentPropsWithoutRef<typeof Image>) {
-    return <Image maw={240} mx="auto" radius="md" withPlaceholder {...props} />
+    return <Image maw={240} mx="auto" radius="md" {...props} />
 }
 
 const components: MDXComponents = {
