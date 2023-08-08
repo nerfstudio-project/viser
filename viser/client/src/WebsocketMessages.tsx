@@ -146,6 +146,13 @@ export interface GuiAddFolderMessage {
   label: string;
   container_id: string;
 }
+export interface GuiAddMarkdownMessage {
+  type: "GuiAddMarkdownMessage";
+  order: number;
+  id: string;
+  markdown: string;
+  container_id: string;
+}
 export interface GuiAddTabGroupMessage {
   type: "GuiAddTabGroupMessage";
   order: number;
@@ -354,6 +361,7 @@ export type Message =
   | SceneNodeClickedMessage
   | ResetSceneMessage
   | GuiAddFolderMessage
+  | GuiAddMarkdownMessage
   | GuiAddTabGroupMessage
   | _GuiAddInputBase
   | GuiAddButtonMessage

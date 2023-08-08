@@ -16,7 +16,7 @@ import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { Box, Paper } from "@mantine/core";
+import { Paper } from "@mantine/core";
 /** Float **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
@@ -475,7 +475,7 @@ function useMessageHandler() {
                 </Html>
               </group>
             );
-          })
+          }),
         );
         return;
       }
