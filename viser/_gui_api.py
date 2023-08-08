@@ -5,11 +5,12 @@
 from __future__ import annotations
 
 import abc
-import dataclasses
+import re
 import threading
 import time
-import uuid
+import urllib.parse
 import warnings
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -22,6 +23,7 @@ from typing import (
     overload,
 )
 
+import imageio.v3 as iio
 import numpy as onp
 from typing_extensions import LiteralString
 
@@ -30,12 +32,14 @@ from ._gui_handles import (
     GuiButtonGroupHandle,
     GuiButtonHandle,
     GuiDropdownHandle,
+    GuiFolderHandle,
     GuiHandle,
+    GuiMarkdownHandle,
+    GuiTabGroupHandle,
     _GuiHandleState,
+    _make_unique_id,
 )
-from ._icons import base64_from_icon
-from ._icons_enum import Icon
-from ._message_api import MessageApi, cast_vector
+from ._message_api import MessageApi, _encode_image_base64, cast_vector
 
 if TYPE_CHECKING:
     from .infra import ClientId
@@ -44,11 +48,6 @@ IntOrFloat = TypeVar("IntOrFloat", int, float)
 TString = TypeVar("TString", bound=str)
 TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 T = TypeVar("T")
-
-
-def _make_unique_id() -> str:
-    """Return a unique ID for referencing GUI elements."""
-    return str(uuid.uuid4())
 
 
 def _compute_step(x: Optional[float]) -> float:  # type: ignore
@@ -78,6 +77,38 @@ def _compute_precision_digits(x: float) -> int:
     while x != round(x, ndigits=digits) and digits < 7:
         digits += 1
     return digits
+
+
+def _get_data_url(url: str, image_root: Optional[Path]) -> str:
+    if not url.startswith("http") and not image_root:
+        warnings.warn(
+            "No `image_root` provided. All relative paths will be scoped to viser's installation path.",
+            stacklevel=2,
+        )
+    if url.startswith("http"):
+        return url
+    if image_root is None:
+        image_root = Path(__file__).parent
+    try:
+        image = iio.imread(image_root / url)
+        data_uri = _encode_image_base64(image, "png")
+        url = urllib.parse.quote(f"{data_uri[1]}")
+        return f"data:{data_uri[0]};base64,{url}"
+    except (IOError, FileNotFoundError):
+        warnings.warn(
+            f"Failed to read image {url}, with image_root set to {image_root}.",
+            stacklevel=2,
+        )
+        return url
+
+
+def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
+    markdown = re.sub(
+        r"\!\[([^]]*)\]\(([^]]*)\)",
+        lambda match: f"![{match.group(1)}]({_get_data_url(match.group(2), image_root)})",
+        markdown,
+    )
+    return markdown
 
 
 class GuiApi(abc.ABC):
@@ -136,6 +167,27 @@ class GuiApi(abc.ABC):
             _tab_container_ids=[],
             _gui_api=self,
             _container_id=self._get_container_id(),
+        )
+
+    def add_gui_markdown(
+        self, markdown: str, image_root: Optional[Path]
+    ) -> GuiMarkdownHandle:
+        """Add markdown to the GUI."""
+        markdown = _parse_markdown(markdown, image_root)
+
+        markdown_id = _make_unique_id()
+        self._get_api()._queue(
+            _messages.GuiAddMarkdownMessage(
+                order=time.time(),
+                id=markdown_id,
+                markdown=markdown,
+                container_id=self._get_container_id(),
+            )
+        )
+        return GuiMarkdownHandle(
+            _gui_api=self,
+            _id=markdown_id,
+            _visible=True,
         )
 
     def add_gui_button(
@@ -620,111 +672,3 @@ class GuiApi(abc.ABC):
             handle.visible = visible
 
         return handle
-
-
-@dataclasses.dataclass(frozen=True)
-class GuiTabGroupHandle:
-    _tab_group_id: str
-    _labels: List[str]
-    _icons_base64: List[Optional[str]]
-    _tab_container_ids: List[str]
-    _gui_api: GuiApi
-    _container_id: str
-
-    def add_tab(self, label: str, icon: Optional[Icon] = None) -> GuiTabHandle:
-        """Add a tab. Returns a handle we can use to add GUI elements to it."""
-
-        id = _make_unique_id()
-
-        # We may want to make this thread-safe in the future.
-        self._labels.append(label)
-        self._icons_base64.append(None if icon is None else base64_from_icon(icon))
-        self._tab_container_ids.append(id)
-
-        self._sync_with_client()
-
-        return GuiTabHandle(_parent=self, _container_id=id)
-
-    def remove(self) -> None:
-        """Remove this tab group and all contained GUI elements."""
-        self._gui_api._get_api()._queue(_messages.GuiRemoveMessage(self._tab_group_id))
-        # Containers will be removed automatically by the client.
-        #
-        # for tab_container_id in self._tab_container_ids:
-        #     self._gui_api._get_api()._queue(
-        #         _messages.GuiRemoveContainerChildrenMessage(tab_container_id)
-        #     )
-
-    def _sync_with_client(self) -> None:
-        """Send a message that syncs tab state with the client."""
-        self._gui_api._get_api()._queue(
-            _messages.GuiAddTabGroupMessage(
-                order=time.time(),
-                id=self._tab_group_id,
-                container_id=self._container_id,
-                tab_labels=tuple(self._labels),
-                tab_icons_base64=tuple(self._icons_base64),
-                tab_container_ids=tuple(self._tab_container_ids),
-            )
-        )
-
-
-@dataclasses.dataclass
-class GuiFolderHandle:
-    """Use as a context to place GUI elements into a folder."""
-
-    _gui_api: GuiApi
-    _container_id: str
-    _container_id_restore: Optional[str] = None
-
-    def __enter__(self) -> None:
-        self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._container_id)
-
-    def __exit__(self, *args) -> None:
-        del args
-        assert self._container_id_restore is not None
-        self._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
-
-    def remove(self) -> None:
-        """Permanently remove this folder and all contained GUI elements from the
-        visualizer."""
-        self._gui_api._get_api()._queue(_messages.GuiRemoveMessage(self._container_id))
-
-
-@dataclasses.dataclass
-class GuiTabHandle:
-    """Use as a context to place GUI elements into a tab."""
-
-    _parent: GuiTabGroupHandle
-    _container_id: str
-    _container_id_restore: Optional[str] = None
-
-    def __enter__(self) -> None:
-        self._container_id_restore = self._parent._gui_api._get_container_id()
-        self._parent._gui_api._set_container_id(self._container_id)
-
-    def __exit__(self, *args) -> None:
-        del args
-        assert self._container_id_restore is not None
-        self._parent._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
-
-    def remove(self) -> None:
-        """Permanently remove this tab and all contained GUI elements from the
-        visualizer."""
-        # We may want to make this thread-safe in the future.
-        container_index = self._parent._tab_container_ids.index(self._container_id)
-        assert container_index != -1, "Tab already removed!"
-
-        # Container needs to be manually removed.
-        self._parent._gui_api._get_api()._queue(
-            _messages.GuiRemoveContainerChildrenMessage(self._container_id)
-        )
-
-        self._parent._labels.pop(container_index)
-        self._parent._icons_base64.pop(container_index)
-        self._parent._tab_container_ids.pop(container_index)
-
-        self._parent._sync_with_client()
