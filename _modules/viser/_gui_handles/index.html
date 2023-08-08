@@ -233,6 +233,7 @@
 <span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">TYPE_CHECKING</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
@@ -249,8 +250,12 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 
+<span class="kn">from</span> <span class="nn">._icons</span> <span class="kn">import</span> <span class="n">base64_from_icon</span>
+<span class="kn">from</span> <span class="nn">._icons_enum</span> <span class="kn">import</span> <span class="n">Icon</span>
 <span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">GuiAddDropdownMessage</span><span class="p">,</span>
+    <span class="n">GuiAddTabGroupMessage</span><span class="p">,</span>
+    <span class="n">GuiRemoveContainerChildrenMessage</span><span class="p">,</span>
     <span class="n">GuiRemoveMessage</span><span class="p">,</span>
     <span class="n">GuiSetDisabledMessage</span><span class="p">,</span>
     <span class="n">GuiSetValueMessage</span><span class="p">,</span>
@@ -264,6 +269,11 @@
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
 <span class="n">TGuiHandle</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TGuiHandle&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;_GuiHandle&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_make_unique_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a unique ID for referencing GUI elements.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -488,6 +498,141 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GuiTabGroupHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">GuiTabGroupHandle</span><span class="p">:</span>
+    <span class="n">_tab_group_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">_icons_base64</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
+    <span class="n">_tab_container_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">_gui_api</span><span class="p">:</span> <span class="n">GuiApi</span>
+    <span class="n">_container_id</span><span class="p">:</span> <span class="nb">str</span>
+
+<div class="viewcode-block" id="GuiTabGroupHandle.add_tab"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.add_tab">[docs]</a>    <span class="k">def</span> <span class="nf">add_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">icon</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Icon</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabHandle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a tab. Returns a handle we can use to add GUI elements to it.&quot;&quot;&quot;</span>
+
+        <span class="nb">id</span> <span class="o">=</span> <span class="n">_make_unique_id</span><span class="p">()</span>
+
+        <span class="c1"># We may want to make this thread-safe in the future.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_icons_base64</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">icon</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">base64_from_icon</span><span class="p">(</span><span class="n">icon</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tab_container_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sync_with_client</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">GuiTabHandle</span><span class="p">(</span><span class="n">_parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">_container_id</span><span class="o">=</span><span class="nb">id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GuiTabGroupHandle.remove"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove this tab group and all contained GUI elements.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">))</span></div>
+        <span class="c1"># Containers will be removed automatically by the client.</span>
+        <span class="c1">#</span>
+        <span class="c1"># for tab_container_id in self._tab_container_ids:</span>
+        <span class="c1">#     self._gui_api._get_api()._queue(</span>
+        <span class="c1">#         _messages.GuiRemoveContainerChildrenMessage(tab_container_id)</span>
+        <span class="c1">#     )</span>
+
+    <span class="k">def</span> <span class="nf">_sync_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a message that syncs tab state with the client.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+            <span class="n">GuiAddTabGroupMessage</span><span class="p">(</span>
+                <span class="n">order</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
+                <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">,</span>
+                <span class="n">container_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">,</span>
+                <span class="n">tab_labels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">),</span>
+                <span class="n">tab_icons_base64</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_icons_base64</span><span class="p">),</span>
+                <span class="n">tab_container_ids</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_container_ids</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GuiFolderHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiFolderHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">GuiFolderHandle</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a folder.&quot;&quot;&quot;</span>
+
+    <span class="n">_gui_api</span><span class="p">:</span> <span class="n">GuiApi</span>
+    <span class="n">_container_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">_container_id_restore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_container_id</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_set_container_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">args</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_set_container_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="GuiFolderHandle.remove"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiFolderHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this folder and all contained GUI elements from the</span>
+<span class="sd">        visualizer.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="GuiTabHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">GuiTabHandle</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a tab.&quot;&quot;&quot;</span>
+
+    <span class="n">_parent</span><span class="p">:</span> <span class="n">GuiTabGroupHandle</span>
+    <span class="n">_container_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">_container_id_restore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_container_id</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_set_container_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">args</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_set_container_id</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="GuiTabHandle.remove"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this tab and all contained GUI elements from the</span>
+<span class="sd">        visualizer.&quot;&quot;&quot;</span>
+        <span class="c1"># We may want to make this thread-safe in the future.</span>
+        <span class="n">container_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_tab_container_ids</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">container_index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Tab already removed!&quot;</span>
+
+        <span class="c1"># Container needs to be manually removed.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+            <span class="n">GuiRemoveContainerChildrenMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_labels</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">container_index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_icons_base64</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">container_index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_tab_container_ids</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">container_index</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_sync_with_client</span><span class="p">()</span></div></div>
+
+
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">GuiMarkdownHandle</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use to remove markdown.&quot;&quot;&quot;</span>
+
+    <span class="n">_gui_api</span><span class="p">:</span> <span class="n">GuiApi</span>
+    <span class="n">_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">_visible</span><span class="p">:</span> <span class="nb">bool</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">visible</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Temporarily show or hide this GUI element from the visualizer. Synchronized</span>
+<span class="sd">        automatically when assigned.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_visible</span>
+
+    <span class="nd">@visible</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">visible</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">visible</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">visible</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiSetVisibleMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="n">visible</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_visible</span> <span class="o">=</span> <span class="n">visible</span>
+
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this markdown from the visualizer.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">))</span>
 </pre></div>
         </article>
       </div>

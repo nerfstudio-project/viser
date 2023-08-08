@@ -378,7 +378,24 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dd class="field-odd"><p><strong>label</strong> (<em>str</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiFolderHandle" title="viser.GuiFolderHandle">GuiFolderHandle</a></p>
+<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiFolderHandle" title="viser.GuiFolderHandle">viser.GuiFolderHandle</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.add_gui_markdown">
+<span class="sig-name descname"><span class="pre">add_gui_markdown</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">markdown</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.add_gui_markdown" title="Permalink to this definition">#</a></dt>
+<dd><p>Add markdown to the GUI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>markdown</strong> (<em>str</em>) – </p></li>
+<li><p><strong>image_root</strong> (<em>Optional</em><em>[</em><em>pathlib.Path</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>viser.GuiMarkdownHandle</p>
 </dd>
 </dl>
 </dd></dl>
@@ -475,7 +492,7 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dd><p>Add a tab group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiTabGroupHandle" title="viser.GuiTabGroupHandle">GuiTabGroupHandle</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiTabGroupHandle" title="viser.GuiTabGroupHandle">viser.GuiTabGroupHandle</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -882,6 +899,7 @@ and then hidden by default.</p>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_checkbox"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_checkbox()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_dropdown"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_dropdown()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_folder"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_folder()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.add_gui_markdown"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_markdown()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_number"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_number()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_rgb"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_rgb()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_gui_rgba"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_gui_rgba()</span></code></a></li>
