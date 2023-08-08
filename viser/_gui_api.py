@@ -5,9 +5,12 @@
 from __future__ import annotations
 
 import abc
+import re
 import threading
 import time
+import urllib.parse
 import warnings
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -19,27 +22,24 @@ from typing import (
     TypeVar,
     overload,
 )
-from pathlib import Path
 
-import re
 import imageio.v3 as iio
 import numpy as onp
 from typing_extensions import LiteralString
-import urllib.parse
 
 from . import _messages
 from ._gui_handles import (
-    _make_unique_id,
     GuiButtonGroupHandle,
     GuiButtonHandle,
     GuiDropdownHandle,
-    GuiHandle,
-    _GuiHandleState,
     GuiFolderHandle,
-    GuiTabGroupHandle,
+    GuiHandle,
     GuiMarkdownHandle,
+    GuiTabGroupHandle,
+    _GuiHandleState,
+    _make_unique_id,
 )
-from ._message_api import _encode_image_base64, MessageApi, cast_vector
+from ._message_api import MessageApi, _encode_image_base64, cast_vector
 
 if TYPE_CHECKING:
     from .infra import ClientId
@@ -79,43 +79,36 @@ def _compute_precision_digits(x: float) -> int:
     return digits
 
 
-def _get_repls(image_root: Optional[Path]):
-    root_selected = True
+def _get_data_url(url: str, image_root: Optional[Path]) -> str:
+    if not url.startswith("http") and not image_root:
+        warnings.warn(
+            "No `image_root` provided. All relative paths will be scoped to viser's installation path.",
+            stacklevel=2,
+        )
+    if url.startswith("http"):
+        return url
     if image_root is None:
-        root_selected = False
         image_root = Path(__file__).parent
-
-    def _get_uri(match: re.Match[str], group: int) -> str:
-        url = match.group(group)
-
-        if not url.startswith("http") and not root_selected:
-            warnings.warn(
-                "No image_root provided. All relative paths will be scoped to viser's installation path.",
-                stacklevel=2,
-            )
-        try:
-            image = iio.imread(image_root / url)
-            data_uri = _encode_image_base64(image, "png")
-            url = urllib.parse.quote(f"{data_uri[1]}")
-            return f"data:{data_uri[0]};base64,{url}"
-        except (IOError, FileNotFoundError):
-            return match.group(group)
-
-    def _markdown_repl(match: re.Match[str]) -> str:
-        uri = _get_uri(match, 2)
-        return f"![{match.group(1)}]({uri})"
-
-    def _src_repl(match: re.Match[str]) -> str:
-        uri = _get_uri(match, 1)
-        return f'src="{uri}"'
-
-    return [_markdown_repl, _src_repl]
+    try:
+        image = iio.imread(image_root / url)
+        data_uri = _encode_image_base64(image, "png")
+        url = urllib.parse.quote(f"{data_uri[1]}")
+        return f"data:{data_uri[0]};base64,{url}"
+    except (IOError, FileNotFoundError):
+        warnings.warn(
+            f"Failed to read image {url}, with image_root set to {image_root}.",
+            stacklevel=2,
+        )
+        return url
 
 
 def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
-    repls = _get_repls(image_root)
-    phase1 = re.sub(r"\!\[([^]]*)\]\(([^]]*)\)", repls[0], markdown)
-    return re.sub(r'src="([^"]*)"', repls[1], phase1)
+    markdown = re.sub(
+        r"\!\[([^]]*)\]\(([^]]*)\)",
+        lambda match: f"![{match.group(1)}]({_get_data_url(match.group(2), image_root)})",
+        markdown,
+    )
+    return markdown
 
 
 class GuiApi(abc.ABC):
@@ -193,7 +186,8 @@ class GuiApi(abc.ABC):
         )
         return GuiMarkdownHandle(
             _gui_api=self,
-            _markdown_id=markdown_id,
+            _id=markdown_id,
+            _visible=True,
         )
 
     def add_gui_button(

@@ -43,21 +43,14 @@ export default function GeneratedGuiContainer({
   // Render each GUI element in this container.
   const out =
     guiIdSet === undefined ? null : (
-      <>
+      <Box pt="xs">
         {[...Object.keys(guiIdSet)]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
           .map((conf, index) => {
-            return (
-              <GeneratedInput
-                conf={conf}
-                key={conf.id}
-                first={index == 0}
-                viewer={viewer}
-              />
-            );
+            return <GeneratedInput conf={conf} key={conf.id} viewer={viewer} />;
           })}
-      </>
+      </Box>
     );
 
   return out;
@@ -66,29 +59,34 @@ export default function GeneratedGuiContainer({
 /** A single generated GUI element. */
 function GeneratedInput({
   conf,
-  first,
   viewer,
 }: {
   conf: GuiConfig;
-  first: boolean;
   viewer?: ViewerContextContents;
 }) {
+  // Handle GUI input types.
+  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
+
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
-    return <GeneratedFolder conf={conf} first={first} />;
+    return <GeneratedFolder conf={conf} />;
   if (conf.type == "GuiAddTabGroupMessage")
     return <GeneratedTabGroup conf={conf} />;
-  if (conf.type == "GuiAddMarkdownMessage")
+  if (conf.type == "GuiAddMarkdownMessage") {
+    let { visible } =
+      viewer.useGui((state) => state.guiAttributeFromId[conf.id]) || {};
+    visible = visible ?? true;
+    if (!visible) return <></>;
     return (
-      <Box pt={first ? "sm" : undefined} pb="xs" px="sm">
-        <ErrorBoundary fallback={<Text align="center">Markdown Failed to Render</Text>}>
+      <Box pb="xs" px="sm">
+        <ErrorBoundary
+          fallback={<Text align="center">Markdown Failed to Render</Text>}
+        >
           <Markdown>{conf.markdown}</Markdown>
         </ErrorBoundary>
       </Box>
-    )
-
-  // Handle GUI input types.
-  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
+    );
+  }
 
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
   function updateValue(value: any) {
@@ -326,24 +324,17 @@ function GeneratedInput({
     input = <LabeledInput id={conf.id} label={conf.label} input={input} />;
 
   return (
-    <Box pt={first ? "sm" : undefined} pb="xs" px="sm">
+    <Box pb="xs" px="sm">
       {input}
     </Box>
   );
 }
 
-function GeneratedFolder({
-  conf,
-  first,
-}: {
-  conf: GuiAddFolderMessage;
-  first: boolean;
-}) {
+function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
   return (
     <Accordion
       chevronPosition="right"
       multiple
-      pt={first ? "sm" : undefined}
       pb="xs"
       px="sm"
       defaultValue={["folder"]}
@@ -378,7 +369,12 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
   const icons = conf.tab_icons_base64;
 
   return (
-    <Tabs radius="xs" value={tabState} onTabChange={setTabState}>
+    <Tabs
+      radius="xs"
+      value={tabState}
+      onTabChange={setTabState}
+      sx={(theme) => ({ marginTop: "-" + theme.spacing.xs })}
+    >
       <Tabs.List>
         {conf.tab_labels.map((label, index) => (
           <Tabs.Tab
@@ -413,27 +409,27 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
 function VectorInput(
   props:
     | {
-      id: string;
-      n: 2;
-      value: [number, number];
-      min: [number, number] | null;
-      max: [number, number] | null;
-      step: number;
-      precision: number;
-      onChange: (value: number[]) => void;
-      disabled: boolean;
-    }
+        id: string;
+        n: 2;
+        value: [number, number];
+        min: [number, number] | null;
+        max: [number, number] | null;
+        step: number;
+        precision: number;
+        onChange: (value: number[]) => void;
+        disabled: boolean;
+      }
     | {
-      id: string;
-      n: 3;
-      value: [number, number, number];
-      min: [number, number, number] | null;
-      max: [number, number, number] | null;
-      step: number;
-      precision: number;
-      onChange: (value: number[]) => void;
-      disabled: boolean;
-    }
+        id: string;
+        n: 3;
+        value: [number, number, number];
+        min: [number, number, number] | null;
+        max: [number, number, number] | null;
+        step: number;
+        precision: number;
+        onChange: (value: number[]) => void;
+        disabled: boolean;
+      }
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>

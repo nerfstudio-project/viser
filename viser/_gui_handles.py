@@ -20,17 +20,17 @@ from typing import (
 
 import numpy as onp
 
+from ._icons import base64_from_icon
+from ._icons_enum import Icon
 from ._messages import (
     GuiAddDropdownMessage,
+    GuiAddTabGroupMessage,
+    GuiRemoveContainerChildrenMessage,
     GuiRemoveMessage,
     GuiSetDisabledMessage,
     GuiSetValueMessage,
     GuiSetVisibleMessage,
-    GuiRemoveContainerChildrenMessage,
-    GuiAddTabGroupMessage,
 )
-from ._icons import base64_from_icon
-from ._icons_enum import Icon
 from .infra import ClientId
 
 if TYPE_CHECKING:
@@ -383,11 +383,23 @@ class GuiMarkdownHandle:
     """Use to remove markdown."""
 
     _gui_api: GuiApi
-    _markdown_id: str
+    _id: str
+    _visible: bool
 
-    # I'm not sure if there's interest but maybe having programatic visibility in the future
-    # could be worth looking into.
+    @property
+    def visible(self) -> bool:
+        """Temporarily show or hide this GUI element from the visualizer. Synchronized
+        automatically when assigned."""
+        return self._visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        if visible == self.visible:
+            return
+
+        self._gui_api._get_api()._queue(GuiSetVisibleMessage(self._id, visible=visible))
+        self._visible = visible
 
     def remove(self) -> None:
         """Permanently remove this markdown from the visualizer."""
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._markdown_id))
+        self._gui_api._get_api()._queue(GuiRemoveMessage(self._id))

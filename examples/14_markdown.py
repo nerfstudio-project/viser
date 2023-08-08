@@ -1,6 +1,6 @@
 """Markdown Demonstration
 
-Viser GUI has MDX 2 support (WIP)
+Viser GUI has MDX 2 support.
 """
 
 import time
@@ -14,16 +14,20 @@ server.world_axes.visible = True
 
 @server.on_client_connect
 def _(client: viser.ClientHandle) -> None:
-    with open("./assets/mdx_example.mdx", "r") as mkdn:
-        markdown = client.add_gui_markdown(
-            markdown=mkdn.read(), image_root=Path(__file__).parent
-        )
+    here = Path(__file__).absolute().parent
+    markdown_source = (here / "./assets/mdx_example.mdx").read_text()
+    markdown = client.add_gui_markdown(markdown=markdown_source, image_root=here)
 
     button = client.add_gui_button("Remove Markdown")
+    checkbox = client.add_gui_checkbox("Visibility", initial_value=True)
 
     @button.on_click
     def _(_):
         markdown.remove()
+
+    @checkbox.on_update
+    def _(_):
+        markdown.visible = checkbox.value
 
 
 while True:
