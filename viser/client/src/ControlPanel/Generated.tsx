@@ -70,6 +70,8 @@ function GeneratedInput({
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
     return <GeneratedFolder conf={conf} />;
+  if (conf.type == "GuiAddModalMessage")
+    return;
   if (conf.type == "GuiAddTabGroupMessage")
     return <GeneratedTabGroup conf={conf} />;
   if (conf.type == "GuiAddMarkdownMessage") {
