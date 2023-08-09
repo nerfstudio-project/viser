@@ -27,6 +27,7 @@ import { searchParamKey } from "./SearchParamsUtils";
 import WebsocketInterface from "./WebsocketInterface";
 
 import { Titlebar } from "./Titlebar";
+import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 
 export type ViewerContextContents = {
@@ -103,6 +104,7 @@ function SingleViewer() {
     >
       <ViewerContext.Provider value={viewer}>
         <Titlebar />
+        <ViserModal />
         <Box
           sx={{
             width: "100%",

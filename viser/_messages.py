@@ -316,6 +316,14 @@ class _GuiAddInputBase(Message):
 
 
 @dataclasses.dataclass
+class GuiModalMessage(Message):
+    order: float
+    id: str
+    title: str
+    container_id: str
+
+
+@dataclasses.dataclass
 class GuiAddButtonMessage(_GuiAddInputBase):
     # All GUI elements currently need an `initial_value` field.
     # This makes our job on the frontend easier.
