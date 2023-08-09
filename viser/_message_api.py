@@ -456,7 +456,11 @@ class MessageApi(abc.ABC):
         """Wrapped method for sending messages safely."""
         # This implementation will retain message ordering because _queue_thread has
         # just 1 worker.
-        self._queue_thread.submit(lambda: self._queue_blocking(message))
+        from .infra._infra import error_print_wrapper
+
+        self._queue_thread.submit(
+            error_print_wrapper(lambda: self._queue_blocking(message))
+        )
 
     def _queue_blocking(self, message: _messages.Message) -> None:
         """Wrapped method for sending messages safely. Blocks until ready to send."""
