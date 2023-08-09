@@ -43,6 +43,7 @@ function useMessageHandler() {
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
   const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
+  const addModal = viewer.useGui((state) => state.addModal);
   const removeGui = viewer.useGui((state) => state.removeGui);
   const removeGuiContainer = viewer.useGui((state) => state.removeGuiContainer);
   const setGuiValue = viewer.useGui((state) => state.setGuiValue);
@@ -140,6 +141,11 @@ function useMessageHandler() {
             },
           ),
         );
+        return;
+      }
+
+      case "GuiModalMessage": {
+        addModal(message);
         return;
       }
 

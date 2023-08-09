@@ -35,6 +35,7 @@ from ._gui_handles import (
     GuiFolderHandle,
     GuiHandle,
     GuiMarkdownHandle,
+    GuiModalHandle,
     GuiTabGroupHandle,
     _GuiHandleState,
     _make_unique_id,
@@ -157,6 +158,26 @@ class GuiApi(abc.ABC):
             _container_id=folder_container_id,
         )
 
+    def add_gui_modal(
+        self,
+        title: str,
+    ) -> GuiModalHandle:
+        """Show a modal window, which can be useful for popups and messages, then return
+        a handle that can be used to populate it."""
+        modal_container_id = _make_unique_id()
+        self._get_api()._queue(
+            _messages.GuiModalMessage(
+                order=time.time(),
+                id=modal_container_id,
+                title=title,
+                container_id=self._get_container_id(),
+            )
+        )
+        return GuiModalHandle(
+            _gui_api=self,
+            _container_id=modal_container_id,
+        )
+
     def add_gui_tab_group(self) -> GuiTabGroupHandle:
         """Add a tab group."""
         tab_group_id = _make_unique_id()
@@ -170,7 +191,7 @@ class GuiApi(abc.ABC):
         )
 
     def add_gui_markdown(
-        self, markdown: str, image_root: Optional[Path]
+        self, markdown: str, image_root: Optional[Path] = None
     ) -> GuiMarkdownHandle:
         """Add markdown to the GUI."""
         markdown = _parse_markdown(markdown, image_root)

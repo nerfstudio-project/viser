@@ -288,6 +288,13 @@ export interface GuiAddButtonGroupMessage {
   initial_value: string;
   options: string[];
 }
+export interface GuiModalMessage {
+  type: "GuiModalMessage";
+  order: number;
+  id: string;
+  title: string;
+  container_id: string;
+}
 export interface GuiRemoveContainerChildrenMessage {
   type: "GuiRemoveContainerChildrenMessage";
   container_id: string;
@@ -375,6 +382,7 @@ export type Message =
   | GuiAddTextMessage
   | GuiAddDropdownMessage
   | GuiAddButtonGroupMessage
+  | GuiModalMessage
   | GuiRemoveContainerChildrenMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
