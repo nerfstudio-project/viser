@@ -215,11 +215,15 @@ class Server(MessageHandler):
 
             def handle_incoming(message: Message) -> None:
                 self._thread_executor.submit(
-                    lambda: self._handle_incoming_message(client_id, message)
+                    error_print_wrapper(
+                        lambda: self._handle_incoming_message(client_id, message)
+                    )
                 )
                 self._thread_executor.submit(
-                    lambda: client_connection._handle_incoming_message(
-                        client_id, message
+                    error_print_wrapper(
+                        lambda: client_connection._handle_incoming_message(
+                            client_id, message
+                        )
                     )
                 )
 
@@ -392,3 +396,19 @@ async def _consumer(
         assert isinstance(raw, bytes)
         message = message_class.deserialize(raw)
         handle_message(message)
+
+
+def error_print_wrapper(inner: Callable[[], Any]) -> Callable[[], None]:
+    """Wrap a Callable to print error messages when they happen.
+
+    This can be helpful for jobs submitted to ThreadPoolExecutor instances, which, by
+    default, will suppress error messages until returned futures are awaited.
+    """
+
+    def wrapped() -> None:
+        try:
+            inner()
+        except Exception as e:
+            print(e)
+
+    return wrapped
