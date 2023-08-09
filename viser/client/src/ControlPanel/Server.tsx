@@ -1,8 +1,9 @@
-import { ViewerContext } from "..";
-import { Button, Stack, Switch, TextInput } from "@mantine/core";
+import { ViewerContext } from "../App";
+import { Button, Divider, Stack, Switch, TextInput } from "@mantine/core";
 import { Stats } from "@react-three/drei";
 import { IconPhoto } from "@tabler/icons-react";
 import React from "react";
+import SceneTreeTable from "./SceneTreeTable";
 
 export default function ServerControls() {
   const viewer = React.useContext(ViewerContext)!;
@@ -13,24 +14,25 @@ export default function ServerControls() {
     event.currentTarget.blur();
     event.currentTarget.focus();
   }
+  const MemoizedTable = React.memo(SceneTreeTable);
 
   return (
     <>
       {showStats ? <Stats className="stats-panel" /> : null}
       <Stack spacing="xs">
         <TextInput
-          label="Label"
-          defaultValue={viewer.useGui((state) => state.label)}
-          onBlur={(event) =>
-            viewer.useGui.setState({ label: event.currentTarget.value })
-          }
-          onKeyDown={triggerBlur}
-        />
-        <TextInput
           label="Server"
           defaultValue={viewer.useGui((state) => state.server)}
           onBlur={(event) =>
             viewer.useGui.setState({ server: event.currentTarget.value })
+          }
+          onKeyDown={triggerBlur}
+        />
+        <TextInput
+          label="Label"
+          defaultValue={viewer.useGui((state) => state.label)}
+          onBlur={(event) =>
+            viewer.useGui.setState({ label: event.currentTarget.value })
           }
           onKeyDown={triggerBlur}
         />
@@ -99,6 +101,8 @@ export default function ServerControls() {
             setShowStats(event.currentTarget.checked);
           }}
         />
+        <Divider my="sm" />
+        <MemoizedTable compact={true} />
       </Stack>
     </>
   );

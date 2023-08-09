@@ -1,10 +1,15 @@
-import { Box, Paper } from "@mantine/core";
-import { IconCaretUp } from "@tabler/icons-react";
+// @refresh reset
+
+import { Box, Collapse, Paper } from "@mantine/core";
 import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
+import { useDisclosure } from "@mantine/hooks";
 
-const FloatingPanelRefContext =
-  React.createContext<React.RefObject<HTMLDivElement> | null>(null);
+export const FloatingPanelContext = React.createContext<null | {
+  wrapperRef: React.RefObject<HTMLDivElement>;
+  expanded: boolean;
+  toggleExpanded: () => void;
+}>(null);
 
 /** Root component for control panel. Parents a set of control tabs.
  * This could be refactored+cleaned up a lot! */
@@ -14,8 +19,15 @@ export default function FloatingPanel({
   children: string | React.ReactNode;
 }) {
   const panelWrapperRef = React.useRef<HTMLDivElement>(null);
+  const [expanded, { toggle: toggleExpanded }] = useDisclosure(true);
   return (
-    <FloatingPanelRefContext.Provider value={panelWrapperRef}>
+    <FloatingPanelContext.Provider
+      value={{
+        wrapperRef: panelWrapperRef,
+        expanded: expanded,
+        toggleExpanded: toggleExpanded,
+      }}
+    >
       <Paper
         radius="sm"
         withBorder
@@ -27,34 +39,16 @@ export default function FloatingPanel({
           top: "1em",
           right: "1em",
           margin: 0,
-          "&.hidden": {
-            overflow: "hidden",
-          },
-          "& .panel-contents": {
-            opacity: "1.0",
-            visibility: "visible",
-            height: "auto",
-            transition: "visibility 0.2s linear,opacity 0.2s linear",
-          },
-          "&.hidden .panel-contents": {
-            opacity: "0.0",
-            visibility: "hidden",
-            height: "0 !important",
-            border: "0",
-            position: "absolute",
-          },
+          overflowY: "auto",
           "& .expand-icon": {
             transform: "rotate(0)",
-          },
-          "&.hidden .expand-icon": {
-            transform: "rotate(180deg)",
           },
         }}
         ref={panelWrapperRef}
       >
         {children}
       </Paper>
-    </FloatingPanelRefContext.Provider>
+    </FloatingPanelContext.Provider>
   );
 }
 
@@ -64,7 +58,8 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 }: {
   children: string | React.ReactNode;
 }) {
-  const panelWrapperRef = React.useContext(FloatingPanelRefContext)!;
+  const panelContext = React.useContext(FloatingPanelContext)!;
+  const panelWrapperRef = panelContext.wrapperRef;
   // Things to track for dragging.
   const dragInfo = React.useRef({
     dragging: false,
@@ -83,12 +78,13 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   const computePanelOffset = (
     panelPosition: number,
     panelSize: number,
-    parentSize: number
+    parentSize: number,
   ) =>
     Math.abs(panelPosition + panelSize / 2.0) <
     Math.abs(panelPosition - parentSize + panelSize / 2.0)
       ? panelPosition
       : panelPosition - parentSize;
+
   const panelBoundaryPad = 15;
   function setPanelLocation(x: number, y: number) {
     const panel = panelWrapperRef.current;
@@ -102,12 +98,12 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 
     newX = Math.min(
       newX,
-      parent.clientWidth - panel.clientWidth - panelBoundaryPad
+      parent.clientWidth - panel.clientWidth - panelBoundaryPad,
     );
     newX = Math.max(newX, panelBoundaryPad);
     newY = Math.min(
       newY,
-      parent.clientHeight - panel.clientHeight - panelBoundaryPad
+      parent.clientHeight - panel.clientHeight - panelBoundaryPad,
     );
     newY = Math.max(newY, panelBoundaryPad);
 
@@ -138,13 +134,13 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         unfixedOffset.current.x = computePanelOffset(
           panel.offsetLeft,
           panel.clientWidth,
-          parent.clientWidth
+          parent.clientWidth,
         );
       if (unfixedOffset.current.y === undefined)
         unfixedOffset.current.y = computePanelOffset(
           panel.offsetTop,
           panel.clientHeight,
-          parent.clientHeight
+          parent.clientHeight,
         );
 
       panel.style.maxHeight = `${(
@@ -168,7 +164,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   const dragHandler = (
     event:
       | React.TouchEvent<HTMLDivElement>
-      | React.MouseEvent<HTMLDivElement, MouseEvent>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>,
   ) => {
     const state = dragInfo.current;
     const panel = panelWrapperRef.current;
@@ -205,7 +201,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
       const newY = state.startPosY + deltaY;
       [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
         newX,
-        newY
+        newY,
       );
     }
     window.addEventListener(eventNames.move, dragListener);
@@ -217,7 +213,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         }
         window.removeEventListener(eventNames.move, dragListener);
       },
-      { once: true }
+      { once: true },
     );
   };
 
@@ -232,8 +228,6 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         cursor: "pointer",
         position: "relative",
         fontWeight: 400,
-        boxSizing: "border-box",
-        overflow: "hidden",
         userSelect: "none",
       })}
       onClick={() => {
@@ -242,10 +236,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
           state.dragging = false;
           return;
         }
-
-        const wrapper = panelWrapperRef.current;
-        if (!wrapper) return;
-        wrapper.classList.toggle("hidden");
+        panelContext.toggleExpanded();
       }}
       onTouchStart={(event) => {
         dragHandler(event);
@@ -257,23 +248,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
       <Box
         component="div"
         sx={{
-          padding: "0.5em 3em 0.5em 0.8em",
+          padding: "0.5em 2em 0.5em 0.8em",
         }}
       >
         {children}
-      </Box>
-      <Box
-        component="div"
-        sx={{
-          position: "absolute",
-          top: "50%",
-          right: "0.5em",
-          transform: "translateY(-48%) scale(0.8)",
-          height: "1.5em",
-          opacity: "0.5",
-        }}
-      >
-        <IconCaretUp className="expand-icon" />
       </Box>
     </Box>
   );
@@ -284,5 +262,6 @@ FloatingPanel.Contents = function FloatingPanelContents({
 }: {
   children: string | React.ReactNode;
 }) {
-  return <Box className="panel-contents">{children}</Box>;
+  const context = React.useContext(FloatingPanelContext);
+  return <Collapse in={context?.expanded ?? true}>{children}</Collapse>;
 };

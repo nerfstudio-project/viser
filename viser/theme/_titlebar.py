@@ -1,4 +1,4 @@
-from typing import Tuple, Literal, Optional, TypedDict
+from typing import Literal, Optional, Tuple, TypedDict
 
 
 class TitlebarButton(TypedDict):

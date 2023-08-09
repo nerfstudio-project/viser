@@ -3,20 +3,16 @@ import { createPortal, useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
-import { CoordinateFrame } from "./ThreeAssets";
-
-import { ViewerContext } from ".";
-import { makeThrottledMessageSender } from "./WebsocketInterface";
+import { ViewerContext } from "./App";
+import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
 import { Select } from "@react-three/postprocessing";
 import { immerable } from "immer";
-import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
-import { immer } from "zustand/middleware/immer";
 import { Text } from "@mantine/core";
+import { useSceneTreeState } from "./SceneTreeState";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
-  ref: React.Ref<T>
+  ref: React.Ref<T>,
 ) => React.ReactNode;
 
 /** Scenes will consist of nodes, which form a tree. */
@@ -29,127 +25,11 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
   constructor(
     public name: string,
     public makeObject: MakeObject<T>,
-    public cleanup?: () => void
+    public cleanup?: () => void,
   ) {
     this.children = [];
     this.clickable = false;
   }
-}
-
-interface SceneTreeState {
-  nodeFromName: { [name: string]: undefined | SceneNode };
-  // Putting this into SceneNode makes the scene tree table much harder to implement.
-  labelVisibleFromName: { [name: string]: boolean };
-}
-export interface SceneTreeActions extends SceneTreeState {
-  setClickable(name: string, clickable: boolean): void;
-  addSceneNode(nodes: SceneNode): void;
-  removeSceneNode(name: string): void;
-  resetScene(): void;
-  setLabelVisibility(name: string, labelVisibility: boolean): void;
-}
-
-// Create default scene tree state.
-// By default, the y-axis is up. Let's rotate everything so Z is up instead.
-const makeRoot: MakeObject<THREE.Group> = (ref) => (
-  <group
-    ref={ref}
-    quaternion={new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
-    )}
-  />
-);
-const rootAxesTemplate: MakeObject<THREE.Group> = (ref) => (
-  <CoordinateFrame ref={ref} />
-);
-
-const rootNodeTemplate = new SceneNode(
-  "",
-  makeRoot
-) as SceneNode<THREE.Object3D>;
-
-const rootAxesNode = new SceneNode(
-  "/WorldAxes",
-  rootAxesTemplate
-) as SceneNode<THREE.Object3D>;
-rootNodeTemplate.children.push("/WorldAxes");
-
-/** Declare a scene state, and return a hook for accessing it. Note that we put
-effort into avoiding a global state! */
-export function useSceneTreeState() {
-  return React.useState(() =>
-    create(
-      subscribeWithSelector(
-        immer<SceneTreeState & SceneTreeActions>((set) => ({
-          nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
-          labelVisibleFromName: {},
-          setClickable: (name, clickable) =>
-            set((state) => {
-              const node = state.nodeFromName[name];
-              if (node !== undefined) node.clickable = clickable;
-            }),
-          addSceneNode: (node) =>
-            set((state) => {
-              const existingNode = state.nodeFromName[node.name];
-              if (existingNode) {
-                // Node already exists.
-                state.nodeFromName[node.name] = {
-                  ...node,
-                  children: existingNode.children,
-                };
-              } else {
-                // Node doesn't exist yet!
-                // TODO: this assumes the parent exists. We could probably merge this with addSceneNodeMakeParents.
-                const parent_name = node.name.split("/").slice(0, -1).join("/");
-                state.nodeFromName[node.name] = node;
-                state.nodeFromName[parent_name]!.children.push(node.name);
-              }
-            }),
-          removeSceneNode: (name) =>
-            set((state) => {
-              if (!(name in state.nodeFromName)) {
-                console.log("Skipping scene node removal for " + name);
-                return;
-              }
-
-              // Remove this scene node and all children.
-              const removeNames: string[] = [];
-              function findChildrenRecursive(name: string) {
-                removeNames.push(name);
-                state.nodeFromName[name]!.children.forEach(
-                  findChildrenRecursive
-                );
-              }
-              findChildrenRecursive(name);
-
-              removeNames.forEach((removeName) => {
-                delete state.nodeFromName[removeName];
-              });
-
-              // Remove node from parent's children list.
-              const parent_name = name.split("/").slice(0, -1).join("/");
-              state.nodeFromName[parent_name]!.children = state.nodeFromName[
-                parent_name
-              ]!.children.filter((child_name) => child_name !== name);
-            }),
-          resetScene: () =>
-            set((state) => {
-              // For scene resets: we need to retain the object references created for the root and world frame nodes.
-              for (const key of Object.keys(state.nodeFromName)) {
-                if (key !== "" && key !== "/WorldAxes")
-                  delete state.nodeFromName[key];
-              }
-              state.nodeFromName[""]!.children = ["/WorldAxes"];
-              state.nodeFromName["/WorldAxes"]!.children = [];
-            }),
-          setLabelVisibility: (name, labelVisibility) =>
-            set((state) => {
-              state.labelVisibleFromName[name] = labelVisibility;
-            }),
-        }))
-      )
-    )
-  )[0];
 }
 
 /** Type corresponding to a zustand-style useSceneTree hook. */
@@ -185,7 +65,7 @@ function SceneNodeThreeChildren(props: {
     }
     const unsubscribe = viewer.useSceneTree.subscribe(
       (state) => state.nodeFromName[props.name],
-      updateChildren
+      updateChildren,
     );
     updateChildren();
 
@@ -202,7 +82,7 @@ function SceneNodeThreeChildren(props: {
         return <SceneNodeThreeObject key={child_id} name={child_id} />;
       })}
     </group>,
-    props.parent
+    props.parent,
   );
 }
 
@@ -210,7 +90,7 @@ function SceneNodeThreeChildren(props: {
 function SceneNodeLabel(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const labelVisible = viewer.useSceneTree(
-    (state) => state.labelVisibleFromName[props.name]
+    (state) => state.labelVisibleFromName[props.name],
   );
   return labelVisible ? (
     <Html>
@@ -233,10 +113,10 @@ function SceneNodeLabel(props: { name: string }) {
 export function SceneNodeThreeObject(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const makeObject = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.makeObject
+    (state) => state.nodeFromName[props.name]?.makeObject,
   );
   const cleanup = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.cleanup
+    (state) => state.nodeFromName[props.name]?.cleanup,
   );
   const clickable =
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
@@ -246,14 +126,14 @@ export function SceneNodeThreeObject(props: { name: string }) {
   // Create object + children.
   const objNode = React.useMemo(
     () => makeObject && makeObject(setRef),
-    [setRef, makeObject]
+    [setRef, makeObject],
   );
   const children = React.useMemo(
     () =>
       obj === null ? null : (
         <SceneNodeThreeChildren name={props.name} parent={obj} />
       ),
-    [props.name, obj]
+    [props.name, obj],
   );
 
   // Update attributes on a per-frame basis. Currently does redundant work,
@@ -294,7 +174,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
   // Clicking logic.
   const sendClicksThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    50
+    50,
   );
   const [hovered, setHovered] = React.useState(false);
   useCursor(hovered);

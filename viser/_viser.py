@@ -11,10 +11,11 @@ import numpy as onp
 import numpy.typing as npt
 from typing_extensions import override
 
-from . import _messages, infra
+from . import _client_autobuild, _messages, infra
 from . import transforms as tf
+from ._gui_api import GuiApi
 from ._message_api import MessageApi, cast_vector
-from ._scene_handle import FrameHandle, _SceneNodeHandleState
+from ._scene_handles import FrameHandle, _SceneNodeHandleState
 
 
 @dataclasses.dataclass
@@ -153,11 +154,12 @@ class CameraHandle:
 
 @dataclasses.dataclass
 class _ClientHandleState:
+    server: infra.Server
     connection: infra.ClientConnection
 
 
 @dataclasses.dataclass
-class ClientHandle(MessageApi):
+class ClientHandle(MessageApi, GuiApi):
     """Handle for interacting with a specific client. Can be used to send messages to
     individual clients and read/write camera information."""
 
@@ -169,15 +171,21 @@ class ClientHandle(MessageApi):
         super().__init__(self._state.connection)
 
     @override
-    def _queue(self, message: infra.Message) -> None:
+    def _get_api(self) -> MessageApi:
+        """Message API to use."""
+        return self
+
+    @override
+    def _queue_unsafe(self, message: _messages.Message) -> None:
         """Define how the message API should send messages."""
         self._state.connection.send(message)
 
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
         """Returns a context where:
-        - All outgoing messages are grouped and applied by clients atomically.
         - No incoming messages, like camera or GUI state updates, are processed.
+        - `viser` will attempt to group outgoing messages, which will then be sent after
+          the context is exited.
 
         This can be helpful for things like animations, or when we want position and
         orientation updates to happen synchronously.
@@ -188,16 +196,19 @@ class ClientHandle(MessageApi):
             got_lock = False
         else:
             self._atomic_lock.acquire()
-            self._queue(_messages.MessageGroupStart())
             self._locked_thread_id = thread_id
             got_lock = True
 
         yield
 
         if got_lock:
-            self._queue(_messages.MessageGroupEnd())
             self._atomic_lock.release()
             self._locked_thread_id = -1
+
+
+# We can serialize the state of a ViserServer via a tuple of
+# (serialized message, timestamp) pairs.
+SerializedServerState = Tuple[Tuple[bytes, float], ...]
 
 
 @dataclasses.dataclass
@@ -207,7 +218,7 @@ class _ViserServerState:
     client_lock: threading.Lock = dataclasses.field(default_factory=threading.Lock)
 
 
-class ViserServer(MessageApi):
+class ViserServer(MessageApi, GuiApi):
     """Viser server class. The primary interface for functionality in `viser`.
 
     Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all
@@ -224,8 +235,12 @@ class ViserServer(MessageApi):
             port=port,
             message_class=_messages.Message,
             http_server_root=Path(__file__).absolute().parent / "client" / "build",
+            client_api_version=1,
         )
+        self._server = server
         super().__init__(server)
+
+        _client_autobuild.ensure_client_is_built()
 
         state = _ViserServerState(server)
         self._state = state
@@ -252,7 +267,7 @@ class ViserServer(MessageApi):
             client = ClientHandle(
                 conn.client_id,
                 camera,
-                _ClientHandleState(conn),
+                _ClientHandleState(server, conn),
             )
             camera._state.client = client
             first = True
@@ -316,6 +331,16 @@ class ViserServer(MessageApi):
         )
         self.world_axes.visible = False
 
+    @override
+    def _get_api(self) -> MessageApi:
+        """Message API to use."""
+        return self
+
+    @override
+    def _queue_unsafe(self, message: _messages.Message) -> None:
+        """Define how the message API should send messages."""
+        self._server.broadcast(message)
+
     def get_clients(self) -> Dict[int, ClientHandle]:
         """Creates and returns a copy of the mapping from connected client IDs to
         handles."""
@@ -349,11 +374,6 @@ class ViserServer(MessageApi):
         self._client_disconnect_cb.append(cb)
         return cb
 
-    @override
-    def _queue(self, message: infra.Message) -> None:
-        """Define how the message API should send messages."""
-        self._state.connection.broadcast(message)
-
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
         """Returns a context where:
@@ -380,25 +400,8 @@ class ViserServer(MessageApi):
                 for client in self.get_clients().values():
                     stack.enter_context(client._atomic_lock)
 
-                self._queue(_messages.MessageGroupStart())
-
-            # There's a possible race condition here if we write something like:
-            #
-            # with server.atomic():
-            #     client.add_frame(...)
-            #
-            # - We enter the server's atomic() context.
-            # - The server pushes a MessageGroupStart() to the broadcast buffer.
-            # - The client pushes a frame message to the client buffer.
-            # - For whatever reason the client buffer is handled before the broadcast
-            # buffer.
-            #
-            # The likelihood of this seems exceedingly low, but I don't think we have
-            # any actual guarantees here. Likely worth revisiting but super lower
-            # priority.
             yield
 
         if got_lock:
-            self._queue(_messages.MessageGroupEnd())
             self._atomic_lock.release()
             self._locked_thread_id = -1
