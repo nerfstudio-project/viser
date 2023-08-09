@@ -183,23 +183,25 @@ export const CatmullRomSpline = React.forwardRef<THREE.Mesh, {
   );
 });
 
-export const CubicBezierSpline = React.forwardRef<THREE.Mesh, {
-  start: [number, number, number];
-  end: [number, number, number];
-  midA: [number, number, number];
-  midB: [number, number, number];
+export const CubicBezierSpline = React.forwardRef<THREE.Group, {
+  positions: [number, number, number][];
+  control_points: [number, number, number][];
   lineWidth: number;
 }>(function CatmullRomSpline(props, ref) {
   return (
-    <mesh ref={ref}>
-      <CubicBezierLine
-        start={props.start}
-        end={props.end}
-        midA={props.midA}
-        midB={props.midB}
-        lineWidth={props.lineWidth}
-      >
-      </CubicBezierLine>
-    </mesh>
+    <group ref={ref}>
+      {props.positions.map((_, i) => (
+        (i !== props.positions.length - 1) && (
+          <CubicBezierLine
+            key={i}
+            start={props.positions[i]}
+            end={props.positions[i + 1]}
+            midA={props.control_points[2 * i]}
+            midB={props.control_points[2 * i + 1]}
+            lineWidth={props.lineWidth}
+          >
+          </CubicBezierLine>
+        )))}
+    </group>
   );
 });

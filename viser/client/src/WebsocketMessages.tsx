@@ -338,10 +338,8 @@ export interface CatmullRomSplineMessage {
 }
 export interface CubicBezierSplineMessage {
   type: "CubicBezierSplineMessage";
-  start: [number, number, number];
-  end: [number, number, number];
-  midA: [number, number, number];
-  midB: [number, number, number];
+  positions: [number, number, number][];
+  control_points: [number, number, number][];
   line_width: number;
 }
 

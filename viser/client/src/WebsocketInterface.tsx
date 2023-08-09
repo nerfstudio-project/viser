@@ -583,15 +583,13 @@ function useMessageHandler() {
       }
 
       case "CubicBezierSplineMessage": {
-        addSceneNodeMakeParents(new SceneNode<THREE.Mesh>(
+        addSceneNodeMakeParents(new SceneNode<THREE.Group>(
           "Cubic Bezier Spline",
           (ref) => {
             return <CubicBezierSpline
               ref={ref}
-              start={message.start}
-              end={message.end}
-              midA={message.midA}
-              midB={message.midB}
+              positions={message.positions}
+              control_points={message.control_points}
               lineWidth={message.line_width}
             />
           }

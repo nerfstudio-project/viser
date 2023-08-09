@@ -451,8 +451,6 @@ class CatmullRomSplineMessage(Message):
 class CubicBezierSplineMessage(Message):
     """Message from server->client carrying cubic bezier spline information"""
 
-    start: Tuple[float, float, float]
-    end: Tuple[float, float, float]
-    midA: Tuple[float, float, float]
-    midB: Tuple[float, float, float]
+    positions: Tuple[Tuple[float, float, float], ...]
+    control_points: Tuple[Tuple[float, float, float], ...]
     line_width: float
