@@ -1,5 +1,5 @@
 import { ViewerContext } from "./App";
-import { GuiAddModalMessage } from "./WebsocketMessages";
+import { GuiModalMessage } from "./WebsocketMessages";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Modal } from "@mantine/core";
 import React, { useContext } from "react";
@@ -7,24 +7,20 @@ import React, { useContext } from "react";
 export function ViserModal() {
   const viewer = useContext(ViewerContext)!;
 
-  const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
-  const modals = [...Object.keys(guiConfigFromId)]
-    .map((id) => guiConfigFromId[id])
-    .sort((a, b) => a.order - b.order)
+  const modalList = viewer.useGui((state) => state.modals);
+  const modals = modalList
     .map((conf) => {
-      if (conf.type == "GuiAddModalMessage")
-        return (
-          <GeneratedModal conf={conf} />
-        );
-      else
-        return;
+      return (
+        <GeneratedModal key={conf.id} conf={conf} />
+      );
     });
 
   return modals;
 }
 
-function GeneratedModal({ conf }: { conf: GuiAddModalMessage }) {
+function GeneratedModal({ conf }: { conf: GuiModalMessage }) {
   const viewer = useContext(ViewerContext)!;
+  const popModal = viewer.useGui((state) => state.popModal);
   const removeContainer = viewer.useGui((state) => state.removeGuiContainer);
 
   const [modalVisible, setModalVisible] = React.useState<boolean>(true);
@@ -36,6 +32,7 @@ function GeneratedModal({ conf }: { conf: GuiAddModalMessage }) {
       onClose={() => {
         setModalVisible(false);
         removeContainer(conf.id);
+        popModal();
       }}
       centered>
         <GeneratedGuiContainer containerId={conf.id} />

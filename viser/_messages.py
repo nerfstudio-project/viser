@@ -315,7 +315,7 @@ class _GuiAddInputBase(Message):
     initial_value: Any
 
 @dataclasses.dataclass
-class GuiAddModalMessage(Message):
+class GuiModalMessage(Message):
     order: float
     id: str
     label: str

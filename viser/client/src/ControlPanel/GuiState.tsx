@@ -8,7 +8,6 @@ export type GuiConfig =
   | Messages.GuiAddCheckboxMessage
   | Messages.GuiAddDropdownMessage
   | Messages.GuiAddFolderMessage
-  | Messages.GuiAddModalMessage
   | Messages.GuiAddTabGroupMessage
   | Messages.GuiAddNumberMessage
   | Messages.GuiAddRgbMessage
@@ -33,6 +32,7 @@ interface GuiState {
   guiIdSetFromContainerId: {
     [containerId: string]: Set<string> | undefined;
   };
+  modals: Messages.GuiModalMessage[];
   guiConfigFromId: { [id: string]: GuiConfig };
   guiValueFromId: { [id: string]: any };
   guiAttributeFromId: {
@@ -43,6 +43,8 @@ interface GuiState {
 interface GuiActions {
   setTheme: (theme: Messages.ThemeConfigurationMessage) => void;
   addGui: (config: GuiConfig) => void;
+  addModal: (config: Messages.GuiModalMessage) => void;
+  popModal: () => void;
   setGuiValue: (id: string, value: any) => void;
   setGuiVisible: (id: string, visible: boolean) => void;
   setGuiDisabled: (id: string, visible: boolean) => void;
@@ -63,6 +65,7 @@ const cleanGuiState: GuiState = {
   websocketConnected: false,
   backgroundAvailable: false,
   guiIdSetFromContainerId: {},
+  modals: [],
   guiConfigFromId: {},
   guiValueFromId: {},
   guiAttributeFromId: {},
@@ -84,6 +87,14 @@ export function useGuiState(initialServer: string) {
             state.guiIdSetFromContainerId[guiConfig.container_id] = new Set(
               state.guiIdSetFromContainerId[guiConfig.container_id]
             ).add(guiConfig.id);
+          }),
+        addModal: (modalConfig) =>
+          set((state) => {
+            state.modals.push(modalConfig);
+          }),
+        popModal: () =>
+          set((state) => {
+            state.modals.pop();
           }),
         setGuiValue: (id, value) =>
           set((state) => {

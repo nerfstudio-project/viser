@@ -165,7 +165,7 @@ class GuiApi(abc.ABC):
         """Add a folder, and return a handle that can be used to populate it."""
         modal_container_id = _make_unique_id()
         self._get_api()._queue(
-            _messages.GuiAddModalMessage(
+            _messages.GuiModalMessage(
                 order=time.time(),
                 id=modal_container_id,
                 label=label,
