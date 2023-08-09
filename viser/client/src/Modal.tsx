@@ -8,17 +8,20 @@ export function ViserModal() {
   const viewer = useContext(ViewerContext)!;
 
   const modalList = viewer.useGui((state) => state.modals);
-  const modals = modalList
-    .map((conf) => {
-      return (
-        <GeneratedModal key={conf.id} conf={conf} />
-      );
-    });
+  const modals = modalList.map((conf, index) => {
+    return <GeneratedModal key={conf.id} conf={conf} index={index} />;
+  });
 
   return modals;
 }
 
-function GeneratedModal({ conf }: { conf: GuiModalMessage }) {
+function GeneratedModal({
+  conf,
+  index,
+}: {
+  conf: GuiModalMessage;
+  index: number;
+}) {
   const viewer = useContext(ViewerContext)!;
   const popModal = viewer.useGui((state) => state.popModal);
   const removeContainer = viewer.useGui((state) => state.removeGuiContainer);
@@ -34,8 +37,10 @@ function GeneratedModal({ conf }: { conf: GuiModalMessage }) {
         removeContainer(conf.id);
         popModal();
       }}
-      centered>
-        <GeneratedGuiContainer containerId={conf.id} />
+      centered
+      zIndex={10000 + index}
+    >
+      <GeneratedGuiContainer containerId={conf.id} />
     </Modal>
-  )
+  );
 }

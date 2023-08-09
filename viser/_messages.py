@@ -314,6 +314,7 @@ class _GuiAddInputBase(Message):
     hint: Optional[str]
     initial_value: Any
 
+
 @dataclasses.dataclass
 class GuiModalMessage(Message):
     order: float
