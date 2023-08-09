@@ -352,14 +352,16 @@ class MessageApi(abc.ABC):
         media_type, base64_rgb = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
-        depth_scale = depth_img.max()
-        depth_img = ((depth_img / depth_scale) * 255).squeeze().astype(onp.uint8)
-        _, base64_depth = _encode_image_base64(
-            depth_img, "png"
-        )
+        # this little maneuver is to get the depth image to be 4 channels RGBA integer
+        intdepth = depth_img.view(onp.uint8).reshape((*depth_img.shape[:-1], 4))
+        print(intdepth.shape)
+        with io.BytesIO() as data_buffer:
+            iio.imwrite(data_buffer, intdepth, extension=".png")
+            packed_depth = base64.b64encode(data_buffer.getvalue()).decode("ascii")
+        
         self._queue(
             _messages.PopupImageMessage(
-                media_type=media_type, base64_rgb=base64_rgb, base64_depth = base64_depth, depth_scale=depth_scale
+                media_type=media_type, base64_rgb=base64_rgb, base64_depth = packed_depth, depth_scale=1.0
             )
         )
     def set_background_image(
