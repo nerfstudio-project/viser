@@ -3,9 +3,6 @@
 Examples of using modals in Viser."""
 
 import time
-
-import numpy as onp
-
 import viser
 
 
