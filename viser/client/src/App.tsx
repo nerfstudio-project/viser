@@ -11,6 +11,7 @@ import {
   EffectComposer,
   Outline,
   Selection,
+  Texture,
 } from "@react-three/postprocessing";
 import { BlendFunction, KernelSize } from "postprocessing";
 
@@ -28,6 +29,7 @@ import WebsocketInterface from "./WebsocketInterface";
 
 import { Titlebar } from "./Titlebar";
 import { useSceneTreeState } from "./SceneTreeState";
+import { format } from "path";
 
 type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -186,13 +188,18 @@ function NeRFImage(){
   }
   `.trim();
   const fragShader = `  
+  precision highp float;
+  precision highp int;
+  precision highp usampler2D;
+
   varying vec2 vUv;
   uniform sampler2D nerfColor;
-  uniform sampler2D nerfDepth;
+  uniform usampler2D nerfDepth;
   uniform float cameraNear;
   uniform float cameraFar;
   uniform float depthScale;
   uniform bool enabled;
+
 
   // depthSample from depthTexture.r, for instance
   float linearDepth(float depthSample, float zNear, float zFar)
@@ -210,8 +217,11 @@ function NeRFImage(){
       return nonLinearDepth;
   }
 
-  float readDepth( sampler2D depthSampler, vec2 coord, float zNear, float zFar) {
-    float depth = texture(depthSampler,coord).x * depthScale;
+  float readDepth( usampler2D depthSampler, vec2 coord, float zNear, float zFar) {
+    // the depth is packed into RGBA with 8 bits each
+    uvec4 rgbaPacked = texture(depthSampler,coord);
+    uint depthUint = rgbaPacked.r << 24 | rgbaPacked.g << 16 | rgbaPacked.b << 8 | rgbaPacked.a;
+    float depth = uintBitsToFloat(depthUint);
     float nonLinearDepth = depthSample(depth, zNear, zFar);
     return nonLinearDepth;
   }
@@ -223,7 +233,7 @@ function NeRFImage(){
     }
     vec4 color = texture( nerfColor, vUv );
     gl_FragColor = vec4( color.rgb, 1.0 );
-
+    
     float depth = readDepth(nerfDepth, vUv, cameraNear, cameraFar);
     if(depth < gl_FragCoord.z){
       gl_FragDepth = depth;

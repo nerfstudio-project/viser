@@ -423,7 +423,10 @@ function useMessageHandler() {
           `data:$image/png;base64,${message.base64_depth}`,
           (texture) => {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.);
-            texture.format = THREE.RedFormat;
+            console.log(texture);
+            texture.format = THREE.RGBAIntegerFormat;
+            texture.type = THREE.UnsignedByteType;
+            texture.internalFormat = 'RGBA8UI';
             texture.minFilter = THREE.NearestFilter;
             texture.magFilter = THREE.LinearFilter;
             viewer.nerfMaterialRef.current!.uniforms.nerfDepth.value = texture;
