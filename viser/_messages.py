@@ -284,13 +284,6 @@ class GuiAddFolderMessage(Message):
     label: str
     container_id: str
 
-@dataclasses.dataclass
-class GuiAddModalMessage(Message):
-    order: float
-    id: str
-    label: str
-    container_id: str
-
 
 @dataclasses.dataclass
 class GuiAddMarkdownMessage(Message):
@@ -323,6 +316,13 @@ class _GuiAddInputBase(Message):
     container_id: str
     hint: Optional[str]
     initial_value: Any
+
+@dataclasses.dataclass
+class GuiAddModalMessage(Message):
+    order: float
+    id: str
+    label: str
+    container_id: str
 
 
 @dataclasses.dataclass

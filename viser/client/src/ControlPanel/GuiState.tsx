@@ -8,6 +8,7 @@ export type GuiConfig =
   | Messages.GuiAddCheckboxMessage
   | Messages.GuiAddDropdownMessage
   | Messages.GuiAddFolderMessage
+  | Messages.GuiAddModalMessage
   | Messages.GuiAddTabGroupMessage
   | Messages.GuiAddNumberMessage
   | Messages.GuiAddRgbMessage

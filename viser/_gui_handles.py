@@ -60,9 +60,6 @@ class _GuiHandleState(Generic[T]):
     container_id: str
     """Container that this GUI input was placed into."""
 
-    destination: Literal["CONTROL_PANEL", "MODAL"]
-    """Desination this GUI input was placed into."""
-
     update_cb: List[Callable[[Any], None]]
     """Registered functions to call when this input is updated."""
 
@@ -324,6 +321,30 @@ class GuiTabGroupHandle:
 @dataclasses.dataclass
 class GuiFolderHandle:
     """Use as a context to place GUI elements into a folder."""
+
+    _gui_api: GuiApi
+    _container_id: str
+    _container_id_restore: Optional[str] = None
+
+    def __enter__(self) -> None:
+        self._container_id_restore = self._gui_api._get_container_id()
+        self._gui_api._set_container_id(self._container_id)
+
+    def __exit__(self, *args) -> None:
+        del args
+        assert self._container_id_restore is not None
+        self._gui_api._set_container_id(self._container_id_restore)
+        self._container_id_restore = None
+
+    def remove(self) -> None:
+        """Permanently remove this folder and all contained GUI elements from the
+        visualizer."""
+        self._gui_api._get_api()._queue(GuiRemoveMessage(self._container_id))
+
+
+@dataclasses.dataclass
+class GuiModalHandle:
+    """Use as a context to place GUI elements into a modal."""
 
     _gui_api: GuiApi
     _container_id: str

@@ -25,16 +25,6 @@ import React from "react";
 import Markdown from "../Markdown";
 import { ErrorBoundary } from "react-error-boundary";
 
-enum Destination {
-  CONTROL_PANEL,
-  MODAL,
-}
-
-const DestinationLabels = {
-  "CONTROL_PANEL": Destination.CONTROL_PANEL,
-  "MODAL": Destination.MODAL,
-};
-
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
   containerId,
@@ -279,8 +269,6 @@ function GeneratedInput({
         />
       );
       break;
-    case "GuiAddModal":
-      return;
     case "GuiAddRgbaMessage":
       input = (
         <ColorInput

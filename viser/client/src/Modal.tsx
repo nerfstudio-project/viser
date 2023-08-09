@@ -1,7 +1,6 @@
-import { ViewerContext } from ".";
-import { ThemeConfigurationMessage } from "./WebsocketMessages";
-import { GuiConfig } from "./ControlPanel/GuiState";
-import GeneratedControls from "./ControlPanel/Generated";
+import { ViewerContext } from "./App";
+import { GuiAddModalMessage } from "./WebsocketMessages";
+import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Modal } from "@mantine/core";
 import React, { useContext } from "react";
 
@@ -10,28 +9,36 @@ export function ViserModal() {
 
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
   const modalGuiConfigs = [...Object.keys(guiConfigFromId)]
-    .sort((a, b) => guiConfigFromId[a].order - guiConfigFromId[b].order)
-    .filter((conf) => guiConfigFromId[conf].type === "GuiAddModal");
+    .map((id) => guiConfigFromId[id])
+    .sort((a, b) => a.order - b.order)
+    .map((conf) => {
+      if (conf.type == "GuiAddModalMessage")
+        return (
+          <GeneratedModal conf={conf} />
+        );
+      else
+        return;
+    });
 
-  const showGenerated = modalGuiConfigs.length > 0;
-  return (showGenerated && <GeneratedInput conf={guiConfigFromId[modalGuiConfigs[0]]}></GeneratedInput>)
+  return modalGuiConfigs;
 }
 
-function GeneratedInput({ conf }: { conf: GuiConfig }) {
-  const viewer = React.useContext(ViewerContext)!;
+function GeneratedModal({ conf }: { conf: GuiAddModalMessage }) {
+  const viewer = useContext(ViewerContext)!;
+  const remove = viewer.useGui((state) => state.removeGuiContainer);
 
-  const value = viewer.useGui((state) => state.guiValueFromId[conf.id]) ?? conf.initial_value;
-  const setVisible = viewer.useGui((state) => state.setGuiVisible);
+  const [modalVisible, setModalVisible] = React.useState<boolean>(true);
 
-  let { visible, disabled } =
-    viewer.useGui((state) => state.guiAttributeFromId[conf.id]) || {};
-
-  visible = visible ?? true;
-  disabled = disabled ?? false;
-
-    return (
-      <Modal opened={visible} onClose={() => setVisible(conf.id, false)} title={value} centered>
-        <GeneratedControls destination="MODAL" />
-      </Modal>
-    );
+  return (
+    <Modal
+      opened={modalVisible}
+      title={conf.label}
+      onClose={() => {
+        setModalVisible(false);
+        remove(conf.id);
+      }}
+      centered>
+        <GeneratedGuiContainer containerId={conf.id} />
+    </Modal>
+  )
 }
