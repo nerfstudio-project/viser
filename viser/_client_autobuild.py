@@ -56,7 +56,7 @@ def ensure_client_is_built() -> None:
                 "bash -c '"
                 f"source {env_dir / 'bin' / 'activate'};"
                 f"{npx_path} yarn install;"
-                "yarn run build;"
+                f"{npx_path} yarn run build;"
                 "'"
             ),
             cwd=client_dir,
