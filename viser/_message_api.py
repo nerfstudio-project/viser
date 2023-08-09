@@ -159,11 +159,18 @@ class MessageApi(abc.ABC):
         tension: float = 0.5,
         closed: bool = False,
         line_width: float = 1,
+        color: RgbTupleOrArray = (20, 20, 20),
     ) -> None:
         """Add spline using catmull rom interpolation"""
         # self._queue(_messages.SplineMessage(positions, tension, closed, line_width))
         self._queue(
-            _messages.CatmullRomSplineMessage(positions, tension, closed, line_width)
+            _messages.CatmullRomSplineMessage(
+                positions,
+                tension,
+                closed,
+                line_width,
+                _encode_rgb(color),
+            )
         )
 
     def add_spline_cubicbezier(
@@ -171,6 +178,7 @@ class MessageApi(abc.ABC):
         positions: Tuple[Tuple[float, float, float], ...],
         control_points: Tuple[Tuple[float, float, float], ...],
         line_width: float = 1,
+        color: RgbTupleOrArray = (20, 20, 20),
     ) -> None:
         """Add spline using catmull rom interpolation"""
         # self._queue(_messages.SplineMessage(positions, tension, closed, line_width))
@@ -180,12 +188,8 @@ class MessageApi(abc.ABC):
             _messages.CubicBezierSplineMessage(
                 positions,
                 control_points,
-                line_width
-                # positions[i],
-                # positions[i + 1],
-                # control_points[2 * i],
-                # control_points[2 * i + 1],
-                # line_width,
+                line_width,
+                _encode_rgb(color),
             )
         )
 
@@ -492,7 +496,11 @@ class MessageApi(abc.ABC):
         """Wrapped method for sending messages safely."""
         # This implementation will retain message ordering because _queue_thread has
         # just 1 worker.
-        self._queue_thread.submit(lambda: self._queue_blocking(message))
+        from .infra._infra import error_print_wrapper
+
+        self._queue_thread.submit(
+            error_print_wrapper(lambda: self._queue_blocking(message))
+        )
 
     def _queue_blocking(self, message: _messages.Message) -> None:
         """Wrapped method for sending messages safely. Blocks until ready to send."""

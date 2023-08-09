@@ -286,6 +286,14 @@ class GuiAddFolderMessage(Message):
 
 
 @dataclasses.dataclass
+class GuiAddMarkdownMessage(Message):
+    order: float
+    id: str
+    markdown: str
+    container_id: str
+
+
+@dataclasses.dataclass
 class GuiAddTabGroupMessage(Message):
     order: float
     id: str
@@ -305,6 +313,14 @@ class _GuiAddInputBase(Message):
     container_id: str
     hint: Optional[str]
     initial_value: Any
+
+
+@dataclasses.dataclass
+class GuiModalMessage(Message):
+    order: float
+    id: str
+    title: str
+    container_id: str
 
 
 @dataclasses.dataclass
@@ -445,6 +461,7 @@ class CatmullRomSplineMessage(Message):
     tension: float
     closed: bool
     line_width: float
+    color: int
 
 
 @dataclasses.dataclass
@@ -454,3 +471,4 @@ class CubicBezierSplineMessage(Message):
     positions: Tuple[Tuple[float, float, float], ...]
     control_points: Tuple[Tuple[float, float, float], ...]
     line_width: float
+    color: int

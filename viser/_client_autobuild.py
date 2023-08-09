@@ -1,8 +1,9 @@
 import subprocess
 import sys
+from pathlib import Path
+
 import psutil
 import rich
-from pathlib import Path
 
 client_dir = Path(__file__).absolute().parent / "client"
 build_dir = client_dir / "build"
@@ -55,7 +56,7 @@ def ensure_client_is_built() -> None:
                 "bash -c '"
                 f"source {env_dir / 'bin' / 'activate'};"
                 f"{npx_path} yarn install;"
-                "yarn run build;"
+                f"{npx_path} yarn run build;"
                 "'"
             ),
             cwd=client_dir,

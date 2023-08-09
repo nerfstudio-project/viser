@@ -16,6 +16,7 @@ import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
+
 import { Paper } from "@mantine/core";
 
 /** Float **/
@@ -44,6 +45,7 @@ function useMessageHandler() {
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
   const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
+  const addModal = viewer.useGui((state) => state.addModal);
   const removeGui = viewer.useGui((state) => state.removeGui);
   const removeGuiContainer = viewer.useGui((state) => state.removeGuiContainer);
   const setGuiValue = viewer.useGui((state) => state.setGuiValue);
@@ -142,6 +144,11 @@ function useMessageHandler() {
             },
           ),
         );
+        return;
+      }
+
+      case "GuiModalMessage": {
+        addModal(message);
         return;
       }
 
@@ -477,7 +484,7 @@ function useMessageHandler() {
                 </Html>
               </group>
             );
-          })
+          }),
         );
         return;
       }
@@ -576,7 +583,9 @@ function useMessageHandler() {
               positions={message.positions}
               tension={message.tension}
               closed={message.closed}
-              lineWidth={message.line_width} />
+              lineWidth={message.line_width}
+              color={message.color}
+              />
           }
         ));
         return;
@@ -591,6 +600,7 @@ function useMessageHandler() {
               positions={message.positions}
               control_points={message.control_points}
               lineWidth={message.line_width}
+              color={message.color}
             />
           }
         ));

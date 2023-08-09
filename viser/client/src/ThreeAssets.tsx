@@ -166,6 +166,7 @@ export const CatmullRomSpline = React.forwardRef<THREE.Mesh, {
   tension: number;
   closed: boolean;
   lineWidth: number;
+  color: number;
 }>(function CatmullRomSpline(props, ref) {
   if (props.positions.length < 2) {
     return null;
@@ -178,6 +179,7 @@ export const CatmullRomSpline = React.forwardRef<THREE.Mesh, {
         curveType="catmullrom"
         tension={props.tension}
         lineWidth={props.lineWidth}
+        color={props.color}
       ></CatmullRomLine>
     </mesh>
   );
@@ -187,6 +189,7 @@ export const CubicBezierSpline = React.forwardRef<THREE.Group, {
   positions: [number, number, number][];
   control_points: [number, number, number][];
   lineWidth: number;
+  color: number;
 }>(function CatmullRomSpline(props, ref) {
   return (
     <group ref={ref}>
@@ -199,6 +202,7 @@ export const CubicBezierSpline = React.forwardRef<THREE.Group, {
             midA={props.control_points[2 * i]}
             midB={props.control_points[2 * i + 1]}
             lineWidth={props.lineWidth}
+            color={props.color}
           >
           </CubicBezierLine>
         )))}

@@ -146,6 +146,13 @@ export interface GuiAddFolderMessage {
   label: string;
   container_id: string;
 }
+export interface GuiAddMarkdownMessage {
+  type: "GuiAddMarkdownMessage";
+  order: number;
+  id: string;
+  markdown: string;
+  container_id: string;
+}
 export interface GuiAddTabGroupMessage {
   type: "GuiAddTabGroupMessage";
   order: number;
@@ -281,6 +288,13 @@ export interface GuiAddButtonGroupMessage {
   initial_value: string;
   options: string[];
 }
+export interface GuiModalMessage {
+  type: "GuiModalMessage";
+  order: number;
+  id: string;
+  title: string;
+  container_id: string;
+}
 export interface GuiRemoveContainerChildrenMessage {
   type: "GuiRemoveContainerChildrenMessage";
   container_id: string;
@@ -335,12 +349,14 @@ export interface CatmullRomSplineMessage {
   tension: number;
   closed: boolean;
   line_width: number;
+  color: number;
 }
 export interface CubicBezierSplineMessage {
   type: "CubicBezierSplineMessage";
   positions: [number, number, number][];
   control_points: [number, number, number][];
   line_width: number;
+  color: number;
 }
 
 export type Message =
@@ -367,6 +383,7 @@ export type Message =
   | SceneNodeClickedMessage
   | ResetSceneMessage
   | GuiAddFolderMessage
+  | GuiAddMarkdownMessage
   | GuiAddTabGroupMessage
   | _GuiAddInputBase
   | GuiAddButtonMessage
@@ -380,6 +397,7 @@ export type Message =
   | GuiAddTextMessage
   | GuiAddDropdownMessage
   | GuiAddButtonGroupMessage
+  | GuiModalMessage
   | GuiRemoveContainerChildrenMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
