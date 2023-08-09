@@ -302,9 +302,6 @@ class GuiAddTabGroupMessage(Message):
     tab_icons_base64: Tuple[Union[str, None], ...]
     tab_container_ids: Tuple[str, ...]
 
-# @dataclasses.dataclass
-# class GuiAddModal(_GuiAddMessageBase):
-#     initial_value: str
 
 @dataclasses.dataclass
 class _GuiAddInputBase(Message):
@@ -363,6 +360,7 @@ class GuiAddRgbaMessage(_GuiAddInputBase):
 @dataclasses.dataclass
 class GuiAddCheckboxMessage(_GuiAddInputBase):
     initial_value: bool
+
 
 @dataclasses.dataclass
 class GuiAddVector2Message(_GuiAddInputBase):
