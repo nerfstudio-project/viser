@@ -160,15 +160,16 @@ class GuiApi(abc.ABC):
 
     def add_gui_modal(
         self,
-        label: str,
+        title: str,
     ) -> GuiModalHandle:
-        """Add a folder, and return a handle that can be used to populate it."""
+        """Show a modal window, which can be useful for popups and messages, then return
+        a handle that can be used to populate it."""
         modal_container_id = _make_unique_id()
         self._get_api()._queue(
             _messages.GuiModalMessage(
                 order=time.time(),
                 id=modal_container_id,
-                label=label,
+                title=title,
                 container_id=self._get_container_id(),
             )
         )

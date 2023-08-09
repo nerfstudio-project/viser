@@ -319,7 +319,7 @@ class _GuiAddInputBase(Message):
 class GuiModalMessage(Message):
     order: float
     id: str
-    label: str
+    title: str
     container_id: str
 
 

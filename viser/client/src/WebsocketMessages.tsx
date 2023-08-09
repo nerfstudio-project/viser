@@ -292,7 +292,7 @@ export interface GuiModalMessage {
   type: "GuiModalMessage";
   order: number;
   id: string;
-  label: string;
+  title: string;
   container_id: string;
 }
 export interface GuiRemoveContainerChildrenMessage {

@@ -359,11 +359,6 @@ class GuiModalHandle:
         self._gui_api._set_container_id(self._container_id_restore)
         self._container_id_restore = None
 
-    def remove(self) -> None:
-        """Permanently remove this folder and all contained GUI elements from the
-        visualizer."""
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._container_id))
-
 
 @dataclasses.dataclass
 class GuiTabHandle:

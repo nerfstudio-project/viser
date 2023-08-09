@@ -2,7 +2,7 @@ import { ViewerContext } from "./App";
 import { GuiModalMessage } from "./WebsocketMessages";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Modal } from "@mantine/core";
-import React, { useContext } from "react";
+import { useContext } from "react";
 
 export function ViserModal() {
   const viewer = useContext(ViewerContext)!;
@@ -26,14 +26,11 @@ function GeneratedModal({
   const popModal = viewer.useGui((state) => state.popModal);
   const removeContainer = viewer.useGui((state) => state.removeGuiContainer);
 
-  const [modalVisible, setModalVisible] = React.useState<boolean>(true);
-
   return (
     <Modal
-      opened={modalVisible}
-      title={conf.label}
+      opened={true}
+      title={conf.title}
       onClose={() => {
-        setModalVisible(false);
         removeContainer(conf.id);
         popModal();
       }}

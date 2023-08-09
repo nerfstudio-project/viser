@@ -20,7 +20,7 @@ def main():
             gui_slider = client.add_gui_slider(
                 "Slider",
                 min=1,
-                max=20,
+                max=10,
                 step=1,
                 initial_value=1,
             )
