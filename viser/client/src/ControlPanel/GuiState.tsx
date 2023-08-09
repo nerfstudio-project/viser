@@ -29,10 +29,8 @@ interface GuiState {
   server: string;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
-  // We use an object whose values are always null to emulate a set.
-  // TODO: is there a less hacky way?
   guiIdSetFromContainerId: {
-    [containerId: string]: { [configId: string]: null } | undefined;
+    [containerId: string]: Set<string> | undefined;
   };
   guiConfigFromId: { [id: string]: GuiConfig };
   guiValueFromId: { [id: string]: any };
@@ -82,10 +80,9 @@ export function useGuiState(initialServer: string) {
         addGui: (guiConfig) =>
           set((state) => {
             state.guiConfigFromId[guiConfig.id] = guiConfig;
-            state.guiIdSetFromContainerId[guiConfig.container_id] = {
-              ...state.guiIdSetFromContainerId[guiConfig.container_id],
-              [guiConfig.id]: null,
-            };
+            state.guiIdSetFromContainerId[guiConfig.container_id] = new Set(
+              state.guiIdSetFromContainerId[guiConfig.container_id]
+            ).add(guiConfig.id);
           }),
         setGuiValue: (id, value) =>
           set((state) => {
@@ -113,9 +110,9 @@ export function useGuiState(initialServer: string) {
             if (guiConfig.type === "GuiAddTabGroupMessage")
               guiConfig.tab_container_ids.forEach(state.removeGuiContainer);
 
-            delete state.guiIdSetFromContainerId[guiConfig.container_id]![
+            state.guiIdSetFromContainerId[guiConfig.container_id]!.delete(
               guiConfig.id
-            ];
+            );
             delete state.guiConfigFromId[id];
             delete state.guiValueFromId[id];
             delete state.guiAttributeFromId[id];

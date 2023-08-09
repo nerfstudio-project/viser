@@ -36,7 +36,7 @@ export default function GeneratedGuiContainer({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId],
+    (state) => state.guiIdSetFromContainerId[containerId]
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
@@ -44,7 +44,7 @@ export default function GeneratedGuiContainer({
   const out =
     guiIdSet === undefined ? null : (
       <Box pt="xs">
-        {[...Object.keys(guiIdSet)]
+        {[...guiIdSet]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
           .map((conf, index) => {
