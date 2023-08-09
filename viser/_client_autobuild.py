@@ -1,8 +1,9 @@
 import subprocess
 import sys
+from pathlib import Path
+
 import psutil
 import rich
-from pathlib import Path
 
 client_dir = Path(__file__).absolute().parent / "client"
 build_dir = client_dir / "build"

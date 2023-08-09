@@ -13,6 +13,7 @@ import numpy as onp
 from . import _messages
 
 if TYPE_CHECKING:
+    from ._gui_api import GuiApi
     from ._message_api import ClientId, MessageApi
 
 
@@ -201,3 +202,33 @@ class TransformControlsHandle(_SupportsClick, _SupportsVisibility):
         """Attach a callback for when the gizmo is moved."""
         self._impl_aux.update_cb.append(func)
         return func
+
+
+@dataclasses.dataclass
+class Gui3dContainerHandle(SceneNodeHandle):
+    """Use as a context to place GUI elements into a 3D GUI container."""
+
+    _gui_api: GuiApi
+    _container_id: str
+    _container_id_restore: Optional[str] = None
+
+    def __enter__(self) -> None:
+        self._container_id_restore = self._gui_api._get_container_id()
+        self._gui_api._set_container_id(self._container_id)
+
+    def __exit__(self, *args) -> None:
+        del args
+        assert self._container_id_restore is not None
+        self._gui_api._set_container_id(self._container_id_restore)
+        self._container_id_restore = None
+
+    def remove(self) -> None:
+        """Permanently remove this GUI container from the visualizer."""
+
+        # Call scene node remove.
+        super().remove()
+
+        # Clean up contained GUI elements.
+        self._gui_api._get_api()._queue(
+            _messages.GuiRemoveContainerChildrenMessage(self._container_id)
+        )

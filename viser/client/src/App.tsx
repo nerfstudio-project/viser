@@ -31,7 +31,7 @@ import { Titlebar } from "./Titlebar";
 import { useSceneTreeState } from "./SceneTreeState";
 import { format } from "path";
 
-type ViewerContextContents = {
+export type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: React.MutableRefObject<WebSocket | null>;

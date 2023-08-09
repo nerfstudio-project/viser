@@ -15,7 +15,8 @@ import { Html, PivotControls } from "@react-three/drei";
 import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
-
+import GeneratedGuiContainer from "./ControlPanel/Generated";
+import { Paper } from "@mantine/core";
 /** Float **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
@@ -472,6 +473,32 @@ function useMessageHandler() {
                   >
                     <Label>{message.text}</Label>
                   </div>
+                </Html>
+              </group>
+            );
+          }),
+        );
+        return;
+      }
+      case "Gui3DMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => {
+            // We wrap with <group /> because Html doesn't implement THREE.Object3D.
+            return (
+              <group ref={ref}>
+                <Html>
+                  <Paper
+                    sx={{
+                      width: "20em",
+                      fontSize: "0.8em",
+                    }}
+                    withBorder
+                  >
+                    <GeneratedGuiContainer
+                      containerId={message.container_id}
+                      viewer={viewer}
+                    />
+                  </Paper>
                 </Html>
               </group>
             );

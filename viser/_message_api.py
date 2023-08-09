@@ -27,6 +27,7 @@ from ._gui_handles import GuiHandle, _GuiHandleState
 from ._scene_handles import (
     CameraFrustumHandle,
     FrameHandle,
+    Gui3dContainerHandle,
     ImageHandle,
     LabelHandle,
     MeshHandle,
@@ -549,3 +550,28 @@ class MessageApi(abc.ABC):
             return
         for cb in handle._impl.click_cb:
             cb(handle)
+
+    def add_3d_gui_container(
+        self,
+        name: str,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+    ) -> Gui3dContainerHandle:
+        """Add a 3D gui container to the scene. The returned container handle can be
+        used as a context to place GUI elements into the 3D scene."""
+
+        # Avoids circular import.
+        from ._gui_api import GuiApi, _make_unique_id
+
+        container_id = _make_unique_id()
+        self._queue(
+            _messages.Gui3DMessage(
+                order=time.time(),
+                name=name,
+                container_id=container_id,
+            )
+        )
+        assert isinstance(self, MessageApi)
+        node_handle = SceneNodeHandle._make(self, name, wxyz, position)
+        assert isinstance(self, GuiApi)
+        return Gui3dContainerHandle(node_handle._impl, self, container_id)

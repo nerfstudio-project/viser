@@ -34,6 +34,12 @@ export interface LabelMessage {
   name: string;
   text: string;
 }
+export interface Gui3DMessage {
+  type: "Gui3DMessage";
+  order: number;
+  name: string;
+  container_id: string;
+}
 export interface PointCloudMessage {
   type: "PointCloudMessage";
   name: string;
@@ -146,6 +152,13 @@ export interface GuiAddFolderMessage {
   order: number;
   id: string;
   label: string;
+  container_id: string;
+}
+export interface GuiAddMarkdownMessage {
+  type: "GuiAddMarkdownMessage";
+  order: number;
+  id: string;
+  markdown: string;
   container_id: string;
 }
 export interface GuiAddTabGroupMessage {
@@ -337,6 +350,7 @@ export type Message =
   | CameraFrustumMessage
   | FrameMessage
   | LabelMessage
+  | Gui3DMessage
   | PointCloudMessage
   | MeshMessage
   | TransformControlsMessage
@@ -356,6 +370,7 @@ export type Message =
   | SceneNodeClickedMessage
   | ResetSceneMessage
   | GuiAddFolderMessage
+  | GuiAddMarkdownMessage
   | GuiAddTabGroupMessage
   | _GuiAddInputBase
   | GuiAddButtonMessage
