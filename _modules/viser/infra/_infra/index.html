@@ -445,11 +445,15 @@
 
             <span class="k">def</span> <span class="nf">handle_incoming</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
-                    <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                    <span class="n">error_print_wrapper</span><span class="p">(</span>
+                        <span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                    <span class="p">)</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
-                    <span class="k">lambda</span><span class="p">:</span> <span class="n">client_connection</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span>
-                        <span class="n">client_id</span><span class="p">,</span> <span class="n">message</span>
+                    <span class="n">error_print_wrapper</span><span class="p">(</span>
+                        <span class="k">lambda</span><span class="p">:</span> <span class="n">client_connection</span><span class="o">.</span><span class="n">_handle_incoming_message</span><span class="p">(</span>
+                            <span class="n">client_id</span><span class="p">,</span> <span class="n">message</span>
+                        <span class="p">)</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
 
@@ -622,6 +626,22 @@
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
         <span class="n">message</span> <span class="o">=</span> <span class="n">message_class</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
         <span class="n">handle_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">error_print_wrapper</span><span class="p">(</span><span class="n">inner</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap a Callable to print error messages when they happen.</span>
+
+<span class="sd">    This can be helpful for jobs submitted to ThreadPoolExecutor instances, which, by</span>
+<span class="sd">    default, will suppress error messages until returned futures are awaited.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">wrapped</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">inner</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">wrapped</span>
 </pre></div>
         </article>
       </div>
