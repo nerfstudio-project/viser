@@ -40,8 +40,12 @@ titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
 server.configure_theme(titlebar_content=titlebar_theme, control_layout="fixed")
 
-spline = ((0.0, 0.0, 1.0), (1.0, 1.0, 0.0), (0.0, 1.0, 1.0))
-server.add_spline(positions=spline, closed=True, tension=0.1, line_width=2)
+spline_positions = ((0.0, 0.0, 1.0), (1.0, 1.0, 0.0), (0.0, 1.0, 1.0))
+
+server.add_catmull_rom_spline(spline_positions)
+server.add_cubic_bezier_spline(
+    start=(0, 1, 0), end=(1, 0, 0), midA=(0.5, 0.5, 0), midB=(0, 0.5, 0)
+)
 
 server.world_axes.visible = True
 

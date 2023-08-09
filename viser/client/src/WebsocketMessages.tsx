@@ -329,11 +329,19 @@ export interface ThemeConfigurationMessage {
   control_layout: "floating" | "collapsible" | "fixed";
   dark_mode: boolean;
 }
-export interface SplineMessage {
-  type: "SplineMessage";
+export interface CatmullRomSplineMessage {
+  type: "CatmullRomSplineMessage";
   positions: [number, number, number][];
   tension: number;
   closed: boolean;
+  line_width: number;
+}
+export interface CubicBezierSplineMessage {
+  type: "CubicBezierSplineMessage";
+  start: [number, number, number];
+  end: [number, number, number];
+  midA: [number, number, number];
+  midB: [number, number, number];
   line_width: number;
 }
 
@@ -381,4 +389,5 @@ export type Message =
   | GuiSetDisabledMessage
   | GuiSetValueMessage
   | ThemeConfigurationMessage
-  | SplineMessage;
+  | CatmullRomSplineMessage
+  | CubicBezierSplineMessage;

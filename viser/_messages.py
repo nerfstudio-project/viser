@@ -438,10 +438,21 @@ class ThemeConfigurationMessage(Message):
 
 
 @dataclasses.dataclass
-class SplineMessage(Message):
-    """Message from server->client carrying camera spline information"""
+class CatmullRomSplineMessage(Message):
+    """Message from server->client carrying Catmull Rom spline information"""
 
     positions: Tuple[Tuple[float, float, float], ...]
     tension: float
     closed: bool
+    line_width: float
+
+
+@dataclasses.dataclass
+class CubicBezierSplineMessage(Message):
+    """Message from server->client carrying cubic bezier spline information"""
+
+    start: Tuple[float, float, float]
+    end: Tuple[float, float, float]
+    midA: Tuple[float, float, float]
+    midB: Tuple[float, float, float]
     line_width: float

@@ -8,7 +8,7 @@ import { TextureLoader } from "three";
 import { ViewerContext } from "./App";
 import { SceneNode } from "./SceneTree";
 import { syncSearchParamServer } from "./SearchParamsUtils";
-import { CameraFrustum, CoordinateFrame } from "./ThreeAssets";
+import { CameraFrustum, CatmullRomSpline, CubicBezierSpline, CoordinateFrame } from "./ThreeAssets";
 import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
@@ -17,8 +17,6 @@ import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Paper } from "@mantine/core";
-
-import { SplineConfig, Spline } from "./Splines";
 
 /** Float **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -569,12 +567,33 @@ function useMessageHandler() {
         return;
       }
 
-      case "SplineMessage": {
-        const spline = new SplineConfig(message.positions, message.closed, message.tension, message.line_width);
+      case "CatmullRomSplineMessage": {
         addSceneNodeMakeParents(new SceneNode<THREE.Mesh>(
-          "Spline",
+          "Catmull Rom Spline",
           (ref) => {
-            return <Spline ref={ref} path={spline} />
+            return <CatmullRomSpline
+              ref={ref}
+              positions={message.positions}
+              tension={message.tension}
+              closed={message.closed}
+              lineWidth={message.line_width} />
+          }
+        ));
+        return;
+      }
+
+      case "CubicBezierSplineMessage": {
+        addSceneNodeMakeParents(new SceneNode<THREE.Mesh>(
+          "Cubic Bezier Spline",
+          (ref) => {
+            return <CubicBezierSpline
+              ref={ref}
+              start={message.start}
+              end={message.end}
+              midA={message.midA}
+              midB={message.midB}
+              lineWidth={message.line_width}
+            />
           }
         ));
         return;
