@@ -16,7 +16,10 @@ import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { Box, Paper } from "@mantine/core";
+import { Paper } from "@mantine/core";
+
+import { SplineConfig, Spline } from "./Splines";
+
 /** Float **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
@@ -91,6 +94,7 @@ function useMessageHandler() {
         );
         return;
       }
+
       // Add a point cloud.
       case "PointCloudMessage": {
         const geometry = new THREE.BufferGeometry();
@@ -209,10 +213,10 @@ function useMessageHandler() {
       case "CameraFrustumMessage": {
         const texture =
           message.image_media_type !== null &&
-          message.image_base64_data !== null
+            message.image_base64_data !== null
             ? new TextureLoader().load(
-                `data:${message.image_media_type};base64,${message.image_base64_data}`,
-              )
+              `data:${message.image_media_type};base64,${message.image_base64_data}`,
+            )
             : undefined;
 
         const height = message.scale * Math.tan(message.fov / 2.0) * 2.0;
@@ -564,8 +568,20 @@ function useMessageHandler() {
         removeGuiContainer(message.container_id);
         return;
       }
+
+      case "SplineMessage": {
+        const spline = new SplineConfig(message.positions, message.closed, message.tension, message.line_width);
+        addSceneNodeMakeParents(new SceneNode<THREE.Mesh>(
+          "Spline",
+          (ref) => {
+            return <Spline ref={ref} path={spline} />
+          }
+        ));
+        return;
+      }
+
       default: {
-        console.log("Received message did not match any known types:", message);
+        console.log("Receivd message did not match any known types:", message);
         return;
       }
     }

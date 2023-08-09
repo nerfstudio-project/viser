@@ -194,30 +194,30 @@ export function SceneNodeThreeObject(props: { name: string }) {
             !clickable
               ? undefined
               : (e) => {
-                  if (!isVisible()) return;
-                  e.stopPropagation();
-                  sendClicksThrottled({
-                    type: "SceneNodeClickedMessage",
-                    name: props.name,
-                  });
-                }
+                if (!isVisible()) return;
+                e.stopPropagation();
+                sendClicksThrottled({
+                  type: "SceneNodeClickedMessage",
+                  name: props.name,
+                });
+              }
           }
           onPointerOver={
             !clickable
               ? undefined
               : (e) => {
-                  if (!isVisible()) return;
-                  e.stopPropagation();
-                  setHovered(true);
-                }
+                if (!isVisible()) return;
+                e.stopPropagation();
+                setHovered(true);
+              }
           }
           onPointerOut={
             !clickable
               ? undefined
               : () => {
-                  if (!isVisible()) return;
-                  setHovered(false);
-                }
+                if (!isVisible()) return;
+                setHovered(false);
+              }
           }
         >
           <Select enabled={hovered}>{objNode}</Select>

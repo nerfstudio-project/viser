@@ -329,6 +329,13 @@ export interface ThemeConfigurationMessage {
   control_layout: "floating" | "collapsible" | "fixed";
   dark_mode: boolean;
 }
+export interface SplineMessage {
+  type: "SplineMessage";
+  positions: [number, number, number][];
+  tension: number;
+  closed: boolean;
+  line_width: number;
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -373,4 +380,5 @@ export type Message =
   | GuiSetVisibleMessage
   | GuiSetDisabledMessage
   | GuiSetValueMessage
-  | ThemeConfigurationMessage;
+  | ThemeConfigurationMessage
+  | SplineMessage;

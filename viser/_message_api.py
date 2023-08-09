@@ -153,6 +153,16 @@ class MessageApi(abc.ABC):
             ),
         )
 
+    def add_spline(
+        self,
+        positions: Tuple[Tuple[float, float, float], ...],
+        tension: float = 0.5,
+        closed: bool = False,
+        line_width: float = 1,
+    ) -> None:
+        """Add spline using catmull rom interpolation"""
+        self._queue(_messages.SplineMessage(positions, tension, closed, line_width))
+
     def add_camera_frustum(
         self,
         name: str,

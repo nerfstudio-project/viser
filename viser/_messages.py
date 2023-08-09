@@ -435,3 +435,13 @@ class ThemeConfigurationMessage(Message):
     titlebar_content: Optional[theme.TitlebarConfig]
     control_layout: Literal["floating", "collapsible", "fixed"]
     dark_mode: bool
+
+
+@dataclasses.dataclass
+class SplineMessage(Message):
+    """Message from server->client carrying camera spline information"""
+
+    positions: Tuple[Tuple[float, float, float], ...]
+    tension: float
+    closed: bool
+    line_width: float

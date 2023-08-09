@@ -39,6 +39,10 @@ image = TitlebarImage(
 titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
 server.configure_theme(titlebar_content=titlebar_theme, control_layout="fixed")
+
+spline = ((0.0, 0.0, 1.0), (1.0, 1.0, 0.0), (0.0, 1.0, 1.0))
+server.add_spline(positions=spline, closed=True, tension=0.1, line_width=2)
+
 server.world_axes.visible = True
 
 while True:
