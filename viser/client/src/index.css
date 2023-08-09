@@ -31,3 +31,14 @@ code {
 .stats-panel {
   position: absolute !important;
 }
+
+/* Styling for color chips in markdown */
+.gfm-color-chip {
+  margin-left: 0.125rem;
+  display: inline-block;
+  height: 0.625rem;
+  width: 0.625rem;
+  border-radius: 9999px;
+  border: 1px solid gray;
+  transform: TranslateY(0.07em);
+}

@@ -2,7 +2,7 @@ import {
   GuiAddFolderMessage,
   GuiAddTabGroupMessage,
 } from "../WebsocketMessages";
-import { ViewerContext } from "../App";
+import { ViewerContext, ViewerContextContents } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiConfig } from "./GuiState";
 import { Image, Tabs, TabsValue } from "@mantine/core";
@@ -22,14 +22,19 @@ import {
   Tooltip,
 } from "@mantine/core";
 import React from "react";
+import Markdown from "../Markdown";
+import { ErrorBoundary } from "react-error-boundary";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
   containerId,
+  viewer,
 }: {
   containerId: string;
+  viewer?: ViewerContextContents;
 }) {
-  const viewer = React.useContext(ViewerContext)!;
+  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
+
   const guiIdSet = viewer.useGui(
     (state) => state.guiIdSetFromContainerId[containerId],
   );
@@ -38,31 +43,51 @@ export default function GeneratedGuiContainer({
   // Render each GUI element in this container.
   const out =
     guiIdSet === undefined ? null : (
-      <>
+      <Box pt="xs">
         {[...Object.keys(guiIdSet)]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
           .map((conf, index) => {
-            return (
-              <GeneratedInput conf={conf} key={conf.id} first={index == 0} />
-            );
+            return <GeneratedInput conf={conf} key={conf.id} viewer={viewer} />;
           })}
-      </>
+      </Box>
     );
 
   return out;
 }
 
 /** A single generated GUI element. */
-function GeneratedInput({ conf, first }: { conf: GuiConfig; first: boolean }) {
+function GeneratedInput({
+  conf,
+  viewer,
+}: {
+  conf: GuiConfig;
+  viewer?: ViewerContextContents;
+}) {
+  // Handle GUI input types.
+  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
+
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
-    return <GeneratedFolder conf={conf} first={first} />;
+    return <GeneratedFolder conf={conf} />;
   if (conf.type == "GuiAddTabGroupMessage")
     return <GeneratedTabGroup conf={conf} />;
+  if (conf.type == "GuiAddMarkdownMessage") {
+    let { visible } =
+      viewer.useGui((state) => state.guiAttributeFromId[conf.id]) || {};
+    visible = visible ?? true;
+    if (!visible) return <></>;
+    return (
+      <Box pb="xs" px="sm">
+        <ErrorBoundary
+          fallback={<Text align="center">Markdown Failed to Render</Text>}
+        >
+          <Markdown>{conf.markdown}</Markdown>
+        </ErrorBoundary>
+      </Box>
+    );
+  }
 
-  // Handle GUI input types.
-  const viewer = React.useContext(ViewerContext)!;
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
   function updateValue(value: any) {
     setGuiValue(conf.id, value);
@@ -299,24 +324,17 @@ function GeneratedInput({ conf, first }: { conf: GuiConfig; first: boolean }) {
     input = <LabeledInput id={conf.id} label={conf.label} input={input} />;
 
   return (
-    <Box pt={first ? "sm" : undefined} pb="xs" px="sm">
+    <Box pb="xs" px="sm">
       {input}
     </Box>
   );
 }
 
-function GeneratedFolder({
-  conf,
-  first,
-}: {
-  conf: GuiAddFolderMessage;
-  first: boolean;
-}) {
+function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
   return (
     <Accordion
       chevronPosition="right"
       multiple
-      pt={first ? "sm" : undefined}
       pb="xs"
       px="sm"
       defaultValue={["folder"]}
@@ -351,7 +369,12 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
   const icons = conf.tab_icons_base64;
 
   return (
-    <Tabs radius="xs" value={tabState} onTabChange={setTabState}>
+    <Tabs
+      radius="xs"
+      value={tabState}
+      onTabChange={setTabState}
+      sx={(theme) => ({ marginTop: "-" + theme.spacing.xs })}
+    >
       <Tabs.List>
         {conf.tab_labels.map((label, index) => (
           <Tabs.Tab
