@@ -8,7 +8,7 @@ export function ViserModal() {
   const viewer = useContext(ViewerContext)!;
 
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
-  const modalGuiConfigs = [...Object.keys(guiConfigFromId)]
+  const modals = [...Object.keys(guiConfigFromId)]
     .map((id) => guiConfigFromId[id])
     .sort((a, b) => a.order - b.order)
     .map((conf) => {
@@ -20,12 +20,12 @@ export function ViserModal() {
         return;
     });
 
-  return modalGuiConfigs;
+  return modals;
 }
 
 function GeneratedModal({ conf }: { conf: GuiAddModalMessage }) {
   const viewer = useContext(ViewerContext)!;
-  const remove = viewer.useGui((state) => state.removeGuiContainer);
+  const removeContainer = viewer.useGui((state) => state.removeGuiContainer);
 
   const [modalVisible, setModalVisible] = React.useState<boolean>(true);
 
@@ -35,7 +35,7 @@ function GeneratedModal({ conf }: { conf: GuiAddModalMessage }) {
       title={conf.label}
       onClose={() => {
         setModalVisible(false);
-        remove(conf.id);
+        removeContainer(conf.id);
       }}
       centered>
         <GeneratedGuiContainer containerId={conf.id} />
