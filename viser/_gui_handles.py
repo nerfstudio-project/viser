@@ -16,7 +16,6 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    Literal,
 )
 
 import numpy as onp
