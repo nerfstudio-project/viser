@@ -156,6 +156,8 @@ function useMessageHandler() {
           color: message.color || undefined,
           vertexColors: message.vertex_colors !== null,
           wireframe: message.wireframe,
+          transparent: message.opacity !== null,
+          opacity: message.opacity ?? undefined,
           side: {
             front: THREE.FrontSide,
             back: THREE.BackSide,

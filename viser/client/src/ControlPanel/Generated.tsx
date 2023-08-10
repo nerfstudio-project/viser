@@ -36,7 +36,7 @@ export default function GeneratedGuiContainer({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId]
+    (state) => state.guiIdSetFromContainerId[containerId],
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 

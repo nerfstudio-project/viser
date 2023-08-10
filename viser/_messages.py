@@ -133,6 +133,7 @@ class MeshMessage(Message):
     vertex_colors: Optional[onpt.NDArray[onp.uint8]]
 
     wireframe: bool
+    opacity: Optional[float]
     side: Literal["front", "back", "double"] = "front"
 
     def __post_init__(self):
