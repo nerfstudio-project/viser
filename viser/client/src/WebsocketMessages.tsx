@@ -55,6 +55,7 @@ export interface MeshMessage {
   color: number | null;
   vertex_colors: ArrayBuffer | null;
   wireframe: boolean;
+  opacity: number | null;
   side: "front" | "back" | "double";
 }
 export interface TransformControlsMessage {
