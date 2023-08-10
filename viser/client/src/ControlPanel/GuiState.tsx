@@ -85,7 +85,7 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.guiConfigFromId[guiConfig.id] = guiConfig;
             state.guiIdSetFromContainerId[guiConfig.container_id] = new Set(
-              state.guiIdSetFromContainerId[guiConfig.container_id]
+              state.guiIdSetFromContainerId[guiConfig.container_id],
             ).add(guiConfig.id);
           }),
         addModal: (modalConfig) =>
@@ -123,7 +123,7 @@ export function useGuiState(initialServer: string) {
               guiConfig.tab_container_ids.forEach(state.removeGuiContainer);
 
             state.guiIdSetFromContainerId[guiConfig.container_id]!.delete(
-              guiConfig.id
+              guiConfig.id,
             );
             delete state.guiConfigFromId[id];
             delete state.guiValueFromId[id];
