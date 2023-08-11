@@ -353,6 +353,7 @@ class MessageApi(abc.ABC):
         
         Expects depth_img to be a HxWx1 array of depth values in **floating point**
         """
+        print("hello")
         assert depth_img.dtype == onp.float32 or depth_img.dtype == onp.float16
         scale = depth_img.max()
         assert len(depth_img.shape) == 3 
@@ -369,10 +370,11 @@ class MessageApi(abc.ABC):
         depth_img = onp.clip(depth_img, 0, 100.0)*(base**2) #multiplying by 100 makes the lowest digit the hundreths
         depth_img = depth_img.astype(onp.uint32)
         intdepth = onp.zeros((*depth_img.shape[:-1], 4), dtype=onp.uint8)
-        for i in range(-1,-5,-1):
-            intdepth[...,-i] = ((depth_img % base)/10.0)*255
+        print(depth_img[0,0,:])
+        for i in range(4):
+            intdepth[...,i] = (((depth_img % base)/10.0)*255).squeeze()
             depth_img = depth_img // base
-        print(depth_img[0,0,:], intdepth[0,0,:])
+        print(intdepth[0,0,:])
         with io.BytesIO() as data_buffer:
             iio.imwrite(data_buffer, intdepth, extension=".png")
             packed_depth = base64.b64encode(data_buffer.getvalue()).decode("ascii")

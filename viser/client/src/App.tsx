@@ -225,10 +225,9 @@ function NeRFImage(){
     // uint depthUint = rgbaPacked.b << 8 | rgbaPacked.a;
     // float depth = (float(depthUint) / 65535.0) * 1000.0;
 
-    float depth = rgbaPacked.a*0.1 + rgbaPacked.b + rgbaPacked.g * 10.0 + rgbaPacked.r * 100.0;
-    return depth;
-    // float nonLinearDepth = depthSample(depth, zNear, zFar);
-    // return nonLinearDepth;
+    float depth = rgbaPacked.r*0.1 + rgbaPacked.g + rgbaPacked.b * 10.0 + rgbaPacked.a * 100.0;
+    float nonLinearDepth = depthSample(depth/10.0, zNear, zFar);
+    return nonLinearDepth;
   }
 
   void main() {
@@ -240,6 +239,7 @@ function NeRFImage(){
     gl_FragColor = vec4( color.rgb, 1.0 );
 
     float depth = readDepth(nerfDepth, vUv, cameraNear, cameraFar);
+    // gl_FragColor = vec4( depth,depth,depth, 1.0 );
     
     if(depth < gl_FragCoord.z){
       gl_FragDepth = depth;
