@@ -262,6 +262,7 @@ class MessageApi(abc.ABC):
         faces: onp.ndarray,
         color: RgbTupleOrArray = (90, 200, 255),
         wireframe: bool = False,
+        opacity: Optional[float] = None,
         side: Literal["front", "back", "double"] = "front",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
@@ -277,6 +278,7 @@ class MessageApi(abc.ABC):
                 color=_encode_rgb(color),
                 vertex_colors=None,
                 wireframe=wireframe,
+                opacity=opacity,
                 side=side,
             )
         )
@@ -306,6 +308,7 @@ class MessageApi(abc.ABC):
                         vertex_colors.view(onp.ndarray).astype(onp.uint8)[..., :3]
                     ),
                     wireframe=wireframe,
+                    opacity=None,
                     side=side,
                 )
             )
@@ -329,6 +332,7 @@ class MessageApi(abc.ABC):
                     ),
                     vertex_colors=(None),
                     wireframe=wireframe,
+                    opacity=None,
                     side=side,
                 )
             )
@@ -497,7 +501,11 @@ class MessageApi(abc.ABC):
         """Wrapped method for sending messages safely."""
         # This implementation will retain message ordering because _queue_thread has
         # just 1 worker.
-        self._queue_thread.submit(lambda: self._queue_blocking(message))
+        from .infra._infra import error_print_wrapper
+
+        self._queue_thread.submit(
+            error_print_wrapper(lambda: self._queue_blocking(message))
+        )
 
     def _queue_blocking(self, message: _messages.Message) -> None:
         """Wrapped method for sending messages safely. Blocks until ready to send."""

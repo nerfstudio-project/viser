@@ -44,7 +44,7 @@ export default function GeneratedGuiContainer({
   const out =
     guiIdSet === undefined ? null : (
       <Box pt="xs">
-        {[...Object.keys(guiIdSet)]
+        {[...guiIdSet]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
           .map((conf, index) => {

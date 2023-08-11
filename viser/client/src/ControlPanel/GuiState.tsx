@@ -29,11 +29,10 @@ interface GuiState {
   server: string;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
-  // We use an object whose values are always null to emulate a set.
-  // TODO: is there a less hacky way?
   guiIdSetFromContainerId: {
-    [containerId: string]: { [configId: string]: null } | undefined;
+    [containerId: string]: Set<string> | undefined;
   };
+  modals: Messages.GuiModalMessage[];
   guiConfigFromId: { [id: string]: GuiConfig };
   guiValueFromId: { [id: string]: any };
   guiAttributeFromId: {
@@ -44,6 +43,8 @@ interface GuiState {
 interface GuiActions {
   setTheme: (theme: Messages.ThemeConfigurationMessage) => void;
   addGui: (config: GuiConfig) => void;
+  addModal: (config: Messages.GuiModalMessage) => void;
+  popModal: () => void;
   setGuiValue: (id: string, value: any) => void;
   setGuiVisible: (id: string, visible: boolean) => void;
   setGuiDisabled: (id: string, visible: boolean) => void;
@@ -64,6 +65,7 @@ const cleanGuiState: GuiState = {
   websocketConnected: false,
   backgroundAvailable: false,
   guiIdSetFromContainerId: {},
+  modals: [],
   guiConfigFromId: {},
   guiValueFromId: {},
   guiAttributeFromId: {},
@@ -82,10 +84,17 @@ export function useGuiState(initialServer: string) {
         addGui: (guiConfig) =>
           set((state) => {
             state.guiConfigFromId[guiConfig.id] = guiConfig;
-            state.guiIdSetFromContainerId[guiConfig.container_id] = {
-              ...state.guiIdSetFromContainerId[guiConfig.container_id],
-              [guiConfig.id]: null,
-            };
+            state.guiIdSetFromContainerId[guiConfig.container_id] = new Set(
+              state.guiIdSetFromContainerId[guiConfig.container_id],
+            ).add(guiConfig.id);
+          }),
+        addModal: (modalConfig) =>
+          set((state) => {
+            state.modals.push(modalConfig);
+          }),
+        popModal: () =>
+          set((state) => {
+            state.modals.pop();
           }),
         setGuiValue: (id, value) =>
           set((state) => {
@@ -113,9 +122,9 @@ export function useGuiState(initialServer: string) {
             if (guiConfig.type === "GuiAddTabGroupMessage")
               guiConfig.tab_container_ids.forEach(state.removeGuiContainer);
 
-            delete state.guiIdSetFromContainerId[guiConfig.container_id]![
-              guiConfig.id
-            ];
+            state.guiIdSetFromContainerId[guiConfig.container_id]!.delete(
+              guiConfig.id,
+            );
             delete state.guiConfigFromId[id];
             delete state.guiValueFromId[id];
             delete state.guiAttributeFromId[id];
