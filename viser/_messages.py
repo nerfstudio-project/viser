@@ -133,6 +133,7 @@ class MeshMessage(Message):
     vertex_colors: Optional[onpt.NDArray[onp.uint8]]
 
     wireframe: bool
+    opacity: Optional[float]
     side: Literal["front", "back", "double"] = "front"
 
     def __post_init__(self):
@@ -321,6 +322,14 @@ class _GuiAddInputBase(Message):
     container_id: str
     hint: Optional[str]
     initial_value: Any
+
+
+@dataclasses.dataclass
+class GuiModalMessage(Message):
+    order: float
+    id: str
+    title: str
+    container_id: str
 
 
 @dataclasses.dataclass
