@@ -394,6 +394,7 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
+        console.log("Background");
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_data}`,
           (texture) => {
@@ -424,12 +425,11 @@ function useMessageHandler() {
           `data:$image/png;base64,${message.base64_depth}`,
           (texture) => {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.);
-            console.log(texture);
-            texture.format = THREE.RGBAIntegerFormat;
-            texture.type = THREE.UnsignedByteType;
-            texture.internalFormat = 'RGBA8UI';
+            // texture.format = THREE.RGBAIntegerFormat;
+            // texture.type = THREE.UnsignedByteType;
+            // texture.internalFormat = 'RGBA8UI';
             texture.minFilter = THREE.NearestFilter;
-            texture.magFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.NearestFilter;
             viewer.nerfMaterialRef.current!.uniforms.nerfDepth.value = texture;
             viewer.nerfMaterialRef.current!.uniforms.depthScale.value = message.depth_scale;
           }
