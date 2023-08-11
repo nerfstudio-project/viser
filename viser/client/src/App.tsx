@@ -190,11 +190,11 @@ function NeRFImage(){
   const fragShader = `  
   precision highp float;
   precision highp int;
-  precision highp usampler2D;
+  // precision lowp usampler2D;
 
   varying vec2 vUv;
   uniform sampler2D nerfColor;
-  uniform usampler2D nerfDepth;
+  uniform sampler2D nerfDepth;
   uniform float cameraNear;
   uniform float cameraFar;
   uniform float depthScale;
@@ -217,13 +217,16 @@ function NeRFImage(){
       return nonLinearDepth;
   }
 
-  float readDepth( usampler2D depthSampler, vec2 coord, float zNear, float zFar) {
+  float readDepth( sampler2D depthSampler, vec2 coord, float zNear, float zFar) {
     // the depth is packed into RGBA with 8 bits each
-    uvec4 rgbaPacked = texture(depthSampler,coord);
-    uint depthUint = rgbaPacked.r << 24 | rgbaPacked.g << 16 | rgbaPacked.b << 8 | rgbaPacked.a;
-    float depth = uintBitsToFloat(depthUint);
-    float nonLinearDepth = depthSample(depth, zNear, zFar);
-    return nonLinearDepth;
+    vec4 rgbaPacked = texture(depthSampler,coord);
+    // uint depthUint = rgbaPacked.b << 8 | rgbaPacked.a;
+    // float depth = (float(depthUint) / 65535.0) * 1000.0;
+
+    float depth = rgbaPacked.a*0.1 + rgbaPacked.b + rgbaPacked.g * 10.0 + rgbaPacked.r * 100.0;
+    return depth;
+    // float nonLinearDepth = depthSample(depth, zNear, zFar);
+    // return nonLinearDepth;
   }
 
   void main() {
@@ -233,8 +236,9 @@ function NeRFImage(){
     }
     vec4 color = texture( nerfColor, vUv );
     gl_FragColor = vec4( color.rgb, 1.0 );
-    
+
     float depth = readDepth(nerfDepth, vUv, cameraNear, cameraFar);
+    
     if(depth < gl_FragCoord.z){
       gl_FragDepth = depth;
     }else{

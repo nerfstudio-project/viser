@@ -349,20 +349,33 @@ class MessageApi(abc.ABC):
         
         Expects depth_img to be a HxWx1 array of depth values in **floating point**
         """
-        assert depth_img.dtype == onp.float32
+        assert depth_img.dtype == onp.float32 or depth_img.dtype == onp.float16
+        scale = depth_img.max()
+        assert len(depth_img.shape) == 3 
+        assert depth_img.shape[2] == 1
         media_type, base64_rgb = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
         # this little maneuver is to get the depth image to be 4 channels RGBA integer
-        intdepth = depth_img.view(onp.uint8).reshape((*depth_img.shape[:-1], 4))
-        print(intdepth.shape)
+        # intdepth = depth_img.view(onp.uint8).reshape((*depth_img.shape[:-1], 4))
+
+        # intdepth = onp.clip(((depth_img.astype(onp.float32) / 1000) * 65535.0),0,65534).astype(onp.uint16).view(onp.uint8).reshape((*depth_img.shape[:-1], 2))
+        # intdepth = onp.pad(intdepth, ((0,0), (0,0), (2,0)), mode="constant", constant_values=0)
+        base = 10
+        depth_img = onp.clip(depth_img, 0, 100.0)*(base**2) #multiplying by 100 makes the lowest digit the hundreths
+        depth_img = depth_img.astype(onp.uint32)
+        intdepth = onp.zeros((*depth_img.shape[:-1], 4), dtype=onp.uint8)
+        for i in range(-1,-5,-1):
+            intdepth[...,-i] = ((depth_img % base)/10.0)*255
+            depth_img = depth_img // base
+        print(depth_img[0,0,:], intdepth[0,0,:])
         with io.BytesIO() as data_buffer:
             iio.imwrite(data_buffer, intdepth, extension=".png")
             packed_depth = base64.b64encode(data_buffer.getvalue()).decode("ascii")
         
         self._queue(
             _messages.PopupImageMessage(
-                media_type=media_type, base64_rgb=base64_rgb, base64_depth = packed_depth, depth_scale=1.0
+                media_type=media_type, base64_rgb=base64_rgb, base64_depth = packed_depth, depth_scale=scale
             )
         )
     def set_background_image(
