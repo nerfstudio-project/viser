@@ -47,7 +47,7 @@ export default function GeneratedGuiContainer({
         {[...guiIdSet]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
-          .map((conf, index) => {
+          .map((conf) => {
             return <GeneratedInput conf={conf} key={conf.id} viewer={viewer} />;
           })}
       </Box>
@@ -116,6 +116,7 @@ function GeneratedInput({
         <Button
           id={conf.id}
           fullWidth
+          color={"0x000"}
           onClick={() =>
             messageSender({
               type: "GuiUpdateMessage",

@@ -1,10 +1,9 @@
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import GeneratedGuiContainer from "./Generated";
 import { ViewerContext } from "../App";
-import ServerControls from "./Server";
+import ServerControls from "./ServerControls";
 import {
   ActionIcon,
-  Aside,
   Box,
   Collapse,
   Tooltip,
@@ -160,12 +159,13 @@ export default function ControlPanel(props: {
         >
           {collapsedView}
         </Box>
-        <Aside
-          hiddenBreakpoint={"xs"}
-          fixed
+        {/* Using an <Aside /> below will break Mantine color inputs. */}
+        <Box
           sx={(theme) => ({
             width: collapsed ? 0 : "20em",
+            top: 0,
             bottom: 0,
+            right: 0,
             overflow: "scroll",
             boxSizing: "border-box",
             borderLeft: "1px solid",
@@ -174,6 +174,8 @@ export default function ControlPanel(props: {
                 ? theme.colors.gray[4]
                 : theme.colors.dark[4],
             transition: "width 0.5s 0s",
+            backgroundColor:
+              theme.colorScheme == "dark" ? theme.colors.dark[8] : "0xffffff",
           })}
         >
           <Box
@@ -198,7 +200,7 @@ export default function ControlPanel(props: {
             </Box>
             {panelContents}
           </Box>
-        </Aside>
+        </Box>
       </>
     );
   } else {

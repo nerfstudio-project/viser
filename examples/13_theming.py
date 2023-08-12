@@ -38,10 +38,28 @@ image = TitlebarImage(
 
 titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
-server.configure_theme(
-    dark_mode=True, titlebar_content=titlebar_theme, control_layout="fixed"
+
+# GUI elements for controllable values.
+dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
+control_layout = server.add_gui_dropdown(
+    "Control layout", ("floating", "fixed", "collapsible")
 )
-server.world_axes.visible = True
+brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
+synchronize = server.add_gui_button("Apply theme")
+
+
+@synchronize.on_click
+def synchronize_theme(_) -> None:
+    server.configure_theme(
+        dark_mode=dark_mode.value,
+        titlebar_content=titlebar_theme,
+        control_layout=control_layout.value,
+        brand_color=brand_color.value,
+    )
+    server.world_axes.visible = True
+
+
+synchronize_theme(synchronize)
 
 while True:
     time.sleep(10.0)

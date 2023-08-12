@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import abc
 import base64
+import colorsys
 import io
 import threading
 import time
@@ -43,6 +44,16 @@ if TYPE_CHECKING:
 
 
 P = ParamSpec("P")
+
+
+def _hex_from_hls(h: float, l: float, s: float) -> str:
+    """Converts HLS values in [0.0, 1.0] to a hex-formatted string, eg 0xffffff."""
+    return "#" + "".join(
+        [
+            int(min(255, max(0, channel * 255.0)) + 0.5).to_bytes(1, "little").hex()
+            for channel in colorsys.hls_to_rgb(h, l, s)
+        ]
+    )
 
 
 def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
@@ -143,13 +154,54 @@ class MessageApi(abc.ABC):
         titlebar_content: Optional[theme.TitlebarConfig] = None,
         control_layout: Literal["floating", "collapsible", "fixed"] = "floating",
         dark_mode: bool = False,
+        brand_color: Optional[Tuple[int, int, int]] = None,
     ) -> None:
         """Configure the viser front-end's visual appearance."""
+
+        colors_cast: Optional[
+            Tuple[str, str, str, str, str, str, str, str, str, str]
+        ] = None
+
+        if brand_color is not None:
+            assert len(brand_color) in (3, 10)
+            if len(brand_color) == 3:
+                assert all(
+                    map(lambda val: isinstance(val, int), brand_color)
+                ), "All channels should be integers."
+
+                # RGB => HLS.
+                h, l, s = colorsys.rgb_to_hls(
+                    brand_color[0] / 255.0,
+                    brand_color[1] / 255.0,
+                    brand_color[2] / 255.0,
+                )
+
+                # Automatically generate a 10-color palette.
+                min_l = max(l - 0.08, 0.0)
+                max_l = min(0.8 + 0.5, 0.9)
+                l = max(min_l, min(max_l, l))
+
+                ls = []
+                primary_index = 8
+                ls = tuple(
+                    onp.interp(
+                        x=onp.arange(10), xp=(0, primary_index, 9), fp=(max_l, l, min_l)
+                    )
+                )
+                colors_cast = tuple(_hex_from_hls(h, ls[i], s) for i in range(10))
+            else:
+                colors_cast = brand_color
+
+        assert colors_cast is None or all(
+            [isinstance(val, str) and val.startswith("#") for val in colors_cast]
+        ), "All string colors should be in hexadecimal + prefixed with #, eg #ffffff."
+
         self._queue(
             _messages.ThemeConfigurationMessage(
                 titlebar_content=titlebar_content,
                 control_layout=control_layout,
                 dark_mode=dark_mode,
+                colors=colors_cast,
             ),
         )
 

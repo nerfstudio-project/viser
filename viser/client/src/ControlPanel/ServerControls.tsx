@@ -102,6 +102,7 @@ export default function ServerControls() {
           }}
         />
         <Divider my="sm" />
+        Scene tree
         <MemoizedTable compact={true} />
       </Stack>
     </>

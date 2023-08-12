@@ -59,6 +59,7 @@ const cleanGuiState: GuiState = {
     titlebar_content: null,
     control_layout: "floating",
     dark_mode: false,
+    colors: null,
   },
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.

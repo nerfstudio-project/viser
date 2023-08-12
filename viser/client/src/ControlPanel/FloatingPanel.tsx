@@ -39,7 +39,7 @@ export default function FloatingPanel({
           top: "1em",
           right: "1em",
           margin: 0,
-          overflowY: "auto",
+          overflowY: "scroll" /* overflowY: auto will break dropdown menus.*/,
           "& .expand-icon": {
             transform: "rotate(0)",
           },

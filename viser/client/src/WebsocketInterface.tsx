@@ -580,25 +580,29 @@ function useMessageHandler() {
   };
 }
 
-/** Component for handling websocket connections. */
-export default function WebsocketInterface() {
-  const viewer = useContext(ViewerContext)!;
+export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();
-
-  const server = viewer.useGui((state) => state.server);
-  const resetGui = viewer.useGui((state) => state.resetGui);
-
-  syncSearchParamServer(server);
-
-  const messageQueue: Message[] = [];
+  const messageQueueRef = useContext(ViewerContext)!.messageQueueRef;
 
   useFrame(() => {
     // Handle messages before every frame.
     // Place this directly in ws.onmessage can cause race conditions!
-    const numMessages = messageQueue.length;
-    const processBatch = messageQueue.splice(0, numMessages);
+    const numMessages = messageQueueRef.current.length;
+    const processBatch = messageQueueRef.current.splice(0, numMessages);
     processBatch.forEach(handleMessage);
   });
+
+  return null;
+}
+
+/** Component for handling websocket connections. */
+export function WebsocketMessageProducer() {
+  const messageQueueRef = useContext(ViewerContext)!.messageQueueRef;
+  const viewer = useContext(ViewerContext)!;
+  const server = viewer.useGui((state) => state.server);
+  const resetGui = viewer.useGui((state) => state.resetGui);
+
+  syncSearchParamServer(server);
 
   React.useEffect(() => {
     // Lock for making sure messages are handled in order.
@@ -650,7 +654,7 @@ export default function WebsocketInterface() {
         });
         try {
           const messages = await messagePromise;
-          messageQueue.push(...messages);
+          messageQueueRef.current.push(...messages);
         } finally {
           orderLock.acquired && orderLock.release();
         }
@@ -665,7 +669,7 @@ export default function WebsocketInterface() {
       ws?.close();
       clearTimeout(timeout);
     };
-  }, [server, handleMessage, resetGui]);
+  }, [server, resetGui]);
 
   return <></>;
 }
