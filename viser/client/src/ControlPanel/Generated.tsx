@@ -384,7 +384,9 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
             icon={
               icons[index] === null ? undefined : (
                 <Image
-                  height="1.0rem"
+                  /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
+                  height={"0.9rem"}
+                  width={"0.9rem"}
                   sx={(theme) => ({
                     filter:
                       theme.colorScheme == "dark" ? "invert(1)" : undefined,

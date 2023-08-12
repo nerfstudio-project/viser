@@ -5,7 +5,7 @@ import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 import { useDisclosure } from "@mantine/hooks";
 
-export const FloatingPanelContext = React.createContext<null | {
+const FloatingPanelContext = React.createContext<null | {
   wrapperRef: React.RefObject<HTMLDivElement>;
   expanded: boolean;
   toggleExpanded: () => void;
@@ -264,4 +264,14 @@ FloatingPanel.Contents = function FloatingPanelContents({
 }) {
   const context = React.useContext(FloatingPanelContext);
   return <Collapse in={context?.expanded ?? true}>{children}</Collapse>;
+};
+
+/** Hides contents when floating panel is collapsed. */
+FloatingPanel.HideWhenCollapsed = function FloatingPanelHideWhenCollapsed({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const expanded = React.useContext(FloatingPanelContext)?.expanded ?? true;
+  return expanded ? children : null;
 };
