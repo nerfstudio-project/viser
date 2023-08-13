@@ -49,8 +49,7 @@ brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
 synchronize = server.add_gui_button("Apply theme")
 
 
-@synchronize.on_click
-def synchronize_theme(_) -> None:
+def synchronize_theme() -> None:
     server.configure_theme(
         dark_mode=dark_mode.value,
         titlebar_content=titlebar_theme if titlebar.value else None,
@@ -60,7 +59,8 @@ def synchronize_theme(_) -> None:
     server.world_axes.visible = True
 
 
-synchronize_theme(synchronize)
+synchronize.on_click(lambda _: synchronize_theme())
+synchronize_theme()
 
 while True:
     time.sleep(10.0)

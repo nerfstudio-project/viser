@@ -24,7 +24,7 @@ import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
-from ._gui_handles import GuiHandle, _GuiHandleState
+from ._gui_handles import GuiEvent, GuiHandle, _GuiHandle, _GuiHandleState
 from ._scene_handles import (
     CameraFrustumHandle,
     FrameHandle,
@@ -128,7 +128,7 @@ class MessageApi(abc.ABC):
     def __init__(self, handler: infra.MessageHandler) -> None:
         super().__init__()
 
-        self._gui_handle_state_from_id: Dict[str, _GuiHandleState[Any]] = {}
+        self._gui_handle_from_id: Dict[str, _GuiHandle[Any]] = {}
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
         ] = {}
@@ -533,10 +533,11 @@ class MessageApi(abc.ABC):
         self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
         """Callback for handling GUI messages."""
-        handle_state = self._gui_handle_state_from_id.get(message.id, None)
-        if handle_state is None:
+        handle = self._gui_handle_from_id.get(message.id, None)
+        if handle is None:
             return
 
+        handle_state = handle._impl
         value = handle_state.typ(message.value)
 
         # Only call update when value has actually changed.
@@ -550,7 +551,7 @@ class MessageApi(abc.ABC):
 
         # Trigger callbacks.
         for cb in handle_state.update_cb:
-            cb(GuiHandle(handle_state))
+            cb(GuiEvent(client_id, handle))
         if handle_state.sync_cb is not None:
             handle_state.sync_cb(client_id, value)
 

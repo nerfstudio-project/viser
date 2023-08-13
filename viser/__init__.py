@@ -1,6 +1,7 @@
 from ._gui_handles import GuiButtonGroupHandle as GuiButtonGroupHandle
 from ._gui_handles import GuiButtonHandle as GuiButtonHandle
 from ._gui_handles import GuiDropdownHandle as GuiDropdownHandle
+from ._gui_handles import GuiEvent as GuiEvent
 from ._gui_handles import GuiFolderHandle as GuiFolderHandle
 from ._gui_handles import GuiHandle as GuiHandle
 from ._gui_handles import GuiMarkdownHandle as GuiMarkdownHandle

@@ -37,6 +37,7 @@ from ._gui_handles import (
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiTabGroupHandle,
+    _GuiHandle,
     _GuiHandleState,
     _make_unique_id,
 )
@@ -223,7 +224,7 @@ class GuiApi(abc.ABC):
 
         # Re-wrap the GUI handle with a button interface.
         id = _make_unique_id()
-        return GuiButtonHandle(
+        out = GuiButtonHandle(
             self._create_gui_input(
                 initial_value=False,
                 message=_messages.GuiAddButtonMessage(
@@ -239,6 +240,8 @@ class GuiApi(abc.ABC):
                 is_button=True,
             )._impl
         )
+        self._register_gui_handle(out)
+        return out
 
     # The TLiteralString overload tells pyright to resolve the value type to a Literal
     # whenever possible.
@@ -278,7 +281,7 @@ class GuiApi(abc.ABC):
         """Add a button group to the GUI."""
         initial_value = options[0]
         id = _make_unique_id()
-        return GuiButtonGroupHandle(
+        out = GuiButtonGroupHandle(
             self._create_gui_input(
                 initial_value,
                 message=_messages.GuiAddButtonGroupMessage(
@@ -294,6 +297,8 @@ class GuiApi(abc.ABC):
                 visible=visible,
             )._impl,
         )
+        self._register_gui_handle(out)
+        return out
 
     def add_gui_checkbox(
         self,
@@ -306,7 +311,7 @@ class GuiApi(abc.ABC):
         """Add a checkbox to the GUI."""
         assert isinstance(initial_value, bool)
         id = _make_unique_id()
-        return self._create_gui_input(
+        out = self._create_gui_input(
             initial_value,
             message=_messages.GuiAddCheckboxMessage(
                 order=time.time(),
@@ -319,6 +324,8 @@ class GuiApi(abc.ABC):
             disabled=disabled,
             visible=visible,
         )
+        self._register_gui_handle(out)
+        return out
 
     def add_gui_text(
         self,
@@ -331,7 +338,7 @@ class GuiApi(abc.ABC):
         """Add a text input to the GUI."""
         assert isinstance(initial_value, str)
         id = _make_unique_id()
-        return self._create_gui_input(
+        out = self._create_gui_input(
             initial_value,
             message=_messages.GuiAddTextMessage(
                 order=time.time(),
@@ -344,6 +351,8 @@ class GuiApi(abc.ABC):
             disabled=disabled,
             visible=visible,
         )
+        self._register_gui_handle(out)
+        return out
 
     def add_gui_number(
         self,
@@ -375,7 +384,7 @@ class GuiApi(abc.ABC):
         assert step is not None
 
         id = _make_unique_id()
-        return self._create_gui_input(
+        out = self._create_gui_input(
             initial_value=initial_value,
             message=_messages.GuiAddNumberMessage(
                 order=time.time(),
@@ -393,6 +402,8 @@ class GuiApi(abc.ABC):
             visible=visible,
             is_button=False,
         )
+        self._register_gui_handle(out)
+        return out
 
     def add_gui_vector2(
         self,
@@ -420,7 +431,7 @@ class GuiApi(abc.ABC):
                 possible_steps.extend([_compute_step(x) for x in max])
             step = float(onp.min(possible_steps))
 
-        return self._create_gui_input(
+        out = self._create_gui_input(
             initial_value,
             message=_messages.GuiAddVector2Message(
                 order=time.time(),
@@ -437,6 +448,8 @@ class GuiApi(abc.ABC):
             disabled=disabled,
             visible=visible,
         )
+        self._register_gui_handle(out)
+        return out
 
     def add_gui_vector3(
         self,
@@ -465,7 +478,7 @@ class GuiApi(abc.ABC):
                 possible_steps.extend([_compute_step(x) for x in max])
             step = float(onp.min(possible_steps))
 
-        return self._create_gui_input(
+        out = self._create_gui_input(
             initial_value,
             message=_messages.GuiAddVector3Message(
                 order=time.time(),
@@ -482,6 +495,8 @@ class GuiApi(abc.ABC):
             disabled=disabled,
             visible=visible,
         )
+        self._register_gui_handle(out)
+        return out
 
     # See add_gui_dropdown for notes on overloads.
     @overload
@@ -520,7 +535,7 @@ class GuiApi(abc.ABC):
         if initial_value is None:
             initial_value = options[0]
         id = _make_unique_id()
-        return GuiDropdownHandle(
+        out = GuiDropdownHandle(
             self._create_gui_input(
                 initial_value,
                 message=_messages.GuiAddDropdownMessage(
@@ -537,6 +552,8 @@ class GuiApi(abc.ABC):
             )._impl,
             _impl_options=tuple(options),
         )
+        self._register_gui_handle(out)
+        return out
 
     def add_gui_slider(
         self,
@@ -569,7 +586,7 @@ class GuiApi(abc.ABC):
 
         # Re-wrap the GUI handle with a button interface.
         id = _make_unique_id()
-        return self._create_gui_input(
+        out = self._create_gui_input(
             initial_value=initial_value,
             message=_messages.GuiAddSliderMessage(
                 order=time.time(),
@@ -587,6 +604,8 @@ class GuiApi(abc.ABC):
             visible=visible,
             is_button=False,
         )
+        self._register_gui_handle(out)
+        return out
 
     def add_gui_rgb(
         self,
@@ -598,7 +617,7 @@ class GuiApi(abc.ABC):
     ) -> GuiHandle[Tuple[int, int, int]]:
         """Add an RGB picker to the GUI."""
         id = _make_unique_id()
-        return self._create_gui_input(
+        out = self._create_gui_input(
             initial_value,
             message=_messages.GuiAddRgbMessage(
                 order=time.time(),
@@ -611,6 +630,8 @@ class GuiApi(abc.ABC):
             disabled=disabled,
             visible=visible,
         )
+        self._register_gui_handle(out)
+        return out
 
     def add_gui_rgba(
         self,
@@ -622,7 +643,7 @@ class GuiApi(abc.ABC):
     ) -> GuiHandle[Tuple[int, int, int, int]]:
         """Add an RGBA picker to the GUI."""
         id = _make_unique_id()
-        return self._create_gui_input(
+        out = self._create_gui_input(
             initial_value,
             message=_messages.GuiAddRgbaMessage(
                 order=time.time(),
@@ -635,6 +656,11 @@ class GuiApi(abc.ABC):
             disabled=disabled,
             visible=visible,
         )
+        self._register_gui_handle(out)
+        return out
+
+    def _register_gui_handle(self, handle: _GuiHandle) -> None:
+        self._get_api()._gui_handle_from_id[handle._impl.id] = handle
 
     def _create_gui_input(
         self,
@@ -668,8 +694,7 @@ class GuiApi(abc.ABC):
             initial_value=initial_value,
             hint=message.hint,
         )
-        self._get_api()._gui_handle_state_from_id[handle_state.id] = handle_state
-        handle_state.cleanup_cb = lambda: self._get_api()._gui_handle_state_from_id.pop(
+        handle_state.cleanup_cb = lambda: self._get_api()._gui_handle_from_id.pop(
             handle_state.id
         )
 

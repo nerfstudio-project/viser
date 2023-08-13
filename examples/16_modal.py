@@ -30,7 +30,7 @@ def main():
             modal_button = client.add_gui_button("Show more modals")
 
             @modal_button.on_click
-            def _(_: viser.GuiButtonHandle) -> None:
+            def _(_) -> None:
                 for i in range(gui_slider.value):
                     with client.add_gui_modal(f"Modal #{i}"):
                         client.add_gui_markdown("This is a modal!")

@@ -59,7 +59,7 @@ class _GuiHandleState(Generic[T]):
     container_id: str
     """Container that this GUI input was placed into."""
 
-    update_cb: List[Callable[[Any], None]]
+    update_cb: List[Callable[[GuiEvent], None]]
     """Registered functions to call when this input is updated."""
 
     is_button: bool
@@ -128,7 +128,9 @@ class _GuiHandle(Generic[T]):
         for cb in self._impl.update_cb:
             # Pushing callbacks into separate threads helps prevent deadlocks when we
             # have a lock in a callback. TODO: revisit other callbacks.
-            threading.Thread(target=lambda: cb(self)).start()
+            threading.Thread(
+                target=lambda: cb(GuiEvent(client_id=None, gui_handle=self))
+            ).start()
 
     @property
     def update_timestamp(self) -> float:
@@ -184,11 +186,20 @@ class GuiHandle(_GuiHandle[T], Generic[T]):
     Lets us get values, set values, and detect updates."""
 
     def on_update(
-        self: TGuiHandle, func: Callable[[TGuiHandle], None]
-    ) -> Callable[[TGuiHandle], None]:
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
         """Attach a function to call when a GUI input is updated. Happens in a thread."""
         self._impl.update_cb.append(func)
         return func
+
+
+@dataclasses.dataclass(frozen=True)
+class GuiEvent(Generic[TGuiHandle]):
+    """Information associated with a GUI event, such as an update or click.
+
+    Passed as input to callback functions."""
+    client_id: Optional[ClientId]
+    gui_handle: TGuiHandle
 
 
 @dataclasses.dataclass
@@ -198,8 +209,8 @@ class GuiButtonHandle(_GuiHandle[bool]):
     Lets us detect clicks."""
 
     def on_click(
-        self: TGuiHandle, func: Callable[[TGuiHandle], None]
-    ) -> Callable[[TGuiHandle], None]:
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
         """Attach a function to call when a button is pressed. Happens in a thread."""
         self._impl.update_cb.append(func)
         return func
@@ -212,8 +223,8 @@ class GuiButtonGroupHandle(_GuiHandle[StringType], Generic[StringType]):
     Lets us detect clicks."""
 
     def on_click(
-        self: TGuiHandle, func: Callable[[TGuiHandle], None]
-    ) -> Callable[[TGuiHandle], None]:
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
         """Attach a function to call when a button is pressed. Happens in a thread."""
         self._impl.update_cb.append(func)
         return func
