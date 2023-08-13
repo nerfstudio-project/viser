@@ -181,16 +181,13 @@ class MessageApi(abc.ABC):
                 max_l = min(0.8 + 0.5, 0.9)
                 l = max(min_l, min(max_l, l))
 
-                ls = []
                 primary_index = 8
                 ls = tuple(
                     onp.interp(
                         x=onp.arange(10), xp=(0, primary_index, 9), fp=(max_l, l, min_l)
                     )
                 )
-                colors_cast = tuple(_hex_from_hls(h, ls[i], s) for i in range(10))
-            else:
-                colors_cast = brand_color
+                colors_cast = tuple(_hex_from_hls(h, ls[i], s) for i in range(10))  # type: ignore
 
         assert colors_cast is None or all(
             [isinstance(val, str) and val.startswith("#") for val in colors_cast]
