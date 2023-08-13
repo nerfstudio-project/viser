@@ -14,26 +14,21 @@ def main():
     def _(client: viser.ClientHandle) -> None:
         with client.add_gui_modal("Modal example"):
             client.add_gui_markdown(
-                markdown=(
-                    "**The slider below determines how many modals will appear...**"
-                )
+                "**The input below determines the title of the modal...**"
             )
 
-            gui_slider = client.add_gui_slider(
-                "Slider",
-                min=1,
-                max=10,
-                step=1,
-                initial_value=1,
+            gui_title = client.add_gui_text(
+                "Title",
+                initial_value="My Modal",
             )
 
             modal_button = client.add_gui_button("Show more modals")
 
             @modal_button.on_click
             def _(_) -> None:
-                for i in range(gui_slider.value):
-                    with client.add_gui_modal(f"Modal #{i}"):
-                        client.add_gui_markdown("This is a modal!")
+                with client.add_gui_modal(gui_title.value) as modal:
+                    client.add_gui_markdown("This is content inside the modal!")
+                    client.add_gui_button("Close").on_click(lambda _: modal.close())
 
     while True:
         time.sleep(0.15)

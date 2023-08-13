@@ -14,7 +14,7 @@ import io
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar, Union, cast
 
 import imageio.v3 as iio
 import numpy as onp
@@ -24,7 +24,6 @@ import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
-from ._gui_handles import GuiEvent, GuiHandle, _GuiHandle, _GuiHandleState
 from ._scene_handles import (
     CameraFrustumHandle,
     FrameHandle,
@@ -46,7 +45,7 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 
 
-def _hex_from_hls(h: float, l: float, s: float) -> str:
+def _hex_from_hls(h: float, l: float, s: float) -> str:  # noqa
     """Converts HLS values in [0.0, 1.0] to a hex-formatted string, eg 0xffffff."""
     return "#" + "".join(
         [
@@ -126,15 +125,15 @@ class MessageApi(abc.ABC):
     invidividual clients."""
 
     def __init__(self, handler: infra.MessageHandler) -> None:
+        self._message_handler = handler
+
         super().__init__()
 
-        self._gui_handle_from_id: Dict[str, _GuiHandle[Any]] = {}
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
         ] = {}
         self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
 
-        handler.register_handler(_messages.GuiUpdateMessage, self._handle_gui_updates)
         handler.register_handler(
             _messages.TransformControlsUpdateMessage,
             self._handle_transform_controls_updates,
@@ -170,21 +169,23 @@ class MessageApi(abc.ABC):
                 ), "All channels should be integers."
 
                 # RGB => HLS.
-                h, l, s = colorsys.rgb_to_hls(
+                h, primary_l, s = colorsys.rgb_to_hls(
                     brand_color[0] / 255.0,
                     brand_color[1] / 255.0,
                     brand_color[2] / 255.0,
                 )
 
                 # Automatically generate a 10-color palette.
-                min_l = max(l - 0.08, 0.0)
+                min_l = max(primary_l - 0.08, 0.0)
                 max_l = min(0.8 + 0.5, 0.9)
-                l = max(min_l, min(max_l, l))
+                primary_l = max(min_l, min(max_l, primary_l))
 
                 primary_index = 8
                 ls = tuple(
                     onp.interp(
-                        x=onp.arange(10), xp=(0, primary_index, 9), fp=(max_l, l, min_l)
+                        x=onp.arange(10),
+                        xp=(0, primary_index, 9),
+                        fp=(max_l, primary_l, min_l),
                     )
                 )
                 colors_cast = tuple(_hex_from_hls(h, ls[i], s) for i in range(10))  # type: ignore
@@ -525,32 +526,6 @@ class MessageApi(abc.ABC):
     def _queue_unsafe(self, message: _messages.Message) -> None:
         """Abstract method for sending messages."""
         ...
-
-    def _handle_gui_updates(
-        self, client_id: ClientId, message: _messages.GuiUpdateMessage
-    ) -> None:
-        """Callback for handling GUI messages."""
-        handle = self._gui_handle_from_id.get(message.id, None)
-        if handle is None:
-            return
-
-        handle_state = handle._impl
-        value = handle_state.typ(message.value)
-
-        # Only call update when value has actually changed.
-        if not handle_state.is_button and value == handle_state.value:
-            return
-
-        # Update state.
-        with self._atomic_lock:
-            handle_state.value = value
-            handle_state.update_timestamp = time.time()
-
-        # Trigger callbacks.
-        for cb in handle_state.update_cb:
-            cb(GuiEvent(client_id, handle))
-        if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, value)
 
     def _handle_transform_controls_updates(
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage

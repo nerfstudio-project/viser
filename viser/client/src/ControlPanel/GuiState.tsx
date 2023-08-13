@@ -44,12 +44,11 @@ interface GuiActions {
   setTheme: (theme: Messages.ThemeConfigurationMessage) => void;
   addGui: (config: GuiConfig) => void;
   addModal: (config: Messages.GuiModalMessage) => void;
-  popModal: () => void;
+  removeModal: (id: string) => void;
   setGuiValue: (id: string, value: any) => void;
   setGuiVisible: (id: string, visible: boolean) => void;
   setGuiDisabled: (id: string, visible: boolean) => void;
   removeGui: (id: string) => void;
-  removeGuiContainer: (containerId: string) => void;
   resetGui: () => void;
 }
 
@@ -93,9 +92,9 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.modals.push(modalConfig);
           }),
-        popModal: () =>
+        removeModal: (id) =>
           set((state) => {
-            state.modals.pop();
+            state.modals = state.modals.filter((m) => m.id !== id);
           }),
         setGuiValue: (id, value) =>
           set((state) => {
@@ -118,10 +117,6 @@ export function useGuiState(initialServer: string) {
         removeGui: (id) =>
           set((state) => {
             const guiConfig = state.guiConfigFromId[id];
-            if (guiConfig.type === "GuiAddFolderMessage")
-              state.removeGuiContainer(guiConfig.id);
-            if (guiConfig.type === "GuiAddTabGroupMessage")
-              guiConfig.tab_container_ids.forEach(state.removeGuiContainer);
 
             state.guiIdSetFromContainerId[guiConfig.container_id]!.delete(
               guiConfig.id,
@@ -129,19 +124,6 @@ export function useGuiState(initialServer: string) {
             delete state.guiConfigFromId[id];
             delete state.guiValueFromId[id];
             delete state.guiAttributeFromId[id];
-          }),
-        removeGuiContainer: (containerId) =>
-          set((state) => {
-            const guiIdSet = state.guiIdSetFromContainerId[containerId];
-            if (guiIdSet === undefined) {
-              console.log(
-                "Tried to remove but could not find container ID",
-                containerId,
-              );
-              return;
-            }
-            Object.keys(guiIdSet).forEach(state.removeGui);
-            delete state.guiIdSetFromContainerId[containerId];
           }),
         resetGui: () =>
           set((state) => {
