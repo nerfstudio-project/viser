@@ -420,26 +420,22 @@ function useMessageHandler() {
       }
       // Add a camera-aligned RGBD image
       case "PopupImageMessage": {
-        viewer.nerfMaterialRef.current!.uniforms.enabled.value = true;
+        viewer.popupMaterialRef.current!.uniforms.enabled.value = true;
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
-            viewer.nerfMaterialRef.current!.uniforms.nerfColor.value = texture;
+            viewer.popupMaterialRef.current!.uniforms.nerfColor.value = texture;
           }
         );
         new TextureLoader().load(
           `data:$image/png;base64,${message.base64_depth}`,
           (texture) => {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.);
-            // texture.format = THREE.RGBAIntegerFormat;
-            // texture.type = THREE.UnsignedByteType;
-            // texture.internalFormat = 'RGBA8UI';
             texture.minFilter = THREE.NearestFilter;
             texture.magFilter = THREE.NearestFilter;
-            viewer.nerfMaterialRef.current!.uniforms.nerfDepth.value = texture;
-            viewer.nerfMaterialRef.current!.uniforms.depthScale.value = message.depth_scale;
+            viewer.popupMaterialRef.current!.uniforms.nerfDepth.value = texture;
           }
         );
         return;
