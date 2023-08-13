@@ -91,6 +91,7 @@ select = [
     "PLW",  # Pylint warnings.
 ]
 ignore = [
+    "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "F722",  # Forward annotation false positive from jaxtyping. Should be caught by pyright.
     "F821",  # Forward annotation false positive from jaxtyping. Should be caught by pyright.
