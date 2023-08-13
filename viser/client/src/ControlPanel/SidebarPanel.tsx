@@ -1,6 +1,6 @@
 // @refresh reset
 
-import { ActionIcon, Box, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Paper, Tooltip } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
@@ -60,20 +60,16 @@ export default function SidebarPanel({
     >
       {collapsedView}
       {/* Using an <Aside /> below will break Mantine color inputs. */}
-      <Box
-        sx={(theme) => ({
+      <Paper
+        shadow="lg"
+        radius={0}
+        sx={{
           width: collapsed ? 0 : "20em",
           overflow: "scroll",
           boxSizing: "border-box",
-          borderLeft: "1px solid",
-          borderColor:
-            theme.colorScheme == "light"
-              ? theme.colors.gray[4]
-              : theme.colors.dark[4],
           transition: "width 0.5s 0s",
-          backgroundColor:
-            theme.colorScheme == "dark" ? theme.colors.dark[8] : "0xffffff",
-        })}
+          zIndex: 300,
+        }}
       >
         <Box
           sx={{
@@ -82,7 +78,7 @@ export default function SidebarPanel({
         >
           {children}
         </Box>
-      </Box>
+      </Paper>
     </SidebarPanelContext.Provider>
   );
 }
@@ -97,32 +93,21 @@ SidebarPanel.Handle = function SidebarPanelHandle({
     React.useContext(SidebarPanelContext)!;
 
   const collapseSidebarToggleButton = (
-    <Box
-      sx={{
-        position: "absolute",
-        right: "0.5em",
-        top: "50%",
-        transform: "translateY(-50%)",
-        display: collapsible ? undefined : "none",
-        zIndex: 100,
+    <ActionIcon
+      onClick={(evt) => {
+        evt.stopPropagation();
+        toggleCollapsed();
       }}
     >
-      <ActionIcon
-        onClick={(evt) => {
-          evt.stopPropagation();
-          toggleCollapsed();
-        }}
-      >
-        <Tooltip label={"Collapse sidebar"}>
-          {<IconChevronRight stroke={1.625} />}
-        </Tooltip>
-      </ActionIcon>
-    </Box>
+      <Tooltip label={"Collapse sidebar"}>
+        {<IconChevronRight stroke={1.625} />}
+      </Tooltip>
+    </ActionIcon>
   );
 
   return (
     <Box
-      p="sm"
+      p="xs"
       sx={(theme) => ({
         backgroundColor:
           theme.colorScheme == "dark"
@@ -132,10 +117,13 @@ SidebarPanel.Handle = function SidebarPanelHandle({
         fontWeight: 400,
         position: "relative",
         zIndex: 1,
+        alignItems: "center",
+        display: "flex",
+        flexDirection: "row",
       })}
     >
       {children}
-      {collapseSidebarToggleButton}
+      {collapsible ? collapseSidebarToggleButton : null}
     </Box>
   );
 };

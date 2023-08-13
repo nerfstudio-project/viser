@@ -1,6 +1,6 @@
 """Theming
 
-Viser is adding support for theming. Work-in-progress.
+Viser includes support for light theming.
 """
 
 import time
@@ -33,13 +33,14 @@ image = TitlebarImage(
     image_alt="NerfStudio Logo",
     href="https://docs.nerf.studio/",
 )
-
-# image = None
-
 titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
+server.add_gui_markdown(
+    "Viser includes support for light theming via the `.configure_theme()` method."
+)
 
 # GUI elements for controllable values.
+titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
 dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
 control_layout = server.add_gui_dropdown(
     "Control layout", ("floating", "fixed", "collapsible")
@@ -52,7 +53,7 @@ synchronize = server.add_gui_button("Apply theme")
 def synchronize_theme(_) -> None:
     server.configure_theme(
         dark_mode=dark_mode.value,
-        titlebar_content=titlebar_theme,
+        titlebar_content=titlebar_theme if titlebar.value else None,
         control_layout=control_layout.value,
         brand_color=brand_color.value,
     )

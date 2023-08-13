@@ -38,18 +38,7 @@ export default function ControlPanel(props: {
   const [showSettings, { toggle }] = useDisclosure(false);
 
   const generatedServerToggleButton = (
-    <Box
-      sx={{
-        position: "absolute",
-        right: props.control_layout === "collapsible" ? "2.5em" : "0.5em",
-        top: "50%",
-        /* We can't apply translateY directly to the ActionIcon, since it's used by
-      Mantine for the active/click indicator. */
-        transform: "translateY(-50%)",
-        display: showGenerated ? undefined : "none",
-        zIndex: 100,
-      }}
-    >
+    <Box sx={{ display: showGenerated ? undefined : "none" }}>
       <ActionIcon
         onClick={(evt) => {
           evt.stopPropagation();
@@ -127,9 +116,7 @@ function ConnectionStatus() {
 
   const StatusIcon = connected ? IconCloudCheck : IconCloudOff;
   return (
-    <span
-      style={{ display: "flex", alignItems: "center", width: "max-content" }}
-    >
+    <>
       <StatusIcon
         color={connected ? "#0b0" : "#b00"}
         style={{
@@ -138,8 +125,9 @@ function ConnectionStatus() {
           height: "1.2em",
         }}
       />
-      &nbsp; &nbsp;
-      {label === "" ? server : label}
-    </span>
+      <Box px="xs" sx={{ flexGrow: 1 }}>
+        {label === "" ? server : label}
+      </Box>
+    </>
   );
 }

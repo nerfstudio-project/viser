@@ -30,11 +30,11 @@ export default function FloatingPanel({
     >
       <Paper
         radius="sm"
-        withBorder
+        shadow="lg"
         sx={{
           boxSizing: "border-box",
           width: "20em",
-          zIndex: 1,
+          zIndex: 300,
           position: "absolute",
           top: "1em",
           right: "1em",
@@ -229,6 +229,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         position: "relative",
         fontWeight: 400,
         userSelect: "none",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 0.8em",
+        height: "2.5em",
       })}
       onClick={() => {
         const state = dragInfo.current;
@@ -245,14 +249,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         dragHandler(event);
       }}
     >
-      <Box
-        component="div"
-        sx={{
-          padding: "0.5em 2em 0.5em 0.8em",
-        }}
-      >
-        {children}
-      </Box>
+      {children}
     </Box>
   );
 };

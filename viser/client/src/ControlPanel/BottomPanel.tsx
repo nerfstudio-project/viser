@@ -1,7 +1,12 @@
 import { Box, Collapse, Paper } from "@mantine/core";
 import React from "react";
-import { FloatingPanelContext } from "./FloatingPanel";
 import { useDisclosure } from "@mantine/hooks";
+
+const BottomPanelContext = React.createContext<null | {
+  wrapperRef: React.RefObject<HTMLDivElement>;
+  expanded: boolean;
+  toggleExpanded: () => void;
+}>(null);
 
 export default function BottomPanel({
   children,
@@ -11,7 +16,7 @@ export default function BottomPanel({
   const panelWrapperRef = React.useRef<HTMLDivElement>(null);
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(true);
   return (
-    <FloatingPanelContext.Provider
+    <BottomPanelContext.Provider
       value={{
         wrapperRef: panelWrapperRef,
         expanded: expanded,
@@ -38,7 +43,7 @@ export default function BottomPanel({
       >
         {children}
       </Paper>
-    </FloatingPanelContext.Provider>
+    </BottomPanelContext.Provider>
   );
 }
 BottomPanel.Handle = function BottomPanelHandle({
@@ -46,7 +51,7 @@ BottomPanel.Handle = function BottomPanelHandle({
 }: {
   children: string | React.ReactNode;
 }) {
-  const panelContext = React.useContext(FloatingPanelContext)!;
+  const panelContext = React.useContext(BottomPanelContext)!;
   return (
     <Box
       color="red"
@@ -55,24 +60,20 @@ BottomPanel.Handle = function BottomPanelHandle({
           theme.colorScheme == "dark"
             ? theme.colors.dark[5]
             : theme.colors.gray[1],
-        lineHeight: "2.5em",
         cursor: "pointer",
         position: "relative",
         fontWeight: 400,
         userSelect: "none",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 0.8em",
+        height: "3.5em",
       })}
       onClick={() => {
         panelContext.toggleExpanded();
       }}
     >
-      <Box
-        component="div"
-        sx={{
-          padding: "0.5em 3em 0.5em 0.8em",
-        }}
-      >
-        {children}
-      </Box>
+      {children}
     </Box>
   );
 };
@@ -82,6 +83,6 @@ BottomPanel.Contents = function BottomPanelContents({
 }: {
   children: string | React.ReactNode;
 }) {
-  const panelContext = React.useContext(FloatingPanelContext)!;
+  const panelContext = React.useContext(BottomPanelContext)!;
   return <Collapse in={panelContext.expanded}>{children}</Collapse>;
 };
