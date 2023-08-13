@@ -473,7 +473,7 @@ function useMessageHandler() {
                       width: "20em",
                       fontSize: "0.8em",
                     }}
-                    withBorder
+                    shadow="md"
                   >
                     <GeneratedGuiContainer
                       containerId={message.container_id}
