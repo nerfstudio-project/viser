@@ -353,8 +353,7 @@ class MessageApi(abc.ABC):
         
         Expects depth_img to be a HxWx1 array of depth values in **floating point**
         """
-        print("hello")
-        assert depth_img.dtype == onp.float32 or depth_img.dtype == onp.float16
+        assert depth_img.dtype == onp.float32 or depth_img.dtype == onp.float16 or depth_img.dtype == onp.float64
         scale = depth_img.max()
         assert len(depth_img.shape) == 3 
         assert depth_img.shape[2] == 1
@@ -366,15 +365,13 @@ class MessageApi(abc.ABC):
 
         # intdepth = onp.clip(((depth_img.astype(onp.float32) / 1000) * 65535.0),0,65534).astype(onp.uint16).view(onp.uint8).reshape((*depth_img.shape[:-1], 2))
         # intdepth = onp.pad(intdepth, ((0,0), (0,0), (2,0)), mode="constant", constant_values=0)
-        base = 10
-        depth_img = onp.clip(depth_img, 0, 100.0)*(base**2) #multiplying by 100 makes the lowest digit the hundreths
+        base = 10.0
+        depth_img = onp.clip(depth_img, 0, 99.9)*(base**2.0) #multiplying by 100 makes the lowest digit the hundreths
         depth_img = depth_img.astype(onp.uint32)
         intdepth = onp.zeros((*depth_img.shape[:-1], 4), dtype=onp.uint8)
-        print(depth_img[0,0,:])
         for i in range(4):
             intdepth[...,i] = (((depth_img % base)/10.0)*255).squeeze()
             depth_img = depth_img // base
-        print(intdepth[0,0,:])
         with io.BytesIO() as data_buffer:
             iio.imwrite(data_buffer, intdepth, extension=".png")
             packed_depth = base64.b64encode(data_buffer.getvalue()).decode("ascii")
