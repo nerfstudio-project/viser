@@ -11,6 +11,7 @@ import {
   EffectComposer,
   Outline,
   Selection,
+  Texture,
 } from "@react-three/postprocessing";
 import { BlendFunction, KernelSize } from "postprocessing";
 
@@ -29,6 +30,7 @@ import WebsocketInterface from "./WebsocketInterface";
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
+import { format } from "path";
 
 export type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -37,7 +39,7 @@ export type ViewerContextContents = {
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
-  nerfMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
+  popupMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
@@ -80,7 +82,7 @@ function SingleViewer() {
     canvasRef: React.useRef(null),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
-    nerfMaterialRef: React.useRef(null),
+    popupMaterialRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
     // Scene node attributes that aren't placed in the zustand state, for performance reasons.
     nodeAttributesFromName: React.useRef({}),
@@ -152,8 +154,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       performance={{ min: 0.95 }}
       ref={viewer.canvasRef}
     >
-      <NeRFImage />
       {children}
+      <PopupImage />
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
       <SceneContextSetter />
@@ -177,7 +179,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
 }
 
-function NeRFImage(){
+function PopupImage(){
   // Create a fragment shader that composites depth using nerfDepth and nerfColor
   const vertShader = `
   varying vec2 vUv;
@@ -188,34 +190,21 @@ function NeRFImage(){
   }
   `.trim();
   const fragShader = `  
+  #include <packing>
+  precision highp float;
+  precision highp int;
+
   varying vec2 vUv;
   uniform sampler2D nerfColor;
   uniform sampler2D nerfDepth;
   uniform float cameraNear;
   uniform float cameraFar;
-  uniform float depthScale;
   uniform bool enabled;
 
-  // depthSample from depthTexture.r, for instance
-  float linearDepth(float depthSample, float zNear, float zFar)
-  {
-      depthSample = 2.0 * depthSample - 1.0;
-      float zLinear = 2.0 * zNear * zFar / (zFar + zNear - depthSample * (zFar - zNear));
-      return zLinear;
-  }
-
-  // result suitable for assigning to gl_FragDepth
-  float depthSample(float linearDepth, float zNear, float zFar)
-  {
-      float nonLinearDepth = (zFar + zNear - 2.0 * zNear * zFar / linearDepth) / (zFar - zNear);
-      nonLinearDepth = (nonLinearDepth + 1.0) / 2.0;
-      return nonLinearDepth;
-  }
-
   float readDepth( sampler2D depthSampler, vec2 coord, float zNear, float zFar) {
-    float depth = texture(depthSampler,coord).x * depthScale;
-    float nonLinearDepth = depthSample(depth, zNear, zFar);
-    return nonLinearDepth;
+    vec4 rgbaPacked = texture(depthSampler,coord);
+    float depth = rgbaPacked.r*0.1 + rgbaPacked.g + rgbaPacked.b * 10.0 + rgbaPacked.a * 100.0;
+    return depth;
   }
 
   void main() {
@@ -224,31 +213,27 @@ function NeRFImage(){
       discard;
     }
     vec4 color = texture( nerfColor, vUv );
-    gl_FragColor = vec4( color.rgb, 1.0 );
+    gl_FragColor = vec4( color.rgb, 1.0);
 
     float depth = readDepth(nerfDepth, vUv, cameraNear, cameraFar);
-    if(depth < gl_FragCoord.z){
-      gl_FragDepth = depth;
-    }else{
-      //otherwise set infinite depth
-      gl_FragDepth = 1.0;
-    }
+    float bufDepth = viewZToPerspectiveDepth(-depth, cameraNear, cameraFar);
+    
+    gl_FragDepth = bufDepth;
   }`.trim();
   // initialize the nerfColor texture with all white and depth at infinity
-  const nerfMaterial = new THREE.ShaderMaterial({
+  const popupMaterial = new THREE.ShaderMaterial({
     fragmentShader: fragShader,
     vertexShader: vertShader,
     uniforms: {
       enabled: {value: false},
       nerfDepth: {value: null},
-      depthScale: {value: 1.0},
       nerfColor: {value: null},
       cameraNear: {value: null},
       cameraFar: {value: null},
     }
   });
-  const { nerfMaterialRef } = React.useContext(ViewerContext)!;
-  nerfMaterialRef.current = nerfMaterial;
+  const { popupMaterialRef } = React.useContext(ViewerContext)!;
+  popupMaterialRef.current = popupMaterial;
   const nerfMesh = React.useRef<THREE.Mesh>(null);
   useFrame(({camera}) => {
     //assert it is a perspective camera
@@ -264,15 +249,15 @@ function NeRFImage(){
     //resize the mesh based on size
     const f = camera.getFocalLength();
     nerfMesh.current!.scale.set(camera.getFilmWidth()/f,camera.getFilmHeight()/f,1.0);
+    //get the projection matrix for webgl
     //set the near/far uniforms
-    nerfMaterial.uniforms.cameraNear.value = camera.near;
-    nerfMaterial.uniforms.cameraFar.value = camera.far;
+    popupMaterial.uniforms.cameraNear.value = camera.near;
+    popupMaterial.uniforms.cameraFar.value = camera.far;
   });
   return <mesh
             ref={nerfMesh}
-            material={nerfMaterial}
+            material={popupMaterial}
             matrixWorldAutoUpdate={false}
-            name="nerfImage"
           >
             <planeGeometry
               attach="geometry"
