@@ -354,7 +354,6 @@ class MessageApi(abc.ABC):
         Expects depth_img to be a HxWx1 array of depth values in **floating point**
         """
         assert depth_img.dtype == onp.float32 or depth_img.dtype == onp.float16 or depth_img.dtype == onp.float64
-        scale = depth_img.max()
         assert len(depth_img.shape) == 3 
         assert depth_img.shape[2] == 1
         media_type, base64_rgb = _encode_image_base64(
@@ -378,7 +377,7 @@ class MessageApi(abc.ABC):
         
         self._queue(
             _messages.PopupImageMessage(
-                media_type=media_type, base64_rgb=base64_rgb, base64_depth = packed_depth, depth_scale=scale
+                media_type=media_type, base64_rgb=base64_rgb, base64_depth = packed_depth
             )
         )
     def set_background_image(
