@@ -402,6 +402,7 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
+        console.log("Background");
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_data}`,
           (texture) => {
@@ -419,24 +420,22 @@ function useMessageHandler() {
       }
       // Add a camera-aligned RGBD image
       case "PopupImageMessage": {
-        viewer.nerfMaterialRef.current!.uniforms.enabled.value = true;
+        viewer.popupMaterialRef.current!.uniforms.enabled.value = true;
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
-            viewer.nerfMaterialRef.current!.uniforms.nerfColor.value = texture;
+            viewer.popupMaterialRef.current!.uniforms.nerfColor.value = texture;
           }
         );
         new TextureLoader().load(
           `data:$image/png;base64,${message.base64_depth}`,
           (texture) => {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.);
-            texture.format = THREE.RedFormat;
             texture.minFilter = THREE.NearestFilter;
-            texture.magFilter = THREE.LinearFilter;
-            viewer.nerfMaterialRef.current!.uniforms.nerfDepth.value = texture;
-            viewer.nerfMaterialRef.current!.uniforms.depthScale.value = message.depth_scale;
+            texture.magFilter = THREE.NearestFilter;
+            viewer.popupMaterialRef.current!.uniforms.nerfDepth.value = texture;
           }
         );
         return;
