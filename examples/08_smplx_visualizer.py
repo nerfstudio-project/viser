@@ -36,6 +36,7 @@ def main(
     ext: Literal["npz", "pkl"] = "npz",
 ) -> None:
     server = viser.ViserServer()
+    server.configure_theme(control_layout="collapsible", dark_mode=True)
     model = smplx.create(
         model_path=str(model_path),
         model_type=model_type,

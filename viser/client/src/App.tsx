@@ -24,20 +24,28 @@ import "./index.css";
 import ControlPanel from "./ControlPanel/ControlPanel";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
-import WebsocketInterface from "./WebsocketInterface";
+import {
+  WebsocketMessageProducer,
+  FrameSynchronizedMessageHandler,
+} from "./WebsocketInterface";
 
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
+import { Message } from "./WebsocketMessages";
 
 export type ViewerContextContents = {
+  // Zustand hooks.
   useSceneTree: UseSceneTree;
   useGui: UseGui;
+  // Useful references.
   websocketRef: React.MutableRefObject<WebSocket | null>;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
+  // Scene node attributes.
+  // This is intentionally placed outside of the Zustand state to reduce overhead.
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
       | undefined
@@ -47,6 +55,7 @@ export type ViewerContextContents = {
           visibility?: boolean;
         };
   }>;
+  messageQueueRef: React.MutableRefObject<Message[]>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -54,8 +63,8 @@ export const ViewerContext = React.createContext<null | ViewerContextContents>(
 
 THREE.ColorManagement.enabled = true;
 
-function SingleViewer() {
-  // Default server logic.
+function ViewerRoot() {
+  // What websocket server should we connect to?
   function getDefaultServerFromUrl() {
     // https://localhost:8080/ => ws://localhost:8080
     // https://localhost:8080/?server=some_url => ws://localhost:8080
@@ -80,18 +89,23 @@ function SingleViewer() {
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
-    // Scene node attributes that aren't placed in the zustand state, for performance reasons.
+    // Scene node attributes that aren't placed in the zustand state for performance reasons.
     nodeAttributesFromName: React.useRef({}),
+    messageQueueRef: React.useRef([]),
   };
 
-  // Memoize the websocket interface so it isn't remounted when the theme or
-  // viewer context changes.
-  const memoizedWebsocketInterface = React.useMemo(
-    () => <WebsocketInterface />,
-    [],
+  return (
+    <ViewerContext.Provider value={viewer}>
+      <WebsocketMessageProducer />
+      <ViewerContents />
+    </ViewerContext.Provider>
   );
+}
 
+function ViewerContents() {
+  const viewer = React.useContext(ViewerContext)!;
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
+  const colors = viewer.useGui((state) => state.theme.colors);
   return (
     <MantineProvider
       withGlobalStyles
@@ -100,37 +114,43 @@ function SingleViewer() {
         colorScheme: viewer.useGui((state) => state.theme.dark_mode)
           ? "dark"
           : "light",
+        primaryColor: colors === null ? undefined : "custom",
+        colors:
+          colors === null
+            ? undefined
+            : {
+                custom: colors,
+              },
       }}
     >
-      <ViewerContext.Provider value={viewer}>
-        <Titlebar />
-        <ViserModal />
-        <Box
-          sx={{
-            width: "100%",
-            height: "1px",
-            position: "relative",
-            flex: "1 0 auto",
-          }}
-        >
-          <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
-            <Box
-              sx={(theme) => ({
-                top: 0,
-                bottom: 0,
-                left: 0,
-                right: control_layout === "fixed" ? "20em" : 0,
-                position: "absolute",
-                backgroundColor:
-                  theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
-              })}
-            >
-              <ViewerCanvas>{memoizedWebsocketInterface}</ViewerCanvas>
-            </Box>
-          </MediaQuery>
-          <ControlPanel control_layout={control_layout} />
-        </Box>
-      </ViewerContext.Provider>
+      <Titlebar />
+      <ViserModal />
+      <Box
+        sx={{
+          width: "100%",
+          height: "1px",
+          position: "relative",
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "row",
+        }}
+      >
+        <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
+          <Box
+            sx={(theme) => ({
+              backgroundColor:
+                theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
+              flexGrow: 1,
+              width: "10em",
+            })}
+          >
+            <ViewerCanvas>
+              <FrameSynchronizedMessageHandler />
+            </ViewerCanvas>
+          </Box>
+        </MediaQuery>
+        <ControlPanel control_layout={control_layout} />
+      </Box>
     </MantineProvider>
   );
 }
@@ -195,7 +215,7 @@ export function Root() {
         flexDirection: "column",
       }}
     >
-      <SingleViewer />
+      <ViewerRoot />
     </Box>
   );
 }

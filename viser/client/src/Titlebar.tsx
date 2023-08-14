@@ -65,7 +65,7 @@ export function TitlebarButton(
       ml="sm"
       color="gray"
       sx={(theme) => ({
-        [theme.fn.smallerThan("sm")]: {
+        [theme.fn.smallerThan("xs")]: {
           display: "none",
         },
       })}
@@ -138,72 +138,69 @@ export function Titlebar() {
 
   return (
     <Header
-      p="xs"
       height="3.2em"
-      sx={(theme) => ({
+      sx={{
         margin: 0,
-        borderBottom: "1px solid",
-        borderColor:
-          theme.colorScheme == "light"
-            ? theme.colors.gray[4]
-            : theme.colors.dark[4],
-        zIndex: 299,
-      })}
+        border: "0",
+        zIndex: 200,
+      }}
     >
-      <Container
-        fluid
-        sx={() => ({
-          display: "flex",
-          alignItems: "center",
-        })}
-      >
-        <Group sx={() => ({ marginRight: "auto" })}>
-          {imageData !== null ? TitlebarImage(imageData, theme) : null}
-        </Group>
-        <Group
+      <Paper p="xs" shadow="md" sx={{ height: "100%" }}>
+        <Container
+          fluid
           sx={() => ({
-            flexWrap: "nowrap",
-            overflowX: "scroll",
-            msOverflowStyle: "none",
-            scrollbarWidth: "none",
-            "&::-webkit-scrollbar": {
-              display: "none",
-            },
+            display: "flex",
+            alignItems: "center",
           })}
         >
-          {buttons?.map((btn) => TitlebarButton(btn))}
-        </Group>
-        <Burger
-          size="sm"
-          opened={burgerOpen}
-          onClick={burgerHandlers.toggle}
-          title={!burgerOpen ? "Open navigation" : "Close navigation"}
+          <Group sx={() => ({ marginRight: "auto" })}>
+            {imageData !== null ? TitlebarImage(imageData, theme) : null}
+          </Group>
+          <Group
+            sx={() => ({
+              flexWrap: "nowrap",
+              overflowX: "scroll",
+              msOverflowStyle: "none",
+              scrollbarWidth: "none",
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
+            })}
+          >
+            {buttons?.map((btn) => TitlebarButton(btn))}
+          </Group>
+          <Burger
+            size="sm"
+            opened={burgerOpen}
+            onClick={burgerHandlers.toggle}
+            title={!burgerOpen ? "Open navigation" : "Close navigation"}
+            sx={(theme) => ({
+              [theme.fn.largerThan("xs")]: {
+                display: "none",
+              },
+            })}
+          ></Burger>
+        </Container>
+        <Paper
           sx={(theme) => ({
-            [theme.fn.largerThan("sm")]: {
+            [theme.fn.largerThan("xs")]: {
               display: "none",
             },
+            display: "flex",
+            flexDirection: "column",
+            position: "relative",
+            top: 0,
+            left: "-0.625rem",
+            zIndex: 10000000,
+            height: burgerOpen ? "calc(100vh - 2.375em)" : "0",
+            width: "100vw",
+            transition: "all 0.5s",
+            overflow: burgerOpen ? "scroll" : "hidden",
+            padding: burgerOpen ? "1rem" : "0",
           })}
-        ></Burger>
-      </Container>
-      <Paper
-        sx={(theme) => ({
-          [theme.fn.largerThan("sm")]: {
-            display: "none",
-          },
-          display: "flex",
-          flexDirection: "column",
-          position: "relative",
-          top: 0,
-          left: "-0.625rem",
-          zIndex: 10000000,
-          height: burgerOpen ? "calc(100vh - 2.375em)" : "0",
-          width: "100vw",
-          transition: "all 0.5s",
-          overflow: burgerOpen ? "scroll" : "hidden",
-          padding: burgerOpen ? "1rem" : "0",
-        })}
-      >
-        {buttons?.map((btn) => MobileTitlebarButton(btn))}
+        >
+          {buttons?.map((btn) => MobileTitlebarButton(btn))}
+        </Paper>
       </Paper>
     </Header>
   );

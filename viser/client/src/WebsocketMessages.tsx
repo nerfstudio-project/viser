@@ -342,6 +342,20 @@ export interface ThemeConfigurationMessage {
     } | null;
   } | null;
   control_layout: "floating" | "collapsible" | "fixed";
+  colors:
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+      ]
+    | null;
   dark_mode: boolean;
 }
 
