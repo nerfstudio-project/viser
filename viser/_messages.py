@@ -238,7 +238,6 @@ class PopupImageMessage(Message):
     media_type: Literal["image/jpeg", "image/png"]
     base64_rgb: str
     base64_depth: str
-    depth_scale: float
 
 @dataclasses.dataclass
 class ImageMessage(Message):
