@@ -14,7 +14,9 @@ def main():
     def _(client: viser.ClientHandle) -> None:
         with client.add_gui_modal("Modal example"):
             client.add_gui_markdown(
-                markdown="**The slider below determines how many modals will appear...**"
+                markdown=(
+                    "**The slider below determines how many modals will appear...**"
+                )
             )
 
             gui_slider = client.add_gui_slider(

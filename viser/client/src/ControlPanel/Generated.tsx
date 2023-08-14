@@ -47,7 +47,7 @@ export default function GeneratedGuiContainer({
         {[...guiIdSet]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
-          .map((conf, index) => {
+          .map((conf) => {
             return <GeneratedInput conf={conf} key={conf.id} viewer={viewer} />;
           })}
       </Box>
@@ -116,6 +116,7 @@ function GeneratedInput({
         <Button
           id={conf.id}
           fullWidth
+          color={"0x000"}
           onClick={() =>
             messageSender({
               type: "GuiUpdateMessage",
@@ -383,7 +384,9 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
             icon={
               icons[index] === null ? undefined : (
                 <Image
-                  height="1.0rem"
+                  /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
+                  height={"0.9rem"}
+                  width={"0.9rem"}
                   sx={(theme) => ({
                     filter:
                       theme.colorScheme == "dark" ? "invert(1)" : undefined,
