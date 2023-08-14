@@ -1,3 +1,4 @@
+// @refresh reset
 import {
   AdaptiveDpr,
   AdaptiveEvents,
@@ -14,33 +15,22 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
-import {
-  Aside,
-  Box,
-  MantineProvider,
-  MediaQuery,
-  ScrollArea,
-  useMantineTheme,
-} from "@mantine/core";
+import { Box, MantineProvider, MediaQuery } from "@mantine/core";
 import React from "react";
-
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
-
-import { useSceneTreeState } from "./SceneTreeState";
 
 import "./index.css";
 
-import ControlPanel, { ConnectionStatus } from "./ControlPanel/ControlPanel";
+import ControlPanel from "./ControlPanel/ControlPanel";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 import WebsocketInterface from "./WebsocketInterface";
 
-import FloatingPanel from "./ControlPanel/FloatingPanel";
 import { Titlebar } from "./Titlebar";
-import BottomPanel from "./ControlPanel/BottomPanel";
-import { useMediaQuery } from "@mantine/hooks";
+import { ViserModal } from "./Modal";
+import { useSceneTreeState } from "./SceneTreeState";
 
-type ViewerContextContents = {
+export type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   websocketRef: React.MutableRefObject<WebSocket | null>;
@@ -60,7 +50,7 @@ type ViewerContextContents = {
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
-  null
+  null,
 );
 
 THREE.ColorManagement.enabled = true;
@@ -77,7 +67,7 @@ function SingleViewer() {
     return server;
   }
   const servers = new URLSearchParams(window.location.search).getAll(
-    searchParamKey
+    searchParamKey,
   );
   const initialServer =
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
@@ -95,103 +85,59 @@ function SingleViewer() {
     // Scene node attributes that aren't placed in the zustand state, for performance reasons.
     nodeAttributesFromName: React.useRef({}),
   };
-  const fixed_sidebar = viewer.useGui((state) => state.theme.fixed_sidebar);
+
+  // Memoize the websocket interface so it isn't remounted when the theme or
+  // viewer context changes.
+  const memoizedWebsocketInterface = React.useMemo(
+    () => <WebsocketInterface />,
+    [],
+  );
+
+  const control_layout = viewer.useGui((state) => state.theme.control_layout);
   return (
-    <ViewerContext.Provider value={viewer}>
-      <Titlebar />
-      <Box
-        sx={{
-          width: "100%",
-          height: "1px",
-          position: "relative",
-          flex: "1 0 auto",
-        }}
-      >
-        <WebsocketInterface />
-        <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
-          <Box
-            sx={(theme) => ({
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: fixed_sidebar ? "20em" : 0,
-              position: "absolute",
-              backgroundColor:
-                theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
-            })}
-          >
-            <ViewerCanvas />
-          </Box>
-        </MediaQuery>
-        <Panel fixed_sidebar={fixed_sidebar} />
-      </Box>
-    </ViewerContext.Provider>
+    <MantineProvider
+      withGlobalStyles
+      withNormalizeCSS
+      theme={{
+        colorScheme: viewer.useGui((state) => state.theme.dark_mode)
+          ? "dark"
+          : "light",
+      }}
+    >
+      <ViewerContext.Provider value={viewer}>
+        <Titlebar />
+        <ViserModal />
+        <Box
+          sx={{
+            width: "100%",
+            height: "1px",
+            position: "relative",
+            flex: "1 0 auto",
+          }}
+        >
+          <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
+            <Box
+              sx={(theme) => ({
+                top: 0,
+                bottom: 0,
+                left: 0,
+                right: control_layout === "fixed" ? "20em" : 0,
+                position: "absolute",
+                backgroundColor:
+                  theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
+              })}
+            >
+              <ViewerCanvas>{memoizedWebsocketInterface}</ViewerCanvas>
+            </Box>
+          </MediaQuery>
+          <ControlPanel control_layout={control_layout} />
+        </Box>
+      </ViewerContext.Provider>
+    </MantineProvider>
   );
 }
-function Panel(props: { fixed_sidebar: boolean }) {
-  const theme = useMantineTheme();
-  const xsQuery = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`);
-  if (xsQuery) {
-    return (
-      <BottomPanel>
-        <BottomPanel.Handle>
-          <ConnectionStatus />
-        </BottomPanel.Handle>
-        <BottomPanel.Contents>
-          <ControlPanel />
-        </BottomPanel.Contents>
-      </BottomPanel>
-    );
-  } else if (props.fixed_sidebar) {
-    return (
-      <Aside
-        sx={(theme) => ({
-          width: "20em",
-          boxSizing: "border-box",
-          right: 0,
-          position: "absolute",
-          top: "0em",
-          bottom: "0em",
-          borderLeft: "1px solid",
-          borderColor:
-            theme.colorScheme == "light"
-              ? theme.colors.gray[4]
-              : theme.colors.dark[4],
-        })}
-      >
-        <ScrollArea type="always" sx={{ height: "100%" }}>
-          <Box
-            p="sm"
-            sx={(theme) => ({
-              backgroundColor:
-                theme.colorScheme == "dark"
-                  ? theme.colors.dark[5]
-                  : theme.colors.gray[1],
-              lineHeight: "1.5em",
-              fontWeight: 400,
-            })}
-          >
-            <ConnectionStatus />
-          </Box>
-          <ControlPanel />
-        </ScrollArea>
-      </Aside>
-    );
-  } else {
-    return (
-      <FloatingPanel>
-        <FloatingPanel.Handle>
-          <ConnectionStatus />
-        </FloatingPanel.Handle>
-        <FloatingPanel.Contents>
-          <ControlPanel />
-        </FloatingPanel.Contents>
-      </FloatingPanel>
-    );
-  }
-}
 
-function ViewerCanvas() {
+function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
   return (
     <Canvas
@@ -207,6 +153,7 @@ function ViewerCanvas() {
       ref={viewer.canvasRef}
     >
       <NeRFImage />
+      {children}
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
       <SceneContextSetter />
@@ -339,31 +286,23 @@ function SceneContextSetter() {
   const { sceneRef, cameraRef } = React.useContext(ViewerContext)!;
   sceneRef.current = useThree((state) => state.scene);
   cameraRef.current = useThree(
-    (state) => state.camera as THREE.PerspectiveCamera
+    (state) => state.camera as THREE.PerspectiveCamera,
   );
   return <></>;
 }
 
 export function Root() {
   return (
-    <MantineProvider
-      withGlobalStyles
-      withNormalizeCSS
-      theme={{
-        colorScheme: "light",
+    <Box
+      sx={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <SingleViewer />
-      </Box>
-    </MantineProvider>
+      <SingleViewer />
+    </Box>
   );
 }

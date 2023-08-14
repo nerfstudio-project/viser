@@ -14,7 +14,7 @@ export function SynchronizedCameraControls() {
 
   const sendCameraThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    20
+    20,
   );
 
   // Callback for sending cameras.
@@ -122,28 +122,28 @@ export function SynchronizedCameraControls() {
       cameraControls.rotate(
         -0.1 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true
+        true,
       );
     });
     rightKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0.1 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true
+        true,
       );
     });
     upKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true
+        true,
       );
     });
     downKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true
+        true,
       );
     });
 
