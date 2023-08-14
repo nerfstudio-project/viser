@@ -3,15 +3,12 @@
 # Asymmetric properties are supported in Pyright, but not yet in mypy.
 # - https://github.com/python/mypy/issues/3004
 # - https://github.com/python/mypy/pull/11643
-"""3D GUI Elements
-
-`add_3d_gui_container()` allows standard GUI elements to be incorporated directly into a
-3D scene. In this example, we click on coordinate frames to show actions that can be
-performed on them.
+"""Popup image example.
+In this example, we show how to use the popup image feature.
+It shows a 2.5d RGBD image that tracks the camera around and lays over other geometry in the scene.
 """
 
 import time
-from typing import Optional
 
 import numpy as onp
 
