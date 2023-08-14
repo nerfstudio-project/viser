@@ -34,6 +34,12 @@ export interface LabelMessage {
   name: string;
   text: string;
 }
+export interface Gui3DMessage {
+  type: "Gui3DMessage";
+  order: number;
+  name: string;
+  container_id: string;
+}
 export interface PointCloudMessage {
   type: "PointCloudMessage";
   name: string;
@@ -49,6 +55,7 @@ export interface MeshMessage {
   color: number | null;
   vertex_colors: ArrayBuffer | null;
   wireframe: boolean;
+  opacity: number | null;
   side: "front" | "back" | "double";
 }
 export interface TransformControlsMessage {
@@ -141,20 +148,44 @@ export interface SceneNodeClickedMessage {
 export interface ResetSceneMessage {
   type: "ResetSceneMessage";
 }
-export interface _GuiAddMessageBase {
-  type: "_GuiAddMessageBase";
+export interface GuiAddFolderMessage {
+  type: "GuiAddFolderMessage";
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
+}
+export interface GuiAddMarkdownMessage {
+  type: "GuiAddMarkdownMessage";
+  order: number;
+  id: string;
+  markdown: string;
+  container_id: string;
+}
+export interface GuiAddTabGroupMessage {
+  type: "GuiAddTabGroupMessage";
+  order: number;
+  id: string;
+  container_id: string;
+  tab_labels: string[];
+  tab_icons_base64: (string | null)[];
+  tab_container_ids: string[];
+}
+export interface _GuiAddInputBase {
+  type: "_GuiAddInputBase";
+  order: number;
+  id: string;
+  label: string;
+  container_id: string;
   hint: string | null;
+  initial_value: any;
 }
 export interface GuiAddButtonMessage {
   type: "GuiAddButtonMessage";
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: boolean;
 }
@@ -163,12 +194,12 @@ export interface GuiAddSliderMessage {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
+  initial_value: number;
   min: number;
   max: number;
   step: number | null;
-  initial_value: number;
   precision: number;
 }
 export interface GuiAddNumberMessage {
@@ -176,7 +207,7 @@ export interface GuiAddNumberMessage {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: number;
   precision: number;
@@ -189,7 +220,7 @@ export interface GuiAddRgbMessage {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: [number, number, number];
 }
@@ -198,7 +229,7 @@ export interface GuiAddRgbaMessage {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: [number, number, number, number];
 }
@@ -207,7 +238,7 @@ export interface GuiAddCheckboxMessage {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: boolean;
 }
@@ -216,7 +247,7 @@ export interface GuiAddVector2Message {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: [number, number];
   min: [number, number] | null;
@@ -229,7 +260,7 @@ export interface GuiAddVector3Message {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: [number, number, number];
   min: [number, number, number] | null;
@@ -242,7 +273,7 @@ export interface GuiAddTextMessage {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: string;
 }
@@ -251,7 +282,7 @@ export interface GuiAddDropdownMessage {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: string;
   options: string[];
@@ -261,10 +292,21 @@ export interface GuiAddButtonGroupMessage {
   order: number;
   id: string;
   label: string;
-  folder_labels: string[];
+  container_id: string;
   hint: string | null;
   initial_value: string;
   options: string[];
+}
+export interface GuiModalMessage {
+  type: "GuiModalMessage";
+  order: number;
+  id: string;
+  title: string;
+  container_id: string;
+}
+export interface GuiRemoveContainerChildrenMessage {
+  type: "GuiRemoveContainerChildrenMessage";
+  container_id: string;
 }
 export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
@@ -290,12 +332,6 @@ export interface GuiSetValueMessage {
   id: string;
   value: any;
 }
-export interface MessageGroupStart {
-  type: "MessageGroupStart";
-}
-export interface MessageGroupEnd {
-  type: "MessageGroupEnd";
-}
 export interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
   titlebar_content: {
@@ -313,7 +349,8 @@ export interface ThemeConfigurationMessage {
       href: string | null;
     } | null;
   } | null;
-  fixed_sidebar: boolean;
+  control_layout: "floating" | "collapsible" | "fixed";
+  dark_mode: boolean;
 }
 
 export type Message =
@@ -321,6 +358,7 @@ export type Message =
   | CameraFrustumMessage
   | FrameMessage
   | LabelMessage
+  | Gui3DMessage
   | PointCloudMessage
   | MeshMessage
   | TransformControlsMessage
@@ -339,7 +377,10 @@ export type Message =
   | SetSceneNodeClickableMessage
   | SceneNodeClickedMessage
   | ResetSceneMessage
-  | _GuiAddMessageBase
+  | GuiAddFolderMessage
+  | GuiAddMarkdownMessage
+  | GuiAddTabGroupMessage
+  | _GuiAddInputBase
   | GuiAddButtonMessage
   | GuiAddSliderMessage
   | GuiAddNumberMessage
@@ -351,11 +392,11 @@ export type Message =
   | GuiAddTextMessage
   | GuiAddDropdownMessage
   | GuiAddButtonGroupMessage
+  | GuiModalMessage
+  | GuiRemoveContainerChildrenMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | GuiSetVisibleMessage
   | GuiSetDisabledMessage
   | GuiSetValueMessage
-  | MessageGroupStart
-  | MessageGroupEnd
   | ThemeConfigurationMessage;

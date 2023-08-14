@@ -18,8 +18,8 @@ import viser.transforms as tf
 
 def main(
     data_path: Path = Path(__file__).parent / "assets/record3d_dance",
-    downsample_factor: int = 2,
-    max_frames: int = 50,
+    downsample_factor: int = 4,
+    max_frames: int = 100,
 ) -> None:
     server = viser.ViserServer()
 
@@ -28,13 +28,18 @@ def main(
     num_frames = min(max_frames, loader.num_frames())
 
     # Add playback UI.
-    with server.gui_folder("Playback"):
+    with server.add_gui_folder("Playback"):
         gui_timestep = server.add_gui_slider(
-            "Timestep", min=0, max=num_frames - 1, step=1, initial_value=0
+            "Timestep",
+            min=0,
+            max=num_frames - 1,
+            step=1,
+            initial_value=0,
+            disabled=True,
         )
-        gui_next_frame = server.add_gui_button("Next Frame")
-        gui_prev_frame = server.add_gui_button("Prev Frame")
-        gui_playing = server.add_gui_checkbox("Playing", False)
+        gui_next_frame = server.add_gui_button("Next Frame", disabled=True)
+        gui_prev_frame = server.add_gui_button("Prev Frame", disabled=True)
+        gui_playing = server.add_gui_checkbox("Playing", True)
         gui_framerate = server.add_gui_slider(
             "FPS", min=1, max=60, step=0.1, initial_value=loader.fps
         )

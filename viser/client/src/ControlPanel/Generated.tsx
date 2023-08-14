@@ -1,6 +1,12 @@
-import { ViewerContext } from "../App";
+import {
+  GuiAddFolderMessage,
+  GuiAddTabGroupMessage,
+} from "../WebsocketMessages";
+import { ViewerContext, ViewerContextContents } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiConfig } from "./GuiState";
+import { Image, Tabs, TabsValue } from "@mantine/core";
+
 import {
   Accordion,
   Box,
@@ -11,102 +17,83 @@ import {
   NumberInput,
   Select,
   Slider,
-  Stack,
   Text,
   TextInput,
   Tooltip,
 } from "@mantine/core";
 import React from "react";
-
-type Folder = {
-  inputs: GuiConfig[];
-  subfolders: { [key: string]: Folder };
-};
+import Markdown from "../Markdown";
+import { ErrorBoundary } from "react-error-boundary";
 
 /** Root of generated inputs. */
-export default function Generated() {
-  const viewer = React.useContext(ViewerContext)!;
+export default function GeneratedGuiContainer({
+  containerId,
+  viewer,
+}: {
+  containerId: string;
+  viewer?: ViewerContextContents;
+}) {
+  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
+
+  const guiIdSet = viewer.useGui(
+    (state) => state.guiIdSetFromContainerId[containerId],
+  );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
-  const guiTree: Folder = { inputs: [], subfolders: {} };
+  // Render each GUI element in this container.
+  const out =
+    guiIdSet === undefined ? null : (
+      <Box pt="xs">
+        {[...guiIdSet]
+          .map((id) => guiConfigFromId[id])
+          .sort((a, b) => a.order - b.order)
+          .map((conf, index) => {
+            return <GeneratedInput conf={conf} key={conf.id} viewer={viewer} />;
+          })}
+      </Box>
+    );
 
-  [...Object.keys(guiConfigFromId)]
-    .sort((a, b) => guiConfigFromId[a].order - guiConfigFromId[b].order)
-    .forEach((id) => {
-      const conf = guiConfigFromId[id];
-
-      // Iterate into subfolder for this GUI element.
-      // Could be optimized.
-      let folder = guiTree;
-      conf.folder_labels.forEach((folder_label) => {
-        if (folder.subfolders[folder_label] === undefined)
-          folder.subfolders[folder_label] = { inputs: [], subfolders: {} };
-        folder = folder.subfolders[folder_label];
-      });
-
-      folder.inputs.push(conf);
-    });
-
-  return (
-    <>
-      <GeneratedFolder folder={guiTree} />
-    </>
-  );
-}
-
-function GeneratedFolder({ folder }: { folder: Folder }) {
-  return (
-    <Stack spacing="xs" pt="0.25rem">
-      {folder.inputs.map((conf) => (
-        <GeneratedInput key={conf.id} conf={conf} />
-      ))}
-      <Accordion
-        chevronPosition="right"
-        multiple
-        defaultValue={[...Object.keys(folder.subfolders)]}
-        styles={(theme) => ({
-          label: { padding: "0.625rem 0.2rem" },
-          item: { border: 0 },
-          control: { paddingLeft: 0 },
-          content: {
-            borderLeft: "1px solid",
-            borderLeftColor:
-              theme.colorScheme === "light"
-                ? theme.colors.gray[3]
-                : theme.colors.dark[5],
-            paddingRight: "0",
-            paddingLeft: "0.5rem",
-            paddingBottom: 0,
-            paddingTop: 0,
-            marginBottom: "0.5rem",
-            marginLeft: "0.05rem",
-          },
-        })}
-      >
-        {Object.keys(folder.subfolders).map((folder_label) => (
-          <Accordion.Item key={folder_label} value={folder_label}>
-            <Accordion.Control>{folder_label}</Accordion.Control>
-            <Accordion.Panel>
-              <GeneratedFolder folder={folder.subfolders[folder_label]} />
-            </Accordion.Panel>
-          </Accordion.Item>
-        ))}
-      </Accordion>
-    </Stack>
-  );
+  return out;
 }
 
 /** A single generated GUI element. */
-function GeneratedInput({ conf }: { conf: GuiConfig }) {
-  const viewer = React.useContext(ViewerContext)!;
-  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
+function GeneratedInput({
+  conf,
+  viewer,
+}: {
+  conf: GuiConfig;
+  viewer?: ViewerContextContents;
+}) {
+  // Handle GUI input types.
+  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
+  // Handle nested containers.
+  if (conf.type == "GuiAddFolderMessage")
+    return <GeneratedFolder conf={conf} />;
+  if (conf.type == "GuiAddTabGroupMessage")
+    return <GeneratedTabGroup conf={conf} />;
+  if (conf.type == "GuiAddMarkdownMessage") {
+    let { visible } =
+      viewer.useGui((state) => state.guiAttributeFromId[conf.id]) || {};
+    visible = visible ?? true;
+    if (!visible) return <></>;
+    return (
+      <Box pb="xs" px="sm">
+        <ErrorBoundary
+          fallback={<Text align="center">Markdown Failed to Render</Text>}
+        >
+          <Markdown>{conf.markdown}</Markdown>
+        </ErrorBoundary>
+      </Box>
+    );
+  }
+
+  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
   function updateValue(value: any) {
     setGuiValue(conf.id, value);
     messageSender({ type: "GuiUpdateMessage", id: conf.id, value: value });
   }
 
-  // TODO: the types here could potentially be made much stronger.
   const setGuiValue = viewer.useGui((state) => state.setGuiValue);
   const value =
     viewer.useGui((state) => state.guiValueFromId[conf.id]) ??
@@ -334,8 +321,89 @@ function GeneratedInput({ conf }: { conf: GuiConfig }) {
       );
 
   if (labeled)
-    return <LabeledInput id={conf.id} label={conf.label} input={input} />;
-  else return input;
+    input = <LabeledInput id={conf.id} label={conf.label} input={input} />;
+
+  return (
+    <Box pb="xs" px="sm">
+      {input}
+    </Box>
+  );
+}
+
+function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
+  return (
+    <Accordion
+      chevronPosition="right"
+      multiple
+      pb="xs"
+      px="sm"
+      defaultValue={["folder"]}
+      styles={(theme) => ({
+        label: { padding: "0.5rem 0.4rem" },
+        item: { border: 0 },
+        control: { paddingLeft: 0 },
+        content: {
+          borderLeft: "1px solid",
+          borderLeftColor:
+            theme.colorScheme === "light"
+              ? theme.colors.gray[3]
+              : theme.colors.dark[5],
+          padding: 0,
+          marginBottom: 0,
+          marginLeft: "0.05rem",
+        },
+      })}
+    >
+      <Accordion.Item value="folder">
+        <Accordion.Control>{conf.label}</Accordion.Control>
+        <Accordion.Panel>
+          <GeneratedGuiContainer containerId={conf.id} />
+        </Accordion.Panel>
+      </Accordion.Item>
+    </Accordion>
+  );
+}
+
+function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
+  const [tabState, setTabState] = React.useState<TabsValue>("0");
+  const icons = conf.tab_icons_base64;
+
+  return (
+    <Tabs
+      radius="xs"
+      value={tabState}
+      onTabChange={setTabState}
+      sx={(theme) => ({ marginTop: "-" + theme.spacing.xs })}
+    >
+      <Tabs.List>
+        {conf.tab_labels.map((label, index) => (
+          <Tabs.Tab
+            value={index.toString()}
+            key={index}
+            icon={
+              icons[index] === null ? undefined : (
+                <Image
+                  height="1.0rem"
+                  sx={(theme) => ({
+                    filter:
+                      theme.colorScheme == "dark" ? "invert(1)" : undefined,
+                  })}
+                  src={"data:image/svg+xml;base64," + icons[index]}
+                />
+              )
+            }
+          >
+            {label}
+          </Tabs.Tab>
+        ))}
+      </Tabs.List>
+      {conf.tab_container_ids.map((containerId, index) => (
+        <Tabs.Panel value={index.toString()} key={containerId}>
+          <GeneratedGuiContainer containerId={containerId} />
+        </Tabs.Panel>
+      ))}
+    </Tabs>
+  );
 }
 
 function VectorInput(
@@ -361,7 +429,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      }
+      },
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
