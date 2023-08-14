@@ -402,7 +402,6 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
-        console.log("Background");
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_data}`,
           (texture) => {

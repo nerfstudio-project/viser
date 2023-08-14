@@ -117,7 +117,6 @@ export interface PopupImageMessage {
   media_type: "image/jpeg" | "image/png";
   base64_rgb: string;
   base64_depth: string;
-  depth_scale: number;
 }
 export interface ImageMessage {
   type: "ImageMessage";

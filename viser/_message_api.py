@@ -359,12 +359,9 @@ class MessageApi(abc.ABC):
         media_type, base64_rgb = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
-        # this little maneuver is to get the depth image to be 4 channels RGBA integer
-        # intdepth = depth_img.view(onp.uint8).reshape((*depth_img.shape[:-1], 4))
-
-        # intdepth = onp.clip(((depth_img.astype(onp.float32) / 1000) * 65535.0),0,65534).astype(onp.uint16).view(onp.uint8).reshape((*depth_img.shape[:-1], 2))
-        # intdepth = onp.pad(intdepth, ((0,0), (0,0), (2,0)), mode="constant", constant_values=0)
         base = 10.0
+        # convert to fixed point float, with precision of .01 ranging from .01 to 99.99
+        # this is enough to cover the vast majority of depths needed in the working range of the viewer.
         depth_img = onp.clip(depth_img, 0, 99.9)*(base**2.0) #multiplying by 100 makes the lowest digit the hundreths
         depth_img = depth_img.astype(onp.uint32)
         intdepth = onp.zeros((*depth_img.shape[:-1], 4), dtype=onp.uint8)

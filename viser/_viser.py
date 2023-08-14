@@ -240,7 +240,7 @@ class ViserServer(MessageApi, GuiApi):
         self._server = server
         super().__init__(server)
 
-        # _client_autobuild.ensure_client_is_built()
+        _client_autobuild.ensure_client_is_built()
 
         state = _ViserServerState(server)
         self._state = state

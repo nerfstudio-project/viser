@@ -37,6 +37,7 @@ export default function ControlPanel(props: {
 }) {
   const theme = useMantineTheme();
   const useMobileView = useMediaQuery(`(max-width: ${theme.breakpoints.xs})`);
+  
   // TODO: will result in unnecessary re-renders
   const viewer = React.useContext(ViewerContext)!;
   const showGenerated = viewer.useGui(
