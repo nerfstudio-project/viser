@@ -30,7 +30,6 @@ import WebsocketInterface from "./WebsocketInterface";
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
-import { format } from "path";
 
 export type ViewerContextContents = {
   useSceneTree: UseSceneTree;
@@ -249,7 +248,6 @@ function PopupImage(){
     //resize the mesh based on size
     const f = camera.getFocalLength();
     nerfMesh.current!.scale.set(camera.getFilmWidth()/f,camera.getFilmHeight()/f,1.0);
-    //get the projection matrix for webgl
     //set the near/far uniforms
     popupMaterial.uniforms.cameraNear.value = camera.near;
     popupMaterial.uniforms.cameraFar.value = camera.far;
