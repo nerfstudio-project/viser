@@ -409,6 +409,8 @@ def error_print_wrapper(inner: Callable[[], Any]) -> Callable[[], None]:
         try:
             inner()
         except Exception as e:
-            print(e)
+            import traceback as tb
+
+            tb.print_exception(type(e), e, e.__traceback__, limit=100)
 
     return wrapped
