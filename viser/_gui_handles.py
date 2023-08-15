@@ -185,9 +185,8 @@ class _GuiInputHandle(Generic[T]):
         # TODO: the current way we track GUI handles and children is fairly manual +
         # error-prone. We should revist this design.
         gui_api._gui_handle_from_id[self._impl.id] = self
-        parent = gui_api._container_handle_from_id.get(self._impl.container_id, None)
-        if parent is not None:
-            parent._children[self._impl.id] = self
+        parent = gui_api._container_handle_from_id[self._impl.container_id]
+        parent._children[self._impl.id] = self
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
@@ -313,7 +312,7 @@ class GuiTabGroupHandle:
     _icons_base64: List[Optional[str]]
     _tabs: List[GuiTabHandle]
     _gui_api: GuiApi
-    _container_id: str
+    _container_id: str  # Parent.
 
     def add_tab(self, label: str, icon: Optional[Icon] = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
@@ -321,7 +320,7 @@ class GuiTabGroupHandle:
         id = _make_unique_id()
 
         # We may want to make this thread-safe in the future.
-        out = GuiTabHandle(_parent=self, _container_id=id)
+        out = GuiTabHandle(_parent=self, _id=id)
 
         self._labels.append(label)
         self._icons_base64.append(None if icon is None else base64_from_icon(icon))
@@ -345,7 +344,7 @@ class GuiTabGroupHandle:
                 container_id=self._container_id,
                 tab_labels=tuple(self._labels),
                 tab_icons_base64=tuple(self._icons_base64),
-                tab_container_ids=tuple(tab._container_id for tab in self._tabs),
+                tab_container_ids=tuple(tab._id for tab in self._tabs),
             )
         )
 
@@ -355,7 +354,8 @@ class GuiFolderHandle:
     """Use as a context to place GUI elements into a folder."""
 
     _gui_api: GuiApi
-    _container_id: str
+    _id: str  # Used as container ID for children.
+    _parent_container_id: str  # Container ID of parent.
     _container_id_restore: Optional[str] = None
     _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
@@ -363,7 +363,7 @@ class GuiFolderHandle:
 
     def __enter__(self) -> GuiFolderHandle:
         self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._container_id)
+        self._gui_api._set_container_id(self._id)
         return self
 
     def __exit__(self, *args) -> None:
@@ -373,15 +373,15 @@ class GuiFolderHandle:
         self._container_id_restore = None
 
     def __post_init__(self) -> None:
-        parent = self._gui_api._container_handle_from_id.get(self._container_id, None)
-        if parent is not None:
-            parent._children[self._container_id] = self
+        self._gui_api._container_handle_from_id[self._id] = self
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._id] = self
 
     def remove(self) -> None:
         """Permanently remove this folder and all contained GUI elements from the
         visualizer."""
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._container_id))
-        self._gui_api._container_handle_from_id.pop(self._container_id)
+        self._gui_api._get_api()._queue(GuiRemoveMessage(self._id))
+        self._gui_api._container_handle_from_id.pop(self._id)
         for child in self._children.values():
             child.remove()
 
@@ -391,7 +391,7 @@ class GuiModalHandle:
     """Use as a context to place GUI elements into a modal."""
 
     _gui_api: GuiApi
-    _container_id: str
+    _id: str  # Used as container ID of children.
     _container_id_restore: Optional[str] = None
     _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
@@ -399,7 +399,7 @@ class GuiModalHandle:
 
     def __enter__(self) -> GuiModalHandle:
         self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._container_id)
+        self._gui_api._set_container_id(self._id)
         return self
 
     def __exit__(self, *args) -> None:
@@ -409,14 +409,14 @@ class GuiModalHandle:
         self._container_id_restore = None
 
     def __post_init__(self) -> None:
-        self._gui_api._container_handle_from_id[self._container_id] = self
+        self._gui_api._container_handle_from_id[self._id] = self
 
     def close(self) -> None:
         """Close this modal and permananently remove all contained GUI elements."""
         self._gui_api._get_api()._queue(
-            GuiCloseModalMessage(self._container_id),
+            GuiCloseModalMessage(self._id),
         )
-        self._gui_api._container_handle_from_id.pop(self._container_id)
+        self._gui_api._container_handle_from_id.pop(self._id)
         for child in self._children.values():
             child.remove()
 
@@ -426,15 +426,16 @@ class GuiTabHandle:
     """Use as a context to place GUI elements into a tab."""
 
     _parent: GuiTabGroupHandle
-    _container_id: str
+    _id: str  # Used as container ID of children.
     _container_id_restore: Optional[str] = None
     _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> GuiTabHandle:
         self._container_id_restore = self._parent._gui_api._get_container_id()
-        self._parent._gui_api._set_container_id(self._container_id)
+        self._parent._gui_api._set_container_id(self._id)
+        return self
 
     def __exit__(self, *args) -> None:
         del args
@@ -443,11 +444,7 @@ class GuiTabHandle:
         self._container_id_restore = None
 
     def __post_init__(self) -> None:
-        parent = self._parent._gui_api._container_handle_from_id.get(
-            self._container_id, None
-        )
-        if parent is not None:
-            parent._children[self._container_id] = self
+        self._parent._gui_api._container_handle_from_id[self._id] = self
 
     def remove(self) -> None:
         """Permanently remove this tab and all contained GUI elements from the
@@ -460,7 +457,7 @@ class GuiTabHandle:
                 break
         assert container_index != -1, "Tab already removed!"
 
-        self._parent._gui_api._container_handle_from_id.pop(self._container_id)
+        self._parent._gui_api._container_handle_from_id.pop(self._id)
 
         self._parent._labels.pop(container_index)
         self._parent._icons_base64.pop(container_index)
@@ -478,7 +475,7 @@ class GuiMarkdownHandle:
     _gui_api: GuiApi
     _id: str
     _visible: bool
-    _container_id: str
+    _container_id: str  # Parent.
 
     @property
     def visible(self) -> bool:
@@ -496,9 +493,8 @@ class GuiMarkdownHandle:
 
     def __post_init__(self) -> None:
         """We need to register ourself after construction for callbacks to work."""
-        parent = self._gui_api._container_handle_from_id.get(self._container_id, None)
-        if parent is not None:
-            parent._children[self._id] = self
+        parent = self._gui_api._container_handle_from_id[self._container_id]
+        parent._children[self._id] = self
 
     def remove(self) -> None:
         """Permanently remove this markdown from the visualizer."""
