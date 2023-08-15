@@ -181,6 +181,9 @@ class _GuiInputHandle(Generic[T]):
     def __post_init__(self) -> None:
         """We need to register ourself after construction for callbacks to work."""
         gui_api = self._impl.gui_api
+
+        # TODO: the current way we track GUI handles and children is fairly manual +
+        # error-prone. We should revist this design.
         gui_api._gui_handle_from_id[self._impl.id] = self
         parent = gui_api._container_handle_from_id.get(self._impl.container_id, None)
         if parent is not None:

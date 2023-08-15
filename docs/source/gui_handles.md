@@ -10,7 +10,7 @@ clients. When a GUI element is added to a client (for example, via
 
 <!-- prettier-ignore-start -->
 
-.. autoapiclass:: viser.GuiHandle
+.. autoapiclass:: viser.GuiInputHandle
    :members:
    :undoc-members:
    :inherited-members:
