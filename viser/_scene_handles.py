@@ -243,9 +243,7 @@ class Gui3dContainerHandle(SceneNodeHandle):
         self._container_id_restore = None
 
     def __post_init__(self) -> None:
-        parent = self._gui_api._container_handle_from_id.get(self._container_id, None)
-        if parent is not None:
-            parent._children[self._container_id] = self
+        self._gui_api._container_handle_from_id[self._container_id] = self
 
     def remove(self) -> None:
         """Permanently remove this GUI container from the visualizer."""
@@ -254,9 +252,6 @@ class Gui3dContainerHandle(SceneNodeHandle):
         super().remove()
 
         # Clean up contained GUI elements.
-        for child in self._children.values():
-            child.remove()
-
         self._gui_api._container_handle_from_id.pop(self._container_id)
         for child in self._children.values():
             child.remove()

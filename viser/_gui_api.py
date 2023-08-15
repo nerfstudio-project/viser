@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import abc
+import dataclasses
 import re
 import threading
 import time
@@ -39,6 +40,7 @@ from ._gui_handles import (
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiTabGroupHandle,
+    SupportsRemoveProtocol,
     _GuiHandleState,
     _GuiInputHandle,
     _make_unique_id,
@@ -115,6 +117,11 @@ def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
     return markdown
 
 
+@dataclasses.dataclass
+class _RootGuiContainer:
+    _children: Dict[str, SupportsRemoveProtocol]
+
+
 class GuiApi(abc.ABC):
     _target_container_from_thread_id: Dict[int, str] = {}
     """ID of container to put GUI elements into."""
@@ -123,7 +130,9 @@ class GuiApi(abc.ABC):
         super().__init__()
 
         self._gui_handle_from_id: Dict[str, _GuiInputHandle[Any]] = {}
-        self._container_handle_from_id: Dict[str, GuiContainerProtocol] = {}
+        self._container_handle_from_id: Dict[str, GuiContainerProtocol] = {
+            "root": _RootGuiContainer({})
+        }
         self._get_api()._message_handler.register_handler(
             _messages.GuiUpdateMessage, self._handle_gui_updates
         )
@@ -190,7 +199,8 @@ class GuiApi(abc.ABC):
         )
         return GuiFolderHandle(
             _gui_api=self,
-            _container_id=folder_container_id,
+            _id=folder_container_id,
+            _parent_container_id=self._get_container_id(),
         )
 
     def add_gui_modal(
@@ -209,7 +219,7 @@ class GuiApi(abc.ABC):
         )
         return GuiModalHandle(
             _gui_api=self,
-            _container_id=modal_container_id,
+            _id=modal_container_id,
         )
 
     def add_gui_tab_group(self) -> GuiTabGroupHandle:
