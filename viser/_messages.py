@@ -321,7 +321,11 @@ class GuiModalMessage(Message):
     order: float
     id: str
     title: str
-    container_id: str
+
+
+@dataclasses.dataclass
+class GuiCloseModalMessage(Message):
+    id: str
 
 
 @dataclasses.dataclass
@@ -397,13 +401,6 @@ class GuiAddDropdownMessage(_GuiAddInputBase):
 class GuiAddButtonGroupMessage(_GuiAddInputBase):
     initial_value: str
     options: Tuple[str, ...]
-
-
-@dataclasses.dataclass
-class GuiRemoveContainerChildrenMessage(Message):
-    """Sent server->client to recursively remove children of a GUI container."""
-
-    container_id: str
 
 
 @dataclasses.dataclass

@@ -294,11 +294,10 @@ export interface GuiModalMessage {
   order: number;
   id: string;
   title: string;
-  container_id: string;
 }
-export interface GuiRemoveContainerChildrenMessage {
-  type: "GuiRemoveContainerChildrenMessage";
-  container_id: string;
+export interface GuiCloseModalMessage {
+  type: "GuiCloseModalMessage";
+  id: string;
 }
 export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
@@ -398,7 +397,7 @@ export type Message =
   | GuiAddDropdownMessage
   | GuiAddButtonGroupMessage
   | GuiModalMessage
-  | GuiRemoveContainerChildrenMessage
+  | GuiCloseModalMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | GuiSetVisibleMessage
