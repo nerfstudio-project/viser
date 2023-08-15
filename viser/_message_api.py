@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 
 
-def _hex_from_hls(h: float, l: float, s: float) -> str:  # noqa
+def _hex_from_hls(h: float, l: float, s: float) -> str:
     """Converts HLS values in [0.0, 1.0] to a hex-formatted string, eg 0xffffff."""
     return "#" + "".join(
         [
@@ -169,23 +169,23 @@ class MessageApi(abc.ABC):
                 ), "All channels should be integers."
 
                 # RGB => HLS.
-                h, primary_l, s = colorsys.rgb_to_hls(
+                h, l, s = colorsys.rgb_to_hls(
                     brand_color[0] / 255.0,
                     brand_color[1] / 255.0,
                     brand_color[2] / 255.0,
                 )
 
                 # Automatically generate a 10-color palette.
-                min_l = max(primary_l - 0.08, 0.0)
+                min_l = max(l - 0.08, 0.0)
                 max_l = min(0.8 + 0.5, 0.9)
-                primary_l = max(min_l, min(max_l, primary_l))
+                l = max(min_l, min(max_l, l))
 
                 primary_index = 8
                 ls = tuple(
                     onp.interp(
                         x=onp.arange(10),
                         xp=(0, primary_index, 9),
-                        fp=(max_l, primary_l, min_l),
+                        fp=(max_l, l, min_l),
                     )
                 )
                 colors_cast = tuple(_hex_from_hls(h, ls[i], s) for i in range(10))  # type: ignore
