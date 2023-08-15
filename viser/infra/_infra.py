@@ -306,7 +306,6 @@ class Server(MessageHandler):
                         process_request=(
                             viser_http_server if http_server_root is not None else None
                         ),
-                        compression=None,
                     )
                 )
                 break
