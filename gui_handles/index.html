@@ -238,13 +238,13 @@ read and write state.</p>
 clients. When a GUI element is added to a client (for example, via
 <code class="xref py py-func docutils literal notranslate"><span class="pre">ClientHandle.add_gui_text()</span></code>), state is local to a specific client.</p>
 <!-- prettier-ignore-start --><dl class="py class">
-<dt class="sig sig-object py" id="viser.GuiHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiHandle</span></span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.GuiInputHandle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiInputHandle</span></span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiInputHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiInputHandle" title="Permalink to this definition">#</a></dt>
 <dd><p>Handle for a general GUI inputs in our visualizer.</p>
 <p>Lets us get values, set values, and detect updates.</p>
 <dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiHandle.disabled">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disabled</span></span><a class="headerlink" href="#viser.GuiHandle.disabled" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.GuiInputHandle.disabled">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">disabled</span></span><a class="headerlink" href="#viser.GuiInputHandle.disabled" title="Permalink to this definition">#</a></dt>
 <dd><p>Allow/disallow user interaction with the input. Synchronized automatically
 when assigned.</p>
 <dl class="field-list simple">
@@ -255,22 +255,22 @@ when assigned.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.on_update">
-<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHandle.on_update" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.GuiInputHandle.on_update">
+<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">GuiEvent</span><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiInputHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiInputHandle.on_update" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a function to call when a GUI input is updated. Happens in a thread.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>TGuiHandle</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>GuiEvent</em><em>[</em><em>TGuiHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[TGuiHandle], None]</p>
+<dd class="field-even"><p>Callable[[GuiEvent[TGuiHandle]], None]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.GuiHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiHandle.remove" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.GuiInputHandle.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiInputHandle.remove" title="Permalink to this definition">#</a></dt>
 <dd><p>Permanently remove this GUI element from the visualizer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -280,8 +280,8 @@ when assigned.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiHandle.update_timestamp">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><a class="headerlink" href="#viser.GuiHandle.update_timestamp" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.GuiInputHandle.update_timestamp">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><a class="headerlink" href="#viser.GuiInputHandle.update_timestamp" title="Permalink to this definition">#</a></dt>
 <dd><p>Get the last time that this input was updated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -291,8 +291,8 @@ when assigned.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiHandle.value">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#viser.GuiHandle.value" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.GuiInputHandle.value">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#viser.GuiInputHandle.value" title="Permalink to this definition">#</a></dt>
 <dd><p>Value of the GUI input. Synchronized automatically when assigned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
@@ -302,8 +302,8 @@ when assigned.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="viser.GuiHandle.visible">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.GuiHandle.visible" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.GuiInputHandle.visible">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.GuiInputHandle.visible" title="Permalink to this definition">#</a></dt>
 <dd><p>Temporarily show or hide this GUI element from the visualizer. Synchronized
 automatically when assigned.</p>
 <dl class="field-list simple">
@@ -334,14 +334,14 @@ when assigned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiButtonHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiButtonHandle.on_click"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiButtonHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">GuiEvent</span><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiButtonHandle.on_click"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiButtonHandle.on_click" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a function to call when a button is pressed. Happens in a thread.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>TGuiHandle</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>GuiEvent</em><em>[</em><em>TGuiHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[TGuiHandle], None]</p>
+<dd class="field-even"><p>Callable[[GuiEvent[TGuiHandle]], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -411,14 +411,14 @@ automatically when assigned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiButtonGroupHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiButtonGroupHandle.on_click"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiButtonGroupHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">GuiEvent</span><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiButtonGroupHandle.on_click"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiButtonGroupHandle.on_click" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a function to call when a button is pressed. Happens in a thread.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>TGuiHandle</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>GuiEvent</em><em>[</em><em>TGuiHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[TGuiHandle], None]</p>
+<dd class="field-even"><p>Callable[[GuiEvent[TGuiHandle]], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -489,14 +489,14 @@ when assigned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiDropdownHandle.on_update">
-<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiDropdownHandle.on_update" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">GuiEvent</span><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.GuiDropdownHandle.on_update" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a function to call when a GUI input is updated. Happens in a thread.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>TGuiHandle</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>GuiEvent</em><em>[</em><em>TGuiHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[TGuiHandle], None]</p>
+<dd class="field-even"><p>Callable[[GuiEvent[TGuiHandle]], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -508,7 +508,7 @@ when assigned.</p>
 <p>For projects that care about typing: the static type of <code class="docutils literal notranslate"><span class="pre">options</span></code> should be
 consistent with the <code class="docutils literal notranslate"><span class="pre">StringType</span></code> associated with a handle. Literal types will be
 inferred where possible when handles are instantiated; for the most flexibility,
-we can declare handles as <code class="docutils literal notranslate"><span class="pre">_GuiHandle[str]</span></code>.</p>
+we can declare handles as <code class="docutils literal notranslate"><span class="pre">GuiDropdownHandle[str]</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>Tuple[StringType, Ellipsis]</p>
@@ -697,13 +697,13 @@ visualizer.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">GUI Handles</a><ul>
-<li><a class="reference internal" href="#viser.GuiHandle"><code class="docutils literal notranslate"><span class="pre">GuiHandle</span></code></a><ul>
-<li><a class="reference internal" href="#viser.GuiHandle.disabled"><code class="docutils literal notranslate"><span class="pre">GuiHandle.disabled</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.on_update"><code class="docutils literal notranslate"><span class="pre">GuiHandle.on_update()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiHandle.remove()</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiHandle.update_timestamp</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiHandle.value</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiHandle.visible"><code class="docutils literal notranslate"><span class="pre">GuiHandle.visible</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiInputHandle"><code class="docutils literal notranslate"><span class="pre">GuiInputHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.GuiInputHandle.disabled"><code class="docutils literal notranslate"><span class="pre">GuiInputHandle.disabled</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiInputHandle.on_update"><code class="docutils literal notranslate"><span class="pre">GuiInputHandle.on_update()</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiInputHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiInputHandle.remove()</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiInputHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">GuiInputHandle.update_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiInputHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiInputHandle.value</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiInputHandle.visible"><code class="docutils literal notranslate"><span class="pre">GuiInputHandle.visible</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiButtonHandle"><code class="docutils literal notranslate"><span class="pre">GuiButtonHandle</span></code></a><ul>
