@@ -17,7 +17,8 @@ import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Paper } from "@mantine/core";
-/** Float **/
+
+/** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
     new Float32Array(new Uint8Array(colors)).map((value) => {
@@ -472,13 +473,16 @@ function useMessageHandler() {
             // We wrap with <group /> because Html doesn't implement THREE.Object3D.
             return (
               <group ref={ref}>
-                <Html>
+                <Html prepend={false}>
                   <Paper
                     sx={{
                       width: "20em",
                       fontSize: "0.8em",
                     }}
                     shadow="md"
+                    onPointerDown={(evt) => {
+                      evt.stopPropagation();
+                    }}
                   >
                     <GeneratedGuiContainer
                       containerId={message.container_id}

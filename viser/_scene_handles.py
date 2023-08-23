@@ -62,6 +62,15 @@ class SceneNodeHandle:
         position: Tuple[float, float, float] | onp.ndarray,
     ) -> TSceneNodeHandle:
         out = cls(_SceneNodeHandleState(name, api))
+
+        # If the node already exists, remove it.
+        #
+        # This is mainly useful if a node has some special cleanup procedures;
+        # Gui3dContainerHandle, for example, needs to clear out contained GUI elements +
+        # associated callbacks.
+        if name in api._handle_from_node_name:
+            api._handle_from_node_name[name].remove()
+
         api._handle_from_node_name[name] = out
 
         out.wxyz = wxyz
@@ -232,9 +241,10 @@ class Gui3dContainerHandle(SceneNodeHandle):
         default_factory=dict
     )
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> Gui3dContainerHandle:
         self._container_id_restore = self._gui_api._get_container_id()
         self._gui_api._set_container_id(self._container_id)
+        return self
 
     def __exit__(self, *args) -> None:
         del args
