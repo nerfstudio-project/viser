@@ -340,7 +340,7 @@ class MessageApi(abc.ABC):
             assert False, f"Unsupported texture visuals: {mesh.visual}"
 
         return MeshHandle._make(self, name, wxyz, position, visible)
-    
+
     def set_background_image(
         self,
         image: onp.ndarray,
@@ -352,25 +352,33 @@ class MessageApi(abc.ABC):
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
-        # if depth is provided, encode it and pass it
+
+        # Encode depth if provided. We use a 4-channel PNG to represent a 4-byte (fixed
+        # point) depth at each pixel.
         depth_base64data = None
         if depth is not None:
-            base = 10.0
-            # convert to fixed point float, with precision of .01 ranging from .01 to 99.99
-            # this is enough to cover the vast majority of depths needed in the working range of the viewer.
-            depth_img = onp.clip(depth, 0, 99.9)*(base**2.0) #multiplying by 100 makes the lowest digit the hundreths
-            depth_img = depth_img.astype(onp.uint32)
-            intdepth = onp.zeros((*depth_img.shape[:-1], 4), dtype=onp.uint8)
-            for i in range(4):
-                intdepth[...,i] = (((depth_img % base)/10.0)*255).squeeze()
-                depth_img = depth_img // base
+            # Convert to fixed-point.
+            # We'll support from 0 -> (2^32 - 1) / 1_000_000.
+            #
+            # This translates to a range of [0, 4294.96], with a precision of 1e-6.
+            assert len(depth.shape) == 2 or (
+                len(depth.shape) == 3 and depth.shape[2] == 1
+            ), "Depth should have shape (H,W) or (H,W,1)."
+            depth = onp.clip(depth * 1_000_000, 0, 2**32 - 1).astype(onp.uint32)
+            intdepth = depth.reshape((*depth.shape[:2], 1)).view(onp.uint8)
+            assert intdepth.shape == (*depth.shape[:2], 4)
             with io.BytesIO() as data_buffer:
                 iio.imwrite(data_buffer, intdepth, extension=".png")
-                depth_base64data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
+                depth_base64data = base64.b64encode(data_buffer.getvalue()).decode(
+                    "ascii"
+                )
 
         self._queue(
             _messages.BackgroundImageMessage(
-                media_type=media_type, base64_data=base64_data,base64_depth=depth_base64data,has_depth=depth is not None
+                media_type=media_type,
+                base64_data=base64_data,
+                base64_depth=depth_base64data,
+                has_depth=depth is not None,
             )
         )
 
