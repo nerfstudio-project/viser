@@ -110,12 +110,7 @@ export interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
   media_type: "image/jpeg" | "image/png";
   base64_data: string;
-  base64_depth: string;
-}
-export interface PopupImageMessage {
-  type: "PopupImageMessage";
-  media_type: "image/jpeg" | "image/png";
-  base64_rgb: string;
+  has_depth: boolean;
   base64_depth: string;
 }
 export interface ImageMessage {
@@ -369,7 +364,6 @@ export type Message =
   | SetPositionMessage
   | TransformControlsUpdateMessage
   | BackgroundImageMessage
-  | PopupImageMessage
   | ImageMessage
   | RemoveSceneNodeMessage
   | SetSceneNodeVisibilityMessage

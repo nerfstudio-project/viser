@@ -408,35 +408,30 @@ function useMessageHandler() {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
 
-            const oldBackground = viewer.sceneRef.current?.background;
-            viewer.sceneRef.current!.background = texture;
+            const oldBackground = viewer.popupMaterialRef.current!.uniforms.nerfColor.value
+            viewer.popupMaterialRef.current!.uniforms.nerfColor.value = texture;
             if (isTexture(oldBackground)) oldBackground.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
           },
         );
-        return;
-      }
-      // Add a camera-aligned RGBD image
-      case "PopupImageMessage": {
         viewer.popupMaterialRef.current!.uniforms.enabled.value = true;
-        new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_rgb}`,
-          (texture) => {
-            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
-            texture.encoding = THREE.sRGBEncoding;
-            viewer.popupMaterialRef.current!.uniforms.nerfColor.value = texture;
-          }
-        );
-        new TextureLoader().load(
-          `data:$image/png;base64,${message.base64_depth}`,
-          (texture) => {
-            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.);
-            texture.minFilter = THREE.NearestFilter;
-            texture.magFilter = THREE.NearestFilter;
-            viewer.popupMaterialRef.current!.uniforms.nerfDepth.value = texture;
-          }
-        );
+        viewer.popupMaterialRef.current!.uniforms.hasDepth.value = message.has_depth;
+
+        if(message.has_depth) {
+          // If depth is available set the texture 
+          new TextureLoader().load(
+            `data:$image/png;base64,${message.base64_depth}`,
+            (texture) => {
+              // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.);
+              texture.minFilter = THREE.NearestFilter;
+              texture.magFilter = THREE.NearestFilter;
+              const olddepthtex = viewer.popupMaterialRef.current?.uniforms.nerfDepth.value;
+              viewer.popupMaterialRef.current!.uniforms.nerfDepth.value = texture;
+              if (isTexture(olddepthtex)) olddepthtex.dispose();
+            }
+          );
+        }
         return;
       }
       // Add a 2D label.
@@ -567,6 +562,8 @@ function useMessageHandler() {
         if (isTexture(oldBackground)) oldBackground.dispose();
 
         viewer.useGui.setState({ backgroundAvailable: false });
+        // Disable the depth texture rendering
+        viewer.popupMaterialRef.current!.uniforms.enabled.value = false;
         return;
       }
       // Set the value of a GUI input.
