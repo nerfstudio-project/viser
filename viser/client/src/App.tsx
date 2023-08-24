@@ -178,7 +178,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PopupImage(){
+function PopupImage() {
   // Create a fragment shader that composites depth using nerfDepth and nerfColor
   const vertShader = `
   varying vec2 vUv;
@@ -202,8 +202,10 @@ function PopupImage(){
   uniform bool hasDepth;
 
   float readDepth( sampler2D depthSampler, vec2 coord, float zNear, float zFar) {
-    vec4 rgbaPacked = texture(depthSampler,coord);
-    float depth = rgbaPacked.r*0.1 + rgbaPacked.g + rgbaPacked.b * 10.0 + rgbaPacked.a * 100.0;
+    vec4 rgbaPacked = texture(depthSampler, coord);
+    // For the k-th channel, coefficients are calculated as: 255 * 1e-6 * 2^(8 * k).
+    // Note that: [0, 255] channels are scaled to [0, 1], and we multiply by 1e6 on the server side.
+    float depth = (rgbaPacked.r * 0.000255 + rgbaPacked.g * 0.06528 + rgbaPacked.b * 16.71168 + rgbaPacked.a * 4278.19008);
     return depth;
   }
 
@@ -230,45 +232,50 @@ function PopupImage(){
     fragmentShader: fragShader,
     vertexShader: vertShader,
     uniforms: {
-      enabled: {value: false},
-      nerfDepth: {value: null},
-      nerfColor: {value: null},
-      cameraNear: {value: null},
-      cameraFar: {value: null},
-      hasDepth: {value: false},
-    }
+      enabled: { value: false },
+      nerfDepth: { value: null },
+      nerfColor: { value: null },
+      cameraNear: { value: null },
+      cameraFar: { value: null },
+      hasDepth: { value: false },
+    },
   });
   const { popupMaterialRef } = React.useContext(ViewerContext)!;
   popupMaterialRef.current = popupMaterial;
   const nerfMesh = React.useRef<THREE.Mesh>(null);
-  useFrame(({camera}) => {
+  useFrame(({ camera }) => {
     //assert it is a perspective camera
-    if(!(camera instanceof THREE.PerspectiveCamera)){
-      console.error("Camera is not a perspective camera, cannot render NeRF image");
+    if (!(camera instanceof THREE.PerspectiveCamera)) {
+      console.error(
+        "Camera is not a perspective camera, cannot render NeRF image",
+      );
       return;
     }
     // Update the position of the mesh based on the camera position
     const lookdir = camera.getWorldDirection(new THREE.Vector3());
-    nerfMesh.current!.position.set(camera.position.x,camera.position.y,camera.position.z);
-    nerfMesh.current!.position.addScaledVector(lookdir,1.0);
+    nerfMesh.current!.position.set(
+      camera.position.x,
+      camera.position.y,
+      camera.position.z,
+    );
+    nerfMesh.current!.position.addScaledVector(lookdir, 1.0);
     nerfMesh.current!.quaternion.copy(camera.quaternion);
     //resize the mesh based on size
     const f = camera.getFocalLength();
-    nerfMesh.current!.scale.set(camera.getFilmWidth()/f,camera.getFilmHeight()/f,1.0);
+    nerfMesh.current!.scale.set(
+      camera.getFilmWidth() / f,
+      camera.getFilmHeight() / f,
+      1.0,
+    );
     //set the near/far uniforms
     popupMaterial.uniforms.cameraNear.value = camera.near;
     popupMaterial.uniforms.cameraFar.value = camera.far;
   });
-  return <mesh
-            ref={nerfMesh}
-            material={popupMaterial}
-            matrixWorldAutoUpdate={false}
-          >
-            <planeGeometry
-              attach="geometry"
-              args={[1 , 1]}
-            />
-          </mesh>
+  return (
+    <mesh ref={nerfMesh} material={popupMaterial} matrixWorldAutoUpdate={false}>
+      <planeGeometry attach="geometry" args={[1, 1]} />
+    </mesh>
+  );
 }
 
 /** Component for helping us set the scene reference. */
