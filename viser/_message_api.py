@@ -340,56 +340,37 @@ class MessageApi(abc.ABC):
             assert False, f"Unsupported texture visuals: {mesh.visual}"
 
         return MeshHandle._make(self, name, wxyz, position, visible)
-
-    def set_popup_image(
-        self,
-        image: onp.ndarray,
-        depth_img: onp.ndarray[float] ,
-        format: Literal["png", "jpeg"] = "jpeg",
-        jpeg_quality: Optional[int] = None,
-    ) -> None:
-        """
-        Set a popup image for the scene. Useful for NeRF visualization.
-        
-        Expects depth_img to be a HxWx1 array of depth values in **floating point**
-        """
-        assert depth_img.dtype == onp.float32 or depth_img.dtype == onp.float16 or depth_img.dtype == onp.float64
-        assert len(depth_img.shape) == 3 
-        assert depth_img.shape[2] == 1
-        media_type, base64_rgb = _encode_image_base64(
-            image, format, jpeg_quality=jpeg_quality
-        )
-        base = 10.0
-        # convert to fixed point float, with precision of .01 ranging from .01 to 99.99
-        # this is enough to cover the vast majority of depths needed in the working range of the viewer.
-        depth_img = onp.clip(depth_img, 0, 99.9)*(base**2.0) #multiplying by 100 makes the lowest digit the hundreths
-        depth_img = depth_img.astype(onp.uint32)
-        intdepth = onp.zeros((*depth_img.shape[:-1], 4), dtype=onp.uint8)
-        for i in range(4):
-            intdepth[...,i] = (((depth_img % base)/10.0)*255).squeeze()
-            depth_img = depth_img // base
-        with io.BytesIO() as data_buffer:
-            iio.imwrite(data_buffer, intdepth, extension=".png")
-            packed_depth = base64.b64encode(data_buffer.getvalue()).decode("ascii")
-        
-        self._queue(
-            _messages.PopupImageMessage(
-                media_type=media_type, base64_rgb=base64_rgb, base64_depth = packed_depth
-            )
-        )
+    
     def set_background_image(
         self,
         image: onp.ndarray,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: Optional[int] = None,
+        depth: Optional[onp.ndarray] = None,
     ) -> None:
         """Set a background image for the scene. Useful for NeRF visualization."""
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
+        # if depth is provided, encode it and pass it
+        depth_base64data = None
+        if depth is not None:
+            base = 10.0
+            # convert to fixed point float, with precision of .01 ranging from .01 to 99.99
+            # this is enough to cover the vast majority of depths needed in the working range of the viewer.
+            depth_img = onp.clip(depth, 0, 99.9)*(base**2.0) #multiplying by 100 makes the lowest digit the hundreths
+            depth_img = depth_img.astype(onp.uint32)
+            intdepth = onp.zeros((*depth_img.shape[:-1], 4), dtype=onp.uint8)
+            for i in range(4):
+                intdepth[...,i] = (((depth_img % base)/10.0)*255).squeeze()
+                depth_img = depth_img // base
+            with io.BytesIO() as data_buffer:
+                iio.imwrite(data_buffer, intdepth, extension=".png")
+                depth_base64data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
+
         self._queue(
             _messages.BackgroundImageMessage(
-                media_type=media_type, base64_data=base64_data
+                media_type=media_type, base64_data=base64_data,base64_depth=depth_base64data,has_depth=depth is not None
             )
         )
 

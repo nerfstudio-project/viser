@@ -199,6 +199,7 @@ function PopupImage(){
   uniform float cameraNear;
   uniform float cameraFar;
   uniform bool enabled;
+  uniform bool hasDepth;
 
   float readDepth( sampler2D depthSampler, vec2 coord, float zNear, float zFar) {
     vec4 rgbaPacked = texture(depthSampler,coord);
@@ -214,9 +215,14 @@ function PopupImage(){
     vec4 color = texture( nerfColor, vUv );
     gl_FragColor = vec4( color.rgb, 1.0);
 
-    float depth = readDepth(nerfDepth, vUv, cameraNear, cameraFar);
-    float bufDepth = viewZToPerspectiveDepth(-depth, cameraNear, cameraFar);
-    
+    float bufDepth;
+    if(hasDepth){
+      float depth = readDepth(nerfDepth, vUv, cameraNear, cameraFar);
+      bufDepth = viewZToPerspectiveDepth(-depth, cameraNear, cameraFar);
+    }else{
+      // If no depth enabled, set depth to 1.0 (infinity) to treat it like a background image
+      bufDepth = 1.0;
+    }
     gl_FragDepth = bufDepth;
   }`.trim();
   // initialize the nerfColor texture with all white and depth at infinity
@@ -229,6 +235,7 @@ function PopupImage(){
       nerfColor: {value: null},
       cameraNear: {value: null},
       cameraFar: {value: null},
+      hasDepth: {value: false},
     }
   });
   const { popupMaterialRef } = React.useContext(ViewerContext)!;
