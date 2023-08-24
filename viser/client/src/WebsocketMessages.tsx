@@ -180,6 +180,23 @@ export interface GuiAddButtonMessage {
   container_id: string;
   hint: string | null;
   initial_value: boolean;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
+  icon_base64: string | null;
 }
 export interface GuiAddSliderMessage {
   type: "GuiAddSliderMessage";

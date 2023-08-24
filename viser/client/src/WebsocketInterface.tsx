@@ -13,10 +13,10 @@ import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
-import { isGuiConfig } from "./ControlPanel/GuiState";
+import { isGuiConfig, useMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { Paper } from "@mantine/core";
+import { Box, MantineProvider, Paper } from "@mantine/core";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -66,6 +66,8 @@ function useMessageHandler() {
     }
     addSceneNode(node);
   }
+
+  const mantineTheme = useMantineTheme();
 
   // Return message handler.
   return (message: Message) => {
@@ -274,41 +276,43 @@ function useMessageHandler() {
         );
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => (
-            <PivotControls
-              ref={ref}
-              scale={message.scale}
-              lineWidth={message.line_width}
-              fixed={message.fixed}
-              autoTransform={message.auto_transform}
-              activeAxes={message.active_axes}
-              disableAxes={message.disable_axes}
-              disableSliders={message.disable_sliders}
-              disableRotations={message.disable_rotations}
-              translationLimits={message.translation_limits}
-              rotationLimits={message.rotation_limits}
-              depthTest={message.depth_test}
-              opacity={message.opacity}
-              onDrag={(l) => {
-                const attrs = viewer.nodeAttributesFromName.current;
-                if (attrs[message.name] === undefined) {
-                  attrs[message.name] = {};
-                }
+            <group onClick={(e) => e.stopPropagation()}>
+              <PivotControls
+                ref={ref}
+                scale={message.scale}
+                lineWidth={message.line_width}
+                fixed={message.fixed}
+                autoTransform={message.auto_transform}
+                activeAxes={message.active_axes}
+                disableAxes={message.disable_axes}
+                disableSliders={message.disable_sliders}
+                disableRotations={message.disable_rotations}
+                translationLimits={message.translation_limits}
+                rotationLimits={message.rotation_limits}
+                depthTest={message.depth_test}
+                opacity={message.opacity}
+                onDrag={(l) => {
+                  const attrs = viewer.nodeAttributesFromName.current;
+                  if (attrs[message.name] === undefined) {
+                    attrs[message.name] = {};
+                  }
 
-                const wxyz = new THREE.Quaternion();
-                wxyz.setFromRotationMatrix(l);
-                const position = new THREE.Vector3().setFromMatrixPosition(l);
+                  const wxyz = new THREE.Quaternion();
+                  wxyz.setFromRotationMatrix(l);
+                  const position = new THREE.Vector3().setFromMatrixPosition(l);
 
-                const nodeAttributes = attrs[message.name]!;
-                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                nodeAttributes.position = position.toArray();
-                sendDragMessage({
-                  type: "TransformControlsUpdateMessage",
-                  name: name,
-                  wxyz: nodeAttributes.wxyz,
-                  position: nodeAttributes.position,
-                });
-              }}
-            />
+                  const nodeAttributes = attrs[message.name]!;
+                  nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+                  nodeAttributes.position = position.toArray();
+                  sendDragMessage({
+                    type: "TransformControlsUpdateMessage",
+                    name: name,
+                    wxyz: nodeAttributes.wxyz,
+                    position: nodeAttributes.position,
+                  });
+                }}
+              />
+            </group>
           )),
         );
         return;
@@ -474,21 +478,29 @@ function useMessageHandler() {
             return (
               <group ref={ref}>
                 <Html prepend={false}>
-                  <Paper
-                    sx={{
-                      width: "20em",
-                      fontSize: "0.8em",
-                    }}
-                    shadow="md"
-                    onPointerDown={(evt) => {
-                      evt.stopPropagation();
-                    }}
+                  <MantineProvider
+                    withGlobalStyles
+                    withNormalizeCSS
+                    theme={mantineTheme}
                   >
-                    <GeneratedGuiContainer
-                      containerId={message.container_id}
-                      viewer={viewer}
-                    />
-                  </Paper>
+                    <Paper
+                      sx={{
+                        width: "20em",
+                        fontSize: "0.8em",
+                        marginLeft: "1em",
+                        marginTop: "1em",
+                      }}
+                      shadow="md"
+                      onPointerDown={(evt) => {
+                        evt.stopPropagation();
+                      }}
+                    >
+                      <GeneratedGuiContainer
+                        containerId={message.container_id}
+                        viewer={viewer}
+                      />
+                    </Paper>
+                  </MantineProvider>
                 </Html>
               </group>
             );
@@ -542,7 +554,9 @@ function useMessageHandler() {
       }
       // Set the clickability of a particular scene node.
       case "SetSceneNodeClickableMessage": {
-        setClickable(message.name, message.clickable);
+        // This setTimeout is totally unnecessary, but can help surface some race
+        // conditions.
+        setTimeout(() => setClickable(message.name, message.clickable), 50);
         return;
       }
       // Reset the entire scene, removing all scene nodes.

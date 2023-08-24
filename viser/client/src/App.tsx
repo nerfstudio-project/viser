@@ -22,7 +22,7 @@ import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 import "./index.css";
 
 import ControlPanel from "./ControlPanel/ControlPanel";
-import { UseGui, useGuiState } from "./ControlPanel/GuiState";
+import { UseGui, useGuiState, useMantineTheme } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 import {
   WebsocketMessageProducer,
@@ -105,23 +105,11 @@ function ViewerRoot() {
 function ViewerContents() {
   const viewer = React.useContext(ViewerContext)!;
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
-  const colors = viewer.useGui((state) => state.theme.colors);
   return (
     <MantineProvider
       withGlobalStyles
       withNormalizeCSS
-      theme={{
-        colorScheme: viewer.useGui((state) => state.theme.dark_mode)
-          ? "dark"
-          : "light",
-        primaryColor: colors === null ? undefined : "custom",
-        colors:
-          colors === null
-            ? undefined
-            : {
-                custom: colors,
-              },
-      }}
+      theme={useMantineTheme()}
     >
       <Titlebar />
       <ViserModal />
