@@ -26,7 +26,7 @@ from typing import (
 
 import imageio.v3 as iio
 import numpy as onp
-from typing_extensions import LiteralString
+from typing_extensions import Literal, LiteralString
 
 from . import _messages
 from ._gui_handles import (

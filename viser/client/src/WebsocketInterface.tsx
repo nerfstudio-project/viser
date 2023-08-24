@@ -16,7 +16,7 @@ import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
 import { isGuiConfig, useMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { Box, MantineProvider, Paper } from "@mantine/core";
+import { MantineProvider, Paper } from "@mantine/core";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
