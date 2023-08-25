@@ -415,14 +415,13 @@ function useMessageHandler() {
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {
-            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
 
-            const oldBackground =
+            const oldBackgroundTexture =
               viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
             viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
               texture;
-            if (isTexture(oldBackground)) oldBackground.dispose();
+            if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
           },
@@ -439,12 +438,11 @@ function useMessageHandler() {
           new TextureLoader().load(
             `data:image/png;base64,${message.base64_depth}`,
             (texture) => {
-              // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.);
-              const olddepthtex =
+              const oldDepthTexture =
                 viewer.backgroundMaterialRef.current?.uniforms.depthMap.value;
               viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
                 texture;
-              if (isTexture(olddepthtex)) olddepthtex.dispose();
+              if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
             },
           );
         }

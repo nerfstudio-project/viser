@@ -249,8 +249,7 @@ function BackgroundImage() {
       hasDepth: { value: false },
     },
   });
-  const { backgroundMaterialRef } =
-    React.useContext(ViewerContext)!;
+  const { backgroundMaterialRef } = React.useContext(ViewerContext)!;
   backgroundMaterialRef.current = backgroundMaterial;
   const backgroundMesh = React.useRef<THREE.Mesh>(null);
   useFrame(({ camera }) => {
