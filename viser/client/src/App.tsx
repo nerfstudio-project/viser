@@ -11,7 +11,6 @@ import {
   EffectComposer,
   Outline,
   Selection,
-  Texture,
 } from "@react-three/postprocessing";
 import { BlendFunction, KernelSize } from "postprocessing";
 
@@ -249,41 +248,45 @@ function BackgroundImage() {
       hasDepth: { value: false },
     },
   });
-  const { backgroundMaterialRef: popupMaterialRef } =
+  const { backgroundMaterialRef } =
     React.useContext(ViewerContext)!;
-  popupMaterialRef.current = backgroundMaterial;
-  const nerfMesh = React.useRef<THREE.Mesh>(null);
+  backgroundMaterialRef.current = backgroundMaterial;
+  const backgroundMesh = React.useRef<THREE.Mesh>(null);
   useFrame(({ camera }) => {
-    //assert it is a perspective camera
+    // Logic ahead relies on perspective camera assumption.
     if (!(camera instanceof THREE.PerspectiveCamera)) {
       console.error(
-        "Camera is not a perspective camera, cannot render NeRF image",
+        "Camera is not a perspective camera, cannot render background image",
       );
       return;
     }
-    // Update the position of the mesh based on the camera position
+
+    // Update the position of the mesh based on the camera position.
     const lookdir = camera.getWorldDirection(new THREE.Vector3());
-    nerfMesh.current!.position.set(
+    backgroundMesh.current!.position.set(
       camera.position.x,
       camera.position.y,
       camera.position.z,
     );
-    nerfMesh.current!.position.addScaledVector(lookdir, 1.0);
-    nerfMesh.current!.quaternion.copy(camera.quaternion);
-    //resize the mesh based on size
+    backgroundMesh.current!.position.addScaledVector(lookdir, 1.0);
+    backgroundMesh.current!.quaternion.copy(camera.quaternion);
+
+    // Resize the mesh based on focal length.
     const f = camera.getFocalLength();
-    nerfMesh.current!.scale.set(
+    backgroundMesh.current!.scale.set(
       camera.getFilmWidth() / f,
       camera.getFilmHeight() / f,
       1.0,
     );
-    //set the near/far uniforms
+
+    // Set near/far uniforms.
     backgroundMaterial.uniforms.cameraNear.value = camera.near;
     backgroundMaterial.uniforms.cameraFar.value = camera.far;
   });
+
   return (
     <mesh
-      ref={nerfMesh}
+      ref={backgroundMesh}
       material={backgroundMaterial}
       matrixWorldAutoUpdate={false}
     >
