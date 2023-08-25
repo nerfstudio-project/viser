@@ -26,7 +26,7 @@ from typing import (
 
 import imageio.v3 as iio
 import numpy as onp
-from typing_extensions import LiteralString
+from typing_extensions import Literal, LiteralString
 
 from . import _messages
 from ._gui_handles import (
@@ -45,6 +45,8 @@ from ._gui_handles import (
     _GuiInputHandle,
     _make_unique_id,
 )
+from ._icons import base64_from_icon
+from ._icons_enum import Icon
 from ._message_api import MessageApi, _encode_image_base64, cast_vector
 
 if TYPE_CHECKING:
@@ -159,7 +161,18 @@ class GuiApi(abc.ABC):
 
         # Trigger callbacks.
         for cb in handle_state.update_cb:
-            cb(GuiEvent(client_id, handle))
+            from ._viser import ClientHandle, ViserServer
+
+            # Get the handle of the client that triggered this event.
+            api = self._get_api()
+            if isinstance(api, ClientHandle):
+                client = api
+            elif isinstance(api, ViserServer):
+                client = api.get_clients()[client_id]
+            else:
+                assert False
+
+            cb(GuiEvent(client_id, client, handle))
         if handle_state.sync_cb is not None:
             handle_state.sync_cb(client_id, value)
 
@@ -262,6 +275,25 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        color: Optional[
+            Literal[
+                "dark",
+                "gray",
+                "red",
+                "pink",
+                "grape",
+                "violet",
+                "indigo",
+                "blue",
+                "cyan",
+                "green",
+                "lime",
+                "yellow",
+                "orange",
+                "teal",
+            ]
+        ] = None,
+        icon: Optional[Icon] = None,
     ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
         it is clicked; to detect clicks, we can manually set it back to `False`."""
@@ -278,6 +310,8 @@ class GuiApi(abc.ABC):
                     container_id=self._get_container_id(),
                     hint=hint,
                     initial_value=False,
+                    color=color,
+                    icon_base64=None if icon is None else base64_from_icon(icon),
                 ),
                 disabled=disabled,
                 visible=visible,

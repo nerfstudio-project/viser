@@ -36,6 +36,7 @@ from .infra import ClientId
 
 if TYPE_CHECKING:
     from ._gui_api import GuiApi
+    from ._viser import ClientHandle
 
 
 T = TypeVar("T")
@@ -138,7 +139,13 @@ class _GuiInputHandle(Generic[T]):
             # Pushing callbacks into separate threads helps prevent deadlocks when we
             # have a lock in a callback. TODO: revisit other callbacks.
             threading.Thread(
-                target=lambda: cb(GuiEvent(client_id=None, target=self))
+                target=lambda: cb(
+                    GuiEvent(
+                        client_id=None,
+                        client=None,
+                        target=self,
+                    )
+                )
             ).start()
 
     @property
@@ -223,6 +230,7 @@ class GuiEvent(Generic[TGuiHandle]):
     Passed as input to callback functions."""
 
     client_id: Optional[ClientId]
+    client: Optional[ClientHandle]
     target: TGuiHandle
 
 

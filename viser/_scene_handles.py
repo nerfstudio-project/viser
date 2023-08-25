@@ -232,9 +232,10 @@ class Gui3dContainerHandle(SceneNodeHandle):
         default_factory=dict
     )
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> Gui3dContainerHandle:
         self._container_id_restore = self._gui_api._get_container_id()
         self._gui_api._set_container_id(self._container_id)
+        return self
 
     def __exit__(self, *args) -> None:
         del args
