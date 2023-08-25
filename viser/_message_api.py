@@ -398,27 +398,28 @@ class MessageApi(abc.ABC):
         jpeg_quality: Optional[int] = None,
         depth: Optional[onp.ndarray] = None,
     ) -> None:
-        """Set a background image for the scene. Useful for NeRF visualization."""
+        """Set a background image for the scene, optionally with depth compositing."""
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
 
-        # Encode depth if provided. We use a 4-channel PNG to represent a 4-byte (fixed
-        # point) depth at each pixel.
+        # Encode depth if provided. We use a 3-channel PNG to represent a fixed point
+        # depth at each pixel.
         depth_base64data = None
         if depth is not None:
             # Convert to fixed-point.
-            # We'll support from 0 -> (2^32 - 1) / 1_000_000.
+            # We'll support from 0 -> (2^24 - 1) / 100_000.
             #
-            # This translates to a range of [0, 4294.96], with a precision of 1e-6.
+            # This translates to a range of [0, 167.77215], with a precision of 1e-5.
             assert len(depth.shape) == 2 or (
                 len(depth.shape) == 3 and depth.shape[2] == 1
             ), "Depth should have shape (H,W) or (H,W,1)."
-            depth = onp.clip(depth * 1_000_000, 0, 2**32 - 1).astype(onp.uint32)
-            intdepth = depth.reshape((*depth.shape[:2], 1)).view(onp.uint8)
+            depth = onp.clip(depth * 100_000, 0, 2**24 - 1).astype(onp.uint32)
+            assert depth is not None  # Appease mypy.
+            intdepth: onp.ndarray = depth.reshape((*depth.shape[:2], 1)).view(onp.uint8)
             assert intdepth.shape == (*depth.shape[:2], 4)
             with io.BytesIO() as data_buffer:
-                iio.imwrite(data_buffer, intdepth, extension=".png")
+                iio.imwrite(data_buffer, intdepth[:, :, :3], extension=".png")
                 depth_base64data = base64.b64encode(data_buffer.getvalue()).decode(
                     "ascii"
                 )

@@ -1,3 +1,4 @@
+# mypy: disable-error-code="var-annotated"
 """Background image example with depth compositing.
 
 In this example, we show how to use a background image with depth compositing. This can
@@ -24,7 +25,7 @@ img[250:750, 250:750, :] = 255
 
 mesh = trimesh.creation.box((0.5, 0.5, 0.5))
 server.add_mesh_trimesh(
-    name=f"/cube",
+    name="/cube",
     mesh=mesh,
     position=(0, 0, 0.0),
 )
