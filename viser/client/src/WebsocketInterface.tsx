@@ -403,34 +403,36 @@ function useMessageHandler() {
       // Add a background image.
       case "BackgroundImageMessage": {
         new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_data}`,
+          `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {
             // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
 
             const oldBackground =
-              viewer.popupMaterialRef.current!.uniforms.nerfColor.value;
-            viewer.popupMaterialRef.current!.uniforms.nerfColor.value = texture;
+              viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
+            viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
+              texture;
             if (isTexture(oldBackground)) oldBackground.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
           },
         );
-        viewer.popupMaterialRef.current!.uniforms.enabled.value = true;
-        viewer.popupMaterialRef.current!.uniforms.hasDepth.value =
-          message.has_depth;
+        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
+        viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
+          message.base64_depth !== null;
+        console.log(
+          viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value,
+        );
 
-        if (message.has_depth) {
+        if (message.base64_depth !== null) {
           // If depth is available set the texture
           new TextureLoader().load(
             `data:$image/png;base64,${message.base64_depth}`,
             (texture) => {
               // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.);
-              texture.minFilter = THREE.NearestFilter;
-              texture.magFilter = THREE.NearestFilter;
               const olddepthtex =
-                viewer.popupMaterialRef.current?.uniforms.nerfDepth.value;
-              viewer.popupMaterialRef.current!.uniforms.nerfDepth.value =
+                viewer.backgroundMaterialRef.current?.uniforms.depthMap.value;
+              viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
                 texture;
               if (isTexture(olddepthtex)) olddepthtex.dispose();
             },
@@ -567,7 +569,7 @@ function useMessageHandler() {
 
         viewer.useGui.setState({ backgroundAvailable: false });
         // Disable the depth texture rendering
-        viewer.popupMaterialRef.current!.uniforms.enabled.value = false;
+        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
         return;
       }
       // Set the value of a GUI input.

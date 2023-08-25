@@ -109,9 +109,8 @@ export interface TransformControlsUpdateMessage {
 export interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
   media_type: "image/jpeg" | "image/png";
-  base64_data: string;
-  has_depth: boolean;
-  base64_depth: string;
+  base64_rgb: string;
+  base64_depth: string | null;
 }
 export interface ImageMessage {
   type: "ImageMessage";
