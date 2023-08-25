@@ -229,7 +229,8 @@ class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
     media_type: Literal["image/jpeg", "image/png"]
-    base64_data: str
+    base64_rgb: str
+    base64_depth: Optional[str]
 
 
 @dataclasses.dataclass
