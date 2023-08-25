@@ -376,9 +376,8 @@ class MessageApi(abc.ABC):
         self._queue(
             _messages.BackgroundImageMessage(
                 media_type=media_type,
-                base64_data=base64_data,
+                base64_rgb=base64_data,
                 base64_depth=depth_base64data,
-                has_depth=depth is not None,
             )
         )
 

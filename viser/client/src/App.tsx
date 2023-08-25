@@ -38,7 +38,7 @@ export type ViewerContextContents = {
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
-  popupMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
+  backgroundMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
@@ -81,7 +81,7 @@ function SingleViewer() {
     canvasRef: React.useRef(null),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
-    popupMaterialRef: React.useRef(null),
+    backgroundMaterialRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
     // Scene node attributes that aren't placed in the zustand state, for performance reasons.
     nodeAttributesFromName: React.useRef({}),
@@ -154,7 +154,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       ref={viewer.canvasRef}
     >
       {children}
-      <PopupImage />
+      <BackgroundImage />
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
       <SceneContextSetter />
@@ -178,8 +178,9 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PopupImage() {
-  // Create a fragment shader that composites depth using nerfDepth and nerfColor
+/* Background image with support for depth compositing. */
+function BackgroundImage() {
+  // Create a fragment shader that composites depth using depth and rgb
   const vertShader = `
   varying vec2 vUv;
 
@@ -194,8 +195,8 @@ function PopupImage() {
   precision highp int;
 
   varying vec2 vUv;
-  uniform sampler2D nerfColor;
-  uniform sampler2D nerfDepth;
+  uniform sampler2D colorMap;
+  uniform sampler2D depthMap;
   uniform float cameraNear;
   uniform float cameraFar;
   uniform bool enabled;
@@ -214,12 +215,12 @@ function PopupImage() {
       // discard the pixel if we're not enabled
       discard;
     }
-    vec4 color = texture( nerfColor, vUv );
-    gl_FragColor = vec4( color.rgb, 1.0);
+    vec4 color = texture(colorMap, vUv);
+    gl_FragColor = vec4(color.rgb, 1.0);
 
     float bufDepth;
     if(hasDepth){
-      float depth = readDepth(nerfDepth, vUv, cameraNear, cameraFar);
+      float depth = readDepth(depthMap, vUv, cameraNear, cameraFar);
       bufDepth = viewZToPerspectiveDepth(-depth, cameraNear, cameraFar);
     }else{
       // If no depth enabled, set depth to 1.0 (infinity) to treat it like a background image
@@ -227,21 +228,22 @@ function PopupImage() {
     }
     gl_FragDepth = bufDepth;
   }`.trim();
-  // initialize the nerfColor texture with all white and depth at infinity
-  const popupMaterial = new THREE.ShaderMaterial({
+  // initialize the rgb texture with all white and depth at infinity
+  const backgroundMaterial = new THREE.ShaderMaterial({
     fragmentShader: fragShader,
     vertexShader: vertShader,
     uniforms: {
       enabled: { value: false },
-      nerfDepth: { value: null },
-      nerfColor: { value: null },
+      depthMap: { value: null },
+      colorMap: { value: null },
       cameraNear: { value: null },
       cameraFar: { value: null },
       hasDepth: { value: false },
     },
   });
-  const { popupMaterialRef } = React.useContext(ViewerContext)!;
-  popupMaterialRef.current = popupMaterial;
+  const { backgroundMaterialRef: popupMaterialRef } =
+    React.useContext(ViewerContext)!;
+  popupMaterialRef.current = backgroundMaterial;
   const nerfMesh = React.useRef<THREE.Mesh>(null);
   useFrame(({ camera }) => {
     //assert it is a perspective camera
@@ -268,11 +270,15 @@ function PopupImage() {
       1.0,
     );
     //set the near/far uniforms
-    popupMaterial.uniforms.cameraNear.value = camera.near;
-    popupMaterial.uniforms.cameraFar.value = camera.far;
+    backgroundMaterial.uniforms.cameraNear.value = camera.near;
+    backgroundMaterial.uniforms.cameraFar.value = camera.far;
   });
   return (
-    <mesh ref={nerfMesh} material={popupMaterial} matrixWorldAutoUpdate={false}>
+    <mesh
+      ref={nerfMesh}
+      material={backgroundMaterial}
+      matrixWorldAutoUpdate={false}
+    >
       <planeGeometry attach="geometry" args={[1, 1]} />
     </mesh>
   );
