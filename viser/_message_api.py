@@ -9,11 +9,12 @@ from __future__ import annotations
 
 import abc
 import base64
+import colorsys
 import io
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar, Union, cast
 
 import imageio.v3 as iio
 import numpy as onp
@@ -23,7 +24,6 @@ import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
-from ._gui_handles import GuiHandle, _GuiHandleState
 from ._scene_handles import (
     CameraFrustumHandle,
     FrameHandle,
@@ -43,6 +43,16 @@ if TYPE_CHECKING:
 
 
 P = ParamSpec("P")
+
+
+def _hex_from_hls(h: float, l: float, s: float) -> str:
+    """Converts HLS values in [0.0, 1.0] to a hex-formatted string, eg 0xffffff."""
+    return "#" + "".join(
+        [
+            int(min(255, max(0, channel * 255.0)) + 0.5).to_bytes(1, "little").hex()
+            for channel in colorsys.hls_to_rgb(h, l, s)
+        ]
+    )
 
 
 def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
@@ -115,15 +125,15 @@ class MessageApi(abc.ABC):
     invidividual clients."""
 
     def __init__(self, handler: infra.MessageHandler) -> None:
+        self._message_handler = handler
+
         super().__init__()
 
-        self._gui_handle_state_from_id: Dict[str, _GuiHandleState[Any]] = {}
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
         ] = {}
         self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
 
-        handler.register_handler(_messages.GuiUpdateMessage, self._handle_gui_updates)
         handler.register_handler(
             _messages.TransformControlsUpdateMessage,
             self._handle_transform_controls_updates,
@@ -143,13 +153,53 @@ class MessageApi(abc.ABC):
         titlebar_content: Optional[theme.TitlebarConfig] = None,
         control_layout: Literal["floating", "collapsible", "fixed"] = "floating",
         dark_mode: bool = False,
+        brand_color: Optional[Tuple[int, int, int]] = None,
     ) -> None:
         """Configure the viser front-end's visual appearance."""
+
+        colors_cast: Optional[
+            Tuple[str, str, str, str, str, str, str, str, str, str]
+        ] = None
+
+        if brand_color is not None:
+            assert len(brand_color) in (3, 10)
+            if len(brand_color) == 3:
+                assert all(
+                    map(lambda val: isinstance(val, int), brand_color)
+                ), "All channels should be integers."
+
+                # RGB => HLS.
+                h, l, s = colorsys.rgb_to_hls(
+                    brand_color[0] / 255.0,
+                    brand_color[1] / 255.0,
+                    brand_color[2] / 255.0,
+                )
+
+                # Automatically generate a 10-color palette.
+                min_l = max(l - 0.08, 0.0)
+                max_l = min(0.8 + 0.5, 0.9)
+                l = max(min_l, min(max_l, l))
+
+                primary_index = 8
+                ls = tuple(
+                    onp.interp(
+                        x=onp.arange(10),
+                        xp=(0, primary_index, 9),
+                        fp=(max_l, l, min_l),
+                    )
+                )
+                colors_cast = tuple(_hex_from_hls(h, ls[i], s) for i in range(10))  # type: ignore
+
+        assert colors_cast is None or all(
+            [isinstance(val, str) and val.startswith("#") for val in colors_cast]
+        ), "All string colors should be in hexadecimal + prefixed with #, eg #ffffff."
+
         self._queue(
             _messages.ThemeConfigurationMessage(
                 titlebar_content=titlebar_content,
                 control_layout=control_layout,
                 dark_mode=dark_mode,
+                colors=colors_cast,
             ),
         )
 
@@ -501,31 +551,6 @@ class MessageApi(abc.ABC):
         """Abstract method for sending messages."""
         ...
 
-    def _handle_gui_updates(
-        self, client_id: ClientId, message: _messages.GuiUpdateMessage
-    ) -> None:
-        """Callback for handling GUI messages."""
-        handle_state = self._gui_handle_state_from_id.get(message.id, None)
-        if handle_state is None:
-            return
-
-        value = handle_state.typ(message.value)
-
-        # Only call update when value has actually changed.
-        if not handle_state.is_button and value == handle_state.value:
-            return
-
-        # Update state.
-        with self._atomic_lock:
-            handle_state.value = value
-            handle_state.update_timestamp = time.time()
-
-        # Trigger callbacks.
-        for cb in handle_state.update_cb:
-            cb(GuiHandle(handle_state))
-        if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, value)
-
     def _handle_transform_controls_updates(
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
     ) -> None:
@@ -567,6 +592,16 @@ class MessageApi(abc.ABC):
         # Avoids circular import.
         from ._gui_api import GuiApi, _make_unique_id
 
+        # New name to make the type checker happy; ViserServer and ClientHandle inherit
+        # from both GuiApi and MessageApi. The pattern below is unideal.
+        gui_api = self
+        assert isinstance(gui_api, GuiApi)
+
+        # Remove the 3D GUI container if it already exists. This will make sure
+        # contained GUI elements are removed, preventing potential memory leaks.
+        if name in gui_api._handle_from_node_name:
+            gui_api._handle_from_node_name[name].remove()
+
         container_id = _make_unique_id()
         self._queue(
             _messages.Gui3DMessage(
@@ -575,7 +610,5 @@ class MessageApi(abc.ABC):
                 container_id=container_id,
             )
         )
-        assert isinstance(self, MessageApi)
         node_handle = SceneNodeHandle._make(self, name, wxyz, position)
-        assert isinstance(self, GuiApi)
-        return Gui3dContainerHandle(node_handle._impl, self, container_id)
+        return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)

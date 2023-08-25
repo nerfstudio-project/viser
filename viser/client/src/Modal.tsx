@@ -22,18 +22,17 @@ function GeneratedModal({
   conf: GuiModalMessage;
   index: number;
 }) {
-  const viewer = useContext(ViewerContext)!;
-  const popModal = viewer.useGui((state) => state.popModal);
-  const removeContainer = viewer.useGui((state) => state.removeGuiContainer);
-
   return (
     <Modal
       opened={true}
       title={conf.title}
       onClose={() => {
-        removeContainer(conf.id);
-        popModal();
+        // To make memory management easier, we should only close modals from
+        // the server.
+        // Otherwise, the client would need to communicate to the server that
+        // the modal was deleted and contained GUI elements were cleared.
       }}
+      withCloseButton={false}
       centered
       zIndex={10000 + index}
     >

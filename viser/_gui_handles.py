@@ -6,8 +6,8 @@ import time
 import uuid
 from typing import (
     TYPE_CHECKING,
-    Any,
     Callable,
+    Dict,
     Generic,
     Iterable,
     List,
@@ -19,13 +19,14 @@ from typing import (
 )
 
 import numpy as onp
+from typing_extensions import Protocol
 
 from ._icons import base64_from_icon
 from ._icons_enum import Icon
 from ._messages import (
     GuiAddDropdownMessage,
     GuiAddTabGroupMessage,
-    GuiRemoveContainerChildrenMessage,
+    GuiCloseModalMessage,
     GuiRemoveMessage,
     GuiSetDisabledMessage,
     GuiSetValueMessage,
@@ -35,15 +36,27 @@ from .infra import ClientId
 
 if TYPE_CHECKING:
     from ._gui_api import GuiApi
+    from ._viser import ClientHandle
 
 
 T = TypeVar("T")
-TGuiHandle = TypeVar("TGuiHandle", bound="_GuiHandle")
+TGuiHandle = TypeVar("TGuiHandle", bound="_GuiInputHandle")
 
 
 def _make_unique_id() -> str:
     """Return a unique ID for referencing GUI elements."""
     return str(uuid.uuid4())
+
+
+class GuiContainerProtocol(Protocol):
+    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+        default_factory=dict
+    )
+
+
+class SupportsRemoveProtocol(Protocol):
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -52,14 +65,14 @@ class _GuiHandleState(Generic[T]):
 
     label: str
     typ: Type[T]
-    container: GuiApi
+    gui_api: GuiApi
     value: T
     update_timestamp: float
 
     container_id: str
     """Container that this GUI input was placed into."""
 
-    update_cb: List[Callable[[Any], None]]
+    update_cb: List[Callable[[GuiEvent], None]]
     """Registered functions to call when this input is updated."""
 
     is_button: bool
@@ -67,9 +80,6 @@ class _GuiHandleState(Generic[T]):
 
     sync_cb: Optional[Callable[[ClientId, T], None]]
     """Callback for synchronizing inputs across clients."""
-
-    cleanup_cb: Optional[Callable[[], Any]]
-    """Function to call when GUI element is removed."""
 
     disabled: bool
     visible: bool
@@ -81,7 +91,7 @@ class _GuiHandleState(Generic[T]):
 
 
 @dataclasses.dataclass
-class _GuiHandle(Generic[T]):
+class _GuiInputHandle(Generic[T]):
     # Let's shove private implementation details in here...
     _impl: _GuiHandleState[T]
 
@@ -115,7 +125,7 @@ class _GuiHandle(Generic[T]):
 
         # Send to client, except for buttons.
         if not self._impl.is_button:
-            self._impl.container._get_api()._queue(
+            self._impl.gui_api._get_api()._queue(
                 GuiSetValueMessage(self._impl.id, value)  # type: ignore
             )
 
@@ -128,7 +138,15 @@ class _GuiHandle(Generic[T]):
         for cb in self._impl.update_cb:
             # Pushing callbacks into separate threads helps prevent deadlocks when we
             # have a lock in a callback. TODO: revisit other callbacks.
-            threading.Thread(target=lambda: cb(self)).start()
+            threading.Thread(
+                target=lambda: cb(
+                    GuiEvent(
+                        client_id=None,
+                        client=None,
+                        target=self,
+                    )
+                )
+            ).start()
 
     @property
     def update_timestamp(self) -> float:
@@ -146,7 +164,7 @@ class _GuiHandle(Generic[T]):
         if disabled == self.disabled:
             return
 
-        self._impl.container._get_api()._queue(
+        self._impl.gui_api._get_api()._queue(
             GuiSetDisabledMessage(self._impl.id, disabled=disabled)
         )
         self._impl.disabled = disabled
@@ -162,58 +180,83 @@ class _GuiHandle(Generic[T]):
         if visible == self.visible:
             return
 
-        self._impl.container._get_api()._queue(
+        self._impl.gui_api._get_api()._queue(
             GuiSetVisibleMessage(self._impl.id, visible=visible)
         )
         self._impl.visible = visible
 
+    def __post_init__(self) -> None:
+        """We need to register ourself after construction for callbacks to work."""
+        gui_api = self._impl.gui_api
+
+        # TODO: the current way we track GUI handles and children is fairly manual +
+        # error-prone. We should revist this design.
+        gui_api._gui_handle_from_id[self._impl.id] = self
+        parent = gui_api._container_handle_from_id[self._impl.container_id]
+        parent._children[self._impl.id] = self
+
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
-        self._impl.container._get_api()._queue(GuiRemoveMessage(self._impl.id))
-        assert self._impl.cleanup_cb is not None
-        self._impl.cleanup_cb()
+        gui_api = self._impl.gui_api
+        gui_api._get_api()._queue(GuiRemoveMessage(self._impl.id))
+        gui_api._gui_handle_from_id.pop(self._impl.id)
 
 
 StringType = TypeVar("StringType", bound=str)
 
 
+# GuiInputHandle[T] is used for all inputs except for buttons.
+#
+# We inherit from _GuiInputHandle to special-case buttons because the usage semantics
+# are slightly different: we have `on_click()` instead of `on_update()`.
 @dataclasses.dataclass
-class GuiHandle(_GuiHandle[T], Generic[T]):
+class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
     """Handle for a general GUI inputs in our visualizer.
 
     Lets us get values, set values, and detect updates."""
 
     def on_update(
-        self: TGuiHandle, func: Callable[[TGuiHandle], None]
-    ) -> Callable[[TGuiHandle], None]:
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
         """Attach a function to call when a GUI input is updated. Happens in a thread."""
         self._impl.update_cb.append(func)
         return func
 
 
+@dataclasses.dataclass(frozen=True)
+class GuiEvent(Generic[TGuiHandle]):
+    """Information associated with a GUI event, such as an update or click.
+
+    Passed as input to callback functions."""
+
+    client_id: Optional[ClientId]
+    client: Optional[ClientHandle]
+    target: TGuiHandle
+
+
 @dataclasses.dataclass
-class GuiButtonHandle(_GuiHandle[bool]):
+class GuiButtonHandle(_GuiInputHandle[bool]):
     """Handle for a button input in our visualizer.
 
     Lets us detect clicks."""
 
     def on_click(
-        self: TGuiHandle, func: Callable[[TGuiHandle], None]
-    ) -> Callable[[TGuiHandle], None]:
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
         """Attach a function to call when a button is pressed. Happens in a thread."""
         self._impl.update_cb.append(func)
         return func
 
 
 @dataclasses.dataclass
-class GuiButtonGroupHandle(_GuiHandle[StringType], Generic[StringType]):
+class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
     """Handle for a button group input in our visualizer.
 
     Lets us detect clicks."""
 
     def on_click(
-        self: TGuiHandle, func: Callable[[TGuiHandle], None]
-    ) -> Callable[[TGuiHandle], None]:
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
         """Attach a function to call when a button is pressed. Happens in a thread."""
         self._impl.update_cb.append(func)
         return func
@@ -230,7 +273,7 @@ class GuiButtonGroupHandle(_GuiHandle[StringType], Generic[StringType]):
 
 
 @dataclasses.dataclass
-class GuiDropdownHandle(GuiHandle[StringType], Generic[StringType]):
+class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
     """Handle for a dropdown-style GUI input in our visualizer.
 
     Lets us get values, set values, and detect updates."""
@@ -244,7 +287,7 @@ class GuiDropdownHandle(GuiHandle[StringType], Generic[StringType]):
         For projects that care about typing: the static type of `options` should be
         consistent with the `StringType` associated with a handle. Literal types will be
         inferred where possible when handles are instantiated; for the most flexibility,
-        we can declare handles as `_GuiHandle[str]`.
+        we can declare handles as `GuiDropdownHandle[str]`.
         """
         return self._impl_options
 
@@ -254,7 +297,7 @@ class GuiDropdownHandle(GuiHandle[StringType], Generic[StringType]):
         if self._impl.initial_value not in self._impl_options:
             self._impl.initial_value = self._impl_options[0]
 
-        self._impl.container._get_api()._queue(
+        self._impl.gui_api._get_api()._queue(
             GuiAddDropdownMessage(
                 order=self._impl.order,
                 id=self._impl.id,
@@ -275,9 +318,9 @@ class GuiTabGroupHandle:
     _tab_group_id: str
     _labels: List[str]
     _icons_base64: List[Optional[str]]
-    _tab_container_ids: List[str]
+    _tabs: List[GuiTabHandle]
     _gui_api: GuiApi
-    _container_id: str
+    _container_id: str  # Parent.
 
     def add_tab(self, label: str, icon: Optional[Icon] = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
@@ -285,23 +328,20 @@ class GuiTabGroupHandle:
         id = _make_unique_id()
 
         # We may want to make this thread-safe in the future.
+        out = GuiTabHandle(_parent=self, _id=id)
+
         self._labels.append(label)
         self._icons_base64.append(None if icon is None else base64_from_icon(icon))
-        self._tab_container_ids.append(id)
+        self._tabs.append(out)
 
         self._sync_with_client()
-
-        return GuiTabHandle(_parent=self, _container_id=id)
+        return out
 
     def remove(self) -> None:
         """Remove this tab group and all contained GUI elements."""
+        for tab in self._tabs:
+            tab.remove()
         self._gui_api._get_api()._queue(GuiRemoveMessage(self._tab_group_id))
-        # Containers will be removed automatically by the client.
-        #
-        # for tab_container_id in self._tab_container_ids:
-        #     self._gui_api._get_api()._queue(
-        #         _messages.GuiRemoveContainerChildrenMessage(tab_container_id)
-        #     )
 
     def _sync_with_client(self) -> None:
         """Send a message that syncs tab state with the client."""
@@ -312,7 +352,7 @@ class GuiTabGroupHandle:
                 container_id=self._container_id,
                 tab_labels=tuple(self._labels),
                 tab_icons_base64=tuple(self._icons_base64),
-                tab_container_ids=tuple(self._tab_container_ids),
+                tab_container_ids=tuple(tab._id for tab in self._tabs),
             )
         )
 
@@ -322,12 +362,17 @@ class GuiFolderHandle:
     """Use as a context to place GUI elements into a folder."""
 
     _gui_api: GuiApi
-    _container_id: str
+    _id: str  # Used as container ID for children.
+    _parent_container_id: str  # Container ID of parent.
     _container_id_restore: Optional[str] = None
+    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+        default_factory=dict
+    )
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> GuiFolderHandle:
         self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._container_id)
+        self._gui_api._set_container_id(self._id)
+        return self
 
     def __exit__(self, *args) -> None:
         del args
@@ -335,10 +380,18 @@ class GuiFolderHandle:
         self._gui_api._set_container_id(self._container_id_restore)
         self._container_id_restore = None
 
+    def __post_init__(self) -> None:
+        self._gui_api._container_handle_from_id[self._id] = self
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._id] = self
+
     def remove(self) -> None:
         """Permanently remove this folder and all contained GUI elements from the
         visualizer."""
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._container_id))
+        self._gui_api._get_api()._queue(GuiRemoveMessage(self._id))
+        self._gui_api._container_handle_from_id.pop(self._id)
+        for child in self._children.values():
+            child.remove()
 
 
 @dataclasses.dataclass
@@ -346,12 +399,16 @@ class GuiModalHandle:
     """Use as a context to place GUI elements into a modal."""
 
     _gui_api: GuiApi
-    _container_id: str
+    _id: str  # Used as container ID of children.
     _container_id_restore: Optional[str] = None
+    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+        default_factory=dict
+    )
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> GuiModalHandle:
         self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._container_id)
+        self._gui_api._set_container_id(self._id)
+        return self
 
     def __exit__(self, *args) -> None:
         del args
@@ -359,18 +416,34 @@ class GuiModalHandle:
         self._gui_api._set_container_id(self._container_id_restore)
         self._container_id_restore = None
 
+    def __post_init__(self) -> None:
+        self._gui_api._container_handle_from_id[self._id] = self
+
+    def close(self) -> None:
+        """Close this modal and permananently remove all contained GUI elements."""
+        self._gui_api._get_api()._queue(
+            GuiCloseModalMessage(self._id),
+        )
+        self._gui_api._container_handle_from_id.pop(self._id)
+        for child in self._children.values():
+            child.remove()
+
 
 @dataclasses.dataclass
 class GuiTabHandle:
     """Use as a context to place GUI elements into a tab."""
 
     _parent: GuiTabGroupHandle
-    _container_id: str
+    _id: str  # Used as container ID of children.
     _container_id_restore: Optional[str] = None
+    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+        default_factory=dict
+    )
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> GuiTabHandle:
         self._container_id_restore = self._parent._gui_api._get_container_id()
-        self._parent._gui_api._set_container_id(self._container_id)
+        self._parent._gui_api._set_container_id(self._id)
+        return self
 
     def __exit__(self, *args) -> None:
         del args
@@ -378,23 +451,29 @@ class GuiTabHandle:
         self._parent._gui_api._set_container_id(self._container_id_restore)
         self._container_id_restore = None
 
+    def __post_init__(self) -> None:
+        self._parent._gui_api._container_handle_from_id[self._id] = self
+
     def remove(self) -> None:
         """Permanently remove this tab and all contained GUI elements from the
         visualizer."""
         # We may want to make this thread-safe in the future.
-        container_index = self._parent._tab_container_ids.index(self._container_id)
+        container_index = -1
+        for i, tab in enumerate(self._parent._tabs):
+            if tab is self:
+                container_index = i
+                break
         assert container_index != -1, "Tab already removed!"
 
-        # Container needs to be manually removed.
-        self._parent._gui_api._get_api()._queue(
-            GuiRemoveContainerChildrenMessage(self._container_id)
-        )
+        self._parent._gui_api._container_handle_from_id.pop(self._id)
 
         self._parent._labels.pop(container_index)
         self._parent._icons_base64.pop(container_index)
-        self._parent._tab_container_ids.pop(container_index)
-
+        self._parent._tabs.pop(container_index)
         self._parent._sync_with_client()
+
+        for child in self._children.values():
+            child.remove()
 
 
 @dataclasses.dataclass
@@ -404,6 +483,7 @@ class GuiMarkdownHandle:
     _gui_api: GuiApi
     _id: str
     _visible: bool
+    _container_id: str  # Parent.
 
     @property
     def visible(self) -> bool:
@@ -419,6 +499,12 @@ class GuiMarkdownHandle:
         self._gui_api._get_api()._queue(GuiSetVisibleMessage(self._id, visible=visible))
         self._visible = visible
 
+    def __post_init__(self) -> None:
+        """We need to register ourself after construction for callbacks to work."""
+        parent = self._gui_api._container_handle_from_id[self._container_id]
+        parent._children[self._id] = self
+
     def remove(self) -> None:
         """Permanently remove this markdown from the visualizer."""
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._id))
+        api = self._gui_api._get_api()
+        api._queue(GuiRemoveMessage(self._id))

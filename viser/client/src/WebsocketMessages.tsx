@@ -181,6 +181,23 @@ export interface GuiAddButtonMessage {
   container_id: string;
   hint: string | null;
   initial_value: boolean;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
+  icon_base64: string | null;
 }
 export interface GuiAddSliderMessage {
   type: "GuiAddSliderMessage";
@@ -295,11 +312,10 @@ export interface GuiModalMessage {
   order: number;
   id: string;
   title: string;
-  container_id: string;
 }
-export interface GuiRemoveContainerChildrenMessage {
-  type: "GuiRemoveContainerChildrenMessage";
-  container_id: string;
+export interface GuiCloseModalMessage {
+  type: "GuiCloseModalMessage";
+  id: string;
 }
 export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
@@ -343,6 +359,20 @@ export interface ThemeConfigurationMessage {
     } | null;
   } | null;
   control_layout: "floating" | "collapsible" | "fixed";
+  colors:
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+      ]
+    | null;
   dark_mode: boolean;
 }
 
@@ -385,7 +415,7 @@ export type Message =
   | GuiAddDropdownMessage
   | GuiAddButtonGroupMessage
   | GuiModalMessage
-  | GuiRemoveContainerChildrenMessage
+  | GuiCloseModalMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | GuiSetVisibleMessage

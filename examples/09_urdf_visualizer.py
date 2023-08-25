@@ -27,7 +27,7 @@ def main(urdf_path: Path) -> None:
     urdf = ViserUrdf(server, urdf_path)
 
     # Create joint angle sliders.
-    gui_joints: List[viser.GuiHandle[float]] = []
+    gui_joints: List[viser.GuiInputHandle[float]] = []
     initial_angles: List[float] = []
     for joint_name, (lower, upper) in urdf.get_actuated_joint_limits().items():
         lower = lower if lower is not None else -onp.pi

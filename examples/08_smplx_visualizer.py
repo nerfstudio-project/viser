@@ -36,6 +36,7 @@ def main(
     ext: Literal["npz", "pkl"] = "npz",
 ) -> None:
     server = viser.ViserServer()
+    server.configure_theme(control_layout="collapsible", dark_mode=True)
     model = smplx.create(
         model_path=str(model_path),
         model_type=model_type,
@@ -114,10 +115,10 @@ def main(
 class GuiElements:
     """Structure containing handles for reading from GUI elements."""
 
-    gui_rgb: viser.GuiHandle[Tuple[int, int, int]]
-    gui_wireframe: viser.GuiHandle[bool]
-    gui_betas: List[viser.GuiHandle[float]]
-    gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]]
+    gui_rgb: viser.GuiInputHandle[Tuple[int, int, int]]
+    gui_wireframe: viser.GuiInputHandle[bool]
+    gui_betas: List[viser.GuiInputHandle[float]]
+    gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]]
 
     changed: bool
     """This flag will be flipped to True whenever the mesh needs to be re-generated."""
@@ -197,7 +198,7 @@ def make_gui_elements(
                 joint.value = tf.SO3(wxyz=quat).log()
                 sync_transform_controls()
 
-        gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]] = []
+        gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]] = []
         for i in range(num_body_joints + 1):
             gui_joint = server.add_gui_vector3(
                 label=smplx.joint_names.JOINT_NAMES[i],
