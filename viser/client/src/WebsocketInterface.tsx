@@ -437,7 +437,7 @@ function useMessageHandler() {
         if (message.base64_depth !== null) {
           // If depth is available set the texture
           new TextureLoader().load(
-            `data:$image/png;base64,${message.base64_depth}`,
+            `data:image/png;base64,${message.base64_depth}`,
             (texture) => {
               // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.);
               const olddepthtex =

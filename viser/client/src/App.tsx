@@ -209,11 +209,12 @@ function BackgroundImage() {
   uniform bool enabled;
   uniform bool hasDepth;
 
-  float readDepth( sampler2D depthSampler, vec2 coord, float zNear, float zFar) {
-    vec4 rgbaPacked = texture(depthSampler, coord);
-    // For the k-th channel, coefficients are calculated as: 255 * 1e-6 * 2^(8 * k).
-    // Note that: [0, 255] channels are scaled to [0, 1], and we multiply by 1e6 on the server side.
-    float depth = (rgbaPacked.r * 0.000255 + rgbaPacked.g * 0.06528 + rgbaPacked.b * 16.71168 + rgbaPacked.a * 4278.19008);
+  float readDepth(sampler2D depthMap, vec2 coord) {
+    vec4 rgbPacked = texture(depthMap, coord);
+
+    // For the k-th channel, coefficients are calculated as: 255 * 1e-5 * 2^(8 * k).
+    // Note that: [0, 255] channels are scaled to [0, 1], and we multiply by 1e5 on the server side.
+    float depth = rgbPacked.r * 0.00255 + rgbPacked.g * 0.6528 + rgbPacked.b * 167.1168;
     return depth;
   }
 
@@ -227,10 +228,10 @@ function BackgroundImage() {
 
     float bufDepth;
     if(hasDepth){
-      float depth = readDepth(depthMap, vUv, cameraNear, cameraFar);
+      float depth = readDepth(depthMap, vUv);
       bufDepth = viewZToPerspectiveDepth(-depth, cameraNear, cameraFar);
-    }else{
-      // If no depth enabled, set depth to 1.0 (infinity) to treat it like a background image
+    } else {
+      // If no depth enabled, set depth to 1.0 (infinity) to treat it like a background image.
       bufDepth = 1.0;
     }
     gl_FragDepth = bufDepth;
