@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.0.17"
+version = "0.1.0"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -91,6 +91,7 @@ select = [
     "PLW",  # Pylint warnings.
 ]
 ignore = [
+    "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "F722",  # Forward annotation false positive from jaxtyping. Should be caught by pyright.
     "F821",  # Forward annotation false positive from jaxtyping. Should be caught by pyright.

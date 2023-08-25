@@ -1,6 +1,9 @@
+# mypy: disable-error-code="arg-type"
+#
+# Waiting on PEP 675 support in mypy. https://github.com/python/mypy/issues/12554
 """Theming
 
-Viser is adding support for theming. Work-in-progress.
+Viser includes support for light theming.
 """
 
 import time
@@ -33,15 +36,34 @@ image = TitlebarImage(
     image_alt="NerfStudio Logo",
     href="https://docs.nerf.studio/",
 )
-
-# image = None
-
 titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
-server.configure_theme(
-    dark_mode=True, titlebar_content=titlebar_theme, control_layout="fixed"
+server.add_gui_markdown(
+    "Viser includes support for light theming via the `.configure_theme()` method."
 )
-server.world_axes.visible = True
+
+# GUI elements for controllable values.
+titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
+dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
+control_layout = server.add_gui_dropdown(
+    "Control layout", ("floating", "fixed", "collapsible")
+)
+brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
+synchronize = server.add_gui_button("Apply theme")
+
+
+def synchronize_theme() -> None:
+    server.configure_theme(
+        dark_mode=dark_mode.value,
+        titlebar_content=titlebar_theme if titlebar.value else None,
+        control_layout=control_layout.value,
+        brand_color=brand_color.value,
+    )
+    server.world_axes.visible = True
+
+
+synchronize.on_click(lambda _: synchronize_theme())
+synchronize_theme()
 
 while True:
     time.sleep(10.0)

@@ -72,7 +72,7 @@ def main() -> None:
     gui_num_points.on_update(lambda _: draw_points())
 
     @gui_reset_scene.on_click
-    def _(_: viser.GuiButtonHandle) -> None:
+    def _(_) -> None:
         """Reset the scene when the reset button is clicked."""
         gui_show.value = True
         gui_location.value = 0.0
