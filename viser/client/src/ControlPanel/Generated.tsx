@@ -27,6 +27,7 @@ import { ErrorBoundary } from "react-error-boundary";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
+  // We need to take viewer as input in drei's <Html /> elements, where contexts break.
   containerId,
   viewer,
 }: {
@@ -116,7 +117,7 @@ function GeneratedInput({
         <Button
           id={conf.id}
           fullWidth
-          color={"0x000"}
+          color={conf.color ?? undefined}
           onClick={() =>
             messageSender({
               type: "GuiUpdateMessage",
@@ -127,6 +128,19 @@ function GeneratedInput({
           style={{ height: "1.875rem" }}
           disabled={disabled}
           size="sm"
+          leftIcon={
+            conf.icon_base64 === null ? undefined : (
+              <Image
+                /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
+                height={"0.9rem"}
+                width={"0.9rem"}
+                sx={(theme) => ({
+                  filter: theme.colorScheme == "dark" ? "invert(1)" : undefined,
+                })}
+                src={"data:image/svg+xml;base64," + conf.icon_base64}
+              />
+            )
+          }
         >
           {conf.label}
         </Button>

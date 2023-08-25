@@ -568,6 +568,16 @@ class MessageApi(abc.ABC):
         # Avoids circular import.
         from ._gui_api import GuiApi, _make_unique_id
 
+        # New name to make the type checker happy; ViserServer and ClientHandle inherit
+        # from both GuiApi and MessageApi. The pattern below is unideal.
+        gui_api = self
+        assert isinstance(gui_api, GuiApi)
+
+        # Remove the 3D GUI container if it already exists. This will make sure
+        # contained GUI elements are removed, preventing potential memory leaks.
+        if name in gui_api._handle_from_node_name:
+            gui_api._handle_from_node_name[name].remove()
+
         container_id = _make_unique_id()
         self._queue(
             _messages.Gui3DMessage(
@@ -576,7 +586,5 @@ class MessageApi(abc.ABC):
                 container_id=container_id,
             )
         )
-        assert isinstance(self, MessageApi)
         node_handle = SceneNodeHandle._make(self, name, wxyz, position)
-        assert isinstance(self, GuiApi)
-        return Gui3dContainerHandle(node_handle._impl, self, container_id)
+        return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)

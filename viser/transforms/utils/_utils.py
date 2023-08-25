@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Callable, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Type, TypeVar
 
 import numpy as onp
 
@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 T = TypeVar("T", bound="MatrixLieGroup")
 
 
-def get_epsilon(dtype: onp.dtype) -> float:
+def get_epsilon(dtype: Any) -> float:
     """Helper for grabbing type-specific precision constants.
 
     Args:
@@ -18,10 +18,12 @@ def get_epsilon(dtype: onp.dtype) -> float:
     Returns:
         Output float.
     """
-    return {
-        onp.dtype("float32"): 1e-5,
-        onp.dtype("float64"): 1e-10,
-    }[dtype]
+    if dtype == onp.float32:
+        return 1e-5
+    elif dtype == onp.float64:
+        return 1e-10
+    else:
+        assert False
 
 
 def register_lie_group(

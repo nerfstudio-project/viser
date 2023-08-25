@@ -2,6 +2,8 @@ import * as Messages from "../WebsocketMessages";
 import React from "react";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { ViewerContext } from "../App";
+import { MantineThemeOverride } from "@mantine/core";
 
 export type GuiConfig =
   | Messages.GuiAddButtonMessage
@@ -135,6 +137,23 @@ export function useGuiState(initialServer: string) {
       })),
     ),
   )[0];
+}
+
+export function useMantineTheme(): MantineThemeOverride {
+  const viewer = React.useContext(ViewerContext)!;
+  const colors = viewer.useGui((state) => state.theme.colors);
+  return {
+    colorScheme: viewer.useGui((state) => state.theme.dark_mode)
+      ? "dark"
+      : "light",
+    primaryColor: colors === null ? undefined : "custom",
+    colors:
+      colors === null
+        ? undefined
+        : {
+            custom: colors,
+          },
+  };
 }
 
 /** Type corresponding to a zustand-style useGuiState hook. */
