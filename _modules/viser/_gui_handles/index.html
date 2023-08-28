@@ -343,6 +343,11 @@
     <span class="c1"># Is this worth the tradeoff?</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read-only order value, which dictates the position of the GUI element.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">order</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Value of the GUI input. Synchronized automatically when assigned.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">value</span>
@@ -551,6 +556,12 @@
     <span class="n">_tabs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">GuiTabHandle</span><span class="p">]</span>
     <span class="n">_gui_api</span><span class="p">:</span> <span class="n">GuiApi</span>
     <span class="n">_container_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Parent.</span>
+    <span class="n">_order</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read-only order value, which dictates the position of the GUI element.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 
 <div class="viewcode-block" id="GuiTabGroupHandle.add_tab"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.add_tab">[docs]</a>    <span class="k">def</span> <span class="nf">add_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">icon</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Icon</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a tab. Returns a handle we can use to add GUI elements to it.&quot;&quot;&quot;</span>
@@ -577,7 +588,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a message that syncs tab state with the client.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
             <span class="n">GuiAddTabGroupMessage</span><span class="p">(</span>
-                <span class="n">order</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
+                <span class="n">order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
                 <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">,</span>
                 <span class="n">container_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">,</span>
                 <span class="n">tab_labels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">),</span>
@@ -593,11 +604,17 @@
 
     <span class="n">_gui_api</span><span class="p">:</span> <span class="n">GuiApi</span>
     <span class="n">_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Used as container ID for children.</span>
+    <span class="n">_order</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">_parent_container_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Container ID of parent.</span>
     <span class="n">_container_id_restore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">_children</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SupportsRemoveProtocol</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span>
     <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read-only order value, which dictates the position of the GUI element.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 
     <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiFolderHandle</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_container_id</span><span class="p">()</span>
@@ -714,6 +731,12 @@
     <span class="n">_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">_visible</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="n">_container_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Parent.</span>
+    <span class="n">_order</span><span class="p">:</span> <span class="nb">float</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read-only order value, which dictates the position of the GUI element.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">visible</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
