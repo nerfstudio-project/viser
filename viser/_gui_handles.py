@@ -357,7 +357,7 @@ class GuiTabGroupHandle:
     def _sync_with_client(self) -> None:
         """Send a message that syncs tab state with the client."""
         self._gui_api._get_api()._queue(
-            GuiAddTabGroupM_ordere(
+            GuiAddTabGroupMessage(
                 order=self.order,
                 id=self._tab_group_id,
                 container_id=self._container_id,
