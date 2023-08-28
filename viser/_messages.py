@@ -229,7 +229,8 @@ class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
     media_type: Literal["image/jpeg", "image/png"]
-    base64_data: str
+    base64_rgb: str
+    base64_depth: Optional[str]
 
 
 @dataclasses.dataclass
@@ -321,7 +322,11 @@ class GuiModalMessage(Message):
     order: float
     id: str
     title: str
-    container_id: str
+
+
+@dataclasses.dataclass
+class GuiCloseModalMessage(Message):
+    id: str
 
 
 @dataclasses.dataclass
@@ -329,6 +334,25 @@ class GuiAddButtonMessage(_GuiAddInputBase):
     # All GUI elements currently need an `initial_value` field.
     # This makes our job on the frontend easier.
     initial_value: bool
+    color: Optional[
+        Literal[
+            "dark",
+            "gray",
+            "red",
+            "pink",
+            "grape",
+            "violet",
+            "indigo",
+            "blue",
+            "cyan",
+            "green",
+            "lime",
+            "yellow",
+            "orange",
+            "teal",
+        ]
+    ]
+    icon_base64: Optional[str]
 
 
 @dataclasses.dataclass
@@ -400,13 +424,6 @@ class GuiAddButtonGroupMessage(_GuiAddInputBase):
 
 
 @dataclasses.dataclass
-class GuiRemoveContainerChildrenMessage(Message):
-    """Sent server->client to recursively remove children of a GUI container."""
-
-    container_id: str
-
-
-@dataclasses.dataclass
 class GuiRemoveMessage(Message):
     """Sent server->client to remove a GUI element."""
 
@@ -451,6 +468,7 @@ class ThemeConfigurationMessage(Message):
 
     titlebar_content: Optional[theme.TitlebarConfig]
     control_layout: Literal["floating", "collapsible", "fixed"]
+    colors: Optional[Tuple[str, str, str, str, str, str, str, str, str, str]]
     dark_mode: bool
 
 

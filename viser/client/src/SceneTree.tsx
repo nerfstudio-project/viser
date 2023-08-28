@@ -81,6 +81,7 @@ function SceneNodeThreeChildren(props: {
       {children.map((child_id) => {
         return <SceneNodeThreeObject key={child_id} name={child_id} />;
       })}
+      <SceneNodeLabel name={props.name} />
     </group>,
     props.parent,
   );
@@ -124,17 +125,11 @@ export function SceneNodeThreeObject(props: { name: string }) {
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
   // Create object + children.
-  const objNode = React.useMemo(
-    () => makeObject && makeObject(setRef),
-    [setRef, makeObject],
-  );
-  const children = React.useMemo(
-    () =>
-      obj === null ? null : (
-        <SceneNodeThreeChildren name={props.name} parent={obj} />
-      ),
-    [props.name, obj],
-  );
+  const objNode = makeObject && makeObject(setRef);
+  const children =
+    obj === null ? null : (
+      <SceneNodeThreeChildren name={props.name} parent={obj} />
+    );
 
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
@@ -186,7 +181,9 @@ export function SceneNodeThreeObject(props: { name: string }) {
     return nodeAttributes?.visibility ?? false;
   }
 
-  if (clickable) {
+  if (objNode === undefined) {
+    return <>{children}</>;
+  } else if (clickable) {
     return (
       <>
         <group
@@ -222,15 +219,15 @@ export function SceneNodeThreeObject(props: { name: string }) {
         >
           <Select enabled={hovered}>{objNode}</Select>
         </group>
-        <SceneNodeLabel name={props.name} />
         {children}
       </>
     );
   } else {
     return (
       <>
-        {objNode}
-        <SceneNodeLabel name={props.name} />
+        {/* This <group /> does nothing, but switching between clickable vs not
+        causes strange transform behavior without it. */}
+        <group>{objNode}</group>
         {children}
       </>
     );

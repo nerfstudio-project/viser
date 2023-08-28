@@ -6,7 +6,17 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import TYPE_CHECKING, Callable, List, Optional, Tuple, Type, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
 import numpy as onp
 
@@ -14,6 +24,7 @@ from . import _messages
 
 if TYPE_CHECKING:
     from ._gui_api import GuiApi
+    from ._gui_handles import SupportsRemoveProtocol
     from ._message_api import ClientId, MessageApi
 
 
@@ -96,11 +107,17 @@ class SceneNodeHandle:
         self._impl.api._queue(_messages.RemoveSceneNodeMessage(self._impl.name))
 
 
+@dataclasses.dataclass(frozen=True)
+class ClickEvent(Generic[TSceneNodeHandle]):
+    client_id: ClientId
+    target: TSceneNodeHandle
+
+
 @dataclasses.dataclass
 class _SupportsClick(SceneNodeHandle):
     def on_click(
-        self: TSceneNodeHandle, func: Callable[[TSceneNodeHandle], None]
-    ) -> Callable[[TSceneNodeHandle], None]:
+        self: TSceneNodeHandle, func: Callable[[ClickEvent[TSceneNodeHandle]], None]
+    ) -> Callable[[ClickEvent[TSceneNodeHandle]], None]:
         """Attach a callback for when a scene node is clicked.
 
         TODO:
@@ -211,16 +228,23 @@ class Gui3dContainerHandle(SceneNodeHandle):
     _gui_api: GuiApi
     _container_id: str
     _container_id_restore: Optional[str] = None
+    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+        default_factory=dict
+    )
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> Gui3dContainerHandle:
         self._container_id_restore = self._gui_api._get_container_id()
         self._gui_api._set_container_id(self._container_id)
+        return self
 
     def __exit__(self, *args) -> None:
         del args
         assert self._container_id_restore is not None
         self._gui_api._set_container_id(self._container_id_restore)
         self._container_id_restore = None
+
+    def __post_init__(self) -> None:
+        self._gui_api._container_handle_from_id[self._container_id] = self
 
     def remove(self) -> None:
         """Permanently remove this GUI container from the visualizer."""
@@ -229,6 +253,6 @@ class Gui3dContainerHandle(SceneNodeHandle):
         super().remove()
 
         # Clean up contained GUI elements.
-        self._gui_api._get_api()._queue(
-            _messages.GuiRemoveContainerChildrenMessage(self._container_id)
-        )
+        self._gui_api._container_handle_from_id.pop(self._container_id)
+        for child in self._children.values():
+            child.remove()

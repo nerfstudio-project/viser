@@ -9,20 +9,24 @@ client_dir = Path(__file__).absolute().parent / "client"
 build_dir = client_dir / "build"
 
 
-def _check_process(process_name: str) -> bool:
-    """
-    Check if a process is running
-    """
+def _check_viser_yarn_running() -> bool:
+    """Returns True if the viewer client has been launched via `yarn start`."""
     for process in psutil.process_iter():
-        if process_name == process.name():
-            return True
+        try:
+            if Path(process.cwd()).as_posix().endswith("viser/client") and any(
+                [part.endswith("yarn") for part in process.cmdline()]
+            ):
+                return True
+        except (psutil.AccessDenied, psutil.ZombieProcess):
+            pass
     return False
 
 
 def ensure_client_is_built() -> None:
-    """Ensure that the client is built."""
+    """Ensure that the client is built or already running."""
 
     if not (client_dir / "src").exists():
+        # Can't build client.
         assert (build_dir / "index.html").exists(), (
             "Something went wrong! At least one of the client source or build"
             " directories should be present."
@@ -31,14 +35,15 @@ def ensure_client_is_built() -> None:
 
     # Do we need to re-trigger a build?
     build = False
-    if not (build_dir / "index.html").exists():
-        rich.print("[bold](viser)[/bold] No client build found. Building now...")
-        build = True
-    elif _check_process("Viser Viewer"):
+    if _check_viser_yarn_running():
+        # Don't run `yarn build` if `yarn start` is already running.
         rich.print(
-            "[bold](viser)[/bold] A Viser viewer is already running. Skipping build check..."
+            "[bold](viser)[/bold] The Viser viewer looks like it has been launched via `yarn start`. Skipping build check..."
         )
         build = False
+    elif not (build_dir / "index.html").exists():
+        rich.print("[bold](viser)[/bold] No client build found. Building now...")
+        build = True
     elif _modified_time_recursive(client_dir / "src") > _modified_time_recursive(
         build_dir
     ):

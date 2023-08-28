@@ -13,13 +13,13 @@ import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
-import { isGuiConfig } from "./ControlPanel/GuiState";
+import { isGuiConfig, useMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 
-import { Paper } from "@mantine/core";
+import { MantineProvider, Paper } from "@mantine/core";
 
-/** Float **/
+/** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
     new Float32Array(new Uint8Array(colors)).map((value) => {
@@ -46,8 +46,8 @@ function useMessageHandler() {
   const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
   const addModal = viewer.useGui((state) => state.addModal);
+  const removeModal = viewer.useGui((state) => state.removeModal);
   const removeGui = viewer.useGui((state) => state.removeGui);
-  const removeGuiContainer = viewer.useGui((state) => state.removeGuiContainer);
   const setGuiValue = viewer.useGui((state) => state.setGuiValue);
   const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
   const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
@@ -67,6 +67,8 @@ function useMessageHandler() {
     }
     addSceneNode(node);
   }
+
+  const mantineTheme = useMantineTheme();
 
   // Return message handler.
   return (message: Message) => {
@@ -149,6 +151,11 @@ function useMessageHandler() {
 
       case "GuiModalMessage": {
         addModal(message);
+        return;
+      }
+
+      case "GuiCloseModalMessage": {
+        removeModal(message.id);
         return;
       }
 
@@ -271,41 +278,43 @@ function useMessageHandler() {
         );
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => (
-            <PivotControls
-              ref={ref}
-              scale={message.scale}
-              lineWidth={message.line_width}
-              fixed={message.fixed}
-              autoTransform={message.auto_transform}
-              activeAxes={message.active_axes}
-              disableAxes={message.disable_axes}
-              disableSliders={message.disable_sliders}
-              disableRotations={message.disable_rotations}
-              translationLimits={message.translation_limits}
-              rotationLimits={message.rotation_limits}
-              depthTest={message.depth_test}
-              opacity={message.opacity}
-              onDrag={(l) => {
-                const attrs = viewer.nodeAttributesFromName.current;
-                if (attrs[message.name] === undefined) {
-                  attrs[message.name] = {};
-                }
+            <group onClick={(e) => e.stopPropagation()}>
+              <PivotControls
+                ref={ref}
+                scale={message.scale}
+                lineWidth={message.line_width}
+                fixed={message.fixed}
+                autoTransform={message.auto_transform}
+                activeAxes={message.active_axes}
+                disableAxes={message.disable_axes}
+                disableSliders={message.disable_sliders}
+                disableRotations={message.disable_rotations}
+                translationLimits={message.translation_limits}
+                rotationLimits={message.rotation_limits}
+                depthTest={message.depth_test}
+                opacity={message.opacity}
+                onDrag={(l) => {
+                  const attrs = viewer.nodeAttributesFromName.current;
+                  if (attrs[message.name] === undefined) {
+                    attrs[message.name] = {};
+                  }
 
-                const wxyz = new THREE.Quaternion();
-                wxyz.setFromRotationMatrix(l);
-                const position = new THREE.Vector3().setFromMatrixPosition(l);
+                  const wxyz = new THREE.Quaternion();
+                  wxyz.setFromRotationMatrix(l);
+                  const position = new THREE.Vector3().setFromMatrixPosition(l);
 
-                const nodeAttributes = attrs[message.name]!;
-                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                nodeAttributes.position = position.toArray();
-                sendDragMessage({
-                  type: "TransformControlsUpdateMessage",
-                  name: name,
-                  wxyz: nodeAttributes.wxyz,
-                  position: nodeAttributes.position,
-                });
-              }}
-            />
+                  const nodeAttributes = attrs[message.name]!;
+                  nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+                  nodeAttributes.position = position.toArray();
+                  sendDragMessage({
+                    type: "TransformControlsUpdateMessage",
+                    name: name,
+                    wxyz: nodeAttributes.wxyz,
+                    position: nodeAttributes.position,
+                  });
+                }}
+              />
+            </group>
           )),
         );
         return;
@@ -406,18 +415,39 @@ function useMessageHandler() {
       // Add a background image.
       case "BackgroundImageMessage": {
         new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_data}`,
+          `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {
-            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
 
-            const oldBackground = viewer.sceneRef.current?.background;
-            viewer.sceneRef.current!.background = texture;
-            if (isTexture(oldBackground)) oldBackground.dispose();
+            const oldBackgroundTexture =
+              viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
+            viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
+              texture;
+            if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
           },
         );
+        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
+        viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
+          message.base64_depth !== null;
+        console.log(
+          viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value,
+        );
+
+        if (message.base64_depth !== null) {
+          // If depth is available set the texture
+          new TextureLoader().load(
+            `data:image/png;base64,${message.base64_depth}`,
+            (texture) => {
+              const oldDepthTexture =
+                viewer.backgroundMaterialRef.current?.uniforms.depthMap.value;
+              viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
+                texture;
+              if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
+            },
+          );
+        }
         return;
       }
       // Add a 2D label.
@@ -470,19 +500,30 @@ function useMessageHandler() {
             // We wrap with <group /> because Html doesn't implement THREE.Object3D.
             return (
               <group ref={ref}>
-                <Html>
-                  <Paper
-                    sx={{
-                      width: "20em",
-                      fontSize: "0.8em",
-                    }}
-                    withBorder
+                <Html prepend={false}>
+                  <MantineProvider
+                    withGlobalStyles
+                    withNormalizeCSS
+                    theme={mantineTheme}
                   >
-                    <GeneratedGuiContainer
-                      containerId={message.container_id}
-                      viewer={viewer}
-                    />
-                  </Paper>
+                    <Paper
+                      sx={{
+                        width: "20em",
+                        fontSize: "0.8em",
+                        marginLeft: "1em",
+                        marginTop: "1em",
+                      }}
+                      shadow="md"
+                      onPointerDown={(evt) => {
+                        evt.stopPropagation();
+                      }}
+                    >
+                      <GeneratedGuiContainer
+                        containerId={message.container_id}
+                        viewer={viewer}
+                      />
+                    </Paper>
+                  </MantineProvider>
                 </Html>
               </group>
             );
@@ -536,7 +577,9 @@ function useMessageHandler() {
       }
       // Set the clickability of a particular scene node.
       case "SetSceneNodeClickableMessage": {
-        setClickable(message.name, message.clickable);
+        // This setTimeout is totally unnecessary, but can help surface some race
+        // conditions.
+        setTimeout(() => setClickable(message.name, message.clickable), 50);
         return;
       }
       // Reset the entire scene, removing all scene nodes.
@@ -548,6 +591,8 @@ function useMessageHandler() {
         if (isTexture(oldBackground)) oldBackground.dispose();
 
         viewer.useGui.setState({ backgroundAvailable: false });
+        // Disable the depth texture rendering
+        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
         return;
       }
       // Set the value of a GUI input.
@@ -608,7 +653,6 @@ function useMessageHandler() {
         ));
         return;
       }
-
       default: {
         console.log("Receivd message did not match any known types:", message);
         return;
@@ -617,25 +661,29 @@ function useMessageHandler() {
   };
 }
 
-/** Component for handling websocket connections. */
-export default function WebsocketInterface() {
-  const viewer = useContext(ViewerContext)!;
+export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();
-
-  const server = viewer.useGui((state) => state.server);
-  const resetGui = viewer.useGui((state) => state.resetGui);
-
-  syncSearchParamServer(server);
-
-  const messageQueue: Message[] = [];
+  const messageQueueRef = useContext(ViewerContext)!.messageQueueRef;
 
   useFrame(() => {
     // Handle messages before every frame.
     // Place this directly in ws.onmessage can cause race conditions!
-    const numMessages = messageQueue.length;
-    const processBatch = messageQueue.splice(0, numMessages);
+    const numMessages = messageQueueRef.current.length;
+    const processBatch = messageQueueRef.current.splice(0, numMessages);
     processBatch.forEach(handleMessage);
   });
+
+  return null;
+}
+
+/** Component for handling websocket connections. */
+export function WebsocketMessageProducer() {
+  const messageQueueRef = useContext(ViewerContext)!.messageQueueRef;
+  const viewer = useContext(ViewerContext)!;
+  const server = viewer.useGui((state) => state.server);
+  const resetGui = viewer.useGui((state) => state.resetGui);
+
+  syncSearchParamServer(server);
 
   React.useEffect(() => {
     // Lock for making sure messages are handled in order.
@@ -687,7 +735,7 @@ export default function WebsocketInterface() {
         });
         try {
           const messages = await messagePromise;
-          messageQueue.push(...messages);
+          messageQueueRef.current.push(...messages);
         } finally {
           orderLock.acquired && orderLock.release();
         }
@@ -702,7 +750,7 @@ export default function WebsocketInterface() {
       ws?.close();
       clearTimeout(timeout);
     };
-  }, [server, handleMessage, resetGui]);
+  }, [server, resetGui]);
 
   return <></>;
 }

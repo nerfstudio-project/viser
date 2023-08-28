@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import abc
+import dataclasses
 import re
 import threading
 import time
@@ -25,21 +26,27 @@ from typing import (
 
 import imageio.v3 as iio
 import numpy as onp
-from typing_extensions import LiteralString
+from typing_extensions import Literal, LiteralString
 
 from . import _messages
 from ._gui_handles import (
     GuiButtonGroupHandle,
     GuiButtonHandle,
+    GuiContainerProtocol,
     GuiDropdownHandle,
+    GuiEvent,
     GuiFolderHandle,
-    GuiHandle,
+    GuiInputHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiTabGroupHandle,
+    SupportsRemoveProtocol,
     _GuiHandleState,
+    _GuiInputHandle,
     _make_unique_id,
 )
+from ._icons import base64_from_icon
+from ._icons_enum import Icon
 from ._message_api import MessageApi, _encode_image_base64, cast_vector
 
 if TYPE_CHECKING:
@@ -112,12 +119,62 @@ def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
     return markdown
 
 
+@dataclasses.dataclass
+class _RootGuiContainer:
+    _children: Dict[str, SupportsRemoveProtocol]
+
+
 class GuiApi(abc.ABC):
     _target_container_from_thread_id: Dict[int, str] = {}
     """ID of container to put GUI elements into."""
 
     def __init__(self) -> None:
         super().__init__()
+
+        self._gui_handle_from_id: Dict[str, _GuiInputHandle[Any]] = {}
+        self._container_handle_from_id: Dict[str, GuiContainerProtocol] = {
+            "root": _RootGuiContainer({})
+        }
+        self._get_api()._message_handler.register_handler(
+            _messages.GuiUpdateMessage, self._handle_gui_updates
+        )
+
+    def _handle_gui_updates(
+        self, client_id: ClientId, message: _messages.GuiUpdateMessage
+    ) -> None:
+        """Callback for handling GUI messages."""
+        handle = self._gui_handle_from_id.get(message.id, None)
+        if handle is None:
+            return
+
+        handle_state = handle._impl
+        value = handle_state.typ(message.value)
+
+        # Only call update when value has actually changed.
+        if not handle_state.is_button and value == handle_state.value:
+            return
+
+        # Update state.
+        with self._get_api()._atomic_lock:
+            handle_state.value = value
+            handle_state.update_timestamp = time.time()
+
+        # Trigger callbacks.
+        for cb in handle_state.update_cb:
+            from ._viser import ClientHandle, ViserServer
+
+            # Get the handle of the client that triggered this event.
+            api = self._get_api()
+            if isinstance(api, ClientHandle):
+                client = api
+            elif isinstance(api, ViserServer):
+                client = api.get_clients()[client_id]
+            else:
+                assert False
+
+            cb(GuiEvent(client_id, client, handle))
+        if handle_state.sync_cb is not None:
+            handle_state.sync_cb(client_id, value)
 
     def _get_container_id(self) -> str:
         """Get container ID associated with the current thread."""
@@ -155,7 +212,8 @@ class GuiApi(abc.ABC):
         )
         return GuiFolderHandle(
             _gui_api=self,
-            _container_id=folder_container_id,
+            _id=folder_container_id,
+            _parent_container_id=self._get_container_id(),
         )
 
     def add_gui_modal(
@@ -170,12 +228,11 @@ class GuiApi(abc.ABC):
                 order=time.time(),
                 id=modal_container_id,
                 title=title,
-                container_id=self._get_container_id(),
             )
         )
         return GuiModalHandle(
             _gui_api=self,
-            _container_id=modal_container_id,
+            _id=modal_container_id,
         )
 
     def add_gui_tab_group(self) -> GuiTabGroupHandle:
@@ -185,7 +242,7 @@ class GuiApi(abc.ABC):
             _tab_group_id=tab_group_id,
             _labels=[],
             _icons_base64=[],
-            _tab_container_ids=[],
+            _tabs=[],
             _gui_api=self,
             _container_id=self._get_container_id(),
         )
@@ -209,6 +266,7 @@ class GuiApi(abc.ABC):
             _gui_api=self,
             _id=markdown_id,
             _visible=True,
+            _container_id=self._get_container_id(),
         )
 
     def add_gui_button(
@@ -217,6 +275,25 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        color: Optional[
+            Literal[
+                "dark",
+                "gray",
+                "red",
+                "pink",
+                "grape",
+                "violet",
+                "indigo",
+                "blue",
+                "cyan",
+                "green",
+                "lime",
+                "yellow",
+                "orange",
+                "teal",
+            ]
+        ] = None,
+        icon: Optional[Icon] = None,
     ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
         it is clicked; to detect clicks, we can manually set it back to `False`."""
@@ -233,6 +310,8 @@ class GuiApi(abc.ABC):
                     container_id=self._get_container_id(),
                     hint=hint,
                     initial_value=False,
+                    color=color,
+                    icon_base64=None if icon is None else base64_from_icon(icon),
                 ),
                 disabled=disabled,
                 visible=visible,
@@ -302,7 +381,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiHandle[bool]:
+    ) -> GuiInputHandle[bool]:
         """Add a checkbox to the GUI."""
         assert isinstance(initial_value, bool)
         id = _make_unique_id()
@@ -327,7 +406,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiHandle[str]:
+    ) -> GuiInputHandle[str]:
         """Add a text input to the GUI."""
         assert isinstance(initial_value, str)
         id = _make_unique_id()
@@ -355,7 +434,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiHandle[IntOrFloat]:
+    ) -> GuiInputHandle[IntOrFloat]:
         """Add a number input to the GUI, with user-specifiable bound and precision parameters."""
         assert isinstance(initial_value, (int, float))
 
@@ -404,7 +483,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiHandle[Tuple[float, float]]:
+    ) -> GuiInputHandle[Tuple[float, float]]:
         """Add a length-2 vector input to the GUI."""
         initial_value = cast_vector(initial_value, 2)
         min = cast_vector(min, 2) if min is not None else None
@@ -449,7 +528,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiHandle[Tuple[float, float, float]]:
+    ) -> GuiInputHandle[Tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI."""
         initial_value = cast_vector(initial_value, 2)
         min = cast_vector(min, 3) if min is not None else None
@@ -548,7 +627,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiHandle[IntOrFloat]:
+    ) -> GuiInputHandle[IntOrFloat]:
         """Add a slider to the GUI. Types of the min, max, step, and initial value should match."""
         assert max >= min
         if step > max - min:
@@ -595,7 +674,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiHandle[Tuple[int, int, int]]:
+    ) -> GuiInputHandle[Tuple[int, int, int]]:
         """Add an RGB picker to the GUI."""
         id = _make_unique_id()
         return self._create_gui_input(
@@ -619,7 +698,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
-    ) -> GuiHandle[Tuple[int, int, int, int]]:
+    ) -> GuiInputHandle[Tuple[int, int, int, int]]:
         """Add an RGBA picker to the GUI."""
         id = _make_unique_id()
         return self._create_gui_input(
@@ -643,7 +722,7 @@ class GuiApi(abc.ABC):
         disabled: bool,
         visible: bool,
         is_button: bool = False,
-    ) -> GuiHandle[T]:
+    ) -> GuiInputHandle[T]:
         """Private helper for adding a simple GUI element."""
 
         # Send add GUI input message.
@@ -653,24 +732,19 @@ class GuiApi(abc.ABC):
         handle_state = _GuiHandleState(
             label=message.label,
             typ=type(initial_value),
-            container=self,
+            gui_api=self,
             value=initial_value,
             update_timestamp=time.time(),
             container_id=self._get_container_id(),
             update_cb=[],
             is_button=is_button,
             sync_cb=None,
-            cleanup_cb=None,
             disabled=False,
             visible=True,
             id=message.id,
             order=message.order,
             initial_value=initial_value,
             hint=message.hint,
-        )
-        self._get_api()._gui_handle_state_from_id[handle_state.id] = handle_state
-        handle_state.cleanup_cb = lambda: self._get_api()._gui_handle_state_from_id.pop(
-            handle_state.id
         )
 
         # For broadcasted GUI handles, we should synchronize all clients.
@@ -684,7 +758,7 @@ class GuiApi(abc.ABC):
 
             handle_state.sync_cb = sync_other_clients
 
-        handle = GuiHandle(handle_state)
+        handle = GuiInputHandle(handle_state)
 
         # Set the disabled/visible fields. These will queue messages under-the-hood.
         if disabled:

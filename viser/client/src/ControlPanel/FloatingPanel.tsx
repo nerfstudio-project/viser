@@ -5,7 +5,7 @@ import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 import { useDisclosure } from "@mantine/hooks";
 
-export const FloatingPanelContext = React.createContext<null | {
+const FloatingPanelContext = React.createContext<null | {
   wrapperRef: React.RefObject<HTMLDivElement>;
   expanded: boolean;
   toggleExpanded: () => void;
@@ -31,16 +31,16 @@ export default function FloatingPanel({
     >
       <Paper
         radius="sm"
-        withBorder
+        shadow="lg"
         sx={{
           boxSizing: "border-box",
           width: "20em",
-          zIndex: 1,
+          zIndex: 300,
           position: "absolute",
           top: "1em",
           right: "1em",
           margin: 0,
-          overflowY: "auto",
+          overflowY: "scroll" /* overflowY: auto will break dropdown menus.*/,
           "& .expand-icon": {
             transform: "rotate(0)",
           },
@@ -230,6 +230,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         position: "relative",
         fontWeight: 400,
         userSelect: "none",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 0.8em",
+        height: "2.5em",
       })}
       onClick={() => {
         const state = dragInfo.current;
@@ -246,14 +250,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         dragHandler(event);
       }}
     >
-      <Box
-        component="div"
-        sx={{
-          padding: "0.5em 2em 0.5em 0.8em",
-        }}
-      >
-        {children}
-      </Box>
+      {children}
     </Box>
   );
 };
@@ -265,4 +262,14 @@ FloatingPanel.Contents = function FloatingPanelContents({
 }) {
   const context = React.useContext(FloatingPanelContext);
   return <Collapse in={context?.expanded ?? true}>{children}</Collapse>;
+};
+
+/** Hides contents when floating panel is collapsed. */
+FloatingPanel.HideWhenCollapsed = function FloatingPanelHideWhenCollapsed({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const expanded = React.useContext(FloatingPanelContext)?.expanded ?? true;
+  return expanded ? children : null;
 };

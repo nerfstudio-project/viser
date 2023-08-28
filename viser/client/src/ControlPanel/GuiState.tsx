@@ -2,6 +2,8 @@ import * as Messages from "../WebsocketMessages";
 import React from "react";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { ViewerContext } from "../App";
+import { MantineThemeOverride } from "@mantine/core";
 
 export type GuiConfig =
   | Messages.GuiAddButtonMessage
@@ -44,12 +46,11 @@ interface GuiActions {
   setTheme: (theme: Messages.ThemeConfigurationMessage) => void;
   addGui: (config: GuiConfig) => void;
   addModal: (config: Messages.GuiModalMessage) => void;
-  popModal: () => void;
+  removeModal: (id: string) => void;
   setGuiValue: (id: string, value: any) => void;
   setGuiVisible: (id: string, visible: boolean) => void;
   setGuiDisabled: (id: string, visible: boolean) => void;
   removeGui: (id: string) => void;
-  removeGuiContainer: (containerId: string) => void;
   resetGui: () => void;
 }
 
@@ -59,6 +60,7 @@ const cleanGuiState: GuiState = {
     titlebar_content: null,
     control_layout: "floating",
     dark_mode: false,
+    colors: null,
   },
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.
@@ -92,9 +94,9 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.modals.push(modalConfig);
           }),
-        popModal: () =>
+        removeModal: (id) =>
           set((state) => {
-            state.modals.pop();
+            state.modals = state.modals.filter((m) => m.id !== id);
           }),
         setGuiValue: (id, value) =>
           set((state) => {
@@ -117,10 +119,6 @@ export function useGuiState(initialServer: string) {
         removeGui: (id) =>
           set((state) => {
             const guiConfig = state.guiConfigFromId[id];
-            if (guiConfig.type === "GuiAddFolderMessage")
-              state.removeGuiContainer(guiConfig.id);
-            if (guiConfig.type === "GuiAddTabGroupMessage")
-              guiConfig.tab_container_ids.forEach(state.removeGuiContainer);
 
             state.guiIdSetFromContainerId[guiConfig.container_id]!.delete(
               guiConfig.id,
@@ -128,19 +126,6 @@ export function useGuiState(initialServer: string) {
             delete state.guiConfigFromId[id];
             delete state.guiValueFromId[id];
             delete state.guiAttributeFromId[id];
-          }),
-        removeGuiContainer: (containerId) =>
-          set((state) => {
-            const guiIdSet = state.guiIdSetFromContainerId[containerId];
-            if (guiIdSet === undefined) {
-              console.log(
-                "Tried to remove but could not find container ID",
-                containerId,
-              );
-              return;
-            }
-            Object.keys(guiIdSet).forEach(state.removeGui);
-            delete state.guiIdSetFromContainerId[containerId];
           }),
         resetGui: () =>
           set((state) => {
@@ -152,6 +137,23 @@ export function useGuiState(initialServer: string) {
       })),
     ),
   )[0];
+}
+
+export function useMantineTheme(): MantineThemeOverride {
+  const viewer = React.useContext(ViewerContext)!;
+  const colors = viewer.useGui((state) => state.theme.colors);
+  return {
+    colorScheme: viewer.useGui((state) => state.theme.dark_mode)
+      ? "dark"
+      : "light",
+    primaryColor: colors === null ? undefined : "custom",
+    colors:
+      colors === null
+        ? undefined
+        : {
+            custom: colors,
+          },
+  };
 }
 
 /** Type corresponding to a zustand-style useGuiState hook. */
