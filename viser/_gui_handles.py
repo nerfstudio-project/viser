@@ -331,7 +331,7 @@ class GuiTabGroupHandle:
     @property
     def order(self) -> float:
         """Read-only order value, which dictates the position of the GUI element."""
-        return self.order
+        return self._order
 
     def add_tab(self, label: str, icon: Optional[Icon] = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
@@ -384,7 +384,7 @@ class GuiFolderHandle:
     @property
     def order(self) -> float:
         """Read-only order value, which dictates the position of the GUI element."""
-        return self.order
+        return self._order
 
     def __enter__(self) -> GuiFolderHandle:
         self._container_id_restore = self._gui_api._get_container_id()
@@ -506,7 +506,7 @@ class GuiMarkdownHandle:
     @property
     def order(self) -> float:
         """Read-only order value, which dictates the position of the GUI element."""
-        return self.order
+        return self._order
 
     @property
     def visible(self) -> bool:
