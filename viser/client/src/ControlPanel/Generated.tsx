@@ -37,7 +37,7 @@ export default function GeneratedGuiContainer({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId],
+    (state) => state.guiIdSetFromContainerId[containerId]
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
@@ -134,9 +134,10 @@ function GeneratedInput({
                 /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
                 height={"0.9rem"}
                 width={"0.9rem"}
-                sx={(theme) => ({
-                  filter: theme.colorScheme == "dark" ? "invert(1)" : undefined,
-                })}
+                opacity={disabled ? 0.3 : 1.0}
+                sx={{
+                  filter: !disabled ? "invert(1)" : undefined,
+                }}
                 src={"data:image/svg+xml;base64," + conf.icon_base64}
               />
             )
@@ -175,7 +176,10 @@ function GeneratedInput({
           </Box>
           <NumberInput
             value={value}
-            onChange={updateValue}
+            onChange={(newValue) => {
+              // Ignore empty values.
+              newValue !== "" && updateValue(newValue);
+            }}
             size="xs"
             min={conf.min}
             max={conf.max}
@@ -199,7 +203,10 @@ function GeneratedInput({
           max={conf.max ?? undefined}
           step={conf.step}
           size="xs"
-          onChange={updateValue}
+          onChange={(newValue) => {
+            // Ignore empty values.
+            newValue !== "" && updateValue(newValue);
+          }}
           disabled={disabled}
           stepHoldDelay={500}
           stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
@@ -446,7 +453,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      },
+      }
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
