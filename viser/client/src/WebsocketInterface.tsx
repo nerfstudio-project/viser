@@ -616,11 +616,6 @@ function useMessageHandler() {
         removeGui(message.id);
         return;
       }
-      // Remove a GUI container.
-      case "GuiRemoveContainerChildrenMessage": {
-        removeGuiContainer(message.container_id);
-        return;
-      }
 
       case "CatmullRomSplineMessage": {
         addSceneNodeMakeParents(
