@@ -474,9 +474,11 @@ class ThemeConfigurationMessage(Message):
 
 @dataclasses.dataclass
 class CatmullRomSplineMessage(Message):
-    """Message from server->client carrying Catmull Rom spline information"""
+    """Message from server->client carrying Catmull-Rom spline information."""
 
+    name: str
     positions: Tuple[Tuple[float, float, float], ...]
+    curve_type: Literal["centripetal", "chordal", "catmullrom"]
     tension: float
     closed: bool
     line_width: float
@@ -485,8 +487,9 @@ class CatmullRomSplineMessage(Message):
 
 @dataclasses.dataclass
 class CubicBezierSplineMessage(Message):
-    """Message from server->client carrying cubic bezier spline information"""
+    """Message from server->client carrying Cubic Bezier spline information."""
 
+    name: str
     positions: Tuple[Tuple[float, float, float], ...]
     control_points: Tuple[Tuple[float, float, float], ...]
     line_width: float

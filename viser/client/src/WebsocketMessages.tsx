@@ -377,7 +377,9 @@ export interface ThemeConfigurationMessage {
 }
 export interface CatmullRomSplineMessage {
   type: "CatmullRomSplineMessage";
+  name: string;
   positions: [number, number, number][];
+  curve_type: "centripetal" | "chordal" | "catmullrom";
   tension: number;
   closed: boolean;
   line_width: number;
@@ -385,6 +387,7 @@ export interface CatmullRomSplineMessage {
 }
 export interface CubicBezierSplineMessage {
   type: "CubicBezierSplineMessage";
+  name: string;
   positions: [number, number, number][];
   control_points: [number, number, number][];
   line_width: number;

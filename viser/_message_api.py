@@ -203,19 +203,26 @@ class MessageApi(abc.ABC):
             ),
         )
 
-    def add_spline_catmullrom(
+    def add_spline_catmull_rom(
         self,
-        positions: Tuple[Tuple[float, float, float], ...],
+        name: str,
+        positions: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
         tension: float = 0.5,
         closed: bool = False,
         line_width: float = 1,
         color: RgbTupleOrArray = (20, 20, 20),
     ) -> None:
-        """Add spline using catmull rom interpolation"""
-        # self._queue(_messages.SplineMessage(positions, tension, closed, line_width))
+        """Add spline using Catmull-Rom interpolation."""
+        if isinstance(positions, onp.ndarray):
+            assert len(positions.shape) == 2
+            positions = tuple(map(tuple, positions))
+
         self._queue(
             _messages.CatmullRomSplineMessage(
+                name,
                 positions,
+                curve_type,
                 tension,
                 closed,
                 line_width,
@@ -223,19 +230,27 @@ class MessageApi(abc.ABC):
             )
         )
 
-    def add_spline_cubicbezier(
+    def add_spline_cubic_bezier(
         self,
-        positions: Tuple[Tuple[float, float, float], ...],
-        control_points: Tuple[Tuple[float, float, float], ...],
+        name: str,
+        positions: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        control_points: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
         line_width: float = 1,
         color: RgbTupleOrArray = (20, 20, 20),
     ) -> None:
-        """Add spline using catmull rom interpolation"""
-        # self._queue(_messages.SplineMessage(positions, tension, closed, line_width))
+        """Add spline using Cubic Bezier interpolation."""
+
+        if isinstance(positions, onp.ndarray):
+            assert len(positions.shape) == 2
+            positions = tuple(map(tuple, positions))
+        if isinstance(control_points, onp.ndarray):
+            assert len(control_points.shape) == 2
+            control_points = tuple(map(tuple, control_points))
+
         assert len(control_points) == (2 * len(positions) - 2)
-        # for i in range(len(positions) - 1):
         self._queue(
             _messages.CubicBezierSplineMessage(
+                name,
                 positions,
                 control_points,
                 line_width,

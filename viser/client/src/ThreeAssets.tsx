@@ -1,4 +1,4 @@
-import { CatmullRomLine, CubicBezierLine, Instance, Instances } from "@react-three/drei";
+import { Instance, Instances } from "@react-three/drei";
 import React from "react";
 import * as THREE from "three";
 
@@ -161,51 +161,3 @@ function LineSegmentInstance(props: {
   );
 }
 
-export const CatmullRomSpline = React.forwardRef<THREE.Mesh, {
-  positions: [number, number, number][];
-  tension: number;
-  closed: boolean;
-  lineWidth: number;
-  color: number;
-}>(function CatmullRomSpline(props, ref) {
-  if (props.positions.length < 2) {
-    return null;
-  }
-  return (
-    <mesh ref={ref}>
-      <CatmullRomLine
-        points={props.positions}
-        closed={props.closed}
-        curveType="catmullrom"
-        tension={props.tension}
-        lineWidth={props.lineWidth}
-        color={props.color}
-      ></CatmullRomLine>
-    </mesh>
-  );
-});
-
-export const CubicBezierSpline = React.forwardRef<THREE.Group, {
-  positions: [number, number, number][];
-  control_points: [number, number, number][];
-  lineWidth: number;
-  color: number;
-}>(function CatmullRomSpline(props, ref) {
-  return (
-    <group ref={ref}>
-      {props.positions.map((_, i) => (
-        (i !== props.positions.length - 1) && (
-          <CubicBezierLine
-            key={i}
-            start={props.positions[i]}
-            end={props.positions[i + 1]}
-            midA={props.control_points[2 * i]}
-            midB={props.control_points[2 * i + 1]}
-            lineWidth={props.lineWidth}
-            color={props.color}
-          >
-          </CubicBezierLine>
-        )))}
-    </group>
-  );
-});
