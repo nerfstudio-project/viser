@@ -13,7 +13,7 @@ import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
-import { isGuiConfig, useMantineTheme } from "./ControlPanel/GuiState";
+import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper } from "@mantine/core";
@@ -67,7 +67,7 @@ function useMessageHandler() {
     addSceneNode(node);
   }
 
-  const mantineTheme = useMantineTheme();
+  const mantineTheme = useViserMantineTheme();
 
   // Return message handler.
   return (message: Message) => {

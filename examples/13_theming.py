@@ -49,7 +49,7 @@ control_layout = server.add_gui_dropdown(
     "Control layout", ("floating", "fixed", "collapsible")
 )
 brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
-synchronize = server.add_gui_button("Apply theme")
+synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
 
 
 def synchronize_theme() -> None:

@@ -1,3 +1,4 @@
+import { ColorTranslator } from "colortranslator";
 import {
   GuiAddFolderMessage,
   GuiAddTabGroupMessage,
@@ -5,7 +6,7 @@ import {
 import { ViewerContext, ViewerContextContents } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiConfig } from "./GuiState";
-import { Image, Tabs, TabsValue } from "@mantine/core";
+import { Image, Tabs, TabsValue, useMantineTheme } from "@mantine/core";
 
 import {
   Accordion,
@@ -37,7 +38,7 @@ export default function GeneratedGuiContainer({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId]
+    (state) => state.guiIdSetFromContainerId[containerId],
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
@@ -99,6 +100,7 @@ function GeneratedInput({
   const value =
     viewer.useGui((state) => state.guiValueFromId[conf.id]) ??
     conf.initial_value;
+  const theme = useMantineTheme();
 
   let { visible, disabled } =
     viewer.useGui((state) => state.guiAttributeFromId[conf.id]) || {};
@@ -107,6 +109,11 @@ function GeneratedInput({
   disabled = disabled ?? false;
 
   if (!visible) return <></>;
+
+  const inputColor =
+    new ColorTranslator(theme.fn.primaryColor()).L > 55.0
+      ? theme.colors.gray[9] + " !important"
+      : theme.colors.white;
 
   let labeled = true;
   let input = null;
@@ -135,9 +142,15 @@ function GeneratedInput({
                 height={"0.9rem"}
                 width={"0.9rem"}
                 opacity={disabled ? 0.3 : 1.0}
-                sx={{
-                  filter: !disabled ? "invert(1)" : undefined,
-                }}
+                sx={
+                  inputColor == theme.colors.white
+                    ? {
+                        // Make the color white.
+                        filter: !disabled ? "invert(1)" : undefined,
+                      }
+                    : // Icon will be black by default.
+                      undefined
+                }
                 src={"data:image/svg+xml;base64," + conf.icon_base64}
               />
             )
@@ -235,6 +248,11 @@ function GeneratedInput({
             updateValue(value.target.checked);
           }}
           disabled={disabled}
+          styles={{
+            icon: {
+              color: inputColor,
+            },
+          }}
         />
       );
       break;
@@ -453,7 +471,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      }
+      },
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
