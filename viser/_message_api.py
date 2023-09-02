@@ -215,9 +215,10 @@ class MessageApi(abc.ABC):
     ) -> None:
         """Add spline using Catmull-Rom interpolation."""
         if isinstance(positions, onp.ndarray):
-            assert len(positions.shape) == 2
-            positions = tuple(map(tuple, positions))
-
+            assert len(positions.shape) == 2 and positions.shape[1] == 3
+            positions = tuple(map(tuple, positions))  # type: ignore
+        assert len(positions[0]) == 3
+        assert isinstance(positions, tuple)
         self._queue(
             _messages.CatmullRomSplineMessage(
                 name,
@@ -241,12 +242,14 @@ class MessageApi(abc.ABC):
         """Add spline using Cubic Bezier interpolation."""
 
         if isinstance(positions, onp.ndarray):
-            assert len(positions.shape) == 2
-            positions = tuple(map(tuple, positions))
+            assert len(positions.shape) == 2 and positions.shape[1] == 3
+            positions = tuple(map(tuple, positions))  # type: ignore
         if isinstance(control_points, onp.ndarray):
-            assert len(control_points.shape) == 2
-            control_points = tuple(map(tuple, control_points))
+            assert len(control_points.shape) == 2 and control_points.shape[1] == 3
+            control_points = tuple(map(tuple, control_points))  # type: ignore
 
+        assert isinstance(positions, tuple)
+        assert isinstance(control_points, tuple)
         assert len(control_points) == (2 * len(positions) - 2)
         self._queue(
             _messages.CubicBezierSplineMessage(
