@@ -20,6 +20,7 @@ export default function FloatingPanel({
 }) {
   const panelWrapperRef = React.useRef<HTMLDivElement>(null);
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(true);
+
   return (
     <FloatingPanelContext.Provider
       value={{
@@ -81,7 +82,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     parentSize: number,
   ) =>
     Math.abs(panelPosition + panelSize / 2.0) <
-    Math.abs(panelPosition - parentSize + panelSize / 2.0)
+      Math.abs(panelPosition - parentSize + panelSize / 2.0)
       ? panelPosition
       : panelPosition - parentSize;
 

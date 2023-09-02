@@ -470,3 +470,27 @@ class ThemeConfigurationMessage(Message):
     control_layout: Literal["floating", "collapsible", "fixed"]
     colors: Optional[Tuple[str, str, str, str, str, str, str, str, str, str]]
     dark_mode: bool
+
+
+@dataclasses.dataclass
+class CatmullRomSplineMessage(Message):
+    """Message from server->client carrying Catmull-Rom spline information."""
+
+    name: str
+    positions: Tuple[Tuple[float, float, float], ...]
+    curve_type: Literal["centripetal", "chordal", "catmullrom"]
+    tension: float
+    closed: bool
+    line_width: float
+    color: int
+
+
+@dataclasses.dataclass
+class CubicBezierSplineMessage(Message):
+    """Message from server->client carrying Cubic Bezier spline information."""
+
+    name: str
+    positions: Tuple[Tuple[float, float, float], ...]
+    control_points: Tuple[Tuple[float, float, float], ...]
+    line_width: float
+    color: int

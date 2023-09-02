@@ -203,6 +203,64 @@ class MessageApi(abc.ABC):
             ),
         )
 
+    def add_spline_catmull_rom(
+        self,
+        name: str,
+        positions: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
+        tension: float = 0.5,
+        closed: bool = False,
+        line_width: float = 1,
+        color: RgbTupleOrArray = (20, 20, 20),
+    ) -> None:
+        """Add spline using Catmull-Rom interpolation."""
+        if isinstance(positions, onp.ndarray):
+            assert len(positions.shape) == 2 and positions.shape[1] == 3
+            positions = tuple(map(tuple, positions))  # type: ignore
+        assert len(positions[0]) == 3
+        assert isinstance(positions, tuple)
+        self._queue(
+            _messages.CatmullRomSplineMessage(
+                name,
+                positions,
+                curve_type,
+                tension,
+                closed,
+                line_width,
+                _encode_rgb(color),
+            )
+        )
+
+    def add_spline_cubic_bezier(
+        self,
+        name: str,
+        positions: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        control_points: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        line_width: float = 1,
+        color: RgbTupleOrArray = (20, 20, 20),
+    ) -> None:
+        """Add spline using Cubic Bezier interpolation."""
+
+        if isinstance(positions, onp.ndarray):
+            assert len(positions.shape) == 2 and positions.shape[1] == 3
+            positions = tuple(map(tuple, positions))  # type: ignore
+        if isinstance(control_points, onp.ndarray):
+            assert len(control_points.shape) == 2 and control_points.shape[1] == 3
+            control_points = tuple(map(tuple, control_points))  # type: ignore
+
+        assert isinstance(positions, tuple)
+        assert isinstance(control_points, tuple)
+        assert len(control_points) == (2 * len(positions) - 2)
+        self._queue(
+            _messages.CubicBezierSplineMessage(
+                name,
+                positions,
+                control_points,
+                line_width,
+                _encode_rgb(color),
+            )
+        )
+
     def add_camera_frustum(
         self,
         name: str,
