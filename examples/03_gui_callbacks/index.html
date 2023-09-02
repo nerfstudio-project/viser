@@ -194,7 +194,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../09_urdf_visualizer/">URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../11_colmap_visualizer/">COLMAP visualizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../12_click_meshes/">Click callback demonstration.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../12_click_meshes/">Mesh click events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../13_theming/">Theming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../14_markdown/">Markdown Demonstration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../15_gui_in_scene/">3D GUI Elements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../16_modal/">Modal basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../17_background_composite/">Depth compositing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../18_splines/">Splines</a></li>
 </ul>
 
 </div>
@@ -244,24 +250,24 @@ we get updates.</p>
 <span class="linenos"> 9</span><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">10</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos">11</span>
-<span class="linenos">12</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui_folder</span><span class="p">(</span><span class="s2">&quot;Control&quot;</span><span class="p">):</span>
-<span class="linenos">13</span>        <span class="n">gui_show</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Show Frame&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos">14</span>        <span class="n">gui_axis</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_dropdown</span><span class="p">(</span><span class="s2">&quot;Axis&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">])</span>
-<span class="linenos">15</span>        <span class="n">gui_include_z</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Z in dropdown&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos">16</span>
-<span class="linenos">17</span>        <span class="nd">@gui_include_z</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">18</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos">19</span>            <span class="n">gui_axis</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">gui_include_z</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">]</span>
-<span class="linenos">20</span>
-<span class="linenos">21</span>        <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui_folder</span><span class="p">(</span><span class="s2">&quot;Sliders&quot;</span><span class="p">):</span>
-<span class="linenos">22</span>            <span class="n">gui_location</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
-<span class="linenos">23</span>                <span class="s2">&quot;Location&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mf">0.0</span>
-<span class="linenos">24</span>            <span class="p">)</span>
-<span class="linenos">25</span>            <span class="n">gui_num_points</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
-<span class="linenos">26</span>                <span class="s2">&quot;# Points&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">200_000</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">10_000</span>
-<span class="linenos">27</span>            <span class="p">)</span>
-<span class="linenos">28</span>
-<span class="linenos">29</span>    <span class="n">gui_reset_scene</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Reset Scene&quot;</span><span class="p">)</span>
+<span class="linenos">12</span>    <span class="n">gui_reset_scene</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Reset Scene&quot;</span><span class="p">)</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Control&quot;</span><span class="p">):</span>
+<span class="linenos">15</span>        <span class="n">gui_show</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Show Frame&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">16</span>        <span class="n">gui_axis</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_dropdown</span><span class="p">(</span><span class="s2">&quot;Axis&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">))</span>
+<span class="linenos">17</span>        <span class="n">gui_include_z</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Z in dropdown&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span>        <span class="nd">@gui_include_z</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos">20</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">21</span>            <span class="n">gui_axis</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">gui_include_z</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">)</span>
+<span class="linenos">22</span>
+<span class="linenos">23</span>        <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Sliders&quot;</span><span class="p">):</span>
+<span class="linenos">24</span>            <span class="n">gui_location</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
+<span class="linenos">25</span>                <span class="s2">&quot;Location&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mf">0.0</span>
+<span class="linenos">26</span>            <span class="p">)</span>
+<span class="linenos">27</span>            <span class="n">gui_num_points</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
+<span class="linenos">28</span>                <span class="s2">&quot;# Points&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">200_000</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mi">10_000</span>
+<span class="linenos">29</span>            <span class="p">)</span>
 <span class="linenos">30</span>
 <span class="linenos">31</span>    <span class="k">def</span> <span class="nf">draw_frame</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">32</span>        <span class="n">axis</span> <span class="o">=</span> <span class="n">gui_axis</span><span class="o">.</span><span class="n">value</span>
@@ -298,7 +304,7 @@ we get updates.</p>
 <span class="linenos">63</span>    <span class="n">gui_num_points</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">draw_points</span><span class="p">())</span>
 <span class="linenos">64</span>
 <span class="linenos">65</span>    <span class="nd">@gui_reset_scene</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">66</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiButtonHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">66</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">67</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the scene when the reset button is clicked.&quot;&quot;&quot;</span>
 <span class="linenos">68</span>        <span class="n">gui_show</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="linenos">69</span>        <span class="n">gui_location</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.0</span>

@@ -194,7 +194,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../09_urdf_visualizer/">URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../11_colmap_visualizer/">COLMAP visualizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../12_click_meshes/">Click callback demonstration.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../12_click_meshes/">Mesh click events</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../13_theming/">Theming</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../14_markdown/">Markdown Demonstration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../15_gui_in_scene/">3D GUI Elements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../16_modal/">Modal basics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../17_background_composite/">Depth compositing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../18_splines/">Splines</a></li>
 </ul>
 
 </div>
@@ -243,7 +249,7 @@
 <span class="linenos"> 9</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos">10</span>
 <span class="linenos">11</span>    <span class="c1"># Add some common GUI elements: number inputs, sliders, vectors, checkboxes.</span>
-<span class="linenos">12</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui_folder</span><span class="p">(</span><span class="s2">&quot;Read-only&quot;</span><span class="p">):</span>
+<span class="linenos">12</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Read-only&quot;</span><span class="p">):</span>
 <span class="linenos">13</span>        <span class="n">gui_counter</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_number</span><span class="p">(</span>
 <span class="linenos">14</span>            <span class="s2">&quot;Counter&quot;</span><span class="p">,</span>
 <span class="linenos">15</span>            <span class="n">initial_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -259,7 +265,7 @@
 <span class="linenos">25</span>            <span class="n">disabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="linenos">26</span>        <span class="p">)</span>
 <span class="linenos">27</span>
-<span class="linenos">28</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui_folder</span><span class="p">(</span><span class="s2">&quot;Editable&quot;</span><span class="p">):</span>
+<span class="linenos">28</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Editable&quot;</span><span class="p">):</span>
 <span class="linenos">29</span>        <span class="n">gui_vector2</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_vector2</span><span class="p">(</span>
 <span class="linenos">30</span>            <span class="s2">&quot;Position&quot;</span><span class="p">,</span>
 <span class="linenos">31</span>            <span class="n">initial_value</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
@@ -269,62 +275,61 @@
 <span class="linenos">35</span>            <span class="s2">&quot;Size&quot;</span><span class="p">,</span>
 <span class="linenos">36</span>            <span class="n">initial_value</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
 <span class="linenos">37</span>            <span class="n">step</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
-<span class="linenos">38</span>            <span class="n">lock</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="linenos">39</span>        <span class="p">)</span>
-<span class="linenos">40</span>        <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui_folder</span><span class="p">(</span><span class="s2">&quot;Text toggle&quot;</span><span class="p">):</span>
-<span class="linenos">41</span>            <span class="n">gui_checkbox_hide</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span>
-<span class="linenos">42</span>                <span class="s2">&quot;Hide&quot;</span><span class="p">,</span>
-<span class="linenos">43</span>                <span class="n">initial_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="linenos">44</span>            <span class="p">)</span>
-<span class="linenos">45</span>            <span class="n">gui_text</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_text</span><span class="p">(</span>
-<span class="linenos">46</span>                <span class="s2">&quot;Text&quot;</span><span class="p">,</span>
-<span class="linenos">47</span>                <span class="n">initial_value</span><span class="o">=</span><span class="s2">&quot;Hello world&quot;</span><span class="p">,</span>
-<span class="linenos">48</span>            <span class="p">)</span>
-<span class="linenos">49</span>            <span class="n">gui_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Button&quot;</span><span class="p">)</span>
-<span class="linenos">50</span>            <span class="n">gui_checkbox_disable</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span>
-<span class="linenos">51</span>                <span class="s2">&quot;Disable&quot;</span><span class="p">,</span>
-<span class="linenos">52</span>                <span class="n">initial_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="linenos">53</span>            <span class="p">)</span>
-<span class="linenos">54</span>            <span class="n">gui_rgb</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_rgb</span><span class="p">(</span>
-<span class="linenos">55</span>                <span class="s2">&quot;Color&quot;</span><span class="p">,</span>
-<span class="linenos">56</span>                <span class="n">initial_value</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-<span class="linenos">57</span>            <span class="p">)</span>
-<span class="linenos">58</span>
-<span class="linenos">59</span>    <span class="c1"># Pre-generate a point cloud to send.</span>
-<span class="linenos">60</span>    <span class="n">point_positions</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="linenos">61</span>    <span class="n">color_coeffs</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">point_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-<span class="linenos">62</span>
-<span class="linenos">63</span>    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">64</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">65</span>        <span class="c1"># We can set the value of an input to a particular value. Changes are</span>
-<span class="linenos">66</span>        <span class="c1"># automatically reflected in connected clients.</span>
-<span class="linenos">67</span>        <span class="n">gui_counter</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">counter</span>
-<span class="linenos">68</span>        <span class="n">gui_slider</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">%</span> <span class="mi">100</span>
-<span class="linenos">69</span>
-<span class="linenos">70</span>        <span class="c1"># We can set the position of a scene node with `.position`, and read the value</span>
-<span class="linenos">71</span>        <span class="c1"># of a gui element with `.value`. Changes are automatically reflected in</span>
-<span class="linenos">72</span>        <span class="c1"># connected clients.</span>
-<span class="linenos">73</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
-<span class="linenos">74</span>            <span class="s2">&quot;/point_cloud&quot;</span><span class="p">,</span>
-<span class="linenos">75</span>            <span class="n">points</span><span class="o">=</span><span class="n">point_positions</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gui_vector3</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
-<span class="linenos">76</span>            <span class="n">colors</span><span class="o">=</span><span class="p">(</span>
-<span class="linenos">77</span>                <span class="n">onp</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">gui_rgb</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">point_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="linenos">78</span>                <span class="o">*</span> <span class="n">color_coeffs</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
-<span class="linenos">79</span>            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span>
-<span class="linenos">80</span>            <span class="n">position</span><span class="o">=</span><span class="n">gui_vector2</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span><span class="p">,),</span>
-<span class="linenos">81</span>        <span class="p">)</span>
-<span class="linenos">82</span>
-<span class="linenos">83</span>        <span class="c1"># We can use `.visible` and `.disabled` to toggle GUI elements.</span>
-<span class="linenos">84</span>        <span class="n">gui_text</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">gui_checkbox_hide</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos">85</span>        <span class="n">gui_button</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">gui_checkbox_hide</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos">86</span>        <span class="n">gui_rgb</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">gui_checkbox_disable</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos">87</span>
-<span class="linenos">88</span>        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
-<span class="linenos">89</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="linenos">38</span>        <span class="p">)</span>
+<span class="linenos">39</span>        <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Text toggle&quot;</span><span class="p">):</span>
+<span class="linenos">40</span>            <span class="n">gui_checkbox_hide</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span>
+<span class="linenos">41</span>                <span class="s2">&quot;Hide&quot;</span><span class="p">,</span>
+<span class="linenos">42</span>                <span class="n">initial_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="linenos">43</span>            <span class="p">)</span>
+<span class="linenos">44</span>            <span class="n">gui_text</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_text</span><span class="p">(</span>
+<span class="linenos">45</span>                <span class="s2">&quot;Text&quot;</span><span class="p">,</span>
+<span class="linenos">46</span>                <span class="n">initial_value</span><span class="o">=</span><span class="s2">&quot;Hello world&quot;</span><span class="p">,</span>
+<span class="linenos">47</span>            <span class="p">)</span>
+<span class="linenos">48</span>            <span class="n">gui_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Button&quot;</span><span class="p">)</span>
+<span class="linenos">49</span>            <span class="n">gui_checkbox_disable</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span>
+<span class="linenos">50</span>                <span class="s2">&quot;Disable&quot;</span><span class="p">,</span>
+<span class="linenos">51</span>                <span class="n">initial_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="linenos">52</span>            <span class="p">)</span>
+<span class="linenos">53</span>            <span class="n">gui_rgb</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_rgb</span><span class="p">(</span>
+<span class="linenos">54</span>                <span class="s2">&quot;Color&quot;</span><span class="p">,</span>
+<span class="linenos">55</span>                <span class="n">initial_value</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<span class="linenos">56</span>            <span class="p">)</span>
+<span class="linenos">57</span>
+<span class="linenos">58</span>    <span class="c1"># Pre-generate a point cloud to send.</span>
+<span class="linenos">59</span>    <span class="n">point_positions</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">low</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">5000</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="linenos">60</span>    <span class="n">color_coeffs</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">point_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="linenos">61</span>
+<span class="linenos">62</span>    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">63</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">64</span>        <span class="c1"># We can set the value of an input to a particular value. Changes are</span>
+<span class="linenos">65</span>        <span class="c1"># automatically reflected in connected clients.</span>
+<span class="linenos">66</span>        <span class="n">gui_counter</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">counter</span>
+<span class="linenos">67</span>        <span class="n">gui_slider</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">%</span> <span class="mi">100</span>
+<span class="linenos">68</span>
+<span class="linenos">69</span>        <span class="c1"># We can set the position of a scene node with `.position`, and read the value</span>
+<span class="linenos">70</span>        <span class="c1"># of a gui element with `.value`. Changes are automatically reflected in</span>
+<span class="linenos">71</span>        <span class="c1"># connected clients.</span>
+<span class="linenos">72</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
+<span class="linenos">73</span>            <span class="s2">&quot;/point_cloud&quot;</span><span class="p">,</span>
+<span class="linenos">74</span>            <span class="n">points</span><span class="o">=</span><span class="n">point_positions</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gui_vector3</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+<span class="linenos">75</span>            <span class="n">colors</span><span class="o">=</span><span class="p">(</span>
+<span class="linenos">76</span>                <span class="n">onp</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">gui_rgb</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">point_positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="linenos">77</span>                <span class="o">*</span> <span class="n">color_coeffs</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="linenos">78</span>            <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">uint8</span><span class="p">),</span>
+<span class="linenos">79</span>            <span class="n">position</span><span class="o">=</span><span class="n">gui_vector2</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span><span class="p">,),</span>
+<span class="linenos">80</span>        <span class="p">)</span>
+<span class="linenos">81</span>
+<span class="linenos">82</span>        <span class="c1"># We can use `.visible` and `.disabled` to toggle GUI elements.</span>
+<span class="linenos">83</span>        <span class="n">gui_text</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">gui_checkbox_hide</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">84</span>        <span class="n">gui_button</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">gui_checkbox_hide</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">85</span>        <span class="n">gui_rgb</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">gui_checkbox_disable</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">86</span>
+<span class="linenos">87</span>        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="linenos">88</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="linenos">89</span>
 <span class="linenos">90</span>
-<span class="linenos">91</span>
-<span class="linenos">92</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">93</span>    <span class="n">main</span><span class="p">()</span>
+<span class="linenos">91</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">92</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
