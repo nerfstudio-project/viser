@@ -25,24 +25,24 @@ we get updates.
         def main() -> None:
             server = viser.ViserServer()
 
-            with server.gui_folder("Control"):
+            gui_reset_scene = server.add_gui_button("Reset Scene")
+
+            with server.add_gui_folder("Control"):
                 gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
-                gui_axis = server.add_gui_dropdown("Axis", ["x", "y", "z"])
+                gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
                 gui_include_z = server.add_gui_checkbox("Z in dropdown", initial_value=True)
 
                 @gui_include_z.on_update
                 def _(_) -> None:
-                    gui_axis.options = ["x", "y", "z"] if gui_include_z.value else ["x", "y"]
+                    gui_axis.options = ("x", "y", "z") if gui_include_z.value else ("x", "y")
 
-                with server.gui_folder("Sliders"):
+                with server.add_gui_folder("Sliders"):
                     gui_location = server.add_gui_slider(
                         "Location", min=-5.0, max=5.0, step=0.05, initial_value=0.0
                     )
                     gui_num_points = server.add_gui_slider(
                         "# Points", min=1000, max=200_000, step=1000, initial_value=10_000
                     )
-
-            gui_reset_scene = server.add_gui_button("Reset Scene")
 
             def draw_frame() -> None:
                 axis = gui_axis.value
@@ -79,7 +79,7 @@ we get updates.
             gui_num_points.on_update(lambda _: draw_points())
 
             @gui_reset_scene.on_click
-            def _(_: viser.GuiButtonHandle) -> None:
+            def _(_) -> None:
                 """Reset the scene when the reset button is clicked."""
                 gui_show.value = True
                 gui_location.value = 0.0
