@@ -1,6 +1,6 @@
 // @refresh reset
 
-import { ActionIcon, Box, Paper, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Paper, ScrollArea, Tooltip } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
@@ -60,13 +60,10 @@ export default function SidebarPanel({
     >
       {collapsedView}
       {/* Using an <Aside /> below will break Mantine color inputs. */}
-      <Paper
-        shadow="lg"
-        radius={0}
+      <ScrollArea
         sx={{
           width: collapsed ? 0 : "20em",
-          overflow: "scroll",
-          boxSizing: "border-box",
+          boxSizing: "content-box",
           transition: "width 0.5s 0s",
           zIndex: 300,
         }}
@@ -78,7 +75,7 @@ export default function SidebarPanel({
         >
           {children}
         </Box>
-      </Paper>
+      </ScrollArea>
     </SidebarPanelContext.Provider>
   );
 }
