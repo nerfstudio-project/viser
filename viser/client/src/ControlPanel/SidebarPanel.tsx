@@ -113,7 +113,7 @@ SidebarPanel.Handle = function SidebarPanelHandle({
         lineHeight: "1.5em",
         fontWeight: 400,
         position: "relative",
-        zIndex: 1,
+        zIndex: 0,
         alignItems: "center",
         display: "flex",
         flexDirection: "row",
