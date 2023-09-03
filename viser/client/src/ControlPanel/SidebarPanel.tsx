@@ -60,7 +60,9 @@ export default function SidebarPanel({
     >
       {collapsedView}
       {/* Using an <Aside /> below will break Mantine color inputs. */}
-      <ScrollArea
+      <Paper
+        shadow="xl"
+        component={ScrollArea}
         sx={{
           width: collapsed ? 0 : "20em",
           boxSizing: "content-box",
@@ -75,7 +77,7 @@ export default function SidebarPanel({
         >
           {children}
         </Box>
-      </ScrollArea>
+      </Paper>
     </SidebarPanelContext.Provider>
   );
 }

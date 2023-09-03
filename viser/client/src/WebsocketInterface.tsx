@@ -234,37 +234,18 @@ function useMessageHandler() {
               )
             : undefined;
 
-        const height = message.scale * Math.tan(message.fov / 2.0) * 2.0;
-
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
             message.name,
             (ref) => (
-              <group ref={ref}>
-                <CameraFrustum
-                  fov={message.fov}
-                  aspect={message.aspect}
-                  scale={message.scale}
-                  color={message.color}
-                />
-                {texture && (
-                  <mesh
-                    position={[0.0, 0.0, message.scale]}
-                    rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
-                  >
-                    <planeGeometry
-                      attach="geometry"
-                      args={[message.aspect * height, height]}
-                    />
-                    <meshBasicMaterial
-                      attach="material"
-                      transparent={true}
-                      side={THREE.DoubleSide}
-                      map={texture}
-                    />
-                  </mesh>
-                )}
-              </group>
+              <CameraFrustum
+                ref={ref}
+                fov={message.fov}
+                aspect={message.aspect}
+                scale={message.scale}
+                color={message.color}
+                image={texture}
+              />
             ),
             () => texture?.dispose(),
           ),

@@ -46,7 +46,7 @@ export default function GeneratedGuiContainer({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId]
+    (state) => state.guiIdSetFromContainerId[containerId],
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
@@ -197,10 +197,10 @@ function GeneratedInput({
             />
             <Flex justify="space-between" sx={{ marginTop: "-0.2em" }}>
               <Text fz="0.7rem" c="dimmed">
-                {conf.min}
+                {parseInt(conf.min.toFixed(6))}
               </Text>
               <Text fz="0.7rem" c="dimmed">
-                {conf.max}
+                {parseInt(conf.max.toFixed(6))}
               </Text>
             </Flex>
           </Box>
@@ -383,7 +383,7 @@ function GeneratedInput({
     input = <LabeledInput id={conf.id} label={conf.label} input={input} />;
 
   return (
-    <Box pb="xs" px="sm">
+    <Box pb="xs" px="md">
       {input}
     </Box>
   );
@@ -503,7 +503,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      }
+      },
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
