@@ -38,21 +38,17 @@ image = TitlebarImage(
 )
 titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
-# server.add_gui_markdown(
-#     "Viser includes support for light theming via the `.configure_theme()` method."
-# )
+server.add_gui_markdown(
+    "Viser includes support for light theming via the `.configure_theme()` method."
+)
 
 # GUI elements for controllable values.
-for i in range(30):
-    control_layout = server.add_gui_dropdown(
-        "Control layout", ("floating", "fixed", "collapsible")
-    )
+control_layout = server.add_gui_dropdown(
+    "Control layout", ("floating", "fixed", "collapsible")
+)
 titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
-titlebar.visible = False
 dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
-dark_mode.visible = False
 brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
-brand_color.visible = False
 synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
 
 

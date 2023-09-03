@@ -304,6 +304,8 @@ function GeneratedInput({
           onChange={updateValue}
           searchable
           maxDropdownHeight={400}
+          /* withinPortal prevents clipping from overflow: hidden on a parent. */
+          withinPortal
         />
       );
       break;
