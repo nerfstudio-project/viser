@@ -215,7 +215,7 @@ export default function FloatingPanel({
         sx={{
           boxSizing: "border-box",
           width: "20em",
-          zIndex: 300,
+          zIndex: 10,
           position: "absolute",
           top: "1em",
           right: "1em",

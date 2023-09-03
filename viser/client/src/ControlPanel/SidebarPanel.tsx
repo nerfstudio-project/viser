@@ -65,7 +65,7 @@ export default function SidebarPanel({
           width: collapsed ? 0 : "20em",
           boxSizing: "content-box",
           transition: "width 0.5s 0s",
-          zIndex: 300,
+          zIndex: 10,
         }}
       >
         <Box
