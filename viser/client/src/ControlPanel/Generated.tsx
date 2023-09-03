@@ -400,13 +400,7 @@ function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
       mx="xs"
       mt="xs"
       mb="lg"
-      sx={(theme) => ({
-        position: "relative",
-        borderColor:
-          theme.colorScheme == "light"
-            ? theme.colors.gray[4] + " !important"
-            : theme.colors.gray[8] + " !important",
-      })}
+      sx={{ position: "relative" }}
     >
       <Paper
         sx={{
