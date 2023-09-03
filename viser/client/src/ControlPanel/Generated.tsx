@@ -46,7 +46,7 @@ export default function GeneratedGuiContainer({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId],
+    (state) => state.guiIdSetFromContainerId[containerId]
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
@@ -369,6 +369,7 @@ function GeneratedInput({
     input = // We need to add <Box /> for inputs that we can't assign refs to.
       (
         <Tooltip
+          zIndex={100}
           label={conf.hint}
           multiline
           w="15rem"
@@ -399,10 +400,16 @@ function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
       mx="xs"
       mt="xs"
       mb="lg"
-      sx={{ position: "relative" }}
+      sx={(theme) => ({
+        position: "relative",
+        borderColor:
+          theme.colorScheme == "light"
+            ? theme.colors.gray[4] + " !important"
+            : theme.colors.gray[8] + " !important",
+      })}
     >
       <Paper
-        sx={(theme) => ({
+        sx={{
           fontSize: "0.9em",
           position: "absolute",
           padding: "0 0.5em 0 0.25em",
@@ -411,8 +418,8 @@ function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
           transform: "translateY(-50%)",
           cursor: "pointer",
           userSelect: "none",
-          fontWeight: "600",
-        })}
+          fontWeight: "bolder",
+        }}
         onClick={toggle}
       >
         <ToggleIcon
@@ -504,7 +511,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      },
+      }
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>

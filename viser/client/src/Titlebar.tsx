@@ -142,7 +142,7 @@ export function Titlebar() {
       sx={{
         margin: 0,
         border: "0",
-        zIndex: 200,
+        zIndex: 5,
       }}
     >
       <Paper p="xs" shadow="md" sx={{ height: "100%" }}>

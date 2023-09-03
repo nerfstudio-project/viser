@@ -46,7 +46,7 @@ export default function SidebarPanel({
           toggleCollapsed();
         }}
       >
-        <Tooltip label={"Show sidebar"}>{<IconChevronLeft />}</Tooltip>
+        <Tooltip zIndex={100} label={"Show sidebar"}>{<IconChevronLeft />}</Tooltip>
       </ActionIcon>
     </Box>
   );
@@ -98,7 +98,7 @@ SidebarPanel.Handle = function SidebarPanelHandle({
         toggleCollapsed();
       }}
     >
-      <Tooltip label={"Collapse sidebar"}>
+      <Tooltip zIndex={100} label={"Collapse sidebar"}>
         {<IconChevronRight stroke={1.625} />}
       </Tooltip>
     </ActionIcon>
@@ -115,7 +115,7 @@ SidebarPanel.Handle = function SidebarPanelHandle({
         lineHeight: "1.5em",
         fontWeight: 400,
         position: "relative",
-        zIndex: 0,
+        zIndex: 20,
         alignItems: "center",
         display: "flex",
         flexDirection: "row",
