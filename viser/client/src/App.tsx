@@ -53,12 +53,12 @@ export type ViewerContextContents = {
   // This is intentionally placed outside of the Zustand state to reduce overhead.
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
-      | undefined
-      | {
-          wxyz?: [number, number, number, number];
-          position?: [number, number, number];
-          visibility?: boolean;
-        };
+    | undefined
+    | {
+      wxyz?: [number, number, number, number];
+      position?: [number, number, number];
+      visibility?: boolean;
+    };
   }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
 };

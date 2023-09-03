@@ -1,5 +1,5 @@
 # mypy: disable-error-code="var-annotated"
-"""Background image example with depth compositing.
+"""Depth compositing
 
 In this example, we show how to use a background image with depth compositing. This can
 be useful when we want a 2D image to occlude 3D geometry, such as for NeRF rendering.

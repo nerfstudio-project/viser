@@ -375,6 +375,24 @@ export interface ThemeConfigurationMessage {
     | null;
   dark_mode: boolean;
 }
+export interface CatmullRomSplineMessage {
+  type: "CatmullRomSplineMessage";
+  name: string;
+  positions: [number, number, number][];
+  curve_type: "centripetal" | "chordal" | "catmullrom";
+  tension: number;
+  closed: boolean;
+  line_width: number;
+  color: number;
+}
+export interface CubicBezierSplineMessage {
+  type: "CubicBezierSplineMessage";
+  name: string;
+  positions: [number, number, number][];
+  control_points: [number, number, number][];
+  line_width: number;
+  color: number;
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -421,4 +439,6 @@ export type Message =
   | GuiSetVisibleMessage
   | GuiSetDisabledMessage
   | GuiSetValueMessage
-  | ThemeConfigurationMessage;
+  | ThemeConfigurationMessage
+  | CatmullRomSplineMessage
+  | CubicBezierSplineMessage;
