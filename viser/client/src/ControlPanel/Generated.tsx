@@ -6,10 +6,16 @@ import {
 import { ViewerContext, ViewerContextContents } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiConfig } from "./GuiState";
-import { Image, Tabs, TabsValue, useMantineTheme } from "@mantine/core";
+import {
+  Collapse,
+  Image,
+  Paper,
+  Tabs,
+  TabsValue,
+  useMantineTheme,
+} from "@mantine/core";
 
 import {
-  Accordion,
   Box,
   Button,
   Checkbox,
@@ -25,6 +31,8 @@ import {
 import React from "react";
 import Markdown from "../Markdown";
 import { ErrorBoundary } from "react-error-boundary";
+import { useDisclosure } from "@mantine/hooks";
+import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -38,7 +46,7 @@ export default function GeneratedGuiContainer({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId],
+    (state) => state.guiIdSetFromContainerId[containerId]
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
@@ -382,36 +390,49 @@ function GeneratedInput({
 }
 
 function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
+  const [opened, { toggle }] = useDisclosure(true);
+  const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
   return (
-    <Accordion
-      chevronPosition="right"
-      multiple
-      pb="xs"
-      px="sm"
-      defaultValue={["folder"]}
-      styles={(theme) => ({
-        label: { padding: "0.5rem 0.4rem" },
-        item: { border: 0 },
-        control: { paddingLeft: 0 },
-        content: {
-          borderLeft: "1px solid",
-          borderLeftColor:
-            theme.colorScheme === "light"
-              ? theme.colors.gray[3]
-              : theme.colors.dark[5],
-          padding: 0,
-          marginBottom: 0,
-          marginLeft: "0.05rem",
-        },
-      })}
+    <Paper
+      withBorder
+      pt="xs"
+      mx="xs"
+      mt="xs"
+      mb="lg"
+      sx={{ position: "relative" }}
     >
-      <Accordion.Item value="folder">
-        <Accordion.Control>{conf.label}</Accordion.Control>
-        <Accordion.Panel>
-          <GeneratedGuiContainer containerId={conf.id} />
-        </Accordion.Panel>
-      </Accordion.Item>
-    </Accordion>
+      <Paper
+        sx={(theme) => ({
+          fontSize: "0.9em",
+          position: "absolute",
+          padding: "0 0.5em 0 0.25em",
+          top: 0,
+          left: "0.375em",
+          transform: "translateY(-50%)",
+          cursor: "pointer",
+          userSelect: "none",
+        })}
+        onClick={toggle}
+      >
+        <ToggleIcon
+          style={{
+            width: "1.2em",
+            height: "1.2em",
+            top: "0.25em",
+            position: "relative",
+            marginRight: "0.5em",
+            opacity: 0.5,
+          }}
+        />
+        {conf.label}
+      </Paper>
+      <Collapse in={opened}>
+        <GeneratedGuiContainer containerId={conf.id} />
+      </Collapse>
+      <Collapse in={!opened}>
+        <Box p="xs"></Box>
+      </Collapse>
+    </Paper>
   );
 }
 
@@ -482,7 +503,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      },
+      }
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>

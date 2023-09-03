@@ -33,6 +33,7 @@ dependencies = [
     "trimesh>=3.21.7",
     "nodeenv>=1.8.0",
     "psutil>=5.9.5",
+    "yourdfpy>=0.0.53",
 ]
 
 [project.optional-dependencies]
@@ -46,7 +47,6 @@ dev = [
 examples = [
     "smplx>=0.1.28",
     "torch>=1.13.1",
-    "yourdfpy>=0.0.53",
     "matplotlib>=3.7.1",
 ]
 

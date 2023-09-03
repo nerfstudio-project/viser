@@ -239,7 +239,6 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   children: string | React.ReactNode;
 }) {
   const panelContext = React.useContext(FloatingPanelContext)!;
-  const panelWrapperRef = panelContext.wrapperRef;
 
   return (
     <Box
