@@ -160,10 +160,10 @@ export function useViserMantineTheme(): MantineThemeOverride {
       Button: {
         variants: {
           filled: (theme) => ({
-            inner: {
+            root: {
               color:
                 new ColorTranslator(theme.fn.primaryColor()).L > 55.0
-                  ? theme.colors.gray[9]
+                  ? theme.colors.gray[9] + " !important"
                   : undefined,
             },
           }),

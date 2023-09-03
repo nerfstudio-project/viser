@@ -16,7 +16,7 @@ export const CoordinateFrame = React.forwardRef<
   }
 >(function CoordinateFrame(
   { show_axes = true, axes_length = 0.5, axes_radius = 0.0125 },
-  ref,
+  ref
 ) {
   return (
     <group ref={ref}>
@@ -29,7 +29,7 @@ export const CoordinateFrame = React.forwardRef<
               new THREE.Vector3(
                 axes_radius * 2.5,
                 axes_radius * 2.5,
-                axes_radius * 2.5,
+                axes_radius * 2.5
               )
             }
           />
@@ -70,16 +70,21 @@ export const CameraFrustum = React.forwardRef<
     color: number;
   }
 >(function CameraFrustum(props, ref) {
-  const y = Math.tan(props.fov / 2.0);
-  const x = y * props.aspect;
-  const z = 1.0;
+  let y = Math.tan(props.fov / 2.0);
+  let x = y * props.aspect;
+  let z = 1.0;
+
+  const volumeScale = Math.cbrt((x * y * z) / 3.0);
+  x /= volumeScale;
+  y /= volumeScale;
+  z /= volumeScale;
 
   function scaledLineSegments(points: [number, number, number][]) {
     points = points.map((xyz) => [xyz[0] * x, xyz[1] * y, xyz[2] * z]);
     return [...Array(points.length - 1).keys()].map((i) => (
       <LineSegmentInstance
         key={i}
-        radius={0.015 * props.scale}
+        radius={0.08 * props.scale}
         start={new THREE.Vector3()
           .fromArray(points[i])
           .multiplyScalar(props.scale)}
@@ -148,7 +153,7 @@ function LineSegmentInstance(props: {
 
   const orientation = new THREE.Quaternion().setFromAxisAngle(
     rotationAxis,
-    rotationAngle,
+    rotationAngle
   );
   return (
     <>

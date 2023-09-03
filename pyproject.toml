@@ -61,7 +61,7 @@ exclude = [
 ]
 
 [tool.setuptools.package-data]
-viser = ["py.typed", "client/build/**/*"]
+viser = ["py.typed", "_icons/tabler-icons.tar", "client/build/**/*"]
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"

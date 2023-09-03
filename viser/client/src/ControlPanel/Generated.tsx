@@ -38,7 +38,7 @@ export default function GeneratedGuiContainer({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId],
+    (state) => state.guiIdSetFromContainerId[containerId]
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
@@ -110,16 +110,24 @@ function GeneratedInput({
 
   if (!visible) return <></>;
 
-  const inputColor =
+  let inputColor =
     new ColorTranslator(theme.fn.primaryColor()).L > 55.0
-      ? theme.colors.gray[9] + " !important"
-      : theme.colors.white;
+      ? theme.colors.gray[9]
+      : theme.white;
 
   let labeled = true;
   let input = null;
   switch (conf.type) {
     case "GuiAddButtonMessage":
       labeled = false;
+      if (conf.color !== null) {
+        inputColor =
+          new ColorTranslator(theme.colors[conf.color][theme.fn.primaryShade()])
+            .L > 55.0
+            ? theme.colors.gray[9]
+            : theme.white;
+      }
+
       input = (
         <Button
           id={conf.id}
@@ -133,6 +141,7 @@ function GeneratedInput({
             })
           }
           style={{ height: "1.875rem" }}
+          styles={{ inner: { color: inputColor + " !important" } }}
           disabled={disabled}
           size="sm"
           leftIcon={
@@ -143,7 +152,7 @@ function GeneratedInput({
                 width={"0.9rem"}
                 opacity={disabled ? 0.3 : 1.0}
                 sx={
-                  inputColor == theme.colors.white
+                  inputColor === theme.white
                     ? {
                         // Make the color white.
                         filter: !disabled ? "invert(1)" : undefined,
@@ -250,7 +259,7 @@ function GeneratedInput({
           disabled={disabled}
           styles={{
             icon: {
-              color: inputColor,
+              color: inputColor + " !important",
             },
           }}
         />
@@ -471,7 +480,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      },
+      }
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
