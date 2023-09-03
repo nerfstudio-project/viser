@@ -395,7 +395,7 @@ function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
   return (
     <Paper
       withBorder
-      pt="xs"
+      pt="0.2em"
       mx="xs"
       mt="xs"
       mb="lg"
@@ -411,6 +411,7 @@ function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
           transform: "translateY(-50%)",
           cursor: "pointer",
           userSelect: "none",
+          fontWeight: "600",
         })}
         onClick={toggle}
       >
