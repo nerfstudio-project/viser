@@ -68,18 +68,24 @@ export const CameraFrustum = React.forwardRef<
     aspect: number;
     scale: number;
     color: number;
+    image?: THREE.Texture;
   }
 >(function CameraFrustum(props, ref) {
-  const y = Math.tan(props.fov / 2.0);
-  const x = y * props.aspect;
-  const z = 1.0;
+  let y = Math.tan(props.fov / 2.0);
+  let x = y * props.aspect;
+  let z = 1.0;
+
+  const volumeScale = Math.cbrt((x * y * z) / 3.0);
+  x /= volumeScale;
+  y /= volumeScale;
+  z /= volumeScale;
 
   function scaledLineSegments(points: [number, number, number][]) {
     points = points.map((xyz) => [xyz[0] * x, xyz[1] * y, xyz[2] * z]);
     return [...Array(points.length - 1).keys()].map((i) => (
       <LineSegmentInstance
         key={i}
-        radius={0.015 * props.scale}
+        radius={0.06 * props.scale}
         start={new THREE.Vector3()
           .fromArray(points[i])
           .multiplyScalar(props.scale)}
@@ -121,6 +127,23 @@ export const CameraFrustum = React.forwardRef<
           [0.0, -0.9, 1.0],
         ])}
       </Instances>
+      {props.image && (
+        <mesh
+          position={[0.0, 0.0, props.scale * z]}
+          rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
+        >
+          <planeGeometry
+            attach="geometry"
+            args={[props.scale * props.aspect * y * 2, props.scale * y * 2]}
+          />
+          <meshBasicMaterial
+            attach="material"
+            transparent={true}
+            side={THREE.DoubleSide}
+            map={props.image}
+          />
+        </mesh>
+      )}
     </group>
   );
 });
@@ -160,4 +183,3 @@ function LineSegmentInstance(props: {
     </>
   );
 }
-
