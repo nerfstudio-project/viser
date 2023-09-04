@@ -1,6 +1,6 @@
 // @refresh reset
 
-import { Box, Collapse, Paper } from "@mantine/core";
+import { Box, Collapse, Paper, ScrollArea } from "@mantine/core";
 import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 import { useDisclosure } from "@mantine/hooks";
@@ -8,7 +8,20 @@ import { useDisclosure } from "@mantine/hooks";
 const FloatingPanelContext = React.createContext<null | {
   wrapperRef: React.RefObject<HTMLDivElement>;
   expanded: boolean;
+  maxHeight: number;
   toggleExpanded: () => void;
+  dragHandler: (
+    event:
+      | React.TouchEvent<HTMLDivElement>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>,
+  ) => void;
+  dragInfo: React.MutableRefObject<{
+    dragging: boolean;
+    startPosX: number;
+    startPosY: number;
+    startClientX: number;
+    startClientY: number;
+  }>;
 }>(null);
 
 /** Root component for control panel. Parents a set of control tabs.
@@ -20,47 +33,8 @@ export default function FloatingPanel({
 }) {
   const panelWrapperRef = React.useRef<HTMLDivElement>(null);
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(true);
+  const [maxHeight, setMaxHeight] = React.useState(800);
 
-  return (
-    <FloatingPanelContext.Provider
-      value={{
-        wrapperRef: panelWrapperRef,
-        expanded: expanded,
-        toggleExpanded: toggleExpanded,
-      }}
-    >
-      <Paper
-        radius="sm"
-        shadow="lg"
-        sx={{
-          boxSizing: "border-box",
-          width: "20em",
-          zIndex: 300,
-          position: "absolute",
-          top: "1em",
-          right: "1em",
-          margin: 0,
-          overflowY: "scroll" /* overflowY: auto will break dropdown menus.*/,
-          "& .expand-icon": {
-            transform: "rotate(0)",
-          },
-        }}
-        ref={panelWrapperRef}
-      >
-        {children}
-      </Paper>
-    </FloatingPanelContext.Provider>
-  );
-}
-
-/** Handle object helps us hide, show, and drag our panel.*/
-FloatingPanel.Handle = function FloatingPanelHandle({
-  children,
-}: {
-  children: string | React.ReactNode;
-}) {
-  const panelContext = React.useContext(FloatingPanelContext)!;
-  const panelWrapperRef = panelContext.wrapperRef;
   // Things to track for dragging.
   const dragInfo = React.useRef({
     dragging: false,
@@ -82,7 +56,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     parentSize: number,
   ) =>
     Math.abs(panelPosition + panelSize / 2.0) <
-      Math.abs(panelPosition - parentSize + panelSize / 2.0)
+    Math.abs(panelPosition - parentSize + panelSize / 2.0)
       ? panelPosition
       : panelPosition - parentSize;
 
@@ -125,10 +99,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
     const parent = panel.parentElement;
     if (parent === null) return;
 
-    panel.style.maxHeight = `${(
-      parent.clientHeight -
-      panelBoundaryPad * 2
-    ).toString()}px`;
+    // panel.style.maxHeight = `${(
+    //   parent.clientHeight -
+    //   panelBoundaryPad * 2
+    // ).toString()}px`;
 
     const observer = new ResizeObserver(() => {
       if (unfixedOffset.current.x === undefined)
@@ -144,10 +118,16 @@ FloatingPanel.Handle = function FloatingPanelHandle({
           parent.clientHeight,
         );
 
-      panel.style.maxHeight = `${(
-        parent.clientHeight -
-        panelBoundaryPad * 2
-      ).toString()}px`;
+      // panel.style.maxHeight = `${(
+      //   parent.clientHeight -
+      //   panelBoundaryPad * 2
+      // ).toString()}px`;
+
+      const newMaxHeight = Math.min(
+        parent.clientHeight - panelBoundaryPad * 2 - 2.5 * 16,
+        800,
+      );
+      maxHeight !== newMaxHeight && setMaxHeight(newMaxHeight);
 
       let newX = unfixedOffset.current.x;
       let newY = unfixedOffset.current.y;
@@ -219,8 +199,51 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   };
 
   return (
+    <FloatingPanelContext.Provider
+      value={{
+        wrapperRef: panelWrapperRef,
+        expanded: expanded,
+        maxHeight: maxHeight,
+        toggleExpanded: toggleExpanded,
+        dragHandler: dragHandler,
+        dragInfo: dragInfo,
+      }}
+    >
+      <Paper
+        radius="sm"
+        shadow="lg"
+        sx={{
+          boxSizing: "border-box",
+          width: "20em",
+          zIndex: 10,
+          position: "absolute",
+          top: "1em",
+          right: "1em",
+          margin: 0,
+          "& .expand-icon": {
+            transform: "rotate(0)",
+          },
+        }}
+        ref={panelWrapperRef}
+      >
+        {children}
+      </Paper>
+    </FloatingPanelContext.Provider>
+  );
+}
+
+/** Handle object helps us hide, show, and drag our panel.*/
+FloatingPanel.Handle = function FloatingPanelHandle({
+  children,
+}: {
+  children: string | React.ReactNode;
+}) {
+  const panelContext = React.useContext(FloatingPanelContext)!;
+
+  return (
     <Box
       sx={(theme) => ({
+        borderRadius: "0.2em",
         backgroundColor:
           theme.colorScheme === "dark"
             ? theme.colors.dark[5]
@@ -236,7 +259,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         height: "2.5em",
       })}
       onClick={() => {
-        const state = dragInfo.current;
+        const state = panelContext.dragInfo.current;
         if (state.dragging) {
           state.dragging = false;
           return;
@@ -244,10 +267,10 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         panelContext.toggleExpanded();
       }}
       onTouchStart={(event) => {
-        dragHandler(event);
+        panelContext.dragHandler(event);
       }}
       onMouseDown={(event) => {
-        dragHandler(event);
+        panelContext.dragHandler(event);
       }}
     >
       {children}
@@ -260,8 +283,14 @@ FloatingPanel.Contents = function FloatingPanelContents({
 }: {
   children: string | React.ReactNode;
 }) {
-  const context = React.useContext(FloatingPanelContext);
-  return <Collapse in={context?.expanded ?? true}>{children}</Collapse>;
+  const context = React.useContext(FloatingPanelContext)!;
+  return (
+    <Collapse in={context.expanded}>
+      <ScrollArea.Autosize mah={context!.maxHeight}>
+        {children}
+      </ScrollArea.Autosize>
+    </Collapse>
+  );
 };
 
 /** Hides contents when floating panel is collapsed. */

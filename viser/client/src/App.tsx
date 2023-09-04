@@ -22,7 +22,11 @@ import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 import "./index.css";
 
 import ControlPanel from "./ControlPanel/ControlPanel";
-import { UseGui, useGuiState, useMantineTheme } from "./ControlPanel/GuiState";
+import {
+  UseGui,
+  useGuiState,
+  useViserMantineTheme,
+} from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 import {
   WebsocketMessageProducer,
@@ -49,12 +53,12 @@ export type ViewerContextContents = {
   // This is intentionally placed outside of the Zustand state to reduce overhead.
   nodeAttributesFromName: React.MutableRefObject<{
     [name: string]:
-    | undefined
-    | {
-      wxyz?: [number, number, number, number];
-      position?: [number, number, number];
-      visibility?: boolean;
-    };
+      | undefined
+      | {
+          wxyz?: [number, number, number, number];
+          position?: [number, number, number];
+          visibility?: boolean;
+        };
   }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
 };
@@ -111,7 +115,7 @@ function ViewerContents() {
     <MantineProvider
       withGlobalStyles
       withNormalizeCSS
-      theme={useMantineTheme()}
+      theme={useViserMantineTheme()}
     >
       <Titlebar />
       <ViserModal />

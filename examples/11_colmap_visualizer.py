@@ -45,11 +45,12 @@ def main(
     )
 
     @gui_reset_up.on_click
-    def _(_) -> None:
-        for client in server.get_clients().values():
-            client.camera.up_direction = tf.SO3(client.camera.wxyz) @ onp.array(
-                [0.0, -1.0, 0.0]
-            )
+    def _(event: viser.GuiEvent) -> None:
+        client = event.client
+        assert client is not None
+        client.camera.up_direction = tf.SO3(client.camera.wxyz) @ onp.array(
+            [0.0, -1.0, 0.0]
+        )
 
     gui_points = server.add_gui_slider(
         "Max points",

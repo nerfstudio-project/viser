@@ -171,6 +171,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
           onClose={closeSceneTree}
           size="xl"
           centered
+          zIndex={100}
         >
           <SceneTreeTable compact={false} />
         </Modal>
