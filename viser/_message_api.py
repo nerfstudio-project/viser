@@ -126,6 +126,8 @@ class MessageApi(abc.ABC):
     Should be implemented by both our global server object (for broadcasting) and by
     invidividual clients."""
 
+    _locked_thread_id: int  # Appeasing mypy 1.5.1, not sure why this is needed.
+
     def __init__(self, handler: infra.MessageHandler) -> None:
         self._message_handler = handler
 
