@@ -24,7 +24,9 @@ export interface CameraFrustumMessage {
 }
 export interface GlTFMessage {
   type: "GlTFMessage";
+  name: string;
   gltf_base64_data: string;
+  scale: number;
 }
 export interface FrameMessage {
   type: "FrameMessage";
@@ -331,12 +333,12 @@ export interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
   titlebar_content: {
     buttons:
-      | {
-          text: string | null;
-          icon: "GitHub" | "Description" | "Keyboard" | null;
-          href: string | null;
-        }[]
-      | null;
+    | {
+      text: string | null;
+      icon: "GitHub" | "Description" | "Keyboard" | null;
+      href: string | null;
+    }[]
+    | null;
     image: {
       image_url_light: string;
       image_url_dark: string | null;
@@ -346,19 +348,19 @@ export interface ThemeConfigurationMessage {
   } | null;
   control_layout: "floating" | "collapsible" | "fixed";
   colors:
-    | [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-      ]
-    | null;
+  | [
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+    string,
+  ]
+  | null;
   dark_mode: boolean;
 }
 

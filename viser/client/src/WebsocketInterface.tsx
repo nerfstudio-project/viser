@@ -586,11 +586,10 @@ function useMessageHandler() {
         const loader = new GLTFLoader();
         loader.parse(arrayBuffer, '', (gltf) => {
           // Update the gltf state with the loaded model
-          console.log(gltf)
           addSceneNodeMakeParents(
-            new SceneNode<THREE.Group>('gltf scene', (ref) => (
+            new SceneNode<THREE.Group>(message.name, (ref) => (
               <group ref={ref}>
-                <primitive object={gltf.scene} />
+                <primitive object={gltf.scene} scale={message.scale} />
               </group>
             )),
           );

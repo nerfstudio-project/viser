@@ -65,5 +65,7 @@ def synchronize_theme() -> None:
 synchronize.on_click(lambda _: synchronize_theme())
 synchronize_theme()
 
+server.add_gltf("City", "./cartoon_lowpoly_small_city_free_pack/scene.gltf", 0.1)
+
 while True:
     time.sleep(10.0)

@@ -69,7 +69,9 @@ class CameraFrustumMessage(Message):
 class GlTFMessage(Message):
     """GlTF Message"""
 
+    name: str
     gltf_base64_data: str
+    scale: float
 
 
 @dataclasses.dataclass
