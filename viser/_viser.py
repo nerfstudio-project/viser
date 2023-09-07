@@ -54,19 +54,30 @@ class CameraHandle:
     # - https://github.com/python/mypy/pull/11643
     @wxyz.setter
     def wxyz(self, wxyz: Tuple[float, float, float, float] | onp.ndarray) -> None:
-        R_world_camera = tf.SO3(onp.asarray(wxyz))
-        look_at = onp.array(
-            [
-                0.0,
-                0.0,
-                onp.linalg.norm(self.look_at - self.position),
-            ]
-        )
-        new_look_at = (R_world_camera @ look_at) + self.position
-        self.look_at = new_look_at
+        R_world_camera = tf.SO3(onp.asarray(wxyz)).as_matrix()
+        look_distance = onp.linalg.norm(self.look_at - self.position)
 
-        up_direction = R_world_camera @ onp.array([0.0, -1.0, 0.0])
-        self.up_direction = up_direction
+        # We're following OpenCV conventions: look_direction is +Z, up_direction is -Y,
+        # right_direction is +X.
+        look_direction = R_world_camera[:, 2]
+        up_direction = -R_world_camera[:, 1]
+        right_direction = R_world_camera[:, 0]
+
+        # Minimize our impact on the orbit controls by keeping the new up direction as
+        # close to the old one as possible.
+        projected_up_direction = (
+            self.up_direction
+            - float(self.up_direction @ right_direction) * right_direction
+        )
+        up_cosine = float(up_direction @ projected_up_direction)
+        if abs(up_cosine) < 0.05:
+            projected_up_direction = up_direction
+        elif up_cosine < 0.0:
+            projected_up_direction = up_direction
+
+        new_look_at = look_direction * look_distance + self.position
+        self.look_at = new_look_at
+        self.up_direction = projected_up_direction
         self._state.wxyz = onp.asarray(wxyz)
 
     @property
