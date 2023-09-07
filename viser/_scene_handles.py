@@ -44,7 +44,7 @@ class _SceneNodeHandleState:
     )
     visible: bool = True
     # TODO: we should remove SceneNodeHandle as an argument here.
-    click_cb: Optional[List[Callable[[SceneNodeHandle], None]]] = None
+    click_cb: Optional[List[Callable[[ClickEvent[SceneNodeHandle]], None]]] = None
 
 
 @dataclasses.dataclass

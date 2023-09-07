@@ -23,6 +23,8 @@ import trimesh
 import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
+from viser import ClickEvent
+
 from . import _messages, infra, theme
 from ._scene_handles import (
     CameraFrustumHandle,
@@ -637,7 +639,8 @@ class MessageApi(abc.ABC):
         if handle is None or handle._impl.click_cb is None:
             return
         for cb in handle._impl.click_cb:
-            cb(handle)
+            event = ClickEvent(client_id=client_id, target=handle)
+            cb(event)  # type: ignore
 
     def add_3d_gui_container(
         self,

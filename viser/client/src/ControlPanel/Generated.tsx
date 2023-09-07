@@ -412,7 +412,7 @@ function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
           transform: "translateY(-50%)",
           cursor: "pointer",
           userSelect: "none",
-          fontWeight: "bolder",
+          fontWeight: "bold",
         }}
         onClick={toggle}
       >
