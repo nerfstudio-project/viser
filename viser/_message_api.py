@@ -210,7 +210,15 @@ class MessageApi(abc.ABC):
             ),
         )
 
-    def add_gltf(self, name, gltf_path, scale=1.0):
+    def add_gltf(
+        self,
+        name,
+        gltf_path,
+        scale=1.0,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ):
         with open(gltf_path, "rb") as f:
             print("Reading gltf file...")
             gltf = trimesh.exchange.gltf.load_gltf(
@@ -220,6 +228,7 @@ class MessageApi(abc.ABC):
         print("Encoding gltf...")
         gltf_data = _encode_scene(scene)
         self._queue(_messages.GlTFMessage(name, gltf_data, scale))
+        return MeshHandle._make(self, name, wxyz, position, visible)
 
     def add_camera_frustum(
         self,
@@ -277,7 +286,6 @@ class MessageApi(abc.ABC):
         cast_vector(wxyz, length=4)
         cast_vector(position, length=3)
         self._queue(
-            # TODO: remove wxyz and position from this message for consistency.
             _messages.FrameMessage(
                 name=name,
                 show_axes=show_axes,
