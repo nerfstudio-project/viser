@@ -109,6 +109,25 @@ def _encode_image_base64(
     return media_type, base64_data
 
 
+def _encode_gltf(
+    f: io.BufferedReader,
+    file_path: str,
+) -> str:
+    gltf = trimesh.exchange.gltf.load_gltf(
+        f, resolver=trimesh.resolvers.FilePathResolver(file_path)
+    )
+    scene = trimesh.exchange.load.load_kwargs(gltf)
+    # print(gltf.keys())
+    # print(type(gltf["graph"].pop()))
+    # print(gltf["class"])
+    # del gltf["class"]
+    # scene = trimesh.scene.Scene(**gltf)
+    with io.BytesIO() as data_buffer:
+        data_buffer.write(trimesh.exchange.gltf.export_glb(scene))
+        base64_data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
+    return base64_data
+
+
 TVector = TypeVar("TVector", bound=tuple)
 
 
@@ -202,6 +221,11 @@ class MessageApi(abc.ABC):
                 colors=colors_cast,
             ),
         )
+
+    def add_gltf(self, gltf_path):
+        with open(gltf_path, "rb") as f:
+            gltf_data = _encode_gltf(f, gltf_path)
+        self._queue(_messages.GlTFMessage(gltf_data))
 
     def add_camera_frustum(
         self,

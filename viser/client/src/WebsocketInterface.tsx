@@ -17,6 +17,7 @@ import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Paper } from "@mantine/core";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 /** Float **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
@@ -222,10 +223,10 @@ function useMessageHandler() {
       case "CameraFrustumMessage": {
         const texture =
           message.image_media_type !== null &&
-          message.image_base64_data !== null
+            message.image_base64_data !== null
             ? new TextureLoader().load(
-                `data:${message.image_media_type};base64,${message.image_base64_data}`,
-              )
+              `data:${message.image_media_type};base64,${message.image_base64_data}`,
+            )
             : undefined;
 
         const height = message.scale * Math.tan(message.fov / 2.0) * 2.0;
@@ -572,6 +573,31 @@ function useMessageHandler() {
         removeGui(message.id);
         return;
       }
+
+      // Add GlTF Message
+      case "GlTFMessage": {
+        const binaryData = atob(message.gltf_base64_data);
+        const arrayBuffer = new ArrayBuffer(binaryData.length);
+        const uint8Array = new Uint8Array(arrayBuffer);
+
+        for (let i = 0; i < binaryData.length; i++) {
+          uint8Array[i] = binaryData.charCodeAt(i);
+        }
+        const loader = new GLTFLoader();
+        loader.parse(arrayBuffer, '', (gltf) => {
+          // Update the gltf state with the loaded model
+          console.log(gltf)
+          addSceneNodeMakeParents(
+            new SceneNode<THREE.Group>('gltf scene', (ref) => (
+              <group ref={ref}>
+                <primitive object={gltf.scene} />
+              </group>
+            )),
+          );
+        });
+        return;
+      }
+
       default: {
         console.log("Received message did not match any known types:", message);
         return;

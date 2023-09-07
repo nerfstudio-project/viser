@@ -22,6 +22,10 @@ export interface CameraFrustumMessage {
   image_media_type: "image/jpeg" | "image/png" | null;
   image_base64_data: string | null;
 }
+export interface GlTFMessage {
+  type: "GlTFMessage";
+  gltf_base64_data: string;
+}
 export interface FrameMessage {
   type: "FrameMessage";
   name: string;
@@ -361,6 +365,7 @@ export interface ThemeConfigurationMessage {
 export type Message =
   | ViewerCameraMessage
   | CameraFrustumMessage
+  | GlTFMessage
   | FrameMessage
   | LabelMessage
   | Gui3DMessage

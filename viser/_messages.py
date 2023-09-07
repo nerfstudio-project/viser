@@ -66,6 +66,13 @@ class CameraFrustumMessage(Message):
 
 
 @dataclasses.dataclass
+class GlTFMessage(Message):
+    """GlTF Message"""
+
+    gltf_base64_data: str
+
+
+@dataclasses.dataclass
 class FrameMessage(Message):
     """Coordinate frame message.
 
