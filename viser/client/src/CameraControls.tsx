@@ -160,9 +160,12 @@ export function SynchronizedCameraControls() {
 
     const spaceKey = new holdEvent.KeyboardKeyHold(KEYCODE.SPACE, 20);
     spaceKey.addEventListener("holding", (event) => {
-      for (let i = 0; i < 10; i++) {
-        cameraControls.forward(0.002 * event?.deltaTime, true);
-      }
+      // for (let i = 0; i < 10; i++) {
+      //   cameraControls.forward(0.002 * event?.deltaTime, true);
+      // }
+      cameraControls.moveTo(0, 0, 0, true);
+      cameraControls.rotateTo(0, 0, true);
+      
       // cameraControls.moveTo(0, 0, 0, true);
       // cameraControls.rotateTo(0, 0, true);
     });
