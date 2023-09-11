@@ -210,7 +210,7 @@ texinfo_documents = [
 # -- Extension configuration --------------------------------------------------
 
 # -- Options for autoapi extension --------------------------------------------
-autoapi_dirs = ["../../viser"]
+autoapi_dirs = ["../../src/viser"]
 autoapi_root = "api"
 autoapi_options = [
     "members",

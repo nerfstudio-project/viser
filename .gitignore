@@ -13,6 +13,5 @@ htmlcov
 .lvimrc
 .DS_Store
 .envrc
-.lvimrc
-viser/client/build
-viser/client/.nodeenv
+src/viser/client/build
+src/viser/client/.nodeenv
