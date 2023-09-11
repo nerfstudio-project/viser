@@ -3,8 +3,6 @@
 In this note, we outline current practices, tools, and workflows for `viser`
 development. We assume that the repository is cloned to `~/viser`.
 
-There's a lot of improvement that can be made here. PRs for tooling are welcome.
-
 ## Python install
 
 We recommend an editable install for Python development, ideally in a virtual
@@ -79,10 +77,12 @@ When a `viser` script is launched, two URLs will be printed:
 - A websocket URL, like `ws://localhost:8080`, which client applications can
   connect to.
 
-For client-side development, the HTTP URL to the pre-built frontend should be
-ignored. Instead, we want to launch a development version of the frontend, which
+If changes to the client source files are detected on startup, `viser` will
+re-build the client automatically. This is okay for quick changes, but for
+faster iteration we can also launch a development version of the frontend, which
 will reflect changes we make to the client source files
-(`~/viser/viser/client/src`). This requires a few more steps.
+(`~/viser/viser/client/src`) without a full build. This requires a few more
+steps.
 
 **Installing dependencies.**
 
@@ -96,7 +96,7 @@ will reflect changes we make to the client source files
 
 **Launching client.**
 
-To launch the client, we can then simply run
+To launch the client, we can run:
 
 ```
 cd ~/viser/viser/client
@@ -106,22 +106,6 @@ yarn start
 from the `viser/viser/client` directory. After opening the client in a web
 browser, the websocket server address typically needs to be updated in the
 "Server" tab.
-
-**Building the client.**
-
-When changes to the client are finished, we can wrap up by (a) building the
-client and (b) committing the built viewer. This is what the printed HTTP server
-points to, and allows use of the viewer without installing all of the web
-dependencies.
-
-```
-cd ~/viser/viser/client
-yarn build
-git add build
-```
-
-This manual build step and version control of the `build/` directory are
-unideal. Open to suggestions on how to improve this workflow.
 
 **Formatting.**
 
