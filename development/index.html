@@ -239,7 +239,6 @@
 <h1>Development<a class="headerlink" href="#development" title="Permalink to this heading">#</a></h1>
 <p>In this note, we outline current practices, tools, and workflows for <code class="docutils literal notranslate"><span class="pre">viser</span></code>
 development. We assume that the repository is cloned to <code class="docutils literal notranslate"><span class="pre">~/viser</span></code>.</p>
-<p>There’s a lot of improvement that can be made here. PRs for tooling are welcome.</p>
 <section id="python-install">
 <h2>Python install<a class="headerlink" href="#python-install" title="Permalink to this heading">#</a></h2>
 <p>We recommend an editable install for Python development, ideally in a virtual
@@ -303,10 +302,12 @@ examples are a good place to start:</p>
 <li><p>A websocket URL, like <code class="docutils literal notranslate"><span class="pre">ws://localhost:8080</span></code>, which client applications can
 connect to.</p></li>
 </ul>
-<p>For client-side development, the HTTP URL to the pre-built frontend should be
-ignored. Instead, we want to launch a development version of the frontend, which
+<p>If changes to the client source files are detected on startup, <code class="docutils literal notranslate"><span class="pre">viser</span></code> will
+re-build the client automatically. This is okay for quick changes, but for
+faster iteration we can also launch a development version of the frontend, which
 will reflect changes we make to the client source files
-(<code class="docutils literal notranslate"><span class="pre">~/viser/viser/client/src</span></code>). This requires a few more steps.</p>
+(<code class="docutils literal notranslate"><span class="pre">~/viser/viser/client/src</span></code>) without a full build. This requires a few more
+steps.</p>
 <p><strong>Installing dependencies.</strong></p>
 <ol class="arabic">
 <li><p><a class="reference external" href="https://nodejs.dev/en/download/package-manager">Install nodejs.</a></p></li>
@@ -319,7 +320,7 @@ will reflect changes we make to the client source files
 </li>
 </ol>
 <p><strong>Launching client.</strong></p>
-<p>To launch the client, we can then simply run</p>
+<p>To launch the client, we can run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span><span class="o">/</span><span class="n">viser</span><span class="o">/</span><span class="n">client</span>
 <span class="n">yarn</span> <span class="n">start</span>
 </pre></div>
@@ -327,18 +328,6 @@ will reflect changes we make to the client source files
 <p>from the <code class="docutils literal notranslate"><span class="pre">viser/viser/client</span></code> directory. After opening the client in a web
 browser, the websocket server address typically needs to be updated in the
 “Server” tab.</p>
-<p><strong>Building the client.</strong></p>
-<p>When changes to the client are finished, we can wrap up by (a) building the
-client and (b) committing the built viewer. This is what the printed HTTP server
-points to, and allows use of the viewer without installing all of the web
-dependencies.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">~/</span><span class="n">viser</span><span class="o">/</span><span class="n">viser</span><span class="o">/</span><span class="n">client</span>
-<span class="n">yarn</span> <span class="n">build</span>
-<span class="n">git</span> <span class="n">add</span> <span class="n">build</span>
-</pre></div>
-</div>
-<p>This manual build step and version control of the <code class="docutils literal notranslate"><span class="pre">build/</span></code> directory are
-unideal. Open to suggestions on how to improve this workflow.</p>
 <p><strong>Formatting.</strong></p>
 <p>We use <a class="reference external" href="https://prettier.io/docs/en/install.html">prettier</a>. This can be run via
 one of:</p>
