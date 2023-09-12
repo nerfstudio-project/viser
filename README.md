@@ -38,7 +38,16 @@ It supports:
 - Typed serialization; synchronization between Python dataclass and TypeScript
   interfaces.
 
-## Running examples
+
+## Installation
+
+You can install `viser` with `pip`:
+
+```bash
+pip install viser
+```
+
+To run examples:
 
 ```bash
 # Clone the repository.
@@ -58,3 +67,22 @@ After an example script is running, you can connect by navigating to the printed
 URL (default: `http://localhost:8080`).
 
 See also: our [development docs](https://nerfstudio-project.github.io/viser/development/).
+
+
+## Examples
+
+**Point cloud visualization**
+
+https://github.com/nerfstudio-project/viser/assets/6992947/df35c6ee-78a3-43ad-a2c7-1dddf83f7458
+
+(source: `./examples/07_record3d_visualizer.py`)
+
+**Gaussian splatting visualization**
+
+https://github.com/nerfstudio-project/viser/assets/6992947/c51b4871-6cc8-4987-8751-2bf186bcb1ae
+
+**SMPLX visualizer**
+
+https://github.com/nerfstudio-project/viser/assets/6992947/78ba0e09-612d-4678-abf3-beaeeffddb01
+
+(source: `./example/08_smplx_visualizer.py`)
