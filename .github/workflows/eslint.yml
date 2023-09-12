@@ -17,6 +17,6 @@ jobs:
           node-version: 19
       - name: Run eslint
         run: |
-          cd viser/client
+          cd src/viser/client
           yarn
           yarn eslint .

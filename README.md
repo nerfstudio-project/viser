@@ -14,12 +14,9 @@
 
 `viser` is a library for interactive 3D visualization + Python, inspired by
 tools like [Pangolin](https://github.com/stevenlovegrove/Pangolin),
-[rviz](https://wiki.ros.org/rviz/), and
-[meshcat](https://github.com/rdeits/meshcat).
-
-> **Warning**
-> `viser` is in a working state, but under development. Large changes may be made,
-> and backwards compatibility can't yet be guaranteed.
+[rviz](https://wiki.ros.org/rviz/),
+[meshcat](https://github.com/rdeits/meshcat), and
+[Gradio](https://github.com/gradio-app/gradio).
 
 As a standalone visualization tool, `viser` features include:
 
@@ -27,12 +24,13 @@ As a standalone visualization tool, `viser` features include:
 - Python API for sending 3D primitives to the browser.
 - Python-configurable inputs: buttons, checkboxes, text inputs, sliders,
   dropdowns, gizmos.
-- Support for multiple panels and view-synchronized connections.
+- A [meshcat](https://github.com/rdeits/meshcat) and
+  [tf](http://wiki.ros.org/tf2)-inspired coordinate frame tree.
 
 The `viser.infra` backend can also be used to build custom web applications
 (example:
-[the Nerfstudio viewer](https://github.com/nerfstudio-project/nerfstudio)). It
-supports:
+[the original Nerfstudio viewer](https://github.com/nerfstudio-project/nerfstudio)).
+It supports:
 
 - Websocket / HTTP server management, on a shared port.
 - Asynchronous server/client communication infrastructure.
@@ -40,7 +38,16 @@ supports:
 - Typed serialization; synchronization between Python dataclass and TypeScript
   interfaces.
 
-## Running examples
+
+## Installation
+
+You can install `viser` with `pip`:
+
+```bash
+pip install viser
+```
+
+To run examples:
 
 ```bash
 # Clone the repository.
@@ -59,25 +66,26 @@ python ./examples/4_gui.py
 After an example script is running, you can connect by navigating to the printed
 URL (default: `http://localhost:8080`).
 
-## Setup (client development)
+See also: our [development docs](https://nerfstudio-project.github.io/viser/development/).
 
-This is only needed for client-side development. The automatically hosted viewer
-should be sufficient otherwise.
 
-```bash
-cd ./viser/viser/client
-yarn
-yarn start
-```
+## Examples
 
-## Demos
+**Point cloud visualization**
 
-### Interactive SMPL-X Example
+https://github.com/nerfstudio-project/viser/assets/6992947/df35c6ee-78a3-43ad-a2c7-1dddf83f7458
 
-https://user-images.githubusercontent.com/6992947/228734499-87d8a12a-df1a-4511-a4e0-0a46bd8532fd.mov
+Source: `./examples/07_record3d_visualizer.py`
 
-### Interactive NeRF rendering
+**Gaussian splatting visualization**
 
-(code not released)
+https://github.com/nerfstudio-project/viser/assets/6992947/c51b4871-6cc8-4987-8751-2bf186bcb1ae
 
-https://user-images.githubusercontent.com/6992947/232163875-ff788455-f074-4bd3-9154-5330b5ed4733.mov
+Source: [WangFeng18/3d-gaussian-splatting](https://github.com/WangFeng18/3d-gaussian-splatting)
+and [heheyas/gaussian_splatting_3d](https://github.com/heheyas/gaussian_splatting_3d).
+
+**SMPLX visualizer**
+
+https://github.com/nerfstudio-project/viser/assets/6992947/78ba0e09-612d-4678-abf3-beaeeffddb01
+
+Source: `./example/08_smplx_visualizer.py`

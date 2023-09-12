@@ -53,13 +53,6 @@ examples = [
 [project.urls]
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
-[tool.setuptools.packages.find]
-exclude = [
-    "tests*",
-    "docs*",
-    "examples*",
-]
-
 [tool.setuptools.package-data]
 viser = ["py.typed", "_icons/tabler-icons.tar", "client/build/**/*"]
 
