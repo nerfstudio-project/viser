@@ -36,6 +36,7 @@ from .infra import ClientId
 
 if TYPE_CHECKING:
     from ._gui_api import GuiApi
+    from ._viser import ClientHandle
 
 
 T = TypeVar("T")
@@ -112,6 +113,11 @@ class _GuiInputHandle(Generic[T]):
     # Is this worth the tradeoff?
 
     @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._impl.order
+
+    @property
     def value(self) -> T:
         """Value of the GUI input. Synchronized automatically when assigned."""
         return self._impl.value
@@ -138,7 +144,13 @@ class _GuiInputHandle(Generic[T]):
             # Pushing callbacks into separate threads helps prevent deadlocks when we
             # have a lock in a callback. TODO: revisit other callbacks.
             threading.Thread(
-                target=lambda: cb(GuiEvent(client_id=None, target=self))
+                target=lambda: cb(
+                    GuiEvent(
+                        client_id=None,
+                        client=None,
+                        target=self,
+                    )
+                )
             ).start()
 
     @property
@@ -223,6 +235,7 @@ class GuiEvent(Generic[TGuiHandle]):
     Passed as input to callback functions."""
 
     client_id: Optional[ClientId]
+    client: Optional[ClientHandle]
     target: TGuiHandle
 
 
@@ -313,6 +326,12 @@ class GuiTabGroupHandle:
     _tabs: List[GuiTabHandle]
     _gui_api: GuiApi
     _container_id: str  # Parent.
+    _order: float
+
+    @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._order
 
     def add_tab(self, label: str, icon: Optional[Icon] = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
@@ -339,7 +358,7 @@ class GuiTabGroupHandle:
         """Send a message that syncs tab state with the client."""
         self._gui_api._get_api()._queue(
             GuiAddTabGroupMessage(
-                order=time.time(),
+                order=self.order,
                 id=self._tab_group_id,
                 container_id=self._container_id,
                 tab_labels=tuple(self._labels),
@@ -355,11 +374,17 @@ class GuiFolderHandle:
 
     _gui_api: GuiApi
     _id: str  # Used as container ID for children.
+    _order: float
     _parent_container_id: str  # Container ID of parent.
     _container_id_restore: Optional[str] = None
     _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
+
+    @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._order
 
     def __enter__(self) -> GuiFolderHandle:
         self._container_id_restore = self._gui_api._get_container_id()
@@ -476,6 +501,12 @@ class GuiMarkdownHandle:
     _id: str
     _visible: bool
     _container_id: str  # Parent.
+    _order: float
+
+    @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._order
 
     @property
     def visible(self) -> bool:

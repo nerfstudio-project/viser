@@ -33,7 +33,7 @@ export default function ControlPanel(props: {
   // TODO: will result in unnecessary re-renders.
   const viewer = React.useContext(ViewerContext)!;
   const showGenerated = viewer.useGui(
-    (state) => "root" in state.guiIdSetFromContainerId,
+    (state) => "root" in state.guiIdSetFromContainerId
   );
   const [showSettings, { toggle }] = useDisclosure(false);
 
@@ -46,6 +46,7 @@ export default function ControlPanel(props: {
         }}
       >
         <Tooltip
+          zIndex={100}
           label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
         >
           {showSettings ? (

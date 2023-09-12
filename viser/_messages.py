@@ -238,7 +238,8 @@ class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
     media_type: Literal["image/jpeg", "image/png"]
-    base64_data: str
+    base64_rgb: str
+    base64_depth: Optional[str]
 
 
 @dataclasses.dataclass
@@ -342,6 +343,25 @@ class GuiAddButtonMessage(_GuiAddInputBase):
     # All GUI elements currently need an `initial_value` field.
     # This makes our job on the frontend easier.
     initial_value: bool
+    color: Optional[
+        Literal[
+            "dark",
+            "gray",
+            "red",
+            "pink",
+            "grape",
+            "violet",
+            "indigo",
+            "blue",
+            "cyan",
+            "green",
+            "lime",
+            "yellow",
+            "orange",
+            "teal",
+        ]
+    ]
+    icon_base64: Optional[str]
 
 
 @dataclasses.dataclass
@@ -459,3 +479,27 @@ class ThemeConfigurationMessage(Message):
     control_layout: Literal["floating", "collapsible", "fixed"]
     colors: Optional[Tuple[str, str, str, str, str, str, str, str, str, str]]
     dark_mode: bool
+
+
+@dataclasses.dataclass
+class CatmullRomSplineMessage(Message):
+    """Message from server->client carrying Catmull-Rom spline information."""
+
+    name: str
+    positions: Tuple[Tuple[float, float, float], ...]
+    curve_type: Literal["centripetal", "chordal", "catmullrom"]
+    tension: float
+    closed: bool
+    line_width: float
+    color: int
+
+
+@dataclasses.dataclass
+class CubicBezierSplineMessage(Message):
+    """Message from server->client carrying Cubic Bezier spline information."""
+
+    name: str
+    positions: Tuple[Tuple[float, float, float], ...]
+    control_points: Tuple[Tuple[float, float, float], ...]
+    line_width: float
+    color: int

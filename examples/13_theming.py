@@ -45,13 +45,13 @@ server.add_gui_markdown(
 )
 
 # GUI elements for controllable values.
-titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
-dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
 control_layout = server.add_gui_dropdown(
     "Control layout", ("floating", "fixed", "collapsible")
 )
+titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
+dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
 brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
-synchronize = server.add_gui_button("Apply theme")
+synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
 
 
 def synchronize_theme() -> None:

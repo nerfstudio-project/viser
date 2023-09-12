@@ -21,6 +21,7 @@
     "@types/three": "^0.150.1",
     "@vitejs/plugin-react": "^4.0.1",
     "await-lock": "^2.2.2",
+    "colortranslator": "^3.0.2",
     "dayjs": "^1.11.8",
     "hold-event": "^0.2.0",
     "immer": "^9.0.21",

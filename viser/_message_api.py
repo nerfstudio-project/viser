@@ -12,7 +12,6 @@ import base64
 import colorsys
 import io
 import threading
-import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar, Union, cast
 
@@ -22,6 +21,8 @@ import numpy.typing as onpt
 import trimesh
 import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
+
+from viser import ClickEvent
 
 from . import _messages, infra, theme
 from ._scene_handles import (
@@ -131,6 +132,8 @@ class MessageApi(abc.ABC):
     Should be implemented by both our global server object (for broadcasting) and by
     invidividual clients."""
 
+    _locked_thread_id: int  # Appeasing mypy 1.5.1, not sure why this is needed.
+
     def __init__(self, handler: infra.MessageHandler) -> None:
         self._message_handler = handler
 
@@ -229,6 +232,64 @@ class MessageApi(abc.ABC):
         gltf_data = _encode_scene(scene)
         self._queue(_messages.GlTFMessage(name, gltf_data, scale))
         return MeshHandle._make(self, name, wxyz, position, visible)
+
+    def add_spline_catmull_rom(
+        self,
+        name: str,
+        positions: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
+        tension: float = 0.5,
+        closed: bool = False,
+        line_width: float = 1,
+        color: RgbTupleOrArray = (20, 20, 20),
+    ) -> None:
+        """Add spline using Catmull-Rom interpolation."""
+        if isinstance(positions, onp.ndarray):
+            assert len(positions.shape) == 2 and positions.shape[1] == 3
+            positions = tuple(map(tuple, positions))  # type: ignore
+        assert len(positions[0]) == 3
+        assert isinstance(positions, tuple)
+        self._queue(
+            _messages.CatmullRomSplineMessage(
+                name,
+                positions,
+                curve_type,
+                tension,
+                closed,
+                line_width,
+                _encode_rgb(color),
+            )
+        )
+
+    def add_spline_cubic_bezier(
+        self,
+        name: str,
+        positions: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        control_points: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        line_width: float = 1,
+        color: RgbTupleOrArray = (20, 20, 20),
+    ) -> None:
+        """Add spline using Cubic Bezier interpolation."""
+
+        if isinstance(positions, onp.ndarray):
+            assert len(positions.shape) == 2 and positions.shape[1] == 3
+            positions = tuple(map(tuple, positions))  # type: ignore
+        if isinstance(control_points, onp.ndarray):
+            assert len(control_points.shape) == 2 and control_points.shape[1] == 3
+            control_points = tuple(map(tuple, control_points))  # type: ignore
+
+        assert isinstance(positions, tuple)
+        assert isinstance(control_points, tuple)
+        assert len(control_points) == (2 * len(positions) - 2)
+        self._queue(
+            _messages.CubicBezierSplineMessage(
+                name,
+                positions,
+                control_points,
+                line_width,
+                _encode_rgb(color),
+            )
+        )
 
     def add_camera_frustum(
         self,
@@ -422,14 +483,39 @@ class MessageApi(abc.ABC):
         image: onp.ndarray,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: Optional[int] = None,
+        depth: Optional[onp.ndarray] = None,
     ) -> None:
-        """Set a background image for the scene. Useful for NeRF visualization."""
+        """Set a background image for the scene, optionally with depth compositing."""
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
+
+        # Encode depth if provided. We use a 3-channel PNG to represent a fixed point
+        # depth at each pixel.
+        depth_base64data = None
+        if depth is not None:
+            # Convert to fixed-point.
+            # We'll support from 0 -> (2^24 - 1) / 100_000.
+            #
+            # This translates to a range of [0, 167.77215], with a precision of 1e-5.
+            assert len(depth.shape) == 2 or (
+                len(depth.shape) == 3 and depth.shape[2] == 1
+            ), "Depth should have shape (H,W) or (H,W,1)."
+            depth = onp.clip(depth * 100_000, 0, 2**24 - 1).astype(onp.uint32)
+            assert depth is not None  # Appease mypy.
+            intdepth: onp.ndarray = depth.reshape((*depth.shape[:2], 1)).view(onp.uint8)
+            assert intdepth.shape == (*depth.shape[:2], 4)
+            with io.BytesIO() as data_buffer:
+                iio.imwrite(data_buffer, intdepth[:, :, :3], extension=".png")
+                depth_base64data = base64.b64encode(data_buffer.getvalue()).decode(
+                    "ascii"
+                )
+
         self._queue(
             _messages.BackgroundImageMessage(
-                media_type=media_type, base64_data=base64_data
+                media_type=media_type,
+                base64_rgb=base64_data,
+                base64_depth=depth_base64data,
             )
         )
 
@@ -580,7 +666,8 @@ class MessageApi(abc.ABC):
         if handle is None or handle._impl.click_cb is None:
             return
         for cb in handle._impl.click_cb:
-            cb(handle)
+            event = ClickEvent(client_id=client_id, target=handle)
+            cb(event)  # type: ignore
 
     def add_3d_gui_container(
         self,
@@ -594,6 +681,16 @@ class MessageApi(abc.ABC):
         # Avoids circular import.
         from ._gui_api import GuiApi, _make_unique_id
 
+        # New name to make the type checker happy; ViserServer and ClientHandle inherit
+        # from both GuiApi and MessageApi. The pattern below is unideal.
+        gui_api = self
+        assert isinstance(gui_api, GuiApi)
+
+        # Remove the 3D GUI container if it already exists. This will make sure
+        # contained GUI elements are removed, preventing potential memory leaks.
+        if name in gui_api._handle_from_node_name:
+            gui_api._handle_from_node_name[name].remove()
+
         container_id = _make_unique_id()
         self._queue(
             _messages.Gui3DMessage(
@@ -602,7 +699,5 @@ class MessageApi(abc.ABC):
                 container_id=container_id,
             )
         )
-        assert isinstance(self, MessageApi)
         node_handle = SceneNodeHandle._make(self, name, wxyz, position)
-        assert isinstance(self, GuiApi)
-        return Gui3dContainerHandle(node_handle._impl, self, container_id)
+        return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)

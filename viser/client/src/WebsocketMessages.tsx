@@ -115,7 +115,8 @@ export interface TransformControlsUpdateMessage {
 export interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
   media_type: "image/jpeg" | "image/png";
-  base64_data: string;
+  base64_rgb: string;
+  base64_depth: string | null;
 }
 export interface ImageMessage {
   type: "ImageMessage";
@@ -186,6 +187,23 @@ export interface GuiAddButtonMessage {
   container_id: string;
   hint: string | null;
   initial_value: boolean;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
+  icon_base64: string | null;
 }
 export interface GuiAddSliderMessage {
   type: "GuiAddSliderMessage";
@@ -363,6 +381,24 @@ export interface ThemeConfigurationMessage {
   | null;
   dark_mode: boolean;
 }
+export interface CatmullRomSplineMessage {
+  type: "CatmullRomSplineMessage";
+  name: string;
+  positions: [number, number, number][];
+  curve_type: "centripetal" | "chordal" | "catmullrom";
+  tension: number;
+  closed: boolean;
+  line_width: number;
+  color: number;
+}
+export interface CubicBezierSplineMessage {
+  type: "CubicBezierSplineMessage";
+  name: string;
+  positions: [number, number, number][];
+  control_points: [number, number, number][];
+  line_width: number;
+  color: number;
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -410,4 +446,6 @@ export type Message =
   | GuiSetVisibleMessage
   | GuiSetDisabledMessage
   | GuiSetValueMessage
-  | ThemeConfigurationMessage;
+  | ThemeConfigurationMessage
+  | CatmullRomSplineMessage
+  | CubicBezierSplineMessage;

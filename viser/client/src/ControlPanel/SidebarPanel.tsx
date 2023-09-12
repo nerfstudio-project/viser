@@ -1,6 +1,6 @@
 // @refresh reset
 
-import { ActionIcon, Box, Paper, Tooltip } from "@mantine/core";
+import { ActionIcon, Box, Paper, ScrollArea, Tooltip } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
@@ -46,7 +46,7 @@ export default function SidebarPanel({
           toggleCollapsed();
         }}
       >
-        <Tooltip label={"Show sidebar"}>{<IconChevronLeft />}</Tooltip>
+        <Tooltip zIndex={100} label={"Show sidebar"}>{<IconChevronLeft />}</Tooltip>
       </ActionIcon>
     </Box>
   );
@@ -61,14 +61,13 @@ export default function SidebarPanel({
       {collapsedView}
       {/* Using an <Aside /> below will break Mantine color inputs. */}
       <Paper
-        shadow="lg"
-        radius={0}
+        shadow="xl"
+        component={ScrollArea}
         sx={{
           width: collapsed ? 0 : "20em",
-          overflow: "scroll",
-          boxSizing: "border-box",
+          boxSizing: "content-box",
           transition: "width 0.5s 0s",
-          zIndex: 300,
+          zIndex: 10,
         }}
       >
         <Box
@@ -99,7 +98,7 @@ SidebarPanel.Handle = function SidebarPanelHandle({
         toggleCollapsed();
       }}
     >
-      <Tooltip label={"Collapse sidebar"}>
+      <Tooltip zIndex={100} label={"Collapse sidebar"}>
         {<IconChevronRight stroke={1.625} />}
       </Tooltip>
     </ActionIcon>
@@ -116,7 +115,7 @@ SidebarPanel.Handle = function SidebarPanelHandle({
         lineHeight: "1.5em",
         fontWeight: 400,
         position: "relative",
-        zIndex: 1,
+        zIndex: 20,
         alignItems: "center",
         display: "flex",
         flexDirection: "row",

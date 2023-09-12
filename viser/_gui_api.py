@@ -26,7 +26,7 @@ from typing import (
 
 import imageio.v3 as iio
 import numpy as onp
-from typing_extensions import LiteralString
+from typing_extensions import Literal, LiteralString
 
 from . import _messages
 from ._gui_handles import (
@@ -45,6 +45,8 @@ from ._gui_handles import (
     _GuiInputHandle,
     _make_unique_id,
 )
+from ._icons import base64_from_icon
+from ._icons_enum import Icon
 from ._message_api import MessageApi, _encode_image_base64, cast_vector
 
 if TYPE_CHECKING:
@@ -122,6 +124,23 @@ class _RootGuiContainer:
     _children: Dict[str, SupportsRemoveProtocol]
 
 
+_global_order_counter = 0
+
+
+def _apply_default_order(order: Optional[float]) -> float:
+    """Apply default ordering logic for GUI elements.
+
+    If `order` is set to a float, this function is a no-op and returns it back.
+    Otherwise, we increment and return the value of a global counter.
+    """
+    if order is not None:
+        return order
+
+    global _global_order_counter
+    _global_order_counter += 1
+    return _global_order_counter
+
+
 class GuiApi(abc.ABC):
     _target_container_from_thread_id: Dict[int, str] = {}
     """ID of container to put GUI elements into."""
@@ -159,7 +178,18 @@ class GuiApi(abc.ABC):
 
         # Trigger callbacks.
         for cb in handle_state.update_cb:
-            cb(GuiEvent(client_id, handle))
+            from ._viser import ClientHandle, ViserServer
+
+            # Get the handle of the client that triggered this event.
+            api = self._get_api()
+            if isinstance(api, ClientHandle):
+                client = api
+            elif isinstance(api, ViserServer):
+                client = api.get_clients()[client_id]
+            else:
+                assert False
+
+            cb(GuiEvent(client_id, client, handle))
         if handle_state.sync_cb is not None:
             handle_state.sync_cb(client_id, value)
 
@@ -186,12 +216,15 @@ class GuiApi(abc.ABC):
             )
             return self.add_gui_folder(label)
 
-    def add_gui_folder(self, label: str) -> GuiFolderHandle:
+    def add_gui_folder(
+        self, label: str, order: Optional[float] = None
+    ) -> GuiFolderHandle:
         """Add a folder, and return a handle that can be used to populate it."""
         folder_container_id = _make_unique_id()
+        order = _apply_default_order(order)
         self._get_api()._queue(
             _messages.GuiAddFolderMessage(
-                order=time.time(),
+                order=order,
                 id=folder_container_id,
                 label=label,
                 container_id=self._get_container_id(),
@@ -201,18 +234,21 @@ class GuiApi(abc.ABC):
             _gui_api=self,
             _id=folder_container_id,
             _parent_container_id=self._get_container_id(),
+            _order=order,
         )
 
     def add_gui_modal(
         self,
         title: str,
+        order: Optional[float] = None,
     ) -> GuiModalHandle:
         """Show a modal window, which can be useful for popups and messages, then return
         a handle that can be used to populate it."""
         modal_container_id = _make_unique_id()
+        order = _apply_default_order(order)
         self._get_api()._queue(
             _messages.GuiModalMessage(
-                order=time.time(),
+                order=order,
                 id=modal_container_id,
                 title=title,
             )
@@ -222,9 +258,13 @@ class GuiApi(abc.ABC):
             _id=modal_container_id,
         )
 
-    def add_gui_tab_group(self) -> GuiTabGroupHandle:
+    def add_gui_tab_group(
+        self,
+        order: Optional[float] = None,
+    ) -> GuiTabGroupHandle:
         """Add a tab group."""
         tab_group_id = _make_unique_id()
+        order = _apply_default_order(order)
         return GuiTabGroupHandle(
             _tab_group_id=tab_group_id,
             _labels=[],
@@ -232,18 +272,22 @@ class GuiApi(abc.ABC):
             _tabs=[],
             _gui_api=self,
             _container_id=self._get_container_id(),
+            _order=order,
         )
 
     def add_gui_markdown(
-        self, markdown: str, image_root: Optional[Path] = None
+        self,
+        markdown: str,
+        image_root: Optional[Path] = None,
+        order: Optional[float] = None,
     ) -> GuiMarkdownHandle:
         """Add markdown to the GUI."""
         markdown = _parse_markdown(markdown, image_root)
-
         markdown_id = _make_unique_id()
+        order = _apply_default_order(order)
         self._get_api()._queue(
             _messages.GuiAddMarkdownMessage(
-                order=time.time(),
+                order=order,
                 id=markdown_id,
                 markdown=markdown,
                 container_id=self._get_container_id(),
@@ -254,6 +298,7 @@ class GuiApi(abc.ABC):
             _id=markdown_id,
             _visible=True,
             _container_id=self._get_container_id(),
+            _order=order,
         )
 
     def add_gui_button(
@@ -262,22 +307,45 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        color: Optional[
+            Literal[
+                "dark",
+                "gray",
+                "red",
+                "pink",
+                "grape",
+                "violet",
+                "indigo",
+                "blue",
+                "cyan",
+                "green",
+                "lime",
+                "yellow",
+                "orange",
+                "teal",
+            ]
+        ] = None,
+        icon: Optional[Icon] = None,
+        order: Optional[float] = None,
     ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
         it is clicked; to detect clicks, we can manually set it back to `False`."""
 
         # Re-wrap the GUI handle with a button interface.
         id = _make_unique_id()
+        order = _apply_default_order(order)
         return GuiButtonHandle(
             self._create_gui_input(
                 initial_value=False,
                 message=_messages.GuiAddButtonMessage(
-                    order=time.time(),
+                    order=order,
                     id=id,
                     label=label,
                     container_id=self._get_container_id(),
                     hint=hint,
                     initial_value=False,
+                    color=color,
+                    icon_base64=None if icon is None else base64_from_icon(icon),
                 ),
                 disabled=disabled,
                 visible=visible,
@@ -298,6 +366,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         disabled: bool = False,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiButtonGroupHandle[TLiteralString]:
         ...
 
@@ -309,6 +378,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         disabled: bool = False,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiButtonGroupHandle[TString]:
         ...
 
@@ -319,15 +389,17 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         disabled: bool = False,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiButtonGroupHandle[Any]:  # Return types are specified in overloads.
         """Add a button group to the GUI."""
         initial_value = options[0]
         id = _make_unique_id()
+        order = _apply_default_order(order)
         return GuiButtonGroupHandle(
             self._create_gui_input(
                 initial_value,
                 message=_messages.GuiAddButtonGroupMessage(
-                    order=time.time(),
+                    order=order,
                     id=id,
                     label=label,
                     container_id=self._get_container_id(),
@@ -347,14 +419,16 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiInputHandle[bool]:
         """Add a checkbox to the GUI."""
         assert isinstance(initial_value, bool)
         id = _make_unique_id()
+        order = _apply_default_order(order)
         return self._create_gui_input(
             initial_value,
             message=_messages.GuiAddCheckboxMessage(
-                order=time.time(),
+                order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
@@ -372,14 +446,16 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiInputHandle[str]:
         """Add a text input to the GUI."""
         assert isinstance(initial_value, str)
         id = _make_unique_id()
+        order = _apply_default_order(order)
         return self._create_gui_input(
             initial_value,
             message=_messages.GuiAddTextMessage(
-                order=time.time(),
+                order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
@@ -400,6 +476,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a number input to the GUI, with user-specifiable bound and precision parameters."""
         assert isinstance(initial_value, (int, float))
@@ -420,10 +497,11 @@ class GuiApi(abc.ABC):
         assert step is not None
 
         id = _make_unique_id()
+        order = _apply_default_order(order)
         return self._create_gui_input(
             initial_value=initial_value,
             message=_messages.GuiAddNumberMessage(
-                order=time.time(),
+                order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
@@ -449,12 +527,14 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiInputHandle[Tuple[float, float]]:
         """Add a length-2 vector input to the GUI."""
         initial_value = cast_vector(initial_value, 2)
         min = cast_vector(min, 2) if min is not None else None
         max = cast_vector(max, 2) if max is not None else None
         id = _make_unique_id()
+        order = _apply_default_order(order)
 
         if step is None:
             possible_steps: List[float] = []
@@ -468,7 +548,7 @@ class GuiApi(abc.ABC):
         return self._create_gui_input(
             initial_value,
             message=_messages.GuiAddVector2Message(
-                order=time.time(),
+                order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
@@ -490,16 +570,17 @@ class GuiApi(abc.ABC):
         min: Tuple[float, float, float] | onp.ndarray | None = None,
         max: Tuple[float, float, float] | onp.ndarray | None = None,
         step: Optional[float] = None,
-        lock: bool = False,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiInputHandle[Tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI."""
         initial_value = cast_vector(initial_value, 2)
         min = cast_vector(min, 3) if min is not None else None
         max = cast_vector(max, 3) if max is not None else None
         id = _make_unique_id()
+        order = _apply_default_order(order)
 
         if step is None:
             possible_steps: List[float] = []
@@ -513,7 +594,7 @@ class GuiApi(abc.ABC):
         return self._create_gui_input(
             initial_value,
             message=_messages.GuiAddVector3Message(
-                order=time.time(),
+                order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
@@ -538,6 +619,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiDropdownHandle[TLiteralString]:
         ...
 
@@ -549,6 +631,8 @@ class GuiApi(abc.ABC):
         initial_value: Optional[TString] = None,
         disabled: bool = False,
         visible: bool = True,
+        hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiDropdownHandle[TString]:
         ...
 
@@ -560,16 +644,18 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiDropdownHandle[Any]:  # Output type is specified in overloads.
         """Add a dropdown to the GUI."""
         if initial_value is None:
             initial_value = options[0]
         id = _make_unique_id()
+        order = _apply_default_order(order)
         return GuiDropdownHandle(
             self._create_gui_input(
                 initial_value,
                 message=_messages.GuiAddDropdownMessage(
-                    order=time.time(),
+                    order=order,
                     id=id,
                     label=label,
                     container_id=self._get_container_id(),
@@ -593,6 +679,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a slider to the GUI. Types of the min, max, step, and initial value should match."""
         assert max >= min
@@ -612,12 +699,12 @@ class GuiApi(abc.ABC):
         #
         # assert type(min) == type(max) == type(step) == type(initial_value)
 
-        # Re-wrap the GUI handle with a button interface.
         id = _make_unique_id()
+        order = _apply_default_order(order)
         return self._create_gui_input(
             initial_value=initial_value,
             message=_messages.GuiAddSliderMessage(
-                order=time.time(),
+                order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
@@ -640,13 +727,15 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiInputHandle[Tuple[int, int, int]]:
         """Add an RGB picker to the GUI."""
         id = _make_unique_id()
+        order = _apply_default_order(order)
         return self._create_gui_input(
             initial_value,
             message=_messages.GuiAddRgbMessage(
-                order=time.time(),
+                order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
@@ -664,13 +753,15 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
+        order: Optional[float] = None,
     ) -> GuiInputHandle[Tuple[int, int, int, int]]:
         """Add an RGBA picker to the GUI."""
         id = _make_unique_id()
+        order = _apply_default_order(order)
         return self._create_gui_input(
             initial_value,
             message=_messages.GuiAddRgbaMessage(
-                order=time.time(),
+                order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),

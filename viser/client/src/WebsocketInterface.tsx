@@ -1,4 +1,5 @@
 import AwaitLock from "await-lock";
+import { CatmullRomLine, CubicBezierLine } from "@react-three/drei";
 import { unpack } from "msgpackr";
 
 import React, { useContext } from "react";
@@ -13,12 +14,13 @@ import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
-import { isGuiConfig } from "./ControlPanel/GuiState";
+import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { Paper } from "@mantine/core";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-/** Float **/
+import { MantineProvider, Paper } from "@mantine/core";
+
+/** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
     new Float32Array(new Uint8Array(colors)).map((value) => {
@@ -67,6 +69,8 @@ function useMessageHandler() {
     addSceneNode(node);
   }
 
+  const mantineTheme = useViserMantineTheme();
+
   // Return message handler.
   return (message: Message) => {
     if (isGuiConfig(message)) {
@@ -93,6 +97,7 @@ function useMessageHandler() {
         );
         return;
       }
+
       // Add a point cloud.
       case "PointCloudMessage": {
         const geometry = new THREE.BufferGeometry();
@@ -229,37 +234,18 @@ function useMessageHandler() {
             )
             : undefined;
 
-        const height = message.scale * Math.tan(message.fov / 2.0) * 2.0;
-
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
             message.name,
             (ref) => (
-              <group ref={ref}>
-                <CameraFrustum
-                  fov={message.fov}
-                  aspect={message.aspect}
-                  scale={message.scale}
-                  color={message.color}
-                />
-                {texture && (
-                  <mesh
-                    position={[0.0, 0.0, message.scale]}
-                    rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
-                  >
-                    <planeGeometry
-                      attach="geometry"
-                      args={[message.aspect * height, height]}
-                    />
-                    <meshBasicMaterial
-                      attach="material"
-                      transparent={true}
-                      side={THREE.DoubleSide}
-                      map={texture}
-                    />
-                  </mesh>
-                )}
-              </group>
+              <CameraFrustum
+                ref={ref}
+                fov={message.fov}
+                aspect={message.aspect}
+                scale={message.scale}
+                color={message.color}
+                image={texture}
+              />
             ),
             () => texture?.dispose(),
           ),
@@ -274,41 +260,43 @@ function useMessageHandler() {
         );
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => (
-            <PivotControls
-              ref={ref}
-              scale={message.scale}
-              lineWidth={message.line_width}
-              fixed={message.fixed}
-              autoTransform={message.auto_transform}
-              activeAxes={message.active_axes}
-              disableAxes={message.disable_axes}
-              disableSliders={message.disable_sliders}
-              disableRotations={message.disable_rotations}
-              translationLimits={message.translation_limits}
-              rotationLimits={message.rotation_limits}
-              depthTest={message.depth_test}
-              opacity={message.opacity}
-              onDrag={(l) => {
-                const attrs = viewer.nodeAttributesFromName.current;
-                if (attrs[message.name] === undefined) {
-                  attrs[message.name] = {};
-                }
+            <group onClick={(e) => e.stopPropagation()}>
+              <PivotControls
+                ref={ref}
+                scale={message.scale}
+                lineWidth={message.line_width}
+                fixed={message.fixed}
+                autoTransform={message.auto_transform}
+                activeAxes={message.active_axes}
+                disableAxes={message.disable_axes}
+                disableSliders={message.disable_sliders}
+                disableRotations={message.disable_rotations}
+                translationLimits={message.translation_limits}
+                rotationLimits={message.rotation_limits}
+                depthTest={message.depth_test}
+                opacity={message.opacity}
+                onDrag={(l) => {
+                  const attrs = viewer.nodeAttributesFromName.current;
+                  if (attrs[message.name] === undefined) {
+                    attrs[message.name] = {};
+                  }
 
-                const wxyz = new THREE.Quaternion();
-                wxyz.setFromRotationMatrix(l);
-                const position = new THREE.Vector3().setFromMatrixPosition(l);
+                  const wxyz = new THREE.Quaternion();
+                  wxyz.setFromRotationMatrix(l);
+                  const position = new THREE.Vector3().setFromMatrixPosition(l);
 
-                const nodeAttributes = attrs[message.name]!;
-                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                nodeAttributes.position = position.toArray();
-                sendDragMessage({
-                  type: "TransformControlsUpdateMessage",
-                  name: name,
-                  wxyz: nodeAttributes.wxyz,
-                  position: nodeAttributes.position,
-                });
-              }}
-            />
+                  const nodeAttributes = attrs[message.name]!;
+                  nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+                  nodeAttributes.position = position.toArray();
+                  sendDragMessage({
+                    type: "TransformControlsUpdateMessage",
+                    name: name,
+                    wxyz: nodeAttributes.wxyz,
+                    position: nodeAttributes.position,
+                  });
+                }}
+              />
+            </group>
           )),
         );
         return;
@@ -409,18 +397,39 @@ function useMessageHandler() {
       // Add a background image.
       case "BackgroundImageMessage": {
         new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_data}`,
+          `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {
-            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
             texture.encoding = THREE.sRGBEncoding;
 
-            const oldBackground = viewer.sceneRef.current?.background;
-            viewer.sceneRef.current!.background = texture;
-            if (isTexture(oldBackground)) oldBackground.dispose();
+            const oldBackgroundTexture =
+              viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
+            viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
+              texture;
+            if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
           },
         );
+        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
+        viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
+          message.base64_depth !== null;
+        console.log(
+          viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value,
+        );
+
+        if (message.base64_depth !== null) {
+          // If depth is available set the texture
+          new TextureLoader().load(
+            `data:image/png;base64,${message.base64_depth}`,
+            (texture) => {
+              const oldDepthTexture =
+                viewer.backgroundMaterialRef.current?.uniforms.depthMap.value;
+              viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
+                texture;
+              if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
+            },
+          );
+        }
         return;
       }
       // Add a 2D label.
@@ -473,19 +482,30 @@ function useMessageHandler() {
             // We wrap with <group /> because Html doesn't implement THREE.Object3D.
             return (
               <group ref={ref}>
-                <Html>
-                  <Paper
-                    sx={{
-                      width: "20em",
-                      fontSize: "0.8em",
-                    }}
-                    shadow="md"
+                <Html prepend={false}>
+                  <MantineProvider
+                    withGlobalStyles
+                    withNormalizeCSS
+                    theme={mantineTheme}
                   >
-                    <GeneratedGuiContainer
-                      containerId={message.container_id}
-                      viewer={viewer}
-                    />
-                  </Paper>
+                    <Paper
+                      sx={{
+                        width: "20em",
+                        fontSize: "0.8em",
+                        marginLeft: "1em",
+                        marginTop: "1em",
+                      }}
+                      shadow="md"
+                      onPointerDown={(evt) => {
+                        evt.stopPropagation();
+                      }}
+                    >
+                      <GeneratedGuiContainer
+                        containerId={message.container_id}
+                        viewer={viewer}
+                      />
+                    </Paper>
+                  </MantineProvider>
                 </Html>
               </group>
             );
@@ -539,7 +559,9 @@ function useMessageHandler() {
       }
       // Set the clickability of a particular scene node.
       case "SetSceneNodeClickableMessage": {
-        setClickable(message.name, message.clickable);
+        // This setTimeout is totally unnecessary, but can help surface some race
+        // conditions.
+        setTimeout(() => setClickable(message.name, message.clickable), 50);
         return;
       }
       // Reset the entire scene, removing all scene nodes.
@@ -551,6 +573,8 @@ function useMessageHandler() {
         if (isTexture(oldBackground)) oldBackground.dispose();
 
         viewer.useGui.setState({ backgroundAvailable: false });
+        // Disable the depth texture rendering
+        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
         return;
       }
       // Set the value of a GUI input.
@@ -597,6 +621,49 @@ function useMessageHandler() {
         return;
       }
 
+
+      case "CatmullRomSplineMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => {
+            return (
+              <group ref={ref}>
+                <CatmullRomLine
+                  points={message.positions}
+                  closed={message.closed}
+                  curveType={message.curve_type}
+                  tension={message.tension}
+                  lineWidth={message.line_width}
+                  color={message.color}
+                ></CatmullRomLine>
+              </group>
+            );
+          }),
+        );
+        return;
+      }
+
+      case "CubicBezierSplineMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => {
+            return (
+              <group ref={ref}>
+                {[...Array(message.positions.length - 1).keys()].map((i) => (
+                  <CubicBezierLine
+                    key={i}
+                    start={message.positions[i]}
+                    end={message.positions[i + 1]}
+                    midA={message.control_points[2 * i]}
+                    midB={message.control_points[2 * i + 1]}
+                    lineWidth={message.line_width}
+                    color={message.color}
+                  ></CubicBezierLine>
+                ))}
+              </group>
+            );
+          }),
+        );
+        return;
+      }
       default: {
         console.log("Received message did not match any known types:", message);
         return;

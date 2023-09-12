@@ -6,7 +6,7 @@ import {
   Environment,
 } from "@react-three/drei";
 import * as THREE from "three";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import {
   EffectComposer,
   Outline,
@@ -22,7 +22,11 @@ import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 import "./index.css";
 
 import ControlPanel from "./ControlPanel/ControlPanel";
-import { UseGui, useGuiState } from "./ControlPanel/GuiState";
+import {
+  UseGui,
+  useGuiState,
+  useViserMantineTheme,
+} from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 import {
   WebsocketMessageProducer,
@@ -43,6 +47,7 @@ export type ViewerContextContents = {
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
+  backgroundMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
   // Scene node attributes.
   // This is intentionally placed outside of the Zustand state to reduce overhead.
@@ -88,6 +93,7 @@ function ViewerRoot() {
     canvasRef: React.useRef(null),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
+    backgroundMaterialRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
     // Scene node attributes that aren't placed in the zustand state for performance reasons.
     nodeAttributesFromName: React.useRef({}),
@@ -105,23 +111,11 @@ function ViewerRoot() {
 function ViewerContents() {
   const viewer = React.useContext(ViewerContext)!;
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
-  const colors = viewer.useGui((state) => state.theme.colors);
   return (
     <MantineProvider
       withGlobalStyles
       withNormalizeCSS
-      theme={{
-        colorScheme: viewer.useGui((state) => state.theme.dark_mode)
-          ? "dark"
-          : "light",
-        primaryColor: colors === null ? undefined : "custom",
-        colors:
-          colors === null
-            ? undefined
-            : {
-                custom: colors,
-              },
-      }}
+      theme={useViserMantineTheme()}
     >
       <Titlebar />
       <ViserModal />
@@ -171,6 +165,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       ref={viewer.canvasRef}
     >
       {children}
+      <BackgroundImage />
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
       <SceneContextSetter />
@@ -191,6 +186,116 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       </Selection>
       <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
     </Canvas>
+  );
+}
+
+/* Background image with support for depth compositing. */
+function BackgroundImage() {
+  // Create a fragment shader that composites depth using depth and rgb
+  const vertShader = `
+  varying vec2 vUv;
+
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+  `.trim();
+  const fragShader = `  
+  #include <packing>
+  precision highp float;
+  precision highp int;
+
+  varying vec2 vUv;
+  uniform sampler2D colorMap;
+  uniform sampler2D depthMap;
+  uniform float cameraNear;
+  uniform float cameraFar;
+  uniform bool enabled;
+  uniform bool hasDepth;
+
+  float readDepth(sampler2D depthMap, vec2 coord) {
+    vec4 rgbPacked = texture(depthMap, coord);
+
+    // For the k-th channel, coefficients are calculated as: 255 * 1e-5 * 2^(8 * k).
+    // Note that: [0, 255] channels are scaled to [0, 1], and we multiply by 1e5 on the server side.
+    float depth = rgbPacked.r * 0.00255 + rgbPacked.g * 0.6528 + rgbPacked.b * 167.1168;
+    return depth;
+  }
+
+  void main() {
+    if (!enabled) {
+      // discard the pixel if we're not enabled
+      discard;
+    }
+    vec4 color = texture(colorMap, vUv);
+    gl_FragColor = vec4(color.rgb, 1.0);
+
+    float bufDepth;
+    if(hasDepth){
+      float depth = readDepth(depthMap, vUv);
+      bufDepth = viewZToPerspectiveDepth(-depth, cameraNear, cameraFar);
+    } else {
+      // If no depth enabled, set depth to 1.0 (infinity) to treat it like a background image.
+      bufDepth = 1.0;
+    }
+    gl_FragDepth = bufDepth;
+  }`.trim();
+  // initialize the rgb texture with all white and depth at infinity
+  const backgroundMaterial = new THREE.ShaderMaterial({
+    fragmentShader: fragShader,
+    vertexShader: vertShader,
+    uniforms: {
+      enabled: { value: false },
+      depthMap: { value: null },
+      colorMap: { value: null },
+      cameraNear: { value: null },
+      cameraFar: { value: null },
+      hasDepth: { value: false },
+    },
+  });
+  const { backgroundMaterialRef } = React.useContext(ViewerContext)!;
+  backgroundMaterialRef.current = backgroundMaterial;
+  const backgroundMesh = React.useRef<THREE.Mesh>(null);
+  useFrame(({ camera }) => {
+    // Logic ahead relies on perspective camera assumption.
+    if (!(camera instanceof THREE.PerspectiveCamera)) {
+      console.error(
+        "Camera is not a perspective camera, cannot render background image",
+      );
+      return;
+    }
+
+    // Update the position of the mesh based on the camera position.
+    const lookdir = camera.getWorldDirection(new THREE.Vector3());
+    backgroundMesh.current!.position.set(
+      camera.position.x,
+      camera.position.y,
+      camera.position.z,
+    );
+    backgroundMesh.current!.position.addScaledVector(lookdir, 1.0);
+    backgroundMesh.current!.quaternion.copy(camera.quaternion);
+
+    // Resize the mesh based on focal length.
+    const f = camera.getFocalLength();
+    backgroundMesh.current!.scale.set(
+      camera.getFilmWidth() / f,
+      camera.getFilmHeight() / f,
+      1.0,
+    );
+
+    // Set near/far uniforms.
+    backgroundMaterial.uniforms.cameraNear.value = camera.near;
+    backgroundMaterial.uniforms.cameraFar.value = camera.far;
+  });
+
+  return (
+    <mesh
+      ref={backgroundMesh}
+      material={backgroundMaterial}
+      matrixWorldAutoUpdate={false}
+    >
+      <planeGeometry attach="geometry" args={[1, 1]} />
+    </mesh>
   );
 }
 
