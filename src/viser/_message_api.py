@@ -213,6 +213,24 @@ class MessageApi(abc.ABC):
             ),
         )
 
+    def add_glb(
+        self,
+        name,
+        glb_path,
+        scale=1.0,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ):
+        with open(glb_path, "rb") as f:
+            print("Reading glb file...")
+            contents = f.read()
+        with io.BytesIO() as data_buffer:
+            data_buffer.write(contents)
+            glb_data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
+        self._queue(_messages.GlTFMessage(name, glb_data, scale))
+        return MeshHandle._make(self, name, wxyz, position, visible)
+
     def add_gltf(
         self,
         name,

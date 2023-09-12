@@ -10,8 +10,6 @@ import time
 
 import viser
 from viser.theme import TitlebarButton, TitlebarConfig, TitlebarImage
-import numpy as onp
-import viser.transforms as tf
 
 server = viser.ViserServer()
 
@@ -66,13 +64,6 @@ def synchronize_theme() -> None:
 
 synchronize.on_click(lambda _: synchronize_theme())
 synchronize_theme()
-
-server.add_gltf(
-    "City",
-    "./cartoon_lowpoly_small_city_free_pack/scene.gltf",
-    0.1,
-    wxyz=tf.SO3.exp(onp.array([onp.pi / 2, 0.0, 0.0])).wxyz,
-)
 
 while True:
     time.sleep(10.0)
