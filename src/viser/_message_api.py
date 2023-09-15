@@ -23,11 +23,10 @@ import trimesh
 import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
-from viser import ClickEvent
-
 from . import _messages, infra, theme
 from ._scene_handles import (
     CameraFrustumHandle,
+    ClickEvent,
     FrameHandle,
     Gui3dContainerHandle,
     ImageHandle,
