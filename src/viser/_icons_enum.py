@@ -11,6 +11,7 @@ class Icon(enum.Enum):
         https://tabler-icons.io/
         https://github.com/tabler/tabler-icons
     """
+
     ICON_123 = "123"
     ICON_24_HOURS = "24-hours"
     ICON_2FA = "2fa"
