@@ -290,22 +290,40 @@
 <span class="linenos">43</span><span class="n">brand_color</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_rgb</span><span class="p">(</span><span class="s2">&quot;Brand color&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">230</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
 <span class="linenos">44</span><span class="n">synchronize</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Apply theme&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="n">viser</span><span class="o">.</span><span class="n">Icon</span><span class="o">.</span><span class="n">CHECK</span><span class="p">)</span>
 <span class="linenos">45</span>
-<span class="linenos">46</span>
-<span class="linenos">47</span><span class="k">def</span> <span class="nf">synchronize_theme</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos">48</span>    <span class="n">server</span><span class="o">.</span><span class="n">configure_theme</span><span class="p">(</span>
-<span class="linenos">49</span>        <span class="n">dark_mode</span><span class="o">=</span><span class="n">dark_mode</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-<span class="linenos">50</span>        <span class="n">titlebar_content</span><span class="o">=</span><span class="n">titlebar_theme</span> <span class="k">if</span> <span class="n">titlebar</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-<span class="linenos">51</span>        <span class="n">control_layout</span><span class="o">=</span><span class="n">control_layout</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-<span class="linenos">52</span>        <span class="n">brand_color</span><span class="o">=</span><span class="n">brand_color</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
-<span class="linenos">53</span>    <span class="p">)</span>
-<span class="linenos">54</span>    <span class="n">server</span><span class="o">.</span><span class="n">world_axes</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="linenos">55</span>
-<span class="linenos">56</span>
-<span class="linenos">57</span><span class="n">synchronize</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">synchronize_theme</span><span class="p">())</span>
-<span class="linenos">58</span><span class="n">synchronize_theme</span><span class="p">()</span>
-<span class="linenos">59</span>
-<span class="linenos">60</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">61</span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos">46</span><span class="n">gui_theme_code</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_markdown</span><span class="p">(</span><span class="s2">&quot;no theme applied yet&quot;</span><span class="p">)</span>
+<span class="linenos">47</span>
+<span class="linenos">48</span>
+<span class="linenos">49</span><span class="k">def</span> <span class="nf">synchronize_theme</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">50</span>    <span class="k">global</span> <span class="n">gui_theme_code</span>
+<span class="linenos">51</span>    <span class="n">server</span><span class="o">.</span><span class="n">configure_theme</span><span class="p">(</span>
+<span class="linenos">52</span>        <span class="n">dark_mode</span><span class="o">=</span><span class="n">dark_mode</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+<span class="linenos">53</span>        <span class="n">titlebar_content</span><span class="o">=</span><span class="n">titlebar_theme</span> <span class="k">if</span> <span class="n">titlebar</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<span class="linenos">54</span>        <span class="n">control_layout</span><span class="o">=</span><span class="n">control_layout</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+<span class="linenos">55</span>        <span class="n">brand_color</span><span class="o">=</span><span class="n">brand_color</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+<span class="linenos">56</span>    <span class="p">)</span>
+<span class="linenos">57</span>    <span class="n">server</span><span class="o">.</span><span class="n">world_axes</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">58</span>
+<span class="linenos">59</span>    <span class="n">gui_theme_code</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<span class="linenos">60</span>    <span class="n">gui_theme_code</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_markdown</span><span class="p">(</span>
+<span class="linenos">61</span>        <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="linenos">62</span><span class="s2">        ### Current applied theme</span>
+<span class="linenos">63</span><span class="s2">        ```</span>
+<span class="linenos">64</span><span class="s2">        server.configure_theme(</span>
+<span class="linenos">65</span><span class="s2">            dark_mode=</span><span class="si">{</span><span class="n">dark_mode</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">,</span>
+<span class="linenos">66</span><span class="s2">            titlebar_content=</span><span class="si">{</span><span class="s2">&quot;titlebar_content&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">titlebar</span><span class="o">.</span><span class="n">value</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="si">}</span><span class="s2">,</span>
+<span class="linenos">67</span><span class="s2">            control_layout=&quot;</span><span class="si">{</span><span class="n">control_layout</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;,</span>
+<span class="linenos">68</span><span class="s2">            brand_color=</span><span class="si">{</span><span class="n">brand_color</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">,</span>
+<span class="linenos">69</span><span class="s2">        )</span>
+<span class="linenos">70</span><span class="s2">        ```</span>
+<span class="linenos">71</span><span class="s2">        &quot;&quot;&quot;</span>
+<span class="linenos">72</span>    <span class="p">)</span>
+<span class="linenos">73</span>
+<span class="linenos">74</span>
+<span class="linenos">75</span><span class="n">synchronize</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">synchronize_theme</span><span class="p">())</span>
+<span class="linenos">76</span><span class="n">synchronize_theme</span><span class="p">()</span>
+<span class="linenos">77</span>
+<span class="linenos">78</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">79</span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
