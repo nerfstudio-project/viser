@@ -349,10 +349,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">RemoveSceneNodeMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div></div>
 
 
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="ClickEvent"><a class="viewcode-back" href="../../../scene_handles/#viser.ClickEvent">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">ClickEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TSceneNodeHandle</span><span class="p">]):</span>
     <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">TSceneNodeHandle</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">TSceneNodeHandle</span></div>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -463,7 +463,7 @@
         <span class="k">return</span> <span class="n">func</span></div></div>
 
 
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="Gui3dContainerHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.Gui3dContainerHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Gui3dContainerHandle</span><span class="p">(</span><span class="n">SceneNodeHandle</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a 3D GUI container.&quot;&quot;&quot;</span>
 
@@ -488,7 +488,7 @@
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Gui3dContainerHandle.remove"><a class="viewcode-back" href="../../../scene_handles/#viser.Gui3dContainerHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this GUI container from the visualizer.&quot;&quot;&quot;</span>
 
         <span class="c1"># Call scene node remove.</span>
@@ -497,7 +497,7 @@
         <span class="c1"># Clean up contained GUI elements.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div></div>
 </pre></div>
         </article>
       </div>

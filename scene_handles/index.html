@@ -296,7 +296,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Handle for camera frustums.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClickEvent</span><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.CameraFrustumHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.CameraFrustumHandle.on_click" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -305,10 +305,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>ClickEvent</em><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[ClickEvent[TSceneNodeHandle]], None]</p>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -367,7 +367,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Handle for coordinate frames.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.FrameHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClickEvent</span><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.FrameHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.FrameHandle.on_click" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -376,10 +376,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>ClickEvent</em><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[ClickEvent[TSceneNodeHandle]], None]</p>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -433,12 +433,53 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="viser.Gui3dContainerHandle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">Gui3dContainerHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#Gui3dContainerHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.Gui3dContainerHandle" title="Permalink to this definition">#</a></dt>
+<dd><p>Use as a context to place GUI elements into a 3D GUI container.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.Gui3dContainerHandle.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.Gui3dContainerHandle.position" title="Permalink to this definition">#</a></dt>
+<dd><p>Position of the scene node. This is equivalent to the t in
+<code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.Gui3dContainerHandle.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handles/#Gui3dContainerHandle.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.Gui3dContainerHandle.remove" title="Permalink to this definition">#</a></dt>
+<dd><p>Permanently remove this GUI container from the visualizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.Gui3dContainerHandle.wxyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.Gui3dContainerHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<dd><p>Orientation of the scene node. This is the quaternion representation of the R
+in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="viser.ImageHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ImageHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#ImageHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ImageHandle" title="Permalink to this definition">#</a></dt>
 <dd><p>Handle for 2D images, rendered in 3D.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ImageHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClickEvent</span><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ImageHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ImageHandle.on_click" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -447,10 +488,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>ClickEvent</em><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[ClickEvent[TSceneNodeHandle]], None]</p>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -550,7 +591,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Handle for mesh objects.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.MeshHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClickEvent</span><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.MeshHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.MeshHandle.on_click" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -559,10 +600,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>ClickEvent</em><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[ClickEvent[TSceneNodeHandle]], None]</p>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -673,7 +714,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Handle for interacting with transform control gizmos.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClickEvent</span><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.TransformControlsHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.TransformControlsHandle.on_click" title="Permalink to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -682,10 +723,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><em>ClickEvent</em><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>Callable[[ClickEvent[TSceneNodeHandle]], None]</p>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -759,6 +800,49 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </dd>
 </dl>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="viser.ClickEvent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ClickEvent</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#ClickEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClickEvent" title="Permalink to this definition">#</a></dt>
+<dd><p>Abstract base class for generic types.</p>
+<p>A generic type is typically declared by inheriting from
+this class parameterized with one or more type variables.
+For example, a generic mapping type might be defined as:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>class Mapping(Generic[KT, VT]):</dt><dd><dl class="simple">
+<dt>def <strong>getitem</strong>(self, key: KT) -&gt; VT:</dt><dd><p>…</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Etc.</span>
+</pre></div>
+</div>
+<p>This class can then be used as follows:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>def lookup_name(mapping: Mapping[KT, VT], key: KT, default: VT) -&gt; VT:</dt><dd><dl class="simple">
+<dt>try:</dt><dd><p>return mapping[key]</p>
+</dd>
+<dt>except KeyError:</dt><dd><p>return default</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ClickEvent.client_id">
+<span class="sig-name descname"><span class="pre">client_id</span></span><a class="headerlink" href="#viser.ClickEvent.client_id" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ClickEvent.target">
+<span class="sig-name descname"><span class="pre">target</span></span><a class="headerlink" href="#viser.ClickEvent.target" title="Permalink to this definition">#</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -849,6 +933,12 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.FrameHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">FrameHandle.wxyz</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#viser.Gui3dContainerHandle"><code class="docutils literal notranslate"><span class="pre">Gui3dContainerHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.Gui3dContainerHandle.position"><code class="docutils literal notranslate"><span class="pre">Gui3dContainerHandle.position</span></code></a></li>
+<li><a class="reference internal" href="#viser.Gui3dContainerHandle.remove"><code class="docutils literal notranslate"><span class="pre">Gui3dContainerHandle.remove()</span></code></a></li>
+<li><a class="reference internal" href="#viser.Gui3dContainerHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">Gui3dContainerHandle.wxyz</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#viser.ImageHandle"><code class="docutils literal notranslate"><span class="pre">ImageHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.ImageHandle.on_click"><code class="docutils literal notranslate"><span class="pre">ImageHandle.on_click()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.position"><code class="docutils literal notranslate"><span class="pre">ImageHandle.position</span></code></a></li>
@@ -886,6 +976,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.TransformControlsHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.update_timestamp</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.visible"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.wxyz</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#viser.ClickEvent"><code class="docutils literal notranslate"><span class="pre">ClickEvent</span></code></a><ul>
+<li><a class="reference internal" href="#viser.ClickEvent.client_id"><code class="docutils literal notranslate"><span class="pre">ClickEvent.client_id</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClickEvent.target"><code class="docutils literal notranslate"><span class="pre">ClickEvent.target</span></code></a></li>
 </ul>
 </li>
 </ul>
