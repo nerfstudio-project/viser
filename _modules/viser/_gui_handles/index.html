@@ -470,7 +470,7 @@
         <span class="k">return</span> <span class="n">func</span></div></div>
 
 
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="GuiEvent"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiEvent">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">GuiEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information associated with a GUI event, such as an update or click.</span>
 
@@ -478,7 +478,7 @@
 
     <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClientId</span><span class="p">]</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClientHandle</span><span class="p">]</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">TGuiHandle</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">TGuiHandle</span></div>
 
 
 <div class="viewcode-block" id="GuiButtonHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -735,7 +735,7 @@
             <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div></div>
 
 
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="GuiMarkdownHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiMarkdownHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">GuiMarkdownHandle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use to remove markdown.&quot;&quot;&quot;</span>
 
@@ -769,10 +769,10 @@
         <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">]</span>
         <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="GuiMarkdownHandle.remove"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiMarkdownHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this markdown from the visualizer.&quot;&quot;&quot;</span>
         <span class="n">api</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span>
-        <span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">))</span>
+        <span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">))</span></div></div>
 </pre></div>
         </article>
       </div>
