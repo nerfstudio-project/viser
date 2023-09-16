@@ -12,7 +12,7 @@ import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
-  ref: React.Ref<T>,
+  ref: React.Ref<T>
 ) => React.ReactNode;
 
 /** Scenes will consist of nodes, which form a tree. */
@@ -25,7 +25,7 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
   constructor(
     public name: string,
     public makeObject: MakeObject<T>,
-    public cleanup?: () => void,
+    public cleanup?: () => void
   ) {
     this.children = [];
     this.clickable = false;
@@ -65,7 +65,7 @@ function SceneNodeThreeChildren(props: {
     }
     const unsubscribe = viewer.useSceneTree.subscribe(
       (state) => state.nodeFromName[props.name],
-      updateChildren,
+      updateChildren
     );
     updateChildren();
 
@@ -83,7 +83,7 @@ function SceneNodeThreeChildren(props: {
       })}
       <SceneNodeLabel name={props.name} />
     </group>,
-    props.parent,
+    props.parent
   );
 }
 
@@ -91,7 +91,7 @@ function SceneNodeThreeChildren(props: {
 function SceneNodeLabel(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const labelVisible = viewer.useSceneTree(
-    (state) => state.labelVisibleFromName[props.name],
+    (state) => state.labelVisibleFromName[props.name]
   );
   return labelVisible ? (
     <Html>
@@ -114,10 +114,10 @@ function SceneNodeLabel(props: { name: string }) {
 export function SceneNodeThreeObject(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const makeObject = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.makeObject,
+    (state) => state.nodeFromName[props.name]?.makeObject
   );
   const cleanup = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.cleanup,
+    (state) => state.nodeFromName[props.name]?.cleanup
   );
   const clickable =
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
@@ -125,7 +125,12 @@ export function SceneNodeThreeObject(props: { name: string }) {
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
   // Create object + children.
-  const objNode = makeObject && makeObject(setRef);
+  //
+  // For not-fully-understood reasons, wrapping makeObject with useMemo() fixes
+  // stability issues (eg breaking runtime errors) associated with
+  // PivotControls.
+  const objNode =
+    makeObject && React.useMemo(() => makeObject(setRef), [makeObject]);
   const children =
     obj === null ? null : (
       <SceneNodeThreeChildren name={props.name} parent={obj} />
@@ -169,7 +174,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
   // Clicking logic.
   const sendClicksThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    50,
+    50
   );
   const [hovered, setHovered] = React.useState(false);
   useCursor(hovered);

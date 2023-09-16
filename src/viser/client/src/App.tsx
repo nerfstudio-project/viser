@@ -63,7 +63,7 @@ export type ViewerContextContents = {
   messageQueueRef: React.MutableRefObject<Message[]>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
-  null,
+  null
 );
 
 THREE.ColorManagement.enabled = true;
@@ -75,12 +75,13 @@ function ViewerRoot() {
     // https://localhost:8080/?server=some_url => ws://localhost:8080
     let server = window.location.href;
     server = server.replace("http://", "ws://");
+    server = server.replace("https://", "wss://");
     server = server.split("?")[0];
     if (server.endsWith("/")) server = server.slice(0, -1);
     return server;
   }
   const servers = new URLSearchParams(window.location.search).getAll(
-    searchParamKey,
+    searchParamKey
   );
   const initialServer =
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
@@ -260,7 +261,7 @@ function BackgroundImage() {
     // Logic ahead relies on perspective camera assumption.
     if (!(camera instanceof THREE.PerspectiveCamera)) {
       console.error(
-        "Camera is not a perspective camera, cannot render background image",
+        "Camera is not a perspective camera, cannot render background image"
       );
       return;
     }
@@ -270,7 +271,7 @@ function BackgroundImage() {
     backgroundMesh.current!.position.set(
       camera.position.x,
       camera.position.y,
-      camera.position.z,
+      camera.position.z
     );
     backgroundMesh.current!.position.addScaledVector(lookdir, 1.0);
     backgroundMesh.current!.quaternion.copy(camera.quaternion);
@@ -280,7 +281,7 @@ function BackgroundImage() {
     backgroundMesh.current!.scale.set(
       camera.getFilmWidth() / f,
       camera.getFilmHeight() / f,
-      1.0,
+      1.0
     );
 
     // Set near/far uniforms.
@@ -304,7 +305,7 @@ function SceneContextSetter() {
   const { sceneRef, cameraRef } = React.useContext(ViewerContext)!;
   sceneRef.current = useThree((state) => state.scene);
   cameraRef.current = useThree(
-    (state) => state.camera as THREE.PerspectiveCamera,
+    (state) => state.camera as THREE.PerspectiveCamera
   );
   return <></>;
 }
