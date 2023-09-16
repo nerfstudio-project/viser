@@ -28,9 +28,6 @@ import websockets.connection
 import websockets.datastructures
 import websockets.exceptions
 import websockets.server
-from rich import box, style
-from rich.panel import Panel
-from rich.table import Table
 from typing_extensions import Literal, assert_never
 from websockets.legacy.server import WebSocketServerProtocol
 
@@ -137,6 +134,7 @@ class Server(MessageHandler):
         self._client_api_version: Literal[0, 1] = client_api_version
 
         self._thread_executor = ThreadPoolExecutor(max_workers=32)
+        self._shutdown_event = threading.Event()
 
     def start(self) -> None:
         """Start the server."""
@@ -154,6 +152,11 @@ class Server(MessageHandler):
 
         # Broadcast buffer should be populated by the background worker.
         assert isinstance(self._broadcast_buffer, AsyncMessageBuffer)
+
+    def stop(self) -> None:
+        """Stop the server."""
+        self._thread_executor.shutdown(wait=True)
+        self._event_loop.stop()
 
     def on_client_connect(self, cb: Callable[[ClientConnection], Any]) -> None:
         """Attach a callback to run for newly connected clients."""
@@ -182,7 +185,6 @@ class Server(MessageHandler):
         asyncio.set_event_loop(event_loop)
         self._event_loop = event_loop
         self._broadcast_buffer = AsyncMessageBuffer(event_loop)
-        ready_sem.release()
 
         count_lock = asyncio.Lock()
         connection_count = 0
@@ -313,23 +315,10 @@ class Server(MessageHandler):
                 port += 1
                 continue
 
-        if self._verbose:
-            http_url = f"http://{host}:{port}"
-            ws_url = f"ws://{host}:{port}"
-
-            table = Table(
-                title=None,
-                show_header=False,
-                box=box.MINIMAL,
-                title_style=style.Style(bold=True),
-            )
-            if http_server_root is not None:
-                table.add_row("HTTP", f"[link={http_url}]{http_url}[/link]")
-            table.add_row("Websocket", f"[link={ws_url}]{ws_url}[/link]")
-
-            rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
-
+        self._port = port
+        ready_sem.release()
         event_loop.run_forever()
+        rich.print("[bold](viser)[/bold] Server stopped")
 
 
 async def _client_producer(
