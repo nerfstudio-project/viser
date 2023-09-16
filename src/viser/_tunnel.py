@@ -146,7 +146,7 @@ async def connect(
 
 if __name__ == "__main__":
     tunnel = _ViserTunnel(8080)
-    print(tunnel.on_connect(lambda: None))
+    tunnel.on_connect(lambda: None)
 
     time.sleep(2.0)
     print("Trying to close")
