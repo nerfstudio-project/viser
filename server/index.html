@@ -249,15 +249,17 @@ launches a thread with a visualization server and (b) provides a high-level API
 for communicating with clients.</p>
 <!-- prettier-ignore-start --><dl class="py class">
 <dt class="sig sig-object py" id="viser.ViserServer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ViserServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0.0.0.0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8080</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ViserServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'0.0.0.0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8080</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">share</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer" title="Permalink to this definition">#</a></dt>
 <dd><p>Viser server class. The primary interface for functionality in <code class="docutils literal notranslate"><span class="pre">viser</span></code>.</p>
 <p>Commands on a server object (<code class="docutils literal notranslate"><span class="pre">add_frame</span></code>, <code class="docutils literal notranslate"><span class="pre">add_gui_*</span></code>, …) will be sent to all
 clients, including new clients that connect after a command is called.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>host</strong> (<em>str</em>) – </p></li>
-<li><p><strong>port</strong> (<em>int</em>) – </p></li>
+<li><p><strong>host</strong> (<em>str</em>) – Host to bind server to.</p></li>
+<li><p><strong>port</strong> (<em>int</em>) – Port to bind server to.</p></li>
+<li><p><strong>share</strong> (<em>bool</em>) – Experimental. If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, create and print a public, shareable URL
+for this instance of viser.</p></li>
 </ul>
 </dd>
 </dl>
@@ -909,6 +911,17 @@ handles.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.stop" title="Permalink to this definition">#</a></dt>
+<dd><p>Stop the Viser server and associated threads and tunnels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ViserServer.world_axes">
 <span class="sig-name descname"><span class="pre">world_axes</span></span><a class="headerlink" href="#viser.ViserServer.world_axes" title="Permalink to this definition">#</a></dt>
@@ -1018,6 +1031,7 @@ and then hidden by default.</p>
 <li><a class="reference internal" href="#viser.ViserServer.on_client_disconnect"><code class="docutils literal notranslate"><span class="pre">ViserServer.on_client_disconnect()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.reset_scene"><code class="docutils literal notranslate"><span class="pre">ViserServer.reset_scene()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.set_background_image"><code class="docutils literal notranslate"><span class="pre">ViserServer.set_background_image()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.stop"><code class="docutils literal notranslate"><span class="pre">ViserServer.stop()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.world_axes"><code class="docutils literal notranslate"><span class="pre">ViserServer.world_axes</span></code></a></li>
 </ul>
 </li>

@@ -271,9 +271,6 @@
 <span class="kn">import</span> <span class="nn">websockets.datastructures</span>
 <span class="kn">import</span> <span class="nn">websockets.exceptions</span>
 <span class="kn">import</span> <span class="nn">websockets.server</span>
-<span class="kn">from</span> <span class="nn">rich</span> <span class="kn">import</span> <span class="n">box</span><span class="p">,</span> <span class="n">style</span>
-<span class="kn">from</span> <span class="nn">rich.panel</span> <span class="kn">import</span> <span class="n">Panel</span>
-<span class="kn">from</span> <span class="nn">rich.table</span> <span class="kn">import</span> <span class="n">Table</span>
 <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">assert_never</span>
 <span class="kn">from</span> <span class="nn">websockets.legacy.server</span> <span class="kn">import</span> <span class="n">WebSocketServerProtocol</span>
 
@@ -380,6 +377,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_api_version</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_api_version</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Server.start"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the server.&quot;&quot;&quot;</span>
@@ -397,6 +395,11 @@
 
         <span class="c1"># Broadcast buffer should be populated by the background worker.</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="p">,</span> <span class="n">AsyncMessageBuffer</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Server.stop"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the server.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_event_loop</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Server.on_client_connect"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.on_client_connect">[docs]</a>    <span class="k">def</span> <span class="nf">on_client_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientConnection</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run for newly connected clients.&quot;&quot;&quot;</span>
@@ -425,7 +428,6 @@
         <span class="n">asyncio</span><span class="o">.</span><span class="n">set_event_loop</span><span class="p">(</span><span class="n">event_loop</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_loop</span> <span class="o">=</span> <span class="n">event_loop</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span> <span class="o">=</span> <span class="n">AsyncMessageBuffer</span><span class="p">(</span><span class="n">event_loop</span><span class="p">)</span>
-        <span class="n">ready_sem</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
 
         <span class="n">count_lock</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="n">connection_count</span> <span class="o">=</span> <span class="mi">0</span>
@@ -556,23 +558,10 @@
                 <span class="n">port</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="k">continue</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
-            <span class="n">http_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="n">ws_url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;ws://</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">&quot;</span>
-
-            <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
-                <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                <span class="n">show_header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="o">.</span><span class="n">MINIMAL</span><span class="p">,</span>
-                <span class="n">title_style</span><span class="o">=</span><span class="n">style</span><span class="o">.</span><span class="n">Style</span><span class="p">(</span><span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="k">if</span> <span class="n">http_server_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;HTTP&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;[link=</span><span class="si">{</span><span class="n">http_url</span><span class="si">}</span><span class="s2">]</span><span class="si">{</span><span class="n">http_url</span><span class="si">}</span><span class="s2">[/link]&quot;</span><span class="p">)</span>
-            <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;Websocket&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;[link=</span><span class="si">{</span><span class="n">ws_url</span><span class="si">}</span><span class="s2">]</span><span class="si">{</span><span class="n">ws_url</span><span class="si">}</span><span class="s2">[/link]&quot;</span><span class="p">)</span>
-
-            <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Panel</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;[bold]viser[/bold]&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-
-        <span class="n">event_loop</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="n">ready_sem</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="n">event_loop</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
+        <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Server stopped&quot;</span><span class="p">)</span></div>
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">_client_producer</span><span class="p">(</span>
