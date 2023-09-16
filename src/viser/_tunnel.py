@@ -135,13 +135,16 @@ async def connect(
                 ],
                 return_when=asyncio.FIRST_COMPLETED,
             )
-        except Exception:
+        except Exception as e:
             pass
         finally:
             if local_w is not None:
                 local_w.close()
             if remote_w is not None:
                 remote_w.close()
+
+        # Throttle connection attempts.
+        await asyncio.sleep(0.1)
 
 
 if __name__ == "__main__":
