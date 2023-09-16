@@ -203,7 +203,6 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         mantineTableContainerProps={{ sx: { maxHeight: "30em" } }}
         mantinePaginationProps={{
           showRowsPerPage: false,
-          showFirstLastPageButtons: false,
         }}
         mantineTableBodyRowProps={({ row }) => ({
           onPointerOver: () => {

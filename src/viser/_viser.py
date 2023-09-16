@@ -9,6 +9,10 @@ from typing import Callable, Dict, Generator, List, Tuple
 
 import numpy as onp
 import numpy.typing as npt
+import rich
+from rich import box, style
+from rich.panel import Panel
+from rich.table import Table
 from typing_extensions import override
 
 from . import _client_autobuild, _messages, infra
@@ -16,6 +20,7 @@ from . import transforms as tf
 from ._gui_api import GuiApi
 from ._message_api import MessageApi, cast_vector
 from ._scene_handles import FrameHandle, _SceneNodeHandleState
+from ._tunnel import _ViserTunnel
 
 
 @dataclasses.dataclass
@@ -234,13 +239,19 @@ class ViserServer(MessageApi, GuiApi):
 
     Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all
     clients, including new clients that connect after a command is called.
+
+    Args:
+        host: Host to bind server to.
+        port: Port to bind server to.
+        share: Experimental. If set to `True`, create and print a public, shareable URL
+            for this instance of viser.
     """
 
     world_axes: FrameHandle
     """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
     and then hidden by default."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8080):
+    def __init__(self, host: str = "0.0.0.0", port: int = 8080, share: bool = False):
         server = infra.Server(
             host=host,
             port=port,
@@ -331,6 +342,38 @@ class ViserServer(MessageApi, GuiApi):
 
         # Start the server.
         server.start()
+
+        # Form status print.
+        port = server._port  # Port may have changed.
+        http_url = f"http://{host}:{port}"
+        ws_url = f"ws://{host}:{port}"
+        table = Table(
+            title=None,
+            show_header=False,
+            box=box.MINIMAL,
+            title_style=style.Style(bold=True),
+        )
+        table.add_row("HTTP", http_url)
+        table.add_row("Websocket", ws_url)
+        rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
+
+        # Create share tunnel if requested.
+        if not share:
+            self._share_tunnel = None
+        else:
+            self._share_tunnel = _ViserTunnel(port)
+
+            @self._share_tunnel.on_connect
+            def _() -> None:
+                assert self._share_tunnel is not None
+                share_url = self._share_tunnel.get_url()
+                if share_url is None:
+                    rich.print("[bold](viser)[/bold] Could not generate share URL")
+                else:
+                    rich.print(
+                        f"[bold](viser)[/bold] Share URL (expires in 24 hours): {share_url}"
+                    )
+
         self.reset_scene()
         self.world_axes = FrameHandle(
             _SceneNodeHandleState(
@@ -341,6 +384,12 @@ class ViserServer(MessageApi, GuiApi):
             )
         )
         self.world_axes.visible = False
+
+    def stop(self) -> None:
+        """Stop the Viser server and associated threads and tunnels."""
+        self._server.stop()
+        if self._share_tunnel is not None:
+            self._share_tunnel.close()
 
     @override
     def _get_api(self) -> MessageApi:

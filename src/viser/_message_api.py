@@ -11,9 +11,9 @@ import abc
 import base64
 import colorsys
 import io
+import queue
 import threading
 import time
-from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar, Union, cast
 
 import imageio.v3 as iio
@@ -147,8 +147,8 @@ class MessageApi(abc.ABC):
         )
 
         self._atomic_lock = threading.Lock()
+        self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
-        self._queue_thread = ThreadPoolExecutor(max_workers=1)
 
     def configure_theme(
         self,
@@ -594,19 +594,20 @@ class MessageApi(abc.ABC):
 
     def _queue(self, message: _messages.Message) -> None:
         """Wrapped method for sending messages safely."""
-        # This implementation will retain message ordering because _queue_thread has
-        # just 1 worker.
-        from .infra._infra import error_print_wrapper
+        got_lock = self._atomic_lock.acquire(blocking=False)
+        if got_lock:
+            self._queue_unsafe(message)
+            self._atomic_lock.release()
+        else:
+            # Send when lock is acquirable, while retaining message order.
+            # This could be optimized!
+            self._queued_messages.put(message)
 
-        self._queue_thread.submit(
-            error_print_wrapper(lambda: self._queue_blocking(message))
-        )
+            def try_again():
+                with self._atomic_lock:
+                    self._queue_unsafe(self._queued_messages.get())
 
-    def _queue_blocking(self, message: _messages.Message) -> None:
-        """Wrapped method for sending messages safely. Blocks until ready to send."""
-        self._atomic_lock.acquire()
-        self._queue_unsafe(message)
-        self._atomic_lock.release()
+            threading.Thread(target=try_again).start()
 
     @abc.abstractmethod
     def _queue_unsafe(self, message: _messages.Message) -> None:
