@@ -361,6 +361,7 @@ class ViserServer(MessageApi, GuiApi):
         if not share:
             self._share_tunnel = None
         else:
+            rich.print("[bold](viser)[/bold] Share URL requested!")
             self._share_tunnel = _ViserTunnel(port)
 
             @self._share_tunnel.on_connect

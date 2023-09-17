@@ -90,31 +90,22 @@ async def _make_tunnel(local_port: int, shared_state: DictProxy) -> None:
     shared_state["url"] = res["url"]
     shared_state["status"] = "connected"
 
-    def make_connection_task():
-        return asyncio.create_task(
-            connect(
-                "127.0.0.1",
-                local_port,
-                share_domain,
-                res["port"],
+    await asyncio.gather(
+        *[
+            asyncio.create_task(
+                _simple_proxy(
+                    "127.0.0.1",
+                    local_port,
+                    share_domain,
+                    res["port"],
+                )
             )
-        )
-
-    connection_tasks = [make_connection_task() for _ in range(res["max_conn_count"])]
-    await asyncio.gather(*connection_tasks)
-
-
-async def pipe(r: asyncio.StreamReader, w: asyncio.StreamWriter) -> None:
-    while True:
-        data = await r.read(4096)
-        if len(data) == 0:
-            # Done!
-            break
-        w.write(data)
-        await w.drain()
+            for _ in range(res["max_conn_count"])
+        ]
+    )
 
 
-async def connect(
+async def _simple_proxy(
     local_host: str,
     local_port: int,
     remote_host: str,
@@ -122,26 +113,29 @@ async def connect(
 ) -> None:
     """Establish a connection to the tunnel server."""
 
-    while True:
-        local_w = None
-        remote_w = None
+    async def relay(r: asyncio.StreamReader, w: asyncio.StreamWriter) -> None:
         try:
-            local_r, local_w = await asyncio.open_connection(local_host, local_port)
-            remote_r, remote_w = await asyncio.open_connection(remote_host, remote_port)
-            await asyncio.wait(
-                [
-                    asyncio.create_task(pipe(local_r, remote_w)),
-                    asyncio.create_task(pipe(remote_r, local_w)),
-                ],
-                return_when=asyncio.FIRST_COMPLETED,
-            )
-        except Exception as e:
+            while True:
+                data = await r.read(4096)
+                if len(data) == 0:
+                    # Done!
+                    break
+                w.write(data)
+                await w.drain()
+        except Exception:
             pass
         finally:
-            if local_w is not None:
-                local_w.close()
-            if remote_w is not None:
-                remote_w.close()
+            w.close()
+            await w.wait_closed()
+
+    while True:
+        local_r, local_w = await asyncio.open_connection(local_host, local_port)
+        remote_r, remote_w = await asyncio.open_connection(remote_host, remote_port)
+
+        await asyncio.gather(
+            asyncio.create_task(relay(local_r, remote_w)),
+            asyncio.create_task(relay(remote_r, local_w)),
+        )
 
         # Throttle connection attempts.
         await asyncio.sleep(0.1)
