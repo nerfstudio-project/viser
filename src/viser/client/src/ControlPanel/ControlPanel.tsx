@@ -136,6 +136,7 @@ function ConnectionStatus() {
           <Loader
             size="xs"
             variant="bars"
+            color="red"
             style={{ position: "absolute", ...styles }}
           />
         )}
