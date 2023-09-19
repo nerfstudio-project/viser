@@ -113,7 +113,18 @@ async def _simple_proxy(
 ) -> None:
     """Establish a connection to the tunnel server."""
 
+    async def close_writer(writer: asyncio.StreamWriter) -> None:
+        """Utility for closing a writer and waiting until done, while suppressing errors
+        from broken connections."""
+        try:
+            if not writer.is_closing():
+                writer.close()
+            await writer.wait_closed()
+        except ConnectionResetError:
+            pass
+
     async def relay(r: asyncio.StreamReader, w: asyncio.StreamWriter) -> None:
+        """Simple data passthrough from one stream to another."""
         try:
             while True:
                 data = await r.read(4096)
@@ -125,17 +136,26 @@ async def _simple_proxy(
         except Exception:
             pass
         finally:
-            w.close()
-            await w.wait_closed()
+            await close_writer(w)
 
     while True:
-        local_r, local_w = await asyncio.open_connection(local_host, local_port)
-        remote_r, remote_w = await asyncio.open_connection(remote_host, remote_port)
-
-        await asyncio.gather(
-            asyncio.create_task(relay(local_r, remote_w)),
-            asyncio.create_task(relay(remote_r, local_w)),
-        )
+        local_w = None
+        remote_w = None
+        try:
+            local_r, local_w = await asyncio.open_connection(local_host, local_port)
+            remote_r, remote_w = await asyncio.open_connection(remote_host, remote_port)
+            await asyncio.gather(
+                asyncio.create_task(relay(local_r, remote_w)),
+                asyncio.create_task(relay(remote_r, local_w)),
+            )
+        except Exception:
+            pass
+        finally:
+            # Be extra sure that connections are closed.
+            if local_w is not None:
+                await close_writer(local_w)
+            if remote_w is not None:
+                await close_writer(remote_w)
 
         # Throttle connection attempts.
         await asyncio.sleep(0.1)
