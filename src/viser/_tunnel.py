@@ -120,7 +120,7 @@ async def _simple_proxy(
             if not writer.is_closing():
                 writer.close()
             await writer.wait_closed()
-        except ConnectionResetError:
+        except ConnectionError:
             pass
 
     async def relay(r: asyncio.StreamReader, w: asyncio.StreamWriter) -> None:
