@@ -318,6 +318,15 @@
 
     <span class="c1"># Generate interfaces for each specific message.</span>
     <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">message_types</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__doc__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">docstring</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> * &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">line</span><span class="p">:</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__doc__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span>
+            <span class="p">)</span>
+            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/** </span><span class="si">{</span><span class="n">docstring</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; *&quot;</span><span class="p">)</span>
+            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; * (automatically generated)&quot;</span><span class="p">)</span>
+            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; */&quot;</span><span class="p">)</span>
+
         <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;export interface </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="s2">&quot;{&quot;</span><span class="p">)</span>
         <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  type: &quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&quot;;&#39;</span><span class="p">)</span>
         <span class="n">field_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="bp">cls</span><span class="p">)])</span>  <span class="c1"># type: ignore</span>
@@ -359,6 +368,7 @@
                         <span class="s2">&quot; buffer.&quot;</span>
                     <span class="p">),</span>
                     <span class="s2">&quot;type ArrayBuffer = Uint8Array;&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
                 <span class="p">]</span>
                 <span class="k">if</span> <span class="n">interfaces</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;ArrayBuffer&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
                 <span class="k">else</span> <span class="p">[]</span>
