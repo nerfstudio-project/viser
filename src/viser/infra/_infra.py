@@ -76,7 +76,7 @@ class MessageHandler:
         if callback is None:
             self._incoming_handlers.pop(message_cls)
         else:
-            self._incoming_handlers[message_cls].remove(callback)
+            self._incoming_handlers[message_cls].remove(callback)  # type: ignore
 
     def _handle_incoming_message(self, client_id: ClientId, message: Message) -> None:
         """Handle incoming messages."""
