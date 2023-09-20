@@ -16,7 +16,9 @@ _raw_type_mapping = {
     float: "number",
     int: "number",
     str: "string",
-    onp.ndarray: "ArrayBuffer",
+    # For numpy arrays, we directly serialize the underlying data buffer.
+    onp.ndarray: "Uint8Array",
+    bytes: "Uint8Array",
     Any: "any",
     None: "null",
     type(None): "null",
@@ -80,9 +82,9 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
                 map(lambda line: line.strip(), cls.__doc__.split("\n"))
             )
             out_lines.append(f"/** {docstring}")
-            out_lines.append(f" *")
-            out_lines.append(f" * (automatically generated)")
-            out_lines.append(f" */")
+            out_lines.append(" *")
+            out_lines.append(" * (automatically generated)")
+            out_lines.append(" */")
 
         out_lines.append(f"export interface {cls.__name__} " + "{")
         out_lines.append(f'  type: "{cls.__name__}";')
@@ -117,19 +119,6 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
                 "// This file should not be manually modified.",
                 "",
             ]
-            + (
-                # Add numpy type alias if needed.
-                [
-                    (
-                        "// For numpy arrays, we directly serialize the underlying data"
-                        " buffer."
-                    ),
-                    "type ArrayBuffer = Uint8Array;",
-                    "",
-                ]
-                if interfaces.count("ArrayBuffer") > 0
-                else []
-            )
         )
         + interfaces
     )

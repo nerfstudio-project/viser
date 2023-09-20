@@ -13,7 +13,11 @@ import { CameraFrustum, CoordinateFrame } from "./ThreeAssets";
 import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
-import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
+import {
+  isTexture,
+  makeThrottledMessageSender,
+  sendWebsocketMessage,
+} from "./WebsocketFunctions";
 import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
@@ -31,7 +35,7 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
         return Math.pow((value + 0.055) / 1.055, 2.4);
       }
     }),
-    3,
+    3
   );
 }
 
@@ -63,7 +67,7 @@ function useMessageHandler() {
       addSceneNodeMakeParents(
         new SceneNode<THREE.Group>(parent_name, (ref) => (
           <CoordinateFrame ref={ref} show_axes={false} />
-        )),
+        ))
       );
     }
     addSceneNode(node);
@@ -79,6 +83,13 @@ function useMessageHandler() {
     }
 
     switch (message.type) {
+      // Request a render.
+      case "GetRenderRequestMessage": {
+        viewer.getRenderRequest.current = message;
+        viewer.getRenderRequestState.current = "triggered";
+        return;
+      }
+      // Configure the theme.
       case "ThemeConfigurationMessage": {
         setTheme(message);
         return;
@@ -93,7 +104,7 @@ function useMessageHandler() {
               axes_length={message.axes_length}
               axes_radius={message.axes_radius}
             />
-          )),
+          ))
         );
         return;
       }
@@ -114,18 +125,18 @@ function useMessageHandler() {
             new Float32Array(
               message.points.buffer.slice(
                 message.points.byteOffset,
-                message.points.byteOffset + message.points.byteLength,
-              ),
+                message.points.byteOffset + message.points.byteLength
+              )
             ),
-            3,
-          ),
+            3
+          )
         );
         geometry.computeBoundingSphere();
 
         // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
         geometry.setAttribute(
           "color",
-          threeColorBufferFromUint8Buffer(message.colors),
+          threeColorBufferFromUint8Buffer(message.colors)
         );
 
         addSceneNodeMakeParents(
@@ -144,8 +155,8 @@ function useMessageHandler() {
               // disposal.
               geometry.dispose();
               pointCloudMaterial.dispose();
-            },
-          ),
+            }
+          )
         );
         return;
       }
@@ -181,16 +192,16 @@ function useMessageHandler() {
             new Float32Array(
               message.vertices.buffer.slice(
                 message.vertices.byteOffset,
-                message.vertices.byteOffset + message.vertices.byteLength,
-              ),
+                message.vertices.byteOffset + message.vertices.byteLength
+              )
             ),
-            3,
-          ),
+            3
+          )
         );
         if (message.vertex_colors !== null) {
           geometry.setAttribute(
             "color",
-            threeColorBufferFromUint8Buffer(message.vertex_colors),
+            threeColorBufferFromUint8Buffer(message.vertex_colors)
           );
         }
 
@@ -199,11 +210,11 @@ function useMessageHandler() {
             new Uint32Array(
               message.faces.buffer.slice(
                 message.faces.byteOffset,
-                message.faces.byteOffset + message.faces.byteLength,
-              ),
+                message.faces.byteOffset + message.faces.byteLength
+              )
             ),
-            1,
-          ),
+            1
+          )
         );
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
@@ -219,8 +230,8 @@ function useMessageHandler() {
               // disposal.
               geometry.dispose();
               material.dispose();
-            },
-          ),
+            }
+          )
         );
         return;
       }
@@ -230,7 +241,7 @@ function useMessageHandler() {
           message.image_media_type !== null &&
           message.image_base64_data !== null
             ? new TextureLoader().load(
-                `data:${message.image_media_type};base64,${message.image_base64_data}`,
+                `data:${message.image_media_type};base64,${message.image_base64_data}`
               )
             : undefined;
 
@@ -247,8 +258,8 @@ function useMessageHandler() {
                 image={texture}
               />
             ),
-            () => texture?.dispose(),
-          ),
+            () => texture?.dispose()
+          )
         );
         return;
       }
@@ -256,7 +267,7 @@ function useMessageHandler() {
         const name = message.name;
         const sendDragMessage = makeThrottledMessageSender(
           viewer.websocketRef,
-          50,
+          50
         );
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => (
@@ -297,7 +308,7 @@ function useMessageHandler() {
                 }}
               />
             </group>
-          )),
+          ))
         );
         return;
       }
@@ -306,12 +317,12 @@ function useMessageHandler() {
 
         const R_threeworld_world = new THREE.Quaternion();
         R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
+          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
         );
         const target = new THREE.Vector3(
           message.look_at[0],
           message.look_at[1],
-          message.look_at[2],
+          message.look_at[2]
         );
         target.applyQuaternion(R_threeworld_world);
         cameraControls.setTarget(target.x, target.y, target.z);
@@ -322,12 +333,12 @@ function useMessageHandler() {
         const cameraControls = viewer.cameraControlRef.current!;
         const R_threeworld_world = new THREE.Quaternion();
         R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
+          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
         );
         const updir = new THREE.Vector3(
           message.position[0],
           message.position[1],
-          message.position[2],
+          message.position[2]
         ).applyQuaternion(R_threeworld_world);
         camera.up.set(updir.x, updir.y, updir.z);
 
@@ -341,7 +352,7 @@ function useMessageHandler() {
         cameraControls.setPosition(
           prevPosition.x,
           prevPosition.y,
-          prevPosition.z,
+          prevPosition.z
         );
         return;
       }
@@ -352,18 +363,18 @@ function useMessageHandler() {
         const position_cmd = new THREE.Vector3(
           message.position[0],
           message.position[1],
-          message.position[2],
+          message.position[2]
         );
         const R_worldthree_world = new THREE.Quaternion();
         R_worldthree_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
+          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
         );
         position_cmd.applyQuaternion(R_worldthree_world);
 
         cameraControls.setPosition(
           position_cmd.x,
           position_cmd.y,
-          position_cmd.z,
+          position_cmd.z
         );
         return;
       }
@@ -372,7 +383,7 @@ function useMessageHandler() {
         // tan(fov / 2.0) = 0.5 * film height / focal length
         // focal length = 0.5 * film height / tan(fov / 2.0)
         camera.setFocalLength(
-          (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0),
+          (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0)
         );
         return;
       }
@@ -408,14 +419,11 @@ function useMessageHandler() {
             if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
-          },
+          }
         );
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
         viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
           message.base64_depth !== null;
-        console.log(
-          viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value,
-        );
 
         if (message.base64_depth !== null) {
           // If depth is available set the texture
@@ -427,7 +435,7 @@ function useMessageHandler() {
               viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
                 texture;
               if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
-            },
+            }
           );
         }
         return;
@@ -472,7 +480,7 @@ function useMessageHandler() {
                 </Html>
               </group>
             );
-          }),
+          })
         );
         return;
       }
@@ -509,7 +517,7 @@ function useMessageHandler() {
                 </Html>
               </group>
             );
-          }),
+          })
         );
         return;
       }
@@ -544,10 +552,10 @@ function useMessageHandler() {
                     </group>
                   );
                 },
-                () => texture.dispose(),
-              ),
+                () => texture.dispose()
+              )
             );
-          },
+          }
         );
         return;
       }
@@ -613,7 +621,7 @@ function useMessageHandler() {
                 ></CatmullRomLine>
               </group>
             );
-          }),
+          })
         );
         return;
       }
@@ -636,12 +644,12 @@ function useMessageHandler() {
                 ))}
               </group>
             );
-          }),
+          })
         );
         return;
       }
       default: {
-        console.log("Receivd message did not match any known types:", message);
+        console.log("Received message did not match any known types:", message);
         return;
       }
     }
@@ -650,14 +658,112 @@ function useMessageHandler() {
 
 export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();
-  const messageQueueRef = useContext(ViewerContext)!.messageQueueRef;
+  const viewer = useContext(ViewerContext)!;
+  const messageQueueRef = viewer.messageQueueRef;
+
+  // We'll reuse the same canvas.
+  const renderBufferCanvas = React.useMemo(() => new OffscreenCanvas(1, 1), []);
 
   useFrame(() => {
-    // Handle messages before every frame.
-    // Place this directly in ws.onmessage can cause race conditions!
-    const numMessages = messageQueueRef.current.length;
-    const processBatch = messageQueueRef.current.splice(0, numMessages);
-    processBatch.forEach(handleMessage);
+    // Send a render along if it was requested!
+    if (viewer.getRenderRequestState.current === "triggered") {
+      viewer.getRenderRequestState.current = "pause";
+    } else if (viewer.getRenderRequestState.current === "pause") {
+      const sourceCanvas = viewer.canvasRef.current!;
+
+      const targetWidth = viewer.getRenderRequest.current!.width;
+      const targetHeight = viewer.getRenderRequest.current!.height;
+
+      // We'll save a render to an intermediate canvas with the requested dimensions.
+      if (renderBufferCanvas.width !== targetWidth)
+        renderBufferCanvas.width = targetWidth;
+      if (renderBufferCanvas.height !== targetHeight)
+        renderBufferCanvas.height = targetHeight;
+
+      const ctx = renderBufferCanvas.getContext("2d")!;
+      ctx.reset();
+      // Use a white background for JPEGs, which don't have an alpha channel.
+      if (viewer.getRenderRequest.current?.format === "image/jpeg") {
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, renderBufferCanvas.width, renderBufferCanvas.height);
+      }
+
+      // Determine offsets for the source canvas. We'll always center our renders.
+      // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
+      let sourceWidth = sourceCanvas.width;
+      let sourceHeight = sourceCanvas.height;
+
+      const sourceAspect = sourceWidth / sourceHeight;
+      const targetAspect = targetWidth / targetHeight;
+
+      if (sourceAspect > targetAspect) {
+        // The source is wider than the target.
+        // We need to shrink the width.
+        sourceWidth = Math.round(targetAspect * sourceHeight);
+      } else if (sourceAspect < targetAspect) {
+        // The source is narrower than the target.
+        // We need to shrink the height.
+        sourceHeight = Math.round(sourceWidth / targetAspect);
+      }
+
+      console.log(
+        `Sending render; requested aspect ratio was ${targetAspect} (dimensinos: ${targetWidth}/${targetHeight}), copying from aspect ratio ${
+          sourceWidth / sourceHeight
+        } (dimensions: ${sourceWidth}/${sourceHeight}).`
+      );
+
+      ctx.drawImage(
+        sourceCanvas,
+        (sourceCanvas.width - sourceWidth) / 2.0,
+        (sourceCanvas.height - sourceHeight) / 2.0,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        targetWidth,
+        targetHeight
+      );
+
+      viewer.getRenderRequestState.current = "in_progress";
+
+      // Encode the image, the send it.
+      renderBufferCanvas
+        .convertToBlob({
+          type: viewer.getRenderRequest.current!.format,
+          quality: viewer.getRenderRequest.current!.quality / 100.0,
+        })
+        .then(async (blob) => {
+          if (blob === null) {
+            console.error("Render failed");
+            viewer.getRenderRequestState.current = "ready";
+            return;
+          }
+          const payload = new Uint8Array(await blob.arrayBuffer());
+          sendWebsocketMessage(viewer.websocketRef, {
+            type: "GetRenderResponseMessage",
+            payload: payload,
+          });
+          viewer.getRenderRequestState.current = "ready";
+        });
+    }
+
+    // Handle messages, but only if we're not trying to render something.
+    if (viewer.getRenderRequestState.current === "ready") {
+      // Handle messages before every frame.
+      // Place this directly in ws.onmessage can cause race conditions!
+      //
+      // If a render is requested, note that we don't handle any more messages
+      // until the render is done.
+      const requestRenderIndex = messageQueueRef.current.findIndex(
+        (message) => message.type === "GetRenderRequestMessage"
+      );
+      const numMessages =
+        requestRenderIndex !== -1
+          ? requestRenderIndex + 1
+          : messageQueueRef.current.length;
+      const processBatch = messageQueueRef.current.splice(0, numMessages);
+      processBatch.forEach(handleMessage);
+    }
   });
 
   return null;
@@ -696,8 +802,8 @@ export function WebsocketMessageProducer() {
         viewer.useGui.setState({ websocketConnected: true });
       };
 
-      ws.onclose = () => {
-        console.log(`Disconnected! ${server}`);
+      ws.onclose = (event) => {
+        console.log(`Disconnected! ${server} code=${event.code}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
         viewer.useGui.setState({ websocketConnected: false });

@@ -36,7 +36,7 @@ import {
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
-import { Message } from "./WebsocketMessages";
+import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -61,6 +61,11 @@ export type ViewerContextContents = {
         };
   }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
+  // Requested a render.
+  getRenderRequestState: React.MutableRefObject<
+    "ready" | "triggered" | "pause" | "in_progress"
+  >;
+  getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null
@@ -99,6 +104,8 @@ function ViewerRoot() {
     // Scene node attributes that aren't placed in the zustand state for performance reasons.
     nodeAttributesFromName: React.useRef({}),
     messageQueueRef: React.useRef([]),
+    getRenderRequestState: React.useRef("ready"),
+    getRenderRequest: React.useRef(null),
   };
 
   return (
