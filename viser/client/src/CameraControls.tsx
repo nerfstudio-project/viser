@@ -70,15 +70,6 @@ export function SynchronizedCameraControls() {
       const initialAspect = three_camera.aspect;
       const initialFov = (three_camera.fov * Math.PI) / 180.0;
 
-      // setInitialCamera({
-      //   wxyz: initialWxyz,
-      //   position: initialPosition,
-      //   look_at: initialLookAt,
-      //   up_direction: initialUp,
-      //   aspect: initialAspect,
-      //   fov: initialFov
-      // });
-
       initialCameraRef.current = {
         wxyz: initialWxyz,
         position: initialPosition,
@@ -114,35 +105,6 @@ export function SynchronizedCameraControls() {
   const animateCamera = () => {
     const cameraControls = viewer.cameraControlRef.current;
     if (!cameraControls || !initialCameraRef.current) return;
-
-    console.log(
-      "Animating camera to initial position: " +
-        initialCameraRef.current.position.x +
-        ", " +
-        initialCameraRef.current.position.y +
-        ", " +
-        initialCameraRef.current.position.z +
-        " and look at: " +
-        initialCameraRef.current.look_at.x +
-        ", " +
-        initialCameraRef.current.look_at.y +
-        ", " +
-        initialCameraRef.current.look_at.z
-    );
-    console.log(
-      "Current camera position: " +
-        cameraControls.getPosition(new THREE.Vector3()).x +
-        ", " +
-        cameraControls.getPosition(new THREE.Vector3()).y +
-        ", " +
-        cameraControls.getPosition(new THREE.Vector3()).z +
-        " and look at: " +
-        cameraControls.getTarget(new THREE.Vector3()).x +
-        ", " +
-        cameraControls.getTarget(new THREE.Vector3()).y +
-        ", " +
-        cameraControls.getTarget(new THREE.Vector3()).z
-    );
     const targetPosition = initialCameraRef.current.position;
     const targetLookAt = initialCameraRef.current.look_at;
 
@@ -160,21 +122,6 @@ export function SynchronizedCameraControls() {
       alpha
     );
 
-    console.log(
-      "New camera position: " +
-        newPosition.x +
-        ", " +
-        newPosition.y +
-        ", " +
-        newPosition.z +
-        " and look at: " +
-        newLookAt.x +
-        ", " +
-        newLookAt.y +
-        ", " +
-        newLookAt.z
-    );
-
     if (newPosition.distanceTo(targetPosition) < tolerance) {
       newPosition.copy(targetPosition);
     }
@@ -189,7 +136,6 @@ export function SynchronizedCameraControls() {
     const hasReachedTarget =
       newPosition.equals(targetPosition) && newLookAt.equals(targetLookAt);
 
-    console.log("Has reached target: " + hasReachedTarget);
     if (!hasReachedTarget) {
       animationId.current = requestAnimationFrame(animateCamera);
     } else {
@@ -199,16 +145,6 @@ export function SynchronizedCameraControls() {
       }
     }
   };
-
-  // const animateCamera = () => {
-  //   if (!initialCameraRef.current) return;
-
-  //   const cameraControls = viewer.cameraControlRef.current!;
-  //   if (!cameraControls) return;
-
-  //   cameraControls.setTarget(initialCameraRef.current.look_at.x, initialCameraRef.current.look_at.y, initialCameraRef.current.look_at.z, true);
-  //   cameraControls.setPosition(initialCameraRef.current.position.x, initialCameraRef.current.position.y, initialCameraRef.current.position.z, true);
-  // };
 
   // Send camera for new connections.
   // We add a small delay to give the server time to add a callback.
@@ -321,9 +257,6 @@ export function SynchronizedCameraControls() {
         const elapsedTime = Date.now() - spaceKeyDownTimestamp;
 
         // Check if the key press duration is less than a certain threshold (e.g., 200ms) to consider it a click
-        console.log("Space key pressed for " + elapsedTime + "ms");
-        // console.log("Initial camera values: " + initialCameraRef.current)
-        // console.log("viwer: " + viewer)
         if (elapsedTime < 200) {
           // Handle the space bar click event
           if (animationId.current !== null) {
