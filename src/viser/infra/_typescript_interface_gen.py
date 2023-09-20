@@ -75,6 +75,15 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
 
     # Generate interfaces for each specific message.
     for cls in message_types:
+        if cls.__doc__ is not None:
+            docstring = "\n * ".join(
+                map(lambda line: line.strip(), cls.__doc__.split("\n"))
+            )
+            out_lines.append(f"/** {docstring}")
+            out_lines.append(f" *")
+            out_lines.append(f" * (automatically generated)")
+            out_lines.append(f" */")
+
         out_lines.append(f"export interface {cls.__name__} " + "{")
         out_lines.append(f'  type: "{cls.__name__}";')
         field_names = set([f.name for f in dataclasses.fields(cls)])  # type: ignore
@@ -116,6 +125,7 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
                         " buffer."
                     ),
                     "type ArrayBuffer = Uint8Array;",
+                    "",
                 ]
                 if interfaces.count("ArrayBuffer") > 0
                 else []
