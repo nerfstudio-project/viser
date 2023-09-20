@@ -494,3 +494,20 @@ class CubicBezierSplineMessage(Message):
     control_points: Tuple[Tuple[float, float, float], ...]
     line_width: float
     color: int
+
+
+@dataclasses.dataclass
+class GetRenderRequestMessage(Message):
+    """Message from server->client requesting a render of the current viewport."""
+
+    format: Literal["image/jpeg", "image/png"]
+    height: int
+    width: int
+    quality: int
+
+
+@dataclasses.dataclass
+class GetRenderResponseMessage(Message):
+    """Message from client->server carrying a render."""
+
+    payload: bytes

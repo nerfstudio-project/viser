@@ -64,6 +64,20 @@ class MessageHandler:
             self._incoming_handlers[message_cls] = []
         self._incoming_handlers[message_cls].append(callback)  # type: ignore
 
+    def unregister_handler(
+        self,
+        message_cls: Type[TMessage],
+        callback: Optional[Callable[[ClientId, TMessage], None]] = None,
+    ):
+        """Unregister a handler for a particular message type."""
+        assert (
+            message_cls in self._incoming_handlers
+        ), "Tried to unregister a handler that hasn't been registered."
+        if callback is None:
+            self._incoming_handlers.pop(message_cls)
+        else:
+            self._incoming_handlers[message_cls].remove(callback)  # type: ignore
+
     def _handle_incoming_message(self, client_id: ClientId, message: Message) -> None:
         """Handle incoming messages."""
         if type(message) in self._incoming_handlers:

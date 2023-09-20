@@ -24,37 +24,38 @@ NeRFs), or images to render as 3D textures.
 
         import viser
 
-        server = viser.ViserServer()
+        if __name__ == "__main__":
+            server = viser.ViserServer()
 
-        # Add a background image.
-        server.set_background_image(
-            iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
-            format="png",
-        )
-
-        # Add main image.
-        server.add_image(
-            "/img",
-            iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
-            4.0,
-            4.0,
-            format="png",
-            wxyz=(1.0, 0.0, 0.0, 0.0),
-            position=(2.0, 2.0, 0.0),
-        )
-        while True:
-            server.add_image(
-                "/noise",
-                onp.random.randint(
-                    0,
-                    256,
-                    size=(400, 400, 3),
-                    dtype=onp.uint8,
-                ),
-                4.0,
-                4.0,
-                format="jpeg",
-                wxyz=(1.0, 0.0, 0.0, 0.0),
-                position=(2.0, 2.0, -1e-2),
+            # Add a background image.
+            server.set_background_image(
+                iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
+                format="png",
             )
-            time.sleep(0.2)
+
+            # Add main image.
+            server.add_image(
+                "/img",
+                iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
+                4.0,
+                4.0,
+                format="png",
+                wxyz=(1.0, 0.0, 0.0, 0.0),
+                position=(2.0, 2.0, 0.0),
+            )
+            while True:
+                server.add_image(
+                    "/noise",
+                    onp.random.randint(
+                        0,
+                        256,
+                        size=(400, 400, 3),
+                        dtype=onp.uint8,
+                    ),
+                    4.0,
+                    4.0,
+                    format="jpeg",
+                    wxyz=(1.0, 0.0, 0.0, 0.0),
+                    position=(2.0, 2.0, -1e-2),
+                )
+                time.sleep(0.2)
