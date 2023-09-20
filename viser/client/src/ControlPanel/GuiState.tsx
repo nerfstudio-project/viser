@@ -125,7 +125,7 @@ export function useGuiState(initialServer: string) {
             if (guiIdSet === undefined) {
               console.log(
                 "Tried to remove but could not find container ID",
-                containerId,
+                containerId
               );
               return;
             }
@@ -139,8 +139,8 @@ export function useGuiState(initialServer: string) {
             state.guiValueFromId = {};
             state.guiAttributeFromId = {};
           }),
-      })),
-    ),
+      }))
+    )
   )[0];
 }
 

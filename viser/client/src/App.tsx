@@ -48,7 +48,7 @@ type ViewerContextContents = {
   }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
-  null,
+  null
 );
 
 THREE.ColorManagement.enabled = true;
@@ -65,7 +65,7 @@ function SingleViewer() {
     return server;
   }
   const servers = new URLSearchParams(window.location.search).getAll(
-    searchParamKey,
+    searchParamKey
   );
   const initialServer =
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
@@ -87,7 +87,7 @@ function SingleViewer() {
   // viewer context changes.
   const memoizedWebsocketInterface = React.useMemo(
     () => <WebsocketInterface />,
-    [],
+    []
   );
 
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
@@ -177,7 +177,7 @@ function SceneContextSetter() {
   const { sceneRef, cameraRef } = React.useContext(ViewerContext)!;
   sceneRef.current = useThree((state) => state.scene);
   cameraRef.current = useThree(
-    (state) => state.camera as THREE.PerspectiveCamera,
+    (state) => state.camera as THREE.PerspectiveCamera
   );
   return <></>;
 }

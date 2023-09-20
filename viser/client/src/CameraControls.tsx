@@ -3,7 +3,7 @@ import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { CameraControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import * as holdEvent from "hold-event";
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 import { PerspectiveCamera } from "three";
 import * as THREE from "three";
 
@@ -14,8 +14,19 @@ export function SynchronizedCameraControls() {
 
   const sendCameraThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    20,
+    20
   );
+
+  type CameraDetails = {
+    wxyz: number[];
+    position: THREE.Vector3;
+    look_at: THREE.Vector3;
+    up_direction: THREE.Vector3;
+    aspect: number;
+    fov: number;
+  };
+
+  const initialCameraRef = useRef<CameraDetails | null>(null);
 
   // Callback for sending cameras.
   const sendCamera = React.useCallback(() => {
@@ -42,7 +53,42 @@ export function SynchronizedCameraControls() {
       .getTarget(new THREE.Vector3())
       .applyQuaternion(R_world_threeworld);
     const up = three_camera.up.clone().applyQuaternion(R_world_threeworld);
-    const initial_position = three_camera.position.clone().applyQuaternion(R_world_threeworld);
+
+    //Store initial camera values
+    if (!initialCameraRef.current) {
+      const initialWxyz = [
+        R_world_camera.w,
+        R_world_camera.x,
+        R_world_camera.y,
+        R_world_camera.z,
+      ];
+      const initialPosition = three_camera.position
+        .clone()
+        .applyQuaternion(R_world_threeworld);
+      const initialLookAt = look_at;
+      const initialUp = up;
+      const initialAspect = three_camera.aspect;
+      const initialFov = (three_camera.fov * Math.PI) / 180.0;
+
+      // setInitialCamera({
+      //   wxyz: initialWxyz,
+      //   position: initialPosition,
+      //   look_at: initialLookAt,
+      //   up_direction: initialUp,
+      //   aspect: initialAspect,
+      //   fov: initialFov
+      // });
+
+      initialCameraRef.current = {
+        wxyz: initialWxyz,
+        position: initialPosition,
+        look_at: initialLookAt,
+        up_direction: initialUp,
+        aspect: initialAspect,
+        fov: initialFov,
+      };
+    }
+
     sendCameraThrottled({
       type: "ViewerCameraMessage",
       wxyz: [
@@ -51,13 +97,118 @@ export function SynchronizedCameraControls() {
         R_world_camera.y,
         R_world_camera.z,
       ],
-      position: initial_position.toArray(),
+      position: three_camera.position
+        .clone()
+        .applyQuaternion(R_world_threeworld)
+        .toArray(),
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
       look_at: [look_at.x, look_at.y, look_at.z],
       up_direction: [up.x, up.y, up.z],
     });
   }, [camera, sendCameraThrottled]);
+
+  //Camera Animation code
+  const animationId = useRef<number | null>(null);
+
+  const animateCamera = () => {
+    const cameraControls = viewer.cameraControlRef.current;
+    if (!cameraControls || !initialCameraRef.current) return;
+
+    console.log(
+      "Animating camera to initial position: " +
+        initialCameraRef.current.position.x +
+        ", " +
+        initialCameraRef.current.position.y +
+        ", " +
+        initialCameraRef.current.position.z +
+        " and look at: " +
+        initialCameraRef.current.look_at.x +
+        ", " +
+        initialCameraRef.current.look_at.y +
+        ", " +
+        initialCameraRef.current.look_at.z
+    );
+    console.log(
+      "Current camera position: " +
+        cameraControls.getPosition(new THREE.Vector3()).x +
+        ", " +
+        cameraControls.getPosition(new THREE.Vector3()).y +
+        ", " +
+        cameraControls.getPosition(new THREE.Vector3()).z +
+        " and look at: " +
+        cameraControls.getTarget(new THREE.Vector3()).x +
+        ", " +
+        cameraControls.getTarget(new THREE.Vector3()).y +
+        ", " +
+        cameraControls.getTarget(new THREE.Vector3()).z
+    );
+    const targetPosition = initialCameraRef.current.position;
+    const targetLookAt = initialCameraRef.current.look_at;
+
+    const alpha = 0.2;
+    const tolerance = 0.2;
+
+    const newPosition = new THREE.Vector3().lerpVectors(
+      camera.position,
+      targetPosition,
+      alpha
+    );
+    const newLookAt = new THREE.Vector3().lerpVectors(
+      cameraControls.getTarget(new THREE.Vector3()),
+      targetLookAt,
+      alpha
+    );
+
+    console.log(
+      "New camera position: " +
+        newPosition.x +
+        ", " +
+        newPosition.y +
+        ", " +
+        newPosition.z +
+        " and look at: " +
+        newLookAt.x +
+        ", " +
+        newLookAt.y +
+        ", " +
+        newLookAt.z
+    );
+
+    if (newPosition.distanceTo(targetPosition) < tolerance) {
+      newPosition.copy(targetPosition);
+    }
+
+    if (newLookAt.distanceTo(targetLookAt) < tolerance) {
+      newLookAt.copy(targetLookAt);
+    }
+
+    cameraControls.setPosition(newPosition.x, newPosition.y, newPosition.z);
+    cameraControls.setTarget(newLookAt.x, newLookAt.y, newLookAt.z);
+
+    const hasReachedTarget =
+      newPosition.equals(targetPosition) && newLookAt.equals(targetLookAt);
+
+    console.log("Has reached target: " + hasReachedTarget);
+    if (!hasReachedTarget) {
+      animationId.current = requestAnimationFrame(animateCamera);
+    } else {
+      if (animationId.current !== null) {
+        cancelAnimationFrame(animationId.current);
+        animationId.current = null;
+      }
+    }
+  };
+
+  // const animateCamera = () => {
+  //   if (!initialCameraRef.current) return;
+
+  //   const cameraControls = viewer.cameraControlRef.current!;
+  //   if (!cameraControls) return;
+
+  //   cameraControls.setTarget(initialCameraRef.current.look_at.x, initialCameraRef.current.look_at.y, initialCameraRef.current.look_at.z, true);
+  //   cameraControls.setPosition(initialCameraRef.current.position.x, initialCameraRef.current.position.y, initialCameraRef.current.position.z, true);
+  // };
 
   // Send camera for new connections.
   // We add a small delay to give the server time to add a callback.
@@ -92,7 +243,7 @@ export function SynchronizedCameraControls() {
       ARROW_UP: 38,
       ARROW_RIGHT: 39,
       ARROW_DOWN: 40,
-      SPACE: 32,
+      SPACE: " ",
       Q: 81,
       E: 69,
     };
@@ -104,7 +255,6 @@ export function SynchronizedCameraControls() {
     const dKey = new holdEvent.KeyboardKeyHold(KEYCODE.D, 20);
     const qKey = new holdEvent.KeyboardKeyHold(KEYCODE.Q, 20);
     const eKey = new holdEvent.KeyboardKeyHold(KEYCODE.E, 20);
-    // const spaceKey = new holdEvent.KeyboardKeyHold(KEYCODE.SPACE, 20);
 
     aKey.addEventListener("holding", (event) => {
       cameraControls.truck(-0.002 * event?.deltaTime, 0, true);
@@ -133,47 +283,73 @@ export function SynchronizedCameraControls() {
       cameraControls.rotate(
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true,
+        true
       );
     });
     rightKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true,
+        true
       );
     });
     upKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true,
+        true
       );
     });
     downKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true,
+        true
       );
     });
 
-    const spaceKey = new holdEvent.KeyboardKeyHold(KEYCODE.SPACE, 20);
-    spaceKey.addEventListener("holding", (event) => {
-      // for (let i = 0; i < 10; i++) {
-      //   cameraControls.forward(0.002 * event?.deltaTime, true);
-      // }
-      cameraControls.moveTo(0, 0, 0, true);
-      cameraControls.rotateTo(0, 0, true);
-      
-      // cameraControls.moveTo(0, 0, 0, true);
-      // cameraControls.rotateTo(0, 0, true);
-    });
+    let spaceKeyDownTimestamp: number | null = null;
+
+    const onSpaceKeyDown = (event: KeyboardEvent) => {
+      if (event.key === KEYCODE.SPACE) {
+        spaceKeyDownTimestamp = Date.now();
+      }
+    };
+
+    const onSpaceKeyUp = (event: KeyboardEvent) => {
+      if (event.key === KEYCODE.SPACE && spaceKeyDownTimestamp) {
+        const elapsedTime = Date.now() - spaceKeyDownTimestamp;
+
+        // Check if the key press duration is less than a certain threshold (e.g., 200ms) to consider it a click
+        console.log("Space key pressed for " + elapsedTime + "ms");
+        // console.log("Initial camera values: " + initialCameraRef.current)
+        // console.log("viwer: " + viewer)
+        if (elapsedTime < 200) {
+          // Handle the space bar click event
+          if (animationId.current !== null) {
+            cancelAnimationFrame(animationId.current);
+          }
+          animateCamera();
+        }
+        spaceKeyDownTimestamp = null;
+      }
+    };
+
+    window.addEventListener("keydown", onSpaceKeyDown);
+    window.addEventListener("keyup", onSpaceKeyUp);
 
     // TODO: we currently don't remove any event listeners. This is a bit messy
     // because KeyboardKeyHold attaches listeners directly to the
     // document/window; it's unclear if we can remove these.
-  });
+    return () => {
+      if (animationId.current !== null) {
+        cancelAnimationFrame(animationId.current);
+      }
+      window.removeEventListener("resize", sendCamera);
+      window.removeEventListener("keydown", onSpaceKeyDown);
+      window.removeEventListener("keyup", onSpaceKeyUp);
+    };
+  }, [CameraControls]);
 
   return (
     <CameraControls

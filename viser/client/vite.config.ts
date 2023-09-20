@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [react(), eslint(), viteTsconfigPaths(), svgrPlugin()],
   server: {
     port: 3000,
-    hmr: { port: 1025 }
+    hmr: { port: 1025 },
   },
   build: {
     outDir: "build",

@@ -14,7 +14,7 @@ function setServerParams(serverParams: string[]) {
   if (
     serverParams.length === 1 &&
     window.location.host.includes(
-      serverParams[0].replace("ws://", "").replace("/", ""),
+      serverParams[0].replace("ws://", "").replace("/", "")
     )
   )
     serverParams = [];
@@ -26,6 +26,6 @@ function setServerParams(serverParams: string[]) {
     // it. We're going to just not escape the string. :)
     serverParams.length === 0
       ? window.location.href.split("?")[0]
-      : `?${serverParams.map((s) => `${searchParamKey}=${s}`).join("&")}`,
+      : `?${serverParams.map((s) => `${searchParamKey}=${s}`).join("&")}`
   );
 }

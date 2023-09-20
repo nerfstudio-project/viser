@@ -78,7 +78,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   const computePanelOffset = (
     panelPosition: number,
     panelSize: number,
-    parentSize: number,
+    parentSize: number
   ) =>
     Math.abs(panelPosition + panelSize / 2.0) <
     Math.abs(panelPosition - parentSize + panelSize / 2.0)
@@ -98,12 +98,12 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 
     newX = Math.min(
       newX,
-      parent.clientWidth - panel.clientWidth - panelBoundaryPad,
+      parent.clientWidth - panel.clientWidth - panelBoundaryPad
     );
     newX = Math.max(newX, panelBoundaryPad);
     newY = Math.min(
       newY,
-      parent.clientHeight - panel.clientHeight - panelBoundaryPad,
+      parent.clientHeight - panel.clientHeight - panelBoundaryPad
     );
     newY = Math.max(newY, panelBoundaryPad);
 
@@ -134,13 +134,13 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         unfixedOffset.current.x = computePanelOffset(
           panel.offsetLeft,
           panel.clientWidth,
-          parent.clientWidth,
+          parent.clientWidth
         );
       if (unfixedOffset.current.y === undefined)
         unfixedOffset.current.y = computePanelOffset(
           panel.offsetTop,
           panel.clientHeight,
-          parent.clientHeight,
+          parent.clientHeight
         );
 
       panel.style.maxHeight = `${(
@@ -164,7 +164,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   const dragHandler = (
     event:
       | React.TouchEvent<HTMLDivElement>
-      | React.MouseEvent<HTMLDivElement, MouseEvent>,
+      | React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
     const state = dragInfo.current;
     const panel = panelWrapperRef.current;
@@ -201,7 +201,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
       const newY = state.startPosY + deltaY;
       [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
         newX,
-        newY,
+        newY
       );
     }
     window.addEventListener(eventNames.move, dragListener);
@@ -213,7 +213,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         }
         window.removeEventListener(eventNames.move, dragListener);
       },
-      { once: true },
+      { once: true }
     );
   };
 

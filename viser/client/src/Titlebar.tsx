@@ -28,7 +28,7 @@ function assertUnreachable(x: never): never {
 }
 
 function getIcon(
-  icon: ArrayElement<NoNull<TitlebarContent["buttons"]>>["icon"],
+  icon: ArrayElement<NoNull<TitlebarContent["buttons"]>>["icon"]
 ) {
   let Icon = null;
   switch (icon) {
@@ -51,7 +51,7 @@ function getIcon(
 
 // We inherit props directly from message contents.
 export function TitlebarButton(
-  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>,
+  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>
 ) {
   const Icon = getIcon(props.icon);
   return (
@@ -76,7 +76,7 @@ export function TitlebarButton(
 }
 
 export function MobileTitlebarButton(
-  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>,
+  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>
 ) {
   const Icon = getIcon(props.icon);
   return (
@@ -97,7 +97,7 @@ export function MobileTitlebarButton(
 
 export function TitlebarImage(
   props: NoNull<TitlebarContent["image"]>,
-  theme: MantineTheme,
+  theme: MantineTheme
 ) {
   let imageSource: string;
   if (props.image_url_dark == null || theme.colorScheme == "light") {

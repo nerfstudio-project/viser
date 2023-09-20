@@ -5,7 +5,7 @@ import { pack } from "msgpackr";
 /** Send message over websocket. */
 export function sendWebsocketMessage(
   websocketRef: MutableRefObject<WebSocket | null>,
-  message: Message,
+  message: Message
 ) {
   if (websocketRef.current === null) return;
   websocketRef.current.send(pack(message));
@@ -14,7 +14,7 @@ export function sendWebsocketMessage(
 /** Returns a function for sending messages, with automatic throttling. */
 export function makeThrottledMessageSender(
   websocketRef: MutableRefObject<WebSocket | null>,
-  throttleMilliseconds: number,
+  throttleMilliseconds: number
 ) {
   let readyToSend = true;
   let stale = false;
@@ -42,12 +42,7 @@ export function makeThrottledMessageSender(
 
 /** Type guard for threejs textures. Meant to be used with `scene.background`. */
 export function isTexture(
-  background:
-    | THREE.Color
-    | THREE.Texture
-    | THREE.CubeTexture
-    | null
-    | undefined,
+  background: THREE.Color | THREE.Texture | THREE.CubeTexture | null | undefined
 ): background is THREE.Texture {
   return (
     background !== null &&
