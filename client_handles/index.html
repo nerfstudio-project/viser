@@ -852,6 +852,27 @@ orientation updates to happen synchronously.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.ClientHandle.get_render">
+<span class="sig-name descname"><span class="pre">get_render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">typing_extensions.Literal</span><span class="p"><span class="pre">[</span></span><span class="pre">png</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">jpeg</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jpeg'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_viser/#ClientHandle.get_render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClientHandle.get_render" title="Permalink to this definition">#</a></dt>
+<dd><p>Request a render from a client, block until it’s done and received, then
+return it as a numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>height</strong> (<em>int</em>) – Height of rendered image. Should be &lt;= the browser height.</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – Width of rendered image. Should be &lt;= the browser width.</p></li>
+<li><p><strong>transport_format</strong> (<em>typing_extensions.Literal</em><em>[</em><em>png</em><em>, </em><em>jpeg</em><em>]</em>) – Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
+return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
+too quickly for higher-resolution images.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.ClientHandle.reset_scene">
 <span class="sig-name descname"><span class="pre">reset_scene</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.reset_scene" title="Permalink to this definition">#</a></dt>
 <dd><p>Reset the scene.</p>
@@ -1086,6 +1107,7 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ClientHandle.camera"><code class="docutils literal notranslate"><span class="pre">ClientHandle.camera</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.client_id"><code class="docutils literal notranslate"><span class="pre">ClientHandle.client_id</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.configure_theme"><code class="docutils literal notranslate"><span class="pre">ClientHandle.configure_theme()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.get_render"><code class="docutils literal notranslate"><span class="pre">ClientHandle.get_render()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.reset_scene"><code class="docutils literal notranslate"><span class="pre">ClientHandle.reset_scene()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.set_background_image"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_background_image()</span></code></a></li>
 </ul>

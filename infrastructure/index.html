@@ -297,6 +297,20 @@ you’re building a web-based application from scratch.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.ClientConnection.unregister_handler">
+<span class="sig-name descname"><span class="pre">unregister_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.infra.ClientConnection.unregister_handler" title="Permalink to this definition">#</a></dt>
+<dd><p>Unregister a handler for a particular message type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message_cls</strong> (<em>Type</em><em>[</em><em>TMessage</em><em>]</em>) – </p></li>
+<li><p><strong>callback</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>ClientId</em><em>, </em><em>TMessage</em><em>]</em><em>, </em><em>None</em><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py data">
@@ -385,6 +399,20 @@ should only keep the latest message.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.MessageHandler.unregister_handler">
+<span class="sig-name descname"><span class="pre">unregister_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_infra/#MessageHandler.unregister_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.MessageHandler.unregister_handler" title="Permalink to this definition">#</a></dt>
+<dd><p>Unregister a handler for a particular message type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message_cls</strong> (<em>Type</em><em>[</em><em>TMessage</em><em>]</em>) – </p></li>
+<li><p><strong>callback</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>ClientId</em><em>, </em><em>TMessage</em><em>]</em><em>, </em><em>None</em><em>]</em><em>]</em>) – </p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -499,6 +527,20 @@ is culled using the value of <code class="docutils literal notranslate"><span cl
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.Server.unregister_handler">
+<span class="sig-name descname"><span class="pre">unregister_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.infra.Server.unregister_handler" title="Permalink to this definition">#</a></dt>
+<dd><p>Unregister a handler for a particular message type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message_cls</strong> (<em>Type</em><em>[</em><em>TMessage</em><em>]</em>) – </p></li>
+<li><p><strong>callback</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>ClientId</em><em>, </em><em>TMessage</em><em>]</em><em>, </em><em>None</em><em>]</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
@@ -584,6 +626,7 @@ is culled using the value of <code class="docutils literal notranslate"><span cl
 <li><a class="reference internal" href="#viser.infra.ClientConnection.client_id"><code class="docutils literal notranslate"><span class="pre">ClientConnection.client_id</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.ClientConnection.register_handler"><code class="docutils literal notranslate"><span class="pre">ClientConnection.register_handler()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.ClientConnection.send"><code class="docutils literal notranslate"><span class="pre">ClientConnection.send()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.ClientConnection.unregister_handler"><code class="docutils literal notranslate"><span class="pre">ClientConnection.unregister_handler()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.infra.ClientId"><code class="docutils literal notranslate"><span class="pre">ClientId</span></code></a></li>
@@ -597,6 +640,7 @@ is culled using the value of <code class="docutils literal notranslate"><span cl
 </li>
 <li><a class="reference internal" href="#viser.infra.MessageHandler"><code class="docutils literal notranslate"><span class="pre">MessageHandler</span></code></a><ul>
 <li><a class="reference internal" href="#viser.infra.MessageHandler.register_handler"><code class="docutils literal notranslate"><span class="pre">MessageHandler.register_handler()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.MessageHandler.unregister_handler"><code class="docutils literal notranslate"><span class="pre">MessageHandler.unregister_handler()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.infra.Server"><code class="docutils literal notranslate"><span class="pre">Server</span></code></a><ul>
@@ -606,6 +650,7 @@ is culled using the value of <code class="docutils literal notranslate"><span cl
 <li><a class="reference internal" href="#viser.infra.Server.register_handler"><code class="docutils literal notranslate"><span class="pre">Server.register_handler()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Server.start"><code class="docutils literal notranslate"><span class="pre">Server.start()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Server.stop"><code class="docutils literal notranslate"><span class="pre">Server.stop()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.Server.unregister_handler"><code class="docutils literal notranslate"><span class="pre">Server.unregister_handler()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.infra.generate_typescript_interfaces"><code class="docutils literal notranslate"><span class="pre">generate_typescript_interfaces()</span></code></a></li>

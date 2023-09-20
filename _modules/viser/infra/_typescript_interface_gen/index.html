@@ -259,7 +259,9 @@
     <span class="nb">float</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
     <span class="nb">int</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span><span class="p">,</span>
     <span class="nb">str</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-    <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="s2">&quot;ArrayBuffer&quot;</span><span class="p">,</span>
+    <span class="c1"># For numpy arrays, we directly serialize the underlying data buffer.</span>
+    <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="s2">&quot;Uint8Array&quot;</span><span class="p">,</span>
+    <span class="nb">bytes</span><span class="p">:</span> <span class="s2">&quot;Uint8Array&quot;</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">:</span> <span class="s2">&quot;any&quot;</span><span class="p">,</span>
     <span class="kc">None</span><span class="p">:</span> <span class="s2">&quot;null&quot;</span><span class="p">,</span>
     <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">):</span> <span class="s2">&quot;null&quot;</span><span class="p">,</span>
@@ -323,9 +325,9 @@
                 <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">line</span><span class="p">:</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__doc__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span>
             <span class="p">)</span>
             <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/** </span><span class="si">{</span><span class="n">docstring</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; *&quot;</span><span class="p">)</span>
-            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; * (automatically generated)&quot;</span><span class="p">)</span>
-            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot; */&quot;</span><span class="p">)</span>
+            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; *&quot;</span><span class="p">)</span>
+            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; * (automatically generated)&quot;</span><span class="p">)</span>
+            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; */&quot;</span><span class="p">)</span>
 
         <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;export interface </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="s2">&quot;{&quot;</span><span class="p">)</span>
         <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  type: &quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&quot;;&#39;</span><span class="p">)</span>
@@ -360,19 +362,6 @@
                 <span class="s2">&quot;// This file should not be manually modified.&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="p">]</span>
-            <span class="o">+</span> <span class="p">(</span>
-                <span class="c1"># Add numpy type alias if needed.</span>
-                <span class="p">[</span>
-                    <span class="p">(</span>
-                        <span class="s2">&quot;// For numpy arrays, we directly serialize the underlying data&quot;</span>
-                        <span class="s2">&quot; buffer.&quot;</span>
-                    <span class="p">),</span>
-                    <span class="s2">&quot;type ArrayBuffer = Uint8Array;&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                <span class="p">]</span>
-                <span class="k">if</span> <span class="n">interfaces</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;ArrayBuffer&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-                <span class="k">else</span> <span class="p">[]</span>
-            <span class="p">)</span>
         <span class="p">)</span>
         <span class="o">+</span> <span class="n">interfaces</span>
     <span class="p">)</span></div>

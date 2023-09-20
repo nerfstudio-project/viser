@@ -30,8 +30,9 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
             data_path: Path = Path(__file__).parent / "assets/record3d_dance",
             downsample_factor: int = 4,
             max_frames: int = 100,
+            share: bool = False,
         ) -> None:
-            server = viser.ViserServer()
+            server = viser.ViserServer(share=share)
 
             print("Loading frames!")
             loader = viser.extras.Record3dLoader(data_path)
