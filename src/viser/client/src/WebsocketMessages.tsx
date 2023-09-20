@@ -1,8 +1,5 @@
 // AUTOMATICALLY GENERATED message interfaces, from Python dataclass definitions.
 // This file should not be manually modified.
-
-// For numpy arrays, we directly serialize the underlying data buffer.
-type ArrayBuffer = Uint8Array;
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
  *
@@ -78,8 +75,8 @@ export interface Gui3DMessage {
 export interface PointCloudMessage {
   type: "PointCloudMessage";
   name: string;
-  points: ArrayBuffer;
-  colors: ArrayBuffer;
+  points: Uint8Array;
+  colors: Uint8Array;
   point_size: number;
 }
 /** Mesh message.
@@ -91,10 +88,10 @@ export interface PointCloudMessage {
 export interface MeshMessage {
   type: "MeshMessage";
   name: string;
-  vertices: ArrayBuffer;
-  faces: ArrayBuffer;
+  vertices: Uint8Array;
+  faces: Uint8Array;
   color: number | null;
-  vertex_colors: ArrayBuffer | null;
+  vertex_colors: Uint8Array | null;
   wireframe: boolean;
   opacity: number | null;
   side: "front" | "back" | "double";
@@ -600,6 +597,25 @@ export interface CubicBezierSplineMessage {
   line_width: number;
   color: number;
 }
+/** Message from server->client requesting a render of the current viewport.
+ *
+ * (automatically generated)
+ */
+export interface GetRenderRequestMessage {
+  type: "GetRenderRequestMessage";
+  format: "image/jpeg" | "image/png";
+  height: number;
+  width: number;
+  quality: number;
+}
+/** Message from client->server carrying a render.
+ *
+ * (automatically generated)
+ */
+export interface GetRenderResponseMessage {
+  type: "GetRenderResponseMessage";
+  payload: Uint8Array;
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -648,4 +664,6 @@ export type Message =
   | GuiSetValueMessage
   | ThemeConfigurationMessage
   | CatmullRomSplineMessage
-  | CubicBezierSplineMessage;
+  | CubicBezierSplineMessage
+  | GetRenderRequestMessage
+  | GetRenderResponseMessage;
