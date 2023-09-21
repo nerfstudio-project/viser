@@ -46,7 +46,9 @@ export default function SidebarPanel({
           toggleCollapsed();
         }}
       >
-        <Tooltip zIndex={100} label={"Show sidebar"}>{<IconChevronLeft />}</Tooltip>
+        <Tooltip zIndex={100} label={"Show sidebar"}>
+          {<IconChevronLeft />}
+        </Tooltip>
       </ActionIcon>
     </Box>
   );
