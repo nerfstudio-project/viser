@@ -136,8 +136,8 @@ export function useGuiState(initialServer: string) {
             state.guiValueFromId = {};
             state.guiAttributeFromId = {};
           }),
-      }))
-    )
+      })),
+    ),
   )[0];
 }
 

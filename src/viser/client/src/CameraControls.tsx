@@ -14,7 +14,7 @@ export function SynchronizedCameraControls() {
 
   const sendCameraThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    20
+    20,
   );
 
   type CameraDetails = {
@@ -114,12 +114,12 @@ export function SynchronizedCameraControls() {
     const newPosition = new THREE.Vector3().lerpVectors(
       camera.position,
       targetPosition,
-      alpha
+      alpha,
     );
     const newLookAt = new THREE.Vector3().lerpVectors(
       cameraControls.getTarget(new THREE.Vector3()),
       targetLookAt,
-      alpha
+      alpha,
     );
 
     if (newPosition.distanceTo(targetPosition) < tolerance) {
@@ -219,28 +219,28 @@ export function SynchronizedCameraControls() {
       cameraControls.rotate(
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true
+        true,
       );
     });
     rightKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true
+        true,
       );
     });
     upKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true
+        true,
       );
     });
     downKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true
+        true,
       );
     });
 

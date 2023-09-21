@@ -53,7 +53,7 @@ export default function FloatingPanel({
   const computePanelOffset = (
     panelPosition: number,
     panelSize: number,
-    parentSize: number
+    parentSize: number,
   ) =>
     Math.abs(panelPosition + panelSize / 2.0) <
     Math.abs(panelPosition - parentSize + panelSize / 2.0)
@@ -73,12 +73,12 @@ export default function FloatingPanel({
 
     newX = Math.min(
       newX,
-      parent.clientWidth - panel.clientWidth - panelBoundaryPad
+      parent.clientWidth - panel.clientWidth - panelBoundaryPad,
     );
     newX = Math.max(newX, panelBoundaryPad);
     newY = Math.min(
       newY,
-      parent.clientHeight - panel.clientHeight - panelBoundaryPad
+      parent.clientHeight - panel.clientHeight - panelBoundaryPad,
     );
     newY = Math.max(newY, panelBoundaryPad);
 
@@ -109,13 +109,13 @@ export default function FloatingPanel({
         unfixedOffset.current.x = computePanelOffset(
           panel.offsetLeft,
           panel.clientWidth,
-          parent.clientWidth
+          parent.clientWidth,
         );
       if (unfixedOffset.current.y === undefined)
         unfixedOffset.current.y = computePanelOffset(
           panel.offsetTop,
           panel.clientHeight,
-          parent.clientHeight
+          parent.clientHeight,
         );
 
       // panel.style.maxHeight = `${(
@@ -145,7 +145,7 @@ export default function FloatingPanel({
   const dragHandler = (
     event:
       | React.TouchEvent<HTMLDivElement>
-      | React.MouseEvent<HTMLDivElement, MouseEvent>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>,
   ) => {
     const state = dragInfo.current;
     const panel = panelWrapperRef.current;
@@ -182,7 +182,7 @@ export default function FloatingPanel({
       const newY = state.startPosY + deltaY;
       [unfixedOffset.current.x, unfixedOffset.current.y] = setPanelLocation(
         newX,
-        newY
+        newY,
       );
     }
     window.addEventListener(eventNames.move, dragListener);
@@ -194,7 +194,7 @@ export default function FloatingPanel({
         }
         window.removeEventListener(eventNames.move, dragListener);
       },
-      { once: true }
+      { once: true },
     );
   };
 

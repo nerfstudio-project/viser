@@ -5,5 +5,5 @@ import { enableMapSet } from "immer";
 enableMapSet();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <Root />
+  <Root />,
 );
