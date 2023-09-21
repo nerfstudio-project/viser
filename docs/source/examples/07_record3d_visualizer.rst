@@ -28,28 +28,34 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
 
         def main(
             data_path: Path = Path(__file__).parent / "assets/record3d_dance",
-            downsample_factor: int = 2,
-            max_frames: int = 50,
+            downsample_factor: int = 4,
+            max_frames: int = 100,
+            share: bool = False,
         ) -> None:
-            server = viser.ViserServer()
+            server = viser.ViserServer(share=share)
 
             print("Loading frames!")
             loader = viser.extras.Record3dLoader(data_path)
             num_frames = min(max_frames, loader.num_frames())
 
             # Add playback UI.
-            with server.gui_folder("Playback"):
+            with server.add_gui_folder("Playback"):
                 gui_timestep = server.add_gui_slider(
-                    "Timestep", min=0, max=num_frames - 1, step=1, initial_value=0
+                    "Timestep",
+                    min=0,
+                    max=num_frames - 1,
+                    step=1,
+                    initial_value=0,
+                    disabled=True,
                 )
-                gui_next_frame = server.add_gui_button("Next Frame")
-                gui_prev_frame = server.add_gui_button("Prev Frame")
-                gui_playing = server.add_gui_checkbox("Playing", False)
+                gui_next_frame = server.add_gui_button("Next Frame", disabled=True)
+                gui_prev_frame = server.add_gui_button("Prev Frame", disabled=True)
+                gui_playing = server.add_gui_checkbox("Playing", True)
                 gui_framerate = server.add_gui_slider(
                     "FPS", min=1, max=60, step=0.1, initial_value=loader.fps
                 )
                 gui_framerate_options = server.add_gui_button_group(
-                    "FPS options", ["10", "20", "30", "60"]
+                    "FPS options", ("10", "20", "30", "60")
                 )
 
             # Frame step buttons.

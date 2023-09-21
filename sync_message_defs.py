@@ -12,11 +12,11 @@ if __name__ == "__main__":
 
     # Write to file.
     target_path = pathlib.Path(__file__).parent / pathlib.Path(
-        "viser/client/src/WebsocketMessages.tsx"
+        "src/viser/client/src/WebsocketMessages.tsx"
     )
     assert target_path.exists()
     target_path.write_text(defs)
     print(f"Wrote to {target_path}")
 
     # Run prettier.
-    subprocess.run(args=["prettier", "-w", str(target_path)])
+    subprocess.run(args=["npx", "prettier", "-w", str(target_path)])

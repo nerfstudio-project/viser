@@ -39,7 +39,6 @@ def main():
             "Size",
             initial_value=(1.0, 1.0, 1.0),
             step=0.25,
-            lock=True,
         )
         with server.add_gui_folder("Text toggle"):
             gui_checkbox_hide = server.add_gui_checkbox(

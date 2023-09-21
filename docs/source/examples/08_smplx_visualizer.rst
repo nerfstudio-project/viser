@@ -41,8 +41,10 @@ parameters to run this script:
             num_betas: int = 10,
             num_expression_coeffs: int = 10,
             ext: Literal["npz", "pkl"] = "npz",
+            share: bool = False,
         ) -> None:
-            server = viser.ViserServer()
+            server = viser.ViserServer(share=share)
+            server.configure_theme(control_layout="collapsible", dark_mode=True)
             model = smplx.create(
                 model_path=str(model_path),
                 model_type=model_type,
@@ -66,7 +68,7 @@ parameters to run this script:
             # Main loop. We'll just keep read from the joints, deform the mesh, then sending the
             # updated mesh in a loop. This could be made a lot more efficient.
             gui_elements = make_gui_elements(
-                server, num_betas=model.num_betas, num_body_joints=model.NUM_BODY_JOINTS
+                server, num_betas=model.num_betas, num_body_joints=int(model.NUM_BODY_JOINTS)
             )
             while True:
                 # Do nothing if no change.
@@ -74,6 +76,10 @@ parameters to run this script:
                     time.sleep(0.01)
                     continue
                 gui_elements.changed = False
+
+                full_pose = torch.from_numpy(
+                    onp.array([j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
+                )
 
                 # Get deformed mesh.
                 output = model.forward(
@@ -84,9 +90,7 @@ parameters to run this script:
                     ),
                     expression=None,
                     return_verts=True,
-                    body_pose=torch.from_numpy(
-                        onp.array([j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
-                    ),
+                    body_pose=full_pose[:, : model.NUM_BODY_JOINTS],  # type: ignore
                     global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].value, dtype=onp.float32)[None, ...]),  # type: ignore
                     return_full_pose=True,
                 )
@@ -119,10 +123,10 @@ parameters to run this script:
         class GuiElements:
             """Structure containing handles for reading from GUI elements."""
 
-            gui_rgb: viser.GuiHandle[Tuple[int, int, int]]
-            gui_wireframe: viser.GuiHandle[bool]
-            gui_betas: List[viser.GuiHandle[float]]
-            gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]]
+            gui_rgb: viser.GuiInputHandle[Tuple[int, int, int]]
+            gui_wireframe: viser.GuiInputHandle[bool]
+            gui_betas: List[viser.GuiInputHandle[float]]
+            gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]]
 
             changed: bool
             """This flag will be flipped to True whenever the mesh needs to be re-generated."""
@@ -133,28 +137,28 @@ parameters to run this script:
         ) -> GuiElements:
             """Make GUI elements for interacting with the model."""
 
+            tab_group = server.add_gui_tab_group()
+
             # GUI elements: mesh settings + visibility.
-            with server.gui_folder("View"):
+            with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
                 gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
+                gui_wireframe = server.add_gui_checkbox("Wireframe", initial_value=False)
+                gui_show_controls = server.add_gui_checkbox("Handles", initial_value=False)
 
                 @gui_rgb.on_update
                 def _(_):
                     out.changed = True
 
-                gui_wireframe = server.add_gui_checkbox("Wireframe", initial_value=False)
-
                 @gui_wireframe.on_update
                 def _(_):
                     out.changed = True
-
-                gui_show_controls = server.add_gui_checkbox("Handles", initial_value=False)
 
                 @gui_show_controls.on_update
                 def _(_):
                     add_transform_controls(enabled=gui_show_controls.value)
 
             # GUI elements: shape parameters.
-            with server.gui_folder("Shape"):
+            with tab_group.add_tab("Shape", viser.Icon.BOX):
                 gui_reset_shape = server.add_gui_button("Reset Shape")
                 gui_random_shape = server.add_gui_button("Random Shape")
 
@@ -180,8 +184,7 @@ parameters to run this script:
                         out.changed = True
 
             # GUI elements: joint angles.
-            with server.gui_folder("Joints"):
-                # Reset button.
+            with tab_group.add_tab("Joints", viser.Icon.ANGLE):
                 gui_reset_joints = server.add_gui_button("Reset Joints")
                 gui_random_joints = server.add_gui_button("Random Joints")
 
@@ -203,10 +206,10 @@ parameters to run this script:
                         joint.value = tf.SO3(wxyz=quat).log()
                         sync_transform_controls()
 
-                gui_joints: List[viser.GuiHandle[Tuple[float, float, float]]] = []
+                gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]] = []
                 for i in range(num_body_joints + 1):
                     gui_joint = server.add_gui_vector3(
-                        name=smplx.joint_names.JOINT_NAMES[i],
+                        label=smplx.joint_names.JOINT_NAMES[i],
                         initial_value=(0.0, 0.0, 0.0),
                         step=0.05,
                     )
@@ -221,7 +224,7 @@ parameters to run this script:
             transform_controls: List[viser.TransformControlsHandle] = []
 
             def add_transform_controls(enabled: bool) -> List[viser.TransformControlsHandle]:
-                for i in range(num_body_joints + 1):
+                for i in range(1 + num_body_joints):
                     controls = server.add_transform_controls(
                         f"/reoriented/smpl/joint_{i}/controls",
                         depth_test=False,

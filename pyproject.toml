@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.0.17"
+version = "0.1.4"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -32,6 +32,8 @@ dependencies = [
     "rich>=13.3.3",
     "trimesh>=3.21.7",
     "nodeenv>=1.8.0",
+    "psutil>=5.9.5",
+    "yourdfpy>=0.0.53",
 ]
 
 [project.optional-dependencies]
@@ -45,22 +47,14 @@ dev = [
 examples = [
     "smplx>=0.1.28",
     "torch>=1.13.1",
-    "yourdfpy>=0.0.53",
     "matplotlib>=3.7.1",
 ]
 
 [project.urls]
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
-[tool.setuptools.packages.find]
-exclude = [
-    "tests*",
-    "docs*",
-    "examples*",
-]
-
 [tool.setuptools.package-data]
-viser = ["py.typed", "client/build/**/*"]
+viser = ["py.typed", "_icons/tabler-icons.tar", "client/build/**/*"]
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
@@ -90,6 +84,7 @@ select = [
     "PLW",  # Pylint warnings.
 ]
 ignore = [
+    "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "F722",  # Forward annotation false positive from jaxtyping. Should be caught by pyright.
     "F821",  # Forward annotation false positive from jaxtyping. Should be caught by pyright.

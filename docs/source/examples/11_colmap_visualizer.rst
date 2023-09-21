@@ -43,20 +43,24 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                 downsample_factor: Downsample factor for the images.
             """
             server = viser.ViserServer()
-            server.configure_theme(canvas_background_color=(230, 230, 230))
+            server.configure_theme(titlebar_content=None, control_layout="collapsible")
 
             # Load the colmap info.
             cameras = read_cameras_binary(colmap_path / "cameras.bin")
             images = read_images_binary(colmap_path / "images.bin")
             points3d = read_points3d_binary(colmap_path / "points3D.bin")
-            gui_reset_up = server.add_gui_button("Reset up direction")
+            gui_reset_up = server.add_gui_button(
+                "Reset up direction",
+                hint="Set the camera control 'up' direction to the current camera's 'up'.",
+            )
 
             @gui_reset_up.on_click
-            def _(_) -> None:
-                for client in server.get_clients().values():
-                    client.camera.up_direction = tf.SO3(client.camera.wxyz) @ onp.array(
-                        [0.0, -1.0, 0.0]
-                    )
+            def _(event: viser.GuiEvent) -> None:
+                client = event.client
+                assert client is not None
+                client.camera.up_direction = tf.SO3(client.camera.wxyz) @ onp.array(
+                    [0.0, -1.0, 0.0]
+                )
 
             gui_points = server.add_gui_slider(
                 "Max points",
