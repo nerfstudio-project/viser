@@ -49,6 +49,7 @@ export default function ControlPanel(props: {
         <Tooltip
           zIndex={100}
           label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
+          withinPortal
         >
           {showSettings ? (
             <IconArrowBack stroke={1.625} />
