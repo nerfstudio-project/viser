@@ -149,6 +149,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
     50,
   );
   const [hovered, setHovered] = React.useState(false);
+  const [dragged, setDragged] = React.useState(false);
   useCursor(hovered);
   if (!clickable && hovered) setHovered(false);
 
@@ -164,12 +165,38 @@ export function SceneNodeThreeObject(props: { name: string }) {
     return (
       <>
         <group
-          onClick={
+          // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
+          // and only send a click if the mouse hasn't moved between the down and up events.
+          //  - onPointerDown resets the click state (dragged = false)
+          //  - onPointerMove, if triggered, sets dragged = true
+          //  - onPointerUp, if triggered, sends a click if dragged = false.
+          // Note: It would be cool to have dragged actions too...
+          onPointerDown={
             !clickable
               ? undefined
               : (e) => {
                   if (!isVisible()) return;
                   e.stopPropagation();
+                  setDragged(false);
+                }
+          }
+          onPointerMove={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isVisible()) return;
+                  e.stopPropagation();
+                  if (dragged) return;
+                  setDragged(true);
+                }
+          }
+          onPointerUp={
+            !clickable
+              ? undefined
+              : (e) => {
+                  if (!isVisible()) return;
+                  e.stopPropagation();
+                  if (dragged) return;
                   sendClicksThrottled({
                     type: "SceneNodeClickedMessage",
                     name: props.name,
