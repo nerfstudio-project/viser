@@ -325,7 +325,7 @@ function useMessageHandler() {
           message.look_at[2],
         );
         target.applyQuaternion(R_threeworld_world);
-        cameraControls.setTarget(target.x, target.y, target.z);
+        cameraControls.setTarget(target.x, target.y, target.z, false);
         return;
       }
       case "SetCameraUpDirectionMessage": {
@@ -353,6 +353,7 @@ function useMessageHandler() {
           prevPosition.x,
           prevPosition.y,
           prevPosition.z,
+          false,
         );
         return;
       }
