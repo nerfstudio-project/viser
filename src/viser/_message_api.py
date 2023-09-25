@@ -422,7 +422,7 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GlbHandle:
-        """Add a trimesh mesh to the scene. Internally calls `seld.add_glb()`."""
+        """Add a trimesh mesh to the scene. Internally calls `self.add_glb()`."""
 
         with io.BytesIO() as data_buffer:
             mesh.export(data_buffer, file_type="glb")
