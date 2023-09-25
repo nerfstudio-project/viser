@@ -44,7 +44,7 @@ Example for getting renders from a client's viewport to the Python API.
                         line_width=3.0,
                         color=onp.random.uniform(size=3),
                     )
-                    images.append(client.get_render(height=1080, width=1920))
+                    images.append(client.get_render(height=720, width=1280))
 
                 print("Writing GIF...")
                 iio.imwrite("saved.gif", images)
