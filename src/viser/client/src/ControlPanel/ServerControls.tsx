@@ -1,7 +1,14 @@
 import { ViewerContext } from "../App";
-import { Button, Divider, Stack, Switch, TextInput } from "@mantine/core";
-import { Stats } from "@react-three/drei";
-import { IconPhoto } from "@tabler/icons-react";
+import {
+  Anchor,
+  Button,
+  Divider,
+  Stack,
+  Switch,
+  TextInput,
+} from "@mantine/core";
+import { IconBrandGithub, IconHomeMove, IconPhoto } from "@tabler/icons-react";
+import { Box, Stats } from "@react-three/drei";
 import React from "react";
 import SceneTreeTable from "./SceneTreeTable";
 
@@ -95,15 +102,34 @@ export default function ServerControls() {
         >
           Export Canvas
         </Button>
+        <Button
+          onClick={() => {
+            viewer.resetCameraViewRef.current!();
+          }}
+          fullWidth
+          leftIcon={<IconHomeMove size="1rem" />}
+        >
+          Reset View
+        </Button>
         <Switch
           label="WebGL Statistics"
           onChange={(event) => {
             setShowStats(event.currentTarget.checked);
           }}
         />
-        <Divider my="sm" />
+        <Divider mt="xs" />
         Scene tree
         <MemoizedTable compact={true} />
+        <Anchor
+          mt="xs"
+          href="https://github.com/nerfstudio-project/viser"
+          target="_blank"
+          sx={{ display: "flex", alignItems: "center", gap: "0.3em" }}
+          color="dimmed"
+        >
+          <IconBrandGithub height="1.5em" style={{ display: "block" }} />{" "}
+          <Box>nerfstudio-project/viser</Box>
+        </Anchor>
       </Stack>
     </>
   );

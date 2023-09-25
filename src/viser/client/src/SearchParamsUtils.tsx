@@ -13,9 +13,12 @@ function setServerParams(serverParams: string[]) {
   // So if we navigate to http://localhost:8081, this should by default connect to ws://localhost:8081.
   if (
     serverParams.length === 1 &&
-    window.location.host.includes(
+    (window.location.host.includes(
       serverParams[0].replace("ws://", "").replace("/", ""),
-    )
+    ) ||
+      window.location.host.includes(
+        serverParams[0].replace("wss://", "").replace("/", ""),
+      ))
   )
     serverParams = [];
 

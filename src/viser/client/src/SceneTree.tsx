@@ -40,47 +40,17 @@ function SceneNodeThreeChildren(props: {
   parent: THREE.Object3D;
 }) {
   const viewer = React.useContext(ViewerContext)!;
-  const [children, setChildren] = React.useState<string[]>([]);
-
-  // De-bounce updates to children.
-  React.useEffect(() => {
-    let readyToUpdate = true;
-
-    let updateChildrenTimeout: NodeJS.Timeout | undefined = undefined;
-
-    function updateChildren() {
-      const newChildren =
-        viewer.useSceneTree.getState().nodeFromName[props.name]?.children;
-      if (newChildren === undefined || children == newChildren) {
-        return;
-      }
-      if (readyToUpdate) {
-        setChildren(newChildren!);
-        readyToUpdate = false;
-        updateChildrenTimeout = setTimeout(() => {
-          readyToUpdate = true;
-          updateChildren();
-        }, 50);
-      }
-    }
-    const unsubscribe = viewer.useSceneTree.subscribe(
-      (state) => state.nodeFromName[props.name],
-      updateChildren,
-    );
-    updateChildren();
-
-    return () => {
-      clearTimeout(updateChildrenTimeout);
-      unsubscribe();
-    };
-  }, [children]);
+  const children = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.children,
+  );
 
   // Create a group of children inside of the parent object.
   return createPortal(
     <group>
-      {children.map((child_id) => {
-        return <SceneNodeThreeObject key={child_id} name={child_id} />;
-      })}
+      {children &&
+        children.map((child_id) => {
+          return <SceneNodeThreeObject key={child_id} name={child_id} />;
+        })}
       <SceneNodeLabel name={props.name} />
     </group>,
     props.parent,
@@ -125,7 +95,14 @@ export function SceneNodeThreeObject(props: { name: string }) {
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
   // Create object + children.
-  const objNode = makeObject && makeObject(setRef);
+  //
+  // For not-fully-understood reasons, wrapping makeObject with useMemo() fixes
+  // stability issues (eg breaking runtime errors) associated with
+  // PivotControls.
+  const objNode = React.useMemo(
+    () => makeObject && makeObject(setRef),
+    [makeObject],
+  );
   const children =
     obj === null ? null : (
       <SceneNodeThreeChildren name={props.name} parent={obj} />

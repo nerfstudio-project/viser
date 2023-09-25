@@ -37,6 +37,6 @@ module.exports = {
         skipUndeclared: true,
       },
     ],
-    "react-refresh/only-export-components": "warn"
+    "react-refresh/only-export-components": "warn",
   },
 };

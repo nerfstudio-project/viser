@@ -46,7 +46,7 @@ export default function GeneratedGuiContainer({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId]
+    (state) => state.guiIdSetFromContainerId[containerId],
   );
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
@@ -375,6 +375,7 @@ function GeneratedInput({
           w="15rem"
           withArrow
           openDelay={500}
+          withinPortal
         >
           <Box>{input}</Box>
         </Tooltip>
@@ -505,7 +506,7 @@ function VectorInput(
         precision: number;
         onChange: (value: number[]) => void;
         disabled: boolean;
-      }
+      },
 ) {
   return (
     <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>

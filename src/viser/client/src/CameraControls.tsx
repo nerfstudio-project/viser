@@ -3,19 +3,42 @@ import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { CameraControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import * as holdEvent from "hold-event";
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 import { PerspectiveCamera } from "three";
 import * as THREE from "three";
 
-/** OrbitControls, but synchronized with the server and other panels. */
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
   const camera = useThree((state) => state.camera as PerspectiveCamera);
 
   const sendCameraThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    20,
+    20
   );
+
+  // Helper for resetting camera poses.
+  const initialCameraRef = useRef<{
+    camera: PerspectiveCamera;
+    lookAt: THREE.Vector3;
+  } | null>(null);
+
+  viewer.resetCameraViewRef.current = () => {
+    viewer.cameraControlRef.current!.setLookAt(
+      initialCameraRef.current!.camera.position.x,
+      initialCameraRef.current!.camera.position.y,
+      initialCameraRef.current!.camera.position.z,
+      initialCameraRef.current!.lookAt.x,
+      initialCameraRef.current!.lookAt.y,
+      initialCameraRef.current!.lookAt.z,
+      true
+    );
+    viewer.cameraRef.current!.up.set(
+      initialCameraRef.current!.camera.up.x,
+      initialCameraRef.current!.camera.up.y,
+      initialCameraRef.current!.camera.up.z
+    );
+    viewer.cameraControlRef.current!.updateCameraUp();
+  };
 
   // Callback for sending cameras.
   const sendCamera = React.useCallback(() => {
@@ -42,6 +65,15 @@ export function SynchronizedCameraControls() {
       .getTarget(new THREE.Vector3())
       .applyQuaternion(R_world_threeworld);
     const up = three_camera.up.clone().applyQuaternion(R_world_threeworld);
+
+    //Store initial camera values
+    if (initialCameraRef.current === null) {
+      initialCameraRef.current = {
+        camera: three_camera.clone(),
+        lookAt: camera_control.getTarget(new THREE.Vector3()),
+      };
+    }
+
     sendCameraThrottled({
       type: "ViewerCameraMessage",
       wxyz: [
@@ -77,13 +109,6 @@ export function SynchronizedCameraControls() {
   }, [camera]);
 
   // Keyboard controls.
-  //
-  // TODO: (critical) we should move this to the root component. Currently if
-  // we add 100 panes and remove 99 of them, we'll still have 100 event
-  // listeners. This should also be combined with some notion notion of the
-  // currently active pane, and only apply keyboard controls to that pane.
-  //
-  // Currently all panes listen to events all the time.
   React.useEffect(() => {
     const KEYCODE = {
       W: 87,
@@ -94,6 +119,9 @@ export function SynchronizedCameraControls() {
       ARROW_UP: 38,
       ARROW_RIGHT: 39,
       ARROW_DOWN: 40,
+      SPACE: " ",
+      Q: 81,
+      E: 69,
     };
     const cameraControls = viewer.cameraControlRef.current!;
 
@@ -101,17 +129,28 @@ export function SynchronizedCameraControls() {
     const aKey = new holdEvent.KeyboardKeyHold(KEYCODE.A, 20);
     const sKey = new holdEvent.KeyboardKeyHold(KEYCODE.S, 20);
     const dKey = new holdEvent.KeyboardKeyHold(KEYCODE.D, 20);
+    const qKey = new holdEvent.KeyboardKeyHold(KEYCODE.Q, 20);
+    const eKey = new holdEvent.KeyboardKeyHold(KEYCODE.E, 20);
+
+    // TODO: these event listeners are currently never removed, even if this
+    // component gets unmounted.
     aKey.addEventListener("holding", (event) => {
-      cameraControls.truck(-0.002 * event?.deltaTime, 0, false);
+      cameraControls.truck(-0.002 * event?.deltaTime, 0, true);
     });
     dKey.addEventListener("holding", (event) => {
-      cameraControls.truck(0.002 * event?.deltaTime, 0, false);
+      cameraControls.truck(0.002 * event?.deltaTime, 0, true);
     });
     wKey.addEventListener("holding", (event) => {
-      cameraControls.forward(0.002 * event?.deltaTime, false);
+      cameraControls.forward(0.002 * event?.deltaTime, true);
     });
     sKey.addEventListener("holding", (event) => {
-      cameraControls.forward(-0.002 * event?.deltaTime, false);
+      cameraControls.forward(-0.002 * event?.deltaTime, true);
+    });
+    qKey.addEventListener("holding", (event) => {
+      cameraControls.elevate(0.002 * event?.deltaTime, true);
+    });
+    eKey.addEventListener("holding", (event) => {
+      cameraControls.elevate(-0.002 * event?.deltaTime, true);
     });
 
     const leftKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_LEFT, 20);
@@ -120,37 +159,40 @@ export function SynchronizedCameraControls() {
     const downKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_DOWN, 20);
     leftKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
-        -0.1 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
+        -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true,
+        true
       );
     });
     rightKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
-        0.1 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
+        0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true,
+        true
       );
     });
     upKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true,
+        true
       );
     });
     downKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true,
+        true
       );
     });
 
     // TODO: we currently don't remove any event listeners. This is a bit messy
     // because KeyboardKeyHold attaches listeners directly to the
     // document/window; it's unclear if we can remove these.
-  });
+    return () => {
+      return;
+    };
+  }, [CameraControls]);
 
   return (
     <CameraControls
@@ -158,7 +200,7 @@ export function SynchronizedCameraControls() {
       minDistance={0.1}
       maxDistance={200.0}
       dollySpeed={0.3}
-      smoothTime={0.0}
+      smoothTime={0.05}
       draggingSmoothTime={0.0}
       onChange={sendCamera}
       makeDefault

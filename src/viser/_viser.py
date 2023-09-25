@@ -2,20 +2,27 @@ from __future__ import annotations
 
 import contextlib
 import dataclasses
+import io
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Dict, Generator, List, Tuple
+from typing import Callable, Dict, Generator, List, Optional, Tuple
 
+import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as npt
-from typing_extensions import override
+import rich
+from rich import box, style
+from rich.panel import Panel
+from rich.table import Table
+from typing_extensions import Literal, override
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
 from ._gui_api import GuiApi
 from ._message_api import MessageApi, cast_vector
 from ._scene_handles import FrameHandle, _SceneNodeHandleState
+from ._tunnel import _ViserTunnel
 
 
 @dataclasses.dataclass
@@ -191,6 +198,57 @@ class ClientHandle(MessageApi, GuiApi):
         """Define how the message API should send messages."""
         self._state.connection.send(message)
 
+    def get_render(
+        self, height: int, width: int, transport_format: Literal["png", "jpeg"] = "jpeg"
+    ) -> onp.ndarray:
+        """Request a render from a client, block until it's done and received, then
+        return it as a numpy array.
+
+        Args:
+            height: Height of rendered image. Should be <= the browser height.
+            width: Width of rendered image. Should be <= the browser width.
+            transport_format: Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
+                return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
+                too quickly for higher-resolution images.
+        """
+
+        # Listen for a render reseponse message, which should contain the rendered
+        # image.
+        render_ready_event = threading.Event()
+        out: Optional[onp.ndarray] = None
+
+        def got_render_cb(
+            client_id: int, message: _messages.GetRenderResponseMessage
+        ) -> None:
+            del client_id
+            self._state.connection.unregister_handler(
+                _messages.GetRenderResponseMessage, got_render_cb
+            )
+            nonlocal out
+            out = iio.imread(
+                io.BytesIO(message.payload),
+                extension=f".{transport_format}",
+            )
+            render_ready_event.set()
+
+        self._state.connection.register_handler(
+            _messages.GetRenderResponseMessage, got_render_cb
+        )
+        self._queue(
+            _messages.GetRenderRequestMessage(
+                "image/jpeg" if transport_format == "jpeg" else "image/png",
+                height=height,
+                width=width,
+                # Only used for JPEG. The main reason to use a lower quality version
+                # value is (unfortunately) to make life easier for the Javascript
+                # garbage collector.
+                quality=80,
+            )
+        )
+        render_ready_event.wait()
+        assert out is not None
+        return out
+
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
         """Returns a context where:
@@ -234,13 +292,19 @@ class ViserServer(MessageApi, GuiApi):
 
     Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all
     clients, including new clients that connect after a command is called.
+
+    Args:
+        host: Host to bind server to.
+        port: Port to bind server to.
+        share: Experimental. If set to `True`, create and print a public, shareable URL
+            for this instance of viser.
     """
 
     world_axes: FrameHandle
     """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
     and then hidden by default."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8080):
+    def __init__(self, host: str = "0.0.0.0", port: int = 8080, share: bool = False):
         server = infra.Server(
             host=host,
             port=port,
@@ -331,6 +395,39 @@ class ViserServer(MessageApi, GuiApi):
 
         # Start the server.
         server.start()
+
+        # Form status print.
+        port = server._port  # Port may have changed.
+        http_url = f"http://{host}:{port}"
+        ws_url = f"ws://{host}:{port}"
+        table = Table(
+            title=None,
+            show_header=False,
+            box=box.MINIMAL,
+            title_style=style.Style(bold=True),
+        )
+        table.add_row("HTTP", http_url)
+        table.add_row("Websocket", ws_url)
+        rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
+
+        # Create share tunnel if requested.
+        if not share:
+            self._share_tunnel = None
+        else:
+            rich.print("[bold](viser)[/bold] Share URL requested!")
+            self._share_tunnel = _ViserTunnel(port)
+
+            @self._share_tunnel.on_connect
+            def _() -> None:
+                assert self._share_tunnel is not None
+                share_url = self._share_tunnel.get_url()
+                if share_url is None:
+                    rich.print("[bold](viser)[/bold] Could not generate share URL")
+                else:
+                    rich.print(
+                        f"[bold](viser)[/bold] Share URL (expires in 24 hours): {share_url}"
+                    )
+
         self.reset_scene()
         self.world_axes = FrameHandle(
             _SceneNodeHandleState(
@@ -341,6 +438,12 @@ class ViserServer(MessageApi, GuiApi):
             )
         )
         self.world_axes.visible = False
+
+    def stop(self) -> None:
+        """Stop the Viser server and associated threads and tunnels."""
+        self._server.stop()
+        if self._share_tunnel is not None:
+            self._share_tunnel.close()
 
     @override
     def _get_api(self) -> MessageApi:

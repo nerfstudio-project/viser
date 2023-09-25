@@ -13,7 +13,11 @@ import { CameraFrustum, CoordinateFrame } from "./ThreeAssets";
 import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
-import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
+import {
+  isTexture,
+  makeThrottledMessageSender,
+  sendWebsocketMessage,
+} from "./WebsocketFunctions";
 import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
@@ -79,6 +83,13 @@ function useMessageHandler() {
     }
 
     switch (message.type) {
+      // Request a render.
+      case "GetRenderRequestMessage": {
+        viewer.getRenderRequest.current = message;
+        viewer.getRenderRequestState.current = "triggered";
+        return;
+      }
+      // Configure the theme.
       case "ThemeConfigurationMessage": {
         setTheme(message);
         return;
@@ -314,7 +325,7 @@ function useMessageHandler() {
           message.look_at[2],
         );
         target.applyQuaternion(R_threeworld_world);
-        cameraControls.setTarget(target.x, target.y, target.z);
+        cameraControls.setTarget(target.x, target.y, target.z, false);
         return;
       }
       case "SetCameraUpDirectionMessage": {
@@ -342,6 +353,7 @@ function useMessageHandler() {
           prevPosition.x,
           prevPosition.y,
           prevPosition.z,
+          false,
         );
         return;
       }
@@ -413,9 +425,6 @@ function useMessageHandler() {
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
         viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
           message.base64_depth !== null;
-        console.log(
-          viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value,
-        );
 
         if (message.base64_depth !== null) {
           // If depth is available set the texture
@@ -674,14 +683,112 @@ function useMessageHandler() {
 
 export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();
-  const messageQueueRef = useContext(ViewerContext)!.messageQueueRef;
+  const viewer = useContext(ViewerContext)!;
+  const messageQueueRef = viewer.messageQueueRef;
+
+  // We'll reuse the same canvas.
+  const renderBufferCanvas = React.useMemo(() => new OffscreenCanvas(1, 1), []);
 
   useFrame(() => {
-    // Handle messages before every frame.
-    // Place this directly in ws.onmessage can cause race conditions!
-    const numMessages = messageQueueRef.current.length;
-    const processBatch = messageQueueRef.current.splice(0, numMessages);
-    processBatch.forEach(handleMessage);
+    // Send a render along if it was requested!
+    if (viewer.getRenderRequestState.current === "triggered") {
+      viewer.getRenderRequestState.current = "pause";
+    } else if (viewer.getRenderRequestState.current === "pause") {
+      const sourceCanvas = viewer.canvasRef.current!;
+
+      const targetWidth = viewer.getRenderRequest.current!.width;
+      const targetHeight = viewer.getRenderRequest.current!.height;
+
+      // We'll save a render to an intermediate canvas with the requested dimensions.
+      if (renderBufferCanvas.width !== targetWidth)
+        renderBufferCanvas.width = targetWidth;
+      if (renderBufferCanvas.height !== targetHeight)
+        renderBufferCanvas.height = targetHeight;
+
+      const ctx = renderBufferCanvas.getContext("2d")!;
+      ctx.reset();
+      // Use a white background for JPEGs, which don't have an alpha channel.
+      if (viewer.getRenderRequest.current?.format === "image/jpeg") {
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, renderBufferCanvas.width, renderBufferCanvas.height);
+      }
+
+      // Determine offsets for the source canvas. We'll always center our renders.
+      // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
+      let sourceWidth = sourceCanvas.width;
+      let sourceHeight = sourceCanvas.height;
+
+      const sourceAspect = sourceWidth / sourceHeight;
+      const targetAspect = targetWidth / targetHeight;
+
+      if (sourceAspect > targetAspect) {
+        // The source is wider than the target.
+        // We need to shrink the width.
+        sourceWidth = Math.round(targetAspect * sourceHeight);
+      } else if (sourceAspect < targetAspect) {
+        // The source is narrower than the target.
+        // We need to shrink the height.
+        sourceHeight = Math.round(sourceWidth / targetAspect);
+      }
+
+      console.log(
+        `Sending render; requested aspect ratio was ${targetAspect} (dimensinos: ${targetWidth}/${targetHeight}), copying from aspect ratio ${
+          sourceWidth / sourceHeight
+        } (dimensions: ${sourceWidth}/${sourceHeight}).`,
+      );
+
+      ctx.drawImage(
+        sourceCanvas,
+        (sourceCanvas.width - sourceWidth) / 2.0,
+        (sourceCanvas.height - sourceHeight) / 2.0,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        targetWidth,
+        targetHeight,
+      );
+
+      viewer.getRenderRequestState.current = "in_progress";
+
+      // Encode the image, the send it.
+      renderBufferCanvas
+        .convertToBlob({
+          type: viewer.getRenderRequest.current!.format,
+          quality: viewer.getRenderRequest.current!.quality / 100.0,
+        })
+        .then(async (blob) => {
+          if (blob === null) {
+            console.error("Render failed");
+            viewer.getRenderRequestState.current = "ready";
+            return;
+          }
+          const payload = new Uint8Array(await blob.arrayBuffer());
+          sendWebsocketMessage(viewer.websocketRef, {
+            type: "GetRenderResponseMessage",
+            payload: payload,
+          });
+          viewer.getRenderRequestState.current = "ready";
+        });
+    }
+
+    // Handle messages, but only if we're not trying to render something.
+    if (viewer.getRenderRequestState.current === "ready") {
+      // Handle messages before every frame.
+      // Place this directly in ws.onmessage can cause race conditions!
+      //
+      // If a render is requested, note that we don't handle any more messages
+      // until the render is done.
+      const requestRenderIndex = messageQueueRef.current.findIndex(
+        (message) => message.type === "GetRenderRequestMessage",
+      );
+      const numMessages =
+        requestRenderIndex !== -1
+          ? requestRenderIndex + 1
+          : messageQueueRef.current.length;
+      const processBatch = messageQueueRef.current.splice(0, numMessages);
+      processBatch.forEach(handleMessage);
+    }
   });
 
   return null;
@@ -720,8 +827,8 @@ export function WebsocketMessageProducer() {
         viewer.useGui.setState({ websocketConnected: true });
       };
 
-      ws.onclose = () => {
-        console.log(`Disconnected! ${server}`);
+      ws.onclose = (event) => {
+        console.log(`Disconnected! ${server} code=${event.code}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
         viewer.useGui.setState({ websocketConnected: false });

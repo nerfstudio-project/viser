@@ -6,13 +6,14 @@ import {
   ActionIcon,
   Box,
   Collapse,
+  Loader,
   Tooltip,
+  Transition,
   useMantineTheme,
 } from "@mantine/core";
 import {
   IconAdjustments,
   IconCloudCheck,
-  IconCloudOff,
   IconArrowBack,
 } from "@tabler/icons-react";
 import React from "react";
@@ -33,7 +34,7 @@ export default function ControlPanel(props: {
   // TODO: will result in unnecessary re-renders.
   const viewer = React.useContext(ViewerContext)!;
   const showGenerated = viewer.useGui(
-    (state) => "root" in state.guiIdSetFromContainerId
+    (state) => "root" in state.guiIdSetFromContainerId,
   );
   const [showSettings, { toggle }] = useDisclosure(false);
 
@@ -48,6 +49,7 @@ export default function ControlPanel(props: {
         <Tooltip
           zIndex={100}
           label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
+          withinPortal
         >
           {showSettings ? (
             <IconArrowBack stroke={1.625} />
@@ -112,22 +114,36 @@ export default function ControlPanel(props: {
 function ConnectionStatus() {
   const { useGui } = React.useContext(ViewerContext)!;
   const connected = useGui((state) => state.websocketConnected);
-  const server = useGui((state) => state.server);
   const label = useGui((state) => state.label);
 
-  const StatusIcon = connected ? IconCloudCheck : IconCloudOff;
   return (
     <>
-      <StatusIcon
-        color={connected ? "#0b0" : "#b00"}
-        style={{
-          transform: "translateY(-0.05em)",
-          width: "1.2em",
-          height: "1.2em",
-        }}
-      />
+      <div style={{ width: "1.4em" }} /> {/* Spacer. */}
+      <Transition transition="skew-down" mounted={connected}>
+        {(styles) => (
+          <IconCloudCheck
+            color={"#0b0"}
+            style={{
+              position: "absolute",
+              width: "1.5em",
+              height: "1.5em",
+              ...styles,
+            }}
+          />
+        )}
+      </Transition>
+      <Transition transition="skew-down" mounted={!connected}>
+        {(styles) => (
+          <Loader
+            size="xs"
+            variant="bars"
+            color="red"
+            style={{ position: "absolute", ...styles }}
+          />
+        )}
+      </Transition>
       <Box px="xs" sx={{ flexGrow: 1 }}>
-        {label === "" ? server : label}
+        {label !== "" ? label : connected ? "Connected" : "Connecting..."}
       </Box>
     </>
   );

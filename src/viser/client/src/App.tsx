@@ -36,7 +36,7 @@ import {
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
-import { Message } from "./WebsocketMessages";
+import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -49,6 +49,7 @@ export type ViewerContextContents = {
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   backgroundMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
+  resetCameraViewRef: React.MutableRefObject<(() => void) | null>;
   // Scene node attributes.
   // This is intentionally placed outside of the Zustand state to reduce overhead.
   nodeAttributesFromName: React.MutableRefObject<{
@@ -61,6 +62,11 @@ export type ViewerContextContents = {
         };
   }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
+  // Requested a render.
+  getRenderRequestState: React.MutableRefObject<
+    "ready" | "triggered" | "pause" | "in_progress"
+  >;
+  getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -75,6 +81,7 @@ function ViewerRoot() {
     // https://localhost:8080/?server=some_url => ws://localhost:8080
     let server = window.location.href;
     server = server.replace("http://", "ws://");
+    server = server.replace("https://", "wss://");
     server = server.split("?")[0];
     if (server.endsWith("/")) server = server.slice(0, -1);
     return server;
@@ -95,9 +102,12 @@ function ViewerRoot() {
     cameraRef: React.useRef(null),
     backgroundMaterialRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
+    resetCameraViewRef: React.useRef(null),
     // Scene node attributes that aren't placed in the zustand state for performance reasons.
     nodeAttributesFromName: React.useRef({}),
     messageQueueRef: React.useRef([]),
+    getRenderRequestState: React.useRef("ready"),
+    getRenderRequest: React.useRef(null),
   };
 
   return (

@@ -34,8 +34,9 @@ def main(
     num_betas: int = 10,
     num_expression_coeffs: int = 10,
     ext: Literal["npz", "pkl"] = "npz",
+    share: bool = False,
 ) -> None:
-    server = viser.ViserServer()
+    server = viser.ViserServer(share=share)
     server.configure_theme(control_layout="collapsible", dark_mode=True)
     model = smplx.create(
         model_path=str(model_path),

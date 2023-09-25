@@ -12,6 +12,7 @@ from typing import (
     Any,
     Awaitable,
     Callable,
+    Coroutine,
     Dict,
     List,
     NewType,
@@ -20,6 +21,7 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
+    Union,
 )
 
 import msgpack
@@ -28,13 +30,15 @@ import websockets.connection
 import websockets.datastructures
 import websockets.exceptions
 import websockets.server
-from rich import box, style
-from rich.panel import Panel
-from rich.table import Table
 from typing_extensions import Literal, assert_never
 from websockets.legacy.server import WebSocketServerProtocol
 
-from ._async_message_buffer import AsyncMessageBuffer, MessageWindow
+from ._async_message_buffer import (
+    DONE_SENTINEL,
+    AsyncMessageBuffer,
+    DoneSentinel,
+    MessageWindow,
+)
 from ._messages import Message
 
 
@@ -66,6 +70,20 @@ class MessageHandler:
         if message_cls not in self._incoming_handlers:
             self._incoming_handlers[message_cls] = []
         self._incoming_handlers[message_cls].append(callback)  # type: ignore
+
+    def unregister_handler(
+        self,
+        message_cls: Type[TMessage],
+        callback: Optional[Callable[[ClientId, TMessage], None]] = None,
+    ):
+        """Unregister a handler for a particular message type."""
+        assert (
+            message_cls in self._incoming_handlers
+        ), "Tried to unregister a handler that hasn't been registered."
+        if callback is None:
+            self._incoming_handlers.pop(message_cls)
+        else:
+            self._incoming_handlers[message_cls].remove(callback)  # type: ignore
 
     def _handle_incoming_message(self, client_id: ClientId, message: Message) -> None:
         """Handle incoming messages."""
@@ -137,6 +155,7 @@ class Server(MessageHandler):
         self._client_api_version: Literal[0, 1] = client_api_version
 
         self._thread_executor = ThreadPoolExecutor(max_workers=32)
+        self._shutdown_event = threading.Event()
 
     def start(self) -> None:
         """Start the server."""
@@ -154,6 +173,11 @@ class Server(MessageHandler):
 
         # Broadcast buffer should be populated by the background worker.
         assert isinstance(self._broadcast_buffer, AsyncMessageBuffer)
+
+    def stop(self) -> None:
+        """Stop the server."""
+        self._thread_executor.shutdown(wait=True)
+        self._event_loop.stop()
 
     def on_client_connect(self, cb: Callable[[ClientConnection], Any]) -> None:
         """Attach a callback to run for newly connected clients."""
@@ -182,7 +206,6 @@ class Server(MessageHandler):
         asyncio.set_event_loop(event_loop)
         self._event_loop = event_loop
         self._broadcast_buffer = AsyncMessageBuffer(event_loop)
-        ready_sem.release()
 
         count_lock = asyncio.Lock()
         connection_count = 0
@@ -252,6 +275,14 @@ class Server(MessageHandler):
                 websockets.exceptions.ConnectionClosedOK,
                 websockets.exceptions.ConnectionClosedError,
             ):
+                # We use a sentinel value to signal that the client producer thread
+                # should exit.
+                #
+                # This is partially cosmetic: it allows us to safely finish pending
+                # queue get() tasks, which suppresses a "Task was destroyed but it is
+                # pending" error.
+                await client_state.message_buffer.put(DONE_SENTINEL)
+
                 # Disconnection callbacks.
                 for cb in self._client_disconnect_cb:
                     cb(client_connection)
@@ -313,38 +344,26 @@ class Server(MessageHandler):
                 port += 1
                 continue
 
-        if self._verbose:
-            http_url = f"http://{host}:{port}"
-            ws_url = f"ws://{host}:{port}"
-
-            table = Table(
-                title=None,
-                show_header=False,
-                box=box.MINIMAL,
-                title_style=style.Style(bold=True),
-            )
-            if http_server_root is not None:
-                table.add_row("HTTP", f"[link={http_url}]{http_url}[/link]")
-            table.add_row("Websocket", f"[link={ws_url}]{ws_url}[/link]")
-
-            rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
-
+        self._port = port
+        ready_sem.release()
         event_loop.run_forever()
+        rich.print("[bold](viser)[/bold] Server stopped")
 
 
 async def _client_producer(
     websocket: WebSocketServerProtocol,
     client_id: ClientId,
-    get_next: Callable[[], Awaitable[Message]],
+    get_next: Callable[[], Coroutine[None, None, Union[Message, DoneSentinel]]],
     client_api_version: Literal[0, 1],
 ) -> None:
     """Infinite loop to send messages from a buffer to a single client."""
 
     window = MessageWindow(client_id=client_id)
-    message_future = asyncio.ensure_future(get_next())
-    while True:
-        if await window.wait_and_append_to_window(message_future):
-            message_future = asyncio.ensure_future(get_next())
+    message_task = asyncio.create_task(get_next())
+
+    while not window.done:
+        if await window.wait_and_append_to_window(message_task) and not window.done:
+            message_task = asyncio.create_task(get_next())
         outgoing = window.get_window_to_send()
         if outgoing is not None:
             if client_api_version == 1:
