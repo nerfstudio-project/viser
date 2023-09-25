@@ -223,6 +223,7 @@ export default function FloatingPanel({
           "& .expand-icon": {
             transform: "rotate(0)",
           },
+          overflow: "hidden",
         }}
         ref={panelWrapperRef}
       >
@@ -243,7 +244,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
   return (
     <Box
       sx={(theme) => ({
-        borderRadius: "0.2em",
+        borderRadius: "0.2em 0.2em 0 0",
         backgroundColor:
           theme.colorScheme === "dark"
             ? theme.colors.dark[5]

@@ -2,7 +2,9 @@ import asyncio
 import dataclasses
 import time
 from asyncio.events import AbstractEventLoop
-from typing import AsyncGenerator, Awaitable, Dict, Optional, Sequence
+from typing import Any, AsyncGenerator, Awaitable, Dict, Optional, Sequence, Union
+
+from typing_extensions import Literal, TypeGuard
 
 from ._messages import Message
 
@@ -80,6 +82,14 @@ class AsyncMessageBuffer:
                 yield out
 
 
+DONE_SENTINEL = "done_sentinel"
+DoneSentinel = Literal["done_sentinel"]
+
+
+def is_done_sentinel(x: Any) -> TypeGuard[DoneSentinel]:
+    return x == DONE_SENTINEL
+
+
 @dataclasses.dataclass
 class MessageWindow:
     """Helper for building windows of messages to send to clients."""
@@ -90,20 +100,28 @@ class MessageWindow:
     window_duration_sec: float = 1.0 / 60.0
     window_max_length: int = 256
 
+    done: bool = False
+
     _window_start_time: float = -1
     _window: Dict[str, Message] = dataclasses.field(default_factory=dict)
     """We use a redundancy key -> message dictionary to track our window. This helps us
     eliminate redundant messages."""
 
-    def append_to_window(self, message: Message) -> None:
+    def append_to_window(self, message: Union[Message, DoneSentinel]) -> None:
         """Append a message to our window."""
-        if message.excluded_self_client == self.client_id:
-            return
-        if len(self._window) == 0:
-            self._window_start_time = time.time()
-        self._window[message.redundancy_key()] = message
+        if isinstance(message, Message):
+            if message.excluded_self_client == self.client_id:
+                return
+            if len(self._window) == 0:
+                self._window_start_time = time.time()
+            self._window[message.redundancy_key()] = message
+        else:
+            assert is_done_sentinel(message)
+            self.done = True
 
-    async def wait_and_append_to_window(self, message: Awaitable[Message]) -> bool:
+    async def wait_and_append_to_window(
+        self, message: Awaitable[Union[Message, DoneSentinel]]
+    ) -> bool:
         """Async version of `append_to_window()`. Returns `True` if successful, `False`
         if timed out."""
         if len(self._window) == 0:
