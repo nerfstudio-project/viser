@@ -6,7 +6,6 @@
 # In the meantime, it works great in Pyright/Pylance!
 
 from __future__ import annotations
-
 import abc
 import base64
 import colorsys
@@ -435,9 +434,10 @@ class MessageApi(abc.ABC):
 
         with io.BytesIO() as data_buffer:
             mesh.export(data_buffer, file_type="glb")
+            glb_data = data_buffer.getvalue()
             return self.add_glb(
                 name,
-                glb_data=data_buffer.getvalue(),
+                glb_data=glb_data,
                 scale=1.0,
                 wxyz=wxyz,
                 position=position,

@@ -43,11 +43,9 @@ def main() -> None:
 
         def create_mesh(counter: int) -> None:
             if counter == 0:
-                # mesh = trimesh.creation.box((0.5, 0.5, 0.5))
-                mesh = trimesh.creation.icosphere(subdivisions=2, radius=0.4)
+                mesh = trimesh.creation.box((0.5, 0.5, 0.5))
             elif counter == 1:
-                # mesh = trimesh.creation.box((0.5, 0.5, 0.5))
-                mesh = trimesh.creation.icosphere(subdivisions=2, radius=0.4)
+                mesh = trimesh.creation.box((0.5, 0.5, 0.5))
             else:
                 mesh = trimesh.creation.icosphere(subdivisions=2, radius=0.4)
 
