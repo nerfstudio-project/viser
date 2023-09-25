@@ -22,6 +22,7 @@ import {
   LineBasicMaterial,
   LineDashedMaterial,
 } from "three";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
@@ -57,7 +58,14 @@ export const GlbAsset = React.forwardRef<
   const mixerRef = React.useRef<THREE.AnimationMixer | null>(null);
 
   React.useEffect(() => {
-    new GLTFLoader().parse(
+    const loader = new GLTFLoader();
+
+    // We use a CDN for Draco. We could move this locally if we want to use Viser offline.
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
+    loader.setDRACOLoader(dracoLoader);
+
+    loader.parse(
       glb_data.buffer,
       "",
       (gltf) => {

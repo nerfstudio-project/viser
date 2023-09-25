@@ -29,6 +29,7 @@ from ._scene_handles import (
     CameraFrustumHandle,
     ClickEvent,
     FrameHandle,
+    GlbHandle,
     Gui3dContainerHandle,
     ImageHandle,
     LabelHandle,
@@ -215,10 +216,13 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> MeshHandle:
-        """Add a general 3D asset via binary glTF (GLB)."""
+    ) -> GlbHandle:
+        """Add a general 3D asset via binary glTF (GLB).
+
+        To load glTF files from disk, you can convert to GLB via a library like
+        `pygltflib`."""
         self._queue(_messages.GlbMessage(name, glb_data, scale))
-        return MeshHandle._make(self, name, wxyz, position, visible)
+        return GlbHandle._make(self, name, wxyz, position, visible)
 
     def add_spline_catmull_rom(
         self,
