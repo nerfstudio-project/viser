@@ -66,11 +66,11 @@ class CameraFrustumMessage(Message):
 
 
 @dataclasses.dataclass
-class GlTFMessage(Message):
+class GlbMessage(Message):
     """GlTF Message"""
 
     name: str
-    gltf_base64_data: str
+    glb_data: bytes
     scale: float
 
 

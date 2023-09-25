@@ -20,6 +20,7 @@ import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
 import trimesh
+import trimesh.exchange
 import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
@@ -216,39 +217,21 @@ class MessageApi(abc.ABC):
     def add_glb(
         self,
         name,
-        glb_path,
+        glb_data: bytes,
         scale=1.0,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ):
-        with open(glb_path, "rb") as f:
-            print("Reading glb file...")
-            contents = f.read()
-        with io.BytesIO() as data_buffer:
-            data_buffer.write(contents)
-            glb_data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
-        self._queue(_messages.GlTFMessage(name, glb_data, scale))
-        return MeshHandle._make(self, name, wxyz, position, visible)
-
-    def add_gltf(
-        self,
-        name,
-        gltf_path,
-        scale=1.0,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
-        visible: bool = True,
-    ):
-        with open(gltf_path, "rb") as f:
-            print("Reading gltf file...")
-            gltf = trimesh.exchange.gltf.load_gltf(
-                f, resolver=trimesh.resolvers.FilePathResolver(gltf_path)
-            )
-        scene = trimesh.exchange.load.load_kwargs(gltf)
-        print("Encoding gltf...")
-        gltf_data = _encode_scene(scene)
-        self._queue(_messages.GlTFMessage(name, gltf_data, scale))
+        # with open(gltf_path, "rb") as f:
+        #     print("Reading gltf file...")
+        #     gltf = trimesh.exchange.gltf.load_gltf(
+        #         f, resolver=trimesh.resolvers.FilePathResolver(gltf_path)
+        #     )
+        # scene = trimesh.exchange.load.load_kwargs(gltf)
+        # print("Encoding gltf...")
+        # gltf_data = _encode_scene(scene)
+        self._queue(_messages.GlbMessage(name, glb_data, scale))
         return MeshHandle._make(self, name, wxyz, position, visible)
 
     def add_spline_catmull_rom(
@@ -444,57 +427,22 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         mesh: trimesh.Trimesh,
-        wireframe: bool = False,
-        side: Literal["front", "back", "double"] = "front",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> MeshHandle:
         """Add a trimesh mesh to the scene."""
-        if isinstance(mesh.visual, trimesh.visual.ColorVisuals):
-            vertex_colors = mesh.visual.vertex_colors
-            self._queue(
-                _messages.MeshMessage(
-                    name,
-                    mesh.vertices.astype(onp.float32),
-                    mesh.faces.astype(onp.uint32),
-                    color=None,
-                    vertex_colors=(
-                        vertex_colors.view(onp.ndarray).astype(onp.uint8)[..., :3]
-                    ),
-                    wireframe=wireframe,
-                    opacity=None,
-                    side=side,
-                )
-            )
-        elif isinstance(mesh.visual, trimesh.visual.TextureVisuals):
-            # TODO: this needs to be implemented.
-            import warnings
 
-            warnings.warn(
-                "Texture visuals are not fully supported yet!",
-                stacklevel=2,
+        with io.BytesIO() as data_buffer:
+            mesh.export(data_buffer, file_type="glb")
+            return self.add_glb(
+                name,
+                glb_data=data_buffer.getvalue(),
+                scale=1.0,
+                wxyz=wxyz,
+                position=position,
+                visible=visible,
             )
-            self._queue(
-                _messages.MeshMessage(
-                    name,
-                    mesh.vertices.astype(onp.float32),
-                    mesh.faces.astype(onp.uint32),
-                    color=_encode_rgb(
-                        # Note that `vertex_colors` here is per-UV coordinate, not
-                        # per mesh vertex.
-                        mesh.visual.to_color().vertex_colors.flatten()[:3]
-                    ),
-                    vertex_colors=(None),
-                    wireframe=wireframe,
-                    opacity=None,
-                    side=side,
-                )
-            )
-        else:
-            assert False, f"Unsupported texture visuals: {mesh.visual}"
-
-        return MeshHandle._make(self, name, wxyz, position, visible)
 
     def set_background_image(
         self,

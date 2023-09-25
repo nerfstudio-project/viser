@@ -34,10 +34,10 @@ export interface CameraFrustumMessage {
  *
  * (automatically generated)
  */
-export interface GlTFMessage {
-  type: "GlTFMessage";
+export interface GlbMessage {
+  type: "GlbMessage";
   name: string;
-  gltf_base64_data: string;
+  glb_data: Uint8Array;
   scale: number;
 }
 /** Coordinate frame message.
@@ -630,7 +630,7 @@ export interface GetRenderResponseMessage {
 export type Message =
   | ViewerCameraMessage
   | CameraFrustumMessage
-  | GlTFMessage
+  | GlbMessage
   | FrameMessage
   | LabelMessage
   | Gui3DMessage

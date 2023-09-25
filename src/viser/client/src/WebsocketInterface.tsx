@@ -608,24 +608,19 @@ function useMessageHandler() {
       }
 
       // Add GlTF Message
-      case "GlTFMessage": {
-        const binaryData = atob(message.gltf_base64_data);
-        const arrayBuffer = new ArrayBuffer(binaryData.length);
-        const uint8Array = new Uint8Array(arrayBuffer);
-
-        for (let i = 0; i < binaryData.length; i++) {
-          uint8Array[i] = binaryData.charCodeAt(i);
-        }
+      case "GlbMessage": {
         const loader = new GLTFLoader();
-        loader.parse(arrayBuffer, '', (gltf) => {
+        console.log("loading...");
+        loader.parse(message.glb_data, '', (gltf) => {
           // Update the gltf state with the loaded model
-          addSceneNodeMakeParents(
-            new SceneNode<THREE.Group>(message.name, (ref) => (
-              <group ref={ref}>
-                <primitive object={gltf.scene} scale={message.scale} />
-              </group>
-            )),
-          );
+          // console.log("loaded GLTF!");
+          // addSceneNodeMakeParents(
+          //   new SceneNode<THREE.Group>(message.name, (ref) => (
+          //     <group ref={ref}>
+          //       <primitive object={gltf.asset} scale={message.scale} />
+          //     </group>
+          //   )),
+          // );
         });
         return;
       }
