@@ -421,7 +421,7 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> MeshHandle:
+    ) -> GlbHandle:
         """Add a trimesh mesh to the scene. Internally calls `seld.add_glb()`."""
 
         with io.BytesIO() as data_buffer:
