@@ -12,6 +12,7 @@ from typing import (
     Any,
     Awaitable,
     Callable,
+    Coroutine,
     Dict,
     List,
     NewType,
@@ -20,6 +21,7 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
+    Union,
 )
 
 import msgpack
@@ -31,7 +33,12 @@ import websockets.server
 from typing_extensions import Literal, assert_never
 from websockets.legacy.server import WebSocketServerProtocol
 
-from ._async_message_buffer import AsyncMessageBuffer, MessageWindow
+from ._async_message_buffer import (
+    DONE_SENTINEL,
+    AsyncMessageBuffer,
+    DoneSentinel,
+    MessageWindow,
+)
 from ._messages import Message
 
 
@@ -268,6 +275,14 @@ class Server(MessageHandler):
                 websockets.exceptions.ConnectionClosedOK,
                 websockets.exceptions.ConnectionClosedError,
             ):
+                # We use a sentinel value to signal that the client producer thread
+                # should exit.
+                #
+                # This is partially cosmetic: it allows us to safely finish pending
+                # queue get() tasks, which suppresses a "Task was destroyed but it is
+                # pending" error.
+                await client_state.message_buffer.put(DONE_SENTINEL)
+
                 # Disconnection callbacks.
                 for cb in self._client_disconnect_cb:
                     cb(client_connection)
@@ -338,16 +353,17 @@ class Server(MessageHandler):
 async def _client_producer(
     websocket: WebSocketServerProtocol,
     client_id: ClientId,
-    get_next: Callable[[], Awaitable[Message]],
+    get_next: Callable[[], Coroutine[None, None, Union[Message, DoneSentinel]]],
     client_api_version: Literal[0, 1],
 ) -> None:
     """Infinite loop to send messages from a buffer to a single client."""
 
     window = MessageWindow(client_id=client_id)
-    message_future = asyncio.ensure_future(get_next())
-    while True:
-        if await window.wait_and_append_to_window(message_future):
-            message_future = asyncio.ensure_future(get_next())
+    message_task = asyncio.create_task(get_next())
+
+    while not window.done:
+        if await window.wait_and_append_to_window(message_task) and not window.done:
+            message_task = asyncio.create_task(get_next())
         outgoing = window.get_window_to_send()
         if outgoing is not None:
             if client_api_version == 1:
