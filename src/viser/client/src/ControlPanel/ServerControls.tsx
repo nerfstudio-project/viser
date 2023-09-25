@@ -2,13 +2,14 @@ import { ViewerContext } from "../App";
 import {
   Anchor,
   Button,
+  Box,
   Divider,
   Stack,
   Switch,
   TextInput,
 } from "@mantine/core";
 import { IconBrandGithub, IconHomeMove, IconPhoto } from "@tabler/icons-react";
-import { Box, Stats } from "@react-three/drei";
+import { Stats } from "@react-three/drei";
 import React from "react";
 import SceneTreeTable from "./SceneTreeTable";
 
