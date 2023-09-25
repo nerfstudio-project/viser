@@ -9,7 +9,7 @@ import { TextureLoader } from "three";
 import { ViewerContext } from "./App";
 import { SceneNode } from "./SceneTree";
 import { syncSearchParamServer } from "./SearchParamsUtils";
-import { CameraFrustum, CoordinateFrame } from "./ThreeAssets";
+import { CameraFrustum, CoordinateFrame, GlbAsset } from "./ThreeAssets";
 import { Message } from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
@@ -21,7 +21,6 @@ import {
 import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { MantineProvider, Paper } from "@mantine/core";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
@@ -606,31 +605,21 @@ function useMessageHandler() {
         removeGui(message.id);
         return;
       }
-
-      // Add GlTF Message
+      // Add a glTF/GLB asset.
       case "GlbMessage": {
-        const loader = new GLTFLoader();
-        console.log("loading...");
-        loader.parse(
-          new Uint8Array(message.glb_data).buffer,
-          "",
-          (gltf) => {
-            // Update the gltf state with the loaded model
-            addSceneNodeMakeParents(
-              new SceneNode<THREE.Group>(message.name, (ref) => (
-                <group ref={ref}>
-                  <primitive object={gltf.scene} scale={message.scale} />
-                </group>
-              )),
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => {
+            return (
+              <GlbAsset
+                ref={ref}
+                glb_data={new Uint8Array(message.glb_data)}
+                scale={message.scale}
+              />
             );
-          },
-          (error) => {
-            console.log(error);
-          }
+          })
         );
         return;
       }
-
       case "CatmullRomSplineMessage": {
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => {
@@ -650,7 +639,6 @@ function useMessageHandler() {
         );
         return;
       }
-
       case "CubicBezierSplineMessage": {
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => {

@@ -6,6 +6,7 @@
 # In the meantime, it works great in Pyright/Pylance!
 
 from __future__ import annotations
+
 import abc
 import base64
 import colorsys
@@ -108,13 +109,6 @@ def _encode_image_base64(
         base64_data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
 
     return media_type, base64_data
-
-
-def _encode_scene(scene: trimesh.Scene) -> str:
-    with io.BytesIO() as data_buffer:
-        data_buffer.write(trimesh.exchange.gltf.export_glb(scene))
-        base64_data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
-    return base64_data
 
 
 TVector = TypeVar("TVector", bound=tuple)
@@ -221,15 +215,8 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ):
-        # with open(gltf_path, "rb") as f:
-        #     print("Reading gltf file...")
-        #     gltf = trimesh.exchange.gltf.load_gltf(
-        #         f, resolver=trimesh.resolvers.FilePathResolver(gltf_path)
-        #     )
-        # scene = trimesh.exchange.load.load_kwargs(gltf)
-        # print("Encoding gltf...")
-        # gltf_data = _encode_scene(scene)
+    ) -> MeshHandle:
+        """Add a general 3D asset via binary glTF (GLB)."""
         self._queue(_messages.GlbMessage(name, glb_data, scale))
         return MeshHandle._make(self, name, wxyz, position, visible)
 
@@ -426,11 +413,12 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         mesh: trimesh.Trimesh,
+        scale: float = 1.0,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> MeshHandle:
-        """Add a trimesh mesh to the scene."""
+        """Add a trimesh mesh to the scene. Internally calls `seld.add_glb()`."""
 
         with io.BytesIO() as data_buffer:
             mesh.export(data_buffer, file_type="glb")
@@ -438,7 +426,7 @@ class MessageApi(abc.ABC):
             return self.add_glb(
                 name,
                 glb_data=glb_data,
-                scale=1.0,
+                scale=scale,
                 wxyz=wxyz,
                 position=position,
                 visible=visible,
