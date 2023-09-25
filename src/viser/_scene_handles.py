@@ -187,6 +187,11 @@ class MeshHandle(_SupportsClick, _SupportsVisibility):
 
 
 @dataclasses.dataclass
+class GlbHandle(_SupportsClick, _SupportsVisibility):
+    """Handle for GLB objects."""
+
+
+@dataclasses.dataclass
 class ImageHandle(_SupportsClick, _SupportsVisibility):
     """Handle for 2D images, rendered in 3D."""
 
