@@ -179,7 +179,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
       <MantineReactTable
         columns={columns}
         data={data}
-        enableExpanding={false}
+        enableExpanding={true}
         filterFromLeafRows
         enableDensityToggle={false}
         enableRowSelection={!props.compact}
@@ -190,7 +190,11 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         enableBottomToolbar={false}
         enableColumnFilters={false}
         enablePagination={false}
-        initialState={{ density: "xs", expanded: true }}
+        initialState={{
+          density: "xs",
+          columnVisibility: { "mrt-row-expand": false },
+          ...(props.compact ? {} : { expanded: true }), // expanded: false is not valid.
+        }}
         mantineExpandAllButtonProps={{
           size: "sm",
         }}

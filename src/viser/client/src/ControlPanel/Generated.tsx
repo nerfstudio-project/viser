@@ -375,6 +375,7 @@ function GeneratedInput({
           w="15rem"
           withArrow
           openDelay={500}
+          withinPortal
         >
           <Box>{input}</Box>
         </Tooltip>

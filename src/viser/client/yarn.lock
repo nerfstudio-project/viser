@@ -1023,12 +1023,12 @@
   dependencies:
     remove-accents "0.4.2"
 
-"@tanstack/react-table@8.9.8":
-  version "8.9.8"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-table/-/react-table-8.9.8.tgz#5dd2dcc65bb569779d61e14ffa09aaf01e58f4f4"
-  integrity sha512-ZUd+ZydvUP8+XLI+oQ3IcG6Pqq3vw94na3fViD/v0dsIVwgQaWanizeh+si/Pn/8eU0XgbSVU9VpejOJEbp/lg==
+"@tanstack/react-table@8.10.0":
+  version "8.10.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-table/-/react-table-8.10.0.tgz#6ff84dfccdf6e567b87053f727f4b758a1a9aa01"
+  integrity sha512-FNhKE3525hryvuWw90xRbP16qNiq7OLJkDZopOKcwyktErLi1ibJzAN9DFwA/gR1br9SK4StXZh9JPvp9izrrQ==
   dependencies:
-    "@tanstack/table-core" "8.9.8"
+    "@tanstack/table-core" "8.10.0"
 
 "@tanstack/react-virtual@3.0.0-beta.60":
   version "3.0.0-beta.60"
@@ -1037,10 +1037,10 @@
   dependencies:
     "@tanstack/virtual-core" "3.0.0-beta.60"
 
-"@tanstack/table-core@8.9.8":
-  version "8.9.8"
-  resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.9.8.tgz#26e7e085fdc71030da643a3e0ac454f0e1088f3d"
-  integrity sha512-f2Y/BcJy3IBkdDxWEk6WX6zJSmCDBI5iS0icr5DyeSbWsbnfaBtOIaeBjfnTEedt9Kk3xPmfciA6uSNOQ1BEXA==
+"@tanstack/table-core@8.10.0":
+  version "8.10.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/table-core/-/table-core-8.10.0.tgz#d6e88157f536f7f29009670b207e60462c84be7f"
+  integrity sha512-e701yAJ18aGDP6mzVworlFAmQ+gi3Wtqx5mGZUe2BUv4W4D80dJxUfkHdtEGJ6GryAnlCCNTej7eaJiYmPhyYg==
 
 "@tanstack/virtual-core@3.0.0-beta.60":
   version "3.0.0-beta.60"
@@ -2902,12 +2902,12 @@ maath@^0.6.0:
   integrity sha512-dSb2xQuP7vDnaYqfoKzlApeRcR2xtN8/f7WV/TMAkBC8552TwTLtOO0JTcSygkYMjNDPoo6V01jTw/aPi4JrMw==
 
 mantine-react-table@^1.0.0-beta.11:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/mantine-react-table/-/mantine-react-table-1.2.1.tgz#d518ac6d89fc7ce9d5c3a252f8d0694c262c9bd5"
-  integrity sha512-o0hJ+kszbf2Y20qoqY5F9as3ikmWUOjewLPF/pA9pabbuFxqAO8gGVywRaoyqRCc4HHnGWEDY4iEM6nwGr+mGQ==
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/mantine-react-table/-/mantine-react-table-1.3.0.tgz#c5dcb2650ed67aa74cf62421bf3bd4cb49824dc3"
+  integrity sha512-ljAd9ZI7S89glI8OGbM5DsNHzInZPfigbeDXboR5gLGPuuseLVgezlVjqV1h8MUQkY06++d9ah9zsMLr2VNxlQ==
   dependencies:
     "@tanstack/match-sorter-utils" "8.8.4"
-    "@tanstack/react-table" "8.9.8"
+    "@tanstack/react-table" "8.10.0"
     "@tanstack/react-virtual" "3.0.0-beta.60"
 
 markdown-extensions@^1.0.0:
