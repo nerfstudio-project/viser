@@ -7,8 +7,8 @@ import {
   Switch,
   TextInput,
 } from "@mantine/core";
+import { IconBrandGithub, IconHomeMove, IconPhoto } from "@tabler/icons-react";
 import { Box, Stats } from "@react-three/drei";
-import { IconBrandGithub, IconPhoto } from "@tabler/icons-react";
 import React from "react";
 import SceneTreeTable from "./SceneTreeTable";
 
@@ -101,6 +101,15 @@ export default function ServerControls() {
           leftIcon={<IconPhoto size="1rem" />}
         >
           Export Canvas
+        </Button>
+        <Button
+          onClick={() => {
+            viewer.resetCameraViewRef.current!();
+          }}
+          fullWidth
+          leftIcon={<IconHomeMove size="1rem" />}
+        >
+          Reset View
         </Button>
         <Switch
           label="WebGL Statistics"
