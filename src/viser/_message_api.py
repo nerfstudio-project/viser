@@ -20,6 +20,7 @@ import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
 import trimesh
+import trimesh.exchange
 import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
@@ -28,6 +29,7 @@ from ._scene_handles import (
     CameraFrustumHandle,
     ClickEvent,
     FrameHandle,
+    GlbHandle,
     Gui3dContainerHandle,
     ImageHandle,
     LabelHandle,
@@ -206,6 +208,22 @@ class MessageApi(abc.ABC):
             ),
         )
 
+    def add_glb(
+        self,
+        name,
+        glb_data: bytes,
+        scale=1.0,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> GlbHandle:
+        """Add a general 3D asset via binary glTF (GLB).
+
+        To load glTF files from disk, you can convert to GLB via a library like
+        `pygltflib`."""
+        self._queue(_messages.GlbMessage(name, glb_data, scale))
+        return GlbHandle._make(self, name, wxyz, position, visible)
+
     def add_spline_catmull_rom(
         self,
         name: str,
@@ -320,7 +338,6 @@ class MessageApi(abc.ABC):
         cast_vector(wxyz, length=4)
         cast_vector(position, length=3)
         self._queue(
-            # TODO: remove wxyz and position from this message for consistency.
             _messages.FrameMessage(
                 name=name,
                 show_axes=show_axes,
@@ -400,57 +417,24 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         mesh: trimesh.Trimesh,
-        wireframe: bool = False,
-        side: Literal["front", "back", "double"] = "front",
+        scale: float = 1.0,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> MeshHandle:
-        """Add a trimesh mesh to the scene."""
-        if isinstance(mesh.visual, trimesh.visual.ColorVisuals):
-            vertex_colors = mesh.visual.vertex_colors
-            self._queue(
-                _messages.MeshMessage(
-                    name,
-                    mesh.vertices.astype(onp.float32),
-                    mesh.faces.astype(onp.uint32),
-                    color=None,
-                    vertex_colors=(
-                        vertex_colors.view(onp.ndarray).astype(onp.uint8)[..., :3]
-                    ),
-                    wireframe=wireframe,
-                    opacity=None,
-                    side=side,
-                )
-            )
-        elif isinstance(mesh.visual, trimesh.visual.TextureVisuals):
-            # TODO: this needs to be implemented.
-            import warnings
+    ) -> GlbHandle:
+        """Add a trimesh mesh to the scene. Internally calls `self.add_glb()`."""
 
-            warnings.warn(
-                "Texture visuals are not fully supported yet!",
-                stacklevel=2,
+        with io.BytesIO() as data_buffer:
+            mesh.export(data_buffer, file_type="glb")
+            glb_data = data_buffer.getvalue()
+            return self.add_glb(
+                name,
+                glb_data=glb_data,
+                scale=scale,
+                wxyz=wxyz,
+                position=position,
+                visible=visible,
             )
-            self._queue(
-                _messages.MeshMessage(
-                    name,
-                    mesh.vertices.astype(onp.float32),
-                    mesh.faces.astype(onp.uint32),
-                    color=_encode_rgb(
-                        # Note that `vertex_colors` here is per-UV coordinate, not
-                        # per mesh vertex.
-                        mesh.visual.to_color().vertex_colors.flatten()[:3]
-                    ),
-                    vertex_colors=(None),
-                    wireframe=wireframe,
-                    opacity=None,
-                    side=side,
-                )
-            )
-        else:
-            assert False, f"Unsupported texture visuals: {mesh.visual}"
-
-        return MeshHandle._make(self, name, wxyz, position, visible)
 
     def set_background_image(
         self,
