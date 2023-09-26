@@ -149,6 +149,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
     50,
   );
   const [hovered, setHovered] = React.useState(false);
+  const [dragged, setDragged] = React.useState(false);
   useCursor(hovered);
   if (!clickable && hovered) setHovered(false);
 
@@ -164,35 +165,40 @@ export function SceneNodeThreeObject(props: { name: string }) {
     return (
       <>
         <group
-          onClick={
-            !clickable
-              ? undefined
-              : (e) => {
-                  if (!isVisible()) return;
-                  e.stopPropagation();
-                  sendClicksThrottled({
-                    type: "SceneNodeClickedMessage",
-                    name: props.name,
-                  });
-                }
-          }
-          onPointerOver={
-            !clickable
-              ? undefined
-              : (e) => {
-                  if (!isVisible()) return;
-                  e.stopPropagation();
-                  setHovered(true);
-                }
-          }
-          onPointerOut={
-            !clickable
-              ? undefined
-              : () => {
-                  if (!isVisible()) return;
-                  setHovered(false);
-                }
-          }
+          // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
+          // and only send a click if the mouse hasn't moved between the down and up events.
+          //  - onPointerDown resets the click state (dragged = false)
+          //  - onPointerMove, if triggered, sets dragged = true
+          //  - onPointerUp, if triggered, sends a click if dragged = false.
+          // Note: It would be cool to have dragged actions too...
+          onPointerDown={(e) => {
+            if (!isVisible()) return;
+            e.stopPropagation();
+            setDragged(false);
+          }}
+          onPointerMove={(e) => {
+            if (!isVisible()) return;
+            e.stopPropagation();
+            setDragged(true);
+          }}
+          onPointerUp={(e) => {
+            if (!isVisible()) return;
+            e.stopPropagation();
+            if (dragged) return;
+            sendClicksThrottled({
+              type: "SceneNodeClickedMessage",
+              name: props.name,
+            });
+          }}
+          onPointerOver={(e) => {
+            if (!isVisible()) return;
+            e.stopPropagation();
+            setHovered(true);
+          }}
+          onPointerOut={() => {
+            if (!isVisible()) return;
+            setHovered(false);
+          }}
         >
           <Select enabled={hovered}>{objNode}</Select>
         </group>
