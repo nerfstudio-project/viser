@@ -153,12 +153,11 @@ export function SceneNodeThreeObject(props: {
   // although this shouldn't be a bottleneck.
   useFrame(() => {
     if (unmountWhenInvisible) {
-      const visible = isDisplayed();
-      console.log(visible, unmount);
-      if (visible && unmount) {
+      const displayed = isDisplayed();
+      if (displayed && unmount) {
         setUnmount(false);
       }
-      if (!visible && !unmount) {
+      if (!displayed && !unmount) {
         setUnmount(true);
       }
     }
