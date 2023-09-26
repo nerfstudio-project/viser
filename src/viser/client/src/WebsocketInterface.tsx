@@ -463,61 +463,71 @@ function useMessageHandler() {
           }
         `;
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => {
-            // We wrap with <group /> because Html doesn't implement THREE.Object3D.
-            return (
-              <group ref={ref}>
-                <Html>
-                  <div
-                    style={{
-                      width: "10em",
-                      fontSize: "0.8em",
-                      transform: "translateX(-1em) translateY(1em)",
-                    }}
-                  >
-                    <Label>{message.text}</Label>
-                  </div>
-                </Html>
-              </group>
-            );
-          })
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => {
+              // We wrap with <group /> because Html doesn't implement THREE.Object3D.
+              return (
+                <group ref={ref}>
+                  <Html>
+                    <div
+                      style={{
+                        width: "10em",
+                        fontSize: "0.8em",
+                        transform: "translateX(-1em) translateY(1em)",
+                      }}
+                    >
+                      <Label>{message.text}</Label>
+                    </div>
+                  </Html>
+                </group>
+              );
+            },
+            undefined,
+            true
+          )
         );
         return;
       }
       case "Gui3DMessage": {
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => {
-            // We wrap with <group /> because Html doesn't implement THREE.Object3D.
-            return (
-              <group ref={ref}>
-                <Html prepend={false}>
-                  <MantineProvider
-                    withGlobalStyles
-                    withNormalizeCSS
-                    theme={mantineTheme}
-                  >
-                    <Paper
-                      sx={{
-                        width: "20em",
-                        fontSize: "0.8em",
-                        marginLeft: "1em",
-                        marginTop: "1em",
-                      }}
-                      shadow="md"
-                      onPointerDown={(evt) => {
-                        evt.stopPropagation();
-                      }}
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => {
+              // We wrap with <group /> because Html doesn't implement THREE.Object3D.
+              return (
+                <group ref={ref}>
+                  <Html prepend={false}>
+                    <MantineProvider
+                      withGlobalStyles
+                      withNormalizeCSS
+                      theme={mantineTheme}
                     >
-                      <GeneratedGuiContainer
-                        containerId={message.container_id}
-                        viewer={viewer}
-                      />
-                    </Paper>
-                  </MantineProvider>
-                </Html>
-              </group>
-            );
-          })
+                      <Paper
+                        sx={{
+                          width: "20em",
+                          fontSize: "0.8em",
+                          marginLeft: "1em",
+                          marginTop: "1em",
+                        }}
+                        shadow="md"
+                        onPointerDown={(evt) => {
+                          evt.stopPropagation();
+                        }}
+                      >
+                        <GeneratedGuiContainer
+                          containerId={message.container_id}
+                          viewer={viewer}
+                        />
+                      </Paper>
+                    </MantineProvider>
+                  </Html>
+                </group>
+              );
+            },
+            undefined,
+            true
+          )
         );
         return;
       }

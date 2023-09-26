@@ -12,7 +12,7 @@ import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
-  ref: React.Ref<T>,
+  ref: React.Ref<T>
 ) => React.ReactNode;
 
 /** Scenes will consist of nodes, which form a tree. */
@@ -26,6 +26,12 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
     public name: string,
     public makeObject: MakeObject<T>,
     public cleanup?: () => void,
+    /** unmountWhenInvisible is used to unmount <Html /> components when they
+     * should be hidden.
+     *
+     * https://github.com/pmndrs/drei/issues/1323
+     */
+    public unmountWhenInvisible?: true
   ) {
     this.children = [];
     this.clickable = false;
@@ -41,7 +47,7 @@ function SceneNodeThreeChildren(props: {
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const children = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.children,
+    (state) => state.nodeFromName[props.name]?.children
   );
 
   // Create a group of children inside of the parent object.
@@ -49,11 +55,17 @@ function SceneNodeThreeChildren(props: {
     <group>
       {children &&
         children.map((child_id) => {
-          return <SceneNodeThreeObject key={child_id} name={child_id} />;
+          return (
+            <SceneNodeThreeObject
+              key={child_id}
+              name={child_id}
+              parent={props.parent}
+            />
+          );
         })}
       <SceneNodeLabel name={props.name} />
     </group>,
-    props.parent,
+    props.parent
   );
 }
 
@@ -61,7 +73,7 @@ function SceneNodeThreeChildren(props: {
 function SceneNodeLabel(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const labelVisible = viewer.useSceneTree(
-    (state) => state.labelVisibleFromName[props.name],
+    (state) => state.labelVisibleFromName[props.name]
   );
   return labelVisible ? (
     <Html>
@@ -81,14 +93,21 @@ function SceneNodeLabel(props: { name: string }) {
 }
 
 /** Component containing the three.js object and children for a particular scene node. */
-export function SceneNodeThreeObject(props: { name: string }) {
+export function SceneNodeThreeObject(props: {
+  name: string;
+  parent: THREE.Object3D | null;
+}) {
   const viewer = React.useContext(ViewerContext)!;
   const makeObject = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.makeObject,
+    (state) => state.nodeFromName[props.name]?.makeObject
   );
   const cleanup = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.cleanup,
+    (state) => state.nodeFromName[props.name]?.cleanup
   );
+  const unmountWhenInvisible = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.unmountWhenInvisible
+  );
+  const [unmount, setUnmount] = React.useState(false);
   const clickable =
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
     false;
@@ -101,16 +120,48 @@ export function SceneNodeThreeObject(props: { name: string }) {
   // PivotControls.
   const objNode = React.useMemo(
     () => makeObject && makeObject(setRef),
-    [makeObject],
+    [makeObject]
   );
   const children =
     obj === null ? null : (
       <SceneNodeThreeChildren name={props.name} parent={obj} />
     );
 
+  // Helper for transient visibility checks. Checks the .visible attribute of
+  // both this object and ancestors.
+  //
+  // This is used for (1) suppressing click events and (2) unmounting when
+  // unmountWhenInvisible is true. The latter is used for <Html /> components.
+  function isDisplayed() {
+    // We avoid checking obj.visible because obj may be unmounted when
+    // unmountWhenInvisible=true.
+    if (viewer.nodeAttributesFromName.current[props.name]?.visibility === false)
+      return false;
+    if (props.parent === null) return true;
+
+    // Check visibility of parents + ancestors.
+    let visible = props.parent.visible;
+    if (visible) {
+      props.parent.traverseAncestors((ancestor) => {
+        visible = visible && ancestor.visible;
+      });
+    }
+    return visible;
+  }
+
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
   useFrame(() => {
+    if (unmountWhenInvisible) {
+      const displayed = isDisplayed();
+      if (displayed && unmount) {
+        setUnmount(false);
+      }
+      if (!displayed && !unmount) {
+        setUnmount(true);
+      }
+    }
+
     if (obj === null) return;
 
     const nodeAttributes = viewer.nodeAttributesFromName.current[props.name];
@@ -146,20 +197,14 @@ export function SceneNodeThreeObject(props: { name: string }) {
   // Clicking logic.
   const sendClicksThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    50,
+    50
   );
   const [hovered, setHovered] = React.useState(false);
   const [dragged, setDragged] = React.useState(false);
   useCursor(hovered);
   if (!clickable && hovered) setHovered(false);
 
-  // Helper for checking transient visibility checks.
-  function isVisible() {
-    const nodeAttributes = viewer.nodeAttributesFromName.current[props.name];
-    return nodeAttributes?.visibility ?? false;
-  }
-
-  if (objNode === undefined) {
+  if (objNode === undefined || unmount) {
     return <>{children}</>;
   } else if (clickable) {
     return (
@@ -172,17 +217,17 @@ export function SceneNodeThreeObject(props: { name: string }) {
           //  - onPointerUp, if triggered, sends a click if dragged = false.
           // Note: It would be cool to have dragged actions too...
           onPointerDown={(e) => {
-            if (!isVisible()) return;
+            if (!isDisplayed()) return;
             e.stopPropagation();
             setDragged(false);
           }}
           onPointerMove={(e) => {
-            if (!isVisible()) return;
+            if (!isDisplayed()) return;
             e.stopPropagation();
             setDragged(true);
           }}
           onPointerUp={(e) => {
-            if (!isVisible()) return;
+            if (!isDisplayed()) return;
             e.stopPropagation();
             if (dragged) return;
             sendClicksThrottled({
@@ -191,12 +236,12 @@ export function SceneNodeThreeObject(props: { name: string }) {
             });
           }}
           onPointerOver={(e) => {
-            if (!isVisible()) return;
+            if (!isDisplayed()) return;
             e.stopPropagation();
             setHovered(true);
           }}
           onPointerOut={() => {
-            if (!isVisible()) return;
+            if (!isDisplayed()) return;
             setHovered(false);
           }}
         >
