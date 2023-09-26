@@ -12,7 +12,7 @@ import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
-  ref: React.Ref<T>,
+  ref: React.Ref<T>
 ) => React.ReactNode;
 
 /** Scenes will consist of nodes, which form a tree. */
@@ -25,7 +25,7 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
   constructor(
     public name: string,
     public makeObject: MakeObject<T>,
-    public cleanup?: () => void,
+    public cleanup?: () => void
   ) {
     this.children = [];
     this.clickable = false;
@@ -41,7 +41,7 @@ function SceneNodeThreeChildren(props: {
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const children = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.children,
+    (state) => state.nodeFromName[props.name]?.children
   );
 
   // Create a group of children inside of the parent object.
@@ -53,7 +53,7 @@ function SceneNodeThreeChildren(props: {
         })}
       <SceneNodeLabel name={props.name} />
     </group>,
-    props.parent,
+    props.parent
   );
 }
 
@@ -61,7 +61,7 @@ function SceneNodeThreeChildren(props: {
 function SceneNodeLabel(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const labelVisible = viewer.useSceneTree(
-    (state) => state.labelVisibleFromName[props.name],
+    (state) => state.labelVisibleFromName[props.name]
   );
   return labelVisible ? (
     <Html>
@@ -84,10 +84,10 @@ function SceneNodeLabel(props: { name: string }) {
 export function SceneNodeThreeObject(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const makeObject = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.makeObject,
+    (state) => state.nodeFromName[props.name]?.makeObject
   );
   const cleanup = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.cleanup,
+    (state) => state.nodeFromName[props.name]?.cleanup
   );
   const clickable =
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
@@ -101,7 +101,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
   // PivotControls.
   const objNode = React.useMemo(
     () => makeObject && makeObject(setRef),
-    [makeObject],
+    [makeObject]
   );
   const children =
     obj === null ? null : (
@@ -146,7 +146,7 @@ export function SceneNodeThreeObject(props: { name: string }) {
   // Clicking logic.
   const sendClicksThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    50,
+    50
   );
   const [hovered, setHovered] = React.useState(false);
   const [dragged, setDragged] = React.useState(false);
@@ -171,55 +171,34 @@ export function SceneNodeThreeObject(props: { name: string }) {
           //  - onPointerMove, if triggered, sets dragged = true
           //  - onPointerUp, if triggered, sends a click if dragged = false.
           // Note: It would be cool to have dragged actions too...
-          onPointerDown={
-            !clickable
-              ? undefined
-              : (e) => {
-                  if (!isVisible()) return;
-                  e.stopPropagation();
-                  setDragged(false);
-                }
-          }
-          onPointerMove={
-            !clickable
-              ? undefined
-              : (e) => {
-                  if (!isVisible()) return;
-                  e.stopPropagation();
-                  if (dragged) return;
-                  setDragged(true);
-                }
-          }
-          onPointerUp={
-            !clickable
-              ? undefined
-              : (e) => {
-                  if (!isVisible()) return;
-                  e.stopPropagation();
-                  if (dragged) return;
-                  sendClicksThrottled({
-                    type: "SceneNodeClickedMessage",
-                    name: props.name,
-                  });
-                }
-          }
-          onPointerOver={
-            !clickable
-              ? undefined
-              : (e) => {
-                  if (!isVisible()) return;
-                  e.stopPropagation();
-                  setHovered(true);
-                }
-          }
-          onPointerOut={
-            !clickable
-              ? undefined
-              : () => {
-                  if (!isVisible()) return;
-                  setHovered(false);
-                }
-          }
+          onPointerDown={(e) => {
+            if (!isVisible()) return;
+            e.stopPropagation();
+            setDragged(false);
+          }}
+          onPointerMove={(e) => {
+            if (!isVisible()) return;
+            e.stopPropagation();
+            setDragged(true);
+          }}
+          onPointerUp={(e) => {
+            if (!isVisible()) return;
+            e.stopPropagation();
+            if (dragged) return;
+            sendClicksThrottled({
+              type: "SceneNodeClickedMessage",
+              name: props.name,
+            });
+          }}
+          onPointerOver={(e) => {
+            if (!isVisible()) return;
+            e.stopPropagation();
+            setHovered(true);
+          }}
+          onPointerOut={() => {
+            if (!isVisible()) return;
+            setHovered(false);
+          }}
         >
           <Select enabled={hovered}>{objNode}</Select>
         </group>
