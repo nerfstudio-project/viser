@@ -32,7 +32,6 @@ def _(client: viser.ClientHandle) -> None:
     rng = onp.random.default_rng(0)
 
     displayed_3d_container: Optional[viser.Gui3dContainerHandle] = None
-    displayed_index: Optional[int] = None
 
     def make_frame(i: int) -> None:
         # Sample a random orientation + position.
@@ -47,17 +46,10 @@ def _(client: viser.ClientHandle) -> None:
         @frame.on_click
         def _(_):
             nonlocal displayed_3d_container
-            nonlocal displayed_index
 
             # Close previously opened GUI.
             if displayed_3d_container is not None:
                 displayed_3d_container.remove()
-
-            # Don't re-show the same GUI element.
-            if displayed_index == i:
-                return
-
-            displayed_index = i
 
             displayed_3d_container = client.add_3d_gui_container(f"/frame_{i}/gui")
             with displayed_3d_container:
@@ -100,12 +92,10 @@ def _(client: viser.ClientHandle) -> None:
             @close.on_click
             def _(_) -> None:
                 nonlocal displayed_3d_container
-                nonlocal displayed_index
                 if displayed_3d_container is None:
                     return
                 displayed_3d_container.remove()
                 displayed_3d_container = None
-                displayed_index = None
 
     for i in range(num_frames):
         make_frame(i)
