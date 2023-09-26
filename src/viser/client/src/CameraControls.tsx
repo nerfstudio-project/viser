@@ -13,7 +13,7 @@ export function SynchronizedCameraControls() {
 
   const sendCameraThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    20
+    20,
   );
 
   // Helper for resetting camera poses.
@@ -30,12 +30,12 @@ export function SynchronizedCameraControls() {
       initialCameraRef.current!.lookAt.x,
       initialCameraRef.current!.lookAt.y,
       initialCameraRef.current!.lookAt.z,
-      true
+      true,
     );
     viewer.cameraRef.current!.up.set(
       initialCameraRef.current!.camera.up.x,
       initialCameraRef.current!.camera.up.y,
-      initialCameraRef.current!.camera.up.z
+      initialCameraRef.current!.camera.up.z,
     );
     viewer.cameraControlRef.current!.updateCameraUp();
   };
@@ -161,28 +161,28 @@ export function SynchronizedCameraControls() {
       cameraControls.rotate(
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true
+        true,
       );
     });
     rightKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
         0,
-        true
+        true,
       );
     });
     upKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true
+        true,
       );
     });
     downKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
         0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true
+        true,
       );
     });
 
