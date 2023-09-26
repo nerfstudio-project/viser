@@ -30,6 +30,16 @@ export interface CameraFrustumMessage {
   image_media_type: "image/jpeg" | "image/png" | null;
   image_base64_data: string | null;
 }
+/** GlTF Message
+ *
+ * (automatically generated)
+ */
+export interface GlbMessage {
+  type: "GlbMessage";
+  name: string;
+  glb_data: Uint8Array;
+  scale: number;
+}
 /** Coordinate frame message.
  *
  * Position and orientation should follow a `T_parent_local` convention, which
@@ -620,6 +630,7 @@ export interface GetRenderResponseMessage {
 export type Message =
   | ViewerCameraMessage
   | CameraFrustumMessage
+  | GlbMessage
   | FrameMessage
   | LabelMessage
   | Gui3DMessage

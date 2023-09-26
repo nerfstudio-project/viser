@@ -13,6 +13,7 @@ from ._icons_enum import Icon as Icon
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle
 from ._scene_handles import ClickEvent as ClickEvent
 from ._scene_handles import FrameHandle as FrameHandle
+from ._scene_handles import GlbHandle as GlbHandle
 from ._scene_handles import Gui3dContainerHandle as Gui3dContainerHandle
 from ._scene_handles import ImageHandle as ImageHandle
 from ._scene_handles import LabelHandle as LabelHandle

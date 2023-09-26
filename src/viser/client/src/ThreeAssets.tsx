@@ -1,10 +1,143 @@
 import { Instance, Instances } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
+import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import {
+  MeshBasicMaterial,
+  MeshDepthMaterial,
+  MeshDistanceMaterial,
+  MeshLambertMaterial,
+  MeshMatcapMaterial,
+  MeshNormalMaterial,
+  MeshPhongMaterial,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
+  MeshToonMaterial,
+  ShadowMaterial,
+  SpriteMaterial,
+  RawShaderMaterial,
+  ShaderMaterial,
+  PointsMaterial,
+  LineBasicMaterial,
+  LineDashedMaterial,
+} from "three";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
+
+type AllPossibleThreeJSMaterials =
+  | MeshBasicMaterial
+  | MeshDepthMaterial
+  | MeshDistanceMaterial
+  | MeshLambertMaterial
+  | MeshMatcapMaterial
+  | MeshNormalMaterial
+  | MeshPhongMaterial
+  | MeshPhysicalMaterial
+  | MeshStandardMaterial
+  | MeshToonMaterial
+  | ShadowMaterial
+  | SpriteMaterial
+  | RawShaderMaterial
+  | ShaderMaterial
+  | PointsMaterial
+  | LineBasicMaterial
+  | LineDashedMaterial;
 
 const axisGeom = new THREE.CylinderGeometry(1.0, 1.0, 1.0, 16, 1);
 const originGeom = new THREE.SphereGeometry(1.0);
 const originMaterial = new THREE.MeshBasicMaterial({ color: 0xecec00 });
+
+/** Component for rendering the contents of GLB files. */
+export const GlbAsset = React.forwardRef<
+  THREE.Group,
+  { glb_data: Uint8Array; scale: number }
+>(function GlbAsset({ glb_data, scale }, ref) {
+  const [gltf, setGltf] = React.useState<GLTF>();
+
+  // glTF/GLB files support animations.
+  const mixerRef = React.useRef<THREE.AnimationMixer | null>(null);
+
+  React.useEffect(() => {
+    const loader = new GLTFLoader();
+
+    // We use a CDN for Draco. We could move this locally if we want to use Viser offline.
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/");
+    loader.setDRACOLoader(dracoLoader);
+
+    loader.parse(
+      glb_data.buffer,
+      "",
+      (gltf) => {
+        if (gltf.animations && gltf.animations.length) {
+          mixerRef.current = new THREE.AnimationMixer(gltf.scene);
+          gltf.animations.forEach((clip) => {
+            mixerRef.current!.clipAction(clip).play();
+          });
+        }
+        setGltf(gltf);
+      },
+      (error) => {
+        console.log("Error loading GLB!");
+        console.log(error);
+      }
+    );
+
+    return () => {
+      if (mixerRef.current) mixerRef.current.stopAllAction();
+
+      function disposeNode(node: any) {
+        if (node instanceof THREE.Mesh) {
+          if (node.geometry) {
+            node.geometry.dispose();
+          }
+          if (node.material) {
+            if (Array.isArray(node.material)) {
+              node.material.forEach((material) => {
+                disposeMaterial(material);
+              });
+            } else {
+              disposeMaterial(node.material);
+            }
+          }
+        }
+      }
+      function disposeMaterial(material: AllPossibleThreeJSMaterials) {
+        if ("map" in material) material.map?.dispose();
+        if ("lightMap" in material) material.lightMap?.dispose();
+        if ("bumpMap" in material) material.bumpMap?.dispose();
+        if ("normalMap" in material) material.normalMap?.dispose();
+        if ("specularMap" in material) material.specularMap?.dispose();
+        if ("envMap" in material) material.envMap?.dispose();
+        if ("alphaMap" in material) material.alphaMap?.dispose();
+        if ("aoMap" in material) material.aoMap?.dispose();
+        if ("displacementMap" in material) material.displacementMap?.dispose();
+        if ("emissiveMap" in material) material.emissiveMap?.dispose();
+        if ("gradientMap" in material) material.gradientMap?.dispose();
+        if ("metalnessMap" in material) material.metalnessMap?.dispose();
+        if ("roughnessMap" in material) material.roughnessMap?.dispose();
+        material.dispose(); // disposes any programs associated with the material
+      }
+
+      // Attempt to free resources.
+      gltf?.scene.traverse(disposeNode);
+    };
+  }, [glb_data]);
+
+  useFrame((_, delta) => {
+    if (mixerRef.current) {
+      mixerRef.current.update(delta);
+    }
+  });
+
+  return (
+    <group ref={ref}>
+      {gltf === undefined ? null : (
+        <primitive object={gltf.scene} scale={scale} />
+      )}
+    </group>
+  );
+});
 
 /** Helper for adding coordinate frames as scene nodes. */
 export const CoordinateFrame = React.forwardRef<
@@ -16,7 +149,7 @@ export const CoordinateFrame = React.forwardRef<
   }
 >(function CoordinateFrame(
   { show_axes = true, axes_length = 0.5, axes_radius = 0.0125 },
-  ref,
+  ref
 ) {
   return (
     <group ref={ref}>
@@ -29,7 +162,7 @@ export const CoordinateFrame = React.forwardRef<
               new THREE.Vector3(
                 axes_radius * 2.5,
                 axes_radius * 2.5,
-                axes_radius * 2.5,
+                axes_radius * 2.5
               )
             }
           />
@@ -171,7 +304,7 @@ function LineSegmentInstance(props: {
 
   const orientation = new THREE.Quaternion().setFromAxisAngle(
     rotationAxis,
-    rotationAngle,
+    rotationAngle
   );
   return (
     <>
