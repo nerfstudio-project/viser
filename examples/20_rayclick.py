@@ -45,6 +45,7 @@ def on_rayclick(origin: typing.Tuple, direction: typing.Tuple) -> None:
     if len(hit_pos) == 0:
         hit_pos_handle.remove()
         hit_pos_handle = None
+        return
 
     # get the first hit position
     hit_pos = sorted(hit_pos, key=lambda x: onp.linalg.norm(x - origin))[0]
