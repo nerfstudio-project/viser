@@ -108,6 +108,59 @@ export function SynchronizedCameraControls() {
     };
   }, [camera]);
 
+  // Note: This fires for double-click, which might not be available for mobile.
+  // Maybe we should also support mobile via long-presses? Worth investigating.
+  // Also, instead of double-click, we could consider an alt-click or meta-click.
+  const sendClickThrottled = makeThrottledMessageSender(
+    viewer.websocketRef,
+    20,
+  );
+  React.useEffect(() => {
+    const onMouseDouble = (e: MouseEvent) => {
+      // check that the mouse event happened inside the canvasRef.
+      if (e.target !== viewer.canvasRef.current!) return;
+
+      // clientX/Y are relative to the viewport, offsetX/Y are relative to the canvasRef.
+      // clientX==offsetX if there is no titlebar, but clientX>offsetX if there is a titlebar.
+      const mouseVector = new THREE.Vector2();
+      console.log(e);
+      console.log(viewer.canvasRef.current!.clientWidth, viewer.canvasRef.current!.clientHeight);
+      mouseVector.x = 2 * (e.offsetX / viewer.canvasRef.current!.clientWidth) - 1;
+      mouseVector.y = 1 - 2 * (e.offsetY / viewer.canvasRef.current!.clientHeight);
+
+      const mouse_in_scene = !(
+        mouseVector.x > 1 ||
+        mouseVector.x < -1 ||
+        mouseVector.y > 1 ||
+        mouseVector.y < -1
+      );
+      if (!mouse_in_scene) { return; } 
+
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouseVector, camera);
+
+      console.log(e.offsetX, e.offsetY);
+
+      sendClickThrottled({
+        type: 'RayClickMessage',
+        origin: [
+          raycaster.ray.origin.x, 
+          -raycaster.ray.origin.z, 
+          raycaster.ray.origin.y
+        ],
+        direction: [
+          raycaster.ray.direction.x, 
+          -raycaster.ray.direction.z, 
+          raycaster.ray.direction.y
+        ],
+      });
+    };
+    window.addEventListener('dblclick', onMouseDouble, false);
+    return () => {
+      window.removeEventListener('dblclick', onMouseDouble, false);
+    };
+  }, [camera, sendClickThrottled]);
+
   // Keyboard controls.
   React.useEffect(() => {
     const KEYCODE = {

@@ -138,6 +138,7 @@ class MessageApi(abc.ABC):
             str, TransformControlsHandle
         ] = {}
         self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
+        self._handle_rayclick: List[Callable[Tuple, Tuple]] = []
 
         handler.register_handler(
             _messages.TransformControlsUpdateMessage,
@@ -147,7 +148,11 @@ class MessageApi(abc.ABC):
             _messages.SceneNodeClickedMessage,
             self._handle_click_updates,
         )
-
+        handler.register_handler(
+            _messages.RayClickMessage,
+            self._handle_rayclick_updates,
+            )
+        
         self._atomic_lock = threading.Lock()
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
@@ -627,6 +632,21 @@ class MessageApi(abc.ABC):
         for cb in handle._impl.click_cb:
             event = ClickEvent(client_id=client_id, target=handle)
             cb(event)  # type: ignore
+    
+    def _handle_rayclick_updates(
+        self, client_id: ClientId, message: _messages.ClickMessage
+    ):
+        """Callback for handling click messages."""
+        for cb in self._handle_rayclick:
+            cb(message.origin, message.direction)
+
+    def add_rayclick_cb(
+        self,
+        cb: Callable[[Tuple[float, float, float], Tuple[float, float, float]], None],
+    ) -> None:
+        """Add a callback for rayclick events. 
+        Callback takes in the origin and direction of the ray."""
+        self._handle_rayclick.append(cb)
 
     def add_3d_gui_container(
         self,

@@ -51,6 +51,16 @@ class ViewerCameraMessage(Message):
 
 
 @dataclasses.dataclass
+class RayClickMessage(Message):
+    """Message for raycast clicks.
+    origin is the viewing camera position, in world coordinates.
+    direction is the vector if a ray is projected from the camera through the clicked pixel,
+    """
+    origin: Tuple[float, float, float]
+    direction: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
 class CameraFrustumMessage(Message):
     """Variant of CameraMessage used for visualizing camera frustums.
 

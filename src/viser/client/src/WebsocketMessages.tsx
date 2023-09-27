@@ -14,6 +14,18 @@ export interface ViewerCameraMessage {
   look_at: [number, number, number];
   up_direction: [number, number, number];
 }
+/** Message for raycast clicks.
+ * origin is the viewing camera position, in world coordinates.
+ * direction is the vector if a ray is projected from the camera through the clicked pixel,
+ *
+ *
+ * (automatically generated)
+ */
+export interface RayClickMessage {
+  type: "RayClickMessage";
+  origin: [number, number, number];
+  direction: [number, number, number];
+}
 /** Variant of CameraMessage used for visualizing camera frustums.
  *
  * OpenCV convention, +Z forward.
@@ -629,6 +641,7 @@ export interface GetRenderResponseMessage {
 
 export type Message =
   | ViewerCameraMessage
+  | RayClickMessage
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
