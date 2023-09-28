@@ -1,18 +1,18 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex/" /><link rel="search" title="Search" href="../search/" /><link rel="next" title="Icons" href="../icons/" /><link rel="prev" title="GUI Handles" href="../gui_handles/" />
 
-    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Scene Handles - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -244,7 +244,7 @@
         </div>
         <article role="main">
           <section id="scene-handles">
-<h1>Scene Handles<a class="headerlink" href="#scene-handles" title="Permalink to this heading">#</a></h1>
+<h1>Scene Handles<a class="headerlink" href="#scene-handles" title="Link to this heading">#</a></h1>
 <p>A handle is created for each object that is added to the scene. These can be
 used to read and set state, as well as detect clicks.</p>
 <p>When a scene node is added to a server (for example, via
@@ -253,15 +253,15 @@ connected clients. When a scene node is added to a client (for example, via
 <a class="reference internal" href="../client_handles/#viser.ClientHandle.add_frame" title="viser.ClientHandle.add_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ClientHandle.add_frame()</span></code></a>), state is local to a specific client.</p>
 <!-- prettier-ignore-start --><dl class="py class">
 <dt class="sig sig-object py" id="viser.SceneNodeHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">SceneNodeHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#SceneNodeHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SceneNodeHandle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">SceneNodeHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#SceneNodeHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SceneNodeHandle" title="Link to this definition">#</a></dt>
 <dd><p>Handle base class for interacting with scene nodes.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.SceneNodeHandle.position">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.SceneNodeHandle.position" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.SceneNodeHandle.position" title="Link to this definition">#</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -269,10 +269,10 @@ connected clients. When a scene node is added to a client (for example, via
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.SceneNodeHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handles/#SceneNodeHandle.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SceneNodeHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handles/#SceneNodeHandle.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SceneNodeHandle.remove" title="Link to this definition">#</a></dt>
 <dd><p>Remove the node from the scene.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
@@ -280,11 +280,11 @@ connected clients. When a scene node is added to a client (for example, via
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.SceneNodeHandle.wxyz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.SceneNodeHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.SceneNodeHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -294,11 +294,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">CameraFrustumHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#CameraFrustumHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraFrustumHandle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">CameraFrustumHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#CameraFrustumHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraFrustumHandle" title="Link to this definition">#</a></dt>
 <dd><p>Handle for camera frustums.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.CameraFrustumHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.CameraFrustumHandle.on_click" title="Link to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -306,10 +306,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><p>Not supported for 2D labels.</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
@@ -317,11 +317,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.position">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.CameraFrustumHandle.position" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.CameraFrustumHandle.position" title="Link to this definition">#</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -329,10 +329,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.CameraFrustumHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.CameraFrustumHandle.remove" title="Link to this definition">#</a></dt>
 <dd><p>Remove the node from the scene.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
@@ -340,10 +340,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.visible">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.CameraFrustumHandle.visible" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.CameraFrustumHandle.visible" title="Link to this definition">#</a></dt>
 <dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -351,11 +351,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.wxyz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.CameraFrustumHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.CameraFrustumHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -365,11 +365,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.FrameHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">FrameHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#FrameHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.FrameHandle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">FrameHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#FrameHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.FrameHandle" title="Link to this definition">#</a></dt>
 <dd><p>Handle for coordinate frames.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.FrameHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.FrameHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.FrameHandle.on_click" title="Link to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -377,10 +377,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><p>Not supported for 2D labels.</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
@@ -388,11 +388,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.FrameHandle.position">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.FrameHandle.position" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.FrameHandle.position" title="Link to this definition">#</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -400,10 +400,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.FrameHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.FrameHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.FrameHandle.remove" title="Link to this definition">#</a></dt>
 <dd><p>Remove the node from the scene.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
@@ -411,10 +411,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.FrameHandle.visible">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.FrameHandle.visible" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.FrameHandle.visible" title="Link to this definition">#</a></dt>
 <dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -422,11 +422,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.FrameHandle.wxyz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.FrameHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.FrameHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -436,15 +436,15 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.Gui3dContainerHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">Gui3dContainerHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#Gui3dContainerHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.Gui3dContainerHandle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">Gui3dContainerHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#Gui3dContainerHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.Gui3dContainerHandle" title="Link to this definition">#</a></dt>
 <dd><p>Use as a context to place GUI elements into a 3D GUI container.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.Gui3dContainerHandle.position">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.Gui3dContainerHandle.position" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.Gui3dContainerHandle.position" title="Link to this definition">#</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -452,10 +452,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.Gui3dContainerHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handles/#Gui3dContainerHandle.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.Gui3dContainerHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handles/#Gui3dContainerHandle.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.Gui3dContainerHandle.remove" title="Link to this definition">#</a></dt>
 <dd><p>Permanently remove this GUI container from the visualizer.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
@@ -463,11 +463,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.Gui3dContainerHandle.wxyz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.Gui3dContainerHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.Gui3dContainerHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -477,11 +477,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.ImageHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ImageHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#ImageHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ImageHandle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ImageHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#ImageHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ImageHandle" title="Link to this definition">#</a></dt>
 <dd><p>Handle for 2D images, rendered in 3D.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ImageHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ImageHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ImageHandle.on_click" title="Link to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -489,10 +489,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><p>Not supported for 2D labels.</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
@@ -500,11 +500,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.ImageHandle.position">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.ImageHandle.position" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.ImageHandle.position" title="Link to this definition">#</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -512,10 +512,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ImageHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.ImageHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.ImageHandle.remove" title="Link to this definition">#</a></dt>
 <dd><p>Remove the node from the scene.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
@@ -523,10 +523,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.ImageHandle.visible">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.ImageHandle.visible" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.ImageHandle.visible" title="Link to this definition">#</a></dt>
 <dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -534,11 +534,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.ImageHandle.wxyz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.ImageHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.ImageHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -548,15 +548,15 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.LabelHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">LabelHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#LabelHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.LabelHandle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">LabelHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#LabelHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.LabelHandle" title="Link to this definition">#</a></dt>
 <dd><p>Handle for 2D label objects. Does not support click events or visibility toggling.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.LabelHandle.position">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.LabelHandle.position" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.LabelHandle.position" title="Link to this definition">#</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -564,10 +564,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.LabelHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.LabelHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.LabelHandle.remove" title="Link to this definition">#</a></dt>
 <dd><p>Remove the node from the scene.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
@@ -575,11 +575,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.LabelHandle.wxyz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.LabelHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.LabelHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -589,11 +589,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.MeshHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">MeshHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#MeshHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.MeshHandle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">MeshHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#MeshHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.MeshHandle" title="Link to this definition">#</a></dt>
 <dd><p>Handle for mesh objects.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.MeshHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.MeshHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.MeshHandle.on_click" title="Link to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -601,10 +601,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><p>Not supported for 2D labels.</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
@@ -612,11 +612,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.MeshHandle.position">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.MeshHandle.position" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.MeshHandle.position" title="Link to this definition">#</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -624,10 +624,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.MeshHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.MeshHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.MeshHandle.remove" title="Link to this definition">#</a></dt>
 <dd><p>Remove the node from the scene.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
@@ -635,10 +635,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.MeshHandle.visible">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.MeshHandle.visible" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.MeshHandle.visible" title="Link to this definition">#</a></dt>
 <dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -646,11 +646,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.MeshHandle.wxyz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.MeshHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.MeshHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -660,15 +660,15 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.PointCloudHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">PointCloudHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#PointCloudHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.PointCloudHandle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">PointCloudHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#PointCloudHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.PointCloudHandle" title="Link to this definition">#</a></dt>
 <dd><p>Handle for point clouds. Does not support click events.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.PointCloudHandle.position">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.PointCloudHandle.position" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.PointCloudHandle.position" title="Link to this definition">#</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -676,10 +676,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.PointCloudHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.PointCloudHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.PointCloudHandle.remove" title="Link to this definition">#</a></dt>
 <dd><p>Remove the node from the scene.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
@@ -687,10 +687,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.PointCloudHandle.visible">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.PointCloudHandle.visible" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.PointCloudHandle.visible" title="Link to this definition">#</a></dt>
 <dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -698,11 +698,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.PointCloudHandle.wxyz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.PointCloudHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.PointCloudHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -712,11 +712,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">TransformControlsHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">TransformControlsHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle" title="Link to this definition">#</a></dt>
 <dd><p>Handle for interacting with transform control gizmos.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.on_click">
-<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.TransformControlsHandle.on_click" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><span class="pre">ClickEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.TransformControlsHandle.on_click" title="Link to this definition">#</a></dt>
 <dd><p>Attach a callback for when a scene node is clicked.</p>
 <p>TODO:</p>
 <ul class="simple">
@@ -724,10 +724,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><p>Not supported for 2D labels.</p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent"><em>ClickEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.ClickEvent" title="viser.ClickEvent">ClickEvent</a>[TSceneNodeHandle]], None]</p>
 </dd>
 </dl>
@@ -735,13 +735,13 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.on_update">
-<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.TransformControlsHandle" title="viser.TransformControlsHandle"><span class="pre">TransformControlsHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.on_update" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.TransformControlsHandle" title="viser.TransformControlsHandle"><span class="pre">TransformControlsHandle</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.on_update" title="Link to this definition">#</a></dt>
 <dd><p>Attach a callback for when the gizmo is moved.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.TransformControlsHandle" title="viser.TransformControlsHandle"><em>TransformControlsHandle</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>Callable[[<a class="reference internal" href="#viser.TransformControlsHandle" title="viser.TransformControlsHandle">TransformControlsHandle</a>], None]</p>
 </dd>
 </dl>
@@ -749,11 +749,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.position">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.TransformControlsHandle.position" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><a class="headerlink" href="#viser.TransformControlsHandle.position" title="Link to this definition">#</a></dt>
 <dd><p>Position of the scene node. This is equivalent to the t in
 <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -761,10 +761,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.TransformControlsHandle.remove" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.TransformControlsHandle.remove" title="Link to this definition">#</a></dt>
 <dd><p>Remove the node from the scene.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
@@ -772,9 +772,9 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.update_timestamp">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><a class="headerlink" href="#viser.TransformControlsHandle.update_timestamp" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update_timestamp</span></span><a class="headerlink" href="#viser.TransformControlsHandle.update_timestamp" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -782,10 +782,10 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.visible">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.TransformControlsHandle.visible" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><a class="headerlink" href="#viser.TransformControlsHandle.visible" title="Link to this definition">#</a></dt>
 <dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
@@ -793,11 +793,11 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.wxyz">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.TransformControlsHandle.wxyz" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><a class="headerlink" href="#viser.TransformControlsHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
@@ -807,7 +807,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.ClickEvent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ClickEvent</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#ClickEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClickEvent" title="Permalink to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ClickEvent</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#ClickEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClickEvent" title="Link to this definition">#</a></dt>
 <dd><p>Abstract base class for generic types.</p>
 <p>A generic type is typically declared by inheriting from
 this class parameterized with one or more type variables.
@@ -838,12 +838,12 @@ For example, a generic mapping type might be defined as:</p>
 </div></blockquote>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ClickEvent.client_id">
-<span class="sig-name descname"><span class="pre">client_id</span></span><a class="headerlink" href="#viser.ClickEvent.client_id" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">client_id</span></span><a class="headerlink" href="#viser.ClickEvent.client_id" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ClickEvent.target">
-<span class="sig-name descname"><span class="pre">target</span></span><a class="headerlink" href="#viser.ClickEvent.target" title="Permalink to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">target</span></span><a class="headerlink" href="#viser.ClickEvent.target" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -996,12 +996,9 @@ For example, a generic mapping type might be defined as:</p>
       
     </aside>
   </div>
-</div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
-    <script src="../_static/scripts/furo.js"></script>
+</div><script src="../_static/documentation_options.js?v=187304be"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=32e29ea5"></script>
     </body>
 </html>

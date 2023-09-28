@@ -1,17 +1,17 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex/" /><link rel="search" title="Search" href="../../../search/" />
 
-    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>viser._gui_handles - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -458,21 +458,29 @@
 <span class="c1">#</span>
 <span class="c1"># We inherit from _GuiInputHandle to special-case buttons because the usage semantics</span>
 <span class="c1"># are slightly different: we have `on_click()` instead of `on_update()`.</span>
-<div class="viewcode-block" id="GuiInputHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiInputHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="GuiInputHandle">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiInputHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">GuiInputHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a general GUI inputs in our visualizer.</span>
 
 <span class="sd">    Lets us get values, set values, and detect updates.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="GuiInputHandle.on_update"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiInputHandle.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
+<div class="viewcode-block" id="GuiInputHandle.on_update">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiInputHandle.on_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">:</span> <span class="n">TGuiHandle</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a function to call when a GUI input is updated. Happens in a thread.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">update_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span></div></div>
+        <span class="k">return</span> <span class="n">func</span></div>
+</div>
 
 
-<div class="viewcode-block" id="GuiEvent"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiEvent">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GuiEvent">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiEvent">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">GuiEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information associated with a GUI event, such as an update or click.</span>
 
@@ -483,32 +491,44 @@
     <span class="n">target</span><span class="p">:</span> <span class="n">TGuiHandle</span></div>
 
 
-<div class="viewcode-block" id="GuiButtonHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="GuiButtonHandle">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">GuiButtonHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="nb">bool</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a button input in our visualizer.</span>
 
 <span class="sd">    Lets us detect clicks.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="GuiButtonHandle.on_click"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonHandle.on_click">[docs]</a>    <span class="k">def</span> <span class="nf">on_click</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">:</span> <span class="n">TGuiHandle</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a function to call when a button is pressed. Happens in a thread.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">update_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span></div></div>
-
-
-<div class="viewcode-block" id="GuiButtonGroupHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonGroupHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">GuiButtonGroupHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">StringType</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">StringType</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a button group input in our visualizer.</span>
-
-<span class="sd">    Lets us detect clicks.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="GuiButtonGroupHandle.on_click"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonGroupHandle.on_click">[docs]</a>    <span class="k">def</span> <span class="nf">on_click</span><span class="p">(</span>
+<div class="viewcode-block" id="GuiButtonHandle.on_click">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonHandle.on_click">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_click</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">:</span> <span class="n">TGuiHandle</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a function to call when a button is pressed. Happens in a thread.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">update_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">func</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GuiButtonGroupHandle">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonGroupHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">GuiButtonGroupHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">StringType</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">StringType</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a button group input in our visualizer.</span>
+
+<span class="sd">    Lets us detect clicks.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GuiButtonGroupHandle.on_click">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonGroupHandle.on_click">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_click</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">TGuiHandle</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a function to call when a button is pressed. Happens in a thread.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">update_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span></div>
+
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">disabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -521,7 +541,10 @@
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">disabled</span><span class="p">,</span> <span class="s2">&quot;Button groups cannot be disabled.&quot;</span></div>
 
 
-<div class="viewcode-block" id="GuiDropdownHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiDropdownHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="GuiDropdownHandle">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiDropdownHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">GuiDropdownHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">StringType</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">StringType</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a dropdown-style GUI input in our visualizer.</span>
 
@@ -562,7 +585,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="GuiTabGroupHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GuiTabGroupHandle">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">GuiTabGroupHandle</span><span class="p">:</span>
     <span class="n">_tab_group_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">_labels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
@@ -577,7 +603,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read-only order value, which dictates the position of the GUI element.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order</span>
 
-<div class="viewcode-block" id="GuiTabGroupHandle.add_tab"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.add_tab">[docs]</a>    <span class="k">def</span> <span class="nf">add_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">icon</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Icon</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabHandle</span><span class="p">:</span>
+<div class="viewcode-block" id="GuiTabGroupHandle.add_tab">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.add_tab">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">icon</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Icon</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a tab. Returns a handle we can use to add GUI elements to it.&quot;&quot;&quot;</span>
 
         <span class="nb">id</span> <span class="o">=</span> <span class="n">_make_unique_id</span><span class="p">()</span>
@@ -592,11 +620,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_sync_with_client</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">out</span></div>
 
-<div class="viewcode-block" id="GuiTabGroupHandle.remove"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="GuiTabGroupHandle.remove">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.remove">[docs]</a>
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove this tab group and all contained GUI elements.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">tab</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tabs</span><span class="p">:</span>
             <span class="n">tab</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">))</span></div>
+
 
     <span class="k">def</span> <span class="nf">_sync_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a message that syncs tab state with the client.&quot;&quot;&quot;</span>
@@ -612,7 +644,10 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="GuiFolderHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiFolderHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="GuiFolderHandle">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiFolderHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">GuiFolderHandle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a folder.&quot;&quot;&quot;</span>
 
@@ -646,13 +681,17 @@
         <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_container_id</span><span class="p">]</span>
         <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="GuiFolderHandle.remove"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiFolderHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="GuiFolderHandle.remove">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiFolderHandle.remove">[docs]</a>
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this folder and all contained GUI elements from the</span>
 <span class="sd">        visualizer.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div></div>
+            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div>
+</div>
+
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -690,7 +729,9 @@
             <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="GuiTabHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="GuiTabHandle">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">GuiTabHandle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a tab.&quot;&quot;&quot;</span>
 
@@ -715,7 +756,9 @@
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="GuiTabHandle.remove"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="GuiTabHandle.remove">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabHandle.remove">[docs]</a>
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this tab and all contained GUI elements from the</span>
 <span class="sd">        visualizer.&quot;&quot;&quot;</span>
         <span class="c1"># We may want to make this thread-safe in the future.</span>
@@ -734,10 +777,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_sync_with_client</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div></div>
+            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div>
+</div>
 
 
-<div class="viewcode-block" id="GuiMarkdownHandle"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiMarkdownHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="GuiMarkdownHandle">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiMarkdownHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">GuiMarkdownHandle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use to remove markdown.&quot;&quot;&quot;</span>
 
@@ -771,10 +818,14 @@
         <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">]</span>
         <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="GuiMarkdownHandle.remove"><a class="viewcode-back" href="../../../gui_handles/#viser.GuiMarkdownHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="GuiMarkdownHandle.remove">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiMarkdownHandle.remove">[docs]</a>
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this markdown from the visualizer.&quot;&quot;&quot;</span>
         <span class="n">api</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span>
-        <span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">))</span></div></div>
+        <span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">))</span></div>
+</div>
+
 </pre></div>
         </article>
       </div>
@@ -814,12 +865,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/scripts/furo.js"></script>
+</div><script src="../../../_static/documentation_options.js?v=187304be"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     </body>
 </html>

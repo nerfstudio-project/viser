@@ -1,17 +1,17 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex/" /><link rel="search" title="Search" href="../../../search/" />
 
-    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>viser._viser - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -284,7 +284,9 @@
     <span class="n">camera_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
 
 
-<div class="viewcode-block" id="CameraHandle"><a class="viewcode-back" href="../../../client_handles/#viser.CameraHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="CameraHandle">
+<a class="viewcode-back" href="../../../client_handles/#viser.CameraHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">CameraHandle</span><span class="p">:</span>
     <span class="n">_state</span><span class="p">:</span> <span class="n">_CameraHandleState</span>
 
@@ -406,12 +408,16 @@
             <span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraUpDirectionMessage</span><span class="p">(</span><span class="n">cast_vector</span><span class="p">(</span><span class="n">up_direction</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="CameraHandle.on_update"><a class="viewcode-back" href="../../../client_handles/#viser.CameraHandle.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
+<div class="viewcode-block" id="CameraHandle.on_update">
+<a class="viewcode-back" href="../../../client_handles/#viser.CameraHandle.on_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run when a new camera message is received.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">callback</span></div></div>
+        <span class="k">return</span> <span class="n">callback</span></div>
+</div>
+
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -420,7 +426,9 @@
     <span class="n">connection</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span>
 
 
-<div class="viewcode-block" id="ClientHandle"><a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="ClientHandle">
+<a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">ClientHandle</span><span class="p">(</span><span class="n">MessageApi</span><span class="p">,</span> <span class="n">GuiApi</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with a specific client. Can be used to send messages to</span>
 <span class="sd">    individual clients and read/write camera information.&quot;&quot;&quot;</span>
@@ -442,7 +450,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ClientHandle.get_render"><a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.get_render">[docs]</a>    <span class="k">def</span> <span class="nf">get_render</span><span class="p">(</span>
+<div class="viewcode-block" id="ClientHandle.get_render">
+<a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.get_render">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_render</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">transport_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Request a render from a client, block until it&#39;s done and received, then</span>
@@ -493,7 +503,10 @@
         <span class="k">assert</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="n">out</span></div>
 
-<div class="viewcode-block" id="ClientHandle.atomic"><a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.atomic">[docs]</a>    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+
+<div class="viewcode-block" id="ClientHandle.atomic">
+<a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.atomic">[docs]</a>
+    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where:</span>
 <span class="sd">        - No incoming messages, like camera or GUI state updates, are processed.</span>
@@ -516,7 +529,9 @@
 
         <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div>
+</div>
+
 
 
 <span class="c1"># We can serialize the state of a ViserServer via a tuple of</span>
@@ -531,7 +546,9 @@
     <span class="n">client_lock</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ViserServer"><a class="viewcode-back" href="../../../server/#viser.ViserServer">[docs]</a><span class="k">class</span> <span class="nc">ViserServer</span><span class="p">(</span><span class="n">MessageApi</span><span class="p">,</span> <span class="n">GuiApi</span><span class="p">):</span>
+<div class="viewcode-block" id="ViserServer">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer">[docs]</a>
+<span class="k">class</span> <span class="nc">ViserServer</span><span class="p">(</span><span class="n">MessageApi</span><span class="p">,</span> <span class="n">GuiApi</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Viser server class. The primary interface for functionality in `viser`.</span>
 
 <span class="sd">    Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all</span>
@@ -652,13 +669,15 @@
         <span class="p">)</span>
         <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;HTTP&quot;</span><span class="p">,</span> <span class="n">http_url</span><span class="p">)</span>
         <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;Websocket&quot;</span><span class="p">,</span> <span class="n">ws_url</span><span class="p">)</span>
-        <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Panel</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;[bold]viser[/bold]&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
         <span class="c1"># Create share tunnel if requested.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">share</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Panel</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;[bold]viser[/bold]&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Share URL requested!&quot;</span><span class="p">)</span>
+            <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+                <span class="s2">&quot;[bold](viser)[/bold] Share URL requested! (expires in 24 hours)&quot;</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="o">=</span> <span class="n">_ViserTunnel</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
 
             <span class="nd">@self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">on_connect</span>
@@ -668,9 +687,8 @@
                 <span class="k">if</span> <span class="n">share_url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Could not generate share URL&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;[bold](viser)[/bold] Share URL (expires in 24 hours): </span><span class="si">{</span><span class="n">share_url</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
+                    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;Share URL&quot;</span><span class="p">,</span> <span class="n">share_url</span><span class="p">)</span>
+                <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Panel</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;[bold]viser[/bold]&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span> <span class="o">=</span> <span class="n">FrameHandle</span><span class="p">(</span>
@@ -683,11 +701,14 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="ViserServer.stop"><a class="viewcode-back" href="../../../server/#viser.ViserServer.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ViserServer.stop">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.stop">[docs]</a>
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the Viser server and associated threads and tunnels.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
 
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">_get_api</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MessageApi</span><span class="p">:</span>
@@ -699,13 +720,18 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ViserServer.get_clients"><a class="viewcode-back" href="../../../server/#viser.ViserServer.get_clients">[docs]</a>    <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
+<div class="viewcode-block" id="ViserServer.get_clients">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.get_clients">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates and returns a copy of the mapping from connected client IDs to</span>
 <span class="sd">        handles.&quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connected_clients</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="ViserServer.on_client_connect"><a class="viewcode-back" href="../../../server/#viser.ViserServer.on_client_connect">[docs]</a>    <span class="k">def</span> <span class="nf">on_client_connect</span><span class="p">(</span>
+
+<div class="viewcode-block" id="ViserServer.on_client_connect">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.on_client_connect">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_client_connect</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run for newly connected clients.&quot;&quot;&quot;</span>
@@ -725,14 +751,20 @@
             <span class="n">cb</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cb</span></div>
 
-<div class="viewcode-block" id="ViserServer.on_client_disconnect"><a class="viewcode-back" href="../../../server/#viser.ViserServer.on_client_disconnect">[docs]</a>    <span class="k">def</span> <span class="nf">on_client_disconnect</span><span class="p">(</span>
+
+<div class="viewcode-block" id="ViserServer.on_client_disconnect">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.on_client_disconnect">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_client_disconnect</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run when clients disconnect.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cb</span></div>
 
-<div class="viewcode-block" id="ViserServer.atomic"><a class="viewcode-back" href="../../../server/#viser.ViserServer.atomic">[docs]</a>    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+
+<div class="viewcode-block" id="ViserServer.atomic">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.atomic">[docs]</a>
+    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where:</span>
 <span class="sd">        - All outgoing messages are grouped and applied by clients atomically.</span>
@@ -762,7 +794,9 @@
 
         <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div>
+</div>
+
 </pre></div>
         </article>
       </div>
@@ -802,12 +836,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/scripts/furo.js"></script>
+</div><script src="../../../_static/documentation_options.js?v=187304be"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     </body>
 </html>

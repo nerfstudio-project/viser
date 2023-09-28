@@ -1,17 +1,17 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex/" /><link rel="search" title="Search" href="../../../../search/" />
 
-    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>viser.transforms._se3 - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -269,7 +269,9 @@
     <span class="p">)</span>
 
 
-<div class="viewcode-block" id="SE3"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3">[docs]</a><span class="nd">@register_lie_group</span><span class="p">(</span>
+<div class="viewcode-block" id="SE3">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3">[docs]</a>
+<span class="nd">@register_lie_group</span><span class="p">(</span>
     <span class="n">matrix_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="n">parameters_dim</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
     <span class="n">tangent_dim</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
@@ -298,7 +300,9 @@
 
     <span class="c1"># SE-specific.</span>
 
-<div class="viewcode-block" id="SE3.from_rotation_and_translation"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.from_rotation_and_translation">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="SE3.from_rotation_and_translation">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.from_rotation_and_translation">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">from_rotation_and_translation</span><span class="p">(</span>
         <span class="n">rotation</span><span class="p">:</span> <span class="n">SO3</span><span class="p">,</span>
@@ -307,27 +311,42 @@
         <span class="k">assert</span> <span class="n">translation</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
         <span class="k">return</span> <span class="n">SE3</span><span class="p">(</span><span class="n">wxyz_xyz</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">rotation</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span> <span class="n">translation</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="SE3.from_translation"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.from_translation">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SE3.from_translation">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.from_translation">[docs]</a>
+    <span class="nd">@override</span>
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_translation</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">translation</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;SE3&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">SE3</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span><span class="n">SO3</span><span class="o">.</span><span class="n">identity</span><span class="p">(),</span> <span class="n">translation</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SE3.rotation"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.rotation">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SE3.rotation">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.rotation">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">SO3</span><span class="p">(</span><span class="n">wxyz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wxyz_xyz</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">4</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="SE3.translation"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.translation">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SE3.translation">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.translation">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">translation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz_xyz</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">4</span><span class="p">:]</span></div>
 
+
     <span class="c1"># Factory.</span>
 
-<div class="viewcode-block" id="SE3.identity"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.identity">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="SE3.identity">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.identity">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">identity</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">SE3</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">SE3</span><span class="p">(</span><span class="n">wxyz_xyz</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="SE3.from_matrix"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.from_matrix">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="SE3.from_matrix">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.from_matrix">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">from_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SE3</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
@@ -337,14 +356,18 @@
             <span class="n">translation</span><span class="o">=</span><span class="n">matrix</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
         <span class="p">)</span></div>
 
+
     <span class="c1"># Accessors.</span>
 
-<div class="viewcode-block" id="SE3.as_matrix"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.as_matrix">[docs]</a>    <span class="nd">@override</span>
+<div class="viewcode-block" id="SE3.as_matrix">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.as_matrix">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">as_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
         <span class="n">out</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
         <span class="n">out</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">translation</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">out</span></div>
+
         <span class="c1">#  return (</span>
         <span class="c1">#      onp.eye(4)</span>
         <span class="c1">#      .at[:3, :3]</span>
@@ -353,13 +376,18 @@
         <span class="c1">#      .set(self.translation())</span>
         <span class="c1">#  )</span>
 
-<div class="viewcode-block" id="SE3.parameters"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.parameters">[docs]</a>    <span class="nd">@override</span>
+<div class="viewcode-block" id="SE3.parameters">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.parameters">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz_xyz</span></div>
 
+
     <span class="c1"># Operations.</span>
 
-<div class="viewcode-block" id="SE3.exp"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.exp">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="SE3.exp">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.exp">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">exp</span><span class="p">(</span><span class="n">tangent</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SE3</span><span class="p">:</span>
         <span class="c1"># Reference:</span>
@@ -404,7 +432,10 @@
             <span class="n">translation</span><span class="o">=</span><span class="n">V</span> <span class="o">@</span> <span class="n">tangent</span><span class="p">[:</span><span class="mi">3</span><span class="p">],</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="SE3.log"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.log">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SE3.log">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.log">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="c1"># Reference:</span>
         <span class="c1"># &gt; https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se3.hpp#L223</span>
@@ -443,7 +474,10 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">onp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">V_inv</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">translation</span><span class="p">(),</span> <span class="n">omega</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="SE3.adjoint"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.adjoint">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SE3.adjoint">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE3.adjoint">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">adjoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="n">R</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">onp</span><span class="o">.</span><span class="n">block</span><span class="p">(</span>
@@ -451,7 +485,9 @@
                 <span class="p">[</span><span class="n">R</span><span class="p">,</span> <span class="n">_skew</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">translation</span><span class="p">())</span> <span class="o">@</span> <span class="n">R</span><span class="p">],</span>
                 <span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)),</span> <span class="n">R</span><span class="p">],</span>
             <span class="p">]</span>
-        <span class="p">)</span></div></div>
+        <span class="p">)</span></div>
+</div>
+
 
     <span class="c1"># @staticmethod</span>
     <span class="c1"># @override</span>
@@ -502,12 +538,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    <script src="../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../_static/scripts/furo.js"></script>
+</div><script src="../../../../_static/documentation_options.js?v=187304be"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     </body>
 </html>

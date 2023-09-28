@@ -1,17 +1,17 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex/" /><link rel="search" title="Search" href="../../../../search/" />
 
-    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>viser.infra._infra - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -297,7 +297,9 @@
 <span class="n">TMessage</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TMessage&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Message</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="MessageHandler"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.MessageHandler">[docs]</a><span class="k">class</span> <span class="nc">MessageHandler</span><span class="p">:</span>
+<div class="viewcode-block" id="MessageHandler">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.MessageHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">MessageHandler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mix-in for adding message handling to a class.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -305,7 +307,9 @@
             <span class="n">Type</span><span class="p">[</span><span class="n">Message</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">Message</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
         <span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="MessageHandler.register_handler"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.MessageHandler.register_handler">[docs]</a>    <span class="k">def</span> <span class="nf">register_handler</span><span class="p">(</span>
+<div class="viewcode-block" id="MessageHandler.register_handler">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.MessageHandler.register_handler">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_handler</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">message_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">TMessage</span><span class="p">],</span>
         <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">TMessage</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span>
@@ -315,7 +319,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_handlers</span><span class="p">[</span><span class="n">message_cls</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_handlers</span><span class="p">[</span><span class="n">message_cls</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
-<div class="viewcode-block" id="MessageHandler.unregister_handler"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.MessageHandler.unregister_handler">[docs]</a>    <span class="k">def</span> <span class="nf">unregister_handler</span><span class="p">(</span>
+
+<div class="viewcode-block" id="MessageHandler.unregister_handler">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.MessageHandler.unregister_handler">[docs]</a>
+    <span class="k">def</span> <span class="nf">unregister_handler</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">message_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">TMessage</span><span class="p">],</span>
         <span class="n">callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">TMessage</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -329,6 +336,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_handlers</span><span class="p">[</span><span class="n">message_cls</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
+
     <span class="k">def</span> <span class="nf">_handle_incoming_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle incoming messages.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_handlers</span><span class="p">:</span>
@@ -336,7 +344,10 @@
                 <span class="n">cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ClientConnection"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.ClientConnection">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="ClientConnection">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.ClientConnection">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">ClientConnection</span><span class="p">(</span><span class="n">MessageHandler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with a single connected client.</span>
 
@@ -348,14 +359,20 @@
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-<div class="viewcode-block" id="ClientConnection.send"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.ClientConnection.send">[docs]</a>    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="ClientConnection.send">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.ClientConnection.send">[docs]</a>
+    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a message to a specific client.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">event_loop</span><span class="o">.</span><span class="n">call_soon_threadsafe</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">message_buffer</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">,</span> <span class="n">message</span>
-        <span class="p">)</span></div></div>
+        <span class="p">)</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Server"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server">[docs]</a><span class="k">class</span> <span class="nc">Server</span><span class="p">(</span><span class="n">MessageHandler</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Server">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server">[docs]</a>
+<span class="k">class</span> <span class="nc">Server</span><span class="p">(</span><span class="n">MessageHandler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Websocket server abstraction. Communicates asynchronously with client</span>
 <span class="sd">    applications.</span>
 
@@ -401,7 +418,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Server.start"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Server.start">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.start">[docs]</a>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the server.&quot;&quot;&quot;</span>
 
         <span class="c1"># Start server thread.</span>
@@ -418,26 +437,39 @@
         <span class="c1"># Broadcast buffer should be populated by the background worker.</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="p">,</span> <span class="n">AsyncMessageBuffer</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Server.stop"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Server.stop">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.stop">[docs]</a>
+    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the server.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_loop</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Server.on_client_connect"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.on_client_connect">[docs]</a>    <span class="k">def</span> <span class="nf">on_client_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientConnection</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Server.on_client_connect">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.on_client_connect">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_client_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientConnection</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run for newly connected clients.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Server.on_client_disconnect"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.on_client_disconnect">[docs]</a>    <span class="k">def</span> <span class="nf">on_client_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientConnection</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Server.on_client_disconnect">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.on_client_disconnect">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_client_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientConnection</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run when clients disconnect.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Server.broadcast"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.broadcast">[docs]</a>    <span class="k">def</span> <span class="nf">broadcast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Server.broadcast">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.broadcast">[docs]</a>
+    <span class="k">def</span> <span class="nf">broadcast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Pushes a message onto the broadcast queue. Message will be sent to all clients.</span>
 
 <span class="sd">        Broadcasted messages are persistent: if a new client connects to the server,</span>
 <span class="sd">        they will receive a buffered set of previously broadcasted messages. The buffer</span>
 <span class="sd">        is culled using the value of `message.redundancy_key()`.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_background_worker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ready_sem</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
@@ -594,6 +626,7 @@
         <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Server stopped&quot;</span><span class="p">)</span></div>
 
 
+
 <span class="k">async</span> <span class="k">def</span> <span class="nf">_client_producer</span><span class="p">(</span>
     <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span>
     <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span>
@@ -716,12 +749,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    <script src="../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../_static/scripts/furo.js"></script>
+</div><script src="../../../../_static/documentation_options.js?v=187304be"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     </body>
 </html>

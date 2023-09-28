@@ -1,17 +1,17 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex/" /><link rel="search" title="Search" href="../../../../search/" />
 
-    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>viser.transforms._so3 - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -254,7 +254,9 @@
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">get_epsilon</span><span class="p">,</span> <span class="n">register_lie_group</span>
 
 
-<div class="viewcode-block" id="SO3"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3">[docs]</a><span class="nd">@register_lie_group</span><span class="p">(</span>
+<div class="viewcode-block" id="SO3">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3">[docs]</a>
+<span class="nd">@register_lie_group</span><span class="p">(</span>
     <span class="n">matrix_dim</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">parameters_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
     <span class="n">tangent_dim</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
@@ -280,7 +282,9 @@
         <span class="n">wxyz</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(wxyz=</span><span class="si">{</span><span class="n">wxyz</span><span class="si">}</span><span class="s2">)&quot;</span>
 
-<div class="viewcode-block" id="SO3.from_x_radians"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_x_radians">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="SO3.from_x_radians">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_x_radians">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">from_x_radians</span><span class="p">(</span><span class="n">theta</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a x-axis rotation.</span>
 
@@ -292,7 +296,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">SO3</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">theta</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="SO3.from_y_radians"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_y_radians">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="SO3.from_y_radians">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_y_radians">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">from_y_radians</span><span class="p">(</span><span class="n">theta</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a y-axis rotation.</span>
 
@@ -304,7 +311,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">SO3</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="SO3.from_z_radians"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_z_radians">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="SO3.from_z_radians">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_z_radians">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">from_z_radians</span><span class="p">(</span><span class="n">theta</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a z-axis rotation.</span>
 
@@ -316,7 +326,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">SO3</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">theta</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="SO3.from_rpy_radians"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_rpy_radians">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="SO3.from_rpy_radians">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_rpy_radians">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">from_rpy_radians</span><span class="p">(</span>
         <span class="n">roll</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">,</span>
         <span class="n">pitch</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">,</span>
@@ -335,9 +348,12 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">SO3</span><span class="o">.</span><span class="n">from_z_radians</span><span class="p">(</span><span class="n">yaw</span><span class="p">)</span>
-<div class="viewcode-block" id="SO3.from_quaternion_xyzw"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_quaternion_xyzw">[docs]</a>            <span class="o">@</span> <span class="n">SO3</span><span class="o">.</span><span class="n">from_y_radians</span><span class="p">(</span><span class="n">pitch</span><span class="p">)</span>
+<div class="viewcode-block" id="SO3.from_quaternion_xyzw">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_quaternion_xyzw">[docs]</a>
+            <span class="o">@</span> <span class="n">SO3</span><span class="o">.</span><span class="n">from_y_radians</span><span class="p">(</span><span class="n">pitch</span><span class="p">)</span>
             <span class="o">@</span> <span class="n">SO3</span><span class="o">.</span><span class="n">from_x_radians</span><span class="p">(</span><span class="n">roll</span><span class="p">)</span>
         <span class="p">)</span></div>
+
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">from_quaternion_xyzw</span><span class="p">(</span><span class="n">xyzw</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
@@ -355,11 +371,17 @@
         <span class="k">assert</span> <span class="n">xyzw</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">4</span><span class="p">,)</span>
         <span class="k">return</span> <span class="n">SO3</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">xyzw</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="SO3.as_quaternion_xyzw"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.as_quaternion_xyzw">[docs]</a>    <span class="k">def</span> <span class="nf">as_quaternion_xyzw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="SO3.as_quaternion_xyzw">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.as_quaternion_xyzw">[docs]</a>
+    <span class="k">def</span> <span class="nf">as_quaternion_xyzw</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Grab parameters as xyzw quaternion.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">onp</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span> <span class="n">shift</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SO3.as_rpy_radians"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.as_rpy_radians">[docs]</a>    <span class="k">def</span> <span class="nf">as_rpy_radians</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">hints</span><span class="o">.</span><span class="n">RollPitchYaw</span><span class="p">:</span>
+
+<div class="viewcode-block" id="SO3.as_rpy_radians">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.as_rpy_radians">[docs]</a>
+    <span class="k">def</span> <span class="nf">as_rpy_radians</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">hints</span><span class="o">.</span><span class="n">RollPitchYaw</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes roll, pitch, and yaw angles. Uses the ZYX mobile robot convention.</span>
 
 <span class="sd">        Returns:</span>
@@ -371,7 +393,10 @@
             <span class="n">yaw</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_yaw_radians</span><span class="p">(),</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="SO3.compute_roll_radians"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.compute_roll_radians">[docs]</a>    <span class="k">def</span> <span class="nf">compute_roll_radians</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="SO3.compute_roll_radians">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.compute_roll_radians">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_roll_radians</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute roll angle. Uses the ZYX mobile robot convention.</span>
 
 <span class="sd">        Returns:</span>
@@ -381,7 +406,10 @@
         <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">,</span> <span class="n">q3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span>
         <span class="k">return</span> <span class="n">onp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q0</span> <span class="o">*</span> <span class="n">q1</span> <span class="o">+</span> <span class="n">q2</span> <span class="o">*</span> <span class="n">q3</span><span class="p">),</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">q2</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="SO3.compute_pitch_radians"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.compute_pitch_radians">[docs]</a>    <span class="k">def</span> <span class="nf">compute_pitch_radians</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="SO3.compute_pitch_radians">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.compute_pitch_radians">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_pitch_radians</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute pitch angle. Uses the ZYX mobile robot convention.</span>
 
 <span class="sd">        Returns:</span>
@@ -391,7 +419,10 @@
         <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">,</span> <span class="n">q3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span>
         <span class="k">return</span> <span class="n">onp</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q0</span> <span class="o">*</span> <span class="n">q2</span> <span class="o">-</span> <span class="n">q3</span> <span class="o">*</span> <span class="n">q1</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="SO3.compute_yaw_radians"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.compute_yaw_radians">[docs]</a>    <span class="k">def</span> <span class="nf">compute_yaw_radians</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+
+<div class="viewcode-block" id="SO3.compute_yaw_radians">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.compute_yaw_radians">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_yaw_radians</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute yaw angle. Uses the ZYX mobile robot convention.</span>
 
 <span class="sd">        Returns:</span>
@@ -401,14 +432,20 @@
         <span class="n">q0</span><span class="p">,</span> <span class="n">q1</span><span class="p">,</span> <span class="n">q2</span><span class="p">,</span> <span class="n">q3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span>
         <span class="k">return</span> <span class="n">onp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q0</span> <span class="o">*</span> <span class="n">q3</span> <span class="o">+</span> <span class="n">q1</span> <span class="o">*</span> <span class="n">q2</span><span class="p">),</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">q2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">q3</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span></div>
 
+
     <span class="c1"># Factory.</span>
 
-<div class="viewcode-block" id="SO3.identity"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.identity">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="SO3.identity">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.identity">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">identity</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">SO3</span><span class="p">(</span><span class="n">wxyz</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="SO3.from_matrix"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_matrix">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="SO3.from_matrix">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.from_matrix">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">from_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -507,9 +544,12 @@
 
         <span class="k">return</span> <span class="n">SO3</span><span class="p">(</span><span class="n">wxyz</span><span class="o">=</span><span class="n">q</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">onp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">t</span><span class="p">))</span></div>
 
+
     <span class="c1"># Accessors.</span>
 
-<div class="viewcode-block" id="SO3.as_matrix"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.as_matrix">[docs]</a>    <span class="nd">@override</span>
+<div class="viewcode-block" id="SO3.as_matrix">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.as_matrix">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">as_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="n">norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span>
         <span class="n">q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">norm</span><span class="p">)</span>
@@ -522,13 +562,19 @@
             <span class="p">]</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="SO3.parameters"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.parameters">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SO3.parameters">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.parameters">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span></div>
 
+
     <span class="c1"># Operations.</span>
 
-<div class="viewcode-block" id="SO3.apply"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.apply">[docs]</a>    <span class="nd">@override</span>
+<div class="viewcode-block" id="SO3.apply">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.apply">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="k">assert</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
 
@@ -536,7 +582,10 @@
         <span class="n">padded_target</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">target</span><span class="p">])</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span> <span class="o">@</span> <span class="n">SO3</span><span class="p">(</span><span class="n">wxyz</span><span class="o">=</span><span class="n">padded_target</span><span class="p">)</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">inverse</span><span class="p">())</span><span class="o">.</span><span class="n">wxyz</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span></div>
 
-<div class="viewcode-block" id="SO3.multiply"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.multiply">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SO3.multiply">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.multiply">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">SO3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
         <span class="n">w0</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">z0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span>
         <span class="n">w1</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">z1</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">wxyz</span>
@@ -551,7 +600,10 @@
             <span class="p">)</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="SO3.exp"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.exp">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="SO3.exp">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.exp">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">exp</span><span class="p">(</span><span class="n">tangent</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
         <span class="c1"># Reference:</span>
@@ -594,7 +646,10 @@
             <span class="p">)</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="SO3.log"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.log">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SO3.log">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.log">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="c1"># Reference:</span>
         <span class="c1"># &gt; https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/so3.hpp#L247</span>
@@ -629,18 +684,29 @@
 
         <span class="k">return</span> <span class="n">atan_factor</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span></div>
 
-<div class="viewcode-block" id="SO3.adjoint"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.adjoint">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SO3.adjoint">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.adjoint">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">adjoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="SO3.inverse"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.inverse">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SO3.inverse">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.inverse">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
         <span class="c1"># Negate complex terms.</span>
         <span class="k">return</span> <span class="n">SO3</span><span class="p">(</span><span class="n">wxyz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="SO3.normalize"><a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.normalize">[docs]</a>    <span class="nd">@override</span>
+
+<div class="viewcode-block" id="SO3.normalize">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO3.normalize">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO3</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">SO3</span><span class="p">(</span><span class="n">wxyz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">/</span> <span class="n">onp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span><span class="p">))</span></div></div>
+        <span class="k">return</span> <span class="n">SO3</span><span class="p">(</span><span class="n">wxyz</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">/</span> <span class="n">onp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wxyz</span><span class="p">))</span></div>
+</div>
+
 
     <span class="c1">#  @staticmethod</span>
     <span class="c1">#  @override</span>
@@ -705,12 +771,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    <script src="../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../_static/scripts/furo.js"></script>
+</div><script src="../../../../_static/documentation_options.js?v=187304be"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     </body>
 </html>

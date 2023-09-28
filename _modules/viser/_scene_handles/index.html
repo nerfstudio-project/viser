@@ -1,17 +1,17 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex/" /><link rel="search" title="Search" href="../../../search/" />
 
-    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>viser._scene_handles - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -291,7 +291,9 @@
     <span class="n">click_cb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClickEvent</span><span class="p">[</span><span class="n">SceneNodeHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="SceneNodeHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.SceneNodeHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="SceneNodeHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.SceneNodeHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">SceneNodeHandle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle base class for interacting with scene nodes.&quot;&quot;&quot;</span>
 
@@ -346,15 +348,22 @@
             <span class="n">_messages</span><span class="o">.</span><span class="n">SetPositionMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">position_cast</span><span class="p">)</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="SceneNodeHandle.remove"><a class="viewcode-back" href="../../../scene_handles/#viser.SceneNodeHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="SceneNodeHandle.remove">
+<a class="viewcode-back" href="../../../scene_handles/#viser.SceneNodeHandle.remove">[docs]</a>
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove the node from the scene.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">RemoveSceneNodeMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">RemoveSceneNodeMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">))</span></div>
+</div>
 
 
-<div class="viewcode-block" id="ClickEvent"><a class="viewcode-back" href="../../../scene_handles/#viser.ClickEvent">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ClickEvent">
+<a class="viewcode-back" href="../../../scene_handles/#viser.ClickEvent">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">ClickEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TSceneNodeHandle</span><span class="p">]):</span>
     <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">TSceneNodeHandle</span></div>
+
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -410,24 +419,36 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">visible</span>
 
 
-<div class="viewcode-block" id="CameraFrustumHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.CameraFrustumHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="CameraFrustumHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.CameraFrustumHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">CameraFrustumHandle</span><span class="p">(</span><span class="n">_SupportsClick</span><span class="p">,</span> <span class="n">_SupportsVisibility</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for camera frustums.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="PointCloudHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.PointCloudHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="PointCloudHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.PointCloudHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">PointCloudHandle</span><span class="p">(</span><span class="n">_SupportsVisibility</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for point clouds. Does not support click events.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="FrameHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.FrameHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="FrameHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.FrameHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">FrameHandle</span><span class="p">(</span><span class="n">_SupportsClick</span><span class="p">,</span> <span class="n">_SupportsVisibility</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for coordinate frames.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="MeshHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.MeshHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="MeshHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.MeshHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">MeshHandle</span><span class="p">(</span><span class="n">_SupportsClick</span><span class="p">,</span> <span class="n">_SupportsVisibility</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for mesh objects.&quot;&quot;&quot;</span></div>
+
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -435,14 +456,20 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for GLB objects.&quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="ImageHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.ImageHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="ImageHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.ImageHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">ImageHandle</span><span class="p">(</span><span class="n">_SupportsClick</span><span class="p">,</span> <span class="n">_SupportsVisibility</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for 2D images, rendered in 3D.&quot;&quot;&quot;</span></div>
 
 
-<div class="viewcode-block" id="LabelHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.LabelHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="LabelHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.LabelHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">LabelHandle</span><span class="p">(</span><span class="n">SceneNodeHandle</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for 2D label objects. Does not support click events or visibility toggling.&quot;&quot;&quot;</span></div>
+
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -452,7 +479,9 @@
     <span class="n">sync_cb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">TransformControlsHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="TransformControlsHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.TransformControlsHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="viewcode-block" id="TransformControlsHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.TransformControlsHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">TransformControlsHandle</span><span class="p">(</span><span class="n">_SupportsClick</span><span class="p">,</span> <span class="n">_SupportsVisibility</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with transform control gizmos.&quot;&quot;&quot;</span>
 
@@ -462,15 +491,21 @@
     <span class="k">def</span> <span class="nf">update_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">last_updated</span>
 
-<div class="viewcode-block" id="TransformControlsHandle.on_update"><a class="viewcode-back" href="../../../scene_handles/#viser.TransformControlsHandle.on_update">[docs]</a>    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
+<div class="viewcode-block" id="TransformControlsHandle.on_update">
+<a class="viewcode-back" href="../../../scene_handles/#viser.TransformControlsHandle.on_update">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">TransformControlsHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">TransformControlsHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback for when the gizmo is moved.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">update_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span></div></div>
+        <span class="k">return</span> <span class="n">func</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Gui3dContainerHandle"><a class="viewcode-back" href="../../../scene_handles/#viser.Gui3dContainerHandle">[docs]</a><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+
+<div class="viewcode-block" id="Gui3dContainerHandle">
+<a class="viewcode-back" href="../../../scene_handles/#viser.Gui3dContainerHandle">[docs]</a>
+<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Gui3dContainerHandle</span><span class="p">(</span><span class="n">SceneNodeHandle</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a 3D GUI container.&quot;&quot;&quot;</span>
 
@@ -495,7 +530,9 @@
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
-<div class="viewcode-block" id="Gui3dContainerHandle.remove"><a class="viewcode-back" href="../../../scene_handles/#viser.Gui3dContainerHandle.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="Gui3dContainerHandle.remove">
+<a class="viewcode-back" href="../../../scene_handles/#viser.Gui3dContainerHandle.remove">[docs]</a>
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this GUI container from the visualizer.&quot;&quot;&quot;</span>
 
         <span class="c1"># Call scene node remove.</span>
@@ -504,7 +541,9 @@
         <span class="c1"># Clean up contained GUI elements.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div></div>
+            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div>
+</div>
+
 </pre></div>
         </article>
       </div>
@@ -544,12 +583,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../_static/doctools.js"></script>
-    <script src="../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../_static/scripts/furo.js"></script>
+</div><script src="../../../_static/documentation_options.js?v=187304be"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/furo.js?v=32e29ea5"></script>
     </body>
 </html>

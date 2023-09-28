@@ -1,17 +1,17 @@
 <!doctype html>
-<html class="no-js" lang="en">
+<html class="no-js" lang="en" data-content_root="../../../../">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../../genindex/" /><link rel="search" title="Search" href="../../../../search/" />
 
-    <!-- Generated with Sphinx 5.2.0 and Furo 2023.03.27 -->
+    <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>viser.infra._messages - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b20cc3f5" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
     
     
 
@@ -314,14 +314,18 @@
     <span class="k">return</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Message"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message">[docs]</a><span class="k">class</span> <span class="nc">Message</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="Message">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message">[docs]</a>
+<span class="k">class</span> <span class="nc">Message</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base message type for server/client communication.&quot;&quot;&quot;</span>
 
     <span class="n">excluded_self_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClientId</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Don&#39;t send this message to a particular client. Useful when a client wants to</span>
 <span class="sd">    send synchronization information to other clients.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Message.as_serializable_dict"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.as_serializable_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_serializable_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<div class="viewcode-block" id="Message.as_serializable_dict">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.as_serializable_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">as_serializable_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a Python Message object into bytes.&quot;&quot;&quot;</span>
         <span class="n">hints</span> <span class="o">=</span> <span class="n">get_type_hints_cached</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         <span class="n">out</span> <span class="o">=</span> <span class="p">{</span>
@@ -330,7 +334,10 @@
         <span class="n">out</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
         <span class="k">return</span> <span class="n">out</span></div>
 
-<div class="viewcode-block" id="Message.deserialize"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.deserialize">[docs]</a>    <span class="nd">@classmethod</span>
+
+<div class="viewcode-block" id="Message.deserialize">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.deserialize">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert bytes into a Python Message object.&quot;&quot;&quot;</span>
         <span class="n">mapping</span> <span class="o">=</span> <span class="n">msgpack</span><span class="o">.</span><span class="n">unpackb</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
@@ -343,13 +350,16 @@
         <span class="n">message_type</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclass_from_type_string</span><span class="p">()[</span><span class="n">cast</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">mapping</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">))]</span>
         <span class="k">return</span> <span class="n">message_type</span><span class="p">(</span><span class="o">**</span><span class="n">mapping</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
+
     <span class="nd">@classmethod</span>
     <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_subclass_from_type_string</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]:</span>
         <span class="n">subclasses</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_subclasses</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">{</span><span class="n">s</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span> <span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">subclasses</span><span class="p">}</span>
 
-<div class="viewcode-block" id="Message.get_subclasses"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.get_subclasses">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Message.get_subclasses">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.get_subclasses">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_subclasses</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Recursively get message subclasses.&quot;&quot;&quot;</span>
 
@@ -362,14 +372,19 @@
 
         <span class="k">return</span> <span class="n">_get_subclasses</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Message.redundancy_key"><a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.redundancy_key">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+
+<div class="viewcode-block" id="Message.redundancy_key">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Message.redundancy_key">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">redundancy_key</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a unique key for this message, used for detecting redundant</span>
 <span class="sd">        messages.</span>
 
 <span class="sd">        For example: if we send 1000 &quot;set value&quot; messages for the same GUI element, we</span>
 <span class="sd">        should only keep the latest message.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div></div>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+</div>
+
 </pre></div>
         </article>
       </div>
@@ -409,12 +424,9 @@
       
     </aside>
   </div>
-</div><script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../../../_static/doctools.js"></script>
-    <script src="../../../../_static/sphinx_highlight.js"></script>
-    <script src="../../../../_static/scripts/furo.js"></script>
+</div><script src="../../../../_static/documentation_options.js?v=187304be"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/scripts/furo.js?v=32e29ea5"></script>
     </body>
 </html>
