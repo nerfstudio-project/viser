@@ -683,6 +683,10 @@ class MessageApi(abc.ABC):
             if cb == func:
                 del self._scene_pointer_cb[i]
                 break
+        
+        # Disable scene pointer events if there are no more callbacks.
+        if len(self._scene_pointer_cb) == 0 and self.scene_pointer_enabled:
+            self.scene_pointer_enabled = False
 
     def add_3d_gui_container(
         self,
