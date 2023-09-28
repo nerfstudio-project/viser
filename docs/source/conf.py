@@ -212,6 +212,7 @@ texinfo_documents = [
 # -- Options for autoapi extension --------------------------------------------
 autoapi_dirs = ["../../src/viser"]
 autoapi_root = "api"
+autoapi_ignore = ["**/client/**/*.py"]
 autoapi_options = [
     "members",
     "inherited-members",
