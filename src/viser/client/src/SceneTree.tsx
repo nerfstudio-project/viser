@@ -113,6 +113,12 @@ export function SceneNodeThreeObject(props: {
     false;
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
+  const dragInfo = React.useRef({
+    dragging: false,
+    startClientX: 0,
+    startClientY: 0,
+  });
+
   // Create object + children.
   //
   // For not-fully-understood reasons, wrapping makeObject with useMemo() fixes
@@ -219,11 +225,20 @@ export function SceneNodeThreeObject(props: {
           onPointerDown={(e) => {
             if (!isDisplayed()) return;
             e.stopPropagation();
+            const state = dragInfo.current;
+            state.startClientX = e.clientX;
+            state.startClientY = e.clientY;
             setDragged(false);
           }}
           onPointerMove={(e) => {
             if (!isDisplayed()) return;
             e.stopPropagation();
+            const state = dragInfo.current;
+            const deltaX = e.clientX - state.startClientX;
+            const deltaY = e.clientY - state.startClientY;
+            // Minimum motion.
+            console.log(deltaX, deltaY);
+            if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
             setDragged(true);
           }}
           onPointerUp={(e) => {
