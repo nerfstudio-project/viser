@@ -663,12 +663,26 @@ class MessageApi(abc.ABC):
             )
             cb(event)
 
-    def on_scene_pointer(
+    def on_scene_pointer_event(
         self, func: Callable[[ScenePointerEvent], None],
     ) -> Callable[[ScenePointerEvent], None]:
         """Add a callback for scene pointer events. """
         self._scene_pointer_cb.append(func)
+        
+        # Enable scene pointer events if they're not already enabled.
+        if len(self._scene_pointer_cb) > 0 and not self.scene_pointer_enabled:
+            self.scene_pointer_enabled = True
+
         return func
+
+    def remove_scene_pointer_event(
+        self, func: Callable[[ScenePointerEvent], None],
+    ) -> None:
+        """Check for the function handle in the list of callbacks and remove it."""
+        for i, cb in enumerate(self._scene_pointer_cb):
+            if cb == func:
+                del self._scene_pointer_cb[i]
+                break
 
     def add_3d_gui_container(
         self,

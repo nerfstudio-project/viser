@@ -1,6 +1,9 @@
-"""Rayclicks
+"""Scene pointer events.
 
-Visualize a mesh. To get the demo data, see `./assets/download_dragon_mesh.sh`.
+This example shows how to use scene pointer events to specify rays, 
+and how they can be used to interact with the scene (e.g., ray-mesh intersections).
+
+To get the demo data, see `./assets/download_dragon_mesh.sh`.
 """
 
 import time
@@ -26,49 +29,52 @@ mesh_handle = server.add_mesh_trimesh(
     position=(0.0, 0.0, 0.0),
 )
 
-button_handle = server.add_gui_checkbox("Enable Rayclicks", False)
-@button_handle.on_update
-def _(_) -> None:
-    # is there a better name for this?
-    server.scene_pointer_enabled = button_handle.value
+hit_pos_handles = []  # type: typing.List[viser.MeshHandle]
 
-# Note: Scene clicks don't interrupt the scenenodeclicks.
-@mesh_handle.on_click
+# Button to add spheres; when clicked, we add a scene pointer event listener
+add_button_handle = server.add_gui_button("Add sphere")
+@add_button_handle.on_click
 def _(_):
-    print("Mesh clicked")
+    add_button_handle.disabled = True
+    @server.on_scene_pointer_event
+    def on_rayclick(message: viser.ScenePointerEvent) -> None:
+        global hit_pos_handles
 
-hit_pos_handle = None
+        # Check for intersection with the mesh, using trimesh's ray-mesh intersection
+        # Note that mesh is in the mesh frame, so we need to transform the ray
+        mesh_tf = tf.SO3(mesh_handle.wxyz).inverse().as_matrix()
+        origin = (mesh_tf @ onp.array(message.ray_origin)).reshape(1, 3)
+        direction = (mesh_tf @ onp.array(message.ray_direction)).reshape(1, 3)
+        intersector = trimesh.ray.ray_triangle.RayMeshIntersector(mesh)
+        hit_pos, _, _ = intersector.intersects_location(origin, direction)
 
-@server.on_scene_pointer
-def on_rayclick(message: viser.ScenePointerEvent) -> None:
-    global hit_pos_handle
+        if len(hit_pos) == 0:
+            return
 
-    # check for intersection with the mesh
-    mesh_tf = tf.SO3(mesh_handle.wxyz).inverse().as_matrix()
-    origin = (mesh_tf @ onp.array(message.ray_origin)).reshape(1, 3)
-    direction = (mesh_tf @ onp.array(message.ray_direction)).reshape(1, 3)
-    intersector = trimesh.ray.ray_triangle.RayMeshIntersector(mesh)
-    hit_pos, _, _ = intersector.intersects_location(origin, direction)
+        # get the first hit position (based on distance from the ray origin)
+        hit_pos = sorted(hit_pos, key=lambda x: onp.linalg.norm(x - origin))[0]
 
-    # if no hit, remove the hit vis from the scene.
-    if len(hit_pos) == 0:
-        if hit_pos_handle is not None:
-            hit_pos_handle.remove()
-            hit_pos_handle = None
-        return
+        # Put the hit position back into the world frame
+        hit_pos = (tf.SO3(mesh_handle.wxyz).as_matrix() @ hit_pos.T).T
+        hit_pos_mesh = trimesh.creation.icosphere(radius=0.1)
+        hit_pos_mesh.vertices += hit_pos
+        hit_pos_mesh.visual.vertex_colors = (1.0, 0.0, 0.0, 1.0)
+        hit_pos_handle = server.add_mesh_trimesh(
+            name=f"/hit_pos_{len(hit_pos_handles)}",
+            mesh=hit_pos_mesh
+        )
+        hit_pos_handles.append(hit_pos_handle)
+        server.remove_scene_pointer_event(on_rayclick)
+        add_button_handle.disabled = False
 
-    # get the first hit position
-    hit_pos = sorted(hit_pos, key=lambda x: onp.linalg.norm(x - origin))[0]
-
-    # put the hit position back into the world frame
-    hit_pos = (tf.SO3(mesh_handle.wxyz).as_matrix() @ hit_pos.T).T
-    hit_pos_mesh = trimesh.creation.icosphere(radius=0.1)
-    hit_pos_mesh.vertices += hit_pos
-    hit_pos_mesh.visual.vertex_colors = (1.0, 0.0, 0.0, 1.0)
-    hit_pos_handle = server.add_mesh_trimesh(
-        name="/hit_pos",
-        mesh=hit_pos_mesh
-    )
+# Button to clear spheres
+clear_button_handle = server.add_gui_button("Clear spheres")
+@clear_button_handle.on_click
+def _(_):
+    global hit_pos_handles
+    for handle in hit_pos_handles:
+        handle.remove()
+    hit_pos_handles = []
 
 while True:
     time.sleep(10.0)
