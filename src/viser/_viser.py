@@ -414,7 +414,9 @@ class ViserServer(MessageApi, GuiApi):
             self._share_tunnel = None
             rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
         else:
-            rich.print("[bold](viser)[/bold] Share URL requested! (expires in 24 hours)")
+            rich.print(
+                "[bold](viser)[/bold] Share URL requested! (expires in 24 hours)"
+            )
             self._share_tunnel = _ViserTunnel(port)
 
             @self._share_tunnel.on_connect
