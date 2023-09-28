@@ -408,7 +408,7 @@ class ViserServer(MessageApi, GuiApi):
         )
         table.add_row("HTTP", http_url)
         table.add_row("Websocket", ws_url)
-        rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
+        table.add_row("hello", ws_url)
 
         # Create share tunnel if requested.
         if not share:
@@ -424,9 +424,8 @@ class ViserServer(MessageApi, GuiApi):
                 if share_url is None:
                     rich.print("[bold](viser)[/bold] Could not generate share URL")
                 else:
-                    rich.print(
-                        f"[bold](viser)[/bold] Share URL (expires in 24 hours): {share_url}"
-                    )
+                    table.add_row("Share URL (expires in 24 hours)", share_url)
+        rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
 
         self.reset_scene()
         self.world_axes = FrameHandle(
