@@ -93,6 +93,13 @@ function useMessageHandler() {
         setTheme(message);
         return;
       }
+
+      // Enable/disable whether scene pointer events are sent.
+      case "EnableScenePointerMessage": {
+        viewer.useScenePointer.current = message.enabled;
+        return;
+      }
+
       // Add a coordinate frame.
       case "FrameMessage": {
         addSceneNodeMakeParents(

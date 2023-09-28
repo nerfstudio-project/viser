@@ -12,6 +12,7 @@ from typing import (
     Dict,
     Generic,
     List,
+    Literal,
     Optional,
     Tuple,
     Type,
@@ -26,6 +27,14 @@ if TYPE_CHECKING:
     from ._gui_api import GuiApi
     from ._gui_handles import SupportsRemoveProtocol
     from ._message_api import ClientId, MessageApi
+
+
+@dataclasses.dataclass(frozen=True)
+class ScenePointerEvent:
+    client_id: ClientId
+    pointer_type: Literal["click"]  # Later we can add `double_click`, `move`, `down`, `up`, etc
+    ray_origin: Tuple[float, float, float]
+    ray_direction: Tuple[float, float, float]
 
 
 TSceneNodeHandle = TypeVar("TSceneNodeHandle", bound="SceneNodeHandle")
@@ -44,7 +53,7 @@ class _SceneNodeHandleState:
     )
     visible: bool = True
     # TODO: we should remove SceneNodeHandle as an argument here.
-    click_cb: Optional[List[Callable[[ClickEvent[SceneNodeHandle]], None]]] = None
+    click_cb: Optional[List[Callable[[SceneNodePointerEvent[SceneNodeHandle]], None]]] = None
 
 
 @dataclasses.dataclass
@@ -108,7 +117,7 @@ class SceneNodeHandle:
 
 
 @dataclasses.dataclass(frozen=True)
-class ClickEvent(Generic[TSceneNodeHandle]):
+class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
     client_id: ClientId
     target: TSceneNodeHandle
 
@@ -116,8 +125,8 @@ class ClickEvent(Generic[TSceneNodeHandle]):
 @dataclasses.dataclass
 class _SupportsClick(SceneNodeHandle):
     def on_click(
-        self: TSceneNodeHandle, func: Callable[[ClickEvent[TSceneNodeHandle]], None]
-    ) -> Callable[[ClickEvent[TSceneNodeHandle]], None]:
+        self: TSceneNodeHandle, func: Callable[[SceneNodePointerEvent[TSceneNodeHandle]], None]
+    ) -> Callable[[SceneNodePointerEvent[TSceneNodeHandle]], None]:
         """Attach a callback for when a scene node is clicked.
 
         TODO:

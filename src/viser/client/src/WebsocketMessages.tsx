@@ -14,17 +14,26 @@ export interface ViewerCameraMessage {
   look_at: [number, number, number];
   up_direction: [number, number, number];
 }
-/** Message for raycast clicks.
+/** Message for a raycast-like pointer in the scene.
  * origin is the viewing camera position, in world coordinates.
  * direction is the vector if a ray is projected from the camera through the clicked pixel,
  *
  *
  * (automatically generated)
  */
-export interface RayClickMessage {
-  type: "RayClickMessage";
-  origin: [number, number, number];
-  direction: [number, number, number];
+export interface ScenePointerMessage {
+  type: "ScenePointerMessage";
+  pointer_type: "click";
+  ray_origin: [number, number, number];
+  ray_direction: [number, number, number];
+}
+/** Message to enable/disable scene pointer
+ *
+ * (automatically generated)
+ */
+export interface EnableScenePointerMessage {
+  type: "EnableScenePointerMessage";
+  enabled: boolean;
 }
 /** Variant of CameraMessage used for visualizing camera frustums.
  *
@@ -641,7 +650,8 @@ export interface GetRenderResponseMessage {
 
 export type Message =
   | ViewerCameraMessage
-  | RayClickMessage
+  | ScenePointerMessage
+  | EnableScenePointerMessage
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage

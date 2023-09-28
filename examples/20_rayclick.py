@@ -19,10 +19,6 @@ mesh = trimesh.load_mesh(Path(__file__).parent / "assets/dragon.obj")
 assert isinstance(mesh, trimesh.Trimesh)
 mesh.apply_scale(0.05)
 
-vertices = mesh.vertices
-faces = mesh.faces
-print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
-
 mesh_handle = server.add_mesh_trimesh(
     name="/mesh",
     mesh=mesh,
@@ -30,21 +26,35 @@ mesh_handle = server.add_mesh_trimesh(
     position=(0.0, 0.0, 0.0),
 )
 
+button_handle = server.add_gui_checkbox("Enable Rayclicks", False)
+@button_handle.on_update
+def _(_) -> None:
+    # is there a better name for this?
+    server.scene_pointer_enabled = button_handle.value
+
+# Note: Scene clicks don't interrupt the scenenodeclicks.
+@mesh_handle.on_click
+def _(_):
+    print("Mesh clicked")
+
 hit_pos_handle = None
-def on_rayclick(origin: typing.Tuple, direction: typing.Tuple) -> None:
+
+@server.on_scene_pointer
+def on_rayclick(message: viser.ScenePointerEvent) -> None:
     global hit_pos_handle
 
     # check for intersection with the mesh
     mesh_tf = tf.SO3(mesh_handle.wxyz).inverse().as_matrix()
-    origin = (mesh_tf @ onp.array(origin)).reshape(1, 3)
-    direction = (mesh_tf @ onp.array(direction)).reshape(1, 3)
+    origin = (mesh_tf @ onp.array(message.ray_origin)).reshape(1, 3)
+    direction = (mesh_tf @ onp.array(message.ray_direction)).reshape(1, 3)
     intersector = trimesh.ray.ray_triangle.RayMeshIntersector(mesh)
     hit_pos, _, _ = intersector.intersects_location(origin, direction)
 
     # if no hit, remove the hit vis from the scene.
     if len(hit_pos) == 0:
-        hit_pos_handle.remove()
-        hit_pos_handle = None
+        if hit_pos_handle is not None:
+            hit_pos_handle.remove()
+            hit_pos_handle = None
         return
 
     # get the first hit position
@@ -59,8 +69,6 @@ def on_rayclick(origin: typing.Tuple, direction: typing.Tuple) -> None:
         name="/hit_pos",
         mesh=hit_pos_mesh
     )
-
-server.add_rayclick_cb(on_rayclick)
 
 while True:
     time.sleep(10.0)

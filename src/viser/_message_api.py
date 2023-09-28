@@ -14,7 +14,7 @@ import io
 import queue
 import threading
 import time
-from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypeVar, Union, cast, Callable
 
 import imageio.v3 as iio
 import numpy as onp
@@ -26,8 +26,9 @@ from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
 from ._scene_handles import (
+    ScenePointerEvent,
     CameraFrustumHandle,
-    ClickEvent,
+    SceneNodePointerEvent,
     FrameHandle,
     GlbHandle,
     Gui3dContainerHandle,
@@ -138,7 +139,10 @@ class MessageApi(abc.ABC):
             str, TransformControlsHandle
         ] = {}
         self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
-        self._handle_rayclick: List[Callable[Tuple, Tuple]] = []
+
+        # Callbacks for scene pointer events -- by default don't enable them.
+        self._scene_pointer_cb: List[Callable[[ScenePointerEvent], None]] = []
+        self._scene_pointer_enabled = False
 
         handler.register_handler(
             _messages.TransformControlsUpdateMessage,
@@ -149,8 +153,8 @@ class MessageApi(abc.ABC):
             self._handle_click_updates,
         )
         handler.register_handler(
-            _messages.RayClickMessage,
-            self._handle_rayclick_updates,
+            _messages.ScenePointerMessage,
+            self._handle_scene_pointer_updates,
             )
         
         self._atomic_lock = threading.Lock()
@@ -630,23 +634,41 @@ class MessageApi(abc.ABC):
         if handle is None or handle._impl.click_cb is None:
             return
         for cb in handle._impl.click_cb:
-            event = ClickEvent(client_id=client_id, target=handle)
+            event = SceneNodePointerEvent(client_id=client_id, target=handle)
             cb(event)  # type: ignore
     
-    def _handle_rayclick_updates(
-        self, client_id: ClientId, message: _messages.ClickMessage
+    @property
+    def scene_pointer_enabled(self) -> bool:
+        """Whether scene pointer events are enabled."""
+        return self._scene_pointer_enabled
+
+    @scene_pointer_enabled.setter
+    def scene_pointer_enabled(self, enable: bool) -> None:
+        """Enable or disable scene pointer events."""
+        self._scene_pointer_enabled = enable
+        self._queue(_messages.EnableScenePointerMessage(
+            enabled=enable
+            ))
+
+    def _handle_scene_pointer_updates(
+        self, client_id: ClientId, message: _messages.ScenePointerMessage
     ):
         """Callback for handling click messages."""
-        for cb in self._handle_rayclick:
-            cb(message.origin, message.direction)
+        for cb in self._scene_pointer_cb:
+            event = ScenePointerEvent(
+                client_id=client_id,
+                pointer_type=message.pointer_type,
+                ray_origin=message.ray_origin,
+                ray_direction=message.ray_direction,
+            )
+            cb(event)
 
-    def add_rayclick_cb(
-        self,
-        cb: Callable[[Tuple[float, float, float], Tuple[float, float, float]], None],
-    ) -> None:
-        """Add a callback for rayclick events. 
-        Callback takes in the origin and direction of the ray."""
-        self._handle_rayclick.append(cb)
+    def on_scene_pointer(
+        self, func: Callable[[ScenePointerEvent], None],
+    ) -> Callable[[ScenePointerEvent], None]:
+        """Add a callback for scene pointer events. """
+        self._scene_pointer_cb.append(func)
+        return func
 
     def add_3d_gui_container(
         self,
