@@ -206,7 +206,6 @@ export function SceneNodeThreeObject(props: {
     50
   );
   const [hovered, setHovered] = React.useState(false);
-  const [dragged, setDragged] = React.useState(false);
   useCursor(hovered);
   if (!clickable && hovered) setHovered(false);
 
@@ -228,7 +227,7 @@ export function SceneNodeThreeObject(props: {
             const state = dragInfo.current;
             state.startClientX = e.clientX;
             state.startClientY = e.clientY;
-            setDragged(false);
+            state.dragging = false;
           }}
           onPointerMove={(e) => {
             if (!isDisplayed()) return;
@@ -239,12 +238,13 @@ export function SceneNodeThreeObject(props: {
             // Minimum motion.
             console.log(deltaX, deltaY);
             if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-            setDragged(true);
+            state.dragging = true;
           }}
           onPointerUp={(e) => {
             if (!isDisplayed()) return;
             e.stopPropagation();
-            if (dragged) return;
+            const state = dragInfo.current;
+            if (state.dragging) return;
             sendClicksThrottled({
               type: "SceneNodeClickedMessage",
               name: props.name,
