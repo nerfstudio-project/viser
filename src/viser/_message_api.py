@@ -14,7 +14,17 @@ import io
 import queue
 import threading
 import time
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypeVar, Union, cast, Callable
+from typing import (
+    TYPE_CHECKING,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+    Callable,
+)
 
 import imageio.v3 as iio
 import numpy as onp
@@ -155,8 +165,8 @@ class MessageApi(abc.ABC):
         handler.register_handler(
             _messages.ScenePointerMessage,
             self._handle_scene_pointer_updates,
-            )
-        
+        )
+
         self._atomic_lock = threading.Lock()
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
@@ -636,7 +646,7 @@ class MessageApi(abc.ABC):
         for cb in handle._impl.click_cb:
             event = SceneNodePointerEvent(client_id=client_id, target=handle)
             cb(event)  # type: ignore
-    
+
     @property
     def scene_pointer_enabled(self) -> bool:
         """Whether scene pointer events are enabled."""
@@ -646,9 +656,7 @@ class MessageApi(abc.ABC):
     def scene_pointer_enabled(self, enable: bool) -> None:
         """Enable or disable scene pointer events."""
         self._scene_pointer_enabled = enable
-        self._queue(_messages.EnableScenePointerMessage(
-            enabled=enable
-            ))
+        self._queue(_messages.EnableScenePointerMessage(enabled=enable))
 
     def _handle_scene_pointer_updates(
         self, client_id: ClientId, message: _messages.ScenePointerMessage
@@ -664,11 +672,12 @@ class MessageApi(abc.ABC):
             cb(event)
 
     def on_scene_pointer_event(
-        self, func: Callable[[ScenePointerEvent], None],
+        self,
+        func: Callable[[ScenePointerEvent], None],
     ) -> Callable[[ScenePointerEvent], None]:
-        """Add a callback for scene pointer events. """
+        """Add a callback for scene pointer events."""
         self._scene_pointer_cb.append(func)
-        
+
         # Enable scene pointer events if they're not already enabled.
         if len(self._scene_pointer_cb) > 0 and not self.scene_pointer_enabled:
             self.scene_pointer_enabled = True
@@ -676,14 +685,15 @@ class MessageApi(abc.ABC):
         return func
 
     def remove_scene_pointer_event(
-        self, func: Callable[[ScenePointerEvent], None],
+        self,
+        func: Callable[[ScenePointerEvent], None],
     ) -> None:
         """Check for the function handle in the list of callbacks and remove it."""
         for i, cb in enumerate(self._scene_pointer_cb):
             if cb == func:
                 del self._scene_pointer_cb[i]
                 break
-        
+
         # Disable scene pointer events if there are no more callbacks.
         if len(self._scene_pointer_cb) == 0 and self.scene_pointer_enabled:
             self.scene_pointer_enabled = False

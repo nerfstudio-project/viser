@@ -7,10 +7,11 @@ To get the demo data, see `./assets/download_dragon_mesh.sh`.
 """
 
 import time
-import typing
+from typing import List
 from pathlib import Path
 
-import trimesh
+import trimesh.ray
+import trimesh.creation
 import numpy as onp
 
 import viser
@@ -29,17 +30,18 @@ mesh_handle = server.add_mesh_trimesh(
     position=(0.0, 0.0, 0.0),
 )
 
-hit_pos_handles = []  # type: typing.List[viser.MeshHandle]
+hit_pos_handles: List[viser.GlbHandle] = []
 
 # Button to add spheres; when clicked, we add a scene pointer event listener
 add_button_handle = server.add_gui_button("Add sphere")
+
+
 @add_button_handle.on_click
 def _(_):
     add_button_handle.disabled = True
+
     @server.on_scene_pointer_event
     def on_rayclick(message: viser.ScenePointerEvent) -> None:
-        global hit_pos_handles
-
         # Check for intersection with the mesh, using trimesh's ray-mesh intersection
         # Note that mesh is in the mesh frame, so we need to transform the ray
         mesh_tf = tf.SO3(mesh_handle.wxyz).inverse().as_matrix()
@@ -58,23 +60,26 @@ def _(_):
         hit_pos = (tf.SO3(mesh_handle.wxyz).as_matrix() @ hit_pos.T).T
         hit_pos_mesh = trimesh.creation.icosphere(radius=0.1)
         hit_pos_mesh.vertices += hit_pos
-        hit_pos_mesh.visual.vertex_colors = (1.0, 0.0, 0.0, 1.0)
+        hit_pos_mesh.visual.vertex_colors = (1.0, 0.0, 0.0, 1.0)  # type: ignore
         hit_pos_handle = server.add_mesh_trimesh(
-            name=f"/hit_pos_{len(hit_pos_handles)}",
-            mesh=hit_pos_mesh
+            name=f"/hit_pos_{len(hit_pos_handles)}", mesh=hit_pos_mesh
         )
         hit_pos_handles.append(hit_pos_handle)
         server.remove_scene_pointer_event(on_rayclick)
         add_button_handle.disabled = False
 
+
 # Button to clear spheres
 clear_button_handle = server.add_gui_button("Clear spheres")
+
+
 @clear_button_handle.on_click
 def _(_):
     global hit_pos_handles
     for handle in hit_pos_handles:
         handle.remove()
     hit_pos_handles = []
+
 
 while True:
     time.sleep(10.0)

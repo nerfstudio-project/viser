@@ -52,11 +52,14 @@ class ViewerCameraMessage(Message):
 
 @dataclasses.dataclass
 class ScenePointerMessage(Message):
-    """Message for a raycast-like pointer in the scene. 
+    """Message for a raycast-like pointer in the scene.
     origin is the viewing camera position, in world coordinates.
     direction is the vector if a ray is projected from the camera through the clicked pixel,
     """
-    pointer_type: Literal["click"]  # Later we can add `double_click`, `move`, `down`, `up`, etc
+
+    pointer_type: Literal[
+        "click"
+    ]  # Later we can add `double_click`, `move`, `down`, `up`, etc
     ray_origin: Tuple[float, float, float]
     ray_direction: Tuple[float, float, float]
 
@@ -64,6 +67,7 @@ class ScenePointerMessage(Message):
 @dataclasses.dataclass
 class EnableScenePointerMessage(Message):
     """Message to enable/disable scene pointer"""
+
     enabled: bool
 
 
