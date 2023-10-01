@@ -22,18 +22,24 @@ import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper } from "@mantine/core";
+import GaussianSplats from "./splatting/GaussianSplats";
+
+/** Convert raw RGB color buffers to linear color buffers. **/
+function linearColorArrayFromSrgbColorArray(colors: ArrayBuffer) {
+  return new Float32Array(new Uint8Array(colors)).map((value) => {
+    value = value / 255.0;
+    if (value <= 0.04045) {
+      return value / 12.92;
+    } else {
+      return Math.pow((value + 0.055) / 1.055, 2.4);
+    }
+  });
+}
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
-    new Float32Array(new Uint8Array(colors)).map((value) => {
-      value = value / 255.0;
-      if (value <= 0.04045) {
-        return value / 12.92;
-      } else {
-        return Math.pow((value + 0.055) / 1.055, 2.4);
-      }
-    }),
+    linearColorArrayFromSrgbColorArray(colors),
     3
   );
 }
@@ -665,6 +671,38 @@ function useMessageHandler() {
                     color={message.color}
                   ></CubicBezierLine>
                 ))}
+              </group>
+            );
+          })
+        );
+        return;
+      }
+      case "GaussianSplatsMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => {
+            return (
+              <group ref={ref}>
+                <GaussianSplats
+                  buffers={{
+                    centers: new Float32Array(
+                      message.centers.buffer.slice(
+                        message.centers.byteOffset,
+                        message.centers.byteOffset + message.centers.byteLength
+                      )
+                    ),
+                    rgbs: new Float32Array(message.rgbs).map((val) => val / 255.0),
+                    // Color need to be in linear space if we enable <EffectComposer />.
+                    // rgbs: linearColorArrayFromSrgbColorArray(message.rgbs),
+                    opacities: message.opacities,
+                    covariancesTriu: new Float32Array(
+                      message.covariances_triu.buffer.slice(
+                        message.covariances_triu.byteOffset,
+                        message.covariances_triu.byteOffset +
+                          message.covariances_triu.byteLength
+                      )
+                    ),
+                  }}
+                />
               </group>
             );
           })

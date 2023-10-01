@@ -607,6 +607,18 @@ export interface CubicBezierSplineMessage {
   line_width: number;
   color: number;
 }
+/** Message from server->client carrying splattable Gaussians.
+ *
+ * (automatically generated)
+ */
+export interface GaussianSplatsMessage {
+  type: "GaussianSplatsMessage";
+  name: string;
+  centers: Uint8Array;
+  rgbs: Uint8Array;
+  opacities: Uint8Array;
+  covariances_triu: Uint8Array;
+}
 /** Message from server->client requesting a render of the current viewport.
  *
  * (automatically generated)
@@ -676,5 +688,6 @@ export type Message =
   | ThemeConfigurationMessage
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
+  | GaussianSplatsMessage
   | GetRenderRequestMessage
   | GetRenderResponseMessage;

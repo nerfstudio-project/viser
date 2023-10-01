@@ -506,6 +506,17 @@ class CubicBezierSplineMessage(Message):
 
 
 @dataclasses.dataclass
+class GaussianSplatsMessage(Message):
+    """Message from server->client carrying splattable Gaussians."""
+
+    name: str
+    centers: onpt.NDArray[onp.float32]
+    rgbs: onpt.NDArray[onp.uint8]
+    opacities: onpt.NDArray[onp.uint8]
+    covariances_triu: onpt.NDArray[onp.float32]
+
+
+@dataclasses.dataclass
 class GetRenderRequestMessage(Message):
     """Message from server->client requesting a render of the current viewport."""
 
