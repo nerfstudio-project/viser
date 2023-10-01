@@ -187,6 +187,11 @@ class MeshHandle(_SupportsClick, _SupportsVisibility):
 
 
 @dataclasses.dataclass
+class GaussianSplatHandle(_SupportsClick, _SupportsVisibility):
+    """Handle for Gaussian splatting objects."""
+
+
+@dataclasses.dataclass
 class GlbHandle(_SupportsClick, _SupportsVisibility):
     """Handle for GLB objects."""
 

@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import {
   EffectComposer,
+  Noise,
   Outline,
   Selection,
 } from "@react-three/postprocessing";
@@ -164,7 +165,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   return (
     <Canvas
       camera={{ position: [3.0, 3.0, -3.0] }}
-      gl={{ preserveDrawingBuffer: true }}
+      gl={{ antialias: false, outputEncoding: THREE.sRGBEncoding }}
       style={{
         position: "relative",
         zIndex: 0,
@@ -182,7 +183,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SynchronizedCameraControls />
       <Selection>
         <SceneNodeThreeObject name="" parent={null} />
-        <EffectComposer enabled={true} autoClear={false}>
+        <EffectComposer enabled={false} autoClear={false}>
           <Outline
             hiddenEdgeColor={0xfbff00}
             visibleEdgeColor={0xfbff00}
