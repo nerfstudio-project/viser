@@ -73,9 +73,8 @@ export default function SidebarPanel({
         }}
       >
         <Box
-          sx={{
-            width: "20em", // Prevent DOM reflow.
-          }}
+          /* Prevent DOM reflow, as well as internals from getting too wide. */
+          w="20em"
         >
           {children}
         </Box>

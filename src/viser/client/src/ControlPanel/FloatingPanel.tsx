@@ -288,7 +288,12 @@ FloatingPanel.Contents = function FloatingPanelContents({
   return (
     <Collapse in={context.expanded}>
       <ScrollArea.Autosize mah={context!.maxHeight}>
-        {children}
+        <Box
+          /* Prevent internals from getting too wide. */
+          w="20em"
+        >
+          {children}
+        </Box>
       </ScrollArea.Autosize>
     </Collapse>
   );
