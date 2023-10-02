@@ -1,3 +1,9 @@
+/** Worker for sorting splats.
+ *
+ * Adapted from Kevin Kwok:
+ *     https://github.com/antimatter15/splat/blob/main/main.js
+ */
+
 {
   // Worker state.
   let buffers: {
@@ -19,7 +25,7 @@
     covA: new Float32Array(),
     covB: new Float32Array(),
   };
-  let depthList = new Float32Array();
+  let depthList = new Int32Array();
   let sortedIndices: number[] = [];
 
   const runSort = (viewProj: number[] | null) => {
@@ -36,24 +42,41 @@
         covA: new Float32Array(numGaussians * 3),
         covB: new Float32Array(numGaussians * 3),
       };
-      depthList = new Float32Array(numGaussians);
+      depthList = new Int32Array(numGaussians);
       sortedIndices = [...Array(numGaussians).keys()];
     }
 
     // Compute depth for each Gaussian.
+    let maxDepth = -Infinity;
+    let minDepth = Infinity;
     for (let i = 0; i < depthList.length; i++) {
       const depth =
-        viewProj[2] * buffers.centers[i * 3 + 0] +
-        viewProj[6] * buffers.centers[i * 3 + 1] +
-        viewProj[10] * buffers.centers[i * 3 + 2];
-      depthList[i] = -depth;
+        ((viewProj[2] * buffers.centers[i * 3 + 0] +
+          viewProj[6] * buffers.centers[i * 3 + 1] +
+          viewProj[10] * buffers.centers[i * 3 + 2]) *
+          4096) |
+        0;
+      depthList[i] = depth;
+      if (depth > maxDepth) maxDepth = depth;
+      if (depth < minDepth) minDepth = depth;
     }
 
-    // Sort naively. :D
-    sortedIndices.sort((a, b) => depthList[a] - depthList[b]);
+    // This is a 16 bit single-pass counting sort.
+    const depthInv = (256 * 256) / (maxDepth - minDepth);
+    const counts0 = new Uint32Array(256 * 256);
+    for (let i = 0; i < numGaussians; i++) {
+      depthList[i] = ((depthList[i] - minDepth) * depthInv) | 0;
+      counts0[depthList[i]]++;
+    }
+    const starts0 = new Uint32Array(256 * 256);
+    for (let i = 1; i < 256 * 256; i++)
+      starts0[i] = starts0[i - 1] + counts0[i - 1];
+    for (let i = 0; i < numGaussians; i++)
+      sortedIndices[starts0[depthList[i]]++] = i;
 
+    // Sort and post underlying buffers.
     for (let j = 0; j < numGaussians; j++) {
-      const i = sortedIndices[j];
+      const i = sortedIndices[numGaussians - j - 1];
 
       sortedBuffers.centers[j * 3 + 0] = buffers.centers[i * 3 + 0];
       sortedBuffers.centers[j * 3 + 1] = buffers.centers[i * 3 + 1];
@@ -72,7 +95,6 @@
       sortedBuffers.covB[3 * j + 1] = buffers.covariancesTriu[i * 6 + 4];
       sortedBuffers.covB[3 * j + 2] = buffers.covariancesTriu[i * 6 + 5];
     }
-
     self.postMessage(sortedBuffers);
   };
 
