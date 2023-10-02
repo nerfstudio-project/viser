@@ -66,7 +66,7 @@ export default function GaussianSplats({
 
     shader.uniforms.focal.value = [fx, fy];
     shader.uniforms.viewport.value = [
-      state.size.width * dpr,
+      state.size.width * dpr * (1.0 + Math.random()),
       state.size.height * dpr,
     ];
 

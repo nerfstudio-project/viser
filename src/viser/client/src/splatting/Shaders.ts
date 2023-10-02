@@ -43,9 +43,10 @@ export const vertexShaderSource = `
         covA.z, covB.y, covB.z
     );
     mat3 J = mat3(
-        focal.x / c_cam.z, 0., -(focal.x * c_cam.x) / (c_cam.z * c_cam.z), 
-        0., focal.y / c_cam.z, -(focal.y * c_cam.y) / (c_cam.z * c_cam.z), 
-        0., 0., 0.
+        // Note that matrices are column-major.
+        focal.x / c_cam.z, 0., 0.0, 
+        0., focal.y / c_cam.z, 0.0, 
+        -(focal.x * c_cam.x) / (c_cam.z * c_cam.z), -(focal.y * c_cam.y) / (c_cam.z * c_cam.z), 0.
     );
     mat3 A = J * mat3(modelViewMatrix);
     mat3 cov_proj = A * cov3d * transpose(A);
