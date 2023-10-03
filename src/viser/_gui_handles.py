@@ -6,6 +6,7 @@ import threading
 import time
 import urllib.parse
 import uuid
+import warnings
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
