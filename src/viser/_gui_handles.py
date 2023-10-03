@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import dataclasses
+import re
 import threading
 import time
+import urllib.parse
 import uuid
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -18,13 +21,16 @@ from typing import (
     Union,
 )
 
+import imageio.v3 as iio
 import numpy as onp
 from typing_extensions import Protocol
 
 from ._icons import base64_from_icon
 from ._icons_enum import Icon
+from ._message_api import _encode_image_base64
 from ._messages import (
     GuiAddDropdownMessage,
+    GuiAddMarkdownMessage,
     GuiAddTabGroupMessage,
     GuiCloseModalMessage,
     GuiRemoveMessage,
@@ -493,6 +499,38 @@ class GuiTabHandle:
             child.remove()
 
 
+def _get_data_url(url: str, image_root: Optional[Path]) -> str:
+    if not url.startswith("http") and not image_root:
+        warnings.warn(
+            "No `image_root` provided. All relative paths will be scoped to viser's installation path.",
+            stacklevel=2,
+        )
+    if url.startswith("http"):
+        return url
+    if image_root is None:
+        image_root = Path(__file__).parent
+    try:
+        image = iio.imread(image_root / url)
+        data_uri = _encode_image_base64(image, "png")
+        url = urllib.parse.quote(f"{data_uri[1]}")
+        return f"data:{data_uri[0]};base64,{url}"
+    except (IOError, FileNotFoundError):
+        warnings.warn(
+            f"Failed to read image {url}, with image_root set to {image_root}.",
+            stacklevel=2,
+        )
+        return url
+
+
+def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
+    markdown = re.sub(
+        r"\!\[([^]]*)\]\(([^]]*)\)",
+        lambda match: f"![{match.group(1)}]({_get_data_url(match.group(2), image_root)})",
+        markdown,
+    )
+    return markdown
+
+
 @dataclasses.dataclass
 class GuiMarkdownHandle:
     """Use to remove markdown."""
@@ -502,6 +540,26 @@ class GuiMarkdownHandle:
     _visible: bool
     _container_id: str  # Parent.
     _order: float
+    _image_root: Optional[Path]
+    _content: Optional[str]
+
+    @property
+    def content(self) -> str:
+        """Current content of this markdown element. Synchronized automatically when assigned."""
+        assert self._content is not None
+        return self._content
+
+    @content.setter
+    def content(self, content: str) -> None:
+        self._content = content
+        self._gui_api._get_api()._queue(
+            GuiAddMarkdownMessage(
+                order=self._order,
+                id=self._id,
+                markdown=_parse_markdown(content, self._image_root),
+                container_id=self._container_id,
+            )
+        )
 
     @property
     def order(self) -> float:
