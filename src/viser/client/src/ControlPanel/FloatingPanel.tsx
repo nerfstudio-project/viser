@@ -24,8 +24,7 @@ const FloatingPanelContext = React.createContext<null | {
   }>;
 }>(null);
 
-/** Root component for control panel. Parents a set of control tabs.
- * This could be refactored+cleaned up a lot! */
+/** A floating panel for displaying controls. */
 export default function FloatingPanel({
   children,
 }: {
@@ -289,7 +288,8 @@ FloatingPanel.Contents = function FloatingPanelContents({
     <Collapse in={context.expanded}>
       <ScrollArea.Autosize mah={context!.maxHeight}>
         <Box
-          /* Prevent internals from getting too wide. */
+          /* Prevent internals from getting too wide. Hardcoded to match the
+           * width of the wrapper element above. */
           w="20em"
         >
           {children}
