@@ -21,7 +21,9 @@ import { useContext } from "react";
 // Type helpers.
 type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
-type TitlebarContent = NonNullable<ThemeConfigurationMessage["titlebar_content"]>;
+type TitlebarContent = NonNullable<
+  ThemeConfigurationMessage["titlebar_content"]
+>;
 function assertUnreachable(x: never): never {
   throw new Error("Didn't expect to get here", x);
 }
