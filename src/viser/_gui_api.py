@@ -6,10 +6,8 @@ from __future__ import annotations
 
 import abc
 import dataclasses
-import re
 import threading
 import time
-import urllib.parse
 import warnings
 from pathlib import Path
 from typing import (
@@ -24,7 +22,6 @@ from typing import (
     overload,
 )
 
-import imageio.v3 as iio
 import numpy as onp
 from typing_extensions import Literal, LiteralString
 
@@ -47,7 +44,7 @@ from ._gui_handles import (
 )
 from ._icons import base64_from_icon
 from ._icons_enum import Icon
-from ._message_api import MessageApi, _encode_image_base64, cast_vector
+from ._message_api import MessageApi, cast_vector
 
 if TYPE_CHECKING:
     from .infra import ClientId
@@ -85,38 +82,6 @@ def _compute_precision_digits(x: float) -> int:
     while x != round(x, ndigits=digits) and digits < 7:
         digits += 1
     return digits
-
-
-def _get_data_url(url: str, image_root: Optional[Path]) -> str:
-    if not url.startswith("http") and not image_root:
-        warnings.warn(
-            "No `image_root` provided. All relative paths will be scoped to viser's installation path.",
-            stacklevel=2,
-        )
-    if url.startswith("http"):
-        return url
-    if image_root is None:
-        image_root = Path(__file__).parent
-    try:
-        image = iio.imread(image_root / url)
-        data_uri = _encode_image_base64(image, "png")
-        url = urllib.parse.quote(f"{data_uri[1]}")
-        return f"data:{data_uri[0]};base64,{url}"
-    except (IOError, FileNotFoundError):
-        warnings.warn(
-            f"Failed to read image {url}, with image_root set to {image_root}.",
-            stacklevel=2,
-        )
-        return url
-
-
-def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
-    markdown = re.sub(
-        r"\!\[([^]]*)\]\(([^]]*)\)",
-        lambda match: f"![{match.group(1)}]({_get_data_url(match.group(2), image_root)})",
-        markdown,
-    )
-    return markdown
 
 
 @dataclasses.dataclass
@@ -277,29 +242,24 @@ class GuiApi(abc.ABC):
 
     def add_gui_markdown(
         self,
-        markdown: str,
+        content: str,
         image_root: Optional[Path] = None,
         order: Optional[float] = None,
     ) -> GuiMarkdownHandle:
         """Add markdown to the GUI."""
-        markdown = _parse_markdown(markdown, image_root)
-        markdown_id = _make_unique_id()
-        order = _apply_default_order(order)
-        self._get_api()._queue(
-            _messages.GuiAddMarkdownMessage(
-                order=order,
-                id=markdown_id,
-                markdown=markdown,
-                container_id=self._get_container_id(),
-            )
-        )
-        return GuiMarkdownHandle(
+        handle = GuiMarkdownHandle(
             _gui_api=self,
-            _id=markdown_id,
+            _id=_make_unique_id(),
             _visible=True,
             _container_id=self._get_container_id(),
-            _order=order,
+            _order=_apply_default_order(order),
+            _image_root=image_root,
+            _content=None,
         )
+
+        # Assigning content will send a GuiAddMarkdownMessage.
+        handle.content = content
+        return handle
 
     def add_gui_button(
         self,

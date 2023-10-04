@@ -10,8 +10,7 @@ export const SidebarPanelContext = React.createContext<null | {
   toggleCollapsed: () => void;
 }>(null);
 
-/** Root component for control panel. Parents a set of control tabs.
- * This could be refactored+cleaned up a lot! */
+/** A fixed or collapsible side panel for displaying controls. */
 export default function SidebarPanel({
   children,
   collapsible,
@@ -73,9 +72,9 @@ export default function SidebarPanel({
         }}
       >
         <Box
-          sx={{
-            width: "20em", // Prevent DOM reflow.
-          }}
+          /* Prevent DOM reflow, as well as internals from getting too wide.
+           * Hardcoded to match the width of the wrapper element above. */
+          w="20em"
         >
           {children}
         </Box>

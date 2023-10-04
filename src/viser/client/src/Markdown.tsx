@@ -177,7 +177,7 @@ export default function Markdown(props: { children?: string }) {
     } catch {
       setChild(<Title order={2}>Error Parsing Markdown...</Title>);
     }
-  }, []);
+  }, [props.children]);
 
   return child;
 }
