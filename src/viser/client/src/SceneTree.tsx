@@ -12,7 +12,7 @@ import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
-  ref: React.Ref<T>
+  ref: React.Ref<T>,
 ) => React.ReactNode;
 
 /** Scenes will consist of nodes, which form a tree. */
@@ -31,7 +31,7 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
      *
      * https://github.com/pmndrs/drei/issues/1323
      */
-    public unmountWhenInvisible?: true
+    public unmountWhenInvisible?: true,
   ) {
     this.children = [];
     this.clickable = false;
@@ -47,7 +47,7 @@ function SceneNodeThreeChildren(props: {
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const children = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.children
+    (state) => state.nodeFromName[props.name]?.children,
   );
 
   // Create a group of children inside of the parent object.
@@ -65,7 +65,7 @@ function SceneNodeThreeChildren(props: {
         })}
       <SceneNodeLabel name={props.name} />
     </group>,
-    props.parent
+    props.parent,
   );
 }
 
@@ -73,7 +73,7 @@ function SceneNodeThreeChildren(props: {
 function SceneNodeLabel(props: { name: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const labelVisible = viewer.useSceneTree(
-    (state) => state.labelVisibleFromName[props.name]
+    (state) => state.labelVisibleFromName[props.name],
   );
   return labelVisible ? (
     <Html>
@@ -99,13 +99,13 @@ export function SceneNodeThreeObject(props: {
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const makeObject = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.makeObject
+    (state) => state.nodeFromName[props.name]?.makeObject,
   );
   const cleanup = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.cleanup
+    (state) => state.nodeFromName[props.name]?.cleanup,
   );
   const unmountWhenInvisible = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.unmountWhenInvisible
+    (state) => state.nodeFromName[props.name]?.unmountWhenInvisible,
   );
   const [unmount, setUnmount] = React.useState(false);
   const clickable =
@@ -126,7 +126,7 @@ export function SceneNodeThreeObject(props: {
   // PivotControls.
   const objNode = React.useMemo(
     () => makeObject && makeObject(setRef),
-    [makeObject]
+    [makeObject],
   );
   const children =
     obj === null ? null : (
@@ -203,7 +203,7 @@ export function SceneNodeThreeObject(props: {
   // Clicking logic.
   const sendClicksThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
-    50
+    50,
   );
   const [hovered, setHovered] = React.useState(false);
   useCursor(hovered);
