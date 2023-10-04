@@ -8,6 +8,7 @@ const BottomPanelContext = React.createContext<null | {
   toggleExpanded: () => void;
 }>(null);
 
+/** A bottom panel is used to display the controls on mobile devices. */
 export default function BottomPanel({
   children,
 }: {
@@ -77,6 +78,7 @@ BottomPanel.Handle = function BottomPanelHandle({
     </Box>
   );
 };
+
 /** Contents of a panel. */
 BottomPanel.Contents = function BottomPanelContents({
   children,
