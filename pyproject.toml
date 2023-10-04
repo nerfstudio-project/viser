@@ -69,7 +69,7 @@ warn_unused_configs = true
 exclude="viser/client/.nodeenv"
 
 [tool.pyright]
-exclude = ["./docs/**/*", "./examples/assets/**/*", "./viser/client/.nodeenv", "./build"]
+exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
 
 [tool.black]
 exclude = "viser/client/.nodeenv"
