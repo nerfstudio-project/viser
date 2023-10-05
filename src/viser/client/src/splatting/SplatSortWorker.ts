@@ -4,44 +4,34 @@
  *     https://github.com/antimatter15/splat/blob/main/main.js
  */
 
+export type GaussianBuffersSplitCov = {
+  // (N, 3)
+  centers: Float32Array;
+  // (N, 3)
+  rgbs: Float32Array;
+  // (N, 1)
+  opacities: Float32Array;
+  // (N, 3)
+  covA: Float32Array;
+  // (N, 3)
+  covB: Float32Array;
+};
 {
   // Worker state.
-  let buffers: {
-    // (N, 3)
-    centers: Float32Array;
-    // (N, 3)
-    rgbs: Float32Array;
-    // (N, 1)
-    opacities: Uint8Array;
-    // (N, 3, 3)
-    covariancesTriu: Float32Array;
-  } | null = null;
+  let buffers: GaussianBuffersSplitCov | null = null;
+  let sortedBuffers: GaussianBuffersSplitCov | null = null;
 
   let viewProj: number[] | null = null;
-  let sortedBuffers = {
-    centers: new Float32Array(),
-    rgbs: new Float32Array(),
-    opacities: new Float32Array(),
-    covA: new Float32Array(),
-    covB: new Float32Array(),
-  };
   let depthList = new Int32Array();
   let sortedIndices: number[] = [];
 
   const runSort = (viewProj: number[] | null) => {
-    if (buffers === null || viewProj === null) return;
+    if (buffers === null || sortedBuffers === null || viewProj === null) return;
 
     const numGaussians = buffers.centers.length / 3;
 
     // Create new buffers.
-    if (sortedBuffers.centers.length !== numGaussians * 3) {
-      sortedBuffers = {
-        centers: new Float32Array(numGaussians * 3),
-        rgbs: new Float32Array(numGaussians * 3),
-        opacities: new Float32Array(numGaussians * 1),
-        covA: new Float32Array(numGaussians * 3),
-        covB: new Float32Array(numGaussians * 3),
-      };
+    if (sortedIndices.length !== numGaussians) {
       depthList = new Int32Array(numGaussians);
       sortedIndices = [...Array(numGaussians).keys()];
     }
@@ -75,25 +65,25 @@
       sortedIndices[starts0[depthList[i]]++] = i;
 
     // Sort and post underlying buffers.
-    for (let j = 0; j < numGaussians; j++) {
-      const i = sortedIndices[numGaussians - j - 1];
+    for (let i = 0; i < sortedIndices.length; i++) {
+      const j = sortedIndices[sortedIndices.length - i - 1];
+      sortedBuffers.centers[i * 3 + 0] = buffers.centers[j * 3 + 0];
+      sortedBuffers.centers[i * 3 + 1] = buffers.centers[j * 3 + 1];
+      sortedBuffers.centers[i * 3 + 2] = buffers.centers[j * 3 + 2];
 
-      sortedBuffers.centers[j * 3 + 0] = buffers.centers[i * 3 + 0];
-      sortedBuffers.centers[j * 3 + 1] = buffers.centers[i * 3 + 1];
-      sortedBuffers.centers[j * 3 + 2] = buffers.centers[i * 3 + 2];
+      sortedBuffers.rgbs[i * 3 + 0] = buffers.rgbs[j * 3 + 0];
+      sortedBuffers.rgbs[i * 3 + 1] = buffers.rgbs[j * 3 + 1];
+      sortedBuffers.rgbs[i * 3 + 2] = buffers.rgbs[j * 3 + 2];
 
-      sortedBuffers.rgbs[j * 3 + 0] = buffers.rgbs[i * 3 + 0];
-      sortedBuffers.rgbs[j * 3 + 1] = buffers.rgbs[i * 3 + 1];
-      sortedBuffers.rgbs[j * 3 + 2] = buffers.rgbs[i * 3 + 2];
+      sortedBuffers.opacities[i] = buffers.opacities[j];
 
-      sortedBuffers.opacities[j * 1 + 0] = buffers.opacities[i * 1 + 0] / 255.0;
+      sortedBuffers.covA[i * 3 + 0] = buffers.covA[j * 3 + 0];
+      sortedBuffers.covA[i * 3 + 1] = buffers.covA[j * 3 + 1];
+      sortedBuffers.covA[i * 3 + 2] = buffers.covA[j * 3 + 2];
 
-      sortedBuffers.covA[3 * j + 0] = buffers.covariancesTriu[i * 6 + 0];
-      sortedBuffers.covA[3 * j + 1] = buffers.covariancesTriu[i * 6 + 1];
-      sortedBuffers.covA[3 * j + 2] = buffers.covariancesTriu[i * 6 + 2];
-      sortedBuffers.covB[3 * j + 0] = buffers.covariancesTriu[i * 6 + 3];
-      sortedBuffers.covB[3 * j + 1] = buffers.covariancesTriu[i * 6 + 4];
-      sortedBuffers.covB[3 * j + 2] = buffers.covariancesTriu[i * 6 + 5];
+      sortedBuffers.covB[i * 3 + 0] = buffers.covB[j * 3 + 0];
+      sortedBuffers.covB[i * 3 + 1] = buffers.covB[j * 3 + 1];
+      sortedBuffers.covB[i * 3 + 2] = buffers.covB[j * 3 + 2];
     }
     self.postMessage(sortedBuffers);
   };
@@ -116,7 +106,7 @@
   self.onmessage = (e) => {
     const data = e.data as
       | {
-          setBuffers: NonNullable<typeof buffers>;
+          setBuffers: GaussianBuffersSplitCov;
         }
       | {
           setViewProj: number[];
@@ -125,6 +115,13 @@
 
     if ("setBuffers" in data) {
       buffers = data.setBuffers;
+      sortedBuffers = {
+        centers: new Float32Array(buffers.centers.length),
+        rgbs: new Float32Array(buffers.rgbs.length),
+        opacities: new Float32Array(buffers.opacities.length),
+        covA: new Float32Array(buffers.covA.length),
+        covB: new Float32Array(buffers.covB.length),
+      };
     }
 
     if ("setViewProj" in data) {

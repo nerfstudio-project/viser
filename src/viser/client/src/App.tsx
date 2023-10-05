@@ -9,7 +9,6 @@ import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import {
   EffectComposer,
-  Noise,
   Outline,
   Selection,
 } from "@react-three/postprocessing";
