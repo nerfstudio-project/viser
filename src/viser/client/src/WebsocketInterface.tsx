@@ -695,7 +695,9 @@ function useMessageHandler() {
                     ),
                     // Color need to be in linear space if we enable <EffectComposer />.
                     // rgbs: linearColorArrayFromSrgbColorArray(message.rgbs),
-                    opacities: message.opacities,
+                    opacities: new Float32Array(message.opacities).map(
+                      (val) => val / 255.0,
+                    ),
                     covariancesTriu: new Float32Array(
                       message.covariances_triu.buffer.slice(
                         message.covariances_triu.byteOffset,

@@ -9,7 +9,7 @@ export const vertexShaderSource = `
   precision mediump float;
   attribute vec2 position;
 
-  attribute vec3 color;
+  attribute vec3 rgb;
   attribute float opacity;
   attribute vec3 center;
   attribute vec3 covA;
@@ -19,7 +19,7 @@ export const vertexShaderSource = `
   uniform vec2 focal;
   uniform vec2 viewport;
 
-  varying vec3 vColor;
+  varying vec3 vRgb;
   varying float vOpacity;
   varying vec2 vPosition;
 
@@ -63,7 +63,7 @@ export const vertexShaderSource = `
     vec2 v1 = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
     vec2 v2 = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
 
-    vColor = color;
+    vRgb = rgb;
     vOpacity = opacity;
     vPosition = position;
 
@@ -77,7 +77,7 @@ export const vertexShaderSource = `
 export const fragmentShaderSource = `
   precision mediump float;
 
-  varying vec3 vColor;
+  varying vec3 vRgb;
   varying float vOpacity;
   varying vec2 vPosition;
 
@@ -89,6 +89,6 @@ export const fragmentShaderSource = `
     float A = -dot(vPosition, vPosition);
     if (A < -4.0) discard;
     float B = exp(A) * vOpacity;
-    gl_FragColor = vec4(vColor.rgb, B);
+    gl_FragColor = vec4(vRgb.rgb, B);
   }
 `;
