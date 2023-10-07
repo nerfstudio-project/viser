@@ -15,6 +15,7 @@
     "@react-three/postprocessing": "^2.14.7",
     "@reduxjs/toolkit": "^1.9.3",
     "@tabler/icons-react": "^2.22.0",
+    "@types/emscripten": "^1.39.8",
     "@types/node": "^18.15.11",
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",

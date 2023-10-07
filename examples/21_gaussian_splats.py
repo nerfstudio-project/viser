@@ -39,7 +39,7 @@ def main(splat_path: Path) -> None:
         "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
     )
 
-    server = viser.ViserServer()
+    server = viser.ViserServer(share=True)
     server.configure_theme(dark_mode=True)
     gui_reset_up = server.add_gui_button(
         "Reset up direction",

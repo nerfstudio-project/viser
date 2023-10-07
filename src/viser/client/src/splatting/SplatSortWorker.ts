@@ -25,9 +25,14 @@ export type GaussianBuffersSplitCov = {
   let depthList = new Int32Array();
   let sortedIndices: number[] = [];
 
+  // Counting sort buffers.
+  const counts0 = new Uint32Array(256 * 256);
+  const starts0 = new Uint32Array(256 * 256);
+
   const runSort = (viewProj: number[] | null) => {
     if (buffers === null || sortedBuffers === null || viewProj === null) return;
 
+    console.time("Start");
     const numGaussians = buffers.centers.length / 3;
 
     // Create new buffers.
@@ -53,14 +58,15 @@ export type GaussianBuffersSplitCov = {
 
     // This is a 16 bit single-pass counting sort.
     const depthInv = (256 * 256) / (maxDepth - minDepth);
-    const counts0 = new Uint32Array(256 * 256);
+    counts0.fill(0);
     for (let i = 0; i < numGaussians; i++) {
       depthList[i] = ((depthList[i] - minDepth) * depthInv) | 0;
       counts0[depthList[i]]++;
     }
-    const starts0 = new Uint32Array(256 * 256);
     for (let i = 1; i < 256 * 256; i++)
       starts0[i] = starts0[i - 1] + counts0[i - 1];
+    console.timeEnd("Start");
+    console.time("Fill");
     for (let i = 0; i < numGaussians; i++)
       sortedIndices[starts0[depthList[i]]++] = i;
 
@@ -85,6 +91,7 @@ export type GaussianBuffersSplitCov = {
       sortedBuffers.covB[i * 3 + 1] = buffers.covB[j * 3 + 1];
       sortedBuffers.covB[i * 3 + 2] = buffers.covB[j * 3 + 2];
     }
+    console.timeEnd("Fill");
     self.postMessage(sortedBuffers);
   };
 

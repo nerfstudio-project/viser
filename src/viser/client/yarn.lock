@@ -1066,6 +1066,11 @@
   resolved "https://registry.yarnpkg.com/@types/draco3d/-/draco3d-1.4.2.tgz#7faccb809db2a5e19b9efb97c5f2eb9d64d527ea"
   integrity sha512-goh23EGr6CLV6aKPwN1p8kBD/7tT5V/bLpToSbarKrwVejqNrspVrv8DhliteYkkhZYrlq/fwKZRRUzH4XN88w==
 
+"@types/emscripten@^1.39.8":
+  version "1.39.8"
+  resolved "https://registry.yarnpkg.com/@types/emscripten/-/emscripten-1.39.8.tgz#5e3e81fb37397345cc7c12d189bd72c7d0095af8"
+  integrity sha512-Rk0HKcMXFUuqT32k1kXHZWgxiMvsyYsmlnjp0rLKa0MMoqXLE3T9dogDBTRfuc3SAsXu97KD3k4SKR1lHqd57w==
+
 "@types/eslint@^8.4.5":
   version "8.44.2"
   resolved "https://registry.yarnpkg.com/@types/eslint/-/eslint-8.44.2.tgz#0d21c505f98a89b8dd4d37fa162b09da6089199a"
