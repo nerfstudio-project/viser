@@ -22,7 +22,7 @@ import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper } from "@mantine/core";
-import GaussianSplats from "./splatting/GaussianSplats";
+import GaussianSplats from "./Splatting/GaussianSplats";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function linearColorArrayFromSrgbColorArray(colors: ArrayBuffer) {
