@@ -1,4 +1,3 @@
-# mypy: disable-error-code="var-annotated"
 """Depth compositing
 
 In this example, we show how to use a background image with depth compositing. This can
