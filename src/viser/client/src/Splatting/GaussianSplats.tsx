@@ -21,13 +21,21 @@ export default function GaussianSplats({
 }: {
   buffers: GaussianBuffers;
 }) {
-  // Create buffer geometry + setter function.
-  const [geometry, setSortedBuffers] = React.useMemo(() => {
+  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>(null);
+  const [material, setMaterial] = React.useState<THREE.Material>(null);
+  const setSortedBuffers = React.useRef<
+    null | ((sortedBuffers: GaussianBuffersSplitCov) => void)
+  >(null);
+  const splatSortWorkerRef = React.useRef<Worker | null>(null);
+
+  // We'll use the vanilla three.js API, which for our use case is more
+  // flexible than the declarative version (particularly for operations like
+  // dynamic updates to buffers and shader uniforms).
+  React.useEffect(() => {
+    // Create geometry. Each Gaussian will be rendered as a quad.
     const geometry = new THREE.InstancedBufferGeometry();
     const numGaussians = buffers.centers.length / 3;
     geometry.instanceCount = numGaussians;
-
-    // Each Gaussian will be drawn as a quadrilateral.
     geometry.setIndex(
       new THREE.BufferAttribute(new Uint32Array([0, 2, 1, 0, 3, 2]), 1),
     );
@@ -38,8 +46,6 @@ export default function GaussianSplats({
         2,
       ),
     );
-
-    // Create attributes.
     const centerAttribute = new THREE.InstancedBufferAttribute(
       new Float32Array(numGaussians * 3),
       3,
@@ -60,35 +66,14 @@ export default function GaussianSplats({
       new Float32Array(numGaussians * 3),
       3,
     );
-
     geometry.setAttribute("center", centerAttribute);
     geometry.setAttribute("rgb", rgbAttribute);
     geometry.setAttribute("opacity", opacityAttribute);
     geometry.setAttribute("covA", covAAttribute);
     geometry.setAttribute("covB", covBAttribute);
 
-    return [
-      geometry,
-      (sortedBuffers: GaussianBuffersSplitCov) => {
-        centerAttribute.set(sortedBuffers.centers);
-        rgbAttribute.set(sortedBuffers.rgbs);
-        opacityAttribute.set(sortedBuffers.opacities);
-        covAAttribute.set(sortedBuffers.covA);
-        covBAttribute.set(sortedBuffers.covB);
-
-        centerAttribute.needsUpdate = true;
-        rgbAttribute.needsUpdate = true;
-        opacityAttribute.needsUpdate = true;
-        covAAttribute.needsUpdate = true;
-        covBAttribute.needsUpdate = true;
-      },
-    ];
-  }, []);
-
-  // Update shader uniforms.
-  const shaderMaterial = React.useMemo(() => {
-    console.log("making material");
-    return new THREE.RawShaderMaterial({
+    // Populate material with custom shaders.
+    const material = new THREE.RawShaderMaterial({
       fragmentShader: fragmentShaderSource,
       vertexShader: vertexShaderSource,
       uniforms: {
@@ -99,10 +84,44 @@ export default function GaussianSplats({
       depthWrite: false,
       transparent: true,
     });
-  }, []);
-  React.useEffect(() => {
-    return () => shaderMaterial.dispose();
-  }, []);
+
+    // Update component state.
+    setGeometry(geometry);
+    setMaterial(material);
+    setSortedBuffers.current = (sortedBuffers: GaussianBuffersSplitCov) => {
+      centerAttribute.set(sortedBuffers.centers);
+      rgbAttribute.set(sortedBuffers.rgbs);
+      opacityAttribute.set(sortedBuffers.opacities);
+      covAAttribute.set(sortedBuffers.covA);
+      covBAttribute.set(sortedBuffers.covB);
+
+      centerAttribute.needsUpdate = true;
+      rgbAttribute.needsUpdate = true;
+      opacityAttribute.needsUpdate = true;
+      covAAttribute.needsUpdate = true;
+      covBAttribute.needsUpdate = true;
+    };
+
+    // Create sorting worker.
+    const sortWorker = new SplatSortWorker();
+    sortWorker.onmessage = (e) => {
+      setSortedBuffers.current !== null &&
+        setSortedBuffers.current(e.data as GaussianBuffersSplitCov);
+    };
+    sortWorker.postMessage({
+      setBuffers: splitCovariances(buffers),
+    });
+    splatSortWorkerRef.current = sortWorker;
+
+    // We should always re-send view projection when buffers are replaced.
+    prevViewProj.current = undefined;
+
+    return () => {
+      geometry.dispose();
+      material.dispose();
+      sortWorker.postMessage({ close: true });
+    };
+  }, [buffers]);
 
   useFrame((state) => {
     const dpr = state.viewport.dpr;
@@ -112,29 +131,12 @@ export default function GaussianSplats({
     const fy = (dpr * state.size.height) / (2 * Math.tan(fovY / 2));
     const fx = (dpr * state.size.width) / (2 * Math.tan(fovX / 2));
 
-    shaderMaterial.uniforms.focal.value = [fx, fy];
-    shaderMaterial.uniforms.viewport.value = [
+    material.uniforms.focal.value = [fx, fy];
+    material.uniforms.viewport.value = [
       state.size.width * dpr,
       state.size.height * dpr,
     ];
   });
-
-  // Create worker for sorting Gaussians.
-  const splatSortWorkerRef = React.useRef<Worker | null>(null);
-  useEffect(() => {
-    const sortWorker = new SplatSortWorker();
-    sortWorker.postMessage({
-      setBuffers: splitCovariances(buffers),
-    });
-    splatSortWorkerRef.current = sortWorker;
-
-    sortWorker.onmessage = (e) => {
-      setSortedBuffers(e.data as GaussianBuffersSplitCov);
-    };
-
-    // Close the worker when done.
-    return () => sortWorker.postMessage({ close: true });
-  }, [buffers]);
 
   // Synchronize view projection matrix with sort worker.
   const meshRef = React.useRef<THREE.Mesh>(null);
@@ -160,7 +162,7 @@ export default function GaussianSplats({
     }
   });
 
-  return <mesh ref={meshRef} geometry={geometry} material={shaderMaterial} />;
+  return <mesh ref={meshRef} geometry={geometry} material={material} />;
 }
 
 /** Split upper-triangular terms (6D) of covariance into pair of 3D terms. This

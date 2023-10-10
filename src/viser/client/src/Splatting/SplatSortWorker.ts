@@ -64,7 +64,6 @@ export type GaussianBuffersSplitCov = {
         buffers.covA,
         buffers.covB,
       );
-      throttledSort();
     } else if ("setViewProj" in data) {
       // Update view projection matrix.
       viewProj = data.setViewProj;
