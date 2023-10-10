@@ -37,7 +37,6 @@ from ._scene_handles import (
     PointCloudHandle,
     SceneNodeHandle,
     TransformControlsHandle,
-    _SupportsVisibility,
     _TransformControlsState,
 )
 
@@ -353,10 +352,11 @@ class MessageApi(abc.ABC):
         text: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> LabelHandle:
         """Add a 2D label to the scene."""
         self._queue(_messages.LabelMessage(name, text))
-        return LabelHandle._make(self, name, wxyz, position)
+        return LabelHandle._make(self, name, wxyz, position, visible=visible)
 
     def add_point_cloud(
         self,
@@ -633,6 +633,7 @@ class MessageApi(abc.ABC):
         name: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> Gui3dContainerHandle:
         """Add a 3D gui container to the scene. The returned container handle can be
         used as a context to place GUI elements into the 3D scene."""
@@ -658,5 +659,5 @@ class MessageApi(abc.ABC):
                 container_id=container_id,
             )
         )
-        node_handle = SceneNodeHandle._make(self, name, wxyz, position)
+        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible=visible)
         return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)
