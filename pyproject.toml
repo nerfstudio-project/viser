@@ -67,6 +67,7 @@ python_version = "3.8"
 ignore_missing_imports = true
 warn_unused_configs = true
 exclude="viser/client/.nodeenv"
+disable_error_code="var-annotated"  # Common source of mypy + numpy false positives.
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
