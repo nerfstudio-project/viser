@@ -562,7 +562,7 @@ class MessageApi(abc.ABC):
             message_position.excluded_self_client = client_id
             self._queue(message_position)
 
-        node_handle = _SupportsVisibility._make(self, name, wxyz, position, visible)
+        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible)
         state_aux = _TransformControlsState(
             last_updated=time.time(),
             update_cb=[],
