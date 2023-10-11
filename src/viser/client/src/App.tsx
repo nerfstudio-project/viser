@@ -185,7 +185,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SynchronizedCameraControls />
       <ScenePointerControls />
       <Selection>
-        <SceneNodeThreeObject name="" />
+        <SceneNodeThreeObject name="" parent={null} />
         <EffectComposer enabled={true} autoClear={false}>
           <Outline
             hiddenEdgeColor={0xfbff00}

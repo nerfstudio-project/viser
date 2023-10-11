@@ -80,7 +80,7 @@ export const GlbAsset = React.forwardRef<
       (error) => {
         console.log("Error loading GLB!");
         console.log(error);
-      }
+      },
     );
 
     return () => {
@@ -149,7 +149,7 @@ export const CoordinateFrame = React.forwardRef<
   }
 >(function CoordinateFrame(
   { show_axes = true, axes_length = 0.5, axes_radius = 0.0125 },
-  ref
+  ref,
 ) {
   return (
     <group ref={ref}>
@@ -162,7 +162,7 @@ export const CoordinateFrame = React.forwardRef<
               new THREE.Vector3(
                 axes_radius * 2.5,
                 axes_radius * 2.5,
-                axes_radius * 2.5
+                axes_radius * 2.5,
               )
             }
           />
@@ -304,7 +304,7 @@ function LineSegmentInstance(props: {
 
   const orientation = new THREE.Quaternion().setFromAxisAngle(
     rotationAxis,
-    rotationAngle
+    rotationAngle,
   );
   return (
     <>

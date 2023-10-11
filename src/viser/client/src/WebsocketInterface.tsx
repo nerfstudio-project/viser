@@ -34,7 +34,7 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
         return Math.pow((value + 0.055) / 1.055, 2.4);
       }
     }),
-    3
+    3,
   );
 }
 
@@ -66,7 +66,7 @@ function useMessageHandler() {
       addSceneNodeMakeParents(
         new SceneNode<THREE.Group>(parent_name, (ref) => (
           <CoordinateFrame ref={ref} show_axes={false} />
-        ))
+        )),
       );
     }
     addSceneNode(node);
@@ -110,7 +110,7 @@ function useMessageHandler() {
               axes_length={message.axes_length}
               axes_radius={message.axes_radius}
             />
-          ))
+          )),
         );
         return;
       }
@@ -131,18 +131,18 @@ function useMessageHandler() {
             new Float32Array(
               message.points.buffer.slice(
                 message.points.byteOffset,
-                message.points.byteOffset + message.points.byteLength
-              )
+                message.points.byteOffset + message.points.byteLength,
+              ),
             ),
-            3
-          )
+            3,
+          ),
         );
         geometry.computeBoundingSphere();
 
         // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
         geometry.setAttribute(
           "color",
-          threeColorBufferFromUint8Buffer(message.colors)
+          threeColorBufferFromUint8Buffer(message.colors),
         );
 
         addSceneNodeMakeParents(
@@ -161,8 +161,8 @@ function useMessageHandler() {
               // disposal.
               geometry.dispose();
               pointCloudMaterial.dispose();
-            }
-          )
+            },
+          ),
         );
         return;
       }
@@ -198,16 +198,16 @@ function useMessageHandler() {
             new Float32Array(
               message.vertices.buffer.slice(
                 message.vertices.byteOffset,
-                message.vertices.byteOffset + message.vertices.byteLength
-              )
+                message.vertices.byteOffset + message.vertices.byteLength,
+              ),
             ),
-            3
-          )
+            3,
+          ),
         );
         if (message.vertex_colors !== null) {
           geometry.setAttribute(
             "color",
-            threeColorBufferFromUint8Buffer(message.vertex_colors)
+            threeColorBufferFromUint8Buffer(message.vertex_colors),
           );
         }
 
@@ -216,11 +216,11 @@ function useMessageHandler() {
             new Uint32Array(
               message.faces.buffer.slice(
                 message.faces.byteOffset,
-                message.faces.byteOffset + message.faces.byteLength
-              )
+                message.faces.byteOffset + message.faces.byteLength,
+              ),
             ),
-            1
-          )
+            1,
+          ),
         );
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
@@ -236,8 +236,8 @@ function useMessageHandler() {
               // disposal.
               geometry.dispose();
               material.dispose();
-            }
-          )
+            },
+          ),
         );
         return;
       }
@@ -247,7 +247,7 @@ function useMessageHandler() {
           message.image_media_type !== null &&
           message.image_base64_data !== null
             ? new TextureLoader().load(
-                `data:${message.image_media_type};base64,${message.image_base64_data}`
+                `data:${message.image_media_type};base64,${message.image_base64_data}`,
               )
             : undefined;
 
@@ -264,8 +264,8 @@ function useMessageHandler() {
                 image={texture}
               />
             ),
-            () => texture?.dispose()
-          )
+            () => texture?.dispose(),
+          ),
         );
         return;
       }
@@ -273,7 +273,7 @@ function useMessageHandler() {
         const name = message.name;
         const sendDragMessage = makeThrottledMessageSender(
           viewer.websocketRef,
-          50
+          50,
         );
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => (
@@ -314,7 +314,7 @@ function useMessageHandler() {
                 }}
               />
             </group>
-          ))
+          )),
         );
         return;
       }
@@ -323,12 +323,12 @@ function useMessageHandler() {
 
         const R_threeworld_world = new THREE.Quaternion();
         R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
+          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
         );
         const target = new THREE.Vector3(
           message.look_at[0],
           message.look_at[1],
-          message.look_at[2]
+          message.look_at[2],
         );
         target.applyQuaternion(R_threeworld_world);
         cameraControls.setTarget(target.x, target.y, target.z, false);
@@ -339,12 +339,12 @@ function useMessageHandler() {
         const cameraControls = viewer.cameraControlRef.current!;
         const R_threeworld_world = new THREE.Quaternion();
         R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
+          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
         );
         const updir = new THREE.Vector3(
           message.position[0],
           message.position[1],
-          message.position[2]
+          message.position[2],
         ).applyQuaternion(R_threeworld_world);
         camera.up.set(updir.x, updir.y, updir.z);
 
@@ -359,7 +359,7 @@ function useMessageHandler() {
           prevPosition.x,
           prevPosition.y,
           prevPosition.z,
-          false
+          false,
         );
         return;
       }
@@ -370,18 +370,18 @@ function useMessageHandler() {
         const position_cmd = new THREE.Vector3(
           message.position[0],
           message.position[1],
-          message.position[2]
+          message.position[2],
         );
         const R_worldthree_world = new THREE.Quaternion();
         R_worldthree_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0)
+          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
         );
         position_cmd.applyQuaternion(R_worldthree_world);
 
         cameraControls.setPosition(
           position_cmd.x,
           position_cmd.y,
-          position_cmd.z
+          position_cmd.z,
         );
         return;
       }
@@ -390,7 +390,7 @@ function useMessageHandler() {
         // tan(fov / 2.0) = 0.5 * film height / focal length
         // focal length = 0.5 * film height / tan(fov / 2.0)
         camera.setFocalLength(
-          (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0)
+          (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0),
         );
         return;
       }
@@ -426,7 +426,7 @@ function useMessageHandler() {
             if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
 
             viewer.useGui.setState({ backgroundAvailable: true });
-          }
+          },
         );
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
         viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
@@ -442,7 +442,7 @@ function useMessageHandler() {
               viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
                 texture;
               if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
-            }
+            },
           );
         }
         return;
@@ -470,61 +470,71 @@ function useMessageHandler() {
           }
         `;
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => {
-            // We wrap with <group /> because Html doesn't implement THREE.Object3D.
-            return (
-              <group ref={ref}>
-                <Html>
-                  <div
-                    style={{
-                      width: "10em",
-                      fontSize: "0.8em",
-                      transform: "translateX(-1em) translateY(1em)",
-                    }}
-                  >
-                    <Label>{message.text}</Label>
-                  </div>
-                </Html>
-              </group>
-            );
-          })
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => {
+              // We wrap with <group /> because Html doesn't implement THREE.Object3D.
+              return (
+                <group ref={ref}>
+                  <Html>
+                    <div
+                      style={{
+                        width: "10em",
+                        fontSize: "0.8em",
+                        transform: "translateX(-1em) translateY(1em)",
+                      }}
+                    >
+                      <Label>{message.text}</Label>
+                    </div>
+                  </Html>
+                </group>
+              );
+            },
+            undefined,
+            true,
+          ),
         );
         return;
       }
       case "Gui3DMessage": {
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => {
-            // We wrap with <group /> because Html doesn't implement THREE.Object3D.
-            return (
-              <group ref={ref}>
-                <Html prepend={false}>
-                  <MantineProvider
-                    withGlobalStyles
-                    withNormalizeCSS
-                    theme={mantineTheme}
-                  >
-                    <Paper
-                      sx={{
-                        width: "20em",
-                        fontSize: "0.8em",
-                        marginLeft: "1em",
-                        marginTop: "1em",
-                      }}
-                      shadow="md"
-                      onPointerDown={(evt) => {
-                        evt.stopPropagation();
-                      }}
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => {
+              // We wrap with <group /> because Html doesn't implement THREE.Object3D.
+              return (
+                <group ref={ref}>
+                  <Html prepend={false}>
+                    <MantineProvider
+                      withGlobalStyles
+                      withNormalizeCSS
+                      theme={mantineTheme}
                     >
-                      <GeneratedGuiContainer
-                        containerId={message.container_id}
-                        viewer={viewer}
-                      />
-                    </Paper>
-                  </MantineProvider>
-                </Html>
-              </group>
-            );
-          })
+                      <Paper
+                        sx={{
+                          width: "20em",
+                          fontSize: "0.8em",
+                          marginLeft: "1em",
+                          marginTop: "1em",
+                        }}
+                        shadow="md"
+                        onPointerDown={(evt) => {
+                          evt.stopPropagation();
+                        }}
+                      >
+                        <GeneratedGuiContainer
+                          containerId={message.container_id}
+                          viewer={viewer}
+                        />
+                      </Paper>
+                    </MantineProvider>
+                  </Html>
+                </group>
+              );
+            },
+            undefined,
+            true,
+          ),
         );
         return;
       }
@@ -559,10 +569,10 @@ function useMessageHandler() {
                     </group>
                   );
                 },
-                () => texture.dispose()
-              )
+                () => texture.dispose(),
+              ),
             );
-          }
+          },
         );
         return;
       }
@@ -623,7 +633,7 @@ function useMessageHandler() {
                 scale={message.scale}
               />
             );
-          })
+          }),
         );
         return;
       }
@@ -642,7 +652,7 @@ function useMessageHandler() {
                 ></CatmullRomLine>
               </group>
             );
-          })
+          }),
         );
         return;
       }
@@ -664,7 +674,7 @@ function useMessageHandler() {
                 ))}
               </group>
             );
-          })
+          }),
         );
         return;
       }
@@ -729,7 +739,7 @@ export function FrameSynchronizedMessageHandler() {
       console.log(
         `Sending render; requested aspect ratio was ${targetAspect} (dimensinos: ${targetWidth}/${targetHeight}), copying from aspect ratio ${
           sourceWidth / sourceHeight
-        } (dimensions: ${sourceWidth}/${sourceHeight}).`
+        } (dimensions: ${sourceWidth}/${sourceHeight}).`,
       );
 
       ctx.drawImage(
@@ -741,7 +751,7 @@ export function FrameSynchronizedMessageHandler() {
         0,
         0,
         targetWidth,
-        targetHeight
+        targetHeight,
       );
 
       viewer.getRenderRequestState.current = "in_progress";
@@ -775,7 +785,7 @@ export function FrameSynchronizedMessageHandler() {
       // If a render is requested, note that we don't handle any more messages
       // until the render is done.
       const requestRenderIndex = messageQueueRef.current.findIndex(
-        (message) => message.type === "GetRenderRequestMessage"
+        (message) => message.type === "GetRenderRequestMessage",
       );
       const numMessages =
         requestRenderIndex !== -1

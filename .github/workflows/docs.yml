@@ -3,6 +3,9 @@ name: docs
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   docs:
@@ -14,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: "3.10"
 
       # Build documentation
       - name: Building documentation
@@ -31,3 +34,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/build
           cname: viser.studio
+        if: github.event_name != 'pull_request'

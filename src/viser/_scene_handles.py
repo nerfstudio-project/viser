@@ -40,7 +40,6 @@ class ScenePointerEvent:
 
 
 TSceneNodeHandle = TypeVar("TSceneNodeHandle", bound="SceneNodeHandle")
-TSupportsVisibility = TypeVar("TSupportsVisibility", bound="_SupportsVisibility")
 
 
 @dataclasses.dataclass
@@ -73,12 +72,14 @@ class SceneNodeHandle:
         name: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray,
         position: Tuple[float, float, float] | onp.ndarray,
+        visible: bool,
     ) -> TSceneNodeHandle:
         out = cls(_SceneNodeHandleState(name, api))
         api._handle_from_node_name[name] = out
 
         out.wxyz = wxyz
         out.position = position
+        out.visible = visible
         return out
 
     @property
@@ -115,6 +116,18 @@ class SceneNodeHandle:
             _messages.SetPositionMessage(self._impl.name, position_cast)
         )
 
+    @property
+    def visible(self) -> bool:
+        """Whether the scene node is visible or not. Synchronized to clients automatically when assigned."""
+        return self._impl.visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        self._impl.api._queue(
+            _messages.SetSceneNodeVisibilityMessage(self._impl.name, visible)
+        )
+        self._impl.visible = visible
+
     def remove(self) -> None:
         """Remove the node from the scene."""
         self._impl.api._queue(_messages.RemoveSceneNodeMessage(self._impl.name))
@@ -127,7 +140,7 @@ class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
 
 
 @dataclasses.dataclass
-class _SupportsClick(SceneNodeHandle):
+class _ClickableSceneNodeHandle(SceneNodeHandle):
     def on_click(
         self: TSceneNodeHandle,
         func: Callable[[SceneNodePointerEvent[TSceneNodeHandle]], None],
@@ -148,71 +161,38 @@ class _SupportsClick(SceneNodeHandle):
 
 
 @dataclasses.dataclass
-class _SupportsVisibility(SceneNodeHandle):
-    @classmethod
-    def _make(
-        cls: Type[TSupportsVisibility],
-        api: MessageApi,
-        name: str,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray,
-        position: Tuple[float, float, float] | onp.ndarray,
-        visible: bool = True,
-    ) -> TSupportsVisibility:
-        out = cls(_SceneNodeHandleState(name, api))
-        api._handle_from_node_name[name] = out
-
-        out.wxyz = wxyz
-        out.position = position
-        out.visible = visible
-
-        return out
-
-    @property
-    def visible(self) -> bool:
-        """Whether the scene node is visible or not. Synchronized to clients automatically when assigned."""
-        return self._impl.visible
-
-    @visible.setter
-    def visible(self, visible: bool) -> None:
-        self._impl.api._queue(
-            _messages.SetSceneNodeVisibilityMessage(self._impl.name, visible)
-        )
-        self._impl.visible = visible
-
-
-@dataclasses.dataclass
-class CameraFrustumHandle(_SupportsClick, _SupportsVisibility):
+class CameraFrustumHandle(_ClickableSceneNodeHandle):
     """Handle for camera frustums."""
 
 
 @dataclasses.dataclass
-class PointCloudHandle(_SupportsVisibility):
+class PointCloudHandle(SceneNodeHandle):
     """Handle for point clouds. Does not support click events."""
 
 
 @dataclasses.dataclass
-class FrameHandle(_SupportsClick, _SupportsVisibility):
+class FrameHandle(_ClickableSceneNodeHandle):
     """Handle for coordinate frames."""
 
 
 @dataclasses.dataclass
-class MeshHandle(_SupportsClick, _SupportsVisibility):
+class MeshHandle(_ClickableSceneNodeHandle):
     """Handle for mesh objects."""
 
 
 @dataclasses.dataclass
-class GlbHandle(_SupportsClick, _SupportsVisibility):
+class GlbHandle(_ClickableSceneNodeHandle):
     """Handle for GLB objects."""
 
 
 @dataclasses.dataclass
-class ImageHandle(_SupportsClick, _SupportsVisibility):
+class ImageHandle(_ClickableSceneNodeHandle):
     """Handle for 2D images, rendered in 3D."""
 
 
 @dataclasses.dataclass
 class LabelHandle(SceneNodeHandle):
-    """Handle for 2D label objects. Does not support click events or visibility toggling."""
+    """Handle for 2D label objects. Does not support click events."""
 
 
 @dataclasses.dataclass
@@ -223,7 +203,7 @@ class _TransformControlsState:
 
 
 @dataclasses.dataclass
-class TransformControlsHandle(_SupportsClick, _SupportsVisibility):
+class TransformControlsHandle(_ClickableSceneNodeHandle):
     """Handle for interacting with transform control gizmos."""
 
     _impl_aux: _TransformControlsState

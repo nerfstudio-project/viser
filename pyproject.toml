@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.5"
+version = "0.1.6"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -67,6 +67,7 @@ python_version = "3.8"
 ignore_missing_imports = true
 warn_unused_configs = true
 exclude="viser/client/.nodeenv"
+disable_error_code="var-annotated"  # Common source of mypy + numpy false positives.
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
