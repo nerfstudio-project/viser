@@ -33,12 +33,17 @@ if TYPE_CHECKING:
 @dataclasses.dataclass(frozen=True)
 class ScenePointerEvent:
     """Event passed to pointer callbacks for the scene (currently only clicks)."""
+
     client: ClientHandle
-    client_id: ClientId
-    # Later we can add `double_click`, `move`, `down`, `up`, etc
+    """Client that triggered this event."""
+    client_id: int
+    """ID of client that triggered this event."""
     event: Literal["click"]
+    """Type of event that was triggered. Currently we only support clicks."""
     ray_origin: Tuple[float, float, float]
+    """Origin of 3D ray corresponding to this click, in world coordinates."""
     ray_direction: Tuple[float, float, float]
+    """Direction of 3D ray corresponding to this click, in world coordinates."""
 
 
 TSceneNodeHandle = TypeVar("TSceneNodeHandle", bound="SceneNodeHandle")
@@ -138,12 +143,19 @@ class SceneNodeHandle:
 @dataclasses.dataclass(frozen=True)
 class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
     """Event passed to pointer callbacks for scene nodes (currently only clicks)."""
+
     client: ClientHandle
-    client_id: ClientId
+    """Client that triggered this event."""
+    client_id: int
+    """ID of client that triggered this event."""
     event: Literal["click"]
+    """Type of event that was triggered. Currently we only support clicks."""
     target: TSceneNodeHandle
+    """Scene node that was clicked."""
     ray_origin: Tuple[float, float, float]
+    """Origin of 3D ray corresponding to this click, in world coordinates."""
     ray_direction: Tuple[float, float, float]
+    """Direction of 3D ray corresponding to this click, in world coordinates."""
 
 
 @dataclasses.dataclass
@@ -152,12 +164,7 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
         self: TSceneNodeHandle,
         func: Callable[[SceneNodePointerEvent[TSceneNodeHandle]], None],
     ) -> Callable[[SceneNodePointerEvent[TSceneNodeHandle]], None]:
-        """Attach a callback for when a scene node is clicked.
-
-        TODO:
-        - Slow for point clouds.
-        - Not supported for 2D labels.
-        """
+        """Attach a callback for when a scene node is clicked."""
         self._impl.api._queue(
             _messages.SetSceneNodeClickableMessage(self._impl.name, True)
         )

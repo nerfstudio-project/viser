@@ -5,9 +5,6 @@ specified using the :class:`viser.Icon` enum.
 
 <!-- prettier-ignore-start -->
 
-.. autoapiclass:: viser.Icon
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.Icon
 
 <!-- prettier-ignore-end -->

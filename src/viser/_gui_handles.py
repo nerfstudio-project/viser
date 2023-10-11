@@ -162,7 +162,7 @@ class _GuiInputHandle(Generic[T]):
 
     @property
     def update_timestamp(self) -> float:
-        """Get the last time that this input was updated."""
+        """Read-only timestamp when this input was last updated."""
         return self._impl.update_timestamp
 
     @property
@@ -241,9 +241,12 @@ class GuiEvent(Generic[TGuiHandle]):
 
     Passed as input to callback functions."""
 
-    client_id: Optional[ClientId]
     client: Optional[ClientHandle]
+    """Client that triggered this event."""
+    client_id: Optional[int]
+    """ID of client that triggered this event."""
     target: TGuiHandle
+    """GUI element that was affected."""
 
 
 @dataclasses.dataclass

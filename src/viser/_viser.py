@@ -182,7 +182,9 @@ class ClientHandle(MessageApi, GuiApi):
     individual clients and read/write camera information."""
 
     client_id: int
+    """Unique ID for this client."""
     camera: CameraHandle
+    """Handle for reading from and manipulating the client's viewport camera."""
     _state: _ClientHandleState
 
     def __post_init__(self):

@@ -10,44 +10,20 @@ connected clients. When a GUI element is added to a client (for example, via
 
 <!-- prettier-ignore-start -->
 
-.. autoapiclass:: viser.GuiInputHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GuiInputHandle()
 
-.. autoapiclass:: viser.GuiButtonHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GuiButtonHandle()
 
-.. autoapiclass:: viser.GuiButtonGroupHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GuiButtonGroupHandle()
 
-.. autoapiclass:: viser.GuiDropdownHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GuiDropdownHandle()
 
-.. autoapiclass:: viser.GuiFolderHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GuiFolderHandle()
 
-.. autoapiclass:: viser.GuiMarkdownHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GuiMarkdownHandle()
 
-.. autoapiclass:: viser.GuiTabGroupHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GuiTabGroupHandle()
 
-.. autoapiclass:: viser.GuiTabHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GuiTabHandle()
 
 <!-- prettier-ignore-end -->
