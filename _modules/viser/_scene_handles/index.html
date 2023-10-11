@@ -279,6 +279,7 @@
 <a class="viewcode-back" href="../../../events/#viser.ScenePointerEvent">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">ScenePointerEvent</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event passed to pointer callbacks for the scene (currently only clicks).&quot;&quot;&quot;</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">ClientHandle</span>
     <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span>
     <span class="c1"># Later we can add `double_click`, `move`, `down`, `up`, etc</span>
@@ -392,6 +393,7 @@
 <a class="viewcode-back" href="../../../events/#viser.SceneNodePointerEvent">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">SceneNodePointerEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TSceneNodeHandle</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Event passed to pointer callbacks for scene nodes (currently only clicks).&quot;&quot;&quot;</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">ClientHandle</span>
     <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span>
     <span class="n">event</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span>
