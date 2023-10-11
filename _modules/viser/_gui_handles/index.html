@@ -8,7 +8,6 @@
         <title>viser._gui_handles - viser</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -209,6 +208,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/19_get_renders/">Get Renders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/20_scene_click/">Scene pointer events.</a></li>
 </ul>
 
 </div>
@@ -407,7 +407,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">update_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the last time that this input was updated.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read-only timestamp when this input was last updated.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">update_timestamp</span>
 
     <span class="nd">@property</span>
@@ -494,9 +494,12 @@
 
 <span class="sd">    Passed as input to callback functions.&quot;&quot;&quot;</span>
 
-    <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClientId</span><span class="p">]</span>
     <span class="n">client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ClientHandle</span><span class="p">]</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">TGuiHandle</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Client that triggered this event.&quot;&quot;&quot;</span>
+    <span class="n">client_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ID of client that triggered this event.&quot;&quot;&quot;</span>
+    <span class="n">target</span><span class="p">:</span> <span class="n">TGuiHandle</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GUI element that was affected.&quot;&quot;&quot;</span></div>
 
 
 
@@ -873,10 +876,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiSetVisibleMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="n">visible</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_visible</span> <span class="o">=</span> <span class="n">visible</span>
 
+<div class="viewcode-block" id="GuiMarkdownHandle.__post_init__">
+<a class="viewcode-back" href="../../../gui_handles/#viser.GuiMarkdownHandle.__post_init__">[docs]</a>
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;We need to register ourself after construction for callbacks to work.&quot;&quot;&quot;</span>
         <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">]</span>
-        <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span></div>
+
 
 <div class="viewcode-block" id="GuiMarkdownHandle.remove">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiMarkdownHandle.remove">[docs]</a>

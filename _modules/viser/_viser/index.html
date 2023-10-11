@@ -8,7 +8,6 @@
         <title>viser._viser - viser</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -209,6 +208,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/19_get_renders/">Get Renders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/20_scene_click/">Scene pointer events.</a></li>
 </ul>
 
 </div>
@@ -435,7 +435,9 @@
 <span class="sd">    individual clients and read/write camera information.&quot;&quot;&quot;</span>
 
     <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique ID for this client.&quot;&quot;&quot;</span>
     <span class="n">camera</span><span class="p">:</span> <span class="n">CameraHandle</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for reading from and manipulating the client&#39;s viewport camera.&quot;&quot;&quot;</span>
     <span class="n">_state</span><span class="p">:</span> <span class="n">_ClientHandleState</span>
 
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

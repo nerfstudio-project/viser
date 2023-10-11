@@ -2,10 +2,7 @@
 
 <!-- prettier-ignore-start -->
 
-.. autoapimodule:: viser.transforms
+.. automodule:: viser.transforms
    :show-inheritance:
-   :members:
-   :undoc-members:
-   :inherited-members:
 
 <!-- prettier-ignore-end -->

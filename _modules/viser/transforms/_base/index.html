@@ -8,7 +8,6 @@
         <title>viser.transforms._base - viser</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b20cc3f5" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -209,6 +208,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/19_get_renders/">Get Renders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/20_scene_click/">Scene pointer events.</a></li>
 </ul>
 
 </div>
@@ -290,6 +290,8 @@
     <span class="k">def</span> <span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="o">...</span>
 
+<div class="viewcode-block" id="MatrixLieGroup.__matmul__">
+<a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.__matmul__">[docs]</a>
     <span class="k">def</span> <span class="fm">__matmul__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">:</span> <span class="n">GroupType</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">GroupType</span><span class="p">,</span> <span class="n">hints</span><span class="o">.</span><span class="n">Array</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">GroupType</span><span class="p">,</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]]:</span>
@@ -304,7 +306,8 @@
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">space_dim</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">space_dim</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">other</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Invalid argument type for `@` operator: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Invalid argument type for `@` operator: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
 
     <span class="c1"># Factory.</span>
 

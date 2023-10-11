@@ -9,7 +9,6 @@
         <title>Events - viser</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -210,6 +209,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/19_get_renders/">Get Renders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/20_scene_click/">Scene pointer events.</a></li>
 </ul>
 
 </div>
@@ -254,28 +254,33 @@ when events like clicks or GUI updates are triggered.</p>
 <dd><p>Event passed to pointer callbacks for the scene (currently only clicks).</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ScenePointerEvent.client">
-<span class="sig-name descname"><span class="pre">client</span></span><a class="headerlink" href="#viser.ScenePointerEvent.client" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">client</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a></em><a class="headerlink" href="#viser.ScenePointerEvent.client" title="Link to this definition">#</a></dt>
+<dd><p>Client that triggered this event.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ScenePointerEvent.client_id">
-<span class="sig-name descname"><span class="pre">client_id</span></span><a class="headerlink" href="#viser.ScenePointerEvent.client_id" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">client_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#viser.ScenePointerEvent.client_id" title="Link to this definition">#</a></dt>
+<dd><p>ID of client that triggered this event.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ScenePointerEvent.event">
-<span class="sig-name descname"><span class="pre">event</span></span><a class="headerlink" href="#viser.ScenePointerEvent.event" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent.ray_direction">
-<span class="sig-name descname"><span class="pre">ray_direction</span></span><a class="headerlink" href="#viser.ScenePointerEvent.ray_direction" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">event</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'click'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ScenePointerEvent.event" title="Link to this definition">#</a></dt>
+<dd><p>Type of event that was triggered. Currently we only support clicks.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ScenePointerEvent.ray_origin">
-<span class="sig-name descname"><span class="pre">ray_origin</span></span><a class="headerlink" href="#viser.ScenePointerEvent.ray_origin" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">ray_origin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_origin" title="Link to this definition">#</a></dt>
+<dd><p>Origin of 3D ray corresponding to this click, in world coordinates.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.ray_direction">
+<span class="sig-name descname"><span class="pre">ray_direction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_direction" title="Link to this definition">#</a></dt>
+<dd><p>Direction of 3D ray corresponding to this click, in world coordinates.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -285,33 +290,39 @@ when events like clicks or GUI updates are triggered.</p>
 <dd><p>Event passed to pointer callbacks for scene nodes (currently only clicks).</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SceneNodePointerEvent.client">
-<span class="sig-name descname"><span class="pre">client</span></span><a class="headerlink" href="#viser.SceneNodePointerEvent.client" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">client</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a></em><a class="headerlink" href="#viser.SceneNodePointerEvent.client" title="Link to this definition">#</a></dt>
+<dd><p>Client that triggered this event.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SceneNodePointerEvent.client_id">
-<span class="sig-name descname"><span class="pre">client_id</span></span><a class="headerlink" href="#viser.SceneNodePointerEvent.client_id" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">client_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#viser.SceneNodePointerEvent.client_id" title="Link to this definition">#</a></dt>
+<dd><p>ID of client that triggered this event.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SceneNodePointerEvent.event">
-<span class="sig-name descname"><span class="pre">event</span></span><a class="headerlink" href="#viser.SceneNodePointerEvent.event" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.SceneNodePointerEvent.ray_direction">
-<span class="sig-name descname"><span class="pre">ray_direction</span></span><a class="headerlink" href="#viser.SceneNodePointerEvent.ray_direction" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.SceneNodePointerEvent.ray_origin">
-<span class="sig-name descname"><span class="pre">ray_origin</span></span><a class="headerlink" href="#viser.SceneNodePointerEvent.ray_origin" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">event</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'click'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SceneNodePointerEvent.event" title="Link to this definition">#</a></dt>
+<dd><p>Type of event that was triggered. Currently we only support clicks.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.SceneNodePointerEvent.target">
-<span class="sig-name descname"><span class="pre">target</span></span><a class="headerlink" href="#viser.SceneNodePointerEvent.target" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">TSceneNodeHandle</span></em><a class="headerlink" href="#viser.SceneNodePointerEvent.target" title="Link to this definition">#</a></dt>
+<dd><p>Scene node that was clicked.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.SceneNodePointerEvent.ray_origin">
+<span class="sig-name descname"><span class="pre">ray_origin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SceneNodePointerEvent.ray_origin" title="Link to this definition">#</a></dt>
+<dd><p>Origin of 3D ray corresponding to this click, in world coordinates.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.SceneNodePointerEvent.ray_direction">
+<span class="sig-name descname"><span class="pre">ray_direction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.SceneNodePointerEvent.ray_direction" title="Link to this definition">#</a></dt>
+<dd><p>Direction of 3D ray corresponding to this click, in world coordinates.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -322,18 +333,21 @@ when events like clicks or GUI updates are triggered.</p>
 <p>Passed as input to callback functions.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GuiEvent.client">
-<span class="sig-name descname"><span class="pre">client</span></span><a class="headerlink" href="#viser.GuiEvent.client" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">client</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser.ClientHandle"><span class="pre">ClientHandle</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.GuiEvent.client" title="Link to this definition">#</a></dt>
+<dd><p>Client that triggered this event.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GuiEvent.client_id">
-<span class="sig-name descname"><span class="pre">client_id</span></span><a class="headerlink" href="#viser.GuiEvent.client_id" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">client_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.GuiEvent.client_id" title="Link to this definition">#</a></dt>
+<dd><p>ID of client that triggered this event.</p>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.GuiEvent.target">
-<span class="sig-name descname"><span class="pre">target</span></span><a class="headerlink" href="#viser.GuiEvent.target" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">target</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">TGuiHandle</span></em><a class="headerlink" href="#viser.GuiEvent.target" title="Link to this definition">#</a></dt>
+<dd><p>GUI element that was affected.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -406,17 +420,17 @@ when events like clicks or GUI updates are triggered.</p>
 <li><a class="reference internal" href="#viser.ScenePointerEvent.client"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.client</span></code></a></li>
 <li><a class="reference internal" href="#viser.ScenePointerEvent.client_id"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.client_id</span></code></a></li>
 <li><a class="reference internal" href="#viser.ScenePointerEvent.event"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.event</span></code></a></li>
-<li><a class="reference internal" href="#viser.ScenePointerEvent.ray_direction"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.ray_direction</span></code></a></li>
 <li><a class="reference internal" href="#viser.ScenePointerEvent.ray_origin"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.ray_origin</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.ray_direction"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.ray_direction</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.SceneNodePointerEvent"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent</span></code></a><ul>
 <li><a class="reference internal" href="#viser.SceneNodePointerEvent.client"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent.client</span></code></a></li>
 <li><a class="reference internal" href="#viser.SceneNodePointerEvent.client_id"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent.client_id</span></code></a></li>
 <li><a class="reference internal" href="#viser.SceneNodePointerEvent.event"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent.event</span></code></a></li>
-<li><a class="reference internal" href="#viser.SceneNodePointerEvent.ray_direction"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent.ray_direction</span></code></a></li>
-<li><a class="reference internal" href="#viser.SceneNodePointerEvent.ray_origin"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent.ray_origin</span></code></a></li>
 <li><a class="reference internal" href="#viser.SceneNodePointerEvent.target"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent.target</span></code></a></li>
+<li><a class="reference internal" href="#viser.SceneNodePointerEvent.ray_origin"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent.ray_origin</span></code></a></li>
+<li><a class="reference internal" href="#viser.SceneNodePointerEvent.ray_direction"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent.ray_direction</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiEvent"><code class="docutils literal notranslate"><span class="pre">GuiEvent</span></code></a><ul>

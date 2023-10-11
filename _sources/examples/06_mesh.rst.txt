@@ -35,13 +35,13 @@ Visualize a mesh. To get the demo data, see ``./assets/download_dragon_mesh.sh``
             name="/simple",
             vertices=vertices,
             faces=faces,
-            wxyz=tf.SO3.exp(onp.array([onp.pi / 2, 0.0, 0.0])).wxyz,
+            wxyz=tf.SO3.from_x_radians(onp.pi / 2).wxyz,
             position=(0.0, 0.0, 0.0),
         )
         server.add_mesh_trimesh(
             name="/trimesh",
             mesh=mesh.smoothed(),
-            wxyz=tf.SO3.exp(onp.array([onp.pi / 2, 0.0, 0.0])).wxyz,
+            wxyz=tf.SO3.from_x_radians(onp.pi / 2).wxyz,
             position=(0.0, 5.0, 0.0),
         )
 

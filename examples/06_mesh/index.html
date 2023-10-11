@@ -9,7 +9,6 @@
         <title>Meshes - viser</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -210,6 +209,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../19_get_renders/">Get Renders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../20_scene_click/">Scene pointer events.</a></li>
 </ul>
 
 </div>
@@ -269,13 +269,13 @@
 <span class="linenos">20</span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/simple&quot;</span><span class="p">,</span>
 <span class="linenos">21</span>    <span class="n">vertices</span><span class="o">=</span><span class="n">vertices</span><span class="p">,</span>
 <span class="linenos">22</span>    <span class="n">faces</span><span class="o">=</span><span class="n">faces</span><span class="p">,</span>
-<span class="linenos">23</span>    <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
+<span class="linenos">23</span>    <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_x_radians</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
 <span class="linenos">24</span>    <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 <span class="linenos">25</span><span class="p">)</span>
 <span class="linenos">26</span><span class="n">server</span><span class="o">.</span><span class="n">add_mesh_trimesh</span><span class="p">(</span>
 <span class="linenos">27</span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/trimesh&quot;</span><span class="p">,</span>
 <span class="linenos">28</span>    <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="o">.</span><span class="n">smoothed</span><span class="p">(),</span>
-<span class="linenos">29</span>    <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
+<span class="linenos">29</span>    <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_x_radians</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
 <span class="linenos">30</span>    <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 <span class="linenos">31</span><span class="p">)</span>
 <span class="linenos">32</span>

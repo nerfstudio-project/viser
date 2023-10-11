@@ -5,19 +5,10 @@ when events like clicks or GUI updates are triggered.
 
 <!-- prettier-ignore-start -->
 
-.. autoapiclass:: viser.ScenePointerEvent
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.ScenePointerEvent()
 
-.. autoapiclass:: viser.SceneNodePointerEvent
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.SceneNodePointerEvent()
 
-.. autoapiclass:: viser.GuiEvent
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GuiEvent()
 
 <!-- prettier-ignore-end -->

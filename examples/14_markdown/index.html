@@ -9,7 +9,6 @@
         <title>Markdown Demonstration - viser</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -210,6 +209,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../19_get_renders/">Get Renders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../20_scene_click/">Scene pointer events.</a></li>
 </ul>
 
 </div>
@@ -255,27 +255,35 @@
 <span class="linenos"> 6</span><span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos"> 7</span><span class="n">server</span><span class="o">.</span><span class="n">world_axes</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="linenos"> 8</span>
-<span class="linenos"> 9</span>
-<span class="linenos">10</span><span class="nd">@server</span><span class="o">.</span><span class="n">on_client_connect</span>
-<span class="linenos">11</span><span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos">12</span>    <span class="n">here</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
-<span class="linenos">13</span>    <span class="n">markdown_source</span> <span class="o">=</span> <span class="p">(</span><span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;./assets/mdx_example.mdx&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
-<span class="linenos">14</span>    <span class="n">markdown</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">add_gui_markdown</span><span class="p">(</span><span class="n">markdown</span><span class="o">=</span><span class="n">markdown_source</span><span class="p">,</span> <span class="n">image_root</span><span class="o">=</span><span class="n">here</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="n">markdown_counter</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_markdown</span><span class="p">(</span><span class="s2">&quot;Counter: 0&quot;</span><span class="p">)</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="n">here</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="n">button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Remove blurb&quot;</span><span class="p">)</span>
+<span class="linenos">14</span><span class="n">checkbox</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Visibility&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="linenos">15</span>
-<span class="linenos">16</span>    <span class="n">button</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Remove Markdown&quot;</span><span class="p">)</span>
-<span class="linenos">17</span>    <span class="n">checkbox</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Visibility&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos">18</span>
-<span class="linenos">19</span>    <span class="nd">@button</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">20</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-<span class="linenos">21</span>        <span class="n">markdown</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<span class="linenos">16</span><span class="n">markdown_source</span> <span class="o">=</span> <span class="p">(</span><span class="n">here</span> <span class="o">/</span> <span class="s2">&quot;./assets/mdx_example.mdx&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">()</span>
+<span class="linenos">17</span><span class="n">markdown_blurb</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_markdown</span><span class="p">(</span>
+<span class="linenos">18</span>    <span class="n">content</span><span class="o">=</span><span class="n">markdown_source</span><span class="p">,</span>
+<span class="linenos">19</span>    <span class="n">image_root</span><span class="o">=</span><span class="n">here</span><span class="p">,</span>
+<span class="linenos">20</span><span class="p">)</span>
+<span class="linenos">21</span>
 <span class="linenos">22</span>
-<span class="linenos">23</span>    <span class="nd">@checkbox</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">24</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-<span class="linenos">25</span>        <span class="n">markdown</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">checkbox</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">23</span><span class="nd">@button</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos">24</span><span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">25</span>    <span class="n">markdown_blurb</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
 <span class="linenos">26</span>
 <span class="linenos">27</span>
-<span class="linenos">28</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">29</span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos">28</span><span class="nd">@checkbox</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos">29</span><span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">30</span>    <span class="n">markdown_blurb</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">checkbox</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">31</span>
+<span class="linenos">32</span>
+<span class="linenos">33</span><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">34</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">35</span>    <span class="n">markdown_counter</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Counter: </span><span class="si">{</span><span class="n">counter</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="linenos">36</span>    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="linenos">37</span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

@@ -8,7 +8,6 @@
         <title>viser._scene_handles - viser</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=eafc0fe6" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=ea52c679" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=36a5483c" />
@@ -209,6 +208,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/19_get_renders/">Get Renders</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/20_scene_click/">Scene pointer events.</a></li>
 </ul>
 
 </div>
@@ -280,12 +280,17 @@
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">ScenePointerEvent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Event passed to pointer callbacks for the scene (currently only clicks).&quot;&quot;&quot;</span>
+
     <span class="n">client</span><span class="p">:</span> <span class="n">ClientHandle</span>
-    <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span>
-    <span class="c1"># Later we can add `double_click`, `move`, `down`, `up`, etc</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Client that triggered this event.&quot;&quot;&quot;</span>
+    <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ID of client that triggered this event.&quot;&quot;&quot;</span>
     <span class="n">event</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of event that was triggered. Currently we only support clicks.&quot;&quot;&quot;</span>
     <span class="n">ray_origin</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
-    <span class="n">ray_direction</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Origin of 3D ray corresponding to this click, in world coordinates.&quot;&quot;&quot;</span>
+    <span class="n">ray_direction</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Direction of 3D ray corresponding to this click, in world coordinates.&quot;&quot;&quot;</span></div>
 
 
 
@@ -394,12 +399,19 @@
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">SceneNodePointerEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TSceneNodeHandle</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Event passed to pointer callbacks for scene nodes (currently only clicks).&quot;&quot;&quot;</span>
+
     <span class="n">client</span><span class="p">:</span> <span class="n">ClientHandle</span>
-    <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Client that triggered this event.&quot;&quot;&quot;</span>
+    <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ID of client that triggered this event.&quot;&quot;&quot;</span>
     <span class="n">event</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of event that was triggered. Currently we only support clicks.&quot;&quot;&quot;</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">TSceneNodeHandle</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Scene node that was clicked.&quot;&quot;&quot;</span>
     <span class="n">ray_origin</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
-    <span class="n">ray_direction</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Origin of 3D ray corresponding to this click, in world coordinates.&quot;&quot;&quot;</span>
+    <span class="n">ray_direction</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Direction of 3D ray corresponding to this click, in world coordinates.&quot;&quot;&quot;</span></div>
 
 
 
@@ -409,12 +421,7 @@
         <span class="bp">self</span><span class="p">:</span> <span class="n">TSceneNodeHandle</span><span class="p">,</span>
         <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SceneNodePointerEvent</span><span class="p">[</span><span class="n">TSceneNodeHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SceneNodePointerEvent</span><span class="p">[</span><span class="n">TSceneNodeHandle</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback for when a scene node is clicked.</span>
-
-<span class="sd">        TODO:</span>
-<span class="sd">        - Slow for point clouds.</span>
-<span class="sd">        - Not supported for 2D labels.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback for when a scene node is clicked.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">SetSceneNodeClickableMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="p">)</span>
