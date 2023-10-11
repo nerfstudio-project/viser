@@ -51,6 +51,26 @@ class ViewerCameraMessage(Message):
 
 
 @dataclasses.dataclass
+class ScenePointerMessage(Message):
+    """Message for a raycast-like pointer in the scene.
+    origin is the viewing camera position, in world coordinates.
+    direction is the vector if a ray is projected from the camera through the clicked pixel,
+    """
+
+    # Later we can add `double_click`, `move`, `down`, `up`, etc.
+    event_type: Literal["click"]
+    ray_origin: Tuple[float, float, float]
+    ray_direction: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
+class ScenePointerCallbackInfoMessage(Message):
+    """Message to enable/disable scene pointer"""
+
+    count: int
+
+
+@dataclasses.dataclass
 class CameraFrustumMessage(Message):
     """Variant of CameraMessage used for visualizing camera frustums.
 
@@ -277,10 +297,12 @@ class SetSceneNodeClickableMessage(Message):
 
 
 @dataclasses.dataclass
-class SceneNodeClickedMessage(Message):
+class SceneNodeClickMessage(Message):
     """Message for clicked objects."""
 
     name: str
+    ray_origin: Tuple[float, float, float]
+    ray_direction: Tuple[float, float, float]
 
 
 @dataclasses.dataclass
