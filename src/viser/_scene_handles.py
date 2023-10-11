@@ -32,6 +32,7 @@ if TYPE_CHECKING:
 
 @dataclasses.dataclass(frozen=True)
 class ScenePointerEvent:
+    """Event passed to pointer callbacks for the scene (currently only clicks)."""
     client: ClientHandle
     client_id: ClientId
     # Later we can add `double_click`, `move`, `down`, `up`, etc
@@ -136,6 +137,7 @@ class SceneNodeHandle:
 
 @dataclasses.dataclass(frozen=True)
 class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
+    """Event passed to pointer callbacks for scene nodes (currently only clicks)."""
     client: ClientHandle
     client_id: ClientId
     event: Literal["click"]
