@@ -93,6 +93,17 @@ function useMessageHandler() {
         setTheme(message);
         return;
       }
+
+      // Enable/disable whether scene pointer events are sent.
+      case "ScenePointerCallbackInfoMessage": {
+        viewer.scenePointerCallbackCount.current += message.count;
+
+        // Update cursor to indicate whether the scene can be clicked.
+        viewer.canvasRef.current!.style.cursor =
+          viewer.scenePointerCallbackCount.current > 0 ? "pointer" : "auto";
+        return;
+      }
+
       // Add a coordinate frame.
       case "FrameMessage": {
         addSceneNodeMakeParents(
@@ -829,6 +840,7 @@ export function WebsocketMessageProducer() {
         console.log(`Disconnected! ${server} code=${event.code}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
+        viewer.scenePointerCallbackCount.current = 0;
         viewer.useGui.setState({ websocketConnected: false });
         resetGui();
 

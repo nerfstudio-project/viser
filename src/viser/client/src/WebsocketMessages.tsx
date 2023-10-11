@@ -14,6 +14,27 @@ export interface ViewerCameraMessage {
   look_at: [number, number, number];
   up_direction: [number, number, number];
 }
+/** Message for a raycast-like pointer in the scene.
+ * origin is the viewing camera position, in world coordinates.
+ * direction is the vector if a ray is projected from the camera through the clicked pixel,
+ *
+ *
+ * (automatically generated)
+ */
+export interface ScenePointerMessage {
+  type: "ScenePointerMessage";
+  event_type: "click";
+  ray_origin: [number, number, number];
+  ray_direction: [number, number, number];
+}
+/** Message to enable/disable scene pointer
+ *
+ * (automatically generated)
+ */
+export interface ScenePointerCallbackInfoMessage {
+  type: "ScenePointerCallbackInfoMessage";
+  count: number;
+}
 /** Variant of CameraMessage used for visualizing camera frustums.
  *
  * OpenCV convention, +Z forward.
@@ -244,9 +265,11 @@ export interface SetSceneNodeClickableMessage {
  *
  * (automatically generated)
  */
-export interface SceneNodeClickedMessage {
-  type: "SceneNodeClickedMessage";
+export interface SceneNodeClickMessage {
+  type: "SceneNodeClickMessage";
   name: string;
+  ray_origin: [number, number, number];
+  ray_direction: [number, number, number];
 }
 /** Reset scene.
  *
@@ -303,7 +326,7 @@ export interface _GuiAddInputBase {
   hint: string | null;
   initial_value: any;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_base64: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -629,6 +652,8 @@ export interface GetRenderResponseMessage {
 
 export type Message =
   | ViewerCameraMessage
+  | ScenePointerMessage
+  | ScenePointerCallbackInfoMessage
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
@@ -649,7 +674,7 @@ export type Message =
   | RemoveSceneNodeMessage
   | SetSceneNodeVisibilityMessage
   | SetSceneNodeClickableMessage
-  | SceneNodeClickedMessage
+  | SceneNodeClickMessage
   | ResetSceneMessage
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage

@@ -15,6 +15,7 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
+import { ScenePointerControls } from "./ScenePointerControls";
 import { Box, MantineProvider, MediaQuery } from "@mantine/core";
 import React from "react";
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
@@ -67,6 +68,7 @@ export type ViewerContextContents = {
     "ready" | "triggered" | "pause" | "in_progress"
   >;
   getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
+  scenePointerCallbackCount: React.MutableRefObject<number>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -108,6 +110,7 @@ function ViewerRoot() {
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
+    scenePointerCallbackCount: React.useRef(0),
   };
 
   return (
@@ -180,6 +183,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <AdaptiveEvents />
       <SceneContextSetter />
       <SynchronizedCameraControls />
+      <ScenePointerControls />
       <Selection>
         <SceneNodeThreeObject name="" parent={null} />
         <EffectComposer enabled={true} autoClear={false}>
