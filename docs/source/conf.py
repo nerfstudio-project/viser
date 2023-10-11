@@ -6,7 +6,7 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/stable/config
 
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import m2r2
 
@@ -46,7 +46,6 @@ extensions = [
     "sphinx.ext.githubpages",
     "sphinx.ext.napoleon",
     # "sphinx.ext.inheritance_diagram",
-    "autoapi.extension",
     "sphinx.ext.viewcode",
     "m2r2",
     "sphinxcontrib.programoutput",
@@ -78,6 +77,15 @@ html_theme_options = {
 
 # Pull documentation types from hints
 autodoc_typehints = "both"
+autodoc_class_signature = "separated"
+autodoc_default_options = {
+    "members": True,
+    "member-order": "bysource",
+    "undoc-members": True,
+    "inherited-members": True,
+    "exclude-members": "__init__, __post_init__",
+    "imported-members": True,
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -209,24 +217,6 @@ texinfo_documents = [
 
 # -- Extension configuration --------------------------------------------------
 
-# -- Options for autoapi extension --------------------------------------------
-autoapi_dirs = ["../../src/viser"]
-autoapi_root = "api"
-autoapi_ignore = ["**/client/**/*.py"]
-autoapi_options = [
-    "members",
-    "inherited-members",
-    "undoc-members",
-    "imported-members",
-    "show-inheritance",
-    # "show-inheritance-diagram",
-    "special-members",
-    "show-module-summary",
-]
-autoapi_add_toctree_entry = False
-autoapi_generate_api_docs = False
-
-
 # -- Options for todo extension ----------------------------------------------
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
@@ -245,147 +235,6 @@ def docstring(app, what, name, obj, options, lines):
 def setup(app):
     app.connect("autodoc-process-docstring", docstring)
     app.add_css_file("css/custom.css")
-
-
-# Generate name aliases
-def _gen_name_aliases():
-    """Generate a name alias dictionary, which maps private names to ones in the public
-    API. A little bit hardcoded/hacky."""
-
-    name_alias = {}
-
-    def recurse(module, prefixes):
-        if hasattr(module, "__name__") and module.__name__.startswith("viser"):
-            MAX_DEPTH = 5
-            if len(prefixes) > MAX_DEPTH:
-                # Prevent infinite loops from cyclic imports
-                return
-        else:
-            return
-
-        for member_name in dir(module):
-            if member_name == "viser":
-                continue
-
-            member = getattr(module, member_name)
-            if callable(member):
-                full_name = ".".join(["viser"] + prefixes + [member_name])
-
-                shortened_name = "viser"
-                current = viser
-                success = True
-                for p in prefixes + [member_name]:
-                    if p.startswith("_"):
-                        continue
-                    if not hasattr(current, p):
-                        success = False
-                        break
-                    current = getattr(current, p)
-                    shortened_name += "." + p
-
-                if success and shortened_name != full_name:
-                    if full_name in name_alias:
-                        assert full_name == name_alias[shortened_name], full_name
-                    else:
-                        name_alias[full_name] = shortened_name
-            elif not member_name.startswith("__"):
-                recurse(member, prefixes + [member_name])
-
-    import viser
-
-    recurse(viser, prefixes=[])
-    return name_alias
-
-
-_name_aliases = _gen_name_aliases()
-
-# Set inheritance_alias setting for inheritance diagrams
-inheritance_alias = _name_aliases
-
-
-def _apply_name_aliases(name: Optional[str]) -> Optional[str]:
-    if name is None:
-        return None
-
-    name = name.strip()
-    for k, v in _name_aliases.items():
-        name = name.replace(k, v)
-    return name  # type: ignore
-
-
-# Apply our inheritance alias to autoapi base classes
-def _override_class_documenter():
-    import autoapi
-    import autoapi.mappers
-
-    orig_init = autoapi.mappers.python.PythonClass.__init__
-
-    def __init__(self, obj, **kwargs):
-        bases = obj["bases"]
-        for i in range(len(bases)):
-            bases[i] = _apply_name_aliases(bases[i])
-
-        args = obj.get("args", None)
-        if args is not None:
-            for i in range(len(args)):
-                assert isinstance(args[i], tuple) and len(args[i]) == 4
-                args[i] = (
-                    args[i][0],
-                    args[i][1],
-                    _apply_name_aliases(args[i][2]),
-                    args[i][3],
-                )
-        orig_init(self, obj, **kwargs)
-
-    autoapi.mappers.python.PythonClass.__init__ = __init__
-
-
-_override_class_documenter()
-
-
-# Apply our inheritance alias to autoapi type annotations
-def _override_function_documenter():
-    import autoapi
-    import autoapi.mappers
-
-    orig_init = autoapi.mappers.python.PythonFunction.__init__
-
-    def __init__(self, obj, **kwargs):
-        args = obj.get("args", None)
-        if args is not None:
-            for i in range(len(args)):
-                assert isinstance(args[i], tuple) and len(args[i]) == 4
-                args[i] = (
-                    args[i][0],
-                    args[i][1],
-                    _apply_name_aliases(args[i][2]),
-                    args[i][3],
-                )
-
-        obj["return_annotation"] = _apply_name_aliases(obj["return_annotation"])
-        orig_init(self, obj, **kwargs)
-
-    autoapi.mappers.python.PythonFunction.__init__ = __init__
-
-
-_override_function_documenter()
-
-
-# Apply our inheritance alias to autoapi attribute annotations
-def _override_attribute_documenter():
-    import autoapi
-    import autoapi.mappers
-
-    orig_init = autoapi.mappers.python.PythonAttribute.__init__
-
-    def __init__(self, obj, **kwargs):
-        obj["annotation"] = _apply_name_aliases(obj["annotation"])
-        orig_init(self, obj, **kwargs)
-
-    autoapi.mappers.python.PythonAttribute.__init__ = __init__
-
-
-_override_attribute_documenter()
 
 
 # -- Napoleon settings -------------------------------------------------------

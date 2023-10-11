@@ -6,12 +6,12 @@ camera state.
 
 <!-- prettier-ignore-start -->
 
-.. autoapiclass:: viser.ClientHandle
+.. autoclass:: viser.ClientHandle
    :members:
    :undoc-members:
    :inherited-members:
 
-.. autoapiclass:: viser.CameraHandle
+.. autoclass:: viser.CameraHandle
    :members:
    :undoc-members:
    :inherited-members:
