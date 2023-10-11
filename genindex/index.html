@@ -178,6 +178,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../client_handles/">Client Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_handles/">Scene Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
@@ -3133,10 +3134,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_DIODE_ZENER">CIRCUIT_DIODE_ZENER (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.CIRCUIT_GROUND">CIRCUIT_GROUND (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.CIRCUIT_GROUND_DIGITAL">CIRCUIT_GROUND_DIGITAL (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_INDUCTOR">CIRCUIT_INDUCTOR (viser.Icon attribute)</a>
@@ -3159,22 +3160,26 @@
 </li>
         <li><a href="../icons/#viser.Icon.CLICK">CLICK (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.ClickEvent">ClickEvent (class in viser)</a>
-</li>
         <li><a href="../client_handles/#viser.CameraHandle.client">client (viser.CameraHandle property)</a>
 
         <ul>
-          <li><a href="../gui_handles/#viser.GuiEvent.client">(viser.GuiEvent attribute)</a>
+          <li><a href="../events/#viser.GuiEvent.client">(viser.GuiEvent attribute)</a>
+</li>
+          <li><a href="../events/#viser.SceneNodePointerEvent.client">(viser.SceneNodePointerEvent attribute)</a>
+</li>
+          <li><a href="../events/#viser.ScenePointerEvent.client">(viser.ScenePointerEvent attribute)</a>
 </li>
         </ul></li>
-        <li><a href="../scene_handles/#viser.ClickEvent.client_id">client_id (viser.ClickEvent attribute)</a>
+        <li><a href="../client_handles/#viser.ClientHandle.client_id">client_id (viser.ClientHandle attribute)</a>
 
         <ul>
-          <li><a href="../client_handles/#viser.ClientHandle.client_id">(viser.ClientHandle attribute)</a>
-</li>
-          <li><a href="../gui_handles/#viser.GuiEvent.client_id">(viser.GuiEvent attribute)</a>
+          <li><a href="../events/#viser.GuiEvent.client_id">(viser.GuiEvent attribute)</a>
 </li>
           <li><a href="../infrastructure/#viser.infra.ClientConnection.client_id">(viser.infra.ClientConnection attribute)</a>
+</li>
+          <li><a href="../events/#viser.SceneNodePointerEvent.client_id">(viser.SceneNodePointerEvent attribute)</a>
+</li>
+          <li><a href="../events/#viser.ScenePointerEvent.client_id">(viser.ScenePointerEvent attribute)</a>
 </li>
         </ul></li>
         <li><a href="../infrastructure/#viser.infra.ClientConnection">ClientConnection (class in viser.infra)</a>
@@ -4523,12 +4528,18 @@
 </li>
         <li><a href="../icons/#viser.Icon.ERROR_404_OFF">ERROR_404_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.EXCHANGE">EXCHANGE (viser.Icon attribute)</a>
+        <li><a href="../events/#viser.SceneNodePointerEvent.event">event (viser.SceneNodePointerEvent attribute)</a>
+
+        <ul>
+          <li><a href="../events/#viser.ScenePointerEvent.event">(viser.ScenePointerEvent attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.EXCHANGE_OFF">EXCHANGE_OFF (viser.Icon attribute)</a>
+        </ul></li>
+        <li><a href="../icons/#viser.Icon.EXCHANGE">EXCHANGE (viser.Icon attribute)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.EXCHANGE_OFF">EXCHANGE_OFF (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.EXCLAMATION_CIRCLE">EXCLAMATION_CIRCLE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.EXCLAMATION_MARK">EXCLAMATION_MARK (viser.Icon attribute)</a>
@@ -5143,6 +5154,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.GLASS_OFF">GLASS_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../scene_handles/#viser.GlbHandle">GlbHandle (class in viser)</a>
+</li>
         <li><a href="../icons/#viser.Icon.GLOBE">GLOBE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.GLOBE_OFF">GLOBE_OFF (viser.Icon attribute)</a>
@@ -5193,7 +5206,7 @@
 </li>
         <li><a href="../gui_handles/#viser.GuiDropdownHandle">GuiDropdownHandle (class in viser)</a>
 </li>
-        <li><a href="../gui_handles/#viser.GuiEvent">GuiEvent (class in viser)</a>
+        <li><a href="../events/#viser.GuiEvent">GuiEvent (class in viser)</a>
 </li>
         <li><a href="../gui_handles/#viser.GuiFolderHandle">GuiFolderHandle (class in viser)</a>
 </li>
@@ -6997,6 +7010,8 @@
         <ul>
           <li><a href="../scene_handles/#viser.FrameHandle.on_click">(viser.FrameHandle method)</a>
 </li>
+          <li><a href="../scene_handles/#viser.GlbHandle.on_click">(viser.GlbHandle method)</a>
+</li>
           <li><a href="../gui_handles/#viser.GuiButtonGroupHandle.on_click">(viser.GuiButtonGroupHandle method)</a>
 </li>
           <li><a href="../gui_handles/#viser.GuiButtonHandle.on_click">(viser.GuiButtonHandle method)</a>
@@ -7014,12 +7029,18 @@
           <li><a href="../server/#viser.ViserServer.on_client_connect">(viser.ViserServer method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../infrastructure/#viser.infra.Server.on_client_disconnect">on_client_disconnect() (viser.infra.Server method)</a>
 
         <ul>
           <li><a href="../server/#viser.ViserServer.on_client_disconnect">(viser.ViserServer method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../client_handles/#viser.ClientHandle.on_scene_click">on_scene_click() (viser.ClientHandle method)</a>
+
+        <ul>
+          <li><a href="../server/#viser.ViserServer.on_scene_click">(viser.ViserServer method)</a>
 </li>
         </ul></li>
         <li><a href="../client_handles/#viser.CameraHandle.on_update">on_update() (viser.CameraHandle method)</a>
@@ -7332,10 +7353,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.PLANE_ARRIVAL">PLANE_ARRIVAL (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.PLANE_DEPARTURE">PLANE_DEPARTURE (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.PLANE_INFLIGHT">PLANE_INFLIGHT (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.PLANE_OFF">PLANE_OFF (viser.Icon attribute)</a>
@@ -7517,6 +7538,8 @@
 </li>
           <li><a href="../scene_handles/#viser.FrameHandle.position">(viser.FrameHandle property)</a>
 </li>
+          <li><a href="../scene_handles/#viser.GlbHandle.position">(viser.GlbHandle property)</a>
+</li>
           <li><a href="../scene_handles/#viser.Gui3dContainerHandle.position">(viser.Gui3dContainerHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.ImageHandle.position">(viser.ImageHandle property)</a>
@@ -7660,6 +7683,18 @@
 </li>
         <li><a href="../icons/#viser.Icon.RATING_21_PLUS">RATING_21_PLUS (viser.Icon attribute)</a>
 </li>
+        <li><a href="../events/#viser.SceneNodePointerEvent.ray_direction">ray_direction (viser.SceneNodePointerEvent attribute)</a>
+
+        <ul>
+          <li><a href="../events/#viser.ScenePointerEvent.ray_direction">(viser.ScenePointerEvent attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="../events/#viser.SceneNodePointerEvent.ray_origin">ray_origin (viser.SceneNodePointerEvent attribute)</a>
+
+        <ul>
+          <li><a href="../events/#viser.ScenePointerEvent.ray_origin">(viser.ScenePointerEvent attribute)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.RAZOR">RAZOR (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.RAZOR_ELECTRIC">RAZOR_ELECTRIC (viser.Icon attribute)</a>
@@ -7739,6 +7774,8 @@
         <ul>
           <li><a href="../scene_handles/#viser.FrameHandle.remove">(viser.FrameHandle method)</a>
 </li>
+          <li><a href="../scene_handles/#viser.GlbHandle.remove">(viser.GlbHandle method)</a>
+</li>
           <li><a href="../scene_handles/#viser.Gui3dContainerHandle.remove">(viser.Gui3dContainerHandle method)</a>
 </li>
           <li><a href="../gui_handles/#viser.GuiButtonGroupHandle.remove">(viser.GuiButtonGroupHandle method)</a>
@@ -7770,6 +7807,12 @@
           <li><a href="../scene_handles/#viser.TransformControlsHandle.remove">(viser.TransformControlsHandle method)</a>
 </li>
         </ul></li>
+        <li><a href="../client_handles/#viser.ClientHandle.remove_scene_click_callback">remove_scene_click_callback() (viser.ClientHandle method)</a>
+
+        <ul>
+          <li><a href="../server/#viser.ViserServer.remove_scene_click_callback">(viser.ViserServer method)</a>
+</li>
+        </ul></li>
         <li><a href="../icons/#viser.Icon.REPEAT">REPEAT (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.REPEAT_OFF">REPEAT_OFF (viser.Icon attribute)</a>
@@ -7778,14 +7821,14 @@
 </li>
         <li><a href="../icons/#viser.Icon.REPLACE">REPLACE (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.REPLACE_FILLED">REPLACE_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.REPLACE_OFF">REPLACE_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.REPORT">REPORT (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.REPORT_ANALYTICS">REPORT_ANALYTICS (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.REPORT_MEDICAL">REPORT_MEDICAL (viser.Icon attribute)</a>
@@ -7995,6 +8038,10 @@
         <li><a href="../icons/#viser.Icon.SCAN_EYE">SCAN_EYE (viser.Icon attribute)</a>
 </li>
         <li><a href="../scene_handles/#viser.SceneNodeHandle">SceneNodeHandle (class in viser)</a>
+</li>
+        <li><a href="../events/#viser.SceneNodePointerEvent">SceneNodePointerEvent (class in viser)</a>
+</li>
+        <li><a href="../events/#viser.ScenePointerEvent">ScenePointerEvent (class in viser)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SCHEMA">SCHEMA (viser.Icon attribute)</a>
 </li>
@@ -8442,10 +8489,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.SQUARE">SQUARE (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.SQUARE_0_FILLED">SQUARE_0_FILLED (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.SQUARE_0_FILLED">SQUARE_0_FILLED (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.SQUARE_1_FILLED">SQUARE_1_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SQUARE_2_FILLED">SQUARE_2_FILLED (viser.Icon attribute)</a>
@@ -9004,13 +9051,11 @@
         </ul></li>
         <li><a href="../icons/#viser.Icon.TANK">TANK (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.ClickEvent.target">target (viser.ClickEvent attribute)</a>
-
-        <ul>
-          <li><a href="../gui_handles/#viser.GuiEvent.target">(viser.GuiEvent attribute)</a>
+        <li><a href="../events/#viser.GuiEvent.target">target (viser.GuiEvent attribute)</a>
 </li>
-        </ul></li>
         <li><a href="../icons/#viser.Icon.TARGET">TARGET (viser.Icon attribute)</a>
+</li>
+        <li><a href="../events/#viser.SceneNodePointerEvent.target">target (viser.SceneNodePointerEvent attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.TARGET_ARROW">TARGET_ARROW (viser.Icon attribute)</a>
 </li>
@@ -9522,10 +9567,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.VIEWFINDER">VIEWFINDER (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.VIEWFINDER_OFF">VIEWFINDER_OFF (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.VIEWPORT_NARROW">VIEWPORT_NARROW (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.VIEWPORT_WIDE">VIEWPORT_WIDE (viser.Icon attribute)</a>
@@ -9562,6 +9607,8 @@
 
         <ul>
           <li><a href="../scene_handles/#viser.FrameHandle.visible">(viser.FrameHandle property)</a>
+</li>
+          <li><a href="../scene_handles/#viser.GlbHandle.visible">(viser.GlbHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.Gui3dContainerHandle.visible">(viser.Gui3dContainerHandle property)</a>
 </li>
@@ -9818,6 +9865,8 @@
           <li><a href="../client_handles/#viser.CameraHandle.wxyz">(viser.CameraHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.FrameHandle.wxyz">(viser.FrameHandle property)</a>
+</li>
+          <li><a href="../scene_handles/#viser.GlbHandle.wxyz">(viser.GlbHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.Gui3dContainerHandle.wxyz">(viser.Gui3dContainerHandle property)</a>
 </li>

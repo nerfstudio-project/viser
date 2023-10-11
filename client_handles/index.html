@@ -180,6 +180,7 @@
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Client Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_handles/">Scene Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
@@ -344,7 +345,7 @@ used as a context to place GUI elements into the 3D scene.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>viser.GlbHandle</p>
+<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.GlbHandle" title="viser.GlbHandle">viser.GlbHandle</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -727,7 +728,7 @@ a handle that can be used to populate it.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>viser.GlbHandle</p>
+<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.GlbHandle" title="viser.GlbHandle">viser.GlbHandle</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -891,6 +892,34 @@ too quickly for higher-resolution images.</p></li>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ClientHandle.on_scene_click">
+<span class="sig-name descname"><span class="pre">on_scene_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent"><span class="pre">viser.ScenePointerEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.on_scene_click" title="Link to this definition">#</a></dt>
+<dd><p>Add a callback for scene pointer events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent"><em>viser.ScenePointerEvent</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent">viser.ScenePointerEvent</a>], None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ClientHandle.remove_scene_click_callback">
+<span class="sig-name descname"><span class="pre">remove_scene_click_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent"><span class="pre">viser.ScenePointerEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ClientHandle.remove_scene_click_callback" title="Link to this definition">#</a></dt>
+<dd><p>Check for the function handle in the list of callbacks and remove it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent"><em>viser.ScenePointerEvent</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1132,6 +1161,8 @@ automatically when assigned.</p>
 <li><a class="reference internal" href="#viser.ClientHandle.client_id"><code class="docutils literal notranslate"><span class="pre">ClientHandle.client_id</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.configure_theme"><code class="docutils literal notranslate"><span class="pre">ClientHandle.configure_theme()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.get_render"><code class="docutils literal notranslate"><span class="pre">ClientHandle.get_render()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.on_scene_click"><code class="docutils literal notranslate"><span class="pre">ClientHandle.on_scene_click()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.remove_scene_click_callback"><code class="docutils literal notranslate"><span class="pre">ClientHandle.remove_scene_click_callback()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.reset_scene"><code class="docutils literal notranslate"><span class="pre">ClientHandle.reset_scene()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.set_background_image"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_background_image()</span></code></a></li>
 </ul>

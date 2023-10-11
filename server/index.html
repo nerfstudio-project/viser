@@ -180,6 +180,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../client_handles/">Client Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_handles/">Scene Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
@@ -350,7 +351,7 @@ used as a context to place GUI elements into the 3D scene.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>viser.GlbHandle</p>
+<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.GlbHandle" title="viser.GlbHandle">viser.GlbHandle</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -733,7 +734,7 @@ a handle that can be used to populate it.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>viser.GlbHandle</p>
+<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.GlbHandle" title="viser.GlbHandle">viser.GlbHandle</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -910,6 +911,34 @@ handles.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.on_scene_click">
+<span class="sig-name descname"><span class="pre">on_scene_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent"><span class="pre">viser.ScenePointerEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.on_scene_click" title="Link to this definition">#</a></dt>
+<dd><p>Add a callback for scene pointer events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent"><em>viser.ScenePointerEvent</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Callable[[<a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent">viser.ScenePointerEvent</a>], None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.remove_scene_click_callback">
+<span class="sig-name descname"><span class="pre">remove_scene_click_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent"><span class="pre">viser.ScenePointerEvent</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.remove_scene_click_callback" title="Link to this definition">#</a></dt>
+<dd><p>Check for the function handle in the list of callbacks and remove it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser.ScenePointerEvent"><em>viser.ScenePointerEvent</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.reset_scene">
 <span class="sig-name descname"><span class="pre">reset_scene</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.reset_scene" title="Link to this definition">#</a></dt>
 <dd><p>Reset the scene.</p>
@@ -1053,6 +1082,8 @@ and then hidden by default.</p>
 <li><a class="reference internal" href="#viser.ViserServer.get_clients"><code class="docutils literal notranslate"><span class="pre">ViserServer.get_clients()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.on_client_connect"><code class="docutils literal notranslate"><span class="pre">ViserServer.on_client_connect()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.on_client_disconnect"><code class="docutils literal notranslate"><span class="pre">ViserServer.on_client_disconnect()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.on_scene_click"><code class="docutils literal notranslate"><span class="pre">ViserServer.on_scene_click()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.remove_scene_click_callback"><code class="docutils literal notranslate"><span class="pre">ViserServer.remove_scene_click_callback()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.reset_scene"><code class="docutils literal notranslate"><span class="pre">ViserServer.reset_scene()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.set_background_image"><code class="docutils literal notranslate"><span class="pre">ViserServer.set_background_image()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.stop"><code class="docutils literal notranslate"><span class="pre">ViserServer.stop()</span></code></a></li>

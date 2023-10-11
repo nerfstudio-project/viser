@@ -50,9 +50,4 @@ connected clients. When a GUI element is added to a client (for example, via
    :undoc-members:
    :inherited-members:
 
-.. autoapiclass:: viser.GuiEvent
-   :members:
-   :undoc-members:
-   :inherited-members:
-
 <!-- prettier-ignore-end -->
