@@ -27,14 +27,15 @@ if TYPE_CHECKING:
     from ._gui_api import GuiApi
     from ._gui_handles import SupportsRemoveProtocol
     from ._message_api import ClientId, MessageApi
+    from ._viser import ClientHandle
 
 
 @dataclasses.dataclass(frozen=True)
 class ScenePointerEvent:
+    client: ClientHandle
     client_id: ClientId
-    pointer_type: Literal[
-        "click"
-    ]  # Later we can add `double_click`, `move`, `down`, `up`, etc
+    # Later we can add `double_click`, `move`, `down`, `up`, etc
+    event: Literal["click"]
     ray_origin: Tuple[float, float, float]
     ray_direction: Tuple[float, float, float]
 
@@ -135,8 +136,12 @@ class SceneNodeHandle:
 
 @dataclasses.dataclass(frozen=True)
 class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
+    client: ClientHandle
     client_id: ClientId
+    event: Literal["click"]
     target: TSceneNodeHandle
+    ray_origin: Tuple[float, float, float]
+    ray_direction: Tuple[float, float, float]
 
 
 @dataclasses.dataclass

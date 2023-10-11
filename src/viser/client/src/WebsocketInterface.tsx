@@ -95,8 +95,8 @@ function useMessageHandler() {
       }
 
       // Enable/disable whether scene pointer events are sent.
-      case "EnableScenePointerMessage": {
-        viewer.useScenePointer.current = message.enabled;
+      case "ScenePointerCallbackInfoMessage": {
+        viewer.scenePointerCallbackCount.current += message.count;
         return;
       }
 
@@ -836,6 +836,7 @@ export function WebsocketMessageProducer() {
         console.log(`Disconnected! ${server} code=${event.code}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
+        viewer.scenePointerCallbackCount.current = 0;
         viewer.useGui.setState({ websocketConnected: false });
         resetGui();
 

@@ -57,18 +57,17 @@ class ScenePointerMessage(Message):
     direction is the vector if a ray is projected from the camera through the clicked pixel,
     """
 
-    pointer_type: Literal[
-        "click"
-    ]  # Later we can add `double_click`, `move`, `down`, `up`, etc
+    # Later we can add `double_click`, `move`, `down`, `up`, etc.
+    event_type: Literal["click"]
     ray_origin: Tuple[float, float, float]
     ray_direction: Tuple[float, float, float]
 
 
 @dataclasses.dataclass
-class EnableScenePointerMessage(Message):
+class ScenePointerCallbackInfoMessage(Message):
     """Message to enable/disable scene pointer"""
 
-    enabled: bool
+    count: int
 
 
 @dataclasses.dataclass
@@ -298,10 +297,12 @@ class SetSceneNodeClickableMessage(Message):
 
 
 @dataclasses.dataclass
-class SceneNodeClickedMessage(Message):
+class SceneNodeClickMessage(Message):
     """Message for clicked objects."""
 
     name: str
+    ray_origin: Tuple[float, float, float]
+    ray_direction: Tuple[float, float, float]
 
 
 @dataclasses.dataclass

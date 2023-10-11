@@ -68,7 +68,7 @@ export type ViewerContextContents = {
     "ready" | "triggered" | "pause" | "in_progress"
   >;
   getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
-  useScenePointer: React.MutableRefObject<boolean>;
+  scenePointerCallbackCount: React.MutableRefObject<number>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -110,7 +110,7 @@ function ViewerRoot() {
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
-    useScenePointer: React.useRef(false),
+    scenePointerCallbackCount: React.useRef(0),
   };
 
   return (

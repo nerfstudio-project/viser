@@ -16,6 +16,7 @@ import threading
 import time
 from typing import (
     TYPE_CHECKING,
+    Callable,
     Dict,
     List,
     Optional,
@@ -23,7 +24,6 @@ from typing import (
     TypeVar,
     Union,
     cast,
-    Callable,
 )
 
 import imageio.v3 as iio
@@ -36,9 +36,7 @@ from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
 from ._scene_handles import (
-    ScenePointerEvent,
     CameraFrustumHandle,
-    SceneNodePointerEvent,
     FrameHandle,
     GlbHandle,
     Gui3dContainerHandle,
@@ -47,11 +45,14 @@ from ._scene_handles import (
     MeshHandle,
     PointCloudHandle,
     SceneNodeHandle,
+    SceneNodePointerEvent,
+    ScenePointerEvent,
     TransformControlsHandle,
     _TransformControlsState,
 )
 
 if TYPE_CHECKING:
+    from ._viser import ClientHandle
     from .infra import ClientId
 
 
@@ -158,8 +159,8 @@ class MessageApi(abc.ABC):
             self._handle_transform_controls_updates,
         )
         handler.register_handler(
-            _messages.SceneNodeClickedMessage,
-            self._handle_click_updates,
+            _messages.SceneNodeClickMessage,
+            self._handle_node_click_updates,
         )
         handler.register_handler(
             _messages.ScenePointerMessage,
@@ -617,6 +618,25 @@ class MessageApi(abc.ABC):
         """Abstract method for sending messages."""
         ...
 
+    def _get_client_handle(self, client_id: ClientId) -> ClientHandle:
+        """Private helper for getting a client handle from its ID."""
+        # Avoid circular imports.
+        from ._viser import ClientHandle, ViserServer
+
+        # Implementation-wise, note that MessageApi is never directly instantiated.
+        # Instead, it serves as a mixin/base class for either ViserServer, which
+        # maintains a registry of connected clients, or ClientHandle, which should
+        # only ever be dealing with its own client_id.
+        if isinstance(self, ViserServer):
+            # TODO: there's a potential race condition here when the client disconnects.
+            # This probably applies to multiple other parts of the code, we should
+            # revisit all of the cases where we index into connected_clients.
+            return self._state.connected_clients[client_id]
+        else:
+            assert isinstance(self, ClientHandle)
+            assert client_id == self.client_id
+            return self
+
     def _handle_transform_controls_updates(
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
     ) -> None:
@@ -636,27 +656,23 @@ class MessageApi(abc.ABC):
         if handle._impl_aux.sync_cb is not None:
             handle._impl_aux.sync_cb(client_id, handle)
 
-    def _handle_click_updates(
-        self, client_id: ClientId, message: _messages.SceneNodeClickedMessage
+    def _handle_node_click_updates(
+        self, client_id: ClientId, message: _messages.SceneNodeClickMessage
     ) -> None:
         """Callback for handling click messages."""
         handle = self._handle_from_node_name.get(message.name, None)
         if handle is None or handle._impl.click_cb is None:
             return
         for cb in handle._impl.click_cb:
-            event = SceneNodePointerEvent(client_id=client_id, target=handle)
+            event = SceneNodePointerEvent(
+                client=self._get_client_handle(client_id),
+                client_id=client_id,
+                event="click",
+                target=handle,
+                ray_origin=message.ray_origin,
+                ray_direction=message.ray_direction,
+            )
             cb(event)  # type: ignore
-
-    @property
-    def scene_pointer_enabled(self) -> bool:
-        """Whether scene pointer events are enabled."""
-        return self._scene_pointer_enabled
-
-    @scene_pointer_enabled.setter
-    def scene_pointer_enabled(self, enable: bool) -> None:
-        """Enable or disable scene pointer events."""
-        self._scene_pointer_enabled = enable
-        self._queue(_messages.EnableScenePointerMessage(enabled=enable))
 
     def _handle_scene_pointer_updates(
         self, client_id: ClientId, message: _messages.ScenePointerMessage
@@ -664,39 +680,37 @@ class MessageApi(abc.ABC):
         """Callback for handling click messages."""
         for cb in self._scene_pointer_cb:
             event = ScenePointerEvent(
+                client=self._get_client_handle(client_id),
                 client_id=client_id,
-                pointer_type=message.pointer_type,
+                event=message.event_type,
                 ray_origin=message.ray_origin,
                 ray_direction=message.ray_direction,
             )
             cb(event)
 
-    def on_scene_pointer_event(
+    def on_scene_click(
         self,
         func: Callable[[ScenePointerEvent], None],
     ) -> Callable[[ScenePointerEvent], None]:
         """Add a callback for scene pointer events."""
         self._scene_pointer_cb.append(func)
 
-        # Enable scene pointer events if they're not already enabled.
-        if len(self._scene_pointer_cb) > 0 and not self.scene_pointer_enabled:
-            self.scene_pointer_enabled = True
-
+        # Notify client of a new listener. This can help the client determine whether
+        # or not click events should still be sent; note that we have no way of knowing
+        # here because both server and client handles manage their own callbacks.
+        self._queue(_messages.ScenePointerCallbackInfoMessage(count=1))
         return func
 
-    def remove_scene_pointer_event(
+    def remove_scene_click_callback(
         self,
         func: Callable[[ScenePointerEvent], None],
     ) -> None:
         """Check for the function handle in the list of callbacks and remove it."""
-        for i, cb in enumerate(self._scene_pointer_cb):
-            if cb == func:
-                del self._scene_pointer_cb[i]
-                break
+        if func in self._scene_pointer_cb:
+            self._scene_pointer_cb.remove(func)
 
-        # Disable scene pointer events if there are no more callbacks.
-        if len(self._scene_pointer_cb) == 0 and self.scene_pointer_enabled:
-            self.scene_pointer_enabled = False
+        # Notify client that the listener has been removed.
+        self._queue(_messages.ScenePointerCallbackInfoMessage(count=-1))
 
     def add_3d_gui_container(
         self,
