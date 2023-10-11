@@ -25,6 +25,11 @@ connected clients. When a scene node is added to a client (for example, via
    :undoc-members:
    :inherited-members:
 
+.. autoapiclass:: viser.GlbHandle
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 .. autoapiclass:: viser.Gui3dContainerHandle
    :members:
    :undoc-members:
@@ -51,11 +56,6 @@ connected clients. When a scene node is added to a client (for example, via
    :inherited-members:
 
 .. autoapiclass:: viser.TransformControlsHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
-
-.. autoapiclass:: viser.ClickEvent
    :members:
    :undoc-members:
    :inherited-members:
