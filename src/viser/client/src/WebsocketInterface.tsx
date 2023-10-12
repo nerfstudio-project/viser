@@ -695,9 +695,6 @@ export function FrameSynchronizedMessageHandler() {
   const viewer = useContext(ViewerContext)!;
   const messageQueueRef = viewer.messageQueueRef;
 
-  // We'll reuse the same canvas.
-  const renderBufferCanvas = React.useMemo(() => new OffscreenCanvas(1, 1), []);
-
   useFrame(() => {
     // Send a render along if it was requested!
     if (viewer.getRenderRequestState.current === "triggered") {
@@ -709,11 +706,7 @@ export function FrameSynchronizedMessageHandler() {
       const targetHeight = viewer.getRenderRequest.current!.height;
 
       // We'll save a render to an intermediate canvas with the requested dimensions.
-      if (renderBufferCanvas.width !== targetWidth)
-        renderBufferCanvas.width = targetWidth;
-      if (renderBufferCanvas.height !== targetHeight)
-        renderBufferCanvas.height = targetHeight;
-
+      const renderBufferCanvas = new OffscreenCanvas(targetWidth, targetHeight);
       const ctx = renderBufferCanvas.getContext("2d")!;
       ctx.reset();
       // Use a white background for JPEGs, which don't have an alpha channel.
