@@ -169,6 +169,57 @@ class CameraHandle:
         self._state.camera_cb.append(callback)
         return callback
 
+    def get_render(
+        self, height: int, width: int, transport_format: Literal["png", "jpeg"] = "jpeg"
+    ) -> onp.ndarray:
+        """Request a render from a client, block until it's done and received, then
+        return it as a numpy array.
+
+        Args:
+            height: Height of rendered image. Should be <= the browser height.
+            width: Width of rendered image. Should be <= the browser width.
+            transport_format: Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
+                return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
+                too quickly for higher-resolution images.
+        """
+
+        # Listen for a render reseponse message, which should contain the rendered
+        # image.
+        render_ready_event = threading.Event()
+        out: Optional[onp.ndarray] = None
+
+        connection = self.client._state.connection
+
+        def got_render_cb(
+            client_id: int, message: _messages.GetRenderResponseMessage
+        ) -> None:
+            del client_id
+            connection.unregister_handler(
+                _messages.GetRenderResponseMessage, got_render_cb
+            )
+            nonlocal out
+            out = iio.imread(
+                io.BytesIO(message.payload),
+                extension=f".{transport_format}",
+            )
+            render_ready_event.set()
+
+        connection.register_handler(_messages.GetRenderResponseMessage, got_render_cb)
+        self.client._queue(
+            _messages.GetRenderRequestMessage(
+                "image/jpeg" if transport_format == "jpeg" else "image/png",
+                height=height,
+                width=width,
+                # Only used for JPEG. The main reason to use a lower quality version
+                # value is (unfortunately) to make life easier for the Javascript
+                # garbage collector.
+                quality=80,
+            )
+        )
+        render_ready_event.wait()
+        assert out is not None
+        return out
+
 
 @dataclasses.dataclass
 class _ClientHandleState:
@@ -199,57 +250,6 @@ class ClientHandle(MessageApi, GuiApi):
     def _queue_unsafe(self, message: _messages.Message) -> None:
         """Define how the message API should send messages."""
         self._state.connection.send(message)
-
-    def get_render(
-        self, height: int, width: int, transport_format: Literal["png", "jpeg"] = "jpeg"
-    ) -> onp.ndarray:
-        """Request a render from a client, block until it's done and received, then
-        return it as a numpy array.
-
-        Args:
-            height: Height of rendered image. Should be <= the browser height.
-            width: Width of rendered image. Should be <= the browser width.
-            transport_format: Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
-                return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
-                too quickly for higher-resolution images.
-        """
-
-        # Listen for a render reseponse message, which should contain the rendered
-        # image.
-        render_ready_event = threading.Event()
-        out: Optional[onp.ndarray] = None
-
-        def got_render_cb(
-            client_id: int, message: _messages.GetRenderResponseMessage
-        ) -> None:
-            del client_id
-            self._state.connection.unregister_handler(
-                _messages.GetRenderResponseMessage, got_render_cb
-            )
-            nonlocal out
-            out = iio.imread(
-                io.BytesIO(message.payload),
-                extension=f".{transport_format}",
-            )
-            render_ready_event.set()
-
-        self._state.connection.register_handler(
-            _messages.GetRenderResponseMessage, got_render_cb
-        )
-        self._queue(
-            _messages.GetRenderRequestMessage(
-                "image/jpeg" if transport_format == "jpeg" else "image/png",
-                height=height,
-                width=width,
-                # Only used for JPEG. The main reason to use a lower quality version
-                # value is (unfortunately) to make life easier for the Javascript
-                # garbage collector.
-                quality=80,
-            )
-        )
-        render_ready_event.wait()
-        assert out is not None
-        return out
 
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
