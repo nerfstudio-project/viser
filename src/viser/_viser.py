@@ -223,6 +223,7 @@ class CameraHandle:
 
 @dataclasses.dataclass
 class _ClientHandleState:
+    viser_server: ViserServer
     server: infra.Server
     connection: infra.ClientConnection
 
@@ -344,7 +345,7 @@ class ViserServer(MessageApi, GuiApi):
             client = ClientHandle(
                 conn.client_id,
                 camera,
-                _ClientHandleState(server, conn),
+                _ClientHandleState(self, server, conn),
             )
             camera._state.client = client
             first = True

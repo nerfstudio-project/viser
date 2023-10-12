@@ -607,7 +607,7 @@ class MessageApi(abc.ABC):
             # This could be optimized!
             self._queued_messages.put(message)
 
-            def try_again():
+            def try_again() -> None:
                 with self._atomic_lock:
                     self._queue_unsafe(self._queued_messages.get())
 
@@ -695,10 +695,9 @@ class MessageApi(abc.ABC):
         """Add a callback for scene pointer events."""
         self._scene_pointer_cb.append(func)
 
-        # Notify client of a new listener. This can help the client determine whether
-        # or not click events should still be sent; note that we have no way of knowing
-        # here because both server and client handles manage their own callbacks.
-        self._queue(_messages.ScenePointerCallbackInfoMessage(count=1))
+        # If this is the first callback.
+        if len(self._scene_pointer_cb) == 1:
+            self._queue(_messages.SceneClickEnableMessage(enable=True))
         return func
 
     def remove_scene_click_callback(
@@ -710,7 +709,41 @@ class MessageApi(abc.ABC):
             self._scene_pointer_cb.remove(func)
 
         # Notify client that the listener has been removed.
-        self._queue(_messages.ScenePointerCallbackInfoMessage(count=-1))
+        if len(self._scene_pointer_cb) == 0:
+            from ._viser import ViserServer
+
+            if isinstance(self, ViserServer):
+                # Turn off server-level scene click events.
+                self._queue(_messages.SceneClickEnableMessage(enable=False))
+
+                # Catch an unlikely edge case: we need to re-enable click events for
+                # clients that still have callbacks.
+                clients = self.get_clients()
+                if len(clients) > 0:
+                    # TODO: putting this in a thread with an initial sleep is a hack for
+                    # giving us a soft guarantee on message ordering; the enable messages
+                    # need to arrive after the disable one above.
+                    #
+                    # Ideally we should implement a flush() method of some kind that
+                    # empties the message buffer.
+
+                    def reenable() -> None:
+                        time.sleep(1.0 / 60.0)
+                        for client in clients.values():
+                            if len(client._scene_pointer_cb) > 0:
+                                self._queue(
+                                    _messages.SceneClickEnableMessage(enable=True)
+                                )
+
+                    threading.Thread(target=reenable).start()
+
+            else:
+                assert isinstance(self, ClientHandle)
+
+                # Turn off scene click events for clients, but only if there's no
+                # server-level scene click events.
+                if len(self._state.viser_server._scene_pointer_cb) == 0:
+                    self._queue(_messages.SceneClickEnableMessage(enable=False))
 
     def add_3d_gui_container(
         self,
