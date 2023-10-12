@@ -417,6 +417,60 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run when a new camera message is received.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">camera_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">callback</span></div>
+
+
+<div class="viewcode-block" id="CameraHandle.get_render">
+<a class="viewcode-back" href="../../../client_handles/#viser.CameraHandle.get_render">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_render</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">transport_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Request a render from a client, block until it&#39;s done and received, then</span>
+<span class="sd">        return it as a numpy array.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            height: Height of rendered image. Should be &lt;= the browser height.</span>
+<span class="sd">            width: Width of rendered image. Should be &lt;= the browser width.</span>
+<span class="sd">            transport_format: Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will</span>
+<span class="sd">                return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called</span>
+<span class="sd">                too quickly for higher-resolution images.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Listen for a render reseponse message, which should contain the rendered</span>
+        <span class="c1"># image.</span>
+        <span class="n">render_ready_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="n">out</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">connection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span>
+
+        <span class="k">def</span> <span class="nf">got_render_cb</span><span class="p">(</span>
+            <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderResponseMessage</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">client_id</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">unregister_handler</span><span class="p">(</span>
+                <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderResponseMessage</span><span class="p">,</span> <span class="n">got_render_cb</span>
+            <span class="p">)</span>
+            <span class="k">nonlocal</span> <span class="n">out</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">iio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span>
+                <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="p">),</span>
+                <span class="n">extension</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">transport_format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">render_ready_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+        <span class="n">connection</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderResponseMessage</span><span class="p">,</span> <span class="n">got_render_cb</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderRequestMessage</span><span class="p">(</span>
+                <span class="s2">&quot;image/jpeg&quot;</span> <span class="k">if</span> <span class="n">transport_format</span> <span class="o">==</span> <span class="s2">&quot;jpeg&quot;</span> <span class="k">else</span> <span class="s2">&quot;image/png&quot;</span><span class="p">,</span>
+                <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+                <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+                <span class="c1"># Only used for JPEG. The main reason to use a lower quality version</span>
+                <span class="c1"># value is (unfortunately) to make life easier for the Javascript</span>
+                <span class="c1"># garbage collector.</span>
+                <span class="n">quality</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">render_ready_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">out</span></div>
 </div>
 
 
@@ -452,60 +506,6 @@
     <span class="k">def</span> <span class="nf">_queue_unsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-
-<div class="viewcode-block" id="ClientHandle.get_render">
-<a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.get_render">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_render</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">transport_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Request a render from a client, block until it&#39;s done and received, then</span>
-<span class="sd">        return it as a numpy array.</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            height: Height of rendered image. Should be &lt;= the browser height.</span>
-<span class="sd">            width: Width of rendered image. Should be &lt;= the browser width.</span>
-<span class="sd">            transport_format: Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will</span>
-<span class="sd">                return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called</span>
-<span class="sd">                too quickly for higher-resolution images.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># Listen for a render reseponse message, which should contain the rendered</span>
-        <span class="c1"># image.</span>
-        <span class="n">render_ready_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
-        <span class="n">out</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="k">def</span> <span class="nf">got_render_cb</span><span class="p">(</span>
-            <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderResponseMessage</span>
-        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">del</span> <span class="n">client_id</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">unregister_handler</span><span class="p">(</span>
-                <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderResponseMessage</span><span class="p">,</span> <span class="n">got_render_cb</span>
-            <span class="p">)</span>
-            <span class="k">nonlocal</span> <span class="n">out</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">iio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span>
-                <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="p">),</span>
-                <span class="n">extension</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">transport_format</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-            <span class="p">)</span>
-            <span class="n">render_ready_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span>
-            <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderResponseMessage</span><span class="p">,</span> <span class="n">got_render_cb</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-            <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderRequestMessage</span><span class="p">(</span>
-                <span class="s2">&quot;image/jpeg&quot;</span> <span class="k">if</span> <span class="n">transport_format</span> <span class="o">==</span> <span class="s2">&quot;jpeg&quot;</span> <span class="k">else</span> <span class="s2">&quot;image/png&quot;</span><span class="p">,</span>
-                <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
-                <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
-                <span class="c1"># Only used for JPEG. The main reason to use a lower quality version</span>
-                <span class="c1"># value is (unfortunately) to make life easier for the Javascript</span>
-                <span class="c1"># garbage collector.</span>
-                <span class="n">quality</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">render_ready_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="n">out</span></div>
-
 
 <div class="viewcode-block" id="ClientHandle.atomic">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.atomic">[docs]</a>

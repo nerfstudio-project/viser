@@ -267,27 +267,6 @@ individual clients and read/write camera information.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.ClientHandle.get_render">
-<span class="sig-name descname"><span class="pre">get_render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘png’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘jpeg’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jpeg'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ClientHandle.get_render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClientHandle.get_render" title="Link to this definition">#</a></dt>
-<dd><p>Request a render from a client, block until it’s done and received, then
-return it as a numpy array.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>height</strong> (<em>int</em>) – Height of rendered image. Should be &lt;= the browser height.</p></li>
-<li><p><strong>width</strong> (<em>int</em>) – Width of rendered image. Should be &lt;= the browser width.</p></li>
-<li><p><strong>transport_format</strong> (<em>Literal</em><em>[</em><em>‘png’</em><em>, </em><em>‘jpeg’</em><em>]</em>) – Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
-return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
-too quickly for higher-resolution images.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>ndarray</em></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="viser.ClientHandle.atomic">
 <span class="sig-name descname"><span class="pre">atomic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ClientHandle.atomic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClientHandle.atomic" title="Link to this definition">#</a></dt>
 <dd><p>Returns a context where:</p>
@@ -1063,6 +1042,27 @@ when assigned.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.CameraHandle.get_render">
+<span class="sig-name descname"><span class="pre">get_render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘png’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘jpeg’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jpeg'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#CameraHandle.get_render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraHandle.get_render" title="Link to this definition">#</a></dt>
+<dd><p>Request a render from a client, block until it’s done and received, then
+return it as a numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>height</strong> (<em>int</em>) – Height of rendered image. Should be &lt;= the browser height.</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – Width of rendered image. Should be &lt;= the browser width.</p></li>
+<li><p><strong>transport_format</strong> (<em>Literal</em><em>[</em><em>‘png’</em><em>, </em><em>‘jpeg’</em><em>]</em>) – Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
+return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
+too quickly for higher-resolution images.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>ndarray</em></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <!-- prettier-ignore-end --></section>
@@ -1133,7 +1133,6 @@ when assigned.</p>
 <li><a class="reference internal" href="#viser.ClientHandle"><code class="docutils literal notranslate"><span class="pre">ClientHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.ClientHandle.client_id"><code class="docutils literal notranslate"><span class="pre">ClientHandle.client_id</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.camera"><code class="docutils literal notranslate"><span class="pre">ClientHandle.camera</span></code></a></li>
-<li><a class="reference internal" href="#viser.ClientHandle.get_render"><code class="docutils literal notranslate"><span class="pre">ClientHandle.get_render()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.atomic"><code class="docutils literal notranslate"><span class="pre">ClientHandle.atomic()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_3d_gui_container"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_3d_gui_container()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_camera_frustum"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_camera_frustum()</span></code></a></li>
@@ -1181,6 +1180,7 @@ when assigned.</p>
 <li><a class="reference internal" href="#viser.CameraHandle.look_at"><code class="docutils literal notranslate"><span class="pre">CameraHandle.look_at</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.up_direction"><code class="docutils literal notranslate"><span class="pre">CameraHandle.up_direction</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraHandle.on_update"><code class="docutils literal notranslate"><span class="pre">CameraHandle.on_update()</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraHandle.get_render"><code class="docutils literal notranslate"><span class="pre">CameraHandle.get_render()</span></code></a></li>
 </ul>
 </li>
 </ul>
