@@ -180,6 +180,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       }}
       performance={{ min: 0.95 }}
       ref={viewer.canvasRef}
+      // Handle scene click events.
       onClick={(e) => {
         // Don't send click events if the scene pointer events are disabled.
         if (!viewer.sceneClickEnable.current) return;
