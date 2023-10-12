@@ -834,7 +834,7 @@ export function WebsocketMessageProducer() {
         console.log(`Disconnected! ${server} code=${event.code}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
-        viewer.sceneClickEnable.current = 0;
+        viewer.sceneClickEnable.current = false;
         viewer.useGui.setState({ websocketConnected: false });
         resetGui();
 
