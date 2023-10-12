@@ -27,13 +27,13 @@ export interface ScenePointerMessage {
   ray_origin: [number, number, number];
   ray_direction: [number, number, number];
 }
-/** Message to enable/disable scene pointer
+/** Message to enable/disable scene click events.
  *
  * (automatically generated)
  */
-export interface ScenePointerCallbackInfoMessage {
-  type: "ScenePointerCallbackInfoMessage";
-  count: number;
+export interface SceneClickEnableMessage {
+  type: "SceneClickEnableMessage";
+  enable: boolean;
 }
 /** Variant of CameraMessage used for visualizing camera frustums.
  *
@@ -653,7 +653,7 @@ export interface GetRenderResponseMessage {
 export type Message =
   | ViewerCameraMessage
   | ScenePointerMessage
-  | ScenePointerCallbackInfoMessage
+  | SceneClickEnableMessage
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
