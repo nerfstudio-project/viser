@@ -825,7 +825,7 @@ export function WebsocketMessageProducer() {
 
       ws.onopen = () => {
         clearTimeout(retryTimeout);
-        console.log(`Connected!${server}`);
+        console.log(`Connected! ${server}`);
         viewer.websocketRef.current = ws;
         viewer.useGui.setState({ websocketConnected: true });
       };
