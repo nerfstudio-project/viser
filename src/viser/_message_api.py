@@ -113,7 +113,7 @@ def _encode_image_base64(
                 data_buffer,
                 image[..., :3],  # Strip alpha.
                 extension=".jpeg",
-                jpeg_quality=75 if jpeg_quality is None else jpeg_quality,
+                quality=75 if jpeg_quality is None else jpeg_quality,
             )
         else:
             assert_never(format)
