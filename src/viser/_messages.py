@@ -108,6 +108,28 @@ class FrameMessage(Message):
 
 
 @dataclasses.dataclass
+class GridMessage(Message):
+    """Grid message. Helpful for visualizing things like ground planes."""
+
+    name: str
+
+    width: float
+    height: float
+    width_segments: int
+    height_segments: int
+
+    plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"]
+
+    cell_color: int
+    cell_thickness: float
+    cell_size: float
+
+    section_color: int
+    section_thickness: float
+    section_size: float
+
+
+@dataclasses.dataclass
 class LabelMessage(Message):
     """Add a 2D label to the scene."""
 
