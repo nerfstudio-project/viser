@@ -57,8 +57,20 @@ export default function GeneratedGuiContainer({
         {[...guiIdSet]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
-          .map((conf) => {
-            return <GeneratedInput conf={conf} key={conf.id} viewer={viewer} />;
+          .map((conf, index) => {
+            return (
+              <>
+                {conf.type === "GuiAddFolderMessage" && index > 0 ? (
+                  <Box pt="0.03125em" />
+                ) : null}
+                <GeneratedInput conf={conf} key={conf.id} viewer={viewer} />
+                {conf.type === "GuiAddFolderMessage" &&
+                index < guiIdSet.size - 1 ? (
+                // Add some whitespace after folders.
+                  <Box pt="0.03125em" />
+                ) : null}
+              </>
+            );
           })}
       </Box>
     );
@@ -399,8 +411,8 @@ function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
       withBorder
       pt="0.2em"
       mx="xs"
-      mt="xs"
-      mb="lg"
+      mt="sm"
+      mb="sm"
       sx={{ position: "relative" }}
     >
       <Paper
@@ -413,7 +425,6 @@ function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
           transform: "translateY(-50%)",
           cursor: "pointer",
           userSelect: "none",
-          fontWeight: "bold",
         }}
         onClick={toggle}
       >
@@ -421,9 +432,9 @@ function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
           style={{
             width: "1.2em",
             height: "1.2em",
-            top: "0.25em",
+            top: "0.2em",
             position: "relative",
-            marginRight: "0.5em",
+            marginRight: "0.25em",
             opacity: 0.5,
           }}
         />

@@ -354,8 +354,7 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> FrameHandle:
-        cast_vector(wxyz, length=4)
-        cast_vector(position, length=3)
+        """Add a coordinate frame to the scene."""
         self._queue(
             _messages.FrameMessage(
                 name=name,
@@ -365,6 +364,43 @@ class MessageApi(abc.ABC):
             )
         )
         return FrameHandle._make(self, name, wxyz, position, visible)
+
+    def add_grid(
+        self,
+        name: str,
+        width: float = 10.0,
+        height: float = 10.0,
+        width_segments: int = 10,
+        height_segments: int = 10,
+        plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
+        cell_color: RgbTupleOrArray = (200, 200, 200),
+        cell_thickness: float = 1.0,
+        cell_size: float = 0.5,
+        section_color: RgbTupleOrArray = (140, 140, 140),
+        section_thickness: float = 1.0,
+        section_size: float = 1.0,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> MeshHandle:
+        """Add a grid to the scene. Useful for visualizing things like ground planes."""
+        self._queue(
+            _messages.GridMessage(
+                name=name,
+                width=width,
+                height=height,
+                width_segments=width_segments,
+                height_segments=height_segments,
+                plane=plane,
+                cell_color=_encode_rgb(cell_color),
+                cell_thickness=cell_thickness,
+                cell_size=cell_size,
+                section_color=_encode_rgb(section_color),
+                section_thickness=section_thickness,
+                section_size=section_size,
+            )
+        )
+        return MeshHandle._make(self, name, wxyz, position, visible)
 
     def add_label(
         self,
@@ -641,20 +677,21 @@ class MessageApi(abc.ABC):
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
     ) -> None:
         """Callback for handling transform gizmo messages."""
-        handle = self._handle_from_transform_controls_name.get(message.name, None)
-        if handle is None:
-            return
+        with self._atomic_lock:
+            handle = self._handle_from_transform_controls_name.get(message.name, None)
+            if handle is None:
+                return
 
-        # Update state.
-        handle._impl.wxyz = onp.array(message.wxyz)
-        handle._impl.position = onp.array(message.position)
-        handle._impl_aux.last_updated = time.time()
+            # Update state.
+            handle._impl.wxyz = onp.array(message.wxyz)
+            handle._impl.position = onp.array(message.position)
+            handle._impl_aux.last_updated = time.time()
 
-        # Trigger callbacks.
-        for cb in handle._impl_aux.update_cb:
-            cb(handle)
-        if handle._impl_aux.sync_cb is not None:
-            handle._impl_aux.sync_cb(client_id, handle)
+            # Trigger callbacks.
+            for cb in handle._impl_aux.update_cb:
+                cb(handle)
+            if handle._impl_aux.sync_cb is not None:
+                handle._impl_aux.sync_cb(client_id, handle)
 
     def _handle_node_click_updates(
         self, client_id: ClientId, message: _messages.SceneNodeClickMessage
@@ -672,7 +709,8 @@ class MessageApi(abc.ABC):
                 ray_origin=message.ray_origin,
                 ray_direction=message.ray_direction,
             )
-            cb(event)  # type: ignore
+            with self._atomic_lock:
+                cb(event)  # type: ignore
 
     def _handle_scene_pointer_updates(
         self, client_id: ClientId, message: _messages.ScenePointerMessage
@@ -686,7 +724,8 @@ class MessageApi(abc.ABC):
                 ray_origin=message.ray_origin,
                 ray_direction=message.ray_direction,
             )
-            cb(event)
+            with self._atomic_lock:
+                cb(event)
 
     def on_scene_click(
         self,
