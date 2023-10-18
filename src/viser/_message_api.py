@@ -229,7 +229,7 @@ class MessageApi(abc.ABC):
 
     def add_glb(
         self,
-        name,
+        name: str,
         glb_data: bytes,
         scale=1.0,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
