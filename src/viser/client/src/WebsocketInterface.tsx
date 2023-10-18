@@ -139,6 +139,17 @@ function useMessageHandler() {
                 sectionThickness={message.section_thickness}
                 sectionSize={message.section_size}
                 rotation={
+                  // There's redundancy here when we set the side to
+                  // THREE.DoubleSide, where xy and yx should be the same.
+                  // 
+                  // But it makes sense to keep this parameterization because
+                  // specifying planes by xy seems more natural than the normal
+                  // direction (z, +z, or -z), and it opens the possibility of
+                  // rendering only FrontSide or BackSide grids in the future.
+                  //
+                  // If we add support for FrontSide or BackSide, we should
+                  // double-check that the normal directions from each of these
+                  // rotations match the right-hand rule!
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
