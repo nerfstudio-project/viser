@@ -1,5 +1,5 @@
 import AwaitLock from "await-lock";
-import { CatmullRomLine, CubicBezierLine } from "@react-three/drei";
+import { CatmullRomLine, CubicBezierLine, Grid } from "@react-three/drei";
 import { unpack } from "msgpackr";
 
 import React, { useContext } from "react";
@@ -115,6 +115,57 @@ function useMessageHandler() {
               axes_length={message.axes_length}
               axes_radius={message.axes_radius}
             />
+          )),
+        );
+        return;
+      }
+
+      case "GridMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => (
+            <group ref={ref}>
+              <Grid
+                args={[
+                  message.width,
+                  message.height,
+                  message.width_segments,
+                  message.height_segments,
+                ]}
+                side={THREE.DoubleSide}
+                cellColor={message.cell_color}
+                cellThickness={message.cell_thickness}
+                cellSize={message.cell_size}
+                sectionColor={message.section_color}
+                sectionThickness={message.section_thickness}
+                sectionSize={message.section_size}
+                rotation={
+                  // There's redundancy here when we set the side to
+                  // THREE.DoubleSide, where xy and yx should be the same.
+                  // 
+                  // But it makes sense to keep this parameterization because
+                  // specifying planes by xy seems more natural than the normal
+                  // direction (z, +z, or -z), and it opens the possibility of
+                  // rendering only FrontSide or BackSide grids in the future.
+                  //
+                  // If we add support for FrontSide or BackSide, we should
+                  // double-check that the normal directions from each of these
+                  // rotations match the right-hand rule!
+                  message.plane == "xz"
+                    ? new THREE.Euler(0.0, 0.0, 0.0)
+                    : message.plane == "xy"
+                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                    : message.plane == "yx"
+                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                    : message.plane == "yz"
+                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                    : message.plane == "zx"
+                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                    : message.plane == "zy"
+                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
+                    : undefined
+                }
+              />
+            </group>
           )),
         );
         return;
