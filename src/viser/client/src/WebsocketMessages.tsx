@@ -75,6 +75,25 @@ export interface FrameMessage {
   axes_length: number;
   axes_radius: number;
 }
+/** Grid message. Helpful for visualizing things like ground planes.
+ *
+ * (automatically generated)
+ */
+export interface GridMessage {
+  type: "GridMessage";
+  name: string;
+  width: number;
+  height: number;
+  width_segments: number;
+  height_segments: number;
+  plane: "xz" | "xy" | "yx" | "yz" | "zx" | "zy";
+  cell_color: number;
+  cell_thickness: number;
+  cell_size: number;
+  section_color: number;
+  section_thickness: number;
+  section_size: number;
+}
 /** Add a 2D label to the scene.
  *
  * (automatically generated)
@@ -657,6 +676,7 @@ export type Message =
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
+  | GridMessage
   | LabelMessage
   | Gui3DMessage
   | PointCloudMessage
