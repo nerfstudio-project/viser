@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import * as THREE from "three";
 import SplatSortWorker from "./SplatSortWorker?worker";
 import { fragmentShaderSource, vertexShaderSource } from "./Shaders";
@@ -21,8 +21,8 @@ export default function GaussianSplats({
 }: {
   buffers: GaussianBuffers;
 }) {
-  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>(null);
-  const [material, setMaterial] = React.useState<THREE.Material>(null);
+  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
+  const [material, setMaterial] = React.useState<THREE.RawShaderMaterial>();
   const setSortedBuffers = React.useRef<
     null | ((sortedBuffers: GaussianBuffersSplitCov) => void)
   >(null);
@@ -131,6 +131,7 @@ export default function GaussianSplats({
     const fy = (dpr * state.size.height) / (2 * Math.tan(fovY / 2));
     const fx = (dpr * state.size.width) / (2 * Math.tan(fovX / 2));
 
+    if (material === undefined) return;
     material.uniforms.focal.value = [fx, fy];
     material.uniforms.viewport.value = [
       state.size.width * dpr,
