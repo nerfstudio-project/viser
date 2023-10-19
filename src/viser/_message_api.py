@@ -14,7 +14,17 @@ import io
 import queue
 import threading
 import time
-from typing import TYPE_CHECKING, Dict, Optional, Tuple, TypeVar, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+    Union,
+    cast,
+)
 
 import imageio.v3 as iio
 import numpy as onp
@@ -27,7 +37,6 @@ from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 from . import _messages, infra, theme
 from ._scene_handles import (
     CameraFrustumHandle,
-    ClickEvent,
     FrameHandle,
     GaussianSplatHandle,
     GlbHandle,
@@ -37,12 +46,14 @@ from ._scene_handles import (
     MeshHandle,
     PointCloudHandle,
     SceneNodeHandle,
+    SceneNodePointerEvent,
+    ScenePointerEvent,
     TransformControlsHandle,
-    _SupportsVisibility,
     _TransformControlsState,
 )
 
 if TYPE_CHECKING:
+    from ._viser import ClientHandle
     from .infra import ClientId
 
 
@@ -103,7 +114,7 @@ def _encode_image_base64(
                 data_buffer,
                 image[..., :3],  # Strip alpha.
                 extension=".jpeg",
-                jpeg_quality=75 if jpeg_quality is None else jpeg_quality,
+                quality=75 if jpeg_quality is None else jpeg_quality,
             )
         else:
             assert_never(format)
@@ -140,13 +151,21 @@ class MessageApi(abc.ABC):
         ] = {}
         self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
 
+        # Callbacks for scene pointer events -- by default don't enable them.
+        self._scene_pointer_cb: List[Callable[[ScenePointerEvent], None]] = []
+        self._scene_pointer_enabled = False
+
         handler.register_handler(
             _messages.TransformControlsUpdateMessage,
             self._handle_transform_controls_updates,
         )
         handler.register_handler(
-            _messages.SceneNodeClickedMessage,
-            self._handle_click_updates,
+            _messages.SceneNodeClickMessage,
+            self._handle_node_click_updates,
+        )
+        handler.register_handler(
+            _messages.ScenePointerMessage,
+            self._handle_scene_pointer_updates,
         )
 
         self._atomic_lock = threading.Lock()
@@ -211,7 +230,7 @@ class MessageApi(abc.ABC):
 
     def add_glb(
         self,
-        name,
+        name: str,
         glb_data: bytes,
         scale=1.0,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
@@ -336,8 +355,7 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> FrameHandle:
-        cast_vector(wxyz, length=4)
-        cast_vector(position, length=3)
+        """Add a coordinate frame to the scene."""
         self._queue(
             _messages.FrameMessage(
                 name=name,
@@ -348,16 +366,54 @@ class MessageApi(abc.ABC):
         )
         return FrameHandle._make(self, name, wxyz, position, visible)
 
+    def add_grid(
+        self,
+        name: str,
+        width: float = 10.0,
+        height: float = 10.0,
+        width_segments: int = 10,
+        height_segments: int = 10,
+        plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"] = "xy",
+        cell_color: RgbTupleOrArray = (200, 200, 200),
+        cell_thickness: float = 1.0,
+        cell_size: float = 0.5,
+        section_color: RgbTupleOrArray = (140, 140, 140),
+        section_thickness: float = 1.0,
+        section_size: float = 1.0,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> MeshHandle:
+        """Add a grid to the scene. Useful for visualizing things like ground planes."""
+        self._queue(
+            _messages.GridMessage(
+                name=name,
+                width=width,
+                height=height,
+                width_segments=width_segments,
+                height_segments=height_segments,
+                plane=plane,
+                cell_color=_encode_rgb(cell_color),
+                cell_thickness=cell_thickness,
+                cell_size=cell_size,
+                section_color=_encode_rgb(section_color),
+                section_thickness=section_thickness,
+                section_size=section_size,
+            )
+        )
+        return MeshHandle._make(self, name, wxyz, position, visible)
+
     def add_label(
         self,
         name: str,
         text: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> LabelHandle:
         """Add a 2D label to the scene."""
         self._queue(_messages.LabelMessage(name, text))
-        return LabelHandle._make(self, name, wxyz, position)
+        return LabelHandle._make(self, name, wxyz, position, visible=visible)
 
     def add_point_cloud(
         self,
@@ -608,7 +664,7 @@ class MessageApi(abc.ABC):
             message_position.excluded_self_client = client_id
             self._queue(message_position)
 
-        node_handle = _SupportsVisibility._make(self, name, wxyz, position, visible)
+        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible)
         state_aux = _TransformControlsState(
             last_updated=time.time(),
             update_cb=[],
@@ -633,7 +689,7 @@ class MessageApi(abc.ABC):
             # This could be optimized!
             self._queued_messages.put(message)
 
-            def try_again():
+            def try_again() -> None:
                 with self._atomic_lock:
                     self._queue_unsafe(self._queued_messages.get())
 
@@ -644,41 +700,142 @@ class MessageApi(abc.ABC):
         """Abstract method for sending messages."""
         ...
 
+    def _get_client_handle(self, client_id: ClientId) -> ClientHandle:
+        """Private helper for getting a client handle from its ID."""
+        # Avoid circular imports.
+        from ._viser import ClientHandle, ViserServer
+
+        # Implementation-wise, note that MessageApi is never directly instantiated.
+        # Instead, it serves as a mixin/base class for either ViserServer, which
+        # maintains a registry of connected clients, or ClientHandle, which should
+        # only ever be dealing with its own client_id.
+        if isinstance(self, ViserServer):
+            # TODO: there's a potential race condition here when the client disconnects.
+            # This probably applies to multiple other parts of the code, we should
+            # revisit all of the cases where we index into connected_clients.
+            return self._state.connected_clients[client_id]
+        else:
+            assert isinstance(self, ClientHandle)
+            assert client_id == self.client_id
+            return self
+
     def _handle_transform_controls_updates(
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
     ) -> None:
         """Callback for handling transform gizmo messages."""
-        handle = self._handle_from_transform_controls_name.get(message.name, None)
-        if handle is None:
-            return
+        with self._atomic_lock:
+            handle = self._handle_from_transform_controls_name.get(message.name, None)
+            if handle is None:
+                return
 
-        # Update state.
-        handle._impl.wxyz = onp.array(message.wxyz)
-        handle._impl.position = onp.array(message.position)
-        handle._impl_aux.last_updated = time.time()
+            # Update state.
+            handle._impl.wxyz = onp.array(message.wxyz)
+            handle._impl.position = onp.array(message.position)
+            handle._impl_aux.last_updated = time.time()
 
-        # Trigger callbacks.
-        for cb in handle._impl_aux.update_cb:
-            cb(handle)
-        if handle._impl_aux.sync_cb is not None:
-            handle._impl_aux.sync_cb(client_id, handle)
+            # Trigger callbacks.
+            for cb in handle._impl_aux.update_cb:
+                cb(handle)
+            if handle._impl_aux.sync_cb is not None:
+                handle._impl_aux.sync_cb(client_id, handle)
 
-    def _handle_click_updates(
-        self, client_id: ClientId, message: _messages.SceneNodeClickedMessage
+    def _handle_node_click_updates(
+        self, client_id: ClientId, message: _messages.SceneNodeClickMessage
     ) -> None:
         """Callback for handling click messages."""
         handle = self._handle_from_node_name.get(message.name, None)
         if handle is None or handle._impl.click_cb is None:
             return
         for cb in handle._impl.click_cb:
-            event = ClickEvent(client_id=client_id, target=handle)
-            cb(event)  # type: ignore
+            event = SceneNodePointerEvent(
+                client=self._get_client_handle(client_id),
+                client_id=client_id,
+                event="click",
+                target=handle,
+                ray_origin=message.ray_origin,
+                ray_direction=message.ray_direction,
+            )
+            with self._atomic_lock:
+                cb(event)  # type: ignore
+
+    def _handle_scene_pointer_updates(
+        self, client_id: ClientId, message: _messages.ScenePointerMessage
+    ):
+        """Callback for handling click messages."""
+        for cb in self._scene_pointer_cb:
+            event = ScenePointerEvent(
+                client=self._get_client_handle(client_id),
+                client_id=client_id,
+                event=message.event_type,
+                ray_origin=message.ray_origin,
+                ray_direction=message.ray_direction,
+            )
+            with self._atomic_lock:
+                cb(event)
+
+    def on_scene_click(
+        self,
+        func: Callable[[ScenePointerEvent], None],
+    ) -> Callable[[ScenePointerEvent], None]:
+        """Add a callback for scene pointer events."""
+        self._scene_pointer_cb.append(func)
+
+        # If this is the first callback.
+        if len(self._scene_pointer_cb) == 1:
+            self._queue(_messages.SceneClickEnableMessage(enable=True))
+        return func
+
+    def remove_scene_click_callback(
+        self,
+        func: Callable[[ScenePointerEvent], None],
+    ) -> None:
+        """Check for the function handle in the list of callbacks and remove it."""
+        if func in self._scene_pointer_cb:
+            self._scene_pointer_cb.remove(func)
+
+        # Notify client that the listener has been removed.
+        if len(self._scene_pointer_cb) == 0:
+            from ._viser import ViserServer
+
+            if isinstance(self, ViserServer):
+                # Turn off server-level scene click events.
+                self._queue(_messages.SceneClickEnableMessage(enable=False))
+
+                # Catch an unlikely edge case: we need to re-enable click events for
+                # clients that still have callbacks.
+                clients = self.get_clients()
+                if len(clients) > 0:
+                    # TODO: putting this in a thread with an initial sleep is a hack for
+                    # giving us a soft guarantee on message ordering; the enable messages
+                    # need to arrive after the disable one above.
+                    #
+                    # Ideally we should implement a flush() method of some kind that
+                    # empties the message buffer.
+
+                    def reenable() -> None:
+                        time.sleep(1.0 / 60.0)
+                        for client in clients.values():
+                            if len(client._scene_pointer_cb) > 0:
+                                self._queue(
+                                    _messages.SceneClickEnableMessage(enable=True)
+                                )
+
+                    threading.Thread(target=reenable).start()
+
+            else:
+                assert isinstance(self, ClientHandle)
+
+                # Turn off scene click events for clients, but only if there's no
+                # server-level scene click events.
+                if len(self._state.viser_server._scene_pointer_cb) == 0:
+                    self._queue(_messages.SceneClickEnableMessage(enable=False))
 
     def add_3d_gui_container(
         self,
         name: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
     ) -> Gui3dContainerHandle:
         """Add a 3D gui container to the scene. The returned container handle can be
         used as a context to place GUI elements into the 3D scene."""
@@ -704,5 +861,5 @@ class MessageApi(abc.ABC):
                 container_id=container_id,
             )
         )
-        node_handle = SceneNodeHandle._make(self, name, wxyz, position)
+        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible=visible)
         return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)

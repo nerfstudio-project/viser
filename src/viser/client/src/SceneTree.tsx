@@ -236,7 +236,6 @@ export function SceneNodeThreeObject(props: {
             const deltaX = e.clientX - state.startClientX;
             const deltaY = e.clientY - state.startClientY;
             // Minimum motion.
-            console.log(deltaX, deltaY);
             if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
             state.dragging = true;
           }}
@@ -246,8 +245,15 @@ export function SceneNodeThreeObject(props: {
             const state = dragInfo.current;
             if (state.dragging) return;
             sendClicksThrottled({
-              type: "SceneNodeClickedMessage",
+              type: "SceneNodeClickMessage",
               name: props.name,
+              // Note that the threejs up is +Y, but we expose a +Z up.
+              ray_origin: [e.ray.origin.x, -e.ray.origin.z, e.ray.origin.y],
+              ray_direction: [
+                e.ray.direction.x,
+                -e.ray.direction.z,
+                e.ray.direction.y,
+              ],
             });
           }}
           onPointerOver={(e) => {

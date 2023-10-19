@@ -88,3 +88,13 @@ BottomPanel.Contents = function BottomPanelContents({
   const panelContext = React.useContext(BottomPanelContext)!;
   return <Collapse in={panelContext.expanded}>{children}</Collapse>;
 };
+
+/** Hides contents when panel is collapsed. */
+BottomPanel.HideWhenCollapsed = function BottomPanelHideWhenCollapsed({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const expanded = React.useContext(BottomPanelContext)?.expanded ?? true;
+  return expanded ? children : null;
+};

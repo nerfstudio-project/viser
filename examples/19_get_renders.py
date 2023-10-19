@@ -33,7 +33,7 @@ def main():
                 line_width=3.0,
                 color=onp.random.uniform(size=3),
             )
-            images.append(client.get_render(height=720, width=1280))
+            images.append(client.camera.get_render(height=720, width=1280))
 
         print("Writing GIF...")
         iio.imwrite("saved.gif", images)

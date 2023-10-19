@@ -37,6 +37,7 @@ import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
+import { makeThrottledMessageSender } from "./WebsocketFunctions";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -67,6 +68,7 @@ export type ViewerContextContents = {
     "ready" | "triggered" | "pause" | "in_progress"
   >;
   getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
+  sceneClickEnable: React.MutableRefObject<boolean>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -108,6 +110,7 @@ function ViewerRoot() {
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
+    sceneClickEnable: React.useRef(false),
   };
 
   return (
@@ -161,6 +164,10 @@ function ViewerContents() {
 
 function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
+  const sendClickThrottled = makeThrottledMessageSender(
+    viewer.websocketRef,
+    20,
+  );
   return (
     <Canvas
       camera={{ position: [3.0, 3.0, -3.0] }}
@@ -173,6 +180,46 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       }}
       performance={{ min: 0.95 }}
       ref={viewer.canvasRef}
+      // Handle scene click events.
+      onClick={(e) => {
+        // Don't send click events if the scene pointer events are disabled.
+        if (!viewer.sceneClickEnable.current) return;
+
+        // clientX/Y are relative to the viewport, offsetX/Y are relative to the canvasRef.
+        // clientX==offsetX if there is no titlebar, but clientX>offsetX if there is a titlebar.
+        const mouseVector = new THREE.Vector2();
+        mouseVector.x =
+          2 * (e.nativeEvent.offsetX / viewer.canvasRef.current!.clientWidth) -
+          1;
+        mouseVector.y =
+          1 -
+          2 * (e.nativeEvent.offsetY / viewer.canvasRef.current!.clientHeight);
+        if (
+          mouseVector.x > 1 ||
+          mouseVector.x < -1 ||
+          mouseVector.y > 1 ||
+          mouseVector.y < -1
+        )
+          return;
+
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
+
+        sendClickThrottled({
+          type: "ScenePointerMessage",
+          event_type: "click",
+          ray_origin: [
+            raycaster.ray.origin.x,
+            -raycaster.ray.origin.z,
+            raycaster.ray.origin.y,
+          ],
+          ray_direction: [
+            raycaster.ray.direction.x,
+            -raycaster.ray.direction.z,
+            raycaster.ray.direction.y,
+          ],
+        });
+      }}
     >
       {children}
       <BackgroundImage />

@@ -12,6 +12,7 @@ from typing import (
     Dict,
     Generic,
     List,
+    Literal,
     Optional,
     Tuple,
     Type,
@@ -26,10 +27,26 @@ if TYPE_CHECKING:
     from ._gui_api import GuiApi
     from ._gui_handles import SupportsRemoveProtocol
     from ._message_api import ClientId, MessageApi
+    from ._viser import ClientHandle
+
+
+@dataclasses.dataclass(frozen=True)
+class ScenePointerEvent:
+    """Event passed to pointer callbacks for the scene (currently only clicks)."""
+
+    client: ClientHandle
+    """Client that triggered this event."""
+    client_id: int
+    """ID of client that triggered this event."""
+    event: Literal["click"]
+    """Type of event that was triggered. Currently we only support clicks."""
+    ray_origin: Tuple[float, float, float]
+    """Origin of 3D ray corresponding to this click, in world coordinates."""
+    ray_direction: Tuple[float, float, float]
+    """Direction of 3D ray corresponding to this click, in world coordinates."""
 
 
 TSceneNodeHandle = TypeVar("TSceneNodeHandle", bound="SceneNodeHandle")
-TSupportsVisibility = TypeVar("TSupportsVisibility", bound="_SupportsVisibility")
 
 
 @dataclasses.dataclass
@@ -44,7 +61,9 @@ class _SceneNodeHandleState:
     )
     visible: bool = True
     # TODO: we should remove SceneNodeHandle as an argument here.
-    click_cb: Optional[List[Callable[[ClickEvent[SceneNodeHandle]], None]]] = None
+    click_cb: Optional[
+        List[Callable[[SceneNodePointerEvent[SceneNodeHandle]], None]]
+    ] = None
 
 
 @dataclasses.dataclass
@@ -60,12 +79,14 @@ class SceneNodeHandle:
         name: str,
         wxyz: Tuple[float, float, float, float] | onp.ndarray,
         position: Tuple[float, float, float] | onp.ndarray,
+        visible: bool,
     ) -> TSceneNodeHandle:
         out = cls(_SceneNodeHandleState(name, api))
         api._handle_from_node_name[name] = out
 
         out.wxyz = wxyz
         out.position = position
+        out.visible = visible
         return out
 
     @property
@@ -102,57 +123,6 @@ class SceneNodeHandle:
             _messages.SetPositionMessage(self._impl.name, position_cast)
         )
 
-    def remove(self) -> None:
-        """Remove the node from the scene."""
-        self._impl.api._queue(_messages.RemoveSceneNodeMessage(self._impl.name))
-
-
-@dataclasses.dataclass(frozen=True)
-class ClickEvent(Generic[TSceneNodeHandle]):
-    client_id: ClientId
-    target: TSceneNodeHandle
-
-
-@dataclasses.dataclass
-class _SupportsClick(SceneNodeHandle):
-    def on_click(
-        self: TSceneNodeHandle, func: Callable[[ClickEvent[TSceneNodeHandle]], None]
-    ) -> Callable[[ClickEvent[TSceneNodeHandle]], None]:
-        """Attach a callback for when a scene node is clicked.
-
-        TODO:
-        - Slow for point clouds.
-        - Not supported for 2D labels.
-        """
-        self._impl.api._queue(
-            _messages.SetSceneNodeClickableMessage(self._impl.name, True)
-        )
-        if self._impl.click_cb is None:
-            self._impl.click_cb = []
-        self._impl.click_cb.append(func)  # type: ignore
-        return func
-
-
-@dataclasses.dataclass
-class _SupportsVisibility(SceneNodeHandle):
-    @classmethod
-    def _make(
-        cls: Type[TSupportsVisibility],
-        api: MessageApi,
-        name: str,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray,
-        position: Tuple[float, float, float] | onp.ndarray,
-        visible: bool = True,
-    ) -> TSupportsVisibility:
-        out = cls(_SceneNodeHandleState(name, api))
-        api._handle_from_node_name[name] = out
-
-        out.wxyz = wxyz
-        out.position = position
-        out.visible = visible
-
-        return out
-
     @property
     def visible(self) -> bool:
         """Whether the scene node is visible or not. Synchronized to clients automatically when assigned."""
@@ -165,45 +135,83 @@ class _SupportsVisibility(SceneNodeHandle):
         )
         self._impl.visible = visible
 
+    def remove(self) -> None:
+        """Remove the node from the scene."""
+        self._impl.api._queue(_messages.RemoveSceneNodeMessage(self._impl.name))
+
+
+@dataclasses.dataclass(frozen=True)
+class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
+    """Event passed to pointer callbacks for scene nodes (currently only clicks)."""
+
+    client: ClientHandle
+    """Client that triggered this event."""
+    client_id: int
+    """ID of client that triggered this event."""
+    event: Literal["click"]
+    """Type of event that was triggered. Currently we only support clicks."""
+    target: TSceneNodeHandle
+    """Scene node that was clicked."""
+    ray_origin: Tuple[float, float, float]
+    """Origin of 3D ray corresponding to this click, in world coordinates."""
+    ray_direction: Tuple[float, float, float]
+    """Direction of 3D ray corresponding to this click, in world coordinates."""
+
 
 @dataclasses.dataclass
-class CameraFrustumHandle(_SupportsClick, _SupportsVisibility):
+class _ClickableSceneNodeHandle(SceneNodeHandle):
+    def on_click(
+        self: TSceneNodeHandle,
+        func: Callable[[SceneNodePointerEvent[TSceneNodeHandle]], None],
+    ) -> Callable[[SceneNodePointerEvent[TSceneNodeHandle]], None]:
+        """Attach a callback for when a scene node is clicked."""
+        self._impl.api._queue(
+            _messages.SetSceneNodeClickableMessage(self._impl.name, True)
+        )
+        if self._impl.click_cb is None:
+            self._impl.click_cb = []
+        self._impl.click_cb.append(func)  # type: ignore
+        return func
+
+
+@dataclasses.dataclass
+class CameraFrustumHandle(_ClickableSceneNodeHandle):
     """Handle for camera frustums."""
 
 
 @dataclasses.dataclass
-class PointCloudHandle(_SupportsVisibility):
+class PointCloudHandle(SceneNodeHandle):
     """Handle for point clouds. Does not support click events."""
 
 
 @dataclasses.dataclass
-class FrameHandle(_SupportsClick, _SupportsVisibility):
+class FrameHandle(_ClickableSceneNodeHandle):
     """Handle for coordinate frames."""
 
 
 @dataclasses.dataclass
-class MeshHandle(_SupportsClick, _SupportsVisibility):
+class MeshHandle(_ClickableSceneNodeHandle):
     """Handle for mesh objects."""
 
 
 @dataclasses.dataclass
-class GaussianSplatHandle(_SupportsClick, _SupportsVisibility):
+class GaussianSplatHandle(_ClickableSceneNodeHandle):
     """Handle for Gaussian splatting objects."""
 
 
 @dataclasses.dataclass
-class GlbHandle(_SupportsClick, _SupportsVisibility):
+class GlbHandle(_ClickableSceneNodeHandle):
     """Handle for GLB objects."""
 
 
 @dataclasses.dataclass
-class ImageHandle(_SupportsClick, _SupportsVisibility):
+class ImageHandle(_ClickableSceneNodeHandle):
     """Handle for 2D images, rendered in 3D."""
 
 
 @dataclasses.dataclass
 class LabelHandle(SceneNodeHandle):
-    """Handle for 2D label objects. Does not support click events or visibility toggling."""
+    """Handle for 2D label objects. Does not support click events."""
 
 
 @dataclasses.dataclass
@@ -214,7 +222,7 @@ class _TransformControlsState:
 
 
 @dataclasses.dataclass
-class TransformControlsHandle(_SupportsClick, _SupportsVisibility):
+class TransformControlsHandle(_ClickableSceneNodeHandle):
     """Handle for interacting with transform control gizmos."""
 
     _impl_aux: _TransformControlsState

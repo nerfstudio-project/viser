@@ -10,54 +10,24 @@ connected clients. When a scene node is added to a client (for example, via
 
 <!-- prettier-ignore-start -->
 
-.. autoapiclass:: viser.SceneNodeHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.SceneNodeHandle
 
-.. autoapiclass:: viser.CameraFrustumHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.CameraFrustumHandle
 
-.. autoapiclass:: viser.FrameHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.FrameHandle
 
-.. autoapiclass:: viser.Gui3dContainerHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.GlbHandle
 
-.. autoapiclass:: viser.ImageHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.Gui3dContainerHandle
 
-.. autoapiclass:: viser.LabelHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.ImageHandle
 
-.. autoapiclass:: viser.MeshHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.LabelHandle
 
-.. autoapiclass:: viser.PointCloudHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.MeshHandle
 
-.. autoapiclass:: viser.TransformControlsHandle
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.PointCloudHandle
 
-.. autoapiclass:: viser.ClickEvent
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.TransformControlsHandle
 
 <!-- prettier-ignore-end -->

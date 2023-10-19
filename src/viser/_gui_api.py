@@ -154,7 +154,7 @@ class GuiApi(abc.ABC):
             else:
                 assert False
 
-            cb(GuiEvent(client_id, client, handle))
+            cb(GuiEvent(client, client_id, handle))
         if handle_state.sync_cb is not None:
             handle_state.sync_cb(client_id, value)
 
