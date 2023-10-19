@@ -169,35 +169,6 @@ class CameraHandle:
         self._state.camera_cb.append(callback)
         return callback
 
-
-@dataclasses.dataclass
-class _ClientHandleState:
-    server: infra.Server
-    connection: infra.ClientConnection
-
-
-@dataclasses.dataclass
-class ClientHandle(MessageApi, GuiApi):
-    """Handle for interacting with a specific client. Can be used to send messages to
-    individual clients and read/write camera information."""
-
-    client_id: int
-    camera: CameraHandle
-    _state: _ClientHandleState
-
-    def __post_init__(self):
-        super().__init__(self._state.connection)
-
-    @override
-    def _get_api(self) -> MessageApi:
-        """Message API to use."""
-        return self
-
-    @override
-    def _queue_unsafe(self, message: _messages.Message) -> None:
-        """Define how the message API should send messages."""
-        self._state.connection.send(message)
-
     def get_render(
         self, height: int, width: int, transport_format: Literal["png", "jpeg"] = "jpeg"
     ) -> onp.ndarray:
@@ -217,11 +188,13 @@ class ClientHandle(MessageApi, GuiApi):
         render_ready_event = threading.Event()
         out: Optional[onp.ndarray] = None
 
+        connection = self.client._state.connection
+
         def got_render_cb(
             client_id: int, message: _messages.GetRenderResponseMessage
         ) -> None:
             del client_id
-            self._state.connection.unregister_handler(
+            connection.unregister_handler(
                 _messages.GetRenderResponseMessage, got_render_cb
             )
             nonlocal out
@@ -231,10 +204,8 @@ class ClientHandle(MessageApi, GuiApi):
             )
             render_ready_event.set()
 
-        self._state.connection.register_handler(
-            _messages.GetRenderResponseMessage, got_render_cb
-        )
-        self._queue(
+        connection.register_handler(_messages.GetRenderResponseMessage, got_render_cb)
+        self.client._queue(
             _messages.GetRenderRequestMessage(
                 "image/jpeg" if transport_format == "jpeg" else "image/png",
                 height=height,
@@ -248,6 +219,38 @@ class ClientHandle(MessageApi, GuiApi):
         render_ready_event.wait()
         assert out is not None
         return out
+
+
+@dataclasses.dataclass
+class _ClientHandleState:
+    viser_server: ViserServer
+    server: infra.Server
+    connection: infra.ClientConnection
+
+
+@dataclasses.dataclass
+class ClientHandle(MessageApi, GuiApi):
+    """Handle for interacting with a specific client. Can be used to send messages to
+    individual clients and read/write camera information."""
+
+    client_id: int
+    """Unique ID for this client."""
+    camera: CameraHandle
+    """Handle for reading from and manipulating the client's viewport camera."""
+    _state: _ClientHandleState
+
+    def __post_init__(self):
+        super().__init__(self._state.connection)
+
+    @override
+    def _get_api(self) -> MessageApi:
+        """Message API to use."""
+        return self
+
+    @override
+    def _queue_unsafe(self, message: _messages.Message) -> None:
+        """Define how the message API should send messages."""
+        self._state.connection.send(message)
 
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
@@ -342,7 +345,7 @@ class ViserServer(MessageApi, GuiApi):
             client = ClientHandle(
                 conn.client_id,
                 camera,
-                _ClientHandleState(server, conn),
+                _ClientHandleState(self, server, conn),
             )
             camera._state.client = client
             first = True

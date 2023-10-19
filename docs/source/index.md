@@ -66,6 +66,7 @@ URL (default: `http://localhost:8080`).
    ./client_handles.md
    ./gui_handles.md
    ./scene_handles.md
+   ./events.md
    ./icons.md
 
 

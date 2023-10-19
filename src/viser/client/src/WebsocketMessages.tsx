@@ -14,6 +14,27 @@ export interface ViewerCameraMessage {
   look_at: [number, number, number];
   up_direction: [number, number, number];
 }
+/** Message for a raycast-like pointer in the scene.
+ * origin is the viewing camera position, in world coordinates.
+ * direction is the vector if a ray is projected from the camera through the clicked pixel,
+ *
+ *
+ * (automatically generated)
+ */
+export interface ScenePointerMessage {
+  type: "ScenePointerMessage";
+  event_type: "click";
+  ray_origin: [number, number, number];
+  ray_direction: [number, number, number];
+}
+/** Message to enable/disable scene click events.
+ *
+ * (automatically generated)
+ */
+export interface SceneClickEnableMessage {
+  type: "SceneClickEnableMessage";
+  enable: boolean;
+}
 /** Variant of CameraMessage used for visualizing camera frustums.
  *
  * OpenCV convention, +Z forward.
@@ -53,6 +74,25 @@ export interface FrameMessage {
   show_axes: boolean;
   axes_length: number;
   axes_radius: number;
+}
+/** Grid message. Helpful for visualizing things like ground planes.
+ *
+ * (automatically generated)
+ */
+export interface GridMessage {
+  type: "GridMessage";
+  name: string;
+  width: number;
+  height: number;
+  width_segments: number;
+  height_segments: number;
+  plane: "xz" | "xy" | "yx" | "yz" | "zx" | "zy";
+  cell_color: number;
+  cell_thickness: number;
+  cell_size: number;
+  section_color: number;
+  section_thickness: number;
+  section_size: number;
 }
 /** Add a 2D label to the scene.
  *
@@ -244,9 +284,11 @@ export interface SetSceneNodeClickableMessage {
  *
  * (automatically generated)
  */
-export interface SceneNodeClickedMessage {
-  type: "SceneNodeClickedMessage";
+export interface SceneNodeClickMessage {
+  type: "SceneNodeClickMessage";
   name: string;
+  ray_origin: [number, number, number];
+  ray_direction: [number, number, number];
 }
 /** Reset scene.
  *
@@ -303,7 +345,7 @@ export interface _GuiAddInputBase {
   hint: string | null;
   initial_value: any;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_base64: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -641,9 +683,12 @@ export interface GetRenderResponseMessage {
 
 export type Message =
   | ViewerCameraMessage
+  | ScenePointerMessage
+  | SceneClickEnableMessage
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
+  | GridMessage
   | LabelMessage
   | Gui3DMessage
   | PointCloudMessage
@@ -661,7 +706,7 @@ export type Message =
   | RemoveSceneNodeMessage
   | SetSceneNodeVisibilityMessage
   | SetSceneNodeClickableMessage
-  | SceneNodeClickedMessage
+  | SceneNodeClickMessage
   | ResetSceneMessage
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage

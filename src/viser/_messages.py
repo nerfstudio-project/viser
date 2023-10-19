@@ -51,6 +51,26 @@ class ViewerCameraMessage(Message):
 
 
 @dataclasses.dataclass
+class ScenePointerMessage(Message):
+    """Message for a raycast-like pointer in the scene.
+    origin is the viewing camera position, in world coordinates.
+    direction is the vector if a ray is projected from the camera through the clicked pixel,
+    """
+
+    # Later we can add `double_click`, `move`, `down`, `up`, etc.
+    event_type: Literal["click"]
+    ray_origin: Tuple[float, float, float]
+    ray_direction: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
+class SceneClickEnableMessage(Message):
+    """Message to enable/disable scene click events."""
+
+    enable: bool
+
+
+@dataclasses.dataclass
 class CameraFrustumMessage(Message):
     """Variant of CameraMessage used for visualizing camera frustums.
 
@@ -85,6 +105,28 @@ class FrameMessage(Message):
     show_axes: bool = True
     axes_length: float = 0.5
     axes_radius: float = 0.025
+
+
+@dataclasses.dataclass
+class GridMessage(Message):
+    """Grid message. Helpful for visualizing things like ground planes."""
+
+    name: str
+
+    width: float
+    height: float
+    width_segments: int
+    height_segments: int
+
+    plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"]
+
+    cell_color: int
+    cell_thickness: float
+    cell_size: float
+
+    section_color: int
+    section_thickness: float
+    section_size: float
 
 
 @dataclasses.dataclass
@@ -277,10 +319,12 @@ class SetSceneNodeClickableMessage(Message):
 
 
 @dataclasses.dataclass
-class SceneNodeClickedMessage(Message):
+class SceneNodeClickMessage(Message):
     """Message for clicked objects."""
 
     name: str
+    ray_origin: Tuple[float, float, float]
+    ray_direction: Tuple[float, float, float]
 
 
 @dataclasses.dataclass

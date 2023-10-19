@@ -78,7 +78,9 @@ export default function ControlPanel(props: {
       <BottomPanel>
         <BottomPanel.Handle>
           <ConnectionStatus />
-          {generatedServerToggleButton}
+          <BottomPanel.HideWhenCollapsed>
+            {generatedServerToggleButton}
+          </BottomPanel.HideWhenCollapsed>
         </BottomPanel.Handle>
         <BottomPanel.Contents>{panelContents}</BottomPanel.Contents>
       </BottomPanel>

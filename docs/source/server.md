@@ -6,9 +6,6 @@ for communicating with clients.
 
 <!-- prettier-ignore-start -->
 
-.. autoapiclass:: viser.ViserServer
-   :members:
-   :undoc-members:
-   :inherited-members:
+.. autoclass:: viser.ViserServer
 
 <!-- prettier-ignore-end -->
