@@ -177,6 +177,7 @@ class MessageApi(abc.ABC):
         titlebar_content: Optional[theme.TitlebarConfig] = None,
         control_layout: Literal["floating", "collapsible", "fixed"] = "floating",
         dark_mode: bool = False,
+        show_logo: bool = True,
         brand_color: Optional[Tuple[int, int, int]] = None,
     ) -> None:
         """Configure the viser front-end's visual appearance."""
@@ -223,6 +224,7 @@ class MessageApi(abc.ABC):
                 titlebar_content=titlebar_content,
                 control_layout=control_layout,
                 dark_mode=dark_mode,
+                show_logo=show_logo,
                 colors=colors_cast,
             ),
         )

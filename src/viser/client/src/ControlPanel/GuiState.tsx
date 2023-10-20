@@ -62,6 +62,7 @@ const cleanGuiState: GuiState = {
     titlebar_content: null,
     control_layout: "floating",
     dark_mode: false,
+    show_logo: true,
     colors: null,
   },
   label: "",
