@@ -1,14 +1,12 @@
 import { ViewerContext } from "../App";
 import {
-  Anchor,
   Button,
-  Box,
   Divider,
   Stack,
   Switch,
   TextInput,
 } from "@mantine/core";
-import { IconBrandGithub, IconHomeMove, IconPhoto } from "@tabler/icons-react";
+import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
 import { Stats } from "@react-three/drei";
 import React from "react";
 import SceneTreeTable from "./SceneTreeTable";
@@ -121,16 +119,6 @@ export default function ServerControls() {
         <Divider mt="xs" />
         Scene tree
         <MemoizedTable compact={true} />
-        <Anchor
-          mt="xs"
-          href="https://github.com/nerfstudio-project/viser"
-          target="_blank"
-          sx={{ display: "flex", alignItems: "center", gap: "0.3em" }}
-          color="dimmed"
-        >
-          <IconBrandGithub height="1.5em" style={{ display: "block" }} />{" "}
-          <Box>nerfstudio-project/viser</Box>
-        </Anchor>
       </Stack>
     </>
   );

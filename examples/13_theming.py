@@ -31,8 +31,8 @@ buttons = (
     ),
 )
 image = TitlebarImage(
-    image_url_light="https://docs.nerf.studio/en/latest/_static/imgs/logo.png",
-    image_url_dark="https://docs.nerf.studio/en/latest/_static/imgs/logo-dark.png",
+    image_url_light="https://docs.nerf.studio/_static/imgs/logo.png",
+    image_url_dark="https://docs.nerf.studio/_static/imgs/logo-dark.png",
     image_alt="NerfStudio Logo",
     href="https://docs.nerf.studio/",
 )
@@ -48,6 +48,7 @@ control_layout = server.add_gui_dropdown(
 )
 titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
 dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
+show_logo = server.add_gui_checkbox("Show logo", initial_value=True)
 brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
 synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
 
@@ -57,9 +58,10 @@ gui_theme_code = server.add_gui_markdown("no theme applied yet")
 def synchronize_theme() -> None:
     global gui_theme_code
     server.configure_theme(
-        dark_mode=dark_mode.value,
         titlebar_content=titlebar_theme if titlebar.value else None,
         control_layout=control_layout.value,
+        dark_mode=dark_mode.value,
+        show_logo=show_logo.value,
         brand_color=brand_color.value,
     )
     server.world_axes.visible = True
@@ -70,9 +72,10 @@ def synchronize_theme() -> None:
         ### Current applied theme
         ```
         server.configure_theme(
-            dark_mode={dark_mode.value},
             titlebar_content={"titlebar_content" if titlebar.value else None},
             control_layout="{control_layout.value}",
+            dark_mode={dark_mode.value},
+            show_logo={show_logo.value},
             brand_color={brand_color.value},
         )
         ```

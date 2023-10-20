@@ -521,8 +521,9 @@ class ThemeConfigurationMessage(Message):
 
     titlebar_content: Optional[theme.TitlebarConfig]
     control_layout: Literal["floating", "collapsible", "fixed"]
-    colors: Optional[Tuple[str, str, str, str, str, str, str, str, str, str]]
+    show_logo: bool
     dark_mode: bool
+    colors: Optional[Tuple[str, str, str, str, str, str, str, str, str, str]]
 
 
 @dataclasses.dataclass

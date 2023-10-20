@@ -15,7 +15,7 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
-import { Box, MantineProvider, MediaQuery } from "@mantine/core";
+import { Box, Image, MantineProvider, MediaQuery } from "@mantine/core";
 import React from "react";
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 
@@ -149,11 +149,30 @@ function ViewerContents() {
                 theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
               flexGrow: 1,
               width: "10em",
+              position: "relative",
             })}
           >
             <ViewerCanvas>
               <FrameSynchronizedMessageHandler />
             </ViewerCanvas>
+            {viewer.useGui((state) => state.theme.show_logo) ? (
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: "1em",
+                  left: "1em",
+                  filter: "saturate(0.625)",
+                  "&:hover": {
+                    filter: "saturate(1.0)",
+                  },
+                }}
+                component="a"
+                target="_blank"
+                href="https://viser.studio"
+              >
+                <Image src="/logo.svg" width="2.5em" height="auto" />
+              </Box>
+            ) : null}
           </Box>
         </MediaQuery>
         <ControlPanel control_layout={control_layout} />
