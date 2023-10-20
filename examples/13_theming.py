@@ -72,9 +72,10 @@ def synchronize_theme() -> None:
         ### Current applied theme
         ```
         server.configure_theme(
-            dark_mode={dark_mode.value},
             titlebar_content={"titlebar_content" if titlebar.value else None},
             control_layout="{control_layout.value}",
+            dark_mode={dark_mode.value},
+            show_logo={show_logo.value},
             brand_color={brand_color.value},
         )
         ```
