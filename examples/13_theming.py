@@ -12,6 +12,7 @@ import viser
 from viser.theme import TitlebarButton, TitlebarConfig, TitlebarImage
 
 server = viser.ViserServer()
+server.world_axes.visible = True
 
 buttons = (
     TitlebarButton(
@@ -42,21 +43,20 @@ server.add_gui_markdown(
     "Viser includes support for light theming via the `.configure_theme()` method."
 )
 
+gui_theme_code = server.add_gui_markdown("no theme applied yet")
+
 # GUI elements for controllable values.
-control_layout = server.add_gui_dropdown(
-    "Control layout", ("floating", "fixed", "collapsible")
-)
 titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
 dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
 show_logo = server.add_gui_checkbox("Show logo", initial_value=True)
 brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
+control_layout = server.add_gui_dropdown(
+    "Control layout", ("floating", "fixed", "collapsible")
+)
 synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
-
-gui_theme_code = server.add_gui_markdown("no theme applied yet")
 
 
 def synchronize_theme() -> None:
-    global gui_theme_code
     server.configure_theme(
         titlebar_content=titlebar_theme if titlebar.value else None,
         control_layout=control_layout.value,
@@ -64,11 +64,7 @@ def synchronize_theme() -> None:
         show_logo=show_logo.value,
         brand_color=brand_color.value,
     )
-    server.world_axes.visible = True
-
-    gui_theme_code.remove()
-    gui_theme_code = server.add_gui_markdown(
-        f"""
+    gui_theme_code.content = f"""
         ### Current applied theme
         ```
         server.configure_theme(
@@ -79,8 +75,7 @@ def synchronize_theme() -> None:
             brand_color={brand_color.value},
         )
         ```
-        """
-    )
+    """
 
 
 synchronize.on_click(lambda _: synchronize_theme())
