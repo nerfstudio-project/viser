@@ -191,7 +191,7 @@ export function Titlebar() {
             position: "relative",
             top: 0,
             left: "-0.625rem",
-            zIndex: 10000000,
+            zIndex: 1000,
             height: burgerOpen ? "calc(100vh - 2.375em)" : "0",
             width: "100vw",
             transition: "all 0.5s",

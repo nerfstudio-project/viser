@@ -66,7 +66,7 @@ export default function GeneratedGuiContainer({
                 <GeneratedInput conf={conf} key={conf.id} viewer={viewer} />
                 {conf.type === "GuiAddFolderMessage" &&
                 index < guiIdSet.size - 1 ? (
-                // Add some whitespace after folders.
+                  // Add some whitespace after folders.
                   <Box pt="0.03125em" />
                 ) : null}
               </>
@@ -324,8 +324,10 @@ function GeneratedInput({
           onChange={updateValue}
           searchable
           maxDropdownHeight={400}
-          /* withinPortal prevents clipping from overflow: hidden on a parent. */
-          withinPortal
+          // zIndex of dropdown should be >modal zIndex.
+          // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
+          zIndex={1000}
+          withinPortal={true}
         />
       );
       break;
@@ -337,6 +339,10 @@ function GeneratedInput({
           value={rgbToHex(value)}
           onChange={(v) => updateValue(hexToRgb(v))}
           format="hex"
+          // zIndex of dropdown should be >modal zIndex.
+          // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
+          dropdownZIndex={1000}
+          withinPortal={true}
         />
       );
       break;
@@ -348,6 +354,10 @@ function GeneratedInput({
           value={rgbaToHex(value)}
           onChange={(v) => updateValue(hexToRgba(v))}
           format="hexa"
+          // zIndex of dropdown should be >modal zIndex.
+          // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
+          dropdownZIndex={1000}
+          withinPortal={true}
         />
       );
       break;
