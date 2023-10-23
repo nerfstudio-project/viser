@@ -12,6 +12,7 @@ import viser
 from viser.theme import TitlebarButton, TitlebarConfig, TitlebarImage
 
 server = viser.ViserServer()
+server.world_axes.visible = True
 
 buttons = (
     TitlebarButton(
@@ -56,7 +57,6 @@ synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
 
 
 def synchronize_theme() -> None:
-    global gui_theme_code
     server.configure_theme(
         titlebar_content=titlebar_theme if titlebar.value else None,
         control_layout=control_layout.value,
@@ -64,8 +64,6 @@ def synchronize_theme() -> None:
         show_logo=show_logo.value,
         brand_color=brand_color.value,
     )
-    server.world_axes.visible = True
-
     gui_theme_code.content = f"""
         ### Current applied theme
         ```
@@ -77,7 +75,7 @@ def synchronize_theme() -> None:
             brand_color={brand_color.value},
         )
         ```
-        """
+    """
 
 
 synchronize.on_click(lambda _: synchronize_theme())
