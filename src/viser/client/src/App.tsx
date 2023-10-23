@@ -142,7 +142,14 @@ function ViewerContents() {
           flexDirection: "row",
         }}
       >
-        <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
+        <MediaQuery
+          smallerThan={"xs"}
+          styles={{
+            right: 0,
+            bottom:
+              "4.5em" /* 4em to account for BottomPanel minimum height. */,
+          }}
+        >
           <Box
             sx={(theme) => ({
               backgroundColor:
