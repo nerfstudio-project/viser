@@ -689,6 +689,14 @@ export interface FileUpload {
   content: Uint8Array;
   mime_type: string;
 }
+/** Request a file from client to server.
+ *
+ * (automatically generated)
+ */
+export interface FileUploadRequest {
+  type: "FileUploadRequest";
+  mime_type: string;
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -745,4 +753,5 @@ export type Message =
   | GetRenderRequestMessage
   | GetRenderResponseMessage
   | FileDownload
-  | FileUpload;
+  | FileUpload
+  | FileUploadRequest;

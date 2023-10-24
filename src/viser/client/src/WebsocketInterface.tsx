@@ -743,6 +743,51 @@ function useMessageHandler() {
         link.remove();
         return;
       }
+      case "FileUploadRequest": {
+        const input = document.createElement("input");
+        input.type = "file";
+        // input.onclick = () => {
+        //   document.body.onfocus = () => {
+        //     if (!input.value.length) {
+        //       sendWebsocketMessage(viewer.websocketRef, {
+        //         type: "FileUpload",
+        //         filename: "",
+        //         content: new Uint8Array(),
+        //         mime_type: "",
+        //       });
+        //     }
+        //     document.body.onfocus = null;
+        //     return;
+        //   };
+        // }
+        input.onchange = () => {
+          if (input.files === null || input.files.length === 0) {
+            sendWebsocketMessage(viewer.websocketRef, {
+              type: "FileUpload",
+              filename: "",
+              content: new Uint8Array(),
+              mime_type: "",
+            });
+            return;
+          }
+          const file = input.files[0];
+          const reader = new FileReader();
+          reader.onload = () => {
+            const arrayBuffer = reader.result as ArrayBuffer;
+            const payload = new Uint8Array(arrayBuffer);
+            sendWebsocketMessage(viewer.websocketRef, {
+              type: "FileUpload",
+              filename: file.name,
+              content: payload,
+              mime_type: file.type,
+            });
+          };
+          reader.readAsArrayBuffer(file);
+        };
+        input.click();
+        input.remove();
+        return;
+      }
       default: {
         console.log("Received message did not match any known types:", message);
         return;
