@@ -345,7 +345,7 @@ export interface _GuiAddInputBase {
   hint: string | null;
   initial_value: any;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_base64: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -679,6 +679,16 @@ export interface FileDownload {
   content: Uint8Array;
   mime_type: string;
 }
+/** Upload a file from client to server.
+ *
+ * (automatically generated)
+ */
+export interface FileUpload {
+  type: "FileUpload";
+  filename: string;
+  content: Uint8Array;
+  mime_type: string;
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -734,4 +744,5 @@ export type Message =
   | CubicBezierSplineMessage
   | GetRenderRequestMessage
   | GetRenderResponseMessage
-  | FileDownload;
+  | FileDownload
+  | FileUpload;
