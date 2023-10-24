@@ -740,6 +740,7 @@ function useMessageHandler() {
         link.href = window.URL.createObjectURL(blob);
         link.download = message.filename;
         link.click();
+        link.remove();
         return;
       }
       default: {
