@@ -60,7 +60,7 @@ pip install -e .
 
 # Run an example.
 pip install -e .[examples]
-python ./examples/4_gui.py
+python ./examples/02_gui.py
 ```
 
 After an example script is running, you can connect by navigating to the printed
