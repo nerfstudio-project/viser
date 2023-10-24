@@ -834,3 +834,22 @@ class MessageApi(abc.ABC):
                 mime_type=mime_type,
             )
         )
+
+    def request_file_upload(self, mime_type: str) -> None:
+        """Request a file upload from the client."""
+        self._queue(_messages.FileUploadRequest(mime_type=mime_type))
+        file_content = {"filled": False}
+
+        def handle_file_upload(client_id: ClientId, message: _messages.FileUpload):
+            file_content["content"] = message.content
+            file_content["filename"] = message.filename
+            file_content["mime_type"] = message.mime_type
+            file_content["filled"] = True
+
+        self._message_handler.register_handler(_messages.FileUpload, handle_file_upload)
+        while not file_content["filled"]:
+            time.sleep(0.1)
+        self._message_handler.unregister_handler(
+            _messages.FileUpload, handle_file_upload
+        )
+        return file_content

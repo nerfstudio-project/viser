@@ -583,3 +583,10 @@ class FileUpload(Message):
     filename: str
     content: bytes
     mime_type: str
+
+
+@dataclasses.dataclass
+class FileUploadRequest(Message):
+    """Request a file from client to server."""
+
+    mime_type: str
