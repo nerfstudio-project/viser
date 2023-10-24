@@ -141,7 +141,7 @@ function useMessageHandler() {
                 rotation={
                   // There's redundancy here when we set the side to
                   // THREE.DoubleSide, where xy and yx should be the same.
-                  // 
+                  //
                   // But it makes sense to keep this parameterization because
                   // specifying planes by xy seems more natural than the normal
                   // direction (z, +z, or -z), and it opens the possibility of
@@ -732,6 +732,14 @@ function useMessageHandler() {
             );
           }),
         );
+        return;
+      }
+      case "FileDownload": {
+        const blob = new Blob([message.content], { type: message.mime_type });
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = message.filename;
+        link.click();
         return;
       }
       default: {
