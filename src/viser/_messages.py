@@ -565,3 +565,12 @@ class GetRenderResponseMessage(Message):
     """Message from client->server carrying a render."""
 
     payload: bytes
+
+
+@dataclasses.dataclass
+class FileDownload(Message):
+    """Send a file for clients to download."""
+
+    filename: str
+    content: bytes
+    mime_type: str
