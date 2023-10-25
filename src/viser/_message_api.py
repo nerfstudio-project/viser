@@ -838,7 +838,12 @@ class MessageApi(abc.ABC):
     def request_file_upload(self, mime_type: str) -> dict:
         """Request a file upload from the client."""
         self._queue(_messages.FileUploadRequest(mime_type=mime_type))
-        file_content = {"filled": False}
+        file_content = {
+            "filled": False,
+            "content": None,
+            "filename": None,
+            "mime_type": None,
+        }
 
         def handle_file_upload(client_id: ClientId, message: _messages.FileUpload):
             file_content["content"] = message.content
