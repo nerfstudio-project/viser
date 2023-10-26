@@ -747,6 +747,7 @@ function useMessageHandler() {
         const input = document.createElement("input");
         input.type = "file";
         input.onchange = () => {
+          // if file upload is null send blanks to down semaphore in server
           if (input.files === null || input.files.length === 0) {
             sendWebsocketMessage(viewer.websocketRef, {
               type: "FileUpload",
