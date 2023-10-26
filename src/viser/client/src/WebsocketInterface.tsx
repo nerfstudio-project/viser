@@ -746,20 +746,6 @@ function useMessageHandler() {
       case "FileUploadRequest": {
         const input = document.createElement("input");
         input.type = "file";
-        // input.onclick = () => {
-        //   document.body.onfocus = () => {
-        //     if (!input.value.length) {
-        //       sendWebsocketMessage(viewer.websocketRef, {
-        //         type: "FileUpload",
-        //         filename: "",
-        //         content: new Uint8Array(),
-        //         mime_type: "",
-        //       });
-        //     }
-        //     document.body.onfocus = null;
-        //     return;
-        //   };
-        // }
         input.onchange = () => {
           if (input.files === null || input.files.length === 0) {
             sendWebsocketMessage(viewer.websocketRef, {
