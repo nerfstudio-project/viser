@@ -75,7 +75,7 @@ export default function SidebarPanel({
       >
         <Box
           /* Prevent DOM reflow, as well as internals from getting too wide.
-           * Hardcoded to match the width of the wrapper element above. */
+           * Needs to match the width of the wrapper element above. */
           w={width}
         >
           {children}

@@ -292,7 +292,7 @@ FloatingPanel.Contents = function FloatingPanelContents({
     <Collapse in={context.expanded}>
       <ScrollArea.Autosize mah={context.maxHeight}>
         <Box
-          /* Prevent internals from getting too wide. Hardcoded to match the
+          /* Prevent internals from getting too wide. Needs to match the
            * width of the wrapper element above. */
           w={context.width}
         >
