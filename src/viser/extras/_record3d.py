@@ -109,7 +109,9 @@ class Record3dFrame:
 
         img_wh = rgb.shape[:2][::-1]
 
-        grid = np.stack(np.meshgrid(range(img_wh[0]), range(img_wh[1])), 2) + 0.5
+        grid = (
+            np.stack(np.meshgrid(np.arange(img_wh[0]), np.arange(img_wh[1])), 2) + 0.5
+        )
         grid = grid * downsample_factor
 
         homo_grid = np.pad(grid[mask], ((0, 0), (0, 1)), constant_values=1)
