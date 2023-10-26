@@ -14,9 +14,11 @@ export const SidebarPanelContext = React.createContext<null | {
 export default function SidebarPanel({
   children,
   collapsible,
+  width,
 }: {
   children: string | React.ReactNode;
   collapsible: boolean;
+  width: string;
 }) {
   const [collapsed, { toggle: toggleCollapsed }] = useDisclosure(false);
 
@@ -65,7 +67,7 @@ export default function SidebarPanel({
         shadow="xl"
         component={ScrollArea}
         sx={{
-          width: collapsed ? 0 : "20em",
+          width: collapsed ? 0 : width,
           boxSizing: "content-box",
           transition: "width 0.5s 0s",
           zIndex: 10,
@@ -74,7 +76,7 @@ export default function SidebarPanel({
         <Box
           /* Prevent DOM reflow, as well as internals from getting too wide.
            * Hardcoded to match the width of the wrapper element above. */
-          w="20em"
+          w={width}
         >
           {children}
         </Box>
