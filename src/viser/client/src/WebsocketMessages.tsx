@@ -669,6 +669,16 @@ export interface GetRenderResponseMessage {
   type: "GetRenderResponseMessage";
   payload: Uint8Array;
 }
+/** Send a file for clients to download.
+ *
+ * (automatically generated)
+ */
+export interface FileDownload {
+  type: "FileDownload";
+  filename: string;
+  content: Uint8Array;
+  mime_type: string;
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -723,4 +733,5 @@ export type Message =
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
   | GetRenderRequestMessage
-  | GetRenderResponseMessage;
+  | GetRenderResponseMessage
+  | FileDownload;
