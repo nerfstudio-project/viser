@@ -838,6 +838,7 @@ class MessageApi(abc.ABC):
     def request_file_upload(self, mime_type: str) -> dict:
         """Request a file upload from the client."""
         self._queue(_messages.FileUploadRequest(mime_type=mime_type))
+        file_upload_sema = threading.Semaphore(value=0)
         file_content = {
             "filled": False,
             "content": None,
@@ -850,10 +851,12 @@ class MessageApi(abc.ABC):
             file_content["filename"] = message.filename
             file_content["mime_type"] = message.mime_type
             file_content["filled"] = True
+            file_upload_sema.release()
 
         self._message_handler.register_handler(_messages.FileUpload, handle_file_upload)
         while not file_content["filled"]:
             time.sleep(0.1)
+            file_upload_sema.acquire()
         self._message_handler.unregister_handler(
             _messages.FileUpload, handle_file_upload
         )
