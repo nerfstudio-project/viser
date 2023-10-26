@@ -3,6 +3,7 @@
 Visualize COLMAP sparse reconstruction outputs. To get demo data, see `./assets/download_colmap_garden.sh`.
 """
 
+import random
 import time
 from pathlib import Path
 
@@ -89,7 +90,7 @@ def main(
 
         # Interpret the images and cameras.
         img_ids = [im.id for im in images.values()]
-        onp.random.shuffle(img_ids)
+        random.shuffle(img_ids)
         img_ids = sorted(img_ids[: gui_frames.value])
 
         def attach_callback(
