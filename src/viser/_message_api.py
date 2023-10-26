@@ -11,6 +11,7 @@ import abc
 import base64
 import colorsys
 import io
+import mimetypes
 import queue
 import threading
 import time
@@ -819,3 +820,17 @@ class MessageApi(abc.ABC):
         )
         node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible=visible)
         return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)
+
+    def send_file_download(self, filename: str, content: bytes) -> None:
+        """Send a file for a client or clients to download."""
+        mime_type = mimetypes.guess_type(filename, strict=False)[0]
+        assert (
+            mime_type is not None
+        ), f"Could not guess MIME type from filename {filename}!"
+        self._queue(
+            _messages.FileDownload(
+                filename,
+                content=content,
+                mime_type=mime_type,
+            )
+        )
