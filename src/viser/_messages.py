@@ -575,7 +575,6 @@ class FileDownload(Message):
     content: bytes
     mime_type: str
 
-
 @dataclasses.dataclass
 class FileUpload(Message):
     """Upload a file from client to server."""
