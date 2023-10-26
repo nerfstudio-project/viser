@@ -840,10 +840,10 @@ class MessageApi(abc.ABC):
         self._queue(_messages.FileUploadRequest(mime_type=mime_type))
         file_upload_sema = threading.Semaphore(value=0)
         file_content = {
+            "content": "",
+            "filename": "",
+            "mime_type": "",
             "filled": False,
-            "content": None,
-            "filename": None,
-            "mime_type": None,
         }
 
         def handle_file_upload(client_id: ClientId, message: _messages.FileUpload):
