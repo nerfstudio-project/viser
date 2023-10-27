@@ -8,6 +8,7 @@ import { useDisclosure } from "@mantine/hooks";
 const FloatingPanelContext = React.createContext<null | {
   wrapperRef: React.RefObject<HTMLDivElement>;
   expanded: boolean;
+  width: string;
   maxHeight: number;
   toggleExpanded: () => void;
   dragHandler: (
@@ -27,8 +28,10 @@ const FloatingPanelContext = React.createContext<null | {
 /** A floating panel for displaying controls. */
 export default function FloatingPanel({
   children,
+  width,
 }: {
   children: string | React.ReactNode;
+  width: string;
 }) {
   const panelWrapperRef = React.useRef<HTMLDivElement>(null);
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(true);
@@ -202,6 +205,7 @@ export default function FloatingPanel({
       value={{
         wrapperRef: panelWrapperRef,
         expanded: expanded,
+        width: width,
         maxHeight: maxHeight,
         toggleExpanded: toggleExpanded,
         dragHandler: dragHandler,
@@ -213,7 +217,7 @@ export default function FloatingPanel({
         shadow="lg"
         sx={{
           boxSizing: "border-box",
-          width: "20em",
+          width: width,
           zIndex: 10,
           position: "absolute",
           top: "1em",
@@ -286,11 +290,11 @@ FloatingPanel.Contents = function FloatingPanelContents({
   const context = React.useContext(FloatingPanelContext)!;
   return (
     <Collapse in={context.expanded}>
-      <ScrollArea.Autosize mah={context!.maxHeight}>
+      <ScrollArea.Autosize mah={context.maxHeight}>
         <Box
-          /* Prevent internals from getting too wide. Hardcoded to match the
+          /* Prevent internals from getting too wide. Needs to match the
            * width of the wrapper element above. */
-          w="20em"
+          w={context.width}
         >
           {children}
         </Box>

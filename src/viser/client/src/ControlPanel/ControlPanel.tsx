@@ -38,6 +38,19 @@ export default function ControlPanel(props: {
   );
   const [showSettings, { toggle }] = useDisclosure(false);
 
+  const controlWidthString = viewer.useGui(
+    (state) => state.theme.control_width,
+  );
+  const controlWidth = (
+    controlWidthString == "small"
+      ? "16em"
+      : controlWidthString == "medium"
+      ? "20em"
+      : controlWidthString == "large"
+      ? "24em"
+      : null
+  )!;
+
   const generatedServerToggleButton = (
     <Box sx={{ display: showGenerated ? undefined : "none" }}>
       <ActionIcon
@@ -88,7 +101,7 @@ export default function ControlPanel(props: {
   } else if (props.control_layout === "floating") {
     /* Floating layout. */
     return (
-      <FloatingPanel>
+      <FloatingPanel width={controlWidth}>
         <FloatingPanel.Handle>
           <ConnectionStatus />
           <FloatingPanel.HideWhenCollapsed>
@@ -101,7 +114,10 @@ export default function ControlPanel(props: {
   } else {
     /* Sidebar view. */
     return (
-      <SidebarPanel collapsible={props.control_layout === "collapsible"}>
+      <SidebarPanel
+        width={controlWidth}
+        collapsible={props.control_layout === "collapsible"}
+      >
         <SidebarPanel.Handle>
           <ConnectionStatus />
           {generatedServerToggleButton}
