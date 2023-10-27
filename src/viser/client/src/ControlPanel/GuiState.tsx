@@ -61,6 +61,7 @@ const cleanGuiState: GuiState = {
     type: "ThemeConfigurationMessage",
     titlebar_content: null,
     control_layout: "floating",
+    control_width: "medium",
     dark_mode: false,
     show_logo: true,
     colors: null,

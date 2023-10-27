@@ -177,6 +177,7 @@ class MessageApi(abc.ABC):
         *,
         titlebar_content: Optional[theme.TitlebarConfig] = None,
         control_layout: Literal["floating", "collapsible", "fixed"] = "floating",
+        control_width: Literal["small", "medium", "large"] = "medium",
         dark_mode: bool = False,
         show_logo: bool = True,
         brand_color: Optional[Tuple[int, int, int]] = None,
@@ -224,6 +225,7 @@ class MessageApi(abc.ABC):
             _messages.ThemeConfigurationMessage(
                 titlebar_content=titlebar_content,
                 control_layout=control_layout,
+                control_width=control_width,
                 dark_mode=dark_mode,
                 show_logo=show_logo,
                 colors=colors_cast,

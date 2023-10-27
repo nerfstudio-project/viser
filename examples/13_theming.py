@@ -53,6 +53,9 @@ brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
 control_layout = server.add_gui_dropdown(
     "Control layout", ("floating", "fixed", "collapsible")
 )
+control_width = server.add_gui_dropdown(
+    "Control width", ("small", "medium", "large"), initial_value="medium"
+)
 synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
 
 
@@ -60,6 +63,7 @@ def synchronize_theme() -> None:
     server.configure_theme(
         titlebar_content=titlebar_theme if titlebar.value else None,
         control_layout=control_layout.value,
+        control_width=control_width.value,
         dark_mode=dark_mode.value,
         show_logo=show_logo.value,
         brand_color=brand_color.value,
@@ -70,6 +74,7 @@ def synchronize_theme() -> None:
         server.configure_theme(
             titlebar_content={"titlebar_content" if titlebar.value else None},
             control_layout="{control_layout.value}",
+            control_width="{control_width.value}",
             dark_mode={dark_mode.value},
             show_logo={show_logo.value},
             brand_color={brand_color.value},
