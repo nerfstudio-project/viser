@@ -157,6 +157,8 @@ class Server(MessageHandler):
         self._thread_executor = ThreadPoolExecutor(max_workers=32)
         self._shutdown_event = threading.Event()
 
+        self._flush_event_from_client_id: Dict[int, asyncio.Event] = {}
+
     def start(self) -> None:
         """Start the server."""
 
@@ -222,6 +224,7 @@ class Server(MessageHandler):
                 nonlocal total_connections
                 total_connections += 1
 
+            self._flush_event_from_client_id[client_id] = asyncio.Event()
             if self._verbose:
                 rich.print(
                     f"[bold](viser)[/bold] Connection opened ({client_id},"
@@ -261,6 +264,7 @@ class Server(MessageHandler):
                     _client_producer(
                         websocket,
                         client_id,
+                        self._flush_event_from_client_id[client_id],
                         client_state.message_buffer.get,
                         self._client_api_version,
                     ),
@@ -282,6 +286,7 @@ class Server(MessageHandler):
                 # queue get() tasks, which suppresses a "Task was destroyed but it is
                 # pending" error.
                 await client_state.message_buffer.put(DONE_SENTINEL)
+                self._flush_event_from_client_id.pop(client_id)
 
                 # Disconnection callbacks.
                 for cb in self._client_disconnect_cb:
@@ -353,6 +358,7 @@ class Server(MessageHandler):
 async def _client_producer(
     websocket: WebSocketServerProtocol,
     client_id: ClientId,
+    flush_event: asyncio.Event,
     get_next: Callable[[], Coroutine[None, None, Union[Message, DoneSentinel]]],
     client_api_version: Literal[0, 1],
 ) -> None:
@@ -362,7 +368,10 @@ async def _client_producer(
     message_task = asyncio.create_task(get_next())
 
     while not window.done:
-        if await window.wait_and_append_to_window(message_task) and not window.done:
+        if (
+            await window.wait_and_append_to_window(message_task, flush_event)
+            and not window.done
+        ):
             message_task = asyncio.create_task(get_next())
         outgoing = window.get_window_to_send()
         if outgoing is not None:
@@ -373,6 +382,8 @@ async def _client_producer(
                 assert isinstance(serialized, bytes)
                 await websocket.send(serialized)
             elif client_api_version == 0:
+                # Clients built for the original viser API didn't do any windowing of
+                # messages.
                 for msg in outgoing:
                     serialized = msgpack.packb(msg.as_serializable_dict())
                     assert isinstance(serialized, bytes)

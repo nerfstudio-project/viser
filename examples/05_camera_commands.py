@@ -61,6 +61,8 @@ def _(client: viser.ClientHandle) -> None:
                 with client.atomic():
                     client.camera.wxyz = T_world_set.rotation().wxyz
                     client.camera.position = T_world_set.translation()
+
+                client.flush()
                 time.sleep(1.0 / 60.0)
 
             # Mouse interactions should orbit around the frame origin.
