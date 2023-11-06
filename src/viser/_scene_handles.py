@@ -130,6 +130,8 @@ class SceneNodeHandle:
 
     @visible.setter
     def visible(self, visible: bool) -> None:
+        if visible == self._impl.visible:
+            return
         self._impl.api._queue(
             _messages.SetSceneNodeVisibilityMessage(self._impl.name, visible)
         )

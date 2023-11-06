@@ -80,6 +80,7 @@ def main(
             frame_nodes[current_timestep].visible = True
             frame_nodes[prev_timestep].visible = False
         prev_timestep = current_timestep
+        server.flush()  # Optional!
 
     # Load in frames.
     server.add_frame(

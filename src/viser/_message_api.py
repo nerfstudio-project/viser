@@ -10,6 +10,7 @@ from __future__ import annotations
 import abc
 import base64
 import colorsys
+import contextlib
 import io
 import mimetypes
 import queue
@@ -19,6 +20,7 @@ from typing import (
     TYPE_CHECKING,
     Callable,
     Dict,
+    Generator,
     List,
     Optional,
     Tuple,
@@ -688,21 +690,21 @@ class MessageApi(abc.ABC):
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
     ) -> None:
         """Callback for handling transform gizmo messages."""
-        with self._atomic_lock:
-            handle = self._handle_from_transform_controls_name.get(message.name, None)
-            if handle is None:
-                return
+        handle = self._handle_from_transform_controls_name.get(message.name, None)
+        if handle is None:
+            return
 
-            # Update state.
+        # Update state.
+        with self.atomic():
             handle._impl.wxyz = onp.array(message.wxyz)
             handle._impl.position = onp.array(message.position)
             handle._impl_aux.last_updated = time.time()
 
-            # Trigger callbacks.
-            for cb in handle._impl_aux.update_cb:
-                cb(handle)
-            if handle._impl_aux.sync_cb is not None:
-                handle._impl_aux.sync_cb(client_id, handle)
+        # Trigger callbacks.
+        for cb in handle._impl_aux.update_cb:
+            cb(handle)
+        if handle._impl_aux.sync_cb is not None:
+            handle._impl_aux.sync_cb(client_id, handle)
 
     def _handle_node_click_updates(
         self, client_id: ClientId, message: _messages.SceneNodeClickMessage
@@ -720,8 +722,7 @@ class MessageApi(abc.ABC):
                 ray_origin=message.ray_origin,
                 ray_direction=message.ray_direction,
             )
-            with self._atomic_lock:
-                cb(event)  # type: ignore
+            cb(event)  # type: ignore
 
     def _handle_scene_pointer_updates(
         self, client_id: ClientId, message: _messages.ScenePointerMessage
@@ -735,8 +736,7 @@ class MessageApi(abc.ABC):
                 ray_origin=message.ray_origin,
                 ray_direction=message.ray_direction,
             )
-            with self._atomic_lock:
-                cb(event)
+            cb(event)
 
     def on_scene_click(
         self,
@@ -842,3 +842,8 @@ class MessageApi(abc.ABC):
                 mime_type=mime_type,
             )
         )
+
+    @contextlib.contextmanager
+    @abc.abstractmethod
+    def atomic(self) -> Generator[None, None, None]:
+        raise NotImplementedError()
