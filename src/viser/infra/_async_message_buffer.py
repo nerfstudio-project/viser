@@ -74,7 +74,7 @@ class AsyncMessageBuffer:
                 send_window = False
                 try:
                     flush_wait = self._flush_event.wait()
-                    done, pending = await asyncio.wait(
+                    done, pending = await asyncio.wait(  # type: ignore
                         [flush_wait, next_message],
                         timeout=window.max_time_until_ready(),
                         return_when=asyncio.FIRST_COMPLETED,
