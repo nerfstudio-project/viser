@@ -145,6 +145,7 @@ export interface MeshMessage {
   wireframe: boolean;
   opacity: number | null;
   side: "front" | "back" | "double";
+  material: "standard" | "toon3" | "toon5";
 }
 /** Message for transform gizmos.
  *
