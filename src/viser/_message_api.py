@@ -257,6 +257,7 @@ class MessageApi(abc.ABC):
         closed: bool = False,
         line_width: float = 1,
         color: RgbTupleOrArray = (20, 20, 20),
+        segments: Optional[int] = None,
     ) -> None:
         """Add spline using Catmull-Rom interpolation."""
         if isinstance(positions, onp.ndarray):
@@ -273,6 +274,7 @@ class MessageApi(abc.ABC):
                 closed,
                 line_width,
                 _encode_rgb(color),
+                segments=segments,
             )
         )
 
@@ -283,6 +285,7 @@ class MessageApi(abc.ABC):
         control_points: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
         line_width: float = 1,
         color: RgbTupleOrArray = (20, 20, 20),
+        segments: Optional[int] = None,
     ) -> None:
         """Add spline using Cubic Bezier interpolation."""
 
@@ -303,6 +306,7 @@ class MessageApi(abc.ABC):
                 control_points,
                 line_width,
                 _encode_rgb(color),
+                segments=segments,
             )
         )
 
