@@ -538,6 +538,7 @@ class CatmullRomSplineMessage(Message):
     closed: bool
     line_width: float
     color: int
+    segments: Optional[int]
 
 
 @dataclasses.dataclass
@@ -549,6 +550,7 @@ class CubicBezierSplineMessage(Message):
     control_points: Tuple[Tuple[float, float, float], ...]
     line_width: float
     color: int
+    segments: Optional[int]
 
 
 @dataclasses.dataclass

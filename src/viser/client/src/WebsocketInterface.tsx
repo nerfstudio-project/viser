@@ -705,6 +705,8 @@ function useMessageHandler() {
                   tension={message.tension}
                   lineWidth={message.line_width}
                   color={message.color}
+                  // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
+                  segments={(message.segments ?? undefined) as undefined}
                 ></CatmullRomLine>
               </group>
             );
@@ -726,6 +728,8 @@ function useMessageHandler() {
                     midB={message.control_points[2 * i + 1]}
                     lineWidth={message.line_width}
                     color={message.color}
+                    // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
+                    segments={(message.segments ?? undefined) as undefined}
                   ></CubicBezierLine>
                 ))}
               </group>

@@ -638,6 +638,7 @@ export interface CatmullRomSplineMessage {
   closed: boolean;
   line_width: number;
   color: number;
+  segments: number | null;
 }
 /** Message from server->client carrying Cubic Bezier spline information.
  *
@@ -650,6 +651,7 @@ export interface CubicBezierSplineMessage {
   control_points: [number, number, number][];
   line_width: number;
   color: number;
+  segments: number | null;
 }
 /** Message from server->client requesting a render of the current viewport.
  *
