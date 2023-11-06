@@ -236,18 +236,54 @@ function useMessageHandler() {
       // Add mesh
       case "MeshMessage": {
         const geometry = new THREE.BufferGeometry();
-        const material = new THREE.MeshStandardMaterial({
+
+        const generateGradientMap = (shades: 3 | 5) => {
+          const texture = new THREE.DataTexture(
+            Uint8Array.from(
+              shades == 3
+                ? [0, 0, 0, 255, 128, 128, 128, 255, 255, 255, 255, 255]
+                : [
+                    0, 0, 0, 255, 64, 64, 64, 255, 128, 128, 128, 255, 192, 192,
+                    192, 255, 255, 255, 255, 255,
+                  ],
+            ),
+            shades,
+            1,
+            THREE.RGBAFormat,
+          );
+
+          texture.needsUpdate = true;
+          return texture;
+        };
+        const standardArgs = {
           color: message.color || undefined,
           vertexColors: message.vertex_colors !== null,
           wireframe: message.wireframe,
           transparent: message.opacity !== null,
-          opacity: message.opacity ?? undefined,
+          opacity: message.opacity ?? 1.0,
           side: {
             front: THREE.FrontSide,
             back: THREE.BackSide,
             double: THREE.DoubleSide,
           }[message.side],
-        });
+        };
+        const assertUnreachable = (x: never): never => {
+          throw new Error(`Should never get here! ${x}`);
+        };
+        const material =
+          message.material == "standard"
+            ? new THREE.MeshStandardMaterial(standardArgs)
+            : message.material == "toon3"
+            ? new THREE.MeshToonMaterial({
+                gradientMap: generateGradientMap(3),
+                ...standardArgs,
+              })
+            : message.material == "toon5"
+            ? new THREE.MeshToonMaterial({
+                gradientMap: generateGradientMap(5),
+                ...standardArgs,
+              })
+            : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
