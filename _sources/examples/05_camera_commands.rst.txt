@@ -61,11 +61,14 @@ corresponding client automatically.
                             T_current_target.log() * j / 19.0
                         )
 
-                        # Important bit: we atomically set both the orientation and the position
-                        # of the camera.
+                        # We can atomically set the orientation and the position of the camera
+                        # together to prevent jitter that might happen if one was set before the
+                        # other.
                         with client.atomic():
                             client.camera.wxyz = T_world_set.rotation().wxyz
                             client.camera.position = T_world_set.translation()
+
+                        client.flush()  # Optional!
                         time.sleep(1.0 / 60.0)
 
                     # Mouse interactions should orbit around the frame origin.

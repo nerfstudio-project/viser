@@ -27,6 +27,22 @@ we get updates.
 
             gui_reset_scene = server.add_gui_button("Reset Scene")
 
+            gui_plane = server.add_gui_dropdown(
+                "Grid plane", ("xz", "xy", "yx", "yz", "zx", "zy")
+            )
+
+            def update_plane() -> None:
+                server.add_grid(
+                    "/grid",
+                    width=10.0,
+                    height=20.0,
+                    width_segments=10,
+                    height_segments=20,
+                    plane=gui_plane.value,
+                )
+
+            gui_plane.on_update(lambda _: update_plane())
+
             with server.add_gui_folder("Control"):
                 gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
                 gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
@@ -90,6 +106,7 @@ we get updates.
                 draw_points()
 
             # Finally, let's add the initial frame + point cloud and just loop infinitely. :)
+            update_plane()
             draw_frame()
             draw_points()
             while True:

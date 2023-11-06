@@ -295,22 +295,25 @@ corresponding client automatically.</p>
 <span class="linenos">45</span>                    <span class="n">T_current_target</span><span class="o">.</span><span class="n">log</span><span class="p">()</span> <span class="o">*</span> <span class="n">j</span> <span class="o">/</span> <span class="mf">19.0</span>
 <span class="linenos">46</span>                <span class="p">)</span>
 <span class="linenos">47</span>
-<span class="linenos">48</span>                <span class="c1"># Important bit: we atomically set both the orientation and the position</span>
-<span class="linenos">49</span>                <span class="c1"># of the camera.</span>
-<span class="linenos">50</span>                <span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
-<span class="linenos">51</span>                    <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">T_world_set</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span><span class="o">.</span><span class="n">wxyz</span>
-<span class="linenos">52</span>                    <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">T_world_set</span><span class="o">.</span><span class="n">translation</span><span class="p">()</span>
-<span class="linenos">53</span>                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">60.0</span><span class="p">)</span>
+<span class="linenos">48</span>                <span class="c1"># We can atomically set the orientation and the position of the camera</span>
+<span class="linenos">49</span>                <span class="c1"># together to prevent jitter that might happen if one was set before the</span>
+<span class="linenos">50</span>                <span class="c1"># other.</span>
+<span class="linenos">51</span>                <span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
+<span class="linenos">52</span>                    <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">T_world_set</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span><span class="o">.</span><span class="n">wxyz</span>
+<span class="linenos">53</span>                    <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">T_world_set</span><span class="o">.</span><span class="n">translation</span><span class="p">()</span>
 <span class="linenos">54</span>
-<span class="linenos">55</span>            <span class="c1"># Mouse interactions should orbit around the frame origin.</span>
-<span class="linenos">56</span>            <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">position</span>
+<span class="linenos">55</span>                <span class="n">client</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>  <span class="c1"># Optional!</span>
+<span class="linenos">56</span>                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">60.0</span><span class="p">)</span>
 <span class="linenos">57</span>
-<span class="linenos">58</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_frames</span><span class="p">):</span>
-<span class="linenos">59</span>        <span class="n">make_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="linenos">58</span>            <span class="c1"># Mouse interactions should orbit around the frame origin.</span>
+<span class="linenos">59</span>            <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">position</span>
 <span class="linenos">60</span>
-<span class="linenos">61</span>
-<span class="linenos">62</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">63</span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="linenos">61</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_frames</span><span class="p">):</span>
+<span class="linenos">62</span>        <span class="n">make_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="linenos">63</span>
+<span class="linenos">64</span>
+<span class="linenos">65</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">66</span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
