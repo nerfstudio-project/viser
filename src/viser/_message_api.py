@@ -452,6 +452,7 @@ class MessageApi(abc.ABC):
         color: RgbTupleOrArray = (90, 200, 255),
         wireframe: bool = False,
         opacity: Optional[float] = None,
+        material: Literal["standard", "toon3", "toon5"] = "standard",
         side: Literal["front", "back", "double"] = "front",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
@@ -469,6 +470,7 @@ class MessageApi(abc.ABC):
                 wireframe=wireframe,
                 opacity=opacity,
                 side=side,
+                material=material,
             )
         )
         node_handle = MeshHandle._make(self, name, wxyz, position, visible)

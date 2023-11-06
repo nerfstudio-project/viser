@@ -185,7 +185,8 @@ class MeshMessage(Message):
 
     wireframe: bool
     opacity: Optional[float]
-    side: Literal["front", "back", "double"] = "front"
+    side: Literal["front", "back", "double"]
+    material: Literal["standard", "toon3", "toon5"]
 
     def __post_init__(self):
         # Check shapes.
