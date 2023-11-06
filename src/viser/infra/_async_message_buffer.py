@@ -158,7 +158,7 @@ class MessageWindow:
 
         message = asyncio.shield(message)
         flush_wait = asyncio.shield(flush_event.wait())
-        (done, pending) = await asyncio.wait(
+        (done, pending) = await asyncio.wait(  # type: ignore
             [message, flush_wait],
             timeout=self.max_time_until_ready(),
             return_when=asyncio.FIRST_COMPLETED,
