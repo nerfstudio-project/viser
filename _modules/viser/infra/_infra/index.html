@@ -563,7 +563,9 @@
                 <span class="c1"># queue get() tasks, which suppresses a &quot;Task was destroyed but it is</span>
                 <span class="c1"># pending&quot; error.</span>
                 <span class="k">await</span> <span class="n">client_state</span><span class="o">.</span><span class="n">message_buffer</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">DONE_SENTINEL</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_flush_event_from_client_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">client_id</span><span class="p">)</span>
+
+                <span class="c1"># Trigger then delete the flush event.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_flush_event_from_client_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">client_id</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
 
                 <span class="c1"># Disconnection callbacks.</span>
                 <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span>
