@@ -277,6 +277,11 @@ class ClientHandle(MessageApi, GuiApi):
             self._atomic_lock.release()
             self._locked_thread_id = -1
 
+    def flush(self) -> None:
+        """Flush the outgoing message buffer. Any buffered messages will immediately be
+        sent. (by default they are windowed)"""
+        self._state.server._flush_event_from_client_id[self.client_id].set()
+
 
 # We can serialize the state of a ViserServer via a tuple of
 # (serialized message, timestamp) pairs.
@@ -358,7 +363,7 @@ class ViserServer(MessageApi, GuiApi):
                 assert client_id == client.client_id
 
                 # Update the client's camera.
-                with client._atomic_lock:
+                with client.atomic():
                     client.camera._state = _CameraHandleState(
                         client,
                         onp.array(message.wxyz),
@@ -523,3 +528,8 @@ class ViserServer(MessageApi, GuiApi):
         if got_lock:
             self._atomic_lock.release()
             self._locked_thread_id = -1
+
+    def flush(self) -> None:
+        """Flush the outgoing message buffer. Any buffered messages will immediately be
+        sent. (by default they are windowed)"""
+        self._server._broadcast_buffer.flush()

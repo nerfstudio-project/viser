@@ -2,7 +2,17 @@ import asyncio
 import dataclasses
 import time
 from asyncio.events import AbstractEventLoop
-from typing import Any, AsyncGenerator, Awaitable, Dict, Optional, Sequence, Union
+from typing import (
+    Any,
+    AsyncGenerator,
+    Awaitable,
+    Dict,
+    Optional,
+    Sequence,
+    Set,
+    Union,
+    cast,
+)
 
 from typing_extensions import Literal, TypeGuard
 
@@ -17,6 +27,7 @@ class AsyncMessageBuffer:
 
     event_loop: AbstractEventLoop
     message_event: asyncio.Event = dataclasses.field(default_factory=asyncio.Event)
+    _flush_event: asyncio.Event = dataclasses.field(default_factory=asyncio.Event)
 
     message_counter: int = 0
     message_from_id: Dict[int, Message] = dataclasses.field(default_factory=dict)
@@ -40,6 +51,10 @@ class AsyncMessageBuffer:
         # Notify consumers that a new message is available.
         self.event_loop.call_soon_threadsafe(self.message_event.set)
 
+    def flush(self) -> None:
+        """Immediately send any buffered messages."""
+        self._flush_event.set()
+
     async def window_generator(
         self, client_id: int
     ) -> AsyncGenerator[Sequence[Message], None]:
@@ -56,12 +71,23 @@ class AsyncMessageBuffer:
             most_recent_message_id = self.message_counter - 1
             while last_sent_id >= most_recent_message_id:
                 next_message = self.message_event.wait()
+                send_window = False
                 try:
-                    await asyncio.wait_for(
-                        next_message, timeout=window.max_time_until_ready()
+                    flush_wait = self._flush_event.wait()
+                    done, pending = await asyncio.wait(  # type: ignore
+                        [flush_wait, next_message],
+                        timeout=window.max_time_until_ready(),
+                        return_when=asyncio.FIRST_COMPLETED,
                     )
+                    del pending
+                    if flush_wait in done:
+                        send_window = True
+                        self._flush_event.clear()
                     most_recent_message_id = self.message_counter - 1
                 except asyncio.TimeoutError:
+                    send_window = True
+
+                if send_window:
                     out = window.get_window_to_send()
                     if out is not None:
                         yield out
@@ -120,7 +146,9 @@ class MessageWindow:
             self.done = True
 
     async def wait_and_append_to_window(
-        self, message: Awaitable[Union[Message, DoneSentinel]]
+        self,
+        message: Awaitable[Union[Message, DoneSentinel]],
+        flush_event: asyncio.Event,
     ) -> bool:
         """Async version of `append_to_window()`. Returns `True` if successful, `False`
         if timed out."""
@@ -129,11 +157,17 @@ class MessageWindow:
             return True
 
         message = asyncio.shield(message)
-        (done, pending) = await asyncio.wait(
-            [message], timeout=self.max_time_until_ready()
+        flush_wait = asyncio.shield(flush_event.wait())
+        (done, pending) = await asyncio.wait(  # type: ignore
+            [message, flush_wait],
+            timeout=self.max_time_until_ready(),
+            return_when=asyncio.FIRST_COMPLETED,
         )
         del pending
-        if message in done:
+        if flush_wait in done:
+            flush_event.clear()
+        flush_wait.cancel()
+        if message in cast(Set[Any], done):  # Cast to prevent type narrowing.
             self.append_to_window(await message)
             return True
         return False
