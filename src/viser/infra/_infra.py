@@ -286,7 +286,9 @@ class Server(MessageHandler):
                 # queue get() tasks, which suppresses a "Task was destroyed but it is
                 # pending" error.
                 await client_state.message_buffer.put(DONE_SENTINEL)
-                self._flush_event_from_client_id.pop(client_id)
+
+                # Trigger then delete the flush event.
+                self._flush_event_from_client_id.pop(client_id).set()
 
                 # Disconnection callbacks.
                 for cb in self._client_disconnect_cb:
