@@ -267,6 +267,9 @@ function useMessageHandler() {
             double: THREE.DoubleSide,
           }[message.side],
         };
+        const assertUnreachable = (x: never): never => {
+          throw new Error(`Should never get here! ${x}`);
+        };
         const material =
           message.material == "standard"
             ? new THREE.MeshStandardMaterial(standardArgs)
@@ -280,7 +283,7 @@ function useMessageHandler() {
                 gradientMap: generateGradientMap(5),
                 ...standardArgs,
               })
-            : undefined;
+            : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
