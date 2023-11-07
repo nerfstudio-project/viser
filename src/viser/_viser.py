@@ -280,7 +280,7 @@ class ClientHandle(MessageApi, GuiApi):
     def flush(self) -> None:
         """Flush the outgoing message buffer. Any buffered messages will immediately be
         sent. (by default they are windowed)"""
-        self._state.server._flush_event_from_client_id[self.client_id].set()
+        self._state.server.flush_client(self.client_id)
 
 
 # We can serialize the state of a ViserServer via a tuple of
@@ -532,4 +532,4 @@ class ViserServer(MessageApi, GuiApi):
     def flush(self) -> None:
         """Flush the outgoing message buffer. Any buffered messages will immediately be
         sent. (by default they are windowed)"""
-        self._server._broadcast_buffer.flush()
+        self._server.flush()

@@ -35,8 +35,10 @@ from websockets.legacy.server import WebSocketServerProtocol
 
 from ._async_message_buffer import (
     DONE_SENTINEL,
+    FLUSH_SENTINEL,
     AsyncMessageBuffer,
     DoneSentinel,
+    FlushSentinel,
     MessageWindow,
 )
 from ._messages import Message
@@ -157,7 +159,7 @@ class Server(MessageHandler):
         self._thread_executor = ThreadPoolExecutor(max_workers=32)
         self._shutdown_event = threading.Event()
 
-        self._flush_event_from_client_id: Dict[int, asyncio.Event] = {}
+        self._client_state_from_id: Dict[int, _ClientHandleState] = {}
 
     def start(self) -> None:
         """Start the server."""
@@ -197,6 +199,16 @@ class Server(MessageHandler):
         is culled using the value of `message.redundancy_key()`."""
         self._broadcast_buffer.push(message)
 
+    def flush(self) -> None:
+        """Flush the outgoing message buffer for broadcasted messages. Any buffered
+        messages will immediately be sent. (by default they are windowed)"""
+        self._broadcast_buffer.push(FLUSH_SENTINEL)
+
+    def flush_client(self, client_id: int) -> None:
+        """Flush the outgoing message buffer for a particular client. Any buffered
+        messages will immediately be sent. (by default they are windowed)"""
+        self._client_state_from_id[client_id].message_buffer.put_nowait(FLUSH_SENTINEL)
+
     def _background_worker(self, ready_sem: threading.Semaphore) -> None:
         host = self._host
         port = self._port
@@ -224,7 +236,6 @@ class Server(MessageHandler):
                 nonlocal total_connections
                 total_connections += 1
 
-            self._flush_event_from_client_id[client_id] = asyncio.Event()
             if self._verbose:
                 rich.print(
                     f"[bold](viser)[/bold] Connection opened ({client_id},"
@@ -238,6 +249,7 @@ class Server(MessageHandler):
                 event_loop=event_loop,
             )
             client_connection = ClientConnection(client_id, client_state)
+            self._client_state_from_id[client_id] = client_state
 
             def handle_incoming(message: Message) -> None:
                 self._thread_executor.submit(
@@ -264,7 +276,6 @@ class Server(MessageHandler):
                     _client_producer(
                         websocket,
                         client_id,
-                        self._flush_event_from_client_id[client_id],
                         client_state.message_buffer.get,
                         self._client_api_version,
                     ),
@@ -287,14 +298,12 @@ class Server(MessageHandler):
                 # pending" error.
                 await client_state.message_buffer.put(DONE_SENTINEL)
 
-                # Trigger then delete the flush event.
-                self._flush_event_from_client_id.pop(client_id).set()
-
                 # Disconnection callbacks.
                 for cb in self._client_disconnect_cb:
                     cb(client_connection)
 
                 # Cleanup.
+                self._client_state_from_id.pop(client_id)
                 total_connections -= 1
                 if self._verbose:
                     rich.print(
@@ -360,8 +369,9 @@ class Server(MessageHandler):
 async def _client_producer(
     websocket: WebSocketServerProtocol,
     client_id: ClientId,
-    flush_event: asyncio.Event,
-    get_next: Callable[[], Coroutine[None, None, Union[Message, DoneSentinel]]],
+    get_next: Callable[
+        [], Coroutine[None, None, Union[Message, FlushSentinel, DoneSentinel]]
+    ],
     client_api_version: Literal[0, 1],
 ) -> None:
     """Infinite loop to send messages from a buffer to a single client."""
@@ -370,10 +380,7 @@ async def _client_producer(
     message_task = asyncio.create_task(get_next())
 
     while not window.done:
-        if (
-            await window.wait_and_append_to_window(message_task, flush_event)
-            and not window.done
-        ):
+        if await window.wait_and_append_to_window(message_task) and not window.done:
             message_task = asyncio.create_task(get_next())
         outgoing = window.get_window_to_send()
         if outgoing is not None:
