@@ -445,6 +445,33 @@ is culled using the value of <code class="docutils literal notranslate"><span cl
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.Server.flush">
+<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.flush"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.flush" title="Link to this definition">#</a></dt>
+<dd><p>Flush the outgoing message buffer for broadcasted messages. Any buffered
+messages will immediately be sent. (by default they are windowed)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.Server.flush_client">
+<span class="sig-name descname"><span class="pre">flush_client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.flush_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.flush_client" title="Link to this definition">#</a></dt>
+<dd><p>Flush the outgoing message buffer for a particular client. Any buffered
+messages will immediately be sent. (by default they are windowed)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>client_id</strong> (<em>int</em>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.Server.register_handler">
 <span class="sig-name descname"><span class="pre">register_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.infra.Server.register_handler" title="Link to this definition">#</a></dt>
 <dd><p>Register a handler for a particular message type.</p>
@@ -638,6 +665,8 @@ should only keep the latest message.</p>
 <li><a class="reference internal" href="#viser.infra.Server.on_client_connect"><code class="docutils literal notranslate"><span class="pre">Server.on_client_connect()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Server.on_client_disconnect"><code class="docutils literal notranslate"><span class="pre">Server.on_client_disconnect()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Server.broadcast"><code class="docutils literal notranslate"><span class="pre">Server.broadcast()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.Server.flush"><code class="docutils literal notranslate"><span class="pre">Server.flush()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.Server.flush_client"><code class="docutils literal notranslate"><span class="pre">Server.flush_client()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Server.register_handler"><code class="docutils literal notranslate"><span class="pre">Server.register_handler()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.Server.unregister_handler"><code class="docutils literal notranslate"><span class="pre">Server.unregister_handler()</span></code></a></li>
 </ul>

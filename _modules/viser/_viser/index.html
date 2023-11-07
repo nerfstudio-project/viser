@@ -541,7 +541,7 @@
     <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
 <span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">_flush_event_from_client_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">]</span><span class="o">.</span><span class="n">set</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">flush_client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span></div>
 </div>
 
 
@@ -814,7 +814,7 @@
     <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
 <span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
 </div>
 
 </pre></div>

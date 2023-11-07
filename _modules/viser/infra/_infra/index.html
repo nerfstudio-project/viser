@@ -280,8 +280,10 @@
 
 <span class="kn">from</span> <span class="nn">._async_message_buffer</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DONE_SENTINEL</span><span class="p">,</span>
+    <span class="n">FLUSH_SENTINEL</span><span class="p">,</span>
     <span class="n">AsyncMessageBuffer</span><span class="p">,</span>
     <span class="n">DoneSentinel</span><span class="p">,</span>
+    <span class="n">FlushSentinel</span><span class="p">,</span>
     <span class="n">MessageWindow</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="n">Message</span>
@@ -419,7 +421,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_flush_event_from_client_id</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_state_from_id</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">_ClientHandleState</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
 <div class="viewcode-block" id="Server.start">
 <a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.start">[docs]</a>
@@ -474,6 +476,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="Server.flush">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.flush">[docs]</a>
+    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer for broadcasted messages. Any buffered</span>
+<span class="sd">        messages will immediately be sent. (by default they are windowed)&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">FLUSH_SENTINEL</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Server.flush_client">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.flush_client">[docs]</a>
+    <span class="k">def</span> <span class="nf">flush_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer for a particular client. Any buffered</span>
+<span class="sd">        messages will immediately be sent. (by default they are windowed)&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_state_from_id</span><span class="p">[</span><span class="n">client_id</span><span class="p">]</span><span class="o">.</span><span class="n">message_buffer</span><span class="o">.</span><span class="n">put_nowait</span><span class="p">(</span><span class="n">FLUSH_SENTINEL</span><span class="p">)</span></div>
+
+
     <span class="k">def</span> <span class="nf">_background_worker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ready_sem</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">host</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
         <span class="n">port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_port</span>
@@ -501,7 +519,6 @@
                 <span class="k">nonlocal</span> <span class="n">total_connections</span>
                 <span class="n">total_connections</span> <span class="o">+=</span> <span class="mi">1</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">_flush_event_from_client_id</span><span class="p">[</span><span class="n">client_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
                 <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;[bold](viser)[/bold] Connection opened (</span><span class="si">{</span><span class="n">client_id</span><span class="si">}</span><span class="s2">,&quot;</span>
@@ -515,6 +532,7 @@
                 <span class="n">event_loop</span><span class="o">=</span><span class="n">event_loop</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">client_connection</span> <span class="o">=</span> <span class="n">ClientConnection</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">client_state</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_client_state_from_id</span><span class="p">[</span><span class="n">client_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_state</span>
 
             <span class="k">def</span> <span class="nf">handle_incoming</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
@@ -541,7 +559,6 @@
                     <span class="n">_client_producer</span><span class="p">(</span>
                         <span class="n">websocket</span><span class="p">,</span>
                         <span class="n">client_id</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_flush_event_from_client_id</span><span class="p">[</span><span class="n">client_id</span><span class="p">],</span>
                         <span class="n">client_state</span><span class="o">.</span><span class="n">message_buffer</span><span class="o">.</span><span class="n">get</span><span class="p">,</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_client_api_version</span><span class="p">,</span>
                     <span class="p">),</span>
@@ -564,14 +581,12 @@
                 <span class="c1"># pending&quot; error.</span>
                 <span class="k">await</span> <span class="n">client_state</span><span class="o">.</span><span class="n">message_buffer</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">DONE_SENTINEL</span><span class="p">)</span>
 
-                <span class="c1"># Trigger then delete the flush event.</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_flush_event_from_client_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">client_id</span><span class="p">)</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
-
                 <span class="c1"># Disconnection callbacks.</span>
                 <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span>
                     <span class="n">cb</span><span class="p">(</span><span class="n">client_connection</span><span class="p">)</span>
 
                 <span class="c1"># Cleanup.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_client_state_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">client_id</span><span class="p">)</span>
                 <span class="n">total_connections</span> <span class="o">-=</span> <span class="mi">1</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
                     <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
@@ -638,8 +653,9 @@
 <span class="k">async</span> <span class="k">def</span> <span class="nf">_client_producer</span><span class="p">(</span>
     <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span>
     <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span>
-    <span class="n">flush_event</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">,</span>
-    <span class="n">get_next</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Coroutine</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Message</span><span class="p">,</span> <span class="n">DoneSentinel</span><span class="p">]]],</span>
+    <span class="n">get_next</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span>
+        <span class="p">[],</span> <span class="n">Coroutine</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Message</span><span class="p">,</span> <span class="n">FlushSentinel</span><span class="p">,</span> <span class="n">DoneSentinel</span><span class="p">]]</span>
+    <span class="p">],</span>
     <span class="n">client_api_version</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Infinite loop to send messages from a buffer to a single client.&quot;&quot;&quot;</span>
@@ -648,10 +664,7 @@
     <span class="n">message_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">get_next</span><span class="p">())</span>
 
     <span class="k">while</span> <span class="ow">not</span> <span class="n">window</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="k">await</span> <span class="n">window</span><span class="o">.</span><span class="n">wait_and_append_to_window</span><span class="p">(</span><span class="n">message_task</span><span class="p">,</span> <span class="n">flush_event</span><span class="p">)</span>
-            <span class="ow">and</span> <span class="ow">not</span> <span class="n">window</span><span class="o">.</span><span class="n">done</span>
-        <span class="p">):</span>
+        <span class="k">if</span> <span class="k">await</span> <span class="n">window</span><span class="o">.</span><span class="n">wait_and_append_to_window</span><span class="p">(</span><span class="n">message_task</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">window</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
             <span class="n">message_task</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">get_next</span><span class="p">())</span>
         <span class="n">outgoing</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">get_window_to_send</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">outgoing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
