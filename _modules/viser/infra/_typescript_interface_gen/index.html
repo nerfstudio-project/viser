@@ -270,32 +270,23 @@
 <span class="p">}</span>
 
 
-<span class="k">def</span> <span class="nf">_get_ts_type</span><span class="p">(</span><span class="n">typ</span><span class="p">:</span> <span class="n">Type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">_get_ts_type</span><span class="p">(</span><span class="n">typ</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">origin_typ</span> <span class="o">=</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">origin_typ</span> <span class="ow">is</span> <span class="nb">tuple</span><span class="p">:</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="o">...</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">_get_ts_type</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;[]&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_get_ts_type</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
-    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Literal</span><span class="p">,</span> <span class="n">LiteralAlt</span><span class="p">):</span>
+    <span class="k">elif</span> <span class="n">origin_typ</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Literal</span><span class="p">,</span> <span class="n">LiteralAlt</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="nb">map</span><span class="p">(</span>
                 <span class="k">lambda</span> <span class="n">lit</span><span class="p">:</span> <span class="nb">repr</span><span class="p">(</span><span class="n">lit</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">lit</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">bool</span> <span class="k">else</span> <span class="nb">repr</span><span class="p">(</span><span class="n">lit</span><span class="p">),</span>
                 <span class="n">get_args</span><span class="p">(</span><span class="n">typ</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="p">)</span>
-    <span class="k">if</span> <span class="n">is_typeddict</span><span class="p">(</span><span class="n">typ</span><span class="p">):</span>
-        <span class="n">hints</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span>
-
-        <span class="k">def</span> <span class="nf">fmt</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
-            <span class="n">val</span> <span class="o">=</span> <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="n">ret</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">_get_ts_type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">ret</span>
-
-        <span class="n">ret</span> <span class="o">=</span> <span class="s2">&quot;{&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="n">hints</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span>
-        <span class="c1"># ret = &quot;{&quot; + f&quot;type: \&#39;{typ.__name__}\&#39;, &quot; + &quot;, &quot;.join(map(fmt, hints)) + &quot;}&quot;</span>
-        <span class="k">return</span> <span class="n">ret</span>
-    <span class="k">if</span> <span class="n">get_origin</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span> <span class="ow">is</span> <span class="n">Union</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">origin_typ</span> <span class="ow">is</span> <span class="n">Union</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="s2">&quot;(&quot;</span>
             <span class="o">+</span> <span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -306,13 +297,22 @@
             <span class="p">)</span>
             <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
         <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">is_typeddict</span><span class="p">(</span><span class="n">typ</span><span class="p">):</span>
+        <span class="n">hints</span> <span class="o">=</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s2">&quot;__origin__&quot;</span><span class="p">):</span>
-        <span class="n">typ</span> <span class="o">=</span> <span class="n">typ</span><span class="o">.</span><span class="n">__origin__</span>
-    <span class="k">if</span> <span class="n">typ</span> <span class="ow">in</span> <span class="n">_raw_type_mapping</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">fmt</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">hints</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span> <span class="o">+</span> <span class="s2">&quot;: &quot;</span> <span class="o">+</span> <span class="n">_get_ts_type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">ret</span>
+
+        <span class="n">ret</span> <span class="o">=</span> <span class="s2">&quot;{&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">fmt</span><span class="p">,</span> <span class="n">hints</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span>
+        <span class="k">return</span> <span class="n">ret</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Like get_origin(), but also supports numpy.typing.NDArray[dtype].</span>
+        <span class="n">typ</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s2">&quot;__origin__&quot;</span><span class="p">,</span> <span class="n">typ</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="n">typ</span> <span class="ow">in</span> <span class="n">_raw_type_mapping</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Unsupported type </span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">return</span> <span class="n">_raw_type_mapping</span><span class="p">[</span><span class="n">typ</span><span class="p">]</span>
-
-    <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Unsupported type: </span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">&quot;</span>
 
 
 <div class="viewcode-block" id="generate_typescript_interfaces">
