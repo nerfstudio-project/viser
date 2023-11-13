@@ -25,32 +25,23 @@ _raw_type_mapping = {
 }
 
 
-def _get_ts_type(typ: Type) -> str:
-    if get_origin(typ) is tuple:
+def _get_ts_type(typ: Type[Any]) -> str:
+    origin_typ = get_origin(typ)
+
+    if origin_typ is tuple:
         args = get_args(typ)
         if len(args) == 2 and args[1] == ...:
             return _get_ts_type(args[0]) + "[]"
         else:
             return "[" + ", ".join(map(_get_ts_type, args)) + "]"
-    if get_origin(typ) in (Literal, LiteralAlt):
+    elif origin_typ in (Literal, LiteralAlt):
         return " | ".join(
             map(
                 lambda lit: repr(lit).lower() if type(lit) is bool else repr(lit),
                 get_args(typ),
             )
         )
-    if is_typeddict(typ):
-        hints = get_type_hints(typ)
-
-        def fmt(key):
-            val = hints[key]
-            ret = f"'{key}'" + ": " + _get_ts_type(val)
-            return ret
-
-        ret = "{" + ", ".join(map(fmt, hints)) + "}"
-        # ret = "{" + f"type: \'{typ.__name__}\', " + ", ".join(map(fmt, hints)) + "}"
-        return ret
-    if get_origin(typ) is Union:
+    elif origin_typ is Union:
         return (
             "("
             + " | ".join(
@@ -61,13 +52,22 @@ def _get_ts_type(typ: Type) -> str:
             )
             + ")"
         )
+    elif is_typeddict(typ):
+        hints = get_type_hints(typ)
 
-    if hasattr(typ, "__origin__"):
-        typ = typ.__origin__
-    if typ in _raw_type_mapping:
+        def fmt(key):
+            val = hints[key]
+            ret = f"'{key}'" + ": " + _get_ts_type(val)
+            return ret
+
+        ret = "{" + ", ".join(map(fmt, hints)) + "}"
+        return ret
+    else:
+        # Like get_origin(), but also supports numpy.typing.NDArray[dtype].
+        typ = getattr(typ, "__origin__", typ)
+
+        assert typ in _raw_type_mapping, f"Unsupported type {typ}"
         return _raw_type_mapping[typ]
-
-    assert False, f"Unsupported type: {typ}"
 
 
 def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
