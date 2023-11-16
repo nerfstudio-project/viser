@@ -50,7 +50,7 @@ extensions = [
     "m2r2",
     "sphinxcontrib.programoutput",
     "sphinxcontrib.ansi",
-    "sphinxcontrib.googleanalytics", # google analytics extension https://github.com/sphinx-contrib/googleanalytics/tree/master
+    "sphinxcontrib.googleanalytics",  # google analytics extension https://github.com/sphinx-contrib/googleanalytics/tree/master
 ]
 programoutput_use_ansi = True
 html_ansi_stylesheet = "black-on-white.css"
@@ -181,13 +181,7 @@ latex_elements: Dict[str, str] = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (
-        master_doc,
-        "viser.tex",
-        "viser",
-        "brentyi",
-        "manual",
-    ),
+    (master_doc, "viser.tex", "viser", "brentyi", "manual",),
 ]
 
 
@@ -204,22 +198,14 @@ man_pages = [(master_doc, "viser", "viser documentation", [author], 1)]
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (
-        master_doc,
-        "viser",
-        "viser",
-        author,
-        "viser",
-        "viser",
-        "Miscellaneous",
-    ),
+    (master_doc, "viser", "viser", author, "viser", "viser", "Miscellaneous",),
 ]
 
 
 # -- Extension configuration --------------------------------------------------
 
 # Google Analytics ID
-googleanalytics_id = 'G-RRGY51J5ZH'
+googleanalytics_id = "G-RRGY51J5ZH"
 
 # -- Options for todo extension ----------------------------------------------
 
