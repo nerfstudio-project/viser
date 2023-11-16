@@ -50,6 +50,7 @@ extensions = [
     "m2r2",
     "sphinxcontrib.programoutput",
     "sphinxcontrib.ansi",
+    "sphinxcontrib.googleanalytics", # google analytics extension https://github.com/sphinx-contrib/googleanalytics/tree/master
 ]
 programoutput_use_ansi = True
 html_ansi_stylesheet = "black-on-white.css"
@@ -216,6 +217,9 @@ texinfo_documents = [
 
 
 # -- Extension configuration --------------------------------------------------
+
+# Google Analytics ID
+googleanalytics_id = 'G-RRGY51J5ZH'
 
 # -- Options for todo extension ----------------------------------------------
 
