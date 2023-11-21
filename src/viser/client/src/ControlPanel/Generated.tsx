@@ -5,7 +5,7 @@ import {
 } from "../WebsocketMessages";
 import { ViewerContext, ViewerContextContents } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
-import { GuiConfig } from "./GuiState";
+import { GuiConfig, computeRelativeLuminance } from "./GuiState";
 import {
   Collapse,
   Image,
@@ -39,9 +39,11 @@ export default function GeneratedGuiContainer({
   // We need to take viewer as input in drei's <Html /> elements, where contexts break.
   containerId,
   viewer,
+  folderDepth,
 }: {
   containerId: string;
   viewer?: ViewerContextContents;
+  folderDepth?: number;
 }) {
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
@@ -53,23 +55,18 @@ export default function GeneratedGuiContainer({
   // Render each GUI element in this container.
   const out =
     guiIdSet === undefined ? null : (
-      <Box pt="xs">
+      <Box pt="0.75em">
         {[...guiIdSet]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
           .map((conf, index) => {
             return (
-              <>
-                {conf.type === "GuiAddFolderMessage" && index > 0 ? (
-                  <Box pt="0.03125em" />
-                ) : null}
-                <GeneratedInput conf={conf} key={conf.id} viewer={viewer} />
-                {conf.type === "GuiAddFolderMessage" &&
-                index < guiIdSet.size - 1 ? (
-                  // Add some whitespace after folders.
-                  <Box pt="0.03125em" />
-                ) : null}
-              </>
+              <GeneratedInput
+                conf={conf}
+                key={conf.id}
+                viewer={viewer}
+                folderDepth={folderDepth ?? 0}
+              />
             );
           })}
       </Box>
@@ -82,16 +79,18 @@ export default function GeneratedGuiContainer({
 function GeneratedInput({
   conf,
   viewer,
+  folderDepth,
 }: {
   conf: GuiConfig;
   viewer?: ViewerContextContents;
+  folderDepth: number;
 }) {
   // Handle GUI input types.
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
-    return <GeneratedFolder conf={conf} />;
+    return <GeneratedFolder conf={conf} folderDepth={folderDepth} />;
   if (conf.type == "GuiAddTabGroupMessage")
     return <GeneratedTabGroup conf={conf} />;
   if (conf.type == "GuiAddMarkdownMessage") {
@@ -100,7 +99,7 @@ function GeneratedInput({
     visible = visible ?? true;
     if (!visible) return <></>;
     return (
-      <Box pb="xs" px="sm">
+      <Box pb="xs" px="sm" style={{ maxWidth: "95%" }}>
         <ErrorBoundary
           fallback={<Text align="center">Markdown Failed to Render</Text>}
         >
@@ -131,7 +130,7 @@ function GeneratedInput({
   if (!visible) return <></>;
 
   let inputColor =
-    new ColorTranslator(theme.fn.primaryColor()).L > 55.0
+    computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
       ? theme.colors.gray[9]
       : theme.white;
 
@@ -142,8 +141,9 @@ function GeneratedInput({
       labeled = false;
       if (conf.color !== null) {
         inputColor =
-          new ColorTranslator(theme.colors[conf.color][theme.fn.primaryShade()])
-            .L > 55.0
+          computeRelativeLuminance(
+            theme.colors[conf.color][theme.fn.primaryShade()],
+          ) > 50.0
             ? theme.colors.gray[9]
             : theme.white;
       }
@@ -195,7 +195,16 @@ function GeneratedInput({
           <Box sx={{ flexGrow: 1 }}>
             <Slider
               id={conf.id}
-              size="sm"
+              size="xs"
+              thumbSize={0}
+              styles={(theme) => ({
+                thumb: {
+                  background: theme.fn.primaryColor(),
+                  borderRadius: "0.1em",
+                  height: "0.75em",
+                  width: "0.625em",
+                },
+              })}
               pt="0.3rem"
               showLabelOnHover={false}
               min={conf.min}
@@ -207,11 +216,11 @@ function GeneratedInput({
               marks={[{ value: conf.min }, { value: conf.max }]}
               disabled={disabled}
             />
-            <Flex justify="space-between" sx={{ marginTop: "-0.2em" }}>
-              <Text fz="0.7rem" c="dimmed">
+            <Flex justify="space-between">
+              <Text fz="0.7rem" c="dimmed" lh="1.2em" lts="-0.5px" mb="-0.1em">
                 {parseInt(conf.min.toFixed(6))}
               </Text>
-              <Text fz="0.7rem" c="dimmed">
+              <Text fz="0.7rem" c="dimmed" lh="1.2em" lts="-0.5px" mb="-0.1em">
                 {parseInt(conf.max.toFixed(6))}
               </Text>
             </Flex>
@@ -228,8 +237,15 @@ function GeneratedInput({
             hideControls
             step={conf.step ?? undefined}
             precision={conf.precision}
-            sx={{ width: "3rem", height: "1rem", minHeight: "1rem" }}
-            styles={{ input: { padding: "0.3rem" } }}
+            sx={{ width: "3rem" }}
+            styles={{
+              input: {
+                padding: "0.3rem",
+                letterSpacing: "-0.5px",
+                minHeight: "1.5rem",
+                height: "1.5rem",
+              },
+            }}
             ml="xs"
           />
         </Flex>
@@ -249,6 +265,12 @@ function GeneratedInput({
             // Ignore empty values.
             newValue !== "" && updateValue(newValue);
           }}
+          styles={{
+            input: {
+              minHeight: "1.625rem",
+              height: "1.625rem",
+            },
+          }}
           disabled={disabled}
           stepHoldDelay={500}
           stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
@@ -262,6 +284,13 @@ function GeneratedInput({
           size="xs"
           onChange={(value) => {
             updateValue(value.target.value);
+          }}
+          styles={{
+            input: {
+              minHeight: "1.625rem",
+              height: "1.625rem",
+              padding: "0 0.5em",
+            },
           }}
           disabled={disabled}
         />
@@ -319,11 +348,21 @@ function GeneratedInput({
       input = (
         <Select
           id={conf.id}
+          radius="xs"
           value={value}
           data={conf.options}
           onChange={updateValue}
           searchable
           maxDropdownHeight={400}
+          size="xs"
+          styles={{
+            input: {
+              padding: "0.3rem",
+              letterSpacing: "-0.5px",
+              minHeight: "1.625rem",
+              height: "1.625rem",
+            },
+          }}
           // zIndex of dropdown should be >modal zIndex.
           // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
           zIndex={1000}
@@ -343,6 +382,10 @@ function GeneratedInput({
           // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
           dropdownZIndex={1000}
           withinPortal={true}
+          styles={{
+            input: { height: "1.625rem", minHeight: "1.625rem" },
+            icon: { transform: "scale(0.8)" },
+          }}
         />
       );
       break;
@@ -358,6 +401,7 @@ function GeneratedInput({
           // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
           dropdownZIndex={1000}
           withinPortal={true}
+          styles={{ input: { height: "1.625rem", minHeight: "1.625rem" } }}
         />
       );
       break;
@@ -377,7 +421,7 @@ function GeneratedInput({
               style={{ flexGrow: 1, width: 0 }}
               disabled={disabled}
               compact
-              size="sm"
+              size="xs"
               variant="outline"
             >
               {option}
@@ -404,54 +448,72 @@ function GeneratedInput({
       );
 
   if (labeled)
-    input = <LabeledInput id={conf.id} label={conf.label} input={input} />;
+    input = (
+      <LabeledInput
+        id={conf.id}
+        label={conf.label}
+        input={input}
+        folderDepth={folderDepth}
+      />
+    );
 
   return (
-    <Box pb="xs" px="md">
+    <Box pb="0.625em" px="xs">
       {input}
     </Box>
   );
 }
 
-function GeneratedFolder({ conf }: { conf: GuiAddFolderMessage }) {
+function GeneratedFolder({
+  conf,
+  folderDepth,
+}: {
+  conf: GuiAddFolderMessage;
+  folderDepth: number;
+}) {
   const [opened, { toggle }] = useDisclosure(true);
   const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
   return (
     <Paper
       withBorder
-      pt="0.2em"
+      pt="0.125em"
       mx="xs"
-      mt="sm"
+      mt="xs"
       mb="sm"
       sx={{ position: "relative" }}
     >
       <Paper
         sx={{
-          fontSize: "0.9em",
+          fontSize: "0.875em",
           position: "absolute",
-          padding: "0 0.5em 0 0.25em",
+          padding: "0 0.25em 0 0.375em",
           top: 0,
-          left: "0.375em",
+          left: "0.25em",
           transform: "translateY(-50%)",
           cursor: "pointer",
           userSelect: "none",
+          fontWeight: 500,
         }}
         onClick={toggle}
       >
+        {conf.label}
         <ToggleIcon
           style={{
-            width: "1.2em",
-            height: "1.2em",
-            top: "0.2em",
+            width: "0.9em",
+            height: "0.9em",
+            strokeWidth: 3,
+            top: "0.1em",
             position: "relative",
-            marginRight: "0.25em",
+            marginLeft: "0.25em",
             opacity: 0.5,
           }}
         />
-        {conf.label}
       </Paper>
-      <Collapse in={opened}>
-        <GeneratedGuiContainer containerId={conf.id} />
+      <Collapse in={opened} pt="0.2em">
+        <GeneratedGuiContainer
+          containerId={conf.id}
+          folderDepth={folderDepth + 1}
+        />
       </Collapse>
       <Collapse in={!opened}>
         <Box p="xs"></Box>
@@ -548,6 +610,8 @@ function VectorInput(
               paddingLeft: "0.3rem",
               paddingRight: "1.1rem",
               textAlign: "right",
+              minHeight: "1.5rem",
+              height: "1.5rem",
             },
             rightSection: { width: "1.0rem" },
             control: {
@@ -572,14 +636,21 @@ function LabeledInput(props: {
   id: string;
   label: string;
   input: React.ReactNode;
+  folderDepth: number;
 }) {
   return (
     <Flex align="center">
-      <Box w="6em" pr="xs">
+      <Box
+        // The per-layer offset here is just eyeballed.
+        w={`${7 - props.folderDepth * 0.6375}em`}
+        pr="xs"
+        sx={{ flexShrink: 0 }}
+      >
         <Text
           c="dimmed"
-          fz="sm"
+          fz="0.875em"
           lh="1.15em"
+          lts="-0.7px"
           unselectable="off"
           sx={{ wordWrap: "break-word" }}
         >
