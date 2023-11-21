@@ -526,6 +526,59 @@ class MessageApi(abc.ABC):
                 visible=visible,
             )
 
+    def add_box(
+        self,
+        name: str,
+        dimensions: Tuple[float, float, float] | onp.ndarray = (1.0, 1.0, 1.0),
+        colors: Tuple[float, float, float] | onp.ndarray = (-1.0, -1.0, -1.0),
+        scale: float = 1.0,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> GlbHandle:
+        """Add a box to the scene."""
+
+        mesh = trimesh.creation.box(dimensions)
+
+        if colors != (-1.0, -1.0, -1.0):
+            mesh.visual.vertex_colors = colors
+
+        return self.add_mesh_trimesh(
+            name=name,
+            mesh=mesh,
+            position=position,
+            scale=scale,
+            wxyz=wxyz,
+            visible=visible,
+        )
+
+    def add_icosphere(
+        self,
+        name: str,
+        radius: float,
+        subdivisions: int,
+        colors: Tuple[float, float, float] | onp.ndarray = (-1.0, -1.0, -1.0),
+        scale: float = 1.0,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> GlbHandle:
+        """Add an icosphere to the scene."""
+
+        mesh = trimesh.creation.icosphere(subdivisions=2, radius=0.4)
+
+        if colors != (-1.0, -1.0, -1.0):
+            mesh.visual.vertex_colors = colors
+
+        return self.add_mesh_trimesh(
+            name=name,
+            mesh=mesh,
+            position=position,
+            scale=scale,
+            wxyz=wxyz,
+            visible=visible,
+        )
+
     def set_background_image(
         self,
         image: onp.ndarray,

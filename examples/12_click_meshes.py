@@ -42,26 +42,38 @@ def main() -> None:
         colormap = matplotlib.colormaps["tab20"]
 
         def create_mesh(counter: int) -> None:
-            if counter == 0:
-                mesh = trimesh.creation.box((0.5, 0.5, 0.5))
-            elif counter == 1:
-                mesh = trimesh.creation.box((0.5, 0.5, 0.5))
+            adding_mesh = "unknown"
+
+            if counter == 0 or counter == 1:
+                adding_mesh = "box"
             else:
-                mesh = trimesh.creation.icosphere(subdivisions=2, radius=0.4)
+                adding_mesh = "icosphere"
 
-            colors = colormap(
-                (i * grid_shape[1] + j + onp.random.rand(mesh.vertices.shape[0]))
-                / (grid_shape[0] * grid_shape[1])
-            )
+            colors = (0.5, 0.5, 0.5)
+
             if counter != 0:
-                assert mesh.visual is not None
-                mesh.visual.vertex_colors = colors
+                index = (i * grid_shape[1] + j) / (grid_shape[0] * grid_shape[1])
+                colors = colormap(index)
 
-            handle = server.add_mesh_trimesh(
-                name=f"/sphere_{i}_{j}",
-                mesh=mesh,
-                position=(i, j, 0.0),
-            )
+            handle = None
+
+            if adding_mesh == "box":
+                handle = server.add_box(
+                    name=f"/sphere_{i}_{j}",
+                    position=(i, j, 0.0),
+                    colors=colors,
+                    dimensions=(0.5, 0.5, 0.5),
+                )
+            elif adding_mesh == "icosphere":
+                handle = server.add_icosphere(
+                    name=f"/sphere_{i}_{j}",
+                    position=(i, j, 0.0),
+                    colors=colors,
+                    radius=0.4,
+                    subdivisions=2,
+                )
+
+            assert handle is not None
 
             @handle.on_click
             def _(_) -> None:
