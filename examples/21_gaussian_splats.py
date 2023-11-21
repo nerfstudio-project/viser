@@ -32,7 +32,7 @@ def main(splat_path: Path) -> None:
     splat_uint8 = onp.frombuffer(splat_buffer, dtype=onp.uint8).reshape(
         (num_gaussians, bytes_per_gaussian)
     )
-    scales = splat_uint8[:, 12:24].view(onp.float32)
+    scales = splat_uint8[:, 12:24].copy().view(onp.float32)
     wxyzs = splat_uint8[:, 28:32] / 255.0 * 2.0 - 1.0
     Rs = onp.array([tf.SO3(wxyz).as_matrix() for wxyz in wxyzs])
     covariances = onp.einsum(
@@ -57,8 +57,8 @@ def main(splat_path: Path) -> None:
     server.add_gaussian_splats(
         "/gaussian_splats",
         # Centers should have shape (N, 3).
-        centers=splat_uint8[:, 0:12].view(onp.float32),
-        # Colors should have shape (N, 4).
+        centers=splat_uint8[:, 0:12].copy().view(onp.float32),
+        # Colors should have shape (N, 3).
         rgbs=splat_uint8[:, 24:27] / 255.0,
         opacities=splat_uint8[:, 27:28] / 255.0,
         # Covariances should have shape (N, 3, 3).
