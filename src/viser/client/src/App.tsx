@@ -454,6 +454,7 @@ function AboutViser() {
       <p>
         <Anchor
           href="https://github.com/nerfstudio-project/viser"
+          target="_blank"
           fw="800"
           sx={{ "&:focus": { outline: "none" } }}
         >
@@ -462,6 +463,7 @@ function AboutViser() {
         &nbsp;&nbsp;&bull;&nbsp;&nbsp;
         <Anchor
           href="https://viser.studio"
+          target="_blank"
           fw="800"
           sx={{ "&:focus": { outline: "none" } }}
         >
