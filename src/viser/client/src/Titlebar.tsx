@@ -145,7 +145,7 @@ export function Titlebar() {
         zIndex: 5,
       }}
     >
-      <Paper p="xs" shadow="md" sx={{ height: "100%" }}>
+      <Paper p="xs" shadow="0 0 0.8em 0 rgba(0,0,0,0.1)" sx={{ height: "100%" }}>
         <Container
           fluid
           sx={() => ({

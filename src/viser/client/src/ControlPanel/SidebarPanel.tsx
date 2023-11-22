@@ -64,7 +64,7 @@ export default function SidebarPanel({
       {collapsedView}
       {/* Using an <Aside /> below will break Mantine color inputs. */}
       <Paper
-        shadow="xl"
+        shadow="0 0 1em 0 rgba(0,0,0,0.1)"
         component={ScrollArea}
         sx={{
           width: collapsed ? 0 : width,
@@ -111,10 +111,11 @@ SidebarPanel.Handle = function SidebarPanelHandle({
     <Box
       p="xs"
       sx={(theme) => ({
-        backgroundColor:
+        borderBottom: "1px solid",
+        borderColor:
           theme.colorScheme == "dark"
-            ? theme.colors.dark[5]
-            : theme.colors.gray[1],
+            ? theme.colors.dark[4]
+            : theme.colors.gray[3],
         lineHeight: "1.5em",
         fontWeight: 400,
         position: "relative",
