@@ -9,14 +9,12 @@
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="https://viser.studio/_static/viser_banner_dark.svg" />
     <!-- /pypi-strip -->
-        <img alt="tyro logo" src="https://viser.studio/_static/viser_banner.svg" width="200px" />
+        <img alt="tyro logo" src="https://viser.studio/_static/viser_banner.svg" />
     <!-- pypi-strip -->
     </picture>
     <!-- /pypi-strip -->
 
 </p>
-
-<br />
 
 <p align="center">
     <strong><code>pip install viser</code></strong>
