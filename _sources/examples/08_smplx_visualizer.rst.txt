@@ -44,7 +44,7 @@ parameters to run this script:
             share: bool = False,
         ) -> None:
             server = viser.ViserServer(share=share)
-            server.configure_theme(control_layout="collapsible", dark_mode=True)
+            server.configure_theme(control_layout="collapsible")
             model = smplx.create(
                 model_path=str(model_path),
                 model_type=model_type,
@@ -142,6 +142,7 @@ parameters to run this script:
             # GUI elements: mesh settings + visibility.
             with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
                 gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
+                gui_rgb_text = server.add_gui_text("Color", "")
                 gui_wireframe = server.add_gui_checkbox("Wireframe", initial_value=False)
                 gui_show_controls = server.add_gui_checkbox("Handles", initial_value=False)
 

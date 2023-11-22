@@ -18,7 +18,7 @@
         <title>viser</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b20cc3f5" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=135e06be" />
-    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ea52c679" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=739484b3" />
     <link rel="stylesheet" type="text/css" href="_static/ansi.css" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=36a5483c" />
     
@@ -159,8 +159,8 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="#">
     
     <div class="sidebar-logo-container" style="margin: .5rem auto .5rem auto">
-        <img class="sidebar-logo only-light" src="_static/viser.svg" alt="Light Logo" />
-        <img class="sidebar-logo only-dark" src="_static/viser.svg" alt="Dark Logo" />
+        <img class="sidebar-logo only-light" src="_static/viser_banner.svg" alt="Light Logo" />
+        <img class="sidebar-logo only-dark" src="_static/viser_banner_dark.svg" alt="Dark Logo" />
     </div>
 </a>
 
@@ -195,6 +195,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transforms/">Transforms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extras/">Extras</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -256,21 +257,21 @@
           <section id="viser">
 <h1>viser<a class="headerlink" href="#viser" title="Link to this heading">#</a></h1>
 <p><a class="reference external" href="https://github.com/nerfstudio-project/viser"><img alt="Mypy status icon" src="https://github.com/nerfstudio-project/viser/workflows/mypy/badge.svg?branch=main" /></a> <a class="reference external" href="https://github.com/nerfstudio-project/viser"><img alt="Mypy status icon" src="https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg?branch=main" /></a> <a class="reference external" href="https://github.com/nerfstudio-project/viser"><img alt="TypeScript status icon" src="https://github.com/nerfstudio-project/viser/workflows/typescript-compile/badge.svg" /></a> <a class="reference external" href="https://pypi.org/project/viser/"><img alt="Version icon" src="https://img.shields.io/pypi/pyversions/viser" /></a></p>
-<p><code class="docutils literal notranslate"><span class="pre">viser</span></code> is a library for interactive 3D visualization + Python, inspired by
+<p><strong>viser</strong> is a library for interactive 3D visualization + Python, inspired by
 tools like <a class="reference external" href="https://github.com/stevenlovegrove/Pangolin">Pangolin</a>,
-<a class="reference external" href="https://wiki.ros.org/rviz/">rviz</a>, and
-<a class="reference external" href="https://github.com/rdeits/meshcat">meshcat</a>.</p>
+<a class="reference external" href="https://wiki.ros.org/rviz/">rviz</a>,
+<a class="reference external" href="https://github.com/rdeits/meshcat">meshcat</a>, and
+<a class="reference external" href="https://github.com/gradio-app/gradio">Gradio</a>. It’s designed to support
+applications in 3D vision and robotics.</p>
 <p>As a standalone visualization tool, <code class="docutils literal notranslate"><span class="pre">viser</span></code> features include:</p>
 <ul class="simple">
-<li><p>Web interface for easy use on remote machines.</p></li>
-<li><p>Python API for sending 3D primitives to the browser.</p></li>
-<li><p>Python-configurable inputs: buttons, checkboxes, text inputs, sliders,
-dropdowns, gizmos.</p></li>
-<li><p>Support for multiple panels and view-synchronized connections.</p></li>
+<li><p>Python API for visualizing 3D primitives in a web browser.</p></li>
+<li><p>Python-configurable GUI elements: buttons, checkboxes, text inputs, sliders,
+dropdowns, and more.</p></li>
+<li><p>A <a class="reference external" href="https://github.com/rdeits/meshcat">meshcat</a> and
+<a class="reference external" href="http://wiki.ros.org/tf2">tf</a>-inspired coordinate frame tree.</p></li>
 </ul>
-<p>The <code class="docutils literal notranslate"><span class="pre">viser.infra</span></code> backend can also be used to build custom web applications
-(example:
-<a class="reference external" href="https://github.com/nerfstudio-project/nerfstudio">the Nerfstudio viewer</a>). It
+<p>The <code class="docutils literal notranslate"><span class="pre">viser.infra</span></code> backend can also be used to build custom web applications. It
 supports:</p>
 <ul class="simple">
 <li><p>Websocket / HTTP server management, on a shared port.</p></li>
@@ -291,7 +292,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 
 <span class="c1"># Run an example.</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="o">[</span>examples<span class="o">]</span>
-python<span class="w"> </span>./examples/4_gui.py
+python<span class="w"> </span>./examples/02_gui.py
 </pre></div>
 </div>
 <p>After an example script is running, you can connect by navigating to the printed
