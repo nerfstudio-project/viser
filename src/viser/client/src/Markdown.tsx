@@ -44,7 +44,7 @@ function rehypeCodeblock(): void | Transformer<Root, Root> {
 // Some of them separate the children into a separate prop since Mantine requires a child
 // and MDX always makes children optional, so destructuring props doesn't work
 function MdxText(props: React.ComponentPropsWithoutRef<typeof Text>) {
-  return <Text {...props} sx={{ marginBottom: "0.5em" }} />;
+  return <Text {...props} />;
 }
 
 function MdxAnchor(props: React.ComponentPropsWithoutRef<typeof Anchor>) {
