@@ -2,22 +2,22 @@
 
 |mypy| |nbsp| |pyright| |nbsp| |typescript| |nbsp| |versions|
 
-`viser` is a library for interactive 3D visualization + Python, inspired by
+**viser** is a library for interactive 3D visualization + Python, inspired by
 tools like [Pangolin](https://github.com/stevenlovegrove/Pangolin),
-[rviz](https://wiki.ros.org/rviz/), and
-[meshcat](https://github.com/rdeits/meshcat).
+[rviz](https://wiki.ros.org/rviz/),
+[meshcat](https://github.com/rdeits/meshcat), and
+[Gradio](https://github.com/gradio-app/gradio). It's designed to support
+applications in 3D vision and robotics.
 
 As a standalone visualization tool, `viser` features include:
 
-- Web interface for easy use on remote machines.
-- Python API for sending 3D primitives to the browser.
-- Python-configurable inputs: buttons, checkboxes, text inputs, sliders,
-  dropdowns, gizmos.
-- Support for multiple panels and view-synchronized connections.
+- Python API for visualizing 3D primitives in a web browser.
+- Python-configurable GUI elements: buttons, checkboxes, text inputs, sliders,
+  dropdowns, and more.
+- A [meshcat](https://github.com/rdeits/meshcat) and
+  [tf](http://wiki.ros.org/tf2)-inspired coordinate frame tree.
 
-The `viser.infra` backend can also be used to build custom web applications
-(example:
-[the Nerfstudio viewer](https://github.com/nerfstudio-project/nerfstudio)). It
+The `viser.infra` backend can also be used to build custom web applications. It
 supports:
 
 - Websocket / HTTP server management, on a shared port.
@@ -39,7 +39,7 @@ pip install -e .
 
 # Run an example.
 pip install -e .[examples]
-python ./examples/4_gui.py
+python ./examples/02_gui.py
 ```
 
 After an example script is running, you can connect by navigating to the printed
@@ -78,6 +78,7 @@ URL (default: `http://localhost:8080`).
 
    ./infrastructure.md
    ./transforms.md
+   ./extras.md
 
 .. toctree::
    :caption: Examples

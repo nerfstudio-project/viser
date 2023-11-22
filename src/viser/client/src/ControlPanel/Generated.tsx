@@ -59,7 +59,7 @@ export default function GeneratedGuiContainer({
         {[...guiIdSet]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
-          .map((conf, index) => {
+          .map((conf) => {
             return (
               <GeneratedInput
                 conf={conf}
@@ -643,18 +643,34 @@ function LabeledInput(props: {
       <Box
         // The per-layer offset here is just eyeballed.
         w={`${7 - props.folderDepth * 0.6375}em`}
+        h="1.15rem"
         pr="xs"
-        sx={{ flexShrink: 0 }}
+        sx={{ flexShrink: 0, position: "relative" }}
       >
         <Text
           c="dimmed"
           fz="0.875em"
-          lh="1.15em"
+          lh="1.15rem"
           lts="-0.7px"
           unselectable="off"
-          sx={{ wordWrap: "break-word" }}
+          sx={(theme) => ({
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            width: "100%",
+            boxSizing: "content-box",
+            "&:hover": {
+              whiteSpace: "normal",
+              position: "absolute",
+              backgroundColor:
+                theme.colorScheme == "dark"
+                  ? theme.colors.dark[7]
+                  : theme.white,
+              zIndex: 1000,
+            },
+          })}
         >
-          <label htmlFor={props.id}> {props.label}</label>
+          <label htmlFor={props.id}>{props.label}</label>
         </Text>
       </Box>
       <Box sx={{ flexGrow: 1 }}>{props.input}</Box>

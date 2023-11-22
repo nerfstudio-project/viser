@@ -15,6 +15,8 @@ from scipy.spatial.transform import Rotation
 
 
 class Record3dLoader:
+    """Helper for loading frames for Record3D captures."""
+
     # NOTE(hangg): Consider moving this module into
     # `examples/7_record3d_visualizer.py` since it is usecase-specific.
 
@@ -87,6 +89,8 @@ class Record3dLoader:
 
 @dataclasses.dataclass
 class Record3dFrame:
+    """A single frame from a Record3D capture."""
+
     K: onpt.NDArray[onp.float32]
     rgb: onpt.NDArray[onp.uint8]
     depth: onpt.NDArray[onp.float32]
