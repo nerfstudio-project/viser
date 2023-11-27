@@ -184,7 +184,18 @@ class MessageApi(abc.ABC):
         show_logo: bool = True,
         brand_color: Optional[Tuple[int, int, int]] = None,
     ) -> None:
-        """Configure the viser front-end's visual appearance."""
+        """Configures the visual appearance of the viser front-end.
+
+        Args:
+            titlebar_content: Optional configuration for the title bar.
+            control_layout: The layout of control elements, options are "floating",
+                            "collapsible", or "fixed".
+            control_width: The width of control elements, options are "small",
+                           "medium", or "large".
+            dark_mode: A boolean indicating if dark mode should be enabled.
+            show_logo: A boolean indicating if the logo should be displayed.
+            brand_color: An optional tuple of integers (RGB) representing the brand color.
+        """
 
         colors_cast: Optional[
             Tuple[str, str, str, str, str, str, str, str, str, str]
@@ -213,8 +224,8 @@ class MessageApi(abc.ABC):
                 ls = tuple(
                     onp.interp(
                         x=onp.arange(10),
-                        xp=(0, primary_index, 9),
-                        fp=(max_l, l, min_l),
+                        xp=onp.array([0, primary_index, 9]),
+                        fp=onp.array([max_l, l, min_l]),
                     )
                 )
                 colors_cast = tuple(_hex_from_hls(h, ls[i], s) for i in range(10))  # type: ignore
@@ -246,7 +257,20 @@ class MessageApi(abc.ABC):
         """Add a general 3D asset via binary glTF (GLB).
 
         To load glTF files from disk, you can convert to GLB via a library like
-        `pygltflib`."""
+        `pygltflib`.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+              define a kinematic tree.
+            glb_data: A binary payload.
+            scale: A scale for resizing the GLB asset.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
         self._queue(_messages.GlbMessage(name, glb_data, scale))
         return GlbHandle._make(self, name, wxyz, position, visible)
 
@@ -260,8 +284,32 @@ class MessageApi(abc.ABC):
         line_width: float = 1,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: Optional[int] = None,
-    ) -> None:
-        """Add spline using Catmull-Rom interpolation."""
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> SceneNodeHandle:
+        """Add a spline to the scene using Catmull-Rom interpolation.
+
+        This method creates a spline based on a set of positions and interpolates
+        them using the Catmull-Rom algorithm. This can be used to create smooth curves.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            positions: A tuple of 3D positions (x, y, z) defining the spline's path.
+            curve_type: Type of the curve ('centripetal', 'chordal', 'catmullrom').
+            tension: Tension of the curve. Affects the tightness of the curve.
+            closed: Boolean indicating if the spline is closed (forms a loop).
+            line_width: Width of the spline line.
+            color: Color of the spline as an RGB tuple.
+            segments: Number of segments to divide the spline into.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
         if isinstance(positions, onp.ndarray):
             assert len(positions.shape) == 2 and positions.shape[1] == 3
             positions = tuple(map(tuple, positions))  # type: ignore
@@ -279,6 +327,7 @@ class MessageApi(abc.ABC):
                 segments=segments,
             )
         )
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
     def add_spline_cubic_bezier(
         self,
@@ -288,8 +337,31 @@ class MessageApi(abc.ABC):
         line_width: float = 1,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: Optional[int] = None,
-    ) -> None:
-        """Add spline using Cubic Bezier interpolation."""
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> SceneNodeHandle:
+        """Add a spline to the scene using Cubic Bezier interpolation.
+
+        This method allows for the creation of a cubic Bezier spline based on given
+        positions and control points. It is useful for creating complex, smooth,
+        curving shapes.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            positions: A tuple of 3D positions (x, y, z) defining the spline's key points.
+            control_points: A tuple of control points for Bezier curve shaping.
+            line_width: Width of the spline line.
+            color: Color of the spline as an RGB tuple.
+            segments: Number of segments to divide the spline into.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
 
         if isinstance(positions, onp.ndarray):
             assert len(positions.shape) == 2 and positions.shape[1] == 3
@@ -311,6 +383,7 @@ class MessageApi(abc.ABC):
                 segments=segments,
             )
         )
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
     def add_camera_frustum(
         self,
@@ -326,12 +399,32 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> CameraFrustumHandle:
-        """Add a frustum to the scene. Useful for visualizing cameras.
+        """Add a camera frustum to the scene for visualization.
+
+        This method adds a frustum representation, typically used to visualize the
+        field of view of a camera. It's helpful for understanding the perspective
+        and coverage of a camera in the 3D space.
 
         Like all cameras in the viser Python API, frustums follow the OpenCV [+Z forward,
-        +X right, +Y down] convention.
+        +X right, +Y down] convention. fov is vertical in radians; aspect is width over height
 
-        fov is vertical in radians; aspect is width over height."""
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            fov: Field of view of the camera (in radians).
+            aspect: Aspect ratio of the camera (width over height).
+            scale: Scale factor for the size of the frustum.
+            color: Color of the frustum as an RGB tuple.
+            image: Optional image to be displayed on the frustum.
+            format: Format of the provided image ('png' or 'jpeg').
+            jpeg_quality: Quality of the jpeg image (if jpeg format is used).
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
 
         if image is not None:
             media_type, base64_data = _encode_image_base64(
@@ -365,7 +458,24 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> FrameHandle:
-        """Add a coordinate frame to the scene."""
+        """Add a coordinate frame to the scene.
+
+        This method is used for adding a visual representation of a coordinate frame,
+        which can help in understanding the orientation and position of objects in 3D space.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            show_axes: Boolean to indicate whether to show the axes.
+            axes_length: Length of each axis.
+            axes_radius: Radius of each axis.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
         self._queue(
             _messages.FrameMessage(
                 name=name,
@@ -393,8 +503,33 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> MeshHandle:
-        """Add a grid to the scene. Useful for visualizing things like ground planes."""
+    ) -> SceneNodeHandle:
+        """Add a grid to the scene.
+
+        This method creates a grid which can be used as a reference for scaling and
+        positioning objects in the scene. It's particularly useful for providing a sense
+        of scale and orientation.
+
+        Args:
+            name: Name of the grid.
+            width: Width of the grid.
+            height: Height of the grid.
+            width_segments: Number of segments along the width.
+            height_segments: Number of segments along the height.
+            plane: The plane in which the grid is oriented (e.g., 'xy', 'yz').
+            cell_color: Color of the grid cells as an RGB tuple.
+            cell_thickness: Thickness of the grid lines.
+            cell_size: Size of each cell in the grid.
+            section_color: Color of the grid sections as an RGB tuple.
+            section_thickness: Thickness of the section lines.
+            section_size: Size of each section in the grid.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
         self._queue(
             _messages.GridMessage(
                 name=name,
@@ -411,7 +546,7 @@ class MessageApi(abc.ABC):
                 section_size=section_size,
             )
         )
-        return MeshHandle._make(self, name, wxyz, position, visible)
+        return SceneNodeHandle._make(self, name, wxyz, position, visible)
 
     def add_label(
         self,
@@ -421,7 +556,21 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> LabelHandle:
-        """Add a 2D label to the scene."""
+        """Add a 2D label to the scene.
+
+        This method creates a text label in the 3D scene, which can be used to annotate
+        or provide information about specific points or objects.
+
+        Args:
+            name: Name of the label.
+            text: Text content of the label.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
         self._queue(_messages.LabelMessage(name, text))
         return LabelHandle._make(self, name, wxyz, position, visible=visible)
 
@@ -443,8 +592,11 @@ class MessageApi(abc.ABC):
             colors: Colors of points. Should have shape (N, 3) or (3,).
             point_size: Size of each point.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
-            position: Translation from parent frame to local frame (t_pl).
-            visible: Whether or not this point cloud is initially visible.
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
         """
         colors_cast = _colors_to_uint8(onp.asarray(colors))
         assert (
@@ -485,7 +637,27 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> MeshHandle:
-        """Add a mesh to the scene."""
+        """Add a mesh to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            vertices: A numpy array of vertex positions. Should have shape (V, 3).
+            faces: A numpy array of faces, where each face is represented by indices of
+                vertices. Should have shape (F,)
+            color: Color of the mesh as an RGB tuple.
+            wireframe: Boolean indicating if the mesh should be rendered as a wireframe.
+            opacity: Opacity of the mesh. None means opaque.
+            material: Material type of the mesh ('standard', 'toon3', 'toon5').
+            side: Side of the surface to render ('front', 'back', 'double').
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this mesh is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
         self._queue(
             _messages.MeshMessage(
                 name,
@@ -512,7 +684,20 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GlbHandle:
-        """Add a trimesh mesh to the scene. Internally calls `self.add_glb()`."""
+        """Add a trimesh mesh to the scene. Internally calls `self.add_glb()`.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+              define a kinematic tree.
+            mesh: A trimesh mesh object.
+            scale: A scale for resizing the mesh.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
 
         with io.BytesIO() as data_buffer:
             mesh.export(data_buffer, file_type="glb")
@@ -533,7 +718,14 @@ class MessageApi(abc.ABC):
         jpeg_quality: Optional[int] = None,
         depth: Optional[onp.ndarray] = None,
     ) -> None:
-        """Set a background image for the scene, optionally with depth compositing."""
+        """Set a background image for the scene, optionally with depth compositing.
+
+        Args:
+            image: The image to set as the background. Should have shape (H, W, 3).
+            format: Format to transport and display the image using ('png' or 'jpeg').
+            jpeg_quality: Quality of the jpeg image (if jpeg format is used).
+            depth: Optional depth image to use to composite background with scene elements.
+        """
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
@@ -579,7 +771,24 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> ImageHandle:
-        """Add a 2D image to the scene. Rendered in 3D."""
+        """Add a 2D image to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            image: A numpy array representing the image.
+            render_width: Width at which the image should be rendered in the scene.
+            render_height: Height at which the image should be rendered in the scene.
+            format: Format to transport and display the image using ('png' or 'jpeg').
+            jpeg_quality: Quality of the jpeg image (if jpeg format is used).
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this image is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
@@ -617,8 +826,33 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> TransformControlsHandle:
-        """Add a transform gizmo for interacting with the scene."""
-        # That decorator factory would be really helpful here...
+        """Add a transform gizmo for interacting with the scene.
+
+        This method adds a transform control (gizmo) to the scene, allowing for interactive
+        manipulation of objects in terms of their position, rotation, and scale.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            scale: Scale of the transform controls.
+            line_width: Width of the lines used in the gizmo.
+            fixed: Boolean indicating if the gizmo should be fixed in position.
+            auto_transform: Whether the transform should be applied automatically.
+            active_axes: Tuple of booleans indicating active axes.
+            disable_axes: Boolean to disable axes interaction.
+            disable_sliders: Boolean to disable slider interaction.
+            disable_rotations: Boolean to disable rotation interaction.
+            translation_limits: Limits for translation.
+            rotation_limits: Limits for rotation.
+            depth_test: Boolean indicating if depth testing should be used when rendering.
+            opacity: Opacity of the gizmo.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this gizmo is initially visible.
+
+        Returns:
+            Handle for manipulating (and reading state of) scene node.
+        """
         self._queue(
             _messages.TransformControlsMessage(
                 name=name,
@@ -662,7 +896,7 @@ class MessageApi(abc.ABC):
         self._handle_from_transform_controls_name[name] = handle
         return handle
 
-    def reset_scene(self):
+    def reset_scene(self) -> None:
         """Reset the scene."""
         self._queue(_messages.ResetSceneMessage())
 
@@ -763,7 +997,11 @@ class MessageApi(abc.ABC):
         self,
         func: Callable[[ScenePointerEvent], None],
     ) -> Callable[[ScenePointerEvent], None]:
-        """Add a callback for scene pointer events."""
+        """Add a callback for scene pointer events.
+
+        Args:
+            func: The callback function to add.
+        """
         self._scene_pointer_cb.append(func)
 
         # If this is the first callback.
@@ -775,7 +1013,11 @@ class MessageApi(abc.ABC):
         self,
         func: Callable[[ScenePointerEvent], None],
     ) -> None:
-        """Check for the function handle in the list of callbacks and remove it."""
+        """Check for the function handle in the list of callbacks and remove it.
+
+        Args:
+            func: The callback function to remove.
+        """
         if func in self._scene_pointer_cb:
             self._scene_pointer_cb.remove(func)
 
@@ -824,7 +1066,19 @@ class MessageApi(abc.ABC):
         visible: bool = True,
     ) -> Gui3dContainerHandle:
         """Add a 3D gui container to the scene. The returned container handle can be
-        used as a context to place GUI elements into the 3D scene."""
+        used as a context to place GUI elements into the 3D scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node. Can be used as a context to place GUI
+            elements inside of the container.
+        """
 
         # Avoids circular import.
         from ._gui_api import GuiApi, _make_unique_id
@@ -851,7 +1105,12 @@ class MessageApi(abc.ABC):
         return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)
 
     def send_file_download(self, filename: str, content: bytes) -> None:
-        """Send a file for a client or clients to download."""
+        """Send a file for a client or clients to download.
+
+        Args:
+            filename: Name of the file to send. Used to infer MIME type.
+            content: Content of the file.
+        """
         mime_type = mimetypes.guess_type(filename, strict=False)[0]
         assert (
             mime_type is not None
@@ -867,4 +1126,5 @@ class MessageApi(abc.ABC):
     @contextlib.contextmanager
     @abc.abstractmethod
     def atomic(self) -> Generator[None, None, None]:
+        """"""
         raise NotImplementedError()

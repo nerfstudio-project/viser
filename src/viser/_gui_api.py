@@ -184,7 +184,15 @@ class GuiApi(abc.ABC):
     def add_gui_folder(
         self, label: str, order: Optional[float] = None
     ) -> GuiFolderHandle:
-        """Add a folder, and return a handle that can be used to populate it."""
+        """Add a folder, and return a handle that can be used to populate it.
+
+        Args:
+            label: Label to display on the folder.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used as a context to populate the folder.
+        """
         folder_container_id = _make_unique_id()
         order = _apply_default_order(order)
         self._get_api()._queue(
@@ -208,7 +216,15 @@ class GuiApi(abc.ABC):
         order: Optional[float] = None,
     ) -> GuiModalHandle:
         """Show a modal window, which can be useful for popups and messages, then return
-        a handle that can be used to populate it."""
+        a handle that can be used to populate it.
+
+        Args:
+            title: Title to display on the modal.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used as a context to populate the modal.
+        """
         modal_container_id = _make_unique_id()
         order = _apply_default_order(order)
         self._get_api()._queue(
@@ -227,7 +243,14 @@ class GuiApi(abc.ABC):
         self,
         order: Optional[float] = None,
     ) -> GuiTabGroupHandle:
-        """Add a tab group."""
+        """Add a tab group.
+
+        Args:
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used as a context to populate the tab group.
+        """
         tab_group_id = _make_unique_id()
         order = _apply_default_order(order)
         return GuiTabGroupHandle(
@@ -246,7 +269,16 @@ class GuiApi(abc.ABC):
         image_root: Optional[Path] = None,
         order: Optional[float] = None,
     ) -> GuiMarkdownHandle:
-        """Add markdown to the GUI."""
+        """Add markdown to the GUI.
+
+        Args:
+            content: Markdown content to display.
+            image_root: Optional root directory to resolve relative image paths.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
         handle = GuiMarkdownHandle(
             _gui_api=self,
             _id=_make_unique_id(),
@@ -289,7 +321,20 @@ class GuiApi(abc.ABC):
         order: Optional[float] = None,
     ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
-        it is clicked; to detect clicks, we can manually set it back to `False`."""
+        it is clicked; to detect clicks, we can manually set it back to `False`.
+
+        Args:
+            label: Label to display on the button.
+            visible: Whether the button is visible.
+            disabled: Whether the button is disabled.
+            hint: Optional hint to display on hover.
+            color: Optional color to use for the button.
+            icon: Optional icon to display on the button.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
 
         # Re-wrap the GUI handle with a button interface.
         id = _make_unique_id()
@@ -351,7 +396,19 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiButtonGroupHandle[Any]:  # Return types are specified in overloads.
-        """Add a button group to the GUI."""
+        """Add a button group to the GUI.
+
+        Args:
+            label: Label to display on the button group.
+            options: Sequence of options to display as buttons.
+            visible: Whether the button group is visible.
+            disabled: Whether the button group is disabled.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
         initial_value = options[0]
         id = _make_unique_id()
         order = _apply_default_order(order)
@@ -381,7 +438,19 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiInputHandle[bool]:
-        """Add a checkbox to the GUI."""
+        """Add a checkbox to the GUI.
+
+        Args:
+            label: Label to display on the checkbox.
+            initial_value: Initial value of the checkbox.
+            disabled: Whether the checkbox is disabled.
+            visible: Whether the checkbox is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
         assert isinstance(initial_value, bool)
         id = _make_unique_id()
         order = _apply_default_order(order)
@@ -408,7 +477,19 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiInputHandle[str]:
-        """Add a text input to the GUI."""
+        """Add a text input to the GUI.
+
+        Args:
+            label: Label to display on the text input.
+            initial_value: Initial value of the text input.
+            disabled: Whether the text input is disabled.
+            visible: Whether the text input is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
         assert isinstance(initial_value, str)
         id = _make_unique_id()
         order = _apply_default_order(order)
@@ -438,7 +519,24 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiInputHandle[IntOrFloat]:
-        """Add a number input to the GUI, with user-specifiable bound and precision parameters."""
+        """Add a number input to the GUI, with user-specifiable bound and precision parameters.
+
+        Args:
+            label: Label to display on the number input.
+            initial_value: Initial value of the number input.
+            min: Optional minimum value of the number input.
+            max: Optional maximum value of the number input.
+            step: Optional step size of the number input. Computed automatically if not
+                specified.
+            disabled: Whether the number input is disabled.
+            visible: Whether the number input is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+
         assert isinstance(initial_value, (int, float))
 
         if step is None:
@@ -489,7 +587,22 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiInputHandle[Tuple[float, float]]:
-        """Add a length-2 vector input to the GUI."""
+        """Add a length-2 vector input to the GUI.
+
+        Args:
+            label: Label to display on the vector input.
+            initial_value: Initial value of the vector input.
+            min: Optional minimum value of the vector input.
+            max: Optional maximum value of the vector input.
+            step: Optional step size of the vector input. Computed automatically if not
+            disabled: Whether the vector input is disabled.
+            visible: Whether the vector input is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
         initial_value = cast_vector(initial_value, 2)
         min = cast_vector(min, 2) if min is not None else None
         max = cast_vector(max, 2) if max is not None else None
@@ -535,7 +648,22 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiInputHandle[Tuple[float, float, float]]:
-        """Add a length-3 vector input to the GUI."""
+        """Add a length-3 vector input to the GUI.
+
+        Args:
+            label: Label to display on the vector input.
+            initial_value: Initial value of the vector input.
+            min: Optional minimum value of the vector input.
+            max: Optional maximum value of the vector input.
+            step: Optional step size of the vector input. Computed automatically if not
+            disabled: Whether the vector input is disabled.
+            visible: Whether the vector input is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
         initial_value = cast_vector(initial_value, 2)
         min = cast_vector(min, 3) if min is not None else None
         max = cast_vector(max, 3) if max is not None else None
@@ -606,7 +734,20 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiDropdownHandle[Any]:  # Output type is specified in overloads.
-        """Add a dropdown to the GUI."""
+        """Add a dropdown to the GUI.
+
+        Args:
+            label: Label to display on the dropdown.
+            options: Sequence of options to display in the dropdown.
+            initial_value: Initial value of the dropdown.
+            disabled: Whether the dropdown is disabled.
+            visible: Whether the dropdown is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
         if initial_value is None:
             initial_value = options[0]
         id = _make_unique_id()
@@ -641,7 +782,22 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiInputHandle[IntOrFloat]:
-        """Add a slider to the GUI. Types of the min, max, step, and initial value should match."""
+        """Add a slider to the GUI. Types of the min, max, step, and initial value should match.
+
+        Args:
+            label: Label to display on the slider.
+            min: Minimum value of the slider.
+            max: Maximum value of the slider.
+            step: Step size of the slider.
+            initial_value: Initial value of the slider.
+            disabled: Whether the slider is disabled.
+            visible: Whether the slider is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
         assert max >= min
         if step > max - min:
             step = max - min
@@ -689,7 +845,20 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiInputHandle[Tuple[int, int, int]]:
-        """Add an RGB picker to the GUI."""
+        """Add an RGB picker to the GUI.
+
+        Args:
+            label: Label to display on the RGB picker.
+            initial_value: Initial value of the RGB picker.
+            disabled: Whether the RGB picker is disabled.
+            visible: Whether the RGB picker is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
@@ -715,7 +884,19 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
     ) -> GuiInputHandle[Tuple[int, int, int, int]]:
-        """Add an RGBA picker to the GUI."""
+        """Add an RGBA picker to the GUI.
+
+        Args:
+            label: Label to display on the RGBA picker.
+            initial_value: Initial value of the RGBA picker.
+            disabled: Whether the RGBA picker is disabled.
+            visible: Whether the RGBA picker is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(

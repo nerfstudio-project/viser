@@ -59,14 +59,23 @@ export default function GeneratedGuiContainer({
         {[...guiIdSet]
           .map((id) => guiConfigFromId[id])
           .sort((a, b) => a.order - b.order)
-          .map((conf) => {
+          .map((conf, index) => {
             return (
-              <GeneratedInput
-                conf={conf}
+              <Box
                 key={conf.id}
-                viewer={viewer}
-                folderDepth={folderDepth ?? 0}
-              />
+                pb={
+                  conf.type == "GuiAddFolderMessage" &&
+                  index < guiIdSet.size - 1
+                    ? "0.2em"
+                    : 0
+                }
+              >
+                <GeneratedInput
+                  conf={conf}
+                  viewer={viewer}
+                  folderDepth={folderDepth ?? 0}
+                />
+              </Box>
             );
           })}
       </Box>
@@ -476,7 +485,7 @@ function GeneratedFolder({
   return (
     <Paper
       withBorder
-      pt="0.125em"
+      pt="0.0625em"
       mx="xs"
       mt="xs"
       mb="sm"
@@ -531,7 +540,7 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
       radius="xs"
       value={tabState}
       onTabChange={setTabState}
-      sx={(theme) => ({ marginTop: "-" + theme.spacing.xs })}
+      sx={{ marginTop: "-0.75em" }}
     >
       <Tabs.List>
         {conf.tab_labels.map((label, index) => (
@@ -642,33 +651,21 @@ function LabeledInput(props: {
     <Flex align="center">
       <Box
         // The per-layer offset here is just eyeballed.
-        w={`${7 - props.folderDepth * 0.6375}em`}
-        h="1.15rem"
+        w={`${7.25 - props.folderDepth * 0.6375}em`}
         pr="xs"
         sx={{ flexShrink: 0, position: "relative" }}
       >
         <Text
           c="dimmed"
           fz="0.875em"
-          lh="1.15rem"
-          lts="-0.7px"
+          fw="450"
+          lh="1.1rem"
+          lts="-0.75px"
           unselectable="off"
-          sx={(theme) => ({
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+          sx={{
             width: "100%",
             boxSizing: "content-box",
-            "&:hover": {
-              whiteSpace: "normal",
-              position: "absolute",
-              backgroundColor:
-                theme.colorScheme == "dark"
-                  ? theme.colors.dark[7]
-                  : theme.white,
-              zIndex: 1000,
-            },
-          })}
+          }}
         >
           <label htmlFor={props.id}>{props.label}</label>
         </Text>
