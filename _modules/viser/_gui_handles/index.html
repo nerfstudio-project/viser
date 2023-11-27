@@ -806,7 +806,8 @@
 <span class="k">def</span> <span class="nf">_get_data_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">image_root</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">image_root</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="s2">&quot;No `image_root` provided. All relative paths will be scoped to viser&#39;s installation path.&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;No `image_root` provided. All relative paths will be scoped to viser&#39;s&quot;</span>
+            <span class="s2">&quot; installation path.&quot;</span><span class="p">,</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">):</span>
@@ -829,7 +830,9 @@
 <span class="k">def</span> <span class="nf">_parse_markdown</span><span class="p">(</span><span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">image_root</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="n">markdown</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
         <span class="sa">r</span><span class="s2">&quot;\!\[([^]]*)\]\(([^]]*)\)&quot;</span><span class="p">,</span>
-        <span class="k">lambda</span> <span class="n">match</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;![</span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">](</span><span class="si">{</span><span class="n">_get_data_url</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">image_root</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
+        <span class="k">lambda</span> <span class="n">match</span><span class="p">:</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;![</span><span class="si">{</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">](</span><span class="si">{</span><span class="n">_get_data_url</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="w"> </span><span class="n">image_root</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">),</span>
         <span class="n">markdown</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">markdown</span>

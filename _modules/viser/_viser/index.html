@@ -522,10 +522,8 @@
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.atomic">[docs]</a>
     <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where:</span>
-<span class="sd">        - No incoming messages, like camera or GUI state updates, are processed.</span>
-<span class="sd">        - `viser` will attempt to group outgoing messages, which will then be sent after</span>
-<span class="sd">          the context is exited.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
+<span class="sd">        clients atomically.</span>
 
 <span class="sd">        This can be helpful for things like animations, or when we want position and</span>
 <span class="sd">        orientation updates to happen synchronously.</span>
@@ -788,9 +786,8 @@
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.atomic">[docs]</a>
     <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where:</span>
-<span class="sd">        - All outgoing messages are grouped and applied by clients atomically.</span>
-<span class="sd">        - No incoming messages, like camera or GUI state updates, are processed.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
+<span class="sd">        clients atomically.</span>
 
 <span class="sd">        This can be helpful for things like animations, or when we want position and</span>
 <span class="sd">        orientation updates to happen synchronously.</span>

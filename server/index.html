@@ -283,14 +283,19 @@ used as a context to place GUI elements into the 3D scene.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.Gui3dContainerHandle" title="viser._scene_handles.Gui3dContainerHandle"><em>Gui3dContainerHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node. Can be used as a context to place GUI
+elements inside of the container.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.Gui3dContainerHandle" title="viser._scene_handles.Gui3dContainerHandle"><em>Gui3dContainerHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -298,28 +303,34 @@ used as a context to place GUI elements into the 3D scene.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_camera_frustum">
 <span class="sig-name descname"><span class="pre">add_camera_frustum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(20,</span> <span class="pre">20,</span> <span class="pre">20)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘png’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘jpeg’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jpeg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jpeg_quality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.CameraFrustumHandle" title="viser._scene_handles.CameraFrustumHandle"><span class="pre">CameraFrustumHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_camera_frustum" title="Link to this definition">#</a></dt>
-<dd><p>Add a frustum to the scene. Useful for visualizing cameras.</p>
+<dd><p>Add a camera frustum to the scene for visualization.</p>
+<p>This method adds a frustum representation, typically used to visualize the
+field of view of a camera. It’s helpful for understanding the perspective
+and coverage of a camera in the 3D space.</p>
 <p>Like all cameras in the viser Python API, frustums follow the OpenCV [+Z forward,
-+X right, +Y down] convention.</p>
-<p>fov is vertical in radians; aspect is width over height.</p>
++X right, +Y down] convention. fov is vertical in radians; aspect is width over height</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>fov</strong> (<em>float</em>) – </p></li>
-<li><p><strong>aspect</strong> (<em>float</em>) – </p></li>
-<li><p><strong>scale</strong> (<em>float</em>) – </p></li>
-<li><p><strong>color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>image</strong> (<em>ndarray</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>format</strong> (<em>Literal</em><em>[</em><em>‘png’</em><em>, </em><em>‘jpeg’</em><em>]</em>) – </p></li>
-<li><p><strong>jpeg_quality</strong> (<em>int</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>fov</strong> (<em>float</em>) – Field of view of the camera (in radians).</p></li>
+<li><p><strong>aspect</strong> (<em>float</em>) – Aspect ratio of the camera (width over height).</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – Scale factor for the size of the frustum.</p></li>
+<li><p><strong>color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Color of the frustum as an RGB tuple.</p></li>
+<li><p><strong>image</strong> (<em>ndarray</em><em> | </em><em>None</em>) – Optional image to be displayed on the frustum.</p></li>
+<li><p><strong>format</strong> (<em>Literal</em><em>[</em><em>‘png’</em><em>, </em><em>‘jpeg’</em><em>]</em>) – Format of the provided image (‘png’ or ‘jpeg’).</p></li>
+<li><p><strong>jpeg_quality</strong> (<em>int</em><em> | </em><em>None</em>) – Quality of the jpeg image (if jpeg format is used).</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.CameraFrustumHandle" title="viser._scene_handles.CameraFrustumHandle"><em>CameraFrustumHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.CameraFrustumHandle" title="viser._scene_handles.CameraFrustumHandle"><em>CameraFrustumHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -328,20 +339,26 @@ used as a context to place GUI elements into the 3D scene.</p>
 <dt class="sig sig-object py" id="viser.ViserServer.add_frame">
 <span class="sig-name descname"><span class="pre">add_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_radius</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.025</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.FrameHandle" title="viser._scene_handles.FrameHandle"><span class="pre">FrameHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_frame" title="Link to this definition">#</a></dt>
 <dd><p>Add a coordinate frame to the scene.</p>
+<p>This method is used for adding a visual representation of a coordinate frame,
+which can help in understanding the orientation and position of objects in 3D space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>show_axes</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>axes_length</strong> (<em>float</em>) – </p></li>
-<li><p><strong>axes_radius</strong> (<em>float</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>show_axes</strong> (<em>bool</em>) – Boolean to indicate whether to show the axes.</p></li>
+<li><p><strong>axes_length</strong> (<em>float</em>) – Length of each axis.</p></li>
+<li><p><strong>axes_radius</strong> (<em>float</em>) – Radius of each axis.</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.FrameHandle" title="viser._scene_handles.FrameHandle"><em>FrameHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.FrameHandle" title="viser._scene_handles.FrameHandle"><em>FrameHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -355,45 +372,56 @@ used as a context to place GUI elements into the 3D scene.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>glb_data</strong> (<em>bytes</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>glb_data</strong> (<em>bytes</em>) – A binary payload.</p></li>
+<li><p><strong>scale</strong> – A scale for resizing the GLB asset.</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.GlbHandle" title="viser._scene_handles.GlbHandle"><em>GlbHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.GlbHandle" title="viser._scene_handles.GlbHandle"><em>GlbHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_grid">
-<span class="sig-name descname"><span class="pre">add_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_segments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_segments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plane</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘xz’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘xy’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘yx’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘yz’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘zx’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘zy’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'xy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(200,</span> <span class="pre">200,</span> <span class="pre">200)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_thickness</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(140,</span> <span class="pre">140,</span> <span class="pre">140)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_thickness</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.MeshHandle" title="viser._scene_handles.MeshHandle"><span class="pre">MeshHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_grid" title="Link to this definition">#</a></dt>
-<dd><p>Add a grid to the scene. Useful for visualizing things like ground planes.</p>
+<span class="sig-name descname"><span class="pre">add_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_segments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_segments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plane</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘xz’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘xy’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘yx’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘yz’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘zx’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘zy’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'xy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(200,</span> <span class="pre">200,</span> <span class="pre">200)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_thickness</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(140,</span> <span class="pre">140,</span> <span class="pre">140)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_thickness</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">section_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.SceneNodeHandle" title="viser._scene_handles.SceneNodeHandle"><span class="pre">SceneNodeHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_grid" title="Link to this definition">#</a></dt>
+<dd><p>Add a grid to the scene.</p>
+<p>This method creates a grid which can be used as a reference for scaling and
+positioning objects in the scene. It’s particularly useful for providing a sense
+of scale and orientation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>width</strong> (<em>float</em>) – </p></li>
-<li><p><strong>height</strong> (<em>float</em>) – </p></li>
-<li><p><strong>width_segments</strong> (<em>int</em>) – </p></li>
-<li><p><strong>height_segments</strong> (<em>int</em>) – </p></li>
-<li><p><strong>plane</strong> (<em>Literal</em><em>[</em><em>‘xz’</em><em>, </em><em>‘xy’</em><em>, </em><em>‘yx’</em><em>, </em><em>‘yz’</em><em>, </em><em>‘zx’</em><em>, </em><em>‘zy’</em><em>]</em>) – </p></li>
-<li><p><strong>cell_color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>cell_thickness</strong> (<em>float</em>) – </p></li>
-<li><p><strong>cell_size</strong> (<em>float</em>) – </p></li>
-<li><p><strong>section_color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>section_thickness</strong> (<em>float</em>) – </p></li>
-<li><p><strong>section_size</strong> (<em>float</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the grid.</p></li>
+<li><p><strong>width</strong> (<em>float</em>) – Width of the grid.</p></li>
+<li><p><strong>height</strong> (<em>float</em>) – Height of the grid.</p></li>
+<li><p><strong>width_segments</strong> (<em>int</em>) – Number of segments along the width.</p></li>
+<li><p><strong>height_segments</strong> (<em>int</em>) – Number of segments along the height.</p></li>
+<li><p><strong>plane</strong> (<em>Literal</em><em>[</em><em>‘xz’</em><em>, </em><em>‘xy’</em><em>, </em><em>‘yx’</em><em>, </em><em>‘yz’</em><em>, </em><em>‘zx’</em><em>, </em><em>‘zy’</em><em>]</em>) – The plane in which the grid is oriented (e.g., ‘xy’, ‘yz’).</p></li>
+<li><p><strong>cell_color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Color of the grid cells as an RGB tuple.</p></li>
+<li><p><strong>cell_thickness</strong> (<em>float</em>) – Thickness of the grid lines.</p></li>
+<li><p><strong>cell_size</strong> (<em>float</em>) – Size of each cell in the grid.</p></li>
+<li><p><strong>section_color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Color of the grid sections as an RGB tuple.</p></li>
+<li><p><strong>section_thickness</strong> (<em>float</em>) – Thickness of the section lines.</p></li>
+<li><p><strong>section_size</strong> (<em>float</em>) – Size of each section in the grid.</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.MeshHandle" title="viser._scene_handles.MeshHandle"><em>MeshHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.SceneNodeHandle" title="viser._scene_handles.SceneNodeHandle"><em>SceneNodeHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -406,17 +434,20 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>color</strong> (<em>Literal</em><em>[</em><em>‘dark’</em><em>, </em><em>‘gray’</em><em>, </em><em>‘red’</em><em>, </em><em>‘pink’</em><em>, </em><em>‘grape’</em><em>, </em><em>‘violet’</em><em>, </em><em>‘indigo’</em><em>, </em><em>‘blue’</em><em>, </em><em>‘cyan’</em><em>, </em><em>‘green’</em><em>, </em><em>‘lime’</em><em>, </em><em>‘yellow’</em><em>, </em><em>‘orange’</em><em>, </em><em>‘teal’</em><em>] </em><em>| </em><em>None</em>) – </p></li>
-<li><p><strong>icon</strong> (<a class="reference internal" href="../icons/#viser.Icon" title="viser._icons_enum.Icon"><em>Icon</em></a><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the button.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the button is visible.</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the button is disabled.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>color</strong> (<em>Literal</em><em>[</em><em>‘dark’</em><em>, </em><em>‘gray’</em><em>, </em><em>‘red’</em><em>, </em><em>‘pink’</em><em>, </em><em>‘grape’</em><em>, </em><em>‘violet’</em><em>, </em><em>‘indigo’</em><em>, </em><em>‘blue’</em><em>, </em><em>‘cyan’</em><em>, </em><em>‘green’</em><em>, </em><em>‘lime’</em><em>, </em><em>‘yellow’</em><em>, </em><em>‘orange’</em><em>, </em><em>‘teal’</em><em>] </em><em>| </em><em>None</em>) – Optional color to use for the button.</p></li>
+<li><p><strong>icon</strong> (<a class="reference internal" href="../icons/#viser.Icon" title="viser._icons_enum.Icon"><em>Icon</em></a><em> | </em><em>None</em>) – Optional icon to display on the button.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiButtonHandle" title="viser._gui_handles.GuiButtonHandle"><em>GuiButtonHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiButtonHandle" title="viser._gui_handles.GuiButtonHandle"><em>GuiButtonHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -428,16 +459,19 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>options</strong> (<em>Sequence</em><em>[</em><em>TLiteralString</em><em>] </em><em>| </em><em>Sequence</em><em>[</em><em>TString</em><em>]</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the button group.</p></li>
+<li><p><strong>options</strong> (<em>Sequence</em><em>[</em><em>TLiteralString</em><em>] </em><em>| </em><em>Sequence</em><em>[</em><em>TString</em><em>]</em>) – Sequence of options to display as buttons.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the button group is visible.</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the button group is disabled.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiButtonGroupHandle" title="viser._gui_handles.GuiButtonGroupHandle"><em>GuiButtonGroupHandle</em></a>[<em>Any</em>]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiButtonGroupHandle" title="viser._gui_handles.GuiButtonGroupHandle"><em>GuiButtonGroupHandle</em></a>[<em>Any</em>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -449,16 +483,19 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>initial_value</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the checkbox.</p></li>
+<li><p><strong>initial_value</strong> (<em>bool</em>) – Initial value of the checkbox.</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the checkbox is disabled.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the checkbox is visible.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[bool]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[bool]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -470,17 +507,20 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>options</strong> (<em>Sequence</em><em>[</em><em>TLiteralString</em><em>] </em><em>| </em><em>Sequence</em><em>[</em><em>TString</em><em>]</em>) – </p></li>
-<li><p><strong>initial_value</strong> (<em>TLiteralString</em><em> | </em><em>TString</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the dropdown.</p></li>
+<li><p><strong>options</strong> (<em>Sequence</em><em>[</em><em>TLiteralString</em><em>] </em><em>| </em><em>Sequence</em><em>[</em><em>TString</em><em>]</em>) – Sequence of options to display in the dropdown.</p></li>
+<li><p><strong>initial_value</strong> (<em>TLiteralString</em><em> | </em><em>TString</em><em> | </em><em>None</em>) – Initial value of the dropdown.</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the dropdown is disabled.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the dropdown is visible.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiDropdownHandle" title="viser._gui_handles.GuiDropdownHandle"><em>GuiDropdownHandle</em></a>[<em>Any</em>]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiDropdownHandle" title="viser._gui_handles.GuiDropdownHandle"><em>GuiDropdownHandle</em></a>[<em>Any</em>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -492,12 +532,15 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the folder.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiFolderHandle" title="viser._gui_handles.GuiFolderHandle"><em>GuiFolderHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used as a context to populate the folder.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiFolderHandle" title="viser._gui_handles.GuiFolderHandle"><em>GuiFolderHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -509,13 +552,16 @@ it is clicked; to detect clicks, we can manually set it back to <code class="doc
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>content</strong> (<em>str</em>) – </p></li>
-<li><p><strong>image_root</strong> (<em>Path</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>content</strong> (<em>str</em>) – Markdown content to display.</p></li>
+<li><p><strong>image_root</strong> (<em>Path</em><em> | </em><em>None</em>) – Optional root directory to resolve relative image paths.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiMarkdownHandle" title="viser._gui_handles.GuiMarkdownHandle"><em>GuiMarkdownHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiMarkdownHandle" title="viser._gui_handles.GuiMarkdownHandle"><em>GuiMarkdownHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -528,12 +574,15 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>title</strong> (<em>str</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>title</strong> (<em>str</em>) – Title to display on the modal.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>GuiModalHandle</em></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used as a context to populate the modal.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>GuiModalHandle</em></p>
 </dd>
 </dl>
 </dd></dl>
@@ -545,19 +594,23 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>initial_value</strong> (<em>IntOrFloat</em>) – </p></li>
-<li><p><strong>min</strong> (<em>IntOrFloat</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>max</strong> (<em>IntOrFloat</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>step</strong> (<em>IntOrFloat</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the number input.</p></li>
+<li><p><strong>initial_value</strong> (<em>IntOrFloat</em>) – Initial value of the number input.</p></li>
+<li><p><strong>min</strong> (<em>IntOrFloat</em><em> | </em><em>None</em>) – Optional minimum value of the number input.</p></li>
+<li><p><strong>max</strong> (<em>IntOrFloat</em><em> | </em><em>None</em>) – Optional maximum value of the number input.</p></li>
+<li><p><strong>step</strong> (<em>IntOrFloat</em><em> | </em><em>None</em>) – Optional step size of the number input. Computed automatically if not
+specified.</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the number input is disabled.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the number input is visible.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>IntOrFloat</em>]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>IntOrFloat</em>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -569,16 +622,19 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>initial_value</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the RGB picker.</p></li>
+<li><p><strong>initial_value</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em>) – Initial value of the RGB picker.</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the RGB picker is disabled.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the RGB picker is visible.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>Tuple</em>[int, int, int]]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>Tuple</em>[int, int, int]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -590,16 +646,19 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>initial_value</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the RGBA picker.</p></li>
+<li><p><strong>initial_value</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>]</em>) – Initial value of the RGBA picker.</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the RGBA picker is disabled.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the RGBA picker is visible.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>Tuple</em>[int, int, int, int]]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>Tuple</em>[int, int, int, int]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -611,19 +670,22 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>min</strong> (<em>IntOrFloat</em>) – </p></li>
-<li><p><strong>max</strong> (<em>IntOrFloat</em>) – </p></li>
-<li><p><strong>step</strong> (<em>IntOrFloat</em>) – </p></li>
-<li><p><strong>initial_value</strong> (<em>IntOrFloat</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the slider.</p></li>
+<li><p><strong>min</strong> (<em>IntOrFloat</em>) – Minimum value of the slider.</p></li>
+<li><p><strong>max</strong> (<em>IntOrFloat</em>) – Maximum value of the slider.</p></li>
+<li><p><strong>step</strong> (<em>IntOrFloat</em>) – Step size of the slider.</p></li>
+<li><p><strong>initial_value</strong> (<em>IntOrFloat</em>) – Initial value of the slider.</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the slider is disabled.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the slider is visible.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>IntOrFloat</em>]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>IntOrFloat</em>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -634,10 +696,13 @@ a handle that can be used to populate it.</p>
 <dd><p>Add a tab group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p>
+<dd class="field-odd"><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiTabGroupHandle" title="viser._gui_handles.GuiTabGroupHandle"><em>GuiTabGroupHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used as a context to populate the tab group.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiTabGroupHandle" title="viser._gui_handles.GuiTabGroupHandle"><em>GuiTabGroupHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -649,16 +714,19 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>initial_value</strong> (<em>str</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the text input.</p></li>
+<li><p><strong>initial_value</strong> (<em>str</em>) – Initial value of the text input.</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the text input is disabled.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the text input is visible.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[str]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -670,19 +738,22 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>initial_value</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>min</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>max</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>step</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the vector input.</p></li>
+<li><p><strong>initial_value</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Initial value of the vector input.</p></li>
+<li><p><strong>min</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em><em> | </em><em>None</em>) – Optional minimum value of the vector input.</p></li>
+<li><p><strong>max</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em><em> | </em><em>None</em>) – Optional maximum value of the vector input.</p></li>
+<li><p><strong>step</strong> (<em>float</em><em> | </em><em>None</em>) – Optional step size of the vector input. Computed automatically if not</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the vector input is disabled.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the vector input is visible.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>Tuple</em>[float, float]]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>Tuple</em>[float, float]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -694,19 +765,22 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<em>str</em>) – </p></li>
-<li><p><strong>initial_value</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>min</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>max</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>step</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>disabled</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>label</strong> (<em>str</em>) – Label to display on the vector input.</p></li>
+<li><p><strong>initial_value</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Initial value of the vector input.</p></li>
+<li><p><strong>min</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em><em> | </em><em>None</em>) – Optional minimum value of the vector input.</p></li>
+<li><p><strong>max</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em><em> | </em><em>None</em>) – Optional maximum value of the vector input.</p></li>
+<li><p><strong>step</strong> (<em>float</em><em> | </em><em>None</em>) – Optional step size of the vector input. Computed automatically if not</p></li>
+<li><p><strong>disabled</strong> (<em>bool</em>) – Whether the vector input is disabled.</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether the vector input is visible.</p></li>
+<li><p><strong>hint</strong> (<em>str</em><em> | </em><em>None</em>) – Optional hint to display on hover.</p></li>
+<li><p><strong>order</strong> (<em>float</em><em> | </em><em>None</em>) – Optional ordering, smallest values will be displayed first.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>Tuple</em>[float, float, float]]</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handle that can be used to interact with the GUI element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gui_handles/#viser.GuiInputHandle" title="viser._gui_handles.GuiInputHandle"><em>GuiInputHandle</em></a>[<em>Tuple</em>[float, float, float]]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -714,23 +788,27 @@ a handle that can be used to populate it.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_image">
 <span class="sig-name descname"><span class="pre">add_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘png’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘jpeg’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jpeg'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jpeg_quality</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.ImageHandle" title="viser._scene_handles.ImageHandle"><span class="pre">ImageHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_image" title="Link to this definition">#</a></dt>
-<dd><p>Add a 2D image to the scene. Rendered in 3D.</p>
+<dd><p>Add a 2D image to the scene.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>image</strong> (<em>ndarray</em>) – </p></li>
-<li><p><strong>render_width</strong> (<em>float</em>) – </p></li>
-<li><p><strong>render_height</strong> (<em>float</em>) – </p></li>
-<li><p><strong>format</strong> (<em>Literal</em><em>[</em><em>‘png’</em><em>, </em><em>‘jpeg’</em><em>]</em>) – </p></li>
-<li><p><strong>jpeg_quality</strong> (<em>int</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>image</strong> (<em>ndarray</em>) – A numpy array representing the image.</p></li>
+<li><p><strong>render_width</strong> (<em>float</em>) – Width at which the image should be rendered in the scene.</p></li>
+<li><p><strong>render_height</strong> (<em>float</em>) – Height at which the image should be rendered in the scene.</p></li>
+<li><p><strong>format</strong> (<em>Literal</em><em>[</em><em>‘png’</em><em>, </em><em>‘jpeg’</em><em>]</em>) – Format to transport and display the image using (‘png’ or ‘jpeg’).</p></li>
+<li><p><strong>jpeg_quality</strong> (<em>int</em><em> | </em><em>None</em>) – Quality of the jpeg image (if jpeg format is used).</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation from parent frame to local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this image is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.ImageHandle" title="viser._scene_handles.ImageHandle"><em>ImageHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.ImageHandle" title="viser._scene_handles.ImageHandle"><em>ImageHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -739,18 +817,23 @@ a handle that can be used to populate it.</p>
 <dt class="sig sig-object py" id="viser.ViserServer.add_label">
 <span class="sig-name descname"><span class="pre">add_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.LabelHandle" title="viser._scene_handles.LabelHandle"><span class="pre">LabelHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_label" title="Link to this definition">#</a></dt>
 <dd><p>Add a 2D label to the scene.</p>
+<p>This method creates a text label in the 3D scene, which can be used to annotate
+or provide information about specific points or objects.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>text</strong> (<em>str</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name of the label.</p></li>
+<li><p><strong>text</strong> (<em>str</em>) – Text content of the label.</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.LabelHandle" title="viser._scene_handles.LabelHandle"><em>LabelHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.LabelHandle" title="viser._scene_handles.LabelHandle"><em>LabelHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -773,21 +856,26 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>vertices</strong> (<em>ndarray</em>) – </p></li>
-<li><p><strong>faces</strong> (<em>ndarray</em>) – </p></li>
-<li><p><strong>color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>wireframe</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>opacity</strong> (<em>float</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>material</strong> (<em>Literal</em><em>[</em><em>‘standard’</em><em>, </em><em>‘toon3’</em><em>, </em><em>‘toon5’</em><em>]</em>) – </p></li>
-<li><p><strong>side</strong> (<em>Literal</em><em>[</em><em>‘front’</em><em>, </em><em>‘back’</em><em>, </em><em>‘double’</em><em>]</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>vertices</strong> (<em>ndarray</em>) – A numpy array of vertex positions. Should have shape (V, 3).</p></li>
+<li><p><strong>faces</strong> (<em>ndarray</em>) – A numpy array of faces, where each face is represented by indices of
+vertices. Should have shape (F,)</p></li>
+<li><p><strong>color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Color of the mesh as an RGB tuple.</p></li>
+<li><p><strong>wireframe</strong> (<em>bool</em>) – Boolean indicating if the mesh should be rendered as a wireframe.</p></li>
+<li><p><strong>opacity</strong> (<em>float</em><em> | </em><em>None</em>) – Opacity of the mesh. None means opaque.</p></li>
+<li><p><strong>material</strong> (<em>Literal</em><em>[</em><em>‘standard’</em><em>, </em><em>‘toon3’</em><em>, </em><em>‘toon5’</em><em>]</em>) – Material type of the mesh (‘standard’, ‘toon3’, ‘toon5’).</p></li>
+<li><p><strong>side</strong> (<em>Literal</em><em>[</em><em>‘front’</em><em>, </em><em>‘back’</em><em>, </em><em>‘double’</em><em>]</em>) – Side of the surface to render (‘front’, ‘back’, ‘double’).</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation from parent frame to local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this mesh is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.MeshHandle" title="viser._scene_handles.MeshHandle"><em>MeshHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.MeshHandle" title="viser._scene_handles.MeshHandle"><em>MeshHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -799,16 +887,20 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>mesh</strong> (<em>Trimesh</em>) – </p></li>
-<li><p><strong>scale</strong> (<em>float</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>mesh</strong> (<em>Trimesh</em>) – A trimesh mesh object.</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – A scale for resizing the mesh.</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.GlbHandle" title="viser._scene_handles.GlbHandle"><em>GlbHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.GlbHandle" title="viser._scene_handles.GlbHandle"><em>GlbHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -825,56 +917,78 @@ a handle that can be used to populate it.</p>
 <li><p><strong>colors</strong> (<em>ndarray</em><em> | </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em>) – Colors of points. Should have shape (N, 3) or (3,).</p></li>
 <li><p><strong>point_size</strong> (<em>float</em>) – Size of each point.</p></li>
 <li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation from parent frame to local frame (t_pl).</p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this point cloud is initially visible.</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.PointCloudHandle" title="viser._scene_handles.PointCloudHandle"><em>PointCloudHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.PointCloudHandle" title="viser._scene_handles.PointCloudHandle"><em>PointCloudHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_spline_catmull_rom">
-<span class="sig-name descname"><span class="pre">add_spline_catmull_rom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curve_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘centripetal’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘chordal’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘catmullrom’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'centripetal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">closed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(20,</span> <span class="pre">20,</span> <span class="pre">20)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.ViserServer.add_spline_catmull_rom" title="Link to this definition">#</a></dt>
-<dd><p>Add spline using Catmull-Rom interpolation.</p>
+<span class="sig-name descname"><span class="pre">add_spline_catmull_rom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curve_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘centripetal’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘chordal’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘catmullrom’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'centripetal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">closed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(20,</span> <span class="pre">20,</span> <span class="pre">20)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.SceneNodeHandle" title="viser._scene_handles.SceneNodeHandle"><span class="pre">SceneNodeHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_spline_catmull_rom" title="Link to this definition">#</a></dt>
+<dd><p>Add a spline to the scene using Catmull-Rom interpolation.</p>
+<p>This method creates a spline based on a set of positions and interpolates
+them using the Catmull-Rom algorithm. This can be used to create smooth curves.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>positions</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>curve_type</strong> (<em>Literal</em><em>[</em><em>‘centripetal’</em><em>, </em><em>‘chordal’</em><em>, </em><em>‘catmullrom’</em><em>]</em>) – </p></li>
-<li><p><strong>tension</strong> (<em>float</em>) – </p></li>
-<li><p><strong>closed</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>line_width</strong> (<em>float</em>) – </p></li>
-<li><p><strong>color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>segments</strong> (<em>int</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>positions</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – A tuple of 3D positions (x, y, z) defining the spline’s path.</p></li>
+<li><p><strong>curve_type</strong> (<em>Literal</em><em>[</em><em>‘centripetal’</em><em>, </em><em>‘chordal’</em><em>, </em><em>‘catmullrom’</em><em>]</em>) – Type of the curve (‘centripetal’, ‘chordal’, ‘catmullrom’).</p></li>
+<li><p><strong>tension</strong> (<em>float</em>) – Tension of the curve. Affects the tightness of the curve.</p></li>
+<li><p><strong>closed</strong> (<em>bool</em>) – Boolean indicating if the spline is closed (forms a loop).</p></li>
+<li><p><strong>line_width</strong> (<em>float</em>) – Width of the spline line.</p></li>
+<li><p><strong>color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Color of the spline as an RGB tuple.</p></li>
+<li><p><strong>segments</strong> (<em>int</em><em> | </em><em>None</em>) – Number of segments to divide the spline into.</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.SceneNodeHandle" title="viser._scene_handles.SceneNodeHandle"><em>SceneNodeHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_spline_cubic_bezier">
-<span class="sig-name descname"><span class="pre">add_spline_cubic_bezier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(20,</span> <span class="pre">20,</span> <span class="pre">20)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.ViserServer.add_spline_cubic_bezier" title="Link to this definition">#</a></dt>
-<dd><p>Add spline using Cubic Bezier interpolation.</p>
+<span class="sig-name descname"><span class="pre">add_spline_cubic_bezier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">…</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(20,</span> <span class="pre">20,</span> <span class="pre">20)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">segments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.SceneNodeHandle" title="viser._scene_handles.SceneNodeHandle"><span class="pre">SceneNodeHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_spline_cubic_bezier" title="Link to this definition">#</a></dt>
+<dd><p>Add a spline to the scene using Cubic Bezier interpolation.</p>
+<p>This method allows for the creation of a cubic Bezier spline based on given
+positions and control points. It is useful for creating complex, smooth,
+curving shapes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>positions</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>control_points</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>line_width</strong> (<em>float</em>) – </p></li>
-<li><p><strong>color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>segments</strong> (<em>int</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>positions</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – A tuple of 3D positions (x, y, z) defining the spline’s key points.</p></li>
+<li><p><strong>control_points</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – A tuple of control points for Bezier curve shaping.</p></li>
+<li><p><strong>line_width</strong> (<em>float</em>) – Width of the spline line.</p></li>
+<li><p><strong>color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Color of the spline as an RGB tuple.</p></li>
+<li><p><strong>segments</strong> (<em>int</em><em> | </em><em>None</em>) – Number of segments to divide the spline into.</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.SceneNodeHandle" title="viser._scene_handles.SceneNodeHandle"><em>SceneNodeHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -883,29 +997,35 @@ a handle that can be used to populate it.</p>
 <dt class="sig sig-object py" id="viser.ViserServer.add_transform_controls">
 <span class="sig-name descname"><span class="pre">add_transform_controls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(True,</span> <span class="pre">True,</span> <span class="pre">True)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_axes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_sliders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_rotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation_limits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">((-1000.0,</span> <span class="pre">1000.0),</span> <span class="pre">(-1000.0,</span> <span class="pre">1000.0),</span> <span class="pre">(-1000.0,</span> <span class="pre">1000.0))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_limits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">((-1000.0,</span> <span class="pre">1000.0),</span> <span class="pre">(-1000.0,</span> <span class="pre">1000.0),</span> <span class="pre">(-1000.0,</span> <span class="pre">1000.0))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth_test</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.TransformControlsHandle" title="viser._scene_handles.TransformControlsHandle"><span class="pre">TransformControlsHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_transform_controls" title="Link to this definition">#</a></dt>
 <dd><p>Add a transform gizmo for interacting with the scene.</p>
+<p>This method adds a transform control (gizmo) to the scene, allowing for interactive
+manipulation of objects in terms of their position, rotation, and scale.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> (<em>str</em>) – </p></li>
-<li><p><strong>scale</strong> (<em>float</em>) – </p></li>
-<li><p><strong>line_width</strong> (<em>float</em>) – </p></li>
-<li><p><strong>fixed</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>auto_transform</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>active_axes</strong> (<em>Tuple</em><em>[</em><em>bool</em><em>, </em><em>bool</em><em>, </em><em>bool</em><em>]</em>) – </p></li>
-<li><p><strong>disable_axes</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>disable_sliders</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>disable_rotations</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>translation_limits</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>]</em>) – </p></li>
-<li><p><strong>rotation_limits</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>]</em>) – </p></li>
-<li><p><strong>depth_test</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>opacity</strong> (<em>float</em>) – </p></li>
-<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>visible</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
+define a kinematic tree.</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – Scale of the transform controls.</p></li>
+<li><p><strong>line_width</strong> (<em>float</em>) – Width of the lines used in the gizmo.</p></li>
+<li><p><strong>fixed</strong> (<em>bool</em>) – Boolean indicating if the gizmo should be fixed in position.</p></li>
+<li><p><strong>auto_transform</strong> (<em>bool</em>) – Whether the transform should be applied automatically.</p></li>
+<li><p><strong>active_axes</strong> (<em>Tuple</em><em>[</em><em>bool</em><em>, </em><em>bool</em><em>, </em><em>bool</em><em>]</em>) – Tuple of booleans indicating active axes.</p></li>
+<li><p><strong>disable_axes</strong> (<em>bool</em>) – Boolean to disable axes interaction.</p></li>
+<li><p><strong>disable_sliders</strong> (<em>bool</em>) – Boolean to disable slider interaction.</p></li>
+<li><p><strong>disable_rotations</strong> (<em>bool</em>) – Boolean to disable rotation interaction.</p></li>
+<li><p><strong>translation_limits</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>]</em>) – Limits for translation.</p></li>
+<li><p><strong>rotation_limits</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>]</em>) – Limits for rotation.</p></li>
+<li><p><strong>depth_test</strong> (<em>bool</em>) – Boolean indicating if depth testing should be used when rendering.</p></li>
+<li><p><strong>opacity</strong> (<em>float</em>) – Opacity of the gizmo.</p></li>
+<li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).</p></li>
+<li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation from parent frame to local frame (t_pl).</p></li>
+<li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this gizmo is initially visible.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../scene_handles/#viser.TransformControlsHandle" title="viser._scene_handles.TransformControlsHandle"><em>TransformControlsHandle</em></a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Handle for manipulating (and reading state of) scene node.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scene_handles/#viser.TransformControlsHandle" title="viser._scene_handles.TransformControlsHandle"><em>TransformControlsHandle</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -913,16 +1033,18 @@ a handle that can be used to populate it.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.configure_theme">
 <span class="sig-name descname"><span class="pre">configure_theme</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">titlebar_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TitlebarConfig</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_layout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘floating’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘collapsible’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘fixed’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'floating'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘small’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘medium’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘large’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'medium'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dark_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_logo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">brand_color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.ViserServer.configure_theme" title="Link to this definition">#</a></dt>
-<dd><p>Configure the viser front-end’s visual appearance.</p>
+<dd><p>Configures the visual appearance of the viser front-end.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>titlebar_content</strong> (<em>TitlebarConfig</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>control_layout</strong> (<em>Literal</em><em>[</em><em>‘floating’</em><em>, </em><em>‘collapsible’</em><em>, </em><em>‘fixed’</em><em>]</em>) – </p></li>
-<li><p><strong>control_width</strong> (<em>Literal</em><em>[</em><em>‘small’</em><em>, </em><em>‘medium’</em><em>, </em><em>‘large’</em><em>]</em>) – </p></li>
-<li><p><strong>dark_mode</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>show_logo</strong> (<em>bool</em>) – </p></li>
-<li><p><strong>brand_color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>None</em>) – </p></li>
+<li><p><strong>titlebar_content</strong> (<em>TitlebarConfig</em><em> | </em><em>None</em>) – Optional configuration for the title bar.</p></li>
+<li><p><strong>control_layout</strong> (<em>Literal</em><em>[</em><em>‘floating’</em><em>, </em><em>‘collapsible’</em><em>, </em><em>‘fixed’</em><em>]</em>) – The layout of control elements, options are “floating”,
+“collapsible”, or “fixed”.</p></li>
+<li><p><strong>control_width</strong> (<em>Literal</em><em>[</em><em>‘small’</em><em>, </em><em>‘medium’</em><em>, </em><em>‘large’</em><em>]</em>) – The width of control elements, options are “small”,
+“medium”, or “large”.</p></li>
+<li><p><strong>dark_mode</strong> (<em>bool</em>) – A boolean indicating if dark mode should be enabled.</p></li>
+<li><p><strong>show_logo</strong> (<em>bool</em>) – A boolean indicating if the logo should be displayed.</p></li>
+<li><p><strong>brand_color</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>, </em><em>int</em><em>] </em><em>| </em><em>None</em>) – An optional tuple of integers (RGB) representing the brand color.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -951,7 +1073,7 @@ a handle that can be used to populate it.</p>
 <dd><p>Add a callback for scene pointer events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser._scene_handles.ScenePointerEvent"><em>ScenePointerEvent</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser._scene_handles.ScenePointerEvent"><em>ScenePointerEvent</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – The callback function to add.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><em>Callable</em>[[<a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser._scene_handles.ScenePointerEvent"><em>ScenePointerEvent</em></a>], None]</p>
@@ -965,7 +1087,7 @@ a handle that can be used to populate it.</p>
 <dd><p>Check for the function handle in the list of callbacks and remove it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser._scene_handles.ScenePointerEvent"><em>ScenePointerEvent</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.ScenePointerEvent" title="viser._scene_handles.ScenePointerEvent"><em>ScenePointerEvent</em></a><em>]</em><em>, </em><em>None</em><em>]</em>) – The callback function to remove.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -975,8 +1097,13 @@ a handle that can be used to populate it.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.reset_scene">
-<span class="sig-name descname"><span class="pre">reset_scene</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#viser.ViserServer.reset_scene" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">reset_scene</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.ViserServer.reset_scene" title="Link to this definition">#</a></dt>
 <dd><p>Reset the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -986,8 +1113,8 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>filename</strong> (<em>str</em>) – </p></li>
-<li><p><strong>content</strong> (<em>bytes</em>) – </p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Name of the file to send. Used to infer MIME type.</p></li>
+<li><p><strong>content</strong> (<em>bytes</em>) – Content of the file.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -1003,10 +1130,10 @@ a handle that can be used to populate it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>image</strong> (<em>ndarray</em>) – </p></li>
-<li><p><strong>format</strong> (<em>Literal</em><em>[</em><em>‘png’</em><em>, </em><em>‘jpeg’</em><em>]</em>) – </p></li>
-<li><p><strong>jpeg_quality</strong> (<em>int</em><em> | </em><em>None</em>) – </p></li>
-<li><p><strong>depth</strong> (<em>ndarray</em><em> | </em><em>None</em>) – </p></li>
+<li><p><strong>image</strong> (<em>ndarray</em>) – The image to set as the background. Should have shape (H, W, 3).</p></li>
+<li><p><strong>format</strong> (<em>Literal</em><em>[</em><em>‘png’</em><em>, </em><em>‘jpeg’</em><em>]</em>) – Format to transport and display the image using (‘png’ or ‘jpeg’).</p></li>
+<li><p><strong>jpeg_quality</strong> (<em>int</em><em> | </em><em>None</em>) – Quality of the jpeg image (if jpeg format is used).</p></li>
+<li><p><strong>depth</strong> (<em>ndarray</em><em> | </em><em>None</em>) – Optional depth image to use to composite background with scene elements.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -1076,11 +1203,8 @@ handles.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.atomic">
 <span class="sig-name descname"><span class="pre">atomic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.atomic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.atomic" title="Link to this definition">#</a></dt>
-<dd><p>Returns a context where:</p>
-<ul class="simple">
-<li><p>All outgoing messages are grouped and applied by clients atomically.</p></li>
-<li><p>No incoming messages, like camera or GUI state updates, are processed.</p></li>
-</ul>
+<dd><p>Returns a context where: all outgoing messages are grouped and applied by
+clients atomically.</p>
 <p>This can be helpful for things like animations, or when we want position and
 orientation updates to happen synchronously.</p>
 <dl class="field-list simple">
