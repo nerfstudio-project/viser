@@ -180,11 +180,7 @@ function ViewerContents() {
                     position: "absolute",
                     bottom: "1em",
                     left: "1em",
-                    filter: "saturate(0.625)",
                     cursor: "pointer",
-                    "&:hover": {
-                      filter: "saturate(1.0)",
-                    },
                   }}
                   component="a"
                   onClick={openAbout}

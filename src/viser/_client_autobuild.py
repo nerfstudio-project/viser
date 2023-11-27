@@ -38,7 +38,8 @@ def ensure_client_is_built() -> None:
     if _check_viser_yarn_running():
         # Don't run `yarn build` if `yarn start` is already running.
         rich.print(
-            "[bold](viser)[/bold] The Viser viewer looks like it has been launched via `yarn start`. Skipping build check..."
+            "[bold](viser)[/bold] The Viser viewer looks like it has been launched via"
+            " `yarn start`. Skipping build check..."
         )
         build = False
     elif not (build_dir / "index.html").exists():
