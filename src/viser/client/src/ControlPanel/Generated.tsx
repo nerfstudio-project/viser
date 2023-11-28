@@ -1,4 +1,3 @@
-import { ColorTranslator } from "colortranslator";
 import {
   GuiAddFolderMessage,
   GuiAddTabGroupMessage,
@@ -66,7 +65,7 @@ export default function GeneratedGuiContainer({
                 pb={
                   conf.type == "GuiAddFolderMessage" &&
                   index < guiIdSet.size - 1
-                    ? "0.2em"
+                    ? "0.125em"
                     : 0
                 }
               >
@@ -169,7 +168,7 @@ function GeneratedInput({
               value: true,
             })
           }
-          style={{ height: "1.875rem" }}
+          style={{ height: "2.125em" }}
           styles={{ inner: { color: inputColor + " !important" } }}
           disabled={disabled}
           size="sm"
@@ -177,9 +176,10 @@ function GeneratedInput({
             conf.icon_base64 === null ? undefined : (
               <Image
                 /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-                height={"0.9rem"}
-                width={"0.9rem"}
+                height="1em"
+                width="1em"
                 opacity={disabled ? 0.3 : 1.0}
+                mr="-0.125em"
                 sx={
                   inputColor === theme.white
                     ? {
@@ -214,7 +214,7 @@ function GeneratedInput({
                   width: "0.625em",
                 },
               })}
-              pt="0.3rem"
+              pt="0.2em"
               showLabelOnHover={false}
               min={conf.min}
               max={conf.max}
@@ -225,13 +225,17 @@ function GeneratedInput({
               marks={[{ value: conf.min }, { value: conf.max }]}
               disabled={disabled}
             />
-            <Flex justify="space-between">
-              <Text fz="0.7rem" c="dimmed" lh="1.2em" lts="-0.5px" mb="-0.1em">
-                {parseInt(conf.min.toFixed(6))}
-              </Text>
-              <Text fz="0.7rem" c="dimmed" lh="1.2em" lts="-0.5px" mb="-0.1em">
-                {parseInt(conf.max.toFixed(6))}
-              </Text>
+            <Flex
+              justify="space-between"
+              fz="0.6rem"
+              c="dimmed"
+              lh="1.2em"
+              lts="-0.5px"
+              mt="-0.0625em"
+              mb="-0.4em"
+            >
+              <Text>{parseInt(conf.min.toFixed(6))}</Text>
+              <Text>{parseInt(conf.max.toFixed(6))}</Text>
             </Flex>
           </Box>
           <NumberInput
@@ -249,10 +253,10 @@ function GeneratedInput({
             sx={{ width: "3rem" }}
             styles={{
               input: {
-                padding: "0.3rem",
+                padding: "0.375em",
                 letterSpacing: "-0.5px",
-                minHeight: "1.5rem",
-                height: "1.5rem",
+                minHeight: "1.875em",
+                height: "1.875em",
               },
             }}
             ml="xs"
@@ -366,7 +370,7 @@ function GeneratedInput({
           size="xs"
           styles={{
             input: {
-              padding: "0.3rem",
+              padding: "0.5em",
               letterSpacing: "-0.5px",
               minHeight: "1.625rem",
               height: "1.625rem",
@@ -452,7 +456,19 @@ function GeneratedInput({
           openDelay={500}
           withinPortal
         >
-          <Box>{input}</Box>
+          <Box
+            sx={{
+              display:
+                // For checkboxes, we want to make sure that the wrapper
+                // doesn't expand to the full width of the parent. This will
+                // de-center the tooltip.
+                conf.type === "GuiAddCheckboxMessage"
+                  ? "inline-block"
+                  : "block",
+            }}
+          >
+            {input}
+          </Box>
         </Tooltip>
       );
 
@@ -467,7 +483,7 @@ function GeneratedInput({
     );
 
   return (
-    <Box pb="0.625em" px="xs">
+    <Box pb="0.5em" px="xs">
       {input}
     </Box>
   );
@@ -551,8 +567,8 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
               icons[index] === null ? undefined : (
                 <Image
                   /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-                  height={"0.9rem"}
-                  width={"0.9rem"}
+                  height={"1.125em"}
+                  width={"1.125em"}
                   sx={(theme) => ({
                     filter:
                       theme.colorScheme == "dark" ? "invert(1)" : undefined,
@@ -601,7 +617,7 @@ function VectorInput(
       },
 ) {
   return (
-    <Flex justify="space-between" style={{ columnGap: "0.3rem" }}>
+    <Flex justify="space-between" style={{ columnGap: "0.5em" }}>
       {[...Array(props.n).keys()].map((i) => (
         <NumberInput
           id={i === 0 ? props.id : undefined}
@@ -616,15 +632,15 @@ function VectorInput(
           styles={{
             root: { flexGrow: 1, width: 0 },
             input: {
-              paddingLeft: "0.3rem",
-              paddingRight: "1.1rem",
+              paddingLeft: "0.5em",
+              paddingRight: "1.75em",
               textAlign: "right",
-              minHeight: "1.5rem",
-              height: "1.5rem",
+              minHeight: "1.875em",
+              height: "1.875em",
             },
-            rightSection: { width: "1.0rem" },
+            rightSection: { width: "1.2em" },
             control: {
-              width: "0.875rem",
+              width: "1.1em",
             },
           }}
           precision={props.precision}
@@ -659,7 +675,7 @@ function LabeledInput(props: {
           c="dimmed"
           fz="0.875em"
           fw="450"
-          lh="1.1rem"
+          lh="1.375em"
           lts="-0.75px"
           unselectable="off"
           sx={{

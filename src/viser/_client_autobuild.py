@@ -15,6 +15,7 @@ def _check_viser_yarn_running() -> bool:
         try:
             if Path(process.cwd()).as_posix().endswith("viser/client") and any(
                 [part.endswith("yarn") for part in process.cmdline()]
+                + [part.endswith("yarn.js") for part in process.cmdline()]
             ):
                 return True
         except (psutil.AccessDenied, psutil.ZombieProcess):
