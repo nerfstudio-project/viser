@@ -449,9 +449,18 @@ function AboutViser() {
       </Box>
       <p>
         <Anchor
+          href="https://github.com/nerfstudio-project/"
+          target="_blank"
+          fw="600"
+          sx={{ "&:focus": { outline: "none" } }}
+        >
+          Nerfstudio
+        </Anchor>
+        &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        <Anchor
           href="https://github.com/nerfstudio-project/viser"
           target="_blank"
-          fw="800"
+          fw="600"
           sx={{ "&:focus": { outline: "none" } }}
         >
           GitHub
@@ -460,7 +469,7 @@ function AboutViser() {
         <Anchor
           href="https://viser.studio"
           target="_blank"
-          fw="800"
+          fw="600"
           sx={{ "&:focus": { outline: "none" } }}
         >
           Documentation
