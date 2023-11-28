@@ -298,7 +298,7 @@ export interface SceneNodeClickMessage {
 export interface ResetSceneMessage {
   type: "ResetSceneMessage";
 }
-/** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str')
+/** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', open_by_default: 'bool')
  *
  * (automatically generated)
  */
@@ -308,6 +308,7 @@ export interface GuiAddFolderMessage {
   id: string;
   label: string;
   container_id: string;
+  open_by_default: boolean;
 }
 /** GuiAddMarkdownMessage(order: 'float', id: 'str', markdown: 'str', container_id: 'str')
  *
@@ -346,7 +347,7 @@ export interface _GuiAddInputBase {
   hint: string | null;
   initial_value: any;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_base64: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]')
  *
  * (automatically generated)
  */
