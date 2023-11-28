@@ -36,7 +36,7 @@ def main() -> None:
 
     gui_plane.on_update(lambda _: update_plane())
 
-    with server.add_gui_folder("Control"):
+    with server.add_gui_folder("Control", expand_by_default=False):
         gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
         gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
         gui_include_z = server.add_gui_checkbox("Z in dropdown", initial_value=True)
