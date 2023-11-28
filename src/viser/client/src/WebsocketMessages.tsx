@@ -298,7 +298,7 @@ export interface SceneNodeClickMessage {
 export interface ResetSceneMessage {
   type: "ResetSceneMessage";
 }
-/** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', expanded_by_default: 'bool')
+/** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', expand_by_default: 'bool')
  *
  * (automatically generated)
  */
@@ -308,7 +308,7 @@ export interface GuiAddFolderMessage {
   id: string;
   label: string;
   container_id: string;
-  expanded_by_default: boolean;
+  expand_by_default: boolean;
 }
 /** GuiAddMarkdownMessage(order: 'float', id: 'str', markdown: 'str', container_id: 'str')
  *

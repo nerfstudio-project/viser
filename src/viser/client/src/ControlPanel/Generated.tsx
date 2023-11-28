@@ -496,7 +496,7 @@ function GeneratedFolder({
   conf: GuiAddFolderMessage;
   folderDepth: number;
 }) {
-  const [opened, { toggle }] = useDisclosure(conf.expanded_by_default);
+  const [opened, { toggle }] = useDisclosure(conf.expand_by_default);
   const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
   return (
     <Paper

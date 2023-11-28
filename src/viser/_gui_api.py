@@ -185,14 +185,14 @@ class GuiApi(abc.ABC):
         self,
         label: str,
         order: Optional[float] = None,
-        expanded_by_default: bool = True,
+        expand_by_default: bool = True,
     ) -> GuiFolderHandle:
         """Add a folder, and return a handle that can be used to populate it.
 
         Args:
             label: Label to display on the folder.
             order: Optional ordering, smallest values will be displayed first.
-            expanded_by_default: Open the folder by default. Set to False to collapse it by
+            expand_by_default: Open the folder by default. Set to False to collapse it by
                 default.
 
         Returns:
@@ -206,7 +206,7 @@ class GuiApi(abc.ABC):
                 id=folder_container_id,
                 label=label,
                 container_id=self._get_container_id(),
-                expanded_by_default=expanded_by_default,
+                expand_by_default=expand_by_default,
             )
         )
         return GuiFolderHandle(

@@ -339,7 +339,7 @@ class GuiAddFolderMessage(Message):
     id: str
     label: str
     container_id: str
-    expanded_by_default: bool
+    expand_by_default: bool
 
 
 @dataclasses.dataclass
