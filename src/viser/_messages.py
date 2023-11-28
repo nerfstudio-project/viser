@@ -185,6 +185,7 @@ class MeshMessage(Message):
 
     wireframe: bool
     opacity: Optional[float]
+    flat_shading: bool
     side: Literal["front", "back", "double"]
     material: Literal["standard", "toon3", "toon5"]
 

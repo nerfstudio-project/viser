@@ -33,6 +33,7 @@ import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
 import trimesh
+import trimesh.creation
 import trimesh.exchange
 import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
@@ -632,6 +633,7 @@ class MessageApi(abc.ABC):
         wireframe: bool = False,
         opacity: Optional[float] = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
+        flat_shading: bool = True,
         side: Literal["front", "back", "double"] = "front",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
@@ -649,6 +651,8 @@ class MessageApi(abc.ABC):
             wireframe: Boolean indicating if the mesh should be rendered as a wireframe.
             opacity: Opacity of the mesh. None means opaque.
             material: Material type of the mesh ('standard', 'toon3', 'toon5').
+            flat_shading: Whether to do flat shading. Set to False to apply smooth
+                shading.
             side: Side of the surface to render ('front', 'back', 'double').
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
@@ -668,6 +672,7 @@ class MessageApi(abc.ABC):
                 vertex_colors=None,
                 wireframe=wireframe,
                 opacity=opacity,
+                flat_shading=flat_shading,
                 side=side,
                 material=material,
             )
@@ -714,25 +719,35 @@ class MessageApi(abc.ABC):
     def add_box(
         self,
         name: str,
+        color: RgbTupleOrArray,
         dimensions: Tuple[float, float, float] | onp.ndarray = (1.0, 1.0, 1.0),
-        colors: Tuple[float, float, float] | onp.ndarray = (-1.0, -1.0, -1.0),
-        scale: float = 1.0,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> GlbHandle:
-        """Add a box to the scene."""
+    ) -> MeshHandle:
+        """Add a box to the scene.
 
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: Color of the box as an RGB tuple.
+            dimensions: Dimensions of the box (x, y, z).
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this box is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
         mesh = trimesh.creation.box(dimensions)
 
-        if colors != (-1.0, -1.0, -1.0):
-            mesh.visual.vertex_colors = colors
-
-        return self.add_mesh_trimesh(
+        return self.add_mesh_simple(
             name=name,
-            mesh=mesh,
+            vertices=mesh.vertices,
+            faces=mesh.faces,
+            color=color,
+            flat_shading=True,
             position=position,
-            scale=scale,
             wxyz=wxyz,
             visible=visible,
         )
@@ -741,25 +756,38 @@ class MessageApi(abc.ABC):
         self,
         name: str,
         radius: float,
-        subdivisions: int,
-        colors: Tuple[float, float, float] | onp.ndarray = (-1.0, -1.0, -1.0),
-        scale: float = 1.0,
+        color: RgbTupleOrArray,
+        subdivisions: int = 3,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> GlbHandle:
-        """Add an icosphere to the scene."""
+    ) -> MeshHandle:
+        """Add an icosphere to the scene.
 
-        mesh = trimesh.creation.icosphere(subdivisions=2, radius=0.4)
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            radius: Radius of the icosphere.
+            color: Color of the icosphere as an RGB tuple.
+            subdivisions: Number of subdivisions to use when creating the icosphere.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this icosphere is initially visible.
 
-        if colors != (-1.0, -1.0, -1.0):
-            mesh.visual.vertex_colors = colors
+        Returns:
+            Handle for manipulating scene node.
+        """
+        mesh = trimesh.creation.icosphere(subdivisions=subdivisions, radius=radius)
 
-        return self.add_mesh_trimesh(
+        # We use add_mesh_simple() because it lets us do smooth shading;
+        # add_mesh_trimesh() currently does not.
+        return self.add_mesh_simple(
             name=name,
-            mesh=mesh,
+            vertices=mesh.vertices,
+            faces=mesh.faces,
+            color=color,
+            flat_shading=False,
             position=position,
-            scale=scale,
             wxyz=wxyz,
             visible=visible,
         )
