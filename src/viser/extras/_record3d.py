@@ -15,6 +15,8 @@ from scipy.spatial.transform import Rotation
 
 
 class Record3dLoader:
+    """Helper for loading frames for Record3D captures."""
+
     # NOTE(hangg): Consider moving this module into
     # `examples/7_record3d_visualizer.py` since it is usecase-specific.
 
@@ -87,6 +89,8 @@ class Record3dLoader:
 
 @dataclasses.dataclass
 class Record3dFrame:
+    """A single frame from a Record3D capture."""
+
     K: onpt.NDArray[onp.float32]
     rgb: onpt.NDArray[onp.uint8]
     depth: onpt.NDArray[onp.float32]
@@ -114,7 +118,7 @@ class Record3dFrame:
         )
         grid = grid * downsample_factor
 
-        homo_grid = np.pad(grid[mask], ((0, 0), (0, 1)), constant_values=1)
+        homo_grid = np.pad(grid[mask], np.array([[0, 0], [0, 1]]), constant_values=1)
         local_dirs = np.einsum("ij,bj->bi", np.linalg.inv(K), homo_grid)
         dirs = np.einsum("ij,bj->bi", T_world_camera[:3, :3], local_dirs)
         points = (T_world_camera[:, -1] + dirs * depth[mask, None]).astype(np.float32)

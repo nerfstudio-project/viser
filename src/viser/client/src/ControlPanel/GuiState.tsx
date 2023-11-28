@@ -77,6 +77,18 @@ const cleanGuiState: GuiState = {
   guiAttributeFromId: {},
 };
 
+export function computeRelativeLuminance(color: string) {
+  const colorTrans = new ColorTranslator(color);
+
+  // Coefficients are from:
+  // https://en.wikipedia.org/wiki/Relative_luminance#Relative_luminance_and_%22gamma_encoded%22_colorspaces
+  return (
+    ((0.2126 * colorTrans.R + 0.7152 * colorTrans.G + 0.0722 * colorTrans.B) /
+      255.0) *
+    100.0
+  );
+}
+
 export function useGuiState(initialServer: string) {
   return React.useState(() =>
     create(
@@ -152,21 +164,69 @@ export function useViserMantineTheme(): MantineThemeOverride {
       ? "dark"
       : "light",
     primaryColor: colors === null ? undefined : "custom",
-    colors:
-      colors === null
+    colors: {
+      default: [
+        "#f3f3fe",
+        "#e4e6ed",
+        "#c8cad3",
+        "#a9adb9",
+        "#9093a4",
+        "#808496",
+        "#767c91",
+        "#656a7e",
+        "#585e72",
+        "#4a5167",
+      ],
+      ...(colors === null
         ? undefined
         : {
             custom: colors,
-          },
+          }),
+    },
+    fontFamily: "Inter",
     components: {
+      Checkbox: {
+        defaultProps: {
+          radius: "xs",
+        },
+      },
+      ColorInput: {
+        defaultProps: {
+          radius: "xs",
+        },
+      },
+      Select: {
+        defaultProps: {
+          radius: "sm",
+        },
+      },
+      TextInput: {
+        defaultProps: {
+          radius: "xs",
+        },
+      },
+      NumberInput: {
+        defaultProps: {
+          radius: "xs",
+        },
+      },
+      Paper: {
+        defaultProps: {
+          radius: "xs",
+        },
+      },
       Button: {
+        defaultProps: {
+          radius: "xs",
+        },
         variants: {
           filled: (theme) => ({
             root: {
+            fontWeight: 450,
               color:
-                new ColorTranslator(theme.fn.primaryColor()).L > 55.0
+                computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
                   ? theme.colors.gray[9] + " !important"
-                  : undefined,
+                  : theme.white,
             },
           }),
         },

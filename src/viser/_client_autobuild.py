@@ -15,6 +15,7 @@ def _check_viser_yarn_running() -> bool:
         try:
             if Path(process.cwd()).as_posix().endswith("viser/client") and any(
                 [part.endswith("yarn") for part in process.cmdline()]
+                + [part.endswith("yarn.js") for part in process.cmdline()]
             ):
                 return True
         except (psutil.AccessDenied, psutil.ZombieProcess):
@@ -38,7 +39,8 @@ def ensure_client_is_built() -> None:
     if _check_viser_yarn_running():
         # Don't run `yarn build` if `yarn start` is already running.
         rich.print(
-            "[bold](viser)[/bold] The Viser viewer looks like it has been launched via `yarn start`. Skipping build check..."
+            "[bold](viser)[/bold] The Viser viewer looks like it has been launched via"
+            " `yarn start`. Skipping build check..."
         )
         build = False
     elif not (build_dir / "index.html").exists():

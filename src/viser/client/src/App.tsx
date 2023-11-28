@@ -15,7 +15,15 @@ import {
 import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
-import { Box, Image, MantineProvider, MediaQuery } from "@mantine/core";
+import {
+  Anchor,
+  Box,
+  Image,
+  MantineProvider,
+  MediaQuery,
+  Modal,
+  useMantineTheme,
+} from "@mantine/core";
 import React from "react";
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 
@@ -38,6 +46,7 @@ import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
+import { useDisclosure } from "@mantine/hooks";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -124,6 +133,8 @@ function ViewerRoot() {
 function ViewerContents() {
   const viewer = React.useContext(ViewerContext)!;
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
+  const [aboutModelOpened, { open: openAbout, close: closeAbout }] =
+    useDisclosure(false);
   return (
     <MantineProvider
       withGlobalStyles
@@ -163,22 +174,30 @@ function ViewerContents() {
               <FrameSynchronizedMessageHandler />
             </ViewerCanvas>
             {viewer.useGui((state) => state.theme.show_logo) ? (
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: "1em",
-                  left: "1em",
-                  filter: "saturate(0.625)",
-                  "&:hover": {
-                    filter: "saturate(1.0)",
-                  },
-                }}
-                component="a"
-                target="_blank"
-                href="https://viser.studio"
-              >
-                <Image src="/logo.svg" width="2.5em" height="auto" />
-              </Box>
+              <>
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: "1em",
+                    left: "1em",
+                    cursor: "pointer",
+                  }}
+                  component="a"
+                  onClick={openAbout}
+                  title="About Viser"
+                >
+                  <Image src="/logo.svg" width="2.5em" height="auto" />
+                </Box>
+                <Modal
+                  opened={aboutModelOpened}
+                  onClose={closeAbout}
+                  size="xl"
+                  withCloseButton={false}
+                  ta="center"
+                >
+                  <AboutViser />
+                </Modal>
+              </>
             ) : null}
           </Box>
         </MediaQuery>
@@ -410,6 +429,43 @@ export function Root() {
       }}
     >
       <ViewerRoot />
+    </Box>
+  );
+}
+
+function AboutViser() {
+  return (
+    <Box>
+      <Image
+        src={
+          useMantineTheme().colorScheme === "dark"
+            ? "viser_banner_dark.svg"
+            : "viser_banner.svg"
+        }
+        radius="xs"
+      />
+      <Box mt="1.625em">
+        Viser is a 3D visualization toolkit developed at UC Berkeley.
+      </Box>
+      <p>
+        <Anchor
+          href="https://github.com/nerfstudio-project/viser"
+          target="_blank"
+          fw="800"
+          sx={{ "&:focus": { outline: "none" } }}
+        >
+          GitHub
+        </Anchor>
+        &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+        <Anchor
+          href="https://viser.studio"
+          target="_blank"
+          fw="800"
+          sx={{ "&:focus": { outline: "none" } }}
+        >
+          Documentation
+        </Anchor>
+      </p>
     </Box>
   );
 }

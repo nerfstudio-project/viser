@@ -37,7 +37,7 @@ def main(
     share: bool = False,
 ) -> None:
     server = viser.ViserServer(share=share)
-    server.configure_theme(control_layout="collapsible", dark_mode=True)
+    server.configure_theme(control_layout="collapsible")
     model = smplx.create(
         model_path=str(model_path),
         model_type=model_type,

@@ -76,7 +76,7 @@ export default function ControlPanel(props: {
 
   const panelContents = (
     <>
-      <Collapse in={!showGenerated || showSettings} p="xs">
+      <Collapse in={!showGenerated || showSettings} p="xs" pt="0.375em">
         <ServerControls />
       </Collapse>
       <Collapse in={showGenerated && !showSettings}>
@@ -136,15 +136,15 @@ function ConnectionStatus() {
 
   return (
     <>
-      <div style={{ width: "1.4em" }} /> {/* Spacer. */}
+      <div style={{ width: "1.1em" }} /> {/* Spacer. */}
       <Transition transition="skew-down" mounted={connected}>
         {(styles) => (
           <IconCloudCheck
             color={"#0b0"}
             style={{
               position: "absolute",
-              width: "1.5em",
-              height: "1.5em",
+              width: "1.25em",
+              height: "1.25em",
               ...styles,
             }}
           />
@@ -160,7 +160,7 @@ function ConnectionStatus() {
           />
         )}
       </Transition>
-      <Box px="xs" sx={{ flexGrow: 1 }}>
+      <Box px="xs" sx={{ flexGrow: 1 }} lts={"-0.5px"} pt="0.1em">
         {label !== "" ? label : connected ? "Connected" : "Connecting..."}
       </Box>
     </>

@@ -254,10 +254,8 @@ class ClientHandle(MessageApi, GuiApi):
 
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
-        """Returns a context where:
-        - No incoming messages, like camera or GUI state updates, are processed.
-        - `viser` will attempt to group outgoing messages, which will then be sent after
-          the context is exited.
+        """Returns a context where: all outgoing messages are grouped and applied by
+        clients atomically.
 
         This can be helpful for things like animations, or when we want position and
         orientation updates to happen synchronously.
@@ -499,9 +497,8 @@ class ViserServer(MessageApi, GuiApi):
 
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
-        """Returns a context where:
-        - All outgoing messages are grouped and applied by clients atomically.
-        - No incoming messages, like camera or GUI state updates, are processed.
+        """Returns a context where: all outgoing messages are grouped and applied by
+        clients atomically.
 
         This can be helpful for things like animations, or when we want position and
         orientation updates to happen synchronously.
