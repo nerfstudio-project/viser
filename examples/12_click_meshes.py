@@ -40,7 +40,7 @@ def main() -> None:
 
         colormap = matplotlib.colormaps["tab20"]
 
-        def create_mesh(counter: Literal[0, 1, 2]) -> None:
+        def create_mesh(counter: int) -> None:
             if counter == 0:
                 color = (0.8, 0.8, 0.8)
             else:
