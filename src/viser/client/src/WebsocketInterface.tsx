@@ -261,6 +261,7 @@ function useMessageHandler() {
           wireframe: message.wireframe,
           transparent: message.opacity !== null,
           opacity: message.opacity ?? 1.0,
+          flatShading: message.flat_shading,
           side: {
             front: THREE.FrontSide,
             back: THREE.BackSide,
