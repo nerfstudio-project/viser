@@ -10,6 +10,7 @@ import { Select } from "@react-three/postprocessing";
 import { immerable } from "immer";
 import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
+import { ErrorBoundary } from "react-error-boundary";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>,
@@ -176,6 +177,8 @@ export function SceneNodeThreeObject(props: {
     const visibility = nodeAttributes.visibility;
     if (visibility !== undefined) {
       obj.visible = visibility;
+    } else {
+      obj.visible = true;
     }
 
     let changed = false;
@@ -214,61 +217,75 @@ export function SceneNodeThreeObject(props: {
   } else if (clickable) {
     return (
       <>
-        <group
-          // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
-          // and only send a click if the mouse hasn't moved between the down and up events.
-          //  - onPointerDown resets the click state (dragged = false)
-          //  - onPointerMove, if triggered, sets dragged = true
-          //  - onPointerUp, if triggered, sends a click if dragged = false.
-          // Note: It would be cool to have dragged actions too...
-          onPointerDown={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            const state = dragInfo.current;
-            state.startClientX = e.clientX;
-            state.startClientY = e.clientY;
-            state.dragging = false;
-          }}
-          onPointerMove={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            const state = dragInfo.current;
-            const deltaX = e.clientX - state.startClientX;
-            const deltaY = e.clientY - state.startClientY;
-            // Minimum motion.
-            if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
-            state.dragging = true;
-          }}
-          onPointerUp={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            const state = dragInfo.current;
-            if (state.dragging) return;
-            sendClicksThrottled({
-              type: "SceneNodeClickMessage",
-              name: props.name,
-              // Note that the threejs up is +Y, but we expose a +Z up.
-              ray_origin: [e.ray.origin.x, -e.ray.origin.z, e.ray.origin.y],
-              ray_direction: [
-                e.ray.direction.x,
-                -e.ray.direction.z,
-                e.ray.direction.y,
-              ],
-            });
-          }}
-          onPointerOver={(e) => {
-            if (!isDisplayed()) return;
-            e.stopPropagation();
-            setHovered(true);
-          }}
-          onPointerOut={() => {
-            if (!isDisplayed()) return;
-            setHovered(false);
+        <ErrorBoundary
+          fallbackRender={() => {
+            // This sometimes (but very rarely) catches a race condition when
+            // we remove scene nodes. I would guess it's related to portaling,
+            // but the issue is unnoticeable with ErrorBoundary in-place so not
+            // debugging further for now...
+            console.error(
+              "There was an error rendering a scene node object:",
+              objNode,
+            );
+            return null;
           }}
         >
-          <Select enabled={hovered}>{objNode}</Select>
-        </group>
-        {children}
+          <group
+            // Instead of using onClick, we use onPointerDown/Move/Up to check mouse drag,
+            // and only send a click if the mouse hasn't moved between the down and up events.
+            //  - onPointerDown resets the click state (dragged = false)
+            //  - onPointerMove, if triggered, sets dragged = true
+            //  - onPointerUp, if triggered, sends a click if dragged = false.
+            // Note: It would be cool to have dragged actions too...
+            onPointerDown={(e) => {
+              if (!isDisplayed()) return;
+              e.stopPropagation();
+              const state = dragInfo.current;
+              state.startClientX = e.clientX;
+              state.startClientY = e.clientY;
+              state.dragging = false;
+            }}
+            onPointerMove={(e) => {
+              if (!isDisplayed()) return;
+              e.stopPropagation();
+              const state = dragInfo.current;
+              const deltaX = e.clientX - state.startClientX;
+              const deltaY = e.clientY - state.startClientY;
+              // Minimum motion.
+              if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
+              state.dragging = true;
+            }}
+            onPointerUp={(e) => {
+              if (!isDisplayed()) return;
+              e.stopPropagation();
+              const state = dragInfo.current;
+              if (state.dragging) return;
+              sendClicksThrottled({
+                type: "SceneNodeClickMessage",
+                name: props.name,
+                // Note that the threejs up is +Y, but we expose a +Z up.
+                ray_origin: [e.ray.origin.x, -e.ray.origin.z, e.ray.origin.y],
+                ray_direction: [
+                  e.ray.direction.x,
+                  -e.ray.direction.z,
+                  e.ray.direction.y,
+                ],
+              });
+            }}
+            onPointerOver={(e) => {
+              if (!isDisplayed()) return;
+              e.stopPropagation();
+              setHovered(true);
+            }}
+            onPointerOut={() => {
+              if (!isDisplayed()) return;
+              setHovered(false);
+            }}
+          >
+            <Select enabled={hovered}>{objNode}</Select>
+          </group>
+          {children}
+        </ErrorBoundary>
       </>
     );
   } else {
