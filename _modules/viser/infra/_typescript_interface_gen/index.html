@@ -254,7 +254,7 @@
         <article role="main">
           <h1>Source code for viser.infra._typescript_interface_gen</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">get_type_hints</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">get_type_hints</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">get_args</span><span class="p">,</span> <span class="n">get_origin</span><span class="p">,</span> <span class="n">is_typeddict</span>
@@ -319,7 +319,7 @@
         <span class="k">return</span> <span class="n">ret</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># Like get_origin(), but also supports numpy.typing.NDArray[dtype].</span>
-        <span class="n">typ</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s2">&quot;__origin__&quot;</span><span class="p">,</span> <span class="n">typ</span><span class="p">)</span>
+        <span class="n">typ</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Any</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">typ</span><span class="p">,</span> <span class="s2">&quot;__origin__&quot;</span><span class="p">,</span> <span class="n">typ</span><span class="p">))</span>
 
         <span class="k">assert</span> <span class="n">typ</span> <span class="ow">in</span> <span class="n">_raw_type_mapping</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Unsupported type </span><span class="si">{</span><span class="n">typ</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">return</span> <span class="n">_raw_type_mapping</span><span class="p">[</span><span class="n">typ</span><span class="p">]</span>
