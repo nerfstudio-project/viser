@@ -67,7 +67,7 @@ T = TypeVar("T", bound="Message")
 
 @functools.lru_cache(maxsize=None)
 def get_type_hints_cached(cls: Type[Any]) -> Dict[str, Any]:
-    return get_type_hints(cls)
+    return get_type_hints(cls)  # type: ignore
 
 
 class Message(abc.ABC):
