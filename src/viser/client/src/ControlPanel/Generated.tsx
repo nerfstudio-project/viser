@@ -52,33 +52,32 @@ export default function GeneratedGuiContainer({
   const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
 
   // Render each GUI element in this container.
-  const out =
-    guiIdSet === undefined ? null : (
-      <Box pt="0.75em">
-        {[...guiIdSet]
-          .map((id) => guiConfigFromId[id])
-          .sort((a, b) => a.order - b.order)
-          .map((conf, index) => {
-            return (
-              <Box
-                key={conf.id}
-                pb={
-                  conf.type == "GuiAddFolderMessage" &&
-                  index < guiIdSet.size - 1
-                    ? "0.125em"
-                    : 0
-                }
-              >
-                <GeneratedInput
-                  conf={conf}
-                  viewer={viewer}
-                  folderDepth={folderDepth ?? 0}
-                />
-              </Box>
-            );
-          })}
-      </Box>
-    );
+  if (guiIdSet === undefined) return null;
+  const out = (
+    <Box pt="0.75em">
+      {[...guiIdSet]
+        .map((id) => guiConfigFromId[id])
+        .sort((a, b) => a.order - b.order)
+        .map((conf, index) => {
+          return (
+            <Box
+              key={conf.id}
+              pb={
+                conf.type == "GuiAddFolderMessage" && index < guiIdSet.size - 1
+                  ? "0.125em"
+                  : 0
+              }
+            >
+              <GeneratedInput
+                conf={conf}
+                viewer={viewer}
+                folderDepth={folderDepth ?? 0}
+              />
+            </Box>
+          );
+        })}
+    </Box>
+  );
 
   return out;
 }
@@ -98,7 +97,9 @@ function GeneratedInput({
 
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
-    return <GeneratedFolder conf={conf} folderDepth={folderDepth} />;
+    return (
+      <GeneratedFolder conf={conf} folderDepth={folderDepth} viewer={viewer} />
+    );
   if (conf.type == "GuiAddTabGroupMessage")
     return <GeneratedTabGroup conf={conf} />;
   if (conf.type == "GuiAddMarkdownMessage") {
@@ -492,11 +493,18 @@ function GeneratedInput({
 function GeneratedFolder({
   conf,
   folderDepth,
+  viewer,
 }: {
   conf: GuiAddFolderMessage;
   folderDepth: number;
+  viewer: ViewerContextContents;
 }) {
   const [opened, { toggle }] = useDisclosure(conf.expand_by_default);
+  const guiIdSet = viewer.useGui(
+    (state) => state.guiIdSetFromContainerId[conf.id],
+  );
+  const isEmpty = guiIdSet === undefined || guiIdSet.size === 0;
+
   const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
   return (
     <Paper
@@ -511,11 +519,11 @@ function GeneratedFolder({
         sx={{
           fontSize: "0.875em",
           position: "absolute",
-          padding: "0 0.25em 0 0.375em",
+          padding: "0 0.375em 0 0.375em",
           top: 0,
-          left: "0.25em",
+          left: "0.375em",
           transform: "translateY(-50%)",
-          cursor: "pointer",
+          cursor: isEmpty ? undefined : "pointer",
           userSelect: "none",
           fontWeight: 500,
         }}
@@ -530,17 +538,19 @@ function GeneratedFolder({
             top: "0.1em",
             position: "relative",
             marginLeft: "0.25em",
+            marginRight: "-0.1em",
             opacity: 0.5,
+            display: isEmpty ? "none" : undefined,
           }}
         />
       </Paper>
-      <Collapse in={opened} pt="0.2em">
+      <Collapse in={opened && !isEmpty} pt="0.2em">
         <GeneratedGuiContainer
           containerId={conf.id}
           folderDepth={folderDepth + 1}
         />
       </Collapse>
-      <Collapse in={!opened}>
+      <Collapse in={!(opened && !isEmpty)}>
         <Box p="xs"></Box>
       </Collapse>
     </Paper>
