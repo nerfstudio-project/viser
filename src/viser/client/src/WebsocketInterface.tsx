@@ -605,8 +605,8 @@ function useMessageHandler() {
                     >
                       <Paper
                         sx={{
-                          width: "20em",
-                          fontSize: "0.8em",
+                          width: "18em",
+                          fontSize: "0.875em",
                           marginLeft: "1em",
                           marginTop: "1em",
                         }}
