@@ -36,7 +36,10 @@ def main(
     ext: Literal["npz", "pkl"] = "npz",
     share: bool = False,
 ) -> None:
-    server = viser.ViserServer(share=share)
+    server = viser.ViserServer()
+    if share:
+        server.get_share_url()
+
     server.configure_theme(control_layout="collapsible")
     model = smplx.create(
         model_path=str(model_path),
