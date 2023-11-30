@@ -420,7 +420,7 @@ class ViserServer(MessageApi, GuiApi):
         table.add_row("Websocket", ws_url)
         rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
 
-        self._share_tunnel = None
+        self._share_tunnel: Optional[_ViserTunnel] = None
 
         # Create share tunnel if requested.
         # This is deprecated: we should use get_share_url() instead.
@@ -479,9 +479,10 @@ class ViserServer(MessageApi, GuiApi):
                 rich.print(
                     "[bold](viser)[/bold] Share URL requested! (expires in 24 hours)"
                 )
-            self._share_tunnel = _ViserTunnel(self._server._port)
 
             connect_event = threading.Event()
+
+            self._share_tunnel = _ViserTunnel(self._server._port)
 
             @self._share_tunnel.on_connect
             def _() -> None:
