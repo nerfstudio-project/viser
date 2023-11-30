@@ -270,11 +270,66 @@ clients, including new clients that connect after a command is called.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>host</strong> – Host to bind server to.</p></li>
 <li><p><strong>port</strong> – Port to bind server to.</p></li>
-<li><p><strong>share</strong> – Experimental. If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, create and print a public, shareable URL
-for this instance of viser.</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ViserServer.world_axes">
+<span class="sig-name descname"><span class="pre">world_axes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../scene_handles/#viser.FrameHandle" title="viser.FrameHandle"><span class="pre">FrameHandle</span></a></em><a class="headerlink" href="#viser.ViserServer.world_axes" title="Link to this definition">#</a></dt>
+<dd><p>Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
+and then hidden by default.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.get_host">
+<span class="sig-name descname"><span class="pre">get_host</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.get_host"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.get_host" title="Link to this definition">#</a></dt>
+<dd><p>Returns the host address of the Viser server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Host address as string.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.get_port">
+<span class="sig-name descname"><span class="pre">get_port</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.get_port"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.get_port" title="Link to this definition">#</a></dt>
+<dd><p>Returns the port of the Viser server. This could be different from the
+originally requested one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Port as integer.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ViserServer.request_share_url">
+<span class="sig-name descname"><span class="pre">request_share_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.request_share_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.request_share_url" title="Link to this definition">#</a></dt>
+<dd><p>Request a share URL for the Viser server, which allows for public access.
+On the first call, will block until a connecting with the share URL server is
+established. Afterwards, the URL will be returned directly.</p>
+<p>This is an experimental feature that relies on an external server; it shouldn’t
+be relied on for critical applications.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Share URL as string, or None if connection fails or is closed.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>verbose</strong> (<em>bool</em>) – </p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str | None</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.add_3d_gui_container">
 <span class="sig-name descname"><span class="pre">add_3d_gui_container</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">visible</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../scene_handles/#viser.Gui3dContainerHandle" title="viser._scene_handles.Gui3dContainerHandle"><span class="pre">Gui3dContainerHandle</span></a></span></span><a class="headerlink" href="#viser.ViserServer.add_3d_gui_container" title="Link to this definition">#</a></dt>
@@ -1197,13 +1252,6 @@ define a kinematic tree.</p></li>
 </dl>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ViserServer.world_axes">
-<span class="sig-name descname"><span class="pre">world_axes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../scene_handles/#viser.FrameHandle" title="viser.FrameHandle"><span class="pre">FrameHandle</span></a></em><a class="headerlink" href="#viser.ViserServer.world_axes" title="Link to this definition">#</a></dt>
-<dd><p>Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
-and then hidden by default.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.stop">
 <span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.stop" title="Link to this definition">#</a></dt>
@@ -1221,8 +1269,11 @@ and then hidden by default.</p>
 <dd><p>Creates and returns a copy of the mapping from connected client IDs to
 handles.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>Dict</em>[int, <a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser._viser.ClientHandle"><em>ClientHandle</em></a>]</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary of clients.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Dict</em>[int, <a class="reference internal" href="../client_handles/#viser.ClientHandle" title="viser._viser.ClientHandle"><em>ClientHandle</em></a>]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1263,8 +1314,11 @@ clients atomically.</p>
 <p>This can be helpful for things like animations, or when we want position and
 orientation updates to happen synchronously.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>Generator</em>[None, None, None]</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Context manager.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Generator</em>[None, None, None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1349,6 +1403,10 @@ sent. (by default they are windowed)</p>
             <ul>
 <li><a class="reference internal" href="#">Viser Server</a><ul>
 <li><a class="reference internal" href="#viser.ViserServer"><code class="docutils literal notranslate"><span class="pre">ViserServer</span></code></a><ul>
+<li><a class="reference internal" href="#viser.ViserServer.world_axes"><code class="docutils literal notranslate"><span class="pre">ViserServer.world_axes</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.get_host"><code class="docutils literal notranslate"><span class="pre">ViserServer.get_host()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.get_port"><code class="docutils literal notranslate"><span class="pre">ViserServer.get_port()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ViserServer.request_share_url"><code class="docutils literal notranslate"><span class="pre">ViserServer.request_share_url()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_3d_gui_container"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_3d_gui_container()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_box"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_box()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.add_camera_frustum"><code class="docutils literal notranslate"><span class="pre">ViserServer.add_camera_frustum()</span></code></a></li>
@@ -1387,7 +1445,6 @@ sent. (by default they are windowed)</p>
 <li><a class="reference internal" href="#viser.ViserServer.reset_scene"><code class="docutils literal notranslate"><span class="pre">ViserServer.reset_scene()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.send_file_download"><code class="docutils literal notranslate"><span class="pre">ViserServer.send_file_download()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.set_background_image"><code class="docutils literal notranslate"><span class="pre">ViserServer.set_background_image()</span></code></a></li>
-<li><a class="reference internal" href="#viser.ViserServer.world_axes"><code class="docutils literal notranslate"><span class="pre">ViserServer.world_axes</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.stop"><code class="docutils literal notranslate"><span class="pre">ViserServer.stop()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.get_clients"><code class="docutils literal notranslate"><span class="pre">ViserServer.get_clients()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ViserServer.on_client_connect"><code class="docutils literal notranslate"><span class="pre">ViserServer.on_client_connect()</span></code></a></li>

@@ -577,15 +577,19 @@
 <span class="sd">    Args:</span>
 <span class="sd">        host: Host to bind server to.</span>
 <span class="sd">        port: Port to bind server to.</span>
-<span class="sd">        share: Experimental. If set to `True`, create and print a public, shareable URL</span>
-<span class="sd">            for this instance of viser.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">world_axes</span><span class="p">:</span> <span class="n">FrameHandle</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for manipulating the world frame axes (/WorldAxes), which is instantiated</span>
 <span class="sd">    and then hidden by default.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">,</span> <span class="n">share</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># Hide deprecated arguments from docstring and type checkers.</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">_actual_init</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">,</span> <span class="o">**</span><span class="n">_deprecated_kwargs</span>
+    <span class="p">):</span>
         <span class="n">server</span> <span class="o">=</span> <span class="n">infra</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span>
             <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
             <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
@@ -689,26 +693,15 @@
         <span class="p">)</span>
         <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;HTTP&quot;</span><span class="p">,</span> <span class="n">http_url</span><span class="p">)</span>
         <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;Websocket&quot;</span><span class="p">,</span> <span class="n">ws_url</span><span class="p">)</span>
+        <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Panel</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;[bold]viser[/bold]&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_ViserTunnel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Create share tunnel if requested.</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">share</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Panel</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;[bold]viser[/bold]&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
-                <span class="s2">&quot;[bold](viser)[/bold] Share URL requested! (expires in 24 hours)&quot;</span>
-            <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="o">=</span> <span class="n">_ViserTunnel</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
-
-            <span class="nd">@self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">on_connect</span>
-            <span class="k">def</span> <span class="nf">_</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                <span class="n">share_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">get_url</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">share_url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Could not generate share URL&quot;</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;Share URL&quot;</span><span class="p">,</span> <span class="n">share_url</span><span class="p">)</span>
-                <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Panel</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;[bold]viser[/bold]&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="c1"># This is deprecated: we should use get_share_url() instead.</span>
+        <span class="n">share</span> <span class="o">=</span> <span class="n">_deprecated_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;share&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">share</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">request_share_url</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span> <span class="o">=</span> <span class="n">FrameHandle</span><span class="p">(</span>
@@ -721,6 +714,76 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span>
 
+<div class="viewcode-block" id="ViserServer.get_host">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.get_host">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_host</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the host address of the Viser server.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Host address as string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">_host</span></div>
+
+
+<div class="viewcode-block" id="ViserServer.get_port">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.get_port">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_port</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the port of the Viser server. This could be different from the</span>
+<span class="sd">        originally requested one.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Port as integer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">_port</span></div>
+
+
+<div class="viewcode-block" id="ViserServer.request_share_url">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.request_share_url">[docs]</a>
+    <span class="k">def</span> <span class="nf">request_share_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Request a share URL for the Viser server, which allows for public access.</span>
+<span class="sd">        On the first call, will block until a connecting with the share URL server is</span>
+<span class="sd">        established. Afterwards, the URL will be returned directly.</span>
+
+<span class="sd">        This is an experimental feature that relies on an external server; it shouldn&#39;t</span>
+<span class="sd">        be relied on for critical applications.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Share URL as string, or None if connection fails or is closed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Tunnel already exists.</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;ready&quot;</span><span class="p">,</span> <span class="s2">&quot;connecting&quot;</span><span class="p">):</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">get_url</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Create a new tunnel!.</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+                    <span class="s2">&quot;[bold](viser)[/bold] Share URL requested! (expires in 24 hours)&quot;</span>
+                <span class="p">)</span>
+
+            <span class="n">connect_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="o">=</span> <span class="n">_ViserTunnel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">_port</span><span class="p">)</span>
+
+            <span class="nd">@self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">on_connect</span>
+            <span class="k">def</span> <span class="nf">_</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="n">share_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">get_url</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">share_url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Could not generate share URL&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;[bold](viser)[/bold] Generated share URL: </span><span class="si">{</span><span class="n">share_url</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                <span class="n">connect_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+            <span class="n">connect_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">get_url</span><span class="p">()</span></div>
+
+
 <div class="viewcode-block" id="ViserServer.stop">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.stop">[docs]</a>
     <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -730,21 +793,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-    <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">_get_api</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MessageApi</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Message API to use.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">_queue_unsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-
 <div class="viewcode-block" id="ViserServer.get_clients">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.get_clients">[docs]</a>
     <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates and returns a copy of the mapping from connected client IDs to</span>
-<span class="sd">        handles.&quot;&quot;&quot;</span>
+<span class="sd">        handles.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dictionary of clients.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connected_clients</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 
@@ -791,6 +848,9 @@
 
 <span class="sd">        This can be helpful for things like animations, or when we want position and</span>
 <span class="sd">        orientation updates to happen synchronously.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Context manager.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Acquire the global atomic lock.</span>
         <span class="c1"># If called multiple times in the same thread, we ignore inner calls.</span>
@@ -822,8 +882,21 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
 <span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
-</div>
 
+
+    <span class="nd">@override</span>
+    <span class="k">def</span> <span class="nf">_get_api</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MessageApi</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Message API to use.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="nd">@override</span>
+    <span class="k">def</span> <span class="nf">_queue_unsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+
+<span class="n">ViserServer</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">ViserServer</span><span class="o">.</span><span class="n">_actual_init</span>  <span class="c1"># type: ignore</span>
 </pre></div>
         </article>
       </div>
