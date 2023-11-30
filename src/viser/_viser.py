@@ -426,7 +426,7 @@ class ViserServer(MessageApi, GuiApi):
         # This is deprecated: we should use get_share_url() instead.
         share = _deprecated_kwargs.get("share", False)
         if share:
-            self.get_share_url()
+            self.request_share_url()
 
         self.reset_scene()
         self.world_axes = FrameHandle(
@@ -456,7 +456,7 @@ class ViserServer(MessageApi, GuiApi):
         """
         return self._server._port
 
-    def get_share_url(self, verbose: bool = True) -> Optional[str]:
+    def request_share_url(self, verbose: bool = True) -> Optional[str]:
         """Request a share URL for the Viser server, which allows for public access.
         On the first call, will block until a connecting with the share URL server is
         established. Afterwards, the URL will be returned directly.

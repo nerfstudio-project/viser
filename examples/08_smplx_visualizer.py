@@ -38,7 +38,7 @@ def main(
 ) -> None:
     server = viser.ViserServer()
     if share:
-        server.get_share_url()
+        server.request_share_url()
 
     server.configure_theme(control_layout="collapsible")
     model = smplx.create(
