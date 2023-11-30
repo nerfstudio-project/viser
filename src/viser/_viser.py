@@ -593,4 +593,4 @@ class ViserServer(MessageApi, GuiApi):
         self._server.broadcast(message)
 
 
-ViserServer.__init__ = ViserServer._actual_init
+ViserServer.__init__ = ViserServer._actual_init  # type: ignore
