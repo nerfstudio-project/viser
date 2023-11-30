@@ -22,7 +22,9 @@ def main(
     max_frames: int = 100,
     share: bool = False,
 ) -> None:
-    server = viser.ViserServer(share=share)
+    server = viser.ViserServer()
+    if share:
+        server.request_share_url()
 
     print("Loading frames!")
     loader = viser.extras.Record3dLoader(data_path)
