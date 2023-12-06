@@ -252,6 +252,7 @@ class ClientHandle(MessageApi, GuiApi):
         """Define how the message API should send messages."""
         self._state.connection.send(message)
 
+    @override
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
         """Returns a context where: all outgoing messages are grouped and applied by
@@ -275,6 +276,7 @@ class ClientHandle(MessageApi, GuiApi):
             self._atomic_lock.release()
             self._locked_thread_id = -1
 
+    @override
     def flush(self) -> None:
         """Flush the outgoing message buffer. Any buffered messages will immediately be
         sent. (by default they are windowed)"""
@@ -495,6 +497,7 @@ class ViserServer(MessageApi, GuiApi):
         self._client_disconnect_cb.append(cb)
         return cb
 
+    @override
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
         """Returns a context where: all outgoing messages are grouped and applied by
@@ -526,6 +529,7 @@ class ViserServer(MessageApi, GuiApi):
             self._atomic_lock.release()
             self._locked_thread_id = -1
 
+    @override
     def flush(self) -> None:
         """Flush the outgoing message buffer. Any buffered messages will immediately be
         sent. (by default they are windowed)"""

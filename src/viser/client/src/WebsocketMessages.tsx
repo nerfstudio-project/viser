@@ -675,15 +675,27 @@ export interface GetRenderResponseMessage {
   type: "GetRenderResponseMessage";
   payload: Uint8Array;
 }
+/** Signal that a file is about to be sent.
+ *
+ * (automatically generated)
+ */
+export interface FileDownloadStart {
+  type: "FileDownloadStart";
+  download_uuid: string;
+  filename: string;
+  mime_type: string;
+  part_count: number;
+  size_bytes: number;
+}
 /** Send a file for clients to download.
  *
  * (automatically generated)
  */
-export interface FileDownload {
-  type: "FileDownload";
-  filename: string;
+export interface FileDownloadPart {
+  type: "FileDownloadPart";
+  download_uuid: string;
+  part: number;
   content: Uint8Array;
-  mime_type: string;
 }
 
 export type Message =
@@ -740,4 +752,5 @@ export type Message =
   | CubicBezierSplineMessage
   | GetRenderRequestMessage
   | GetRenderResponseMessage
-  | FileDownload;
+  | FileDownloadStart
+  | FileDownloadPart;

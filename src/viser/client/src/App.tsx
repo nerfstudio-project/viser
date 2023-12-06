@@ -1,4 +1,6 @@
 // @refresh reset
+import { Notifications } from "@mantine/notifications";
+
 import {
   AdaptiveDpr,
   AdaptiveEvents,
@@ -141,6 +143,15 @@ function ViewerContents() {
       withNormalizeCSS
       theme={useViserMantineTheme()}
     >
+      <Notifications
+        position="top-left"
+        containerWidth="20em"
+        styles={{
+          root: {
+            boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1) !important",
+          },
+        }}
+      />
       <Titlebar />
       <ViserModal />
       <Box
@@ -308,7 +319,7 @@ function BackgroundImage() {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
   `.trim();
-  const fragShader = `  
+  const fragShader = `
   #include <packing>
   precision highp float;
   precision highp int;

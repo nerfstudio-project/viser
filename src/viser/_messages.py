@@ -574,9 +574,28 @@ class GetRenderResponseMessage(Message):
 
 
 @dataclasses.dataclass
-class FileDownload(Message):
+class FileDownloadStart(Message):
+    """Signal that a file is about to be sent."""
+
+    download_uuid: str
+    filename: str
+    mime_type: str
+    part_count: int
+    size_bytes: int
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.download_uuid
+
+
+@dataclasses.dataclass
+class FileDownloadPart(Message):
     """Send a file for clients to download."""
 
-    filename: str
+    download_uuid: str
+    part: int
     content: bytes
-    mime_type: str
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.download_uuid + "-" + str(self.part)
