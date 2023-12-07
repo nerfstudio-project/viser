@@ -1186,7 +1186,7 @@ class MessageApi(abc.ABC):
         return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)
 
     def send_file_download(
-        self, filename: str, content: bytes, chunk_size: int = 16384
+        self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
     ) -> None:
         """Send a file for a client or clients to download.
 
