@@ -796,12 +796,13 @@ function useMessageHandler() {
 }
 
 function useFileDownloadHandler() {
-  const downloadState = React.useRef<{
+  const downloadStatesRef = React.useRef<{
     [uuid: string]: {
       metadata: FileDownloadStart;
       notificationId: string;
       parts: Uint8Array[];
       bytesDownloaded: number;
+      displayFilesize: string;
     };
   }>({});
 
@@ -811,66 +812,74 @@ function useFileDownloadHandler() {
     // Create or update download state.
     switch (message.type) {
       case "FileDownloadStart": {
-        downloadState.current[message.download_uuid] = {
+        let displaySize = message.size_bytes;
+        const displayUnits = ["B", "K", "M", "G", "T", "P"];
+        let displayUnitIndex = 0;
+        while (
+          displaySize >= 100 &&
+          displayUnitIndex < displayUnits.length - 1
+        ) {
+          displaySize /= 1024;
+          displayUnitIndex += 1;
+        }
+        downloadStatesRef.current[message.download_uuid] = {
           metadata: message,
           notificationId: notificationId,
           parts: [],
           bytesDownloaded: 0,
+          displayFilesize: `${displaySize.toFixed(1)}${
+            displayUnits[displayUnitIndex]
+          }`,
         };
         break;
       }
       case "FileDownloadPart": {
-        const state = downloadState.current[message.download_uuid];
-        if (message.part != state.parts.length) {
+        const downloadState = downloadStatesRef.current[message.download_uuid];
+        if (message.part != downloadState.parts.length) {
           console.error(
             "A file download message was dropped; this should never happen!",
           );
         }
-        state.parts.push(message.content);
-        state.bytesDownloaded += message.content.length;
+        downloadState.parts.push(message.content);
+        downloadState.bytesDownloaded += message.content.length;
         break;
       }
     }
 
     // Show notification.
-    const state = downloadState.current[message.download_uuid];
-    console.log(state.bytesDownloaded, state.metadata.size_bytes);
+    const downloadState = downloadStatesRef.current[message.download_uuid];
+    const progressValue =
+      (100.0 * downloadState.bytesDownloaded) /
+      downloadState.metadata.size_bytes;
+    const isDone =
+      downloadState.bytesDownloaded == downloadState.metadata.size_bytes;
 
-    let displaySize = state.metadata.size_bytes;
-    const displayUnits = ["B", "K", "M", "G", "T", "P"];
-    let displayUnitIndex = 0;
-    while (displaySize >= 100 && displayUnitIndex < displayUnits.length - 1) {
-      displaySize /= 1024;
-      displayUnitIndex += 1;
-    }
-    const progressValue = (
-      (100.0 * state.bytesDownloaded) /
-      state.metadata.size_bytes
-    ).toFixed(0);
-    const done = state.bytesDownloaded == state.metadata.size_bytes;
-
-    (state.bytesDownloaded == 0 ? notifications.show : notifications.update)({
+    (downloadState.bytesDownloaded == 0
+      ? notifications.show
+      : notifications.update)({
       title:
-        (done ? "Downloaded " : "Downloading ") +
-        state.metadata.filename +
-        ` (${displaySize.toFixed(1)}${displayUnits[displayUnitIndex]})`,
+        (isDone ? "Downloaded " : "Downloading ") +
+        `${downloadState.metadata.filename} (${downloadState.displayFilesize})`,
       message: <Progress size="sm" value={progressValue} />,
       id: notificationId,
-      autoClose: done,
-      loading: !done,
-      icon: done ? <IconCheck /> : undefined,
+      autoClose: isDone,
+      withCloseButton: isDone,
+      loading: !isDone,
+      icon: isDone ? <IconCheck /> : undefined,
     });
 
     // If done: download file and clear state.
-    if (done) {
+    if (isDone) {
       const link = document.createElement("a");
       link.href = window.URL.createObjectURL(
-        new Blob(state.parts, { type: state.metadata.mime_type }),
+        new Blob(downloadState.parts, {
+          type: downloadState.metadata.mime_type,
+        }),
       );
-      link.download = state.metadata.filename;
+      link.download = downloadState.metadata.filename;
       link.click();
       link.remove();
-      delete downloadState.current[message.download_uuid];
+      delete downloadStatesRef.current[message.download_uuid];
     }
   };
 }
