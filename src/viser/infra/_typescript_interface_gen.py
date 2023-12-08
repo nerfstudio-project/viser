@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, ClassVar, Type, Union, get_type_hints
+from typing import Any, ClassVar, Type, Union, cast, get_type_hints
 
 import numpy as onp
 from typing_extensions import Literal, get_args, get_origin, is_typeddict
@@ -64,7 +64,7 @@ def _get_ts_type(typ: Type[Any]) -> str:
         return ret
     else:
         # Like get_origin(), but also supports numpy.typing.NDArray[dtype].
-        typ = getattr(typ, "__origin__", typ)
+        typ = cast(Any, getattr(typ, "__origin__", typ))
 
         assert typ in _raw_type_mapping, f"Unsupported type {typ}"
         return _raw_type_mapping[typ]

@@ -135,8 +135,6 @@ function ViewerRoot() {
 function ViewerContents() {
   const viewer = React.useContext(ViewerContext)!;
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
-  const [aboutModelOpened, { open: openAbout, close: closeAbout }] =
-    useDisclosure(false);
   return (
     <MantineProvider
       withGlobalStyles
@@ -185,30 +183,7 @@ function ViewerContents() {
               <FrameSynchronizedMessageHandler />
             </ViewerCanvas>
             {viewer.useGui((state) => state.theme.show_logo) ? (
-              <>
-                <Box
-                  sx={{
-                    position: "absolute",
-                    bottom: "1em",
-                    left: "1em",
-                    cursor: "pointer",
-                  }}
-                  component="a"
-                  onClick={openAbout}
-                  title="About Viser"
-                >
-                  <Image src="/logo.svg" width="2.5em" height="auto" />
-                </Box>
-                <Modal
-                  opened={aboutModelOpened}
-                  onClose={closeAbout}
-                  size="xl"
-                  withCloseButton={false}
-                  ta="center"
-                >
-                  <AboutViser />
-                </Modal>
-              </>
+              <ViserLogo />
             ) : null}
           </Box>
         </MediaQuery>
@@ -444,48 +419,74 @@ export function Root() {
   );
 }
 
-function AboutViser() {
+/** Logo. When clicked, opens an info modal. */
+function ViserLogo() {
+  const [aboutModelOpened, { open: openAbout, close: closeAbout }] =
+    useDisclosure(false);
   return (
-    <Box>
-      <Image
-        src={
-          useMantineTheme().colorScheme === "dark"
-            ? "viser_banner_dark.svg"
-            : "viser_banner.svg"
-        }
-        radius="xs"
-      />
-      <Box mt="1.625em">
-        Viser is a 3D visualization toolkit developed at UC Berkeley.
+    <>
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "1em",
+          left: "1em",
+          cursor: "pointer",
+        }}
+        component="a"
+        onClick={openAbout}
+        title="About Viser"
+      >
+        <Image src="/logo.svg" width="2.5em" height="auto" />
       </Box>
-      <p>
-        <Anchor
-          href="https://github.com/nerfstudio-project/"
-          target="_blank"
-          fw="600"
-          sx={{ "&:focus": { outline: "none" } }}
-        >
-          Nerfstudio
-        </Anchor>
-        &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-        <Anchor
-          href="https://github.com/nerfstudio-project/viser"
-          target="_blank"
-          fw="600"
-          sx={{ "&:focus": { outline: "none" } }}
-        >
-          GitHub
-        </Anchor>
-        &nbsp;&nbsp;&bull;&nbsp;&nbsp;
-        <Anchor
-          href="https://viser.studio"
-          target="_blank"
-          fw="600"
-          sx={{ "&:focus": { outline: "none" } }}
-        >
-          Documentation
-        </Anchor>
-      </p>
-    </Box>
+      <Modal
+        opened={aboutModelOpened}
+        onClose={closeAbout}
+        withCloseButton={false}
+        size="xl"
+        ta="center"
+      >
+        <Box>
+          <Image
+            src={
+              useMantineTheme().colorScheme === "dark"
+                ? "viser_banner_dark.svg"
+                : "viser_banner.svg"
+            }
+            radius="xs"
+          />
+          <Box mt="1.625em">
+            Viser is a 3D visualization toolkit developed at UC Berkeley.
+          </Box>
+          <p>
+            <Anchor
+              href="https://github.com/nerfstudio-project/"
+              target="_blank"
+              fw="600"
+              sx={{ "&:focus": { outline: "none" } }}
+            >
+              Nerfstudio
+            </Anchor>
+            &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <Anchor
+              href="https://github.com/nerfstudio-project/viser"
+              target="_blank"
+              fw="600"
+              sx={{ "&:focus": { outline: "none" } }}
+            >
+              GitHub
+            </Anchor>
+            &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <Anchor
+              href="https://viser.studio"
+              target="_blank"
+              fw="600"
+              sx={{ "&:focus": { outline: "none" } }}
+            >
+              Documentation
+            </Anchor>
+          </p>
+        </Box>
+      </Modal>
+    </>
   );
 }

@@ -76,6 +76,11 @@ function useMessageHandler() {
       );
     }
     addSceneNode(node);
+
+    const attrs = viewer.nodeAttributesFromName.current;
+    if (node.name in attrs) {
+      delete attrs[node.name];
+    }
   }
 
   const mantineTheme = useViserMantineTheme();
@@ -601,9 +606,12 @@ function useMessageHandler() {
           new SceneNode<THREE.Group>(
             message.name,
             (ref) => {
-              // We wrap with <group /> because Html doesn't implement THREE.Object3D.
+              // We wrap with <group /> because Html doesn't implement
+              // THREE.Object3D. The initial position is intended to be
+              // off-screen; it will be overwritten with the actual position
+              // after the component is mounted.
               return (
-                <group ref={ref}>
+                <group ref={ref} position={new THREE.Vector3(1e8, 1e8, 1e8)}>
                   <Html prepend={false}>
                     <MantineProvider
                       withGlobalStyles
@@ -612,8 +620,8 @@ function useMessageHandler() {
                     >
                       <Paper
                         sx={{
-                          width: "20em",
-                          fontSize: "0.8em",
+                          width: "18em",
+                          fontSize: "0.875em",
                           marginLeft: "1em",
                           marginTop: "1em",
                         }}

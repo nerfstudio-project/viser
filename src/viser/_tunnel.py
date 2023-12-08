@@ -3,7 +3,7 @@ import multiprocessing as mp
 import threading
 import time
 from multiprocessing.managers import DictProxy
-from typing import Callable, Optional
+from typing import Callable, Literal, Optional
 
 import requests
 
@@ -45,6 +45,11 @@ class _ViserTunnel:
     def get_url(self) -> Optional[str]:
         """Get tunnel URL. None if not connected (or connection failed)."""
         return self._shared_state["url"]
+
+    def get_status(
+        self,
+    ) -> Literal["ready", "connecting", "failed", "connected", "closed"]:
+        return self._shared_state["status"]
 
     def close(self) -> None:
         """Close the tunnel."""
@@ -103,6 +108,9 @@ async def _make_tunnel(local_port: int, shared_state: DictProxy) -> None:
             for _ in range(res["max_conn_count"])
         ]
     )
+
+    shared_state["url"] = None
+    shared_state["status"] = "closed"
 
 
 async def _simple_proxy(

@@ -304,15 +304,19 @@ class ViserServer(MessageApi, GuiApi):
     Args:
         host: Host to bind server to.
         port: Port to bind server to.
-        share: Experimental. If set to `True`, create and print a public, shareable URL
-            for this instance of viser.
     """
 
     world_axes: FrameHandle
     """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
     and then hidden by default."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8080, share: bool = False):
+    # Hide deprecated arguments from docstring and type checkers.
+    def __init__(self, host: str = "0.0.0.0", port: int = 8080):
+        ...
+
+    def _actual_init(
+        self, host: str = "0.0.0.0", port: int = 8080, **_deprecated_kwargs
+    ):
         server = infra.Server(
             host=host,
             port=port,
@@ -416,26 +420,15 @@ class ViserServer(MessageApi, GuiApi):
         )
         table.add_row("HTTP", http_url)
         table.add_row("Websocket", ws_url)
+        rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
+
+        self._share_tunnel: Optional[_ViserTunnel] = None
 
         # Create share tunnel if requested.
-        if not share:
-            self._share_tunnel = None
-            rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
-        else:
-            rich.print(
-                "[bold](viser)[/bold] Share URL requested! (expires in 24 hours)"
-            )
-            self._share_tunnel = _ViserTunnel(port)
-
-            @self._share_tunnel.on_connect
-            def _() -> None:
-                assert self._share_tunnel is not None
-                share_url = self._share_tunnel.get_url()
-                if share_url is None:
-                    rich.print("[bold](viser)[/bold] Could not generate share URL")
-                else:
-                    table.add_row("Share URL", share_url)
-                rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
+        # This is deprecated: we should use get_share_url() instead.
+        share = _deprecated_kwargs.get("share", False)
+        if share:
+            self.request_share_url()
 
         self.reset_scene()
         self.world_axes = FrameHandle(
@@ -448,25 +441,80 @@ class ViserServer(MessageApi, GuiApi):
         )
         self.world_axes.visible = False
 
+    def get_host(self) -> str:
+        """Returns the host address of the Viser server.
+
+        Returns:
+            Host address as string.
+        """
+        return self._server._host
+
+    def get_port(self) -> int:
+        """Returns the port of the Viser server. This could be different from the
+        originally requested one.
+
+        Returns:
+            Port as integer.
+        """
+        return self._server._port
+
+    def request_share_url(self, verbose: bool = True) -> Optional[str]:
+        """Request a share URL for the Viser server, which allows for public access.
+        On the first call, will block until a connecting with the share URL server is
+        established. Afterwards, the URL will be returned directly.
+
+        This is an experimental feature that relies on an external server; it shouldn't
+        be relied on for critical applications.
+
+        Returns:
+            Share URL as string, or None if connection fails or is closed.
+        """
+
+        if self._share_tunnel is not None:
+            # Tunnel already exists.
+            while self._share_tunnel.get_status() in ("ready", "connecting"):
+                time.sleep(0.05)
+            return self._share_tunnel.get_url()
+        else:
+            # Create a new tunnel!.
+            if verbose:
+                rich.print(
+                    "[bold](viser)[/bold] Share URL requested! (expires in 24 hours)"
+                )
+
+            connect_event = threading.Event()
+
+            self._share_tunnel = _ViserTunnel(self._server._port)
+
+            @self._share_tunnel.on_connect
+            def _() -> None:
+                assert self._share_tunnel is not None
+                if verbose:
+                    share_url = self._share_tunnel.get_url()
+                    if share_url is None:
+                        rich.print("[bold](viser)[/bold] Could not generate share URL")
+                    else:
+                        rich.print(
+                            f"[bold](viser)[/bold] Generated share URL: {share_url}"
+                        )
+                connect_event.set()
+
+            connect_event.wait()
+            return self._share_tunnel.get_url()
+
     def stop(self) -> None:
         """Stop the Viser server and associated threads and tunnels."""
         self._server.stop()
         if self._share_tunnel is not None:
             self._share_tunnel.close()
 
-    @override
-    def _get_api(self) -> MessageApi:
-        """Message API to use."""
-        return self
-
-    @override
-    def _queue_unsafe(self, message: _messages.Message) -> None:
-        """Define how the message API should send messages."""
-        self._server.broadcast(message)
-
     def get_clients(self) -> Dict[int, ClientHandle]:
         """Creates and returns a copy of the mapping from connected client IDs to
-        handles."""
+        handles.
+
+        Returns:
+            Dictionary of clients.
+        """
         with self._state.client_lock:
             return self._state.connected_clients.copy()
 
@@ -505,6 +553,9 @@ class ViserServer(MessageApi, GuiApi):
 
         This can be helpful for things like animations, or when we want position and
         orientation updates to happen synchronously.
+
+        Returns:
+            Context manager.
         """
         # Acquire the global atomic lock.
         # If called multiple times in the same thread, we ignore inner calls.
@@ -534,3 +585,16 @@ class ViserServer(MessageApi, GuiApi):
         """Flush the outgoing message buffer. Any buffered messages will immediately be
         sent. (by default they are windowed)"""
         self._server.flush()
+
+    @override
+    def _get_api(self) -> MessageApi:
+        """Message API to use."""
+        return self
+
+    @override
+    def _queue_unsafe(self, message: _messages.Message) -> None:
+        """Define how the message API should send messages."""
+        self._server.broadcast(message)
+
+
+ViserServer.__init__ = ViserServer._actual_init  # type: ignore
