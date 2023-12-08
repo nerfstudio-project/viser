@@ -1,6 +1,7 @@
 import AwaitLock from "await-lock";
 import { CatmullRomLine, CubicBezierLine, Grid } from "@react-three/drei";
 import { unpack } from "msgpackr";
+import { notifications } from "@mantine/notifications";
 
 import React, { useContext } from "react";
 import * as THREE from "three";
@@ -10,7 +11,11 @@ import { ViewerContext } from "./App";
 import { SceneNode } from "./SceneTree";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { CameraFrustum, CoordinateFrame, GlbAsset } from "./ThreeAssets";
-import { Message } from "./WebsocketMessages";
+import {
+  FileDownloadPart,
+  FileDownloadStart,
+  Message,
+} from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import {
@@ -21,7 +26,8 @@ import {
 import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { MantineProvider, Paper } from "@mantine/core";
+import { MantineProvider, Paper, Progress } from "@mantine/core";
+import { IconCheck } from "@tabler/icons-react";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -78,6 +84,7 @@ function useMessageHandler() {
   }
 
   const mantineTheme = useViserMantineTheme();
+  const fileDownloadHandler = useFileDownloadHandler();
 
   // Return message handler.
   return (message: Message) => {
@@ -783,19 +790,104 @@ function useMessageHandler() {
         );
         return;
       }
-      case "FileDownload": {
-        const blob = new Blob([message.content], { type: message.mime_type });
-        const link = document.createElement("a");
-        link.href = window.URL.createObjectURL(blob);
-        link.download = message.filename;
-        link.click();
-        link.remove();
+      case "FileDownloadStart":
+      case "FileDownloadPart": {
+        fileDownloadHandler(message);
         return;
       }
       default: {
         console.log("Received message did not match any known types:", message);
         return;
       }
+    }
+  };
+}
+
+function useFileDownloadHandler() {
+  const downloadStatesRef = React.useRef<{
+    [uuid: string]: {
+      metadata: FileDownloadStart;
+      notificationId: string;
+      parts: Uint8Array[];
+      bytesDownloaded: number;
+      displayFilesize: string;
+    };
+  }>({});
+
+  return (message: FileDownloadStart | FileDownloadPart) => {
+    const notificationId = "download-" + message.download_uuid;
+
+    // Create or update download state.
+    switch (message.type) {
+      case "FileDownloadStart": {
+        let displaySize = message.size_bytes;
+        const displayUnits = ["B", "K", "M", "G", "T", "P"];
+        let displayUnitIndex = 0;
+        while (
+          displaySize >= 100 &&
+          displayUnitIndex < displayUnits.length - 1
+        ) {
+          displaySize /= 1024;
+          displayUnitIndex += 1;
+        }
+        downloadStatesRef.current[message.download_uuid] = {
+          metadata: message,
+          notificationId: notificationId,
+          parts: [],
+          bytesDownloaded: 0,
+          displayFilesize: `${displaySize.toFixed(1)}${
+            displayUnits[displayUnitIndex]
+          }`,
+        };
+        break;
+      }
+      case "FileDownloadPart": {
+        const downloadState = downloadStatesRef.current[message.download_uuid];
+        if (message.part != downloadState.parts.length) {
+          console.error(
+            "A file download message was dropped; this should never happen!",
+          );
+        }
+        downloadState.parts.push(message.content);
+        downloadState.bytesDownloaded += message.content.length;
+        break;
+      }
+    }
+
+    // Show notification.
+    const downloadState = downloadStatesRef.current[message.download_uuid];
+    const progressValue =
+      (100.0 * downloadState.bytesDownloaded) /
+      downloadState.metadata.size_bytes;
+    const isDone =
+      downloadState.bytesDownloaded == downloadState.metadata.size_bytes;
+
+    (downloadState.bytesDownloaded == 0
+      ? notifications.show
+      : notifications.update)({
+      title:
+        (isDone ? "Downloaded " : "Downloading ") +
+        `${downloadState.metadata.filename} (${downloadState.displayFilesize})`,
+      message: <Progress size="sm" value={progressValue} />,
+      id: notificationId,
+      autoClose: isDone,
+      withCloseButton: isDone,
+      loading: !isDone,
+      icon: isDone ? <IconCheck /> : undefined,
+    });
+
+    // If done: download file and clear state.
+    if (isDone) {
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(
+        new Blob(downloadState.parts, {
+          type: downloadState.metadata.mime_type,
+        }),
+      );
+      link.download = downloadState.metadata.filename;
+      link.click();
+      link.remove();
+      delete downloadStatesRef.current[message.download_uuid];
     }
   };
 }
