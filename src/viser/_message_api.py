@@ -1185,27 +1185,56 @@ class MessageApi(abc.ABC):
         node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible=visible)
         return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)
 
-    def send_file_download(self, filename: str, content: bytes) -> None:
+    def send_file_download(
+        self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
+    ) -> None:
         """Send a file for a client or clients to download.
 
         Args:
             filename: Name of the file to send. Used to infer MIME type.
             content: Content of the file.
+            chunk_size: Number of bytes to send at a time.
         """
         mime_type = mimetypes.guess_type(filename, strict=False)[0]
         assert (
             mime_type is not None
         ), f"Could not guess MIME type from filename {filename}!"
+
+        from ._gui_api import _make_unique_id
+
+        parts = [
+            content[i * chunk_size : (i + 1) * chunk_size]
+            for i in range(int(onp.ceil(len(content) / chunk_size)))
+        ]
+
+        uuid = _make_unique_id()
         self._queue(
-            _messages.FileDownload(
-                filename,
-                content=content,
+            _messages.FileDownloadStart(
+                download_uuid=uuid,
+                filename=filename,
                 mime_type=mime_type,
+                part_count=len(parts),
+                size_bytes=len(content),
             )
         )
+
+        for i, part in enumerate(parts):
+            self._queue(_messages.FileDownloadPart(uuid, part=i, content=part))
+            self.flush()
+
+    @abc.abstractmethod
+    def flush(self) -> None:
+        """Flush the outgoing message buffer. Any buffered messages will immediately be
+        sent. (by default they are windowed)"""
+        raise NotImplementedError()
 
     @contextlib.contextmanager
     @abc.abstractmethod
     def atomic(self) -> Generator[None, None, None]:
-        """"""
+        """Returns a context where: all outgoing messages are grouped and applied by
+        clients atomically.
+
+        This can be helpful for things like animations, or when we want position and
+        orientation updates to happen synchronously.
+        """
         raise NotImplementedError()

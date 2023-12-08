@@ -49,14 +49,14 @@ class SO2(_base.SOBase):
 
     # Factory.
 
-    @staticmethod
+    @classmethod
     @override
-    def identity() -> SO2:
+    def identity(cls) -> SO2:
         return SO2(unit_complex=onp.array([1.0, 0.0]))
 
-    @staticmethod
+    @classmethod
     @override
-    def from_matrix(matrix: onpt.NDArray[onp.floating]) -> SO2:
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> SO2:
         assert matrix.shape == (2, 2)
         return SO2(unit_complex=onp.asarray(matrix[:, 0]))
 
@@ -91,9 +91,9 @@ class SO2(_base.SOBase):
     def multiply(self, other: SO2) -> SO2:
         return SO2(unit_complex=self.as_matrix() @ other.unit_complex)
 
-    @staticmethod
+    @classmethod
     @override
-    def exp(tangent: onpt.NDArray[onp.floating]) -> SO2:
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> SO2:
         (theta,) = tangent
         cos = onp.cos(theta)
         sin = onp.sin(theta)
