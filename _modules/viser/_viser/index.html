@@ -520,6 +520,7 @@
 
 <div class="viewcode-block" id="ClientHandle.atomic">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.atomic">[docs]</a>
+    <span class="nd">@override</span>
     <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
@@ -546,6 +547,7 @@
 
 <div class="viewcode-block" id="ClientHandle.flush">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.flush">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
 <span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
@@ -841,6 +843,7 @@
 
 <div class="viewcode-block" id="ViserServer.atomic">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.atomic">[docs]</a>
+    <span class="nd">@override</span>
     <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
@@ -878,6 +881,7 @@
 
 <div class="viewcode-block" id="ViserServer.flush">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.flush">[docs]</a>
+    <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
 <span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>

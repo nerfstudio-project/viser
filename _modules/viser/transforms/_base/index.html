@@ -258,7 +258,7 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">onpt</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">final</span><span class="p">,</span> <span class="n">override</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Self</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">override</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">hints</span>
 
@@ -293,11 +293,11 @@
     <span class="c1"># Shared implementations.</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">GroupType</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">GroupType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GroupType</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="o">...</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">GroupType</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">GroupType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GroupType</span><span class="p">:</span>
         <span class="o">...</span>
 
 <div class="viewcode-block" id="MatrixLieGroup.__matmul__">
@@ -383,7 +383,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.multiply">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.multiply">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">GroupType</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">GroupType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GroupType</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Composes this transformation with another.</span>
 
 <span class="sd">        Returns:</span>
@@ -440,7 +440,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.inverse">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.inverse">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">GroupType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GroupType</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the inverse of our transform.</span>
 
 <span class="sd">        Returns:</span>
@@ -451,7 +451,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.normalize">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.normalize">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">GroupType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GroupType</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize/projects values and returns.</span>
 
 <span class="sd">        Returns:</span>
@@ -562,8 +562,8 @@
 
 <div class="viewcode-block" id="SEBase.multiply">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.multiply">[docs]</a>
-    <span class="nd">@final</span>
     <span class="nd">@override</span>
+    <span class="nd">@final</span>
     <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">SEGroupType</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">SEGroupType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SEGroupType</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span>
             <span class="n">rotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">rotation</span><span class="p">(),</span>

@@ -314,17 +314,17 @@
 
 <div class="viewcode-block" id="SO2.identity">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO2.identity">[docs]</a>
-    <span class="nd">@staticmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">identity</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">SO2</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">identity</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO2</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">SO2</span><span class="p">(</span><span class="n">unit_complex</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span></div>
 
 
 <div class="viewcode-block" id="SO2.from_matrix">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO2.from_matrix">[docs]</a>
-    <span class="nd">@staticmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">from_matrix</span><span class="p">(</span><span class="n">matrix</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SO2</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">from_matrix</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SO2</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">SO2</span><span class="p">(</span><span class="n">unit_complex</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">matrix</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span></div>
 
@@ -374,9 +374,9 @@
 
 <div class="viewcode-block" id="SO2.exp">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SO2.exp">[docs]</a>
-    <span class="nd">@staticmethod</span>
+    <span class="nd">@classmethod</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">exp</span><span class="p">(</span><span class="n">tangent</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SO2</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">exp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tangent</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SO2</span><span class="p">:</span>
         <span class="p">(</span><span class="n">theta</span><span class="p">,)</span> <span class="o">=</span> <span class="n">tangent</span>
         <span class="n">cos</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
         <span class="n">sin</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>

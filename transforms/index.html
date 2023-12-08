@@ -292,9 +292,9 @@ via S^1 and S^3.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.MatrixLieGroup.__matmul__">
-<span class="sig-name descname"><span class="pre">__matmul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GroupType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GroupType</span></span></span><a class="reference internal" href="../_modules/viser/transforms/_base/#MatrixLieGroup.__matmul__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.MatrixLieGroup.__matmul__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__matmul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/transforms/_base/#MatrixLieGroup.__matmul__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.MatrixLieGroup.__matmul__" title="Link to this definition">#</a></dt>
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">__matmul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></dt>
+<span class="sig-name descname"><span class="pre">__matmul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GroupType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GroupType</span></span></span></dt>
 <dd><p>Overload for the <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> operator.</p>
 <p>Switches between the group action (<code class="docutils literal notranslate"><span class="pre">.apply()</span></code>) and multiplication
 (<code class="docutils literal notranslate"><span class="pre">.multiply()</span></code>) based on the type of <code class="docutils literal notranslate"><span class="pre">other</span></code>.</p>
@@ -372,7 +372,7 @@ via S^1 and S^3.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.MatrixLieGroup.multiply">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">multiply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GroupType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GroupType</span></span></span><a class="reference internal" href="../_modules/viser/transforms/_base/#MatrixLieGroup.multiply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.MatrixLieGroup.multiply" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">multiply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../_modules/viser/transforms/_base/#MatrixLieGroup.multiply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.MatrixLieGroup.multiply" title="Link to this definition">#</a></dt>
 <dd><p>Composes this transformation with another.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -380,12 +380,12 @@ via S^1 and S^3.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>self</strong> (<em>GroupType</em>) – </p></li>
-<li><p><strong>other</strong> (<em>GroupType</em>) – </p></li>
+<li><p><strong>self</strong> (<em>Self</em>) – </p></li>
+<li><p><strong>other</strong> (<em>Self</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>GroupType</em></p>
+<dd class="field-odd"><p><em>Self</em></p>
 </dd>
 </dl>
 </dd></dl>
@@ -444,24 +444,24 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.MatrixLieGroup.inverse">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GroupType</span></span></span><a class="reference internal" href="../_modules/viser/transforms/_base/#MatrixLieGroup.inverse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.MatrixLieGroup.inverse" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../_modules/viser/transforms/_base/#MatrixLieGroup.inverse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.MatrixLieGroup.inverse" title="Link to this definition">#</a></dt>
 <dd><p>Computes the inverse of our transform.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Output.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>self</strong> (<em>GroupType</em>) – </p>
+<dd class="field-even"><p><strong>self</strong> (<em>Self</em>) – </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>GroupType</em></p>
+<dd class="field-odd"><p><em>Self</em></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.MatrixLieGroup.normalize">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GroupType</span></span></span><a class="reference internal" href="../_modules/viser/transforms/_base/#MatrixLieGroup.normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.MatrixLieGroup.normalize" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="reference internal" href="../_modules/viser/transforms/_base/#MatrixLieGroup.normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.MatrixLieGroup.normalize" title="Link to this definition">#</a></dt>
 <dd><p>Normalize/projects values and returns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -471,7 +471,7 @@ across different reference frames.</p>
 <dd class="field-even"><p>GroupType</p>
 </dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>self</strong> (<em>GroupType</em>) – </p>
+<dd class="field-odd"><p><strong>self</strong> (<em>Self</em>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -898,17 +898,17 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SOBase.inverse">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GroupType</span></span></span><a class="headerlink" href="#viser.transforms.SOBase.inverse" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#viser.transforms.SOBase.inverse" title="Link to this definition">#</a></dt>
 <dd><p>Computes the inverse of our transform.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Output.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>self</strong> (<em>GroupType</em>) – </p>
+<dd class="field-even"><p><strong>self</strong> (<em>Self</em>) – </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>GroupType</em></p>
+<dd class="field-odd"><p><em>Self</em></p>
 </dd>
 </dl>
 </dd></dl>
@@ -929,7 +929,7 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SOBase.multiply">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">multiply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GroupType</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GroupType</span></span></span><a class="headerlink" href="#viser.transforms.SOBase.multiply" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">multiply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Self</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#viser.transforms.SOBase.multiply" title="Link to this definition">#</a></dt>
 <dd><p>Composes this transformation with another.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -937,19 +937,19 @@ across different reference frames.</p>
 </dd>
 <dt class="field-even">Parameters<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>self</strong> (<em>GroupType</em>) – </p></li>
-<li><p><strong>other</strong> (<em>GroupType</em>) – </p></li>
+<li><p><strong>self</strong> (<em>Self</em>) – </p></li>
+<li><p><strong>other</strong> (<em>Self</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>GroupType</em></p>
+<dd class="field-odd"><p><em>Self</em></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SOBase.normalize">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">GroupType</span></span></span><a class="headerlink" href="#viser.transforms.SOBase.normalize" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Self</span></span></span><a class="headerlink" href="#viser.transforms.SOBase.normalize" title="Link to this definition">#</a></dt>
 <dd><p>Normalize/projects values and returns.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -959,7 +959,7 @@ across different reference frames.</p>
 <dd class="field-even"><p>GroupType</p>
 </dd>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>self</strong> (<em>GroupType</em>) – </p>
+<dd class="field-odd"><p><strong>self</strong> (<em>Self</em>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -1036,7 +1036,7 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SE2.from_rotation_and_translation">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_rotation_and_translation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.transforms.SO2" title="viser.transforms._so2.SO2"><span class="pre">SO2</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE2" title="viser.transforms._se2.SE2"><span class="pre">SE2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se2/#SE2.from_rotation_and_translation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE2.from_rotation_and_translation" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_rotation_and_translation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.transforms.SO2" title="viser.transforms._so2.SO2"><span class="pre">SO2</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE2" title="viser.transforms._se2.SE2"><span class="pre">SE2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se2/#SE2.from_rotation_and_translation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE2.from_rotation_and_translation" title="Link to this definition">#</a></dt>
 <dd><p>Construct a rigid transform from a rotation and a translation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1092,7 +1092,7 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SE2.identity">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE2" title="viser.transforms._se2.SE2"><span class="pre">SE2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se2/#SE2.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE2.identity" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE2" title="viser.transforms._se2.SE2"><span class="pre">SE2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se2/#SE2.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE2.identity" title="Link to this definition">#</a></dt>
 <dd><p>Returns identity element.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1106,7 +1106,7 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SE2.from_matrix">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE2" title="viser.transforms._se2.SE2"><span class="pre">SE2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se2/#SE2.from_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE2.from_matrix" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE2" title="viser.transforms._se2.SE2"><span class="pre">SE2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se2/#SE2.from_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE2.from_matrix" title="Link to this definition">#</a></dt>
 <dd><p>Get group member from matrix representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1145,7 +1145,7 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SE2.exp">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tangent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE2" title="viser.transforms._se2.SE2"><span class="pre">SE2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se2/#SE2.exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE2.exp" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tangent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE2" title="viser.transforms._se2.SE2"><span class="pre">SE2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se2/#SE2.exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE2.exp" title="Link to this definition">#</a></dt>
 <dd><p>Computes <code class="docutils literal notranslate"><span class="pre">expm(wedge(tangent))</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1343,7 +1343,7 @@ is <code class="docutils literal notranslate"><span class="pre">(vx,</span> <spa
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SE3.from_rotation_and_translation">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_rotation_and_translation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.transforms.SO3" title="viser.transforms._so3.SO3"><span class="pre">SO3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE3" title="viser.transforms._se3.SE3"><span class="pre">SE3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se3/#SE3.from_rotation_and_translation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE3.from_rotation_and_translation" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_rotation_and_translation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.transforms.SO3" title="viser.transforms._so3.SO3"><span class="pre">SO3</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">translation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE3" title="viser.transforms._se3.SE3"><span class="pre">SE3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se3/#SE3.from_rotation_and_translation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE3.from_rotation_and_translation" title="Link to this definition">#</a></dt>
 <dd><p>Construct a rigid transform from a rotation and a translation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1399,7 +1399,7 @@ is <code class="docutils literal notranslate"><span class="pre">(vx,</span> <spa
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SE3.identity">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE3" title="viser.transforms._se3.SE3"><span class="pre">SE3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se3/#SE3.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE3.identity" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE3" title="viser.transforms._se3.SE3"><span class="pre">SE3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se3/#SE3.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE3.identity" title="Link to this definition">#</a></dt>
 <dd><p>Returns identity element.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1413,7 +1413,7 @@ is <code class="docutils literal notranslate"><span class="pre">(vx,</span> <spa
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SE3.from_matrix">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE3" title="viser.transforms._se3.SE3"><span class="pre">SE3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se3/#SE3.from_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE3.from_matrix" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE3" title="viser.transforms._se3.SE3"><span class="pre">SE3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se3/#SE3.from_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE3.from_matrix" title="Link to this definition">#</a></dt>
 <dd><p>Get group member from matrix representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1452,7 +1452,7 @@ is <code class="docutils literal notranslate"><span class="pre">(vx,</span> <spa
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SE3.exp">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tangent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE3" title="viser.transforms._se3.SE3"><span class="pre">SE3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se3/#SE3.exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE3.exp" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tangent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SE3" title="viser.transforms._se3.SE3"><span class="pre">SE3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_se3/#SE3.exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SE3.exp" title="Link to this definition">#</a></dt>
 <dd><p>Computes <code class="docutils literal notranslate"><span class="pre">expm(wedge(tangent))</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1671,7 +1671,7 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SO2.identity">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO2" title="viser.transforms._so2.SO2"><span class="pre">SO2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so2/#SO2.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO2.identity" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO2" title="viser.transforms._so2.SO2"><span class="pre">SO2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so2/#SO2.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO2.identity" title="Link to this definition">#</a></dt>
 <dd><p>Returns identity element.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1685,7 +1685,7 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SO2.from_matrix">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO2" title="viser.transforms._so2.SO2"><span class="pre">SO2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so2/#SO2.from_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO2.from_matrix" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO2" title="viser.transforms._so2.SO2"><span class="pre">SO2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so2/#SO2.from_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO2.from_matrix" title="Link to this definition">#</a></dt>
 <dd><p>Get group member from matrix representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1758,7 +1758,7 @@ across different reference frames.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SO2.exp">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tangent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO2" title="viser.transforms._so2.SO2"><span class="pre">SO2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so2/#SO2.exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO2.exp" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tangent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO2" title="viser.transforms._so2.SO2"><span class="pre">SO2</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so2/#SO2.exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO2.exp" title="Link to this definition">#</a></dt>
 <dd><p>Computes <code class="docutils literal notranslate"><span class="pre">expm(wedge(tangent))</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2065,7 +2065,7 @@ constructor.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SO3.identity">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO3" title="viser.transforms._so3.SO3"><span class="pre">SO3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so3/#SO3.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO3.identity" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO3" title="viser.transforms._so3.SO3"><span class="pre">SO3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so3/#SO3.identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO3.identity" title="Link to this definition">#</a></dt>
 <dd><p>Returns identity element.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -2079,7 +2079,7 @@ constructor.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SO3.from_matrix">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO3" title="viser.transforms._so3.SO3"><span class="pre">SO3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so3/#SO3.from_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO3.from_matrix" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO3" title="viser.transforms._so3.SO3"><span class="pre">SO3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so3/#SO3.from_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO3.from_matrix" title="Link to this definition">#</a></dt>
 <dd><p>Get group member from matrix representation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2152,7 +2152,7 @@ constructor.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.transforms.SO3.exp">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tangent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO3" title="viser.transforms._so3.SO3"><span class="pre">SO3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so3/#SO3.exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO3.exp" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tangent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">floating</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.transforms.SO3" title="viser.transforms._so3.SO3"><span class="pre">SO3</span></a></span></span><a class="reference internal" href="../_modules/viser/transforms/_so3/#SO3.exp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.transforms.SO3.exp" title="Link to this definition">#</a></dt>
 <dd><p>Computes <code class="docutils literal notranslate"><span class="pre">expm(wedge(tangent))</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
