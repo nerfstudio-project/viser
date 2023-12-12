@@ -380,7 +380,7 @@ function GeneratedInput({
           // zIndex of dropdown should be >modal zIndex.
           // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
           zIndex={1000}
-          withinPortal={true}
+          withinPortal
         />
       );
       break;
@@ -395,7 +395,7 @@ function GeneratedInput({
           // zIndex of dropdown should be >modal zIndex.
           // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
           dropdownZIndex={1000}
-          withinPortal={true}
+          withinPortal
           styles={{
             input: { height: "1.625rem", minHeight: "1.625rem" },
             icon: { transform: "scale(0.8)" },
@@ -414,7 +414,7 @@ function GeneratedInput({
           // zIndex of dropdown should be >modal zIndex.
           // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
           dropdownZIndex={1000}
-          withinPortal={true}
+          withinPortal
           styles={{ input: { height: "1.625rem", minHeight: "1.625rem" } }}
         />
       );
@@ -627,7 +627,7 @@ function VectorInput(
       },
 ) {
   return (
-    <Flex justify="space-between" style={{ columnGap: "0.5em" }}>
+    <Flex justify="space-between" columnGap="0.5em">
       {[...Array(props.n).keys()].map((i) => (
         <NumberInput
           id={i === 0 ? props.id : undefined}
