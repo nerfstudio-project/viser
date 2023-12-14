@@ -38,6 +38,13 @@ class Message(infra.Message):
 
 
 @dataclasses.dataclass
+class SetUpDirectionMessage(Message):
+    """Message for setting the global up direction."""
+
+    direction: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
 class ViewerCameraMessage(Message):
     """Message for a posed viewer camera.
     Pose is in the form T_world_camera, OpenCV convention, +Z forward."""
