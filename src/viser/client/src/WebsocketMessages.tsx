@@ -1,5 +1,13 @@
 // AUTOMATICALLY GENERATED message interfaces, from Python dataclass definitions.
 // This file should not be manually modified.
+/** Message for setting the global up direction.
+ *
+ * (automatically generated)
+ */
+export interface SetUpDirectionMessage {
+  type: "SetUpDirectionMessage";
+  direction: [number, number, number];
+}
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
  *
@@ -699,6 +707,7 @@ export interface FileDownloadPart {
 }
 
 export type Message =
+  | SetUpDirectionMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | SceneClickEnableMessage

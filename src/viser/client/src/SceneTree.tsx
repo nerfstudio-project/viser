@@ -24,15 +24,15 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
   public clickable: boolean;
 
   constructor(
-    public name: string,
-    public makeObject: MakeObject<T>,
-    public cleanup?: () => void,
+    public readonly name: string,
+    public readonly makeObject: MakeObject<T>,
+    public readonly cleanup?: () => void,
     /** unmountWhenInvisible is used to unmount <Html /> components when they
      * should be hidden.
      *
      * https://github.com/pmndrs/drei/issues/1323
      */
-    public unmountWhenInvisible?: true,
+    public readonly unmountWhenInvisible?: true,
   ) {
     this.children = [];
     this.clickable = false;

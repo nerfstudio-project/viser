@@ -204,7 +204,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         mantineTableProps={{
           verticalSpacing: 2,
         }}
-        mantinePaperProps={{shadow: undefined}}
+        mantinePaperProps={{ shadow: undefined }}
         mantineTableContainerProps={{ sx: { maxHeight: "30em" } }}
         mantinePaginationProps={{
           showRowsPerPage: false,

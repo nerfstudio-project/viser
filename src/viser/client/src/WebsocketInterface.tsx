@@ -28,6 +28,10 @@ import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
+import {
+  computeR_threeworld_world,
+  getR_threeworld_world,
+} from "./WorldTransformUtils";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -103,6 +107,12 @@ function useMessageHandler() {
       // Configure the theme.
       case "ThemeConfigurationMessage": {
         setTheme(message);
+        return;
+      }
+
+      case "SetUpDirectionMessage": {
+        viewer.nodeAttributesFromName.current[""]!.wxyz =
+          computeR_threeworld_world(message.direction);
         return;
       }
 
@@ -426,10 +436,7 @@ function useMessageHandler() {
       case "SetCameraLookAtMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
 
-        const R_threeworld_world = new THREE.Quaternion();
-        R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-        );
+        const R_threeworld_world = getR_threeworld_world(viewer);
         const target = new THREE.Vector3(
           message.look_at[0],
           message.look_at[1],
@@ -442,30 +449,15 @@ function useMessageHandler() {
       case "SetCameraUpDirectionMessage": {
         const camera = viewer.cameraRef.current!;
         const cameraControls = viewer.cameraControlRef.current!;
-        const R_threeworld_world = new THREE.Quaternion();
-        R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-        );
+        const R_threeworld_world = getR_threeworld_world(viewer);
         const updir = new THREE.Vector3(
           message.position[0],
           message.position[1],
           message.position[2],
         ).applyQuaternion(R_threeworld_world);
         camera.up.set(updir.x, updir.y, updir.z);
-
-        // Back up position.
-        const prevPosition = new THREE.Vector3();
-        cameraControls.getPosition(prevPosition);
-
         cameraControls.updateCameraUp();
-
-        // Restore position, which gets unexpectedly mutated in updateCameraUp().
-        cameraControls.setPosition(
-          prevPosition.x,
-          prevPosition.y,
-          prevPosition.z,
-          false,
-        );
+        cameraControls.applyCameraUp();
         return;
       }
       case "SetCameraPositionMessage": {
@@ -477,11 +469,9 @@ function useMessageHandler() {
           message.position[1],
           message.position[2],
         );
-        const R_worldthree_world = new THREE.Quaternion();
-        R_worldthree_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-        );
-        position_cmd.applyQuaternion(R_worldthree_world);
+
+        const R_threeworld_world = getR_threeworld_world(viewer);
+        position_cmd.applyQuaternion(R_threeworld_world);
 
         cameraControls.setPosition(
           position_cmd.x,
