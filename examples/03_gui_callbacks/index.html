@@ -220,6 +220,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../19_get_renders/">Get Renders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../20_scene_click/">Scene pointer events.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../21_set_up_direction/">Set Up Direction</a></li>
 </ul>
 
 </div>
@@ -287,7 +288,7 @@ we get updates.</p>
 <span class="linenos"> 27</span>
 <span class="linenos"> 28</span>    <span class="n">gui_plane</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">update_plane</span><span class="p">())</span>
 <span class="linenos"> 29</span>
-<span class="linenos"> 30</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Control&quot;</span><span class="p">):</span>
+<span class="linenos"> 30</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Control&quot;</span><span class="p">,</span> <span class="n">expand_by_default</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="linenos"> 31</span>        <span class="n">gui_show</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Show Frame&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="linenos"> 32</span>        <span class="n">gui_axis</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_dropdown</span><span class="p">(</span><span class="s2">&quot;Axis&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">))</span>
 <span class="linenos"> 33</span>        <span class="n">gui_include_z</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Z in dropdown&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
