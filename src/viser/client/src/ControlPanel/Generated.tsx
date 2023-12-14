@@ -4,7 +4,7 @@ import {
 } from "../WebsocketMessages";
 import { ViewerContext, ViewerContextContents } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
-import { GuiConfig, computeRelativeLuminance } from "./GuiState";
+import { computeRelativeLuminance } from "./GuiState";
 import {
   Collapse,
   Image,
@@ -46,59 +46,62 @@ export default function GeneratedGuiContainer({
 }) {
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
 
-  const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[containerId],
-  );
-  const guiConfigFromId = viewer.useGui((state) => state.guiConfigFromId);
+  const guiIdSet =
+    viewer.useGui((state) => state.guiIdSetFromContainerId[containerId]) ?? {};
 
   // Render each GUI element in this container.
+  const guiIdArray = [...Object.keys(guiIdSet)];
+  const guiOrderFromId = viewer!.useGui((state) => state.guiOrderFromId);
   if (guiIdSet === undefined) return null;
+
+  const guiIdOrderPairArray = guiIdArray.map((id) => ({
+    id: id,
+    order: guiOrderFromId[id],
+  }));
   const out = (
     <Box pt="0.75em">
-      {[...guiIdSet]
-        .map((id) => guiConfigFromId[id])
+      {guiIdOrderPairArray
         .sort((a, b) => a.order - b.order)
-        .map((conf, index) => {
-          return (
-            <Box
-              key={conf.id}
-              pb={
-                conf.type == "GuiAddFolderMessage" && index < guiIdSet.size - 1
-                  ? "0.125em"
-                  : 0
-              }
-            >
-              <GeneratedInput
-                conf={conf}
-                viewer={viewer}
-                folderDepth={folderDepth ?? 0}
-              />
-            </Box>
-          );
-        })}
+        .map((pair, index) => (
+          <GeneratedInput
+            key={pair.id}
+            id={pair.id}
+            viewer={viewer}
+            folderDepth={folderDepth ?? 0}
+            last={index === guiIdOrderPairArray.length - 1}
+          />
+        ))}
     </Box>
   );
-
   return out;
 }
 
 /** A single generated GUI element. */
 function GeneratedInput({
-  conf,
+  id,
   viewer,
   folderDepth,
+  last,
 }: {
-  conf: GuiConfig;
+  id: string;
   viewer?: ViewerContextContents;
   folderDepth: number;
+  last: boolean;
 }) {
   // Handle GUI input types.
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
+  const conf = viewer.useGui((state) => state.guiConfigFromId[id]);
 
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
     return (
-      <GeneratedFolder conf={conf} folderDepth={folderDepth} viewer={viewer} />
+      <Box pb={!last ? "0.125em" : 0}>
+        <GeneratedFolder
+          conf={conf}
+          folderDepth={folderDepth}
+          viewer={viewer}
+        />
+      </Box>
     );
   if (conf.type == "GuiAddTabGroupMessage")
     return <GeneratedTabGroup conf={conf} />;
