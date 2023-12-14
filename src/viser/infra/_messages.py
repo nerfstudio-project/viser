@@ -97,6 +97,22 @@ class Message(abc.ABC):
             k: tuple(v) if isinstance(v, list) else v for k, v in mapping.items()
         }
         message_type = cls._subclass_from_type_string()[cast(str, mapping.pop("type"))]
+
+        # If annotated as a float but we got an integer, cast to float. These
+        # are both `number` in Javascript.
+        def coerce_floats(value: Any, annotation: Type[Any]) -> Any:
+            if annotation is float:
+                return float(value)
+            elif get_origin(annotation) is tuple:
+                return tuple(
+                    coerce_floats(value[i], typ)
+                    for i, typ in enumerate(get_args(annotation))
+                )
+            else:
+                return value
+
+        type_hints = get_type_hints(message_type)
+        mapping = {k: coerce_floats(v, type_hints[k]) for k, v in mapping.items()}
         return message_type(**mapping)  # type: ignore
 
     @classmethod
