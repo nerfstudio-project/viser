@@ -506,7 +506,7 @@ function GeneratedFolder({
   const guiIdSet = viewer.useGui(
     (state) => state.guiIdSetFromContainerId[conf.id],
   );
-  const isEmpty = guiIdSet === undefined || guiIdSet.size === 0;
+  const isEmpty = guiIdSet === undefined || Object.keys(guiIdSet).length === 0;
 
   const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
   return (
