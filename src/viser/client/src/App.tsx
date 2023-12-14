@@ -49,6 +49,7 @@ import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
+import { computeR_threeworld_world } from "./WorldTransformUtils";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -117,7 +118,11 @@ function ViewerRoot() {
     cameraControlRef: React.useRef(null),
     resetCameraViewRef: React.useRef(null),
     // Scene node attributes that aren't placed in the zustand state for performance reasons.
-    nodeAttributesFromName: React.useRef({}),
+    nodeAttributesFromName: React.useRef({
+      "": {
+        wxyz: computeR_threeworld_world([0.0, 0.0, 1.0]),
+      },
+    }),
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
@@ -201,7 +206,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
   return (
     <Canvas
-      camera={{ position: [3.0, 3.0, -3.0] }}
+      camera={{ position: [3.0, 3.0, 3.0] }}
       gl={{ preserveDrawingBuffer: true }}
       style={{
         position: "relative",

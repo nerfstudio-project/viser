@@ -246,6 +246,32 @@ class MessageApi(abc.ABC):
             ),
         )
 
+    def set_up_direction(
+        self,
+        direction: Literal["+x", "+y", "+z", "-x", "-y", "-z"]
+        | Tuple[float, float, float]
+        | onp.ndarray,
+    ) -> None:
+        """Set the global up direction of the scene. By default we follow +Z-up
+        (similar to Blender, 3DS Max, ROS, etc), the most common alternative is
+        +Y (OpenGL, Maya, etc).
+
+        Args:
+            direction: New up direction. Can either be a string (one of +x, +y,
+                +z, -x, -y, -z) or a length-3 direction vector.
+        """
+        if isinstance(direction, str):
+            direction = {
+                "+x": (1, 0, 0),
+                "+y": (0, 1, 0),
+                "+z": (0, 0, 1),
+                "-x": (-1, 0, 0),
+                "-y": (0, -1, 0),
+                "-z": (0, 0, -1),
+            }[direction]
+        assert not isinstance(direction, str)
+        self._queue(_messages.SetUpDirectionMessage(cast_vector(direction, 3)))
+
     def add_glb(
         self,
         name: str,
