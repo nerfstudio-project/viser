@@ -48,7 +48,9 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
                 out.append(
                     # Hack to be OK with wrong type annotations.
                     # https://github.com/nerfstudio-project/nerfstudio/pull/1805
-                    _prepare_for_serialization(v, args[i]) if i < len(args) else v
+                    _prepare_for_serialization(v, args[i])
+                    if i < len(args)
+                    else v
                 )
             return tuple(out)
 
