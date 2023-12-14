@@ -28,7 +28,10 @@ import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
-import { computeR_threeworld_world, getR_threeworld_world } from "./WorldTransformUtils";
+import {
+  computeR_threeworld_world,
+  getR_threeworld_world,
+} from "./WorldTransformUtils";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
