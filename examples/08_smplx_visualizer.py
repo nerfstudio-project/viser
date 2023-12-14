@@ -66,7 +66,9 @@ def main(
         full_pose = torch.from_numpy(
             onp.array(
                 [j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32
-            )[None, ...]  # type: ignore
+            )[
+                None, ...
+            ]  # type: ignore
         )
 
         # Get deformed mesh.
