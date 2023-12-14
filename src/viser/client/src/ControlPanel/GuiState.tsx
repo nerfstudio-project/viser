@@ -222,7 +222,7 @@ export function useViserMantineTheme(): MantineThemeOverride {
         variants: {
           filled: (theme) => ({
             root: {
-            fontWeight: 450,
+              fontWeight: 450,
               color:
                 computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
                   ? theme.colors.gray[9] + " !important"

@@ -6,6 +6,7 @@ import * as holdEvent from "hold-event";
 import React, { useContext, useRef } from "react";
 import { PerspectiveCamera } from "three";
 import * as THREE from "three";
+import { getR_threeworld_world } from "./WorldTransformUtils";
 
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
@@ -53,10 +54,10 @@ export function SynchronizedCameraControls() {
 
     // We put Z up to match the scene tree, and convert threejs camera convention
     // to the OpenCV one.
-    const R_threecam_cam = new THREE.Quaternion();
-    const R_world_threeworld = new THREE.Quaternion();
-    R_threecam_cam.setFromEuler(new THREE.Euler(Math.PI, 0.0, 0.0));
-    R_world_threeworld.setFromEuler(new THREE.Euler(Math.PI / 2.0, 0.0, 0.0));
+    const R_threecam_cam = new THREE.Quaternion().setFromEuler(
+      new THREE.Euler(Math.PI, 0.0, 0.0),
+    );
+    const R_world_threeworld = getR_threeworld_world(viewer).invert();
     const R_world_camera = R_world_threeworld.clone()
       .multiply(three_camera.quaternion)
       .multiply(R_threecam_cam);
