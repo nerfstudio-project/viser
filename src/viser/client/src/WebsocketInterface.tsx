@@ -445,18 +445,33 @@ function useMessageHandler() {
           message.position[0],
           message.position[1],
           message.position[2],
-        ).applyQuaternion(
-          new THREE.Quaternion().setFromRotationMatrix(T_threeworld_world),
-        );
+        )
+          .normalize()
+          .applyQuaternion(
+            new THREE.Quaternion().setFromRotationMatrix(T_threeworld_world),
+          );
         camera.up.set(updir.x, updir.y, updir.z);
+
+        // Back up position.
+        const prevPosition = new THREE.Vector3();
+        cameraControls.getPosition(prevPosition);
+
         cameraControls.updateCameraUp();
-        cameraControls.applyCameraUp();
+
+        // Restore position, which can get unexpectedly mutated in updateCameraUp().
+        cameraControls.setPosition(
+          prevPosition.x,
+          prevPosition.y,
+          prevPosition.z,
+          false,
+        );
         return;
       }
       case "SetCameraPositionMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
 
-        // Set the camera position. Note that this will shift the orientation as-well.
+        // Set the camera position. Due to the look-at, note that this will
+        // shift the orientation as-well.
         const position_cmd = new THREE.Vector3(
           message.position[0],
           message.position[1],
