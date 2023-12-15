@@ -431,6 +431,8 @@ class ViserServer(MessageApi, GuiApi):
             self.request_share_url()
 
         self.reset_scene()
+
+        # Create a handle for the world axes, which are hardcoded to exist in the client.
         self.world_axes = FrameHandle(
             _SceneNodeHandleState(
                 "/WorldAxes",

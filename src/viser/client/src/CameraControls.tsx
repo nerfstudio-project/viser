@@ -6,7 +6,7 @@ import * as holdEvent from "hold-event";
 import React, { useContext, useRef } from "react";
 import { PerspectiveCamera } from "three";
 import * as THREE from "three";
-import { getR_threeworld_world } from "./WorldTransformUtils";
+import { getT_threeworld_world } from "./WorldTransformUtils";
 
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
@@ -57,10 +57,18 @@ export function SynchronizedCameraControls() {
     const R_threecam_cam = new THREE.Quaternion().setFromEuler(
       new THREE.Euler(Math.PI, 0.0, 0.0),
     );
-    const R_world_threeworld = getR_threeworld_world(viewer).invert();
-    const R_world_camera = R_world_threeworld.clone()
-      .multiply(three_camera.quaternion)
-      .multiply(R_threecam_cam);
+    const T_world_threeworld = getT_threeworld_world(viewer).invert();
+    const T_world_camera = T_world_threeworld.clone()
+      .multiply(
+        new THREE.Matrix4()
+          .makeRotationFromQuaternion(three_camera.quaternion)
+          .setPosition(three_camera.position),
+      )
+      .multiply(new THREE.Matrix4().makeRotationFromQuaternion(R_threecam_cam));
+
+    const R_world_threeworld = new THREE.Quaternion().setFromRotationMatrix(
+      T_world_threeworld,
+    );
 
     const look_at = camera_control
       .getTarget(new THREE.Vector3())
@@ -75,6 +83,11 @@ export function SynchronizedCameraControls() {
       };
     }
 
+    const R_world_camera = new THREE.Quaternion();
+    const t_world_camera = new THREE.Vector3();
+    const scale = new THREE.Vector3();
+    T_world_camera.decompose(t_world_camera, R_world_camera, scale);
+
     sendCameraThrottled({
       type: "ViewerCameraMessage",
       wxyz: [
@@ -83,10 +96,7 @@ export function SynchronizedCameraControls() {
         R_world_camera.y,
         R_world_camera.z,
       ],
-      position: three_camera.position
-        .clone()
-        .applyQuaternion(R_world_threeworld)
-        .toArray(),
+      position: t_world_camera.toArray(),
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
       look_at: [look_at.x, look_at.y, look_at.z],

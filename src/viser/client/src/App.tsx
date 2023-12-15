@@ -49,7 +49,6 @@ import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
-import { computeR_threeworld_world } from "./WorldTransformUtils";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -120,7 +119,12 @@ function ViewerRoot() {
     // Scene node attributes that aren't placed in the zustand state for performance reasons.
     nodeAttributesFromName: React.useRef({
       "": {
-        wxyz: computeR_threeworld_world([0.0, 0.0, 1.0]),
+        wxyz: (() => {
+          const quat = new THREE.Quaternion().setFromEuler(
+            new THREE.Euler(Math.PI / 2, Math.PI, Math.PI / 2),
+          );
+          return [quat.w, quat.x, quat.y, quat.z];
+        })(),
       },
     }),
     messageQueueRef: React.useRef([]),
