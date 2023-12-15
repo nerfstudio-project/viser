@@ -39,6 +39,7 @@ import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
+from . import transforms as tf
 from ._scene_handles import (
     CameraFrustumHandle,
     FrameHandle,
@@ -270,7 +271,51 @@ class MessageApi(abc.ABC):
                 "-z": (0, 0, -1),
             }[direction]
         assert not isinstance(direction, str)
-        self._queue(_messages.SetUpDirectionMessage(cast_vector(direction, 3)))
+
+        default_three_up = onp.array([0.0, 1.0, 0.0])
+        direction = onp.asarray(direction)
+
+        def rotate_between(before: onp.ndarray, after: onp.ndarray) -> tf.SO3:
+            assert before.shape == after.shape == (3,)
+            before = before / onp.linalg.norm(before)
+            after = after / onp.linalg.norm(after)
+
+            angle = onp.arccos(onp.dot(before, after))
+            axis = onp.cross(before, after)
+            if onp.allclose(axis, onp.zeros(3)):
+                axis = onp.cross(
+                    before,
+                    (1.0, 0.0, 0.0)
+                    if onp.abs(before[0]) < onp.abs(before[1])
+                    else (0.0, 1.0, 0.0),
+                )
+            axis = axis / onp.linalg.norm(axis)
+
+            return tf.SO3.exp(-angle * axis)
+
+        R_threeworld_world = rotate_between(default_three_up, direction)
+
+        # If we set +Y to up, +X and +Z should face the camera.
+        # If we set +Z to up, +X and +Y should face the camera.
+        forward_wrt_world = R_threeworld_world.inverse() @ onp.array([1.0, 0.0, 1.0])
+        R_threeworld_world = R_threeworld_world @ rotate_between(
+            forward_wrt_world, onp.abs(forward_wrt_world)
+        )
+        if not onp.any(onp.isnan(R_threeworld_world.wxyz)):
+            # Set the orientation of the root node.
+            self._queue(
+                _messages.SetOrientationMessage(
+                    "", cast_vector(R_threeworld_world.wxyz, 4)
+                )
+            )
+
+    def set_global_scene_node_visibility(self, visible: bool) -> None:
+        """Set global scene node visibility. If visible is set to False, all scene nodes will be hidden.
+
+        Args:
+            visible: Whether or not all scene nodes should be visible.
+        """
+        self._queue(_messages.SetSceneNodeVisibilityMessage("", visible))
 
     def add_glb(
         self,

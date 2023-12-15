@@ -28,10 +28,7 @@ import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
-import {
-  computeR_threeworld_world,
-  getR_threeworld_world,
-} from "./WorldTransformUtils";
+import { getT_threeworld_world } from "./WorldTransformUtils";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -107,12 +104,6 @@ function useMessageHandler() {
       // Configure the theme.
       case "ThemeConfigurationMessage": {
         setTheme(message);
-        return;
-      }
-
-      case "SetUpDirectionMessage": {
-        viewer.nodeAttributesFromName.current[""]!.wxyz =
-          computeR_threeworld_world(message.direction);
         return;
       }
 
@@ -436,25 +427,27 @@ function useMessageHandler() {
       case "SetCameraLookAtMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
 
-        const R_threeworld_world = getR_threeworld_world(viewer);
+        const T_threeworld_world = getT_threeworld_world(viewer);
         const target = new THREE.Vector3(
           message.look_at[0],
           message.look_at[1],
           message.look_at[2],
         );
-        target.applyQuaternion(R_threeworld_world);
+        target.applyMatrix4(T_threeworld_world);
         cameraControls.setTarget(target.x, target.y, target.z, false);
         return;
       }
       case "SetCameraUpDirectionMessage": {
         const camera = viewer.cameraRef.current!;
         const cameraControls = viewer.cameraControlRef.current!;
-        const R_threeworld_world = getR_threeworld_world(viewer);
+        const T_threeworld_world = getT_threeworld_world(viewer);
         const updir = new THREE.Vector3(
           message.position[0],
           message.position[1],
           message.position[2],
-        ).applyQuaternion(R_threeworld_world);
+        ).applyQuaternion(
+          new THREE.Quaternion().setFromRotationMatrix(T_threeworld_world),
+        );
         camera.up.set(updir.x, updir.y, updir.z);
         cameraControls.updateCameraUp();
         cameraControls.applyCameraUp();
@@ -470,8 +463,8 @@ function useMessageHandler() {
           message.position[2],
         );
 
-        const R_threeworld_world = getR_threeworld_world(viewer);
-        position_cmd.applyQuaternion(R_threeworld_world);
+        const T_threeworld_world = getT_threeworld_world(viewer);
+        position_cmd.applyMatrix4(T_threeworld_world);
 
         cameraControls.setPosition(
           position_cmd.x,
