@@ -707,6 +707,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">request_share_url</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
+
+        <span class="c1"># Create a handle for the world axes, which are hardcoded to exist in the client.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span> <span class="o">=</span> <span class="n">FrameHandle</span><span class="p">(</span>
             <span class="n">_SceneNodeHandleState</span><span class="p">(</span>
                 <span class="s2">&quot;/WorldAxes&quot;</span><span class="p">,</span>
