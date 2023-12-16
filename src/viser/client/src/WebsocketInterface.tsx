@@ -28,7 +28,7 @@ import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
-import { getT_threeworld_world } from "./WorldTransformUtils";
+import { computeT_threeworld_world } from "./WorldTransformUtils";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -427,7 +427,7 @@ function useMessageHandler() {
       case "SetCameraLookAtMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
 
-        const T_threeworld_world = getT_threeworld_world(viewer);
+        const T_threeworld_world = computeT_threeworld_world(viewer);
         const target = new THREE.Vector3(
           message.look_at[0],
           message.look_at[1],
@@ -440,7 +440,7 @@ function useMessageHandler() {
       case "SetCameraUpDirectionMessage": {
         const camera = viewer.cameraRef.current!;
         const cameraControls = viewer.cameraControlRef.current!;
-        const T_threeworld_world = getT_threeworld_world(viewer);
+        const T_threeworld_world = computeT_threeworld_world(viewer);
         const updir = new THREE.Vector3(
           message.position[0],
           message.position[1],
@@ -478,7 +478,7 @@ function useMessageHandler() {
           message.position[2],
         );
 
-        const T_threeworld_world = getT_threeworld_world(viewer);
+        const T_threeworld_world = computeT_threeworld_world(viewer);
         position_cmd.applyMatrix4(T_threeworld_world);
 
         cameraControls.setPosition(
