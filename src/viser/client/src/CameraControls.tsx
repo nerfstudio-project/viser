@@ -6,7 +6,7 @@ import * as holdEvent from "hold-event";
 import React, { useContext, useRef } from "react";
 import { PerspectiveCamera } from "three";
 import * as THREE from "three";
-import { getT_threeworld_world } from "./WorldTransformUtils";
+import { computeT_threeworld_world } from "./WorldTransformUtils";
 
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
@@ -57,7 +57,7 @@ export function SynchronizedCameraControls() {
     const R_threecam_cam = new THREE.Quaternion().setFromEuler(
       new THREE.Euler(Math.PI, 0.0, 0.0),
     );
-    const T_world_threeworld = getT_threeworld_world(viewer).invert();
+    const T_world_threeworld = computeT_threeworld_world(viewer).invert();
     const T_world_camera = T_world_threeworld.clone()
       .multiply(
         new THREE.Matrix4()
