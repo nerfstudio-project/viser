@@ -234,6 +234,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         mouseVector.y =
           1 -
           2 * (e.nativeEvent.offsetY / viewer.canvasRef.current!.clientHeight);
+        console.log(mouseVector.x, mouseVector.y);
         if (
           mouseVector.x > 1 ||
           mouseVector.x < -1 ||
@@ -249,13 +250,13 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           type: "ScenePointerMessage",
           event_type: "click",
           ray_origin: [
+            raycaster.ray.origin.z,
             raycaster.ray.origin.x,
-            -raycaster.ray.origin.z,
             raycaster.ray.origin.y,
           ],
           ray_direction: [
+            raycaster.ray.direction.z,
             raycaster.ray.direction.x,
-            -raycaster.ray.direction.z,
             raycaster.ray.direction.y,
           ],
         });
