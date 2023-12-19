@@ -49,7 +49,7 @@ import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
-import { computeR_threeworld_world } from "./WorldTransformUtils";
+import { computeT_threeworld_world } from "./WorldTransformUtils";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -120,7 +120,12 @@ function ViewerRoot() {
     // Scene node attributes that aren't placed in the zustand state for performance reasons.
     nodeAttributesFromName: React.useRef({
       "": {
-        wxyz: computeR_threeworld_world([0.0, 0.0, 1.0]),
+        wxyz: (() => {
+          const quat = new THREE.Quaternion().setFromEuler(
+            new THREE.Euler(Math.PI / 2, Math.PI, Math.PI / 2),
+          );
+          return [quat.w, quat.x, quat.y, quat.z];
+        })(),
       },
     }),
     messageQueueRef: React.useRef([]),
@@ -230,6 +235,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         mouseVector.y =
           1 -
           2 * (e.nativeEvent.offsetY / viewer.canvasRef.current!.clientHeight);
+        console.log(mouseVector.x, mouseVector.y);
         if (
           mouseVector.x > 1 ||
           mouseVector.x < -1 ||
@@ -241,19 +247,24 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
 
+        const T_world_threeworld = computeT_threeworld_world(viewer).invert();
+
+        const origin = raycaster.ray.origin
+          .clone()
+          .applyMatrix4(T_world_threeworld);
+
+        // Compute just the rotation term without new memory allocation; this
+        // will mutate T_world_threeworld!
+        const R_world_threeworld = T_world_threeworld.setPosition(0.0, 0.0, 0);
+        const direction = raycaster.ray.direction
+          .clone()
+          .applyMatrix4(R_world_threeworld);
+
         sendClickThrottled({
           type: "ScenePointerMessage",
           event_type: "click",
-          ray_origin: [
-            raycaster.ray.origin.x,
-            -raycaster.ray.origin.z,
-            raycaster.ray.origin.y,
-          ],
-          ray_direction: [
-            raycaster.ray.direction.x,
-            -raycaster.ray.direction.z,
-            raycaster.ray.direction.y,
-          ],
+          ray_origin: [origin.x, origin.y, origin.z],
+          ray_direction: [direction.x, direction.y, direction.z],
         });
       }}
     >
