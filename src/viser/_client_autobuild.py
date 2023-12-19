@@ -65,9 +65,9 @@ def ensure_client_is_built() -> None:
             yarn_install_cmd = f"{npx_path} yarn install"
             yarn_build_cmd = f"{npx_path} yarn run build"
             # 激活 Node 环境并运行 yarn 命令
-            subprocess.run(["cmd", "/c", yarn_install_cmd], cwd=client_dir, shell=True)
+            subprocess.run(["cmd", "/c", yarn_install_cmd], cwd=env_dir_abs, shell=True)
             print('install yarn done!!!!!!!')
-            subprocess.run(["cmd", "/c", yarn_build_cmd], cwd=client_dir, shell=True)
+            subprocess.run(["cmd", "/c", yarn_build_cmd], cwd=env_dir_abs, shell=True)
             print('build yarn done!!!!!!')
             # print('构建成功！！！！！！！！！！！！！！！！')
         else:
