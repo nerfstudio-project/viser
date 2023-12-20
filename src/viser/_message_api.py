@@ -1180,27 +1180,17 @@ class MessageApi(abc.ABC):
             if isinstance(self, ViserServer):
                 # Turn off server-level scene click events.
                 self._queue(_messages.SceneClickEnableMessage(enable=False))
+                self.flush()
 
                 # Catch an unlikely edge case: we need to re-enable click events for
                 # clients that still have callbacks.
                 clients = self.get_clients()
                 if len(clients) > 0:
-                    # TODO: putting this in a thread with an initial sleep is a hack for
-                    # giving us a soft guarantee on message ordering; the enable messages
-                    # need to arrive after the disable one above.
-                    #
-                    # Ideally we should implement a flush() method of some kind that
-                    # empties the message buffer.
-
-                    def reenable() -> None:
-                        time.sleep(1.0 / 60.0)
-                        for client in clients.values():
-                            if len(client._scene_pointer_cb) > 0:
-                                self._queue(
-                                    _messages.SceneClickEnableMessage(enable=True)
-                                )
-
-                    threading.Thread(target=reenable).start()
+                    for client in clients.values():
+                        if len(client._scene_pointer_cb) > 0:
+                            client._queue(
+                                _messages.SceneClickEnableMessage(enable=True)
+                            )
 
             else:
                 assert isinstance(self, ClientHandle)

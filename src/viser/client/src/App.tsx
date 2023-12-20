@@ -62,6 +62,7 @@ export type ViewerContextContents = {
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   backgroundMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
+  sendCameraRef: React.MutableRefObject<(() => void) | null>;
   resetCameraViewRef: React.MutableRefObject<(() => void) | null>;
   // Scene node attributes.
   // This is intentionally placed outside of the Zustand state to reduce overhead.
@@ -116,6 +117,7 @@ function ViewerRoot() {
     cameraRef: React.useRef(null),
     backgroundMaterialRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
+    sendCameraRef: React.useRef(null),
     resetCameraViewRef: React.useRef(null),
     // Scene node attributes that aren't placed in the zustand state for performance reasons.
     nodeAttributesFromName: React.useRef({

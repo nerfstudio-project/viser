@@ -495,6 +495,7 @@ function useMessageHandler() {
         camera.setFocalLength(
           (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0),
         );
+        viewer.sendCameraRef.current !== null && viewer.sendCameraRef.current();
         return;
       }
       case "SetOrientationMessage": {
