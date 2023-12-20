@@ -108,6 +108,7 @@ export function SynchronizedCameraControls() {
   // We add a small delay to give the server time to add a callback.
   const connected = viewer.useGui((state) => state.websocketConnected);
   React.useEffect(() => {
+    viewer.sendCameraRef.current = sendCamera;
     if (!connected) return;
     setTimeout(() => sendCamera(), 50);
   }, [connected, sendCamera]);
