@@ -19,7 +19,7 @@ import viser.transforms as tf
 
 server = viser.ViserServer()
 
-mesh = trimesh.load_mesh(Path(__file__).parent / "assets/dragon.obj")
+mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
 assert isinstance(mesh, trimesh.Trimesh)
 mesh.apply_scale(0.05)
 
