@@ -124,7 +124,7 @@ function ViewerRoot() {
       "": {
         wxyz: (() => {
           const quat = new THREE.Quaternion().setFromEuler(
-            new THREE.Euler(Math.PI / 2, Math.PI, Math.PI / 2),
+            new THREE.Euler(Math.PI / 2, Math.PI, -Math.PI / 2),
           );
           return [quat.w, quat.x, quat.y, quat.z];
         })(),
@@ -213,7 +213,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
   return (
     <Canvas
-      camera={{ position: [3.0, 3.0, 3.0] }}
+      camera={{ position: [-3.0, 3.0, -3.0] }}
       gl={{ preserveDrawingBuffer: true }}
       style={{
         position: "relative",

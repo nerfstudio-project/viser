@@ -295,12 +295,23 @@ class MessageApi(abc.ABC):
 
         R_threeworld_world = rotate_between(default_three_up, direction)
 
-        # If we set +Y to up, +X and +Z should face the camera.
-        # If we set +Z to up, +X and +Y should face the camera.
-        forward_wrt_world = R_threeworld_world.inverse() @ onp.array([1.0, 0.0, 1.0])
-        R_threeworld_world = R_threeworld_world @ rotate_between(
-            forward_wrt_world, onp.abs(forward_wrt_world)
-        )
+        # Rotate the world frame such that:
+        #     If we set +Y to up, +X and +Z should face the camera.
+        #     If we set +Z to up, +X and +Y should face the camera.
+        #
+        # This could be made more efficient...
+        thetas = onp.arange(360)
+        sums = [
+            onp.sum(
+                (tf.SO3.from_y_radians(theta) @ R_threeworld_world)
+                @ onp.array([-1.0, -1.0, -1.0])
+            )
+            for theta in thetas
+        ]
+        best_theta = thetas[onp.argmax(sums)]
+
+        R_threeworld_world = tf.SO3.from_y_radians(best_theta) @ R_threeworld_world
+
         if not onp.any(onp.isnan(R_threeworld_world.wxyz)):
             # Set the orientation of the root node.
             self._queue(
