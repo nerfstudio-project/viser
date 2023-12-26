@@ -267,7 +267,7 @@
 <span class="linenos"> 7</span><span class="kn">import</span> <span class="nn">viser</span>
 <span class="linenos"> 8</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
 <span class="linenos"> 9</span>
-<span class="linenos">10</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/dragon.obj&quot;</span><span class="p">)</span>
+<span class="linenos">10</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/dragon.obj&quot;</span><span class="p">))</span>
 <span class="linenos">11</span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">)</span>
 <span class="linenos">12</span><span class="n">mesh</span><span class="o">.</span><span class="n">apply_scale</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
 <span class="linenos">13</span>
