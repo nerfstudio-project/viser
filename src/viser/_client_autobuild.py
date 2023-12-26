@@ -68,6 +68,7 @@ def ensure_client_is_built() -> None:
             ),
             cwd=client_dir,
             shell=True,
+            check=False,
         )
 
 
@@ -79,10 +80,13 @@ def _install_sandboxed_node() -> Path:
         rich.print("[bold](viser)[/bold] nodejs is set up!")
         return env_dir
 
-    subprocess.run([sys.executable, "-m", "nodeenv", "--node=20.4.0", env_dir])
+    subprocess.run(
+        [sys.executable, "-m", "nodeenv", "--node=20.4.0", env_dir], check=False
+    )
     subprocess.run(
         args=[env_dir / "bin" / "npm", "install", "yarn"],
         input="y\n".encode(),
+        check=False,
     )
     assert (env_dir / "bin" / "npx").exists()
     return env_dir

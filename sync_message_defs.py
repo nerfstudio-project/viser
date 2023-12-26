@@ -19,4 +19,4 @@ if __name__ == "__main__":
     print(f"Wrote to {target_path}")
 
     # Run prettier.
-    subprocess.run(args=["npx", "prettier", "-w", str(target_path)])
+    subprocess.run(args=["npx", "prettier", "-w", str(target_path)], check=False)
