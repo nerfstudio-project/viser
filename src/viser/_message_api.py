@@ -280,37 +280,34 @@ class MessageApi(abc.ABC):
             before = before / onp.linalg.norm(before)
             after = after / onp.linalg.norm(after)
 
-            angle = onp.arccos(onp.dot(before, after))
+            angle = onp.arccos(onp.clip(onp.dot(before, after), -1, 1))
             axis = onp.cross(before, after)
-            if onp.allclose(axis, onp.zeros(3)):
-                axis = onp.cross(
-                    before,
-                    (1.0, 0.0, 0.0)
-                    if onp.abs(before[0]) < onp.abs(before[1])
-                    else (0.0, 1.0, 0.0),
-                )
+            if onp.allclose(axis, onp.zeros(3), rtol=1e-3, atol=1e-5):
+                unit_vector = onp.arange(3) == onp.argmin(onp.abs(before))
+                axis = onp.cross(before, unit_vector)
             axis = axis / onp.linalg.norm(axis)
+            return tf.SO3.exp(angle * axis)
 
-            return tf.SO3.exp(-angle * axis)
-
-        R_threeworld_world = rotate_between(default_three_up, direction)
+        R_threeworld_world = rotate_between(direction, default_three_up)
 
         # Rotate the world frame such that:
         #     If we set +Y to up, +X and +Z should face the camera.
         #     If we set +Z to up, +X and +Y should face the camera.
-        #
-        # This could be made more efficient...
-        thetas = onp.arange(360)
-        sums = [
-            onp.sum(
-                (tf.SO3.from_y_radians(theta) @ R_threeworld_world)
-                @ onp.array([-1.0, -1.0, -1.0])
+        # In App.tsx, the camera is initialized at [-3, 3, -3] in the threejs
+        # coordinate frame.
+        desired_fwd = onp.array([-1.0, 0.0, -1.0]) / onp.sqrt(2.0)
+        current_fwd = R_threeworld_world @ (onp.ones(3) / onp.sqrt(3.0))
+        current_fwd = current_fwd * onp.array([1.0, 0.0, 1.0])
+        current_fwd = current_fwd / onp.linalg.norm(current_fwd)
+        R_threeworld_world = (
+            tf.SO3.from_y_radians(  # Rotate around the null space / up direction.
+                onp.arctan2(
+                    onp.cross(current_fwd, desired_fwd)[1],
+                    onp.dot(current_fwd, desired_fwd),
+                ),
             )
-            for theta in thetas
-        ]
-        best_theta = thetas[onp.argmax(sums)]
-
-        R_threeworld_world = tf.SO3.from_y_radians(best_theta) @ R_threeworld_world
+            @ R_threeworld_world
+        )
 
         if not onp.any(onp.isnan(R_threeworld_world.wxyz)):
             # Set the orientation of the root node.
@@ -685,8 +682,8 @@ class MessageApi(abc.ABC):
         assert (
             len(points.shape) == 2 and points.shape[-1] == 3
         ), "Shape of points should be (N, 3)."
-        assert colors_cast.shape == points.shape or colors_cast.shape == (
-            3,
+        assert (
+            colors_cast.shape == points.shape == (3,)
         ), "Shape of colors should be (N, 3) or (3,)."
 
         if colors_cast.shape == (3,):
