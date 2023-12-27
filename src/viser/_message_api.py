@@ -682,9 +682,10 @@ class MessageApi(abc.ABC):
         assert (
             len(points.shape) == 2 and points.shape[-1] == 3
         ), "Shape of points should be (N, 3)."
-        assert (
-            colors_cast.shape == points.shape == (3,)
-        ), "Shape of colors should be (N, 3) or (3,)."
+        assert colors_cast.shape in {
+            points.shape,
+            (3,),
+        }, "Shape of colors should be (N, 3) or (3,)."
 
         if colors_cast.shape == (3,):
             colors_cast = onp.tile(colors_cast[None, :], reps=(points.shape[0], 1))
