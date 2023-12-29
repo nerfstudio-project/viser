@@ -596,3 +596,41 @@ class GuiMarkdownHandle:
         """Permanently remove this markdown from the visualizer."""
         api = self._gui_api._get_api()
         api._queue(GuiRemoveMessage(self._id))
+
+
+@dataclasses.dataclass
+class GuiCameraTrajectoryPanelHandle:
+    _gui_api: GuiApi
+    _id: str
+    _visible: bool
+    _container_id: str  # Parent.
+    _order: float
+
+    @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._order
+
+    @property
+    def visible(self) -> bool:
+        """Temporarily show or hide this GUI element from the visualizer. Synchronized
+        automatically when assigned."""
+        return self._visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        if visible == self.visible:
+            return
+
+        self._gui_api._get_api()._queue(GuiSetVisibleMessage(self._id, visible=visible))
+        self._visible = visible
+
+    def __post_init__(self) -> None:
+        """We need to register ourself after construction for callbacks to work."""
+        parent = self._gui_api._container_handle_from_id[self._container_id]
+        parent._children[self._id] = self
+
+    def remove(self) -> None:
+        """Permanently remove this markdown from the visualizer."""
+        api = self._gui_api._get_api()
+        api._queue(GuiRemoveMessage(self._id))

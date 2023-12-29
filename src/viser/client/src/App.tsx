@@ -73,6 +73,7 @@ export type ViewerContextContents = {
           wxyz?: [number, number, number, number];
           position?: [number, number, number];
           visibility?: boolean;
+          renderModeVisibility?: boolean;
         };
   }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
@@ -266,9 +267,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SceneContextSetter />
       <SynchronizedCameraControls />
       <Selection>
-        {(!isRenderMode) && (
-          <SceneNodeThreeObject name="" parent={null} />
-        )}
+        <SceneNodeThreeObject name="" parent={null} />
         <EffectComposer enabled={true} autoClear={false}>
           <Outline
             hiddenEdgeColor={0xfbff00}

@@ -487,6 +487,17 @@ class GuiAddButtonGroupMessage(_GuiAddInputBase):
 
 
 @dataclasses.dataclass
+class GuiAddCameraTrajectoryPanelMessage(Message):
+    order: float
+    id: str
+    container_id: str
+
+    fov: float = 75.
+    render_width: int = 1920
+    render_height: int = 1080
+
+
+@dataclasses.dataclass
 class GuiRemoveMessage(Message):
     """Sent server->client to remove a GUI element."""
 
