@@ -32,6 +32,7 @@ import Markdown from "../Markdown";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDisclosure } from "@mantine/hooks";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import CameraTrajectoryPanel from "./CameraTrajectoryPanel";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -119,6 +120,11 @@ function GeneratedInput({
         </ErrorBoundary>
       </Box>
     );
+  }
+  if (conf.type == "GuiAddCameraTrajectoryPanelMessage") {
+    return (<Box px="xs" pb="xs">
+      <CameraTrajectoryPanel />
+     </Box>);
   }
 
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
@@ -446,7 +452,8 @@ function GeneratedInput({
           ))}
         </Flex>
       );
-  }
+      break;
+    }
 
   if (conf.hint !== null)
     input = // We need to add <Box /> for inputs that we can't assign refs to.

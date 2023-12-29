@@ -552,6 +552,19 @@ export interface GuiCloseModalMessage {
   type: "GuiCloseModalMessage";
   id: string;
 }
+/** GuiAddCameraTrajectoryPanelMessage(order: 'float', id: 'str', container_id: 'str', fov: 'float' = 75.0, render_width: 'int' = 1920, render_height: 'int' = 1080)
+ *
+ * (automatically generated)
+ */
+export interface GuiAddCameraTrajectoryPanelMessage {
+  type: "GuiAddCameraTrajectoryPanelMessage";
+  order: number;
+  id: string;
+  container_id: string;
+  fov: number;
+  render_width: number;
+  render_height: number;
+}
 /** Sent server->client to remove a GUI element.
  *
  * (automatically generated)
@@ -751,6 +764,7 @@ export type Message =
   | GuiAddButtonGroupMessage
   | GuiModalMessage
   | GuiCloseModalMessage
+  | GuiAddCameraTrajectoryPanelMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | GuiSetVisibleMessage

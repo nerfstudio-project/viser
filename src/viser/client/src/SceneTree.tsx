@@ -113,6 +113,7 @@ export function SceneNodeThreeObject(props: {
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
     false;
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
+  const isRenderMode = viewer.useGui((state) => state.isRenderMode);
 
   const dragInfo = React.useRef({
     dragging: false,
@@ -179,6 +180,10 @@ export function SceneNodeThreeObject(props: {
       obj.visible = visibility;
     } else {
       obj.visible = true;
+    }
+
+    if (isRenderMode && nodeAttributes.renderModeVisibility !== undefined) {
+      obj.visible = nodeAttributes.renderModeVisibility;
     }
 
     let changed = false;

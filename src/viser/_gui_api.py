@@ -38,6 +38,7 @@ from ._gui_handles import (
     GuiModalHandle,
     GuiTabGroupHandle,
     SupportsRemoveProtocol,
+    GuiCameraTrajectoryPanelHandle,
     _GuiHandleState,
     _GuiInputHandle,
     _make_unique_id,
@@ -739,6 +740,41 @@ class GuiApi(abc.ABC):
         order: Optional[float] = None,
     ) -> GuiDropdownHandle[TString]:
         ...
+
+    def add_gui_camera_trajectory_panel(
+        self,
+        order: Optional[float] = None,
+        visible: bool = True,
+    ) -> GuiCameraTrajectoryPanelHandle:
+        """
+        Add a camera trajectory panel to the GUI.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        id = _make_unique_id()
+        order = _apply_default_order(order)
+
+        # Send add GUI input message.
+        self._get_api()._queue(_messages.GuiAddCameraTrajectoryPanelMessage(
+            order=order,
+            id=id,
+            container_id=self._get_container_id(),
+        ))
+
+        # Construct handle.
+        handle = GuiCameraTrajectoryPanelHandle(
+            _gui_api=self,
+            _container_id=self._get_container_id(),
+            _visible=True,
+            _id=id,
+            _order=order,
+        )
+
+        # Set the visible field. These will queue messages under-the-hood.
+        if not visible:
+            handle.visible = visible
+        return handle
 
     def add_gui_dropdown(
         self,

@@ -5,7 +5,7 @@ import { ColorTranslator } from "colortranslator";
 
 import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from "../App";
-import { MantineThemeOverride } from "@mantine/core";
+import { MantineThemeOverride, Slider } from "@mantine/core";
 
 export type GuiConfig =
   | Messages.GuiAddButtonMessage
@@ -21,7 +21,8 @@ export type GuiConfig =
   | Messages.GuiAddTextMessage
   | Messages.GuiAddVector2Message
   | Messages.GuiAddVector3Message
-  | Messages.GuiAddMarkdownMessage;
+  | Messages.GuiAddMarkdownMessage
+  | Messages.GuiAddCameraTrajectoryPanelMessage;
 
 export function isGuiConfig(message: Messages.Message): message is GuiConfig {
   return message.type.startsWith("GuiAdd");

@@ -21,7 +21,6 @@ import BottomPanel from "./BottomPanel";
 import FloatingPanel from "./FloatingPanel";
 import { ThemeConfigurationMessage } from "../WebsocketMessages";
 import SidebarPanel from "./SidebarPanel";
-import CameraTrajectoryPanel from "./CameraTrajectoryPanel";
 
 // Must match constant in Python.
 const ROOT_CONTAINER_ID = "root";
@@ -78,7 +77,6 @@ export default function ControlPanel(props: {
   const panelContents = (
     <>
       <Collapse in={!showGenerated || showSettings} p="xs" pt="0.375em">
-        <CameraTrajectoryPanel />
         <ServerControls />
       </Collapse>
       <Collapse in={showGenerated && !showSettings}>

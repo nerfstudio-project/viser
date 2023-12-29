@@ -364,19 +364,19 @@ type Value = number[];
 export interface MultiSliderProps
   extends DefaultProps<MultiSliderStylesNames>,
     Omit<React.ComponentPropsWithoutRef<'div'>, 'value' | 'onChange' | 'defaultValue'> {
-  variant: string;
+  variant?: string;
 
   /** Color from theme.colors */
-  color: MantineColor;
+  color?: MantineColor;
 
   /** Key of theme.radius or any valid CSS value to set border-radius, theme.defaultRadius by default */
-  radius: MantineNumberSize;
+  radius?: MantineNumberSize;
 
   /** Predefined track and thumb size, number to set sizes */
-  size: MantineNumberSize;
+  size?: MantineNumberSize;
 
   /** Minimal possible value */
-  min: number;
+  min?: number;
 
   /** Maximum possible value */
   max: number;
@@ -421,28 +421,28 @@ export interface MultiSliderProps
   labelTransitionTimingFunction?: string;
 
   /** If true label will be not be hidden when user stops dragging */
-  labelAlwaysOn: boolean;
+  labelAlwaysOn?: boolean;
 
   /** First thumb aria-label */
-  thumbFromLabel: string;
+  thumbFromLabel?: string;
 
   /** Second thumb aria-label */
-  thumbToLabel: string;
+  thumbToLabel?: string;
 
   /**If true slider label will appear on hover */
   showLabelOnHover?: boolean;
 
   /** Thumbs children, can be used to add icons */
-  thumbChildren: React.ReactNode | React.ReactNode[] | null;
+  thumbChildren?: React.ReactNode | React.ReactNode[] | null;
 
   /** Disables slider */
-  disabled: boolean;
+  disabled?: boolean;
 
   /** Thumb width and height */
-  thumbSize: number;
+  thumbSize?: number;
 
   /** A transformation function, to change the scale of the slider */
-  scale: (value: number) => number;
+  scale?: (value: number) => number;
 
   fixedEndpoints: boolean;
 }
@@ -502,7 +502,7 @@ export const MultiSlider = forwardRef<HTMLDivElement, MultiSliderProps>((props, 
     variant,
     fixedEndpoints,
     ...others
-  } = useComponentDefaultProps('MultiSlider', defaultProps, props);
+  } = useComponentDefaultProps('MultiSlider', defaultProps, props) as any;
 
   const theme = useMantineTheme();
   const [focused, setFocused] = useState(-1);
