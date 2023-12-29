@@ -139,15 +139,29 @@ export default function CameraTrajectoryPanel(props: CameraTrajectoryPanelProps)
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
   const nodeFromName = viewer.useSceneTree((state) => state.nodeFromName);
   const isRenderMode = viewer.useGui((state) => state.isRenderMode);
+  
+  // Get default FOV from camera
+  const [isCycle, setIsCycle] = React.useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = React.useState<boolean>(false);
+  const [fps, setFps] = React.useState<number>(24);
+  const [smoothness, setSmoothness] = React.useState<number>(0.5);
+  const [cameras, setCameras] = React.useState<Camera[]>([]);
+  const [fov, setFov] = React.useState<number>(viewer.cameraRef.current?.fov ?? 75.0);
+  const [renderWidth, setRenderWidth] = React.useState<number>(1920);
+  const [renderHeight, setRenderHeight] = React.useState<number>(1080);
+  const [playerTime, setPlayerTime] = React.useState<number>(0.);
+  const aspect = renderWidth / renderHeight;
 
   const baseTreeName = "CameraTrajectory"
-  React.useEffect(() => {
+  const ensureThreeRootExists = () => {
     if (!(baseTreeName in nodeFromName)) {
       addSceneNode(
         new SceneNode<THREE.Group>(baseTreeName, (ref) => (
           <CoordinateFrame ref={ref} show_axes={false} />
         )) as SceneNode<any>,
       );
+    }
+    if (!(`${baseTreeName}/PlayerCamera` in nodeFromName)) {
       addSceneNode(
         new SceneNode<THREE.Group>(
             `${baseTreeName}/PlayerCamera`,
@@ -161,26 +175,18 @@ export default function CameraTrajectoryPanel(props: CameraTrajectoryPanelProps)
               />
             ),
         ) as SceneNode<any>);
-      const attr = viewer.nodeAttributesFromName.current;
-      if (attr[`${baseTreeName}/PlayerCamera`] === undefined) attr[`${baseTreeName}/PlayerCamera`] = {};
-      attr[`${baseTreeName}/PlayerCamera`]!.visibility = false;
-      return () => {
-        removeSceneNode(`${baseTreeName}/PlayerCamera`);
-        removeSceneNode(baseTreeName);
-      }
+    }
+    const attr = viewer.nodeAttributesFromName.current;
+    if (attr[`${baseTreeName}/PlayerCamera`] === undefined) attr[`${baseTreeName}/PlayerCamera`] = {};
+    attr[`${baseTreeName}/PlayerCamera`]!.visibility = false;
+  }
+  React.useEffect(() => {
+    ensureThreeRootExists();
+    return () => {
+      `${baseTreeName}/PlayerCamera` in nodeFromName && removeSceneNode(`${baseTreeName}/PlayerCamera`);
+      baseTreeName in nodeFromName && removeSceneNode(baseTreeName);
     }
   }, []);
-
-  const [isCycle, setIsCycle] = React.useState<boolean>(false);
-  const [isPlaying, setIsPlaying] = React.useState<boolean>(false);
-  const [fps, setFps] = React.useState<number>(30);
-  const [smoothness, setSmoothness] = React.useState<number>(0.5);
-  const [cameras, setCameras] = React.useState<Camera[]>([]);
-  const [fov, setFov] = React.useState<number>(1.);
-  const [renderWidth, setRenderWidth] = React.useState<number>(1920);
-  const [renderHeight, setRenderHeight] = React.useState<number>(1080);
-  const [playerTime, setPlayerTime] = React.useState<number>(0.);
-  const aspect = renderWidth / renderHeight;
 
   const curveObject = React.useMemo(() => cameras.length > 1 ? get_curve_object_from_cameras(
     cameras.map(({fov, wxyz, position, time}: Camera) => ({
@@ -192,6 +198,7 @@ export default function CameraTrajectoryPanel(props: CameraTrajectoryPanelProps)
 
   // Update cameras and trajectory
   React.useEffect(() => {
+    ensureThreeRootExists();
     // Update trajectory
     if (!(baseTreeName in nodeFromName)) return;
     const children = nodeFromName[baseTreeName]!.children;
@@ -228,7 +235,7 @@ export default function CameraTrajectoryPanel(props: CameraTrajectoryPanelProps)
 
   // Render camera path
   React.useEffect(() => {
-    if (!(baseTreeName in nodeFromName)) return;
+    ensureThreeRootExists();
     const nodeName = `${baseTreeName}/Trajectory`;
     if (curveObject !== null) {
       const num_points = fps * seconds;
@@ -254,6 +261,7 @@ export default function CameraTrajectoryPanel(props: CameraTrajectoryPanelProps)
   }, [curveObject, fps, isRenderMode]);
 
   React.useEffect(() => {
+    ensureThreeRootExists();
     // set the camera
     if (curveObject !== null) {
       if (isRenderMode) {
@@ -331,28 +339,33 @@ export default function CameraTrajectoryPanel(props: CameraTrajectoryPanelProps)
 
 
   const addCamera = () => {
-    const { position, wxyz } = getPoseFromCamera(viewer);
-    const hash = getCameraHash({ fov, position, wxyz });
-    const name = `${mapNumberToAlphabet(hash).slice(0, 6)}`;
-
-    if (cameras.length >= 2) {
-      const mult = 1 - 1/cameras.length;
-      setCameras([...cameras.map(x => ({...x, time: x.time * mult})), { 
-        time: 1,
-        name,
-        position,
-        wxyz,
-        fov,
-      }]);
-    } else {
-      setCameras([...cameras, { 
-        time: cameras.length === 0 ? 0 : 1,
-        name,
-        position,
-        wxyz,
-        fov,
-      }]);
-    }
+    setCameras((cameras) => {
+      const { position, wxyz } = getPoseFromCamera(viewer);
+      const hash = getCameraHash({ fov, position, wxyz });
+      let name = `${mapNumberToAlphabet(hash).slice(0, 6)}`;
+      const nameNumber = cameras.filter(x => x.name.startsWith(name)).length;
+      if (nameNumber > 0) {
+        name += `-${nameNumber+1}`;
+      }
+      if (cameras.length >= 2) {
+        const mult = 1 - 1/cameras.length;
+        return [...cameras.map(x => ({...x, time: x.time * mult})), { 
+          time: 1,
+          name,
+          position,
+          wxyz,
+          fov,
+        }];
+      } else {
+        return [...cameras, { 
+          time: cameras.length === 0 ? 0 : 1,
+          name,
+          position,
+          wxyz,
+          fov,
+        }];
+      }
+    });
   }
 
 
