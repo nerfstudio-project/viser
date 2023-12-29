@@ -43,6 +43,7 @@ interface GuiState {
   guiAttributeFromId: {
     [id: string]: { visible?: boolean; disabled?: boolean } | undefined;
   };
+  isRenderMode: boolean;
 }
 
 interface GuiActions {
@@ -77,6 +78,7 @@ const cleanGuiState: GuiState = {
   guiConfigFromId: {},
   guiValueFromId: {},
   guiAttributeFromId: {},
+  isRenderMode: false,
 };
 
 export function computeRelativeLuminance(color: string) {

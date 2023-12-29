@@ -50,6 +50,7 @@ import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
 import { computeR_threeworld_world } from "./WorldTransformUtils";
+import { stat } from "fs";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -187,7 +188,7 @@ function ViewerContents() {
             <ViewerCanvas>
               <FrameSynchronizedMessageHandler />
             </ViewerCanvas>
-            {viewer.useGui((state) => state.theme.show_logo) ? (
+            {viewer.useGui((state) => state.theme.show_logo && !state.isRenderMode) ? (
               <ViserLogo />
             ) : null}
           </Box>
@@ -204,6 +205,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     viewer.websocketRef,
     20,
   );
+  const isRenderMode = viewer.useGui((state) => state.isRenderMode);
   return (
     <Canvas
       camera={{ position: [3.0, 3.0, 3.0] }}
@@ -264,7 +266,9 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SceneContextSetter />
       <SynchronizedCameraControls />
       <Selection>
-        <SceneNodeThreeObject name="" parent={null} />
+        {(!isRenderMode) && (
+          <SceneNodeThreeObject name="" parent={null} />
+        )}
         <EffectComposer enabled={true} autoClear={false}>
           <Outline
             hiddenEdgeColor={0xfbff00}

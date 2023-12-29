@@ -11,6 +11,7 @@ import { getR_threeworld_world } from "./WorldTransformUtils";
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
   const camera = useThree((state) => state.camera as PerspectiveCamera);
+  const isRenderMode = viewer.useGui((state) => state.isRenderMode);
 
   const sendCameraThrottled = makeThrottledMessageSender(
     viewer.websocketRef,
@@ -43,6 +44,7 @@ export function SynchronizedCameraControls() {
 
   // Callback for sending cameras.
   const sendCamera = React.useCallback(() => {
+    console.log("Sending camera");
     const three_camera = camera;
     const camera_control = viewer.cameraControlRef.current;
 
@@ -198,6 +200,7 @@ export function SynchronizedCameraControls() {
   return (
     <CameraControls
       ref={viewer.cameraControlRef}
+      enabled={!isRenderMode}
       minDistance={0.1}
       maxDistance={200.0}
       dollySpeed={0.3}
