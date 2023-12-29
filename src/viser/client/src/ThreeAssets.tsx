@@ -192,17 +192,19 @@ export const CoordinateFrame = React.forwardRef<
   );
 });
 
+export interface CameraFrustumProps {
+  fov: number;
+  aspect: number;
+  scale: number;
+  color: number;
+  image?: THREE.Texture;
+}
+
 const lineGeom = new THREE.CylinderGeometry(1.0, 1.0, 1.0, 3, 1);
 /** Helper for visualizing camera frustums. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,
-  {
-    fov: number;
-    aspect: number;
-    scale: number;
-    color: number;
-    image?: THREE.Texture;
-  }
+  CameraFrustumProps
 >(function CameraFrustum(props, ref) {
   let y = Math.tan(props.fov / 2.0);
   let x = y * props.aspect;
