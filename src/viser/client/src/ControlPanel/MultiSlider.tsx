@@ -382,10 +382,10 @@ export interface MultiSliderProps
   max: number;
 
   /** Minimal range interval */
-  minRange: number;
+  minRange?: number;
 
   /** Number by which value will be incremented/decremented with thumb drag and arrows */
-  step: number;
+  step?: number;
 
   /** Amount of digits after the decimal point */
   precision?: number;
@@ -452,7 +452,6 @@ const defaultProps: Partial<MultiSliderProps> = {
   radius: 'xl',
   min: 0,
   max: 100,
-  minRange: 2,
   step: 1,
   marks: [],
   label: (f) => f,
@@ -503,6 +502,7 @@ export const MultiSlider = forwardRef<HTMLDivElement, MultiSliderProps>((props, 
     fixedEndpoints,
     ...others
   } = useComponentDefaultProps('MultiSlider', defaultProps, props) as any;
+  const _minRange = minRange || step;
 
   const theme = useMantineTheme();
   const [focused, setFocused] = useState(-1);
@@ -537,18 +537,18 @@ export const MultiSlider = forwardRef<HTMLDivElement, MultiSliderProps>((props, 
     clone[index] = val;
 
     if (index < clone.length - 1) {
-      if (val > clone[index + 1] - (minRange - 0.000000001)) {
-        clone[index] = Math.max(min, clone[index + 1] - minRange);
+      if (val > clone[index + 1] - (_minRange - 0.000000001)) {
+        clone[index] = Math.max(min, clone[index + 1] - _minRange);
       }
 
-      if (val > (max - (minRange - 0.000000001) || min)) {
+      if (val > (max - (_minRange - 0.000000001) || min)) {
         clone[index] = valueRef.current[index];
       }
     }
 
     if (index > 0) {
-      if (val < clone[index - 1] + minRange) {
-        clone[index] = Math.min(max, clone[index - 1] + minRange);
+      if (val < clone[index - 1] + _minRange) {
+        clone[index] = Math.min(max, clone[index - 1] + _minRange);
       }
     }
 

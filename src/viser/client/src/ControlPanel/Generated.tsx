@@ -7,7 +7,7 @@ import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { computeRelativeLuminance } from "./GuiState";
 import {
   Collapse,
-  Image,
+  Group,
   Paper,
   Tabs,
   TabsValue,
@@ -31,8 +31,18 @@ import React from "react";
 import Markdown from "../Markdown";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDisclosure } from "@mantine/hooks";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import { IconChevronDown, IconChevronUp, TablerIconsProps } from "@tabler/icons-react";
 import CameraTrajectoryPanel from "./CameraTrajectoryPanel";
+import { MultiSlider } from "./MultiSlider";
+import * as TablerIcons from '@tabler/icons-react';
+
+
+function createIcon(icon: string) : (props: TablerIconsProps) => JSX.Element {
+  // Icon name is in snake-case
+  // We need to convert it to PascalCase
+  const iconPascal = icon.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join('');
+  return (TablerIcons as any)[("Icon" + iconPascal) as any] as unknown as (props: TablerIconsProps) => JSX.Element;
+}
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -154,6 +164,8 @@ function GeneratedInput({
 
   let labeled = true;
   let input = null;
+  const iconString = (conf as { icon?: string }).icon;
+  const Icon = iconString && createIcon(iconString);
   switch (conf.type) {
     case "GuiAddButtonMessage":
       labeled = false;
@@ -182,27 +194,7 @@ function GeneratedInput({
           styles={{ inner: { color: inputColor + " !important" } }}
           disabled={disabled}
           size="sm"
-          leftIcon={
-            conf.icon_base64 === null ? undefined : (
-              <Image
-                /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-                height="1em"
-                width="1em"
-                opacity={disabled ? 0.3 : 1.0}
-                mr="-0.125em"
-                sx={
-                  inputColor === theme.white
-                    ? {
-                        // Make the color white.
-                        filter: !disabled ? "invert(1)" : undefined,
-                      }
-                    : // Icon will be black by default.
-                      undefined
-                }
-                src={"data:image/svg+xml;base64," + conf.icon_base64}
-              />
-            )
-          }
+          leftIcon={Icon && <Icon size="1em" />}
         >
           {conf.label}
         </Button>
@@ -294,6 +286,7 @@ function GeneratedInput({
               height: "1.625rem",
             },
           }}
+          icon={Icon && <Icon size="1em" />}
           disabled={disabled}
           stepHoldDelay={500}
           stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
@@ -430,7 +423,7 @@ function GeneratedInput({
       break;
     case "GuiAddButtonGroupMessage":
       input = (
-        <Flex justify="space-between" columnGap="xs">
+        <Group grow spacing="xs">
           {conf.options.map((option, index) => (
             <Button
               key={index}
@@ -450,7 +443,29 @@ function GeneratedInput({
               {option}
             </Button>
           ))}
-        </Flex>
+        </Group>
+      );
+      break;
+    case "GuiAddMultiSliderMessage":
+      return (
+        <Box pb="0.5em" px="xs">
+          {conf.label !== undefined && (<Text size="sm">{conf.label}</Text>)}
+          <MultiSlider
+            id={conf.id}
+            pt="0.2em"
+            showLabelOnHover={false}
+            min={conf.min}
+            max={conf.max}
+            minRange={conf.min_range ?? undefined}
+            step={conf.step ?? undefined}
+            precision={conf.precision}
+            fixedEndpoints={conf.fixed_endpoints}
+            value={value}
+            onChange={updateValue}
+            marks={conf.marks || [{ value: conf.min }, { value: conf.max }]}
+            disabled={disabled}
+          />
+         </Box>
       );
       break;
     }
@@ -483,21 +498,21 @@ function GeneratedInput({
         </Tooltip>
       );
 
-  if (labeled)
-    input = (
-      <LabeledInput
-        id={conf.id}
-        label={conf.label}
-        input={input}
-        folderDepth={folderDepth}
-      />
+      if (labeled)
+      input = (
+        <LabeledInput
+          id={conf.id}
+          label={conf.label}
+          input={input}
+          folderDepth={folderDepth}
+        />
+      );
+  
+    return (
+      <Box pb="0.5em" px="xs">
+        {input}
+      </Box>
     );
-
-  return (
-    <Box pb="0.5em" px="xs">
-      {input}
-    </Box>
-  );
 }
 
 function GeneratedFolder({
@@ -569,7 +584,7 @@ function GeneratedFolder({
 
 function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
   const [tabState, setTabState] = React.useState<TabsValue>("0");
-  const icons = conf.tab_icons_base64;
+  const icons = conf.tab_icons;
 
   return (
     <Tabs
@@ -579,28 +594,18 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
       sx={{ marginTop: "-0.75em" }}
     >
       <Tabs.List>
-        {conf.tab_labels.map((label, index) => (
+        {conf.tab_labels.map((label, index) => {
+          const icon = icons[index];
+          const Icon = icon && createIcon(icon);
+          return (
           <Tabs.Tab
             value={index.toString()}
             key={index}
-            icon={
-              icons[index] === null ? undefined : (
-                <Image
-                  /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-                  height={"1.125em"}
-                  width={"1.125em"}
-                  sx={(theme) => ({
-                    filter:
-                      theme.colorScheme == "dark" ? "invert(1)" : undefined,
-                  })}
-                  src={"data:image/svg+xml;base64," + icons[index]}
-                />
-              )
-            }
+            icon={Icon && <Icon size="1.125em" />}
           >
             {label}
           </Tabs.Tab>
-        ))}
+        )})}
       </Tabs.List>
       {conf.tab_container_ids.map((containerId, index) => (
         <Tabs.Panel value={index.toString()} key={containerId}>
@@ -612,32 +617,28 @@ function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
 }
 
 function VectorInput(
-  props:
-    | {
-        id: string;
-        n: 2;
-        value: [number, number];
-        min: [number, number] | null;
-        max: [number, number] | null;
-        step: number;
-        precision: number;
-        onChange: (value: number[]) => void;
-        disabled: boolean;
-      }
-    | {
-        id: string;
-        n: 3;
-        value: [number, number, number];
-        min: [number, number, number] | null;
-        max: [number, number, number] | null;
-        step: number;
-        precision: number;
-        onChange: (value: number[]) => void;
-        disabled: boolean;
-      },
+  props: {
+    id: string;
+    disabled: boolean;
+    step: number;
+    precision: number;
+    onChange: (value: number[]) => void;
+  } & React.ComponentProps<typeof Group> & ({
+    n: 2;
+    value: [number, number];
+    min: [number, number] | null;
+    max: [number, number] | null;
+    }
+  | {
+      n: 3;
+      value: [number, number, number];
+      min: [number, number, number] | null;
+      max: [number, number, number] | null;
+  })
 ) {
+  const { id, disabled, onChange, step, precision, n, value, min, max, ...otherProps } = props;
   return (
-    <Flex justify="space-between" style={{ columnGap: "0.5em" }}>
+    <Group spacing="0.5em" grow {...otherProps}>
       {[...Array(props.n).keys()].map((i) => (
         <NumberInput
           id={i === 0 ? props.id : undefined}
@@ -672,7 +673,7 @@ function VectorInput(
           disabled={props.disabled}
         />
       ))}
-    </Flex>
+    </Group>
   );
 }
 

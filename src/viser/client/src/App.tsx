@@ -83,6 +83,8 @@ export type ViewerContextContents = {
   >;
   getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
   sceneClickEnable: React.MutableRefObject<boolean>;
+  setIsRenderMode: (isRenderMode: boolean) => void;
+  viewerModeCameraStateBackup: React.MutableRefObject<null | [number[], string]>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -129,6 +131,32 @@ function ViewerRoot() {
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
     sceneClickEnable: React.useRef(false),
+    viewerModeCameraStateBackup: React.useRef<null | [number[], string]>(null),
+    setIsRenderMode: (isRenderMode: boolean) => {
+      viewer.useGui.setState((state) => {
+          state.isRenderMode = isRenderMode;
+          const camera = viewer.cameraRef.current!;
+          // Backup/restore camera state
+          if (isRenderMode) {
+            viewer.viewerModeCameraStateBackup.current = [
+            [...camera.position.toArray()],
+            viewer.cameraControlRef.current!.toJSON()
+          ];
+          } else if (viewer.viewerModeCameraStateBackup.current !== null) {
+            const [cameraData, cameraControl] = viewer.viewerModeCameraStateBackup.current!;
+            const position = new THREE.Vector3(...cameraData.slice(0, 3));
+            const rotation = new THREE.Euler(...cameraData.slice(3, 6));
+            //viewer.cameraControlRef.current?.fromJSON(cameraControl, false);
+            camera.position.copy(position);
+            camera.rotation.copy(rotation);
+            camera.updateProjectionMatrix();
+            //viewer.cameraControlRef.current?.updateCameraUp();
+            //viewer.cameraControlRef.current?.update(1);
+            viewer.viewerModeCameraStateBackup.current = null;
+          }
+          //console.log(camera.up);
+      });
+    }
   };
 
   return (

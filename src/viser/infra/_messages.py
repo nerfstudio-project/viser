@@ -6,7 +6,8 @@ from __future__ import annotations
 import abc
 import functools
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast
+import dataclasses
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast, Union
 
 import msgpack
 import numpy as onp
@@ -18,6 +19,21 @@ else:
     ClientId = Any
 
 
+def _get_union_type(value: Any, types: List[Type]) -> Type:
+    # Fist filter simple cases
+    if len(types) == 1:
+        return types[0]
+    if len(types) == 2 and type(None) in types:
+        non_null = types[0] if types[0] is not type(None) else types[1]
+        return type(None) if value is None else non_null
+
+    # Then filter more complex cases
+    for arg in types:
+        if isinstance(value, arg):
+            return _prepare_for_serialization(value, arg)
+    raise ValueError(f"Could not find a matching type for {value}")
+
+
 def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     """Prepare any special types for serialization."""
 
@@ -27,6 +43,25 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
         return float(value)
     if annotation is int:
         return int(value)
+
+    # Handle union and detect the correct type.
+    if get_origin(annotation) is Union:
+        return _prepare_for_serialization(value, _get_union_type(value, get_args(annotation)))
+
+    # Recursively handle lists.
+    if get_origin(annotation) is list:
+        subtype = get_args(annotation)[0]
+        return [
+            _prepare_for_serialization(v, subtype) for v in value
+        ]
+
+    # Reecursively handle dataclasses
+    if dataclasses.is_dataclass(annotation):
+        resolved_hints = get_type_hints_cached(annotation)
+        field_names = [field.name for field in dataclasses.fields(annotation)]
+        return {
+            k: _prepare_for_serialization(getattr(value, k), resolved_hints[k]) for k in field_names
+        }
 
     # Recursively handle tuples.
     if get_origin(annotation) is tuple:

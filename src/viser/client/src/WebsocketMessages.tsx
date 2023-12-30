@@ -330,7 +330,7 @@ export interface GuiAddMarkdownMessage {
   markdown: string;
   container_id: string;
 }
-/** GuiAddTabGroupMessage(order: 'float', id: 'str', container_id: 'str', tab_labels: 'Tuple[str, ...]', tab_icons_base64: 'Tuple[Union[str, None], ...]', tab_container_ids: 'Tuple[str, ...]')
+/** GuiAddTabGroupMessage(order: 'float', id: 'str', container_id: 'str', tab_labels: 'Tuple[str, ...]', tab_icons: 'Tuple[Union[str, None], ...]', tab_container_ids: 'Tuple[str, ...]')
  *
  * (automatically generated)
  */
@@ -340,7 +340,7 @@ export interface GuiAddTabGroupMessage {
   id: string;
   container_id: string;
   tab_labels: string[];
-  tab_icons_base64: (string | null)[];
+  tab_icons: (string | null)[];
   tab_container_ids: string[];
 }
 /** Base message type containing fields commonly used by GUI inputs.
@@ -356,7 +356,7 @@ export interface _GuiAddInputBase {
   hint: string | null;
   initial_value: any;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -384,7 +384,7 @@ export interface GuiAddButtonMessage {
     | "orange"
     | "teal"
     | null;
-  icon_base64: string | null;
+  icon: string | null;
 }
 /** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int')
  *
@@ -403,7 +403,27 @@ export interface GuiAddSliderMessage {
   step: number | null;
   precision: number;
 }
-/** GuiAddNumberMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
+/** GuiAddMultiSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'List[float]', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, marks: 'Optional[List[GuiSliderMark]]' = None)
+ *
+ * (automatically generated)
+ */
+export interface GuiAddMultiSliderMessage {
+  type: "GuiAddMultiSliderMessage";
+  order: number;
+  id: string;
+  label: string;
+  container_id: string;
+  hint: string | null;
+  initial_value: number[];
+  min: number;
+  max: number;
+  step: number | null;
+  min_range: number | null;
+  precision: number;
+  fixed_endpoints: boolean;
+  marks: { value: number; label: string | null }[] | null;
+}
+/** GuiAddNumberMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]', icon: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -419,6 +439,7 @@ export interface GuiAddNumberMessage {
   step: number;
   min: number | null;
   max: number | null;
+  icon: string | null;
 }
 /** GuiAddRgbMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[int, int, int]')
  *
@@ -753,6 +774,7 @@ export type Message =
   | _GuiAddInputBase
   | GuiAddButtonMessage
   | GuiAddSliderMessage
+  | GuiAddMultiSliderMessage
   | GuiAddNumberMessage
   | GuiAddRgbMessage
   | GuiAddRgbaMessage

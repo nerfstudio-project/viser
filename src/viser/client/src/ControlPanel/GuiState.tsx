@@ -5,7 +5,8 @@ import { ColorTranslator } from "colortranslator";
 
 import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from "../App";
-import { MantineThemeOverride, Slider } from "@mantine/core";
+import { MantineNumberSize, MantineTheme, MantineThemeOverride, Slider, createStyles } from "@mantine/core";
+import { getSize, rem } from '@mantine/styles';
 
 export type GuiConfig =
   | Messages.GuiAddButtonMessage
@@ -22,6 +23,7 @@ export type GuiConfig =
   | Messages.GuiAddVector2Message
   | Messages.GuiAddVector3Message
   | Messages.GuiAddMarkdownMessage
+  | Messages.GuiAddMultiSliderMessage
   | Messages.GuiAddCameraTrajectoryPanelMessage;
 
 export function isGuiConfig(message: Messages.Message): message is GuiConfig {
@@ -217,6 +219,35 @@ export function useViserMantineTheme(): MantineThemeOverride {
       NumberInput: {
         defaultProps: {
           radius: "xs",
+        },
+      },
+      Input: {
+        variants: {
+          labelleft: (theme: MantineTheme, { radius, withRightSection, rightSectionWidth }, context) => {
+            const sizes = {
+              xs: rem(30),
+              sm: rem(36),
+              md: rem(42),
+              lg: rem(50),
+              xl: rem(60),
+            };
+            const size =  getSize({ size: context.size!, sizes })
+            return ({
+            input: {
+              minHeight: size,
+              paddingLeft: `calc(${size}  / 3)`,
+              paddingRight: withRightSection
+                ? rightSectionWidth || size
+                : `calc(${size}  / 3)`,
+              borderRadius: theme.fn.radius(radius),
+              border: `${rem(1)} solid ${
+                theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[4]
+              }`,
+              backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[6] : theme.white,
+              transition: 'border-color 100ms ease',
+              '&:focus, &:focus-within': theme.focusRingStyles.inputStyles(theme),
+            },
+          })}
         },
       },
       Paper: {
