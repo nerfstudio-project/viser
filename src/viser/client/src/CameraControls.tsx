@@ -44,7 +44,6 @@ export function SynchronizedCameraControls() {
 
   // Callback for sending cameras.
   const sendCamera = React.useCallback(() => {
-    console.log("Sending camera");
     const three_camera = camera;
     const camera_control = viewer.cameraControlRef.current;
 

@@ -43,7 +43,6 @@ from ._gui_handles import (
     _GuiInputHandle,
     _make_unique_id,
 )
-from ._icons import base64_from_icon
 from ._icons_enum import Icon
 from ._message_api import MessageApi, cast_vector
 
@@ -273,7 +272,7 @@ class GuiApi(abc.ABC):
         return GuiTabGroupHandle(
             _tab_group_id=tab_group_id,
             _labels=[],
-            _icons_base64=[],
+            _icons=[],
             _tabs=[],
             _gui_api=self,
             _container_id=self._get_container_id(),
@@ -367,7 +366,7 @@ class GuiApi(abc.ABC):
                     hint=hint,
                     initial_value=False,
                     color=color,
-                    icon_base64=None if icon is None else base64_from_icon(icon),
+                    icon=None if icon is None else icon.value,
                 ),
                 disabled=disabled,
                 visible=visible,
@@ -535,6 +534,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        icon: Optional[Icon] = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a number input to the GUI, with user-specifiable bound and precision parameters.
 
@@ -585,6 +585,7 @@ class GuiApi(abc.ABC):
                 min=min,
                 max=max,
                 precision=_compute_precision_digits(step),
+                icon=icon.value if icon is not None else None,
                 step=step,
             ),
             disabled=disabled,
@@ -882,6 +883,80 @@ class GuiApi(abc.ABC):
                 step=step,
                 initial_value=initial_value,
                 precision=_compute_precision_digits(step),
+            ),
+            disabled=disabled,
+            visible=visible,
+            is_button=False,
+        )
+
+    def add_gui_multi_slider(
+        self,
+        label: str,
+        min: IntOrFloat,
+        max: IntOrFloat,
+        step: IntOrFloat,
+        initial_value: List[IntOrFloat],
+        disabled: bool = False,
+        visible: bool = True,
+        min_range: Optional[IntOrFloat] = None,
+        hint: Optional[str] = None,
+        order: Optional[float] = None,
+        marks: Optional[List[Tuple[IntOrFloat, Optional[str]]]] = None,
+    ) -> GuiInputHandle[IntOrFloat]:
+        """Add a multi slider to the GUI. Types of the min, max, step, and initial value should match.
+
+        Args:
+            label: Label to display on the slider.
+            min: Minimum value of the slider.
+            max: Maximum value of the slider.
+            step: Step size of the slider.
+            initial_value: Initial values of the slider.
+            disabled: Whether the slider is disabled.
+            visible: Whether the slider is visible.
+            min_range: Optional minimum difference between two values of the slider.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        assert max >= min
+        if step > max - min:
+            step = max - min
+        assert all(max >= x >= min for x in initial_value)
+
+        # GUI callbacks cast incoming values to match the type of the initial value. If
+        # the min, max, or step is a float, we should cast to a float.
+        if len(initial_value) > 0 and (type(initial_value[0]) is int and (
+            type(min) is float or type(max) is float or type(step) is float
+        )):
+            initial_value = [float(x) for x in initial_value]  # type: ignore
+
+        # TODO: as of 6/5/2023, this assert will break something in nerfstudio. (at
+        # least LERF)
+        #
+        # assert type(min) == type(max) == type(step) == type(initial_value)
+
+        id = _make_unique_id()
+        order = _apply_default_order(order)
+        return self._create_gui_input(
+            initial_value=initial_value,
+            message=_messages.GuiAddMultiSliderMessage(
+                order=order,
+                id=id,
+                label=label,
+                container_id=self._get_container_id(),
+                hint=hint,
+                min=min,
+                min_range=min_range,
+                max=max,
+                step=step,
+                initial_value=initial_value,
+                precision=_compute_precision_digits(step),
+                marks=[
+                    _messages.GuiSliderMark(value=x, label=label)
+                    for x, label in marks
+                ] if marks is not None else None,
             ),
             disabled=disabled,
             visible=visible,

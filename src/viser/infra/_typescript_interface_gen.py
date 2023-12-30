@@ -9,6 +9,11 @@ try:
 except ImportError:
     LiteralAlt = Literal  # type: ignore
 
+try:
+    from typing import get_type_hints
+except ImportError:
+    from typing_extensions import get_type_hints
+
 from ._messages import Message
 
 _raw_type_mapping = {
@@ -52,6 +57,9 @@ def _get_ts_type(typ: Type[Any]) -> str:
             )
             + ")"
         )
+    elif origin_typ is list:
+        args = get_args(typ)
+        return _get_ts_type(args[0]) + "[]"
     elif is_typeddict(typ):
         hints = get_type_hints(typ)
 
@@ -62,6 +70,11 @@ def _get_ts_type(typ: Type[Any]) -> str:
 
         ret = "{" + ", ".join(map(fmt, hints)) + "}"
         return ret
+    elif dataclasses.is_dataclass(typ):
+        resolved_hints = get_type_hints(typ)
+        field_names = [field.name for field in dataclasses.fields(typ)]
+        field_typs = [_get_ts_type(resolved_hints[name]) for name in field_names]
+        return "{ " + ", ".join(map(lambda f, t: f"{f}: {t}", field_names, field_typs)) + " }"
     else:
         # Like get_origin(), but also supports numpy.typing.NDArray[dtype].
         typ = cast(Any, getattr(typ, "__origin__", typ))

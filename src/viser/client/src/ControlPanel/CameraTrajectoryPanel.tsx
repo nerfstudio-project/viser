@@ -87,13 +87,11 @@ function getPoseFromCamera(viewer: ViewerContextContents) {
   const three_camera = viewer.cameraRef.current!;
   const R_threecam_cam = new THREE.Quaternion().setFromEuler(
     new THREE.Euler(Math.PI, 0.0, 0.0),
-  ).multiply(new THREE.Quaternion().setFromEuler(
-    new THREE.Euler(0.0, 0.0, Math.PI),
-  ));
+  );
   const R_world_threeworld = getR_threeworld_world(viewer).invert();
   const R_world_camera = R_world_threeworld.clone()
-    .multiply(three_camera.quaternion)
-    .multiply(R_threecam_cam);
+    .multiply(three_camera.quaternion);
+    //.multiply(R_threecam_cam);
 
   return {
     wxyz: [
@@ -265,19 +263,21 @@ export default function CameraTrajectoryPanel(props: CameraTrajectoryPanelProps)
         const up = curveObject.curve_ups.getPoint(point).multiplyScalar(-1).applyQuaternion(R_threeworld_world);
         const fov = curveObject.curve_fovs.getPoint(point).z;
 
-        const cameraControls = viewer.cameraControlRef.current!;
+        // const cameraControls = viewer.cameraControlRef.current!;
         const threeCamera = viewer.cameraRef.current!;
 
+        threeCamera.position.set(...position.toArray());
         threeCamera.up.set(...up.toArray());
-        cameraControls.updateCameraUp();
-        cameraControls.setLookAt(...position.toArray(), ...lookat.toArray(), false);
-        const target = position.clone().add(lookat);
+        threeCamera.lookAt(...lookat.toArray());
+        // cameraControls.updateCameraUp();
+        // cameraControls.setLookAt(...position.toArray(), ...lookat.toArray(), false);
+        // const target = position.clone().add(lookat);
         // NOTE: lookat is being ignored when calling setLookAt
-        cameraControls.setTarget(...target.toArray(), false);
+        // cameraControls.setTarget(...target.toArray(), false);
         threeCamera.setFocalLength(
           (0.5 * threeCamera.getFilmHeight()) / Math.tan(fov / 2.0),
         );
-        cameraControls.update(1.);
+        // cameraControls.update(1.);
       } else {
         const point = getKeyframePoint(playerTime);
         const position = curveObject.curve_positions.getPoint(point);
@@ -889,7 +889,7 @@ export default function CameraTrajectoryPanel(props: CameraTrajectoryPanelProps)
       label="Render mode"
       checked={isRenderMode}
       onChange={(event) => {
-        viewer.useGui.setState({ isRenderMode: event.currentTarget.checked });
+        viewer.setIsRenderMode(event.currentTarget.checked);
       }}
       size="sm"
     />

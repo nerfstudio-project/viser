@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union, List
 
 import numpy as onp
 import numpy.typing as onpt
@@ -364,7 +364,7 @@ class GuiAddTabGroupMessage(Message):
     id: str
     container_id: str
     tab_labels: Tuple[str, ...]
-    tab_icons_base64: Tuple[Union[str, None], ...]
+    tab_icons: Tuple[Union[str, None], ...]
     tab_container_ids: Tuple[str, ...]
 
 
@@ -415,7 +415,7 @@ class GuiAddButtonMessage(_GuiAddInputBase):
             "teal",
         ]
     ]
-    icon_base64: Optional[str]
+    icon: Optional[str]
 
 
 @dataclasses.dataclass
@@ -428,12 +428,32 @@ class GuiAddSliderMessage(_GuiAddInputBase):
 
 
 @dataclasses.dataclass
+class GuiSliderMark:
+    value: float
+    label: Optional[str] = None
+
+
+@dataclasses.dataclass
+class GuiAddMultiSliderMessage(_GuiAddInputBase):
+    min: float
+    max: float
+    step: Optional[float]
+    min_range: Optional[float]
+    initial_value: List[float]
+    precision: int
+    fixed_endpoints: bool = False
+    marks: Optional[List[GuiSliderMark]] = None
+
+
+
+@dataclasses.dataclass
 class GuiAddNumberMessage(_GuiAddInputBase):
     initial_value: float
     precision: int
     step: float
     min: Optional[float]
     max: Optional[float]
+    icon: Optional[str]
 
 
 @dataclasses.dataclass
