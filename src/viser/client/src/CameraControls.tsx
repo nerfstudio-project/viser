@@ -42,6 +42,17 @@ export function SynchronizedCameraControls() {
   };
 
   // Callback for sending cameras.
+  // It makes the code more chaotic, but we preallocate a bunch of things to
+  // minimize garbage collection!
+  const R_threecam_cam = new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(Math.PI, 0.0, 0.0),
+  );
+  const R_world_threeworld = new THREE.Quaternion();
+  const tmpMatrix4 = new THREE.Matrix4();
+  const lookAt = new THREE.Vector3();
+  const R_world_camera = new THREE.Quaternion();
+  const t_world_camera = new THREE.Vector3();
+  const scale = new THREE.Vector3();
   const sendCamera = React.useCallback(() => {
     const three_camera = camera;
     const camera_control = viewer.cameraControlRef.current;
@@ -54,25 +65,17 @@ export function SynchronizedCameraControls() {
 
     // We put Z up to match the scene tree, and convert threejs camera convention
     // to the OpenCV one.
-    const R_threecam_cam = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(Math.PI, 0.0, 0.0),
-    );
     const T_world_threeworld = computeT_threeworld_world(viewer).invert();
     const T_world_camera = T_world_threeworld.clone()
       .multiply(
-        new THREE.Matrix4()
+        tmpMatrix4
           .makeRotationFromQuaternion(three_camera.quaternion)
           .setPosition(three_camera.position),
       )
-      .multiply(new THREE.Matrix4().makeRotationFromQuaternion(R_threecam_cam));
+      .multiply(tmpMatrix4.makeRotationFromQuaternion(R_threecam_cam));
+    R_world_threeworld.setFromRotationMatrix(T_world_threeworld);
 
-    const R_world_threeworld = new THREE.Quaternion().setFromRotationMatrix(
-      T_world_threeworld,
-    );
-
-    const look_at = camera_control
-      .getTarget(new THREE.Vector3())
-      .applyQuaternion(R_world_threeworld);
+    camera_control.getTarget(lookAt).applyQuaternion(R_world_threeworld);
     const up = three_camera.up.clone().applyQuaternion(R_world_threeworld);
 
     //Store initial camera values
@@ -83,9 +86,6 @@ export function SynchronizedCameraControls() {
       };
     }
 
-    const R_world_camera = new THREE.Quaternion();
-    const t_world_camera = new THREE.Vector3();
-    const scale = new THREE.Vector3();
     T_world_camera.decompose(t_world_camera, R_world_camera, scale);
 
     sendCameraThrottled({
@@ -99,7 +99,7 @@ export function SynchronizedCameraControls() {
       position: t_world_camera.toArray(),
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
-      look_at: [look_at.x, look_at.y, look_at.z],
+      look_at: [lookAt.x, lookAt.y, lookAt.z],
       up_direction: [up.x, up.y, up.z],
     });
   }, [camera, sendCameraThrottled]);
