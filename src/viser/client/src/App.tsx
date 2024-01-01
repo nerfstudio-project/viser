@@ -213,7 +213,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
   return (
     <Canvas
-      camera={{ position: [-3.0, 3.0, -3.0] }}
+      camera={{ position: [-3.0, 3.0, -3.0], near: 0.01 }}
       gl={{ preserveDrawingBuffer: true }}
       style={{
         position: "relative",
