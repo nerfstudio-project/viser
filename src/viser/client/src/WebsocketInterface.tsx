@@ -10,7 +10,12 @@ import { TextureLoader } from "three";
 import { ViewerContext } from "./App";
 import { SceneNode } from "./SceneTree";
 import { syncSearchParamServer } from "./SearchParamsUtils";
-import { CameraFrustum, CoordinateFrame, GlbAsset } from "./ThreeAssets";
+import {
+  CameraFrustum,
+  CoordinateFrame,
+  GlbAsset,
+  OutlinesIfHovered,
+} from "./ThreeAssets";
 import {
   FileDownloadPart,
   FileDownloadStart,
@@ -166,16 +171,20 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
+                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                      : message.plane == "yx"
+                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                        : message.plane == "yz"
+                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                          : message.plane == "zx"
+                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                            : message.plane == "zy"
+                              ? new THREE.Euler(
+                                  -Math.PI / 2.0,
+                                  0.0,
+                                  -Math.PI / 2.0,
+                                )
+                              : undefined
                 }
               />
             </group>
@@ -288,16 +297,16 @@ function useMessageHandler() {
           message.material == "standard"
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(3),
-                ...standardArgs,
-              })
-            : message.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.material);
+              ? new THREE.MeshToonMaterial({
+                  gradientMap: generateGradientMap(3),
+                  ...standardArgs,
+                })
+              : message.material == "toon5"
+                ? new THREE.MeshToonMaterial({
+                    gradientMap: generateGradientMap(5),
+                    ...standardArgs,
+                  })
+                : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -334,7 +343,11 @@ function useMessageHandler() {
           new SceneNode<THREE.Mesh>(
             message.name,
             (ref) => {
-              return <mesh ref={ref} geometry={geometry} material={material} />;
+              return (
+                <mesh ref={ref} geometry={geometry} material={material}>
+                  <OutlinesIfHovered />
+                </mesh>
+              );
             },
             () => {
               // TODO: we can switch to the react-three-fiber <bufferGeometry />,
@@ -661,6 +674,7 @@ function useMessageHandler() {
                   return (
                     <group ref={ref}>
                       <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
+                        <OutlinesIfHovered />
                         <planeGeometry
                           attach="geometry"
                           args={[message.render_width, message.render_height]}

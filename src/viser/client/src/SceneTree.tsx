@@ -6,11 +6,11 @@ import * as THREE from "three";
 import { ViewerContext } from "./App";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
-import { Select } from "@react-three/postprocessing";
 import { immerable } from "immer";
 import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
+import { HoverableContext } from "./ThreeAssets";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>,
@@ -311,7 +311,9 @@ export function SceneNodeThreeObject(props: {
               setHovered(false);
             }}
           >
-            <Select enabled={hovered}>{objNode}</Select>
+            <HoverableContext.Provider value={hovered}>
+              {objNode}
+            </HoverableContext.Provider>
           </group>
           {children}
         </ErrorBoundary>
