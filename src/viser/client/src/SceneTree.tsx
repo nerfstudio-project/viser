@@ -11,6 +11,7 @@ import { immerable } from "immer";
 import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
+import { ray_to_viser_coords } from "./WorldTransformUtils";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>,
@@ -289,16 +290,14 @@ export function SceneNodeThreeObject(props: {
               e.stopPropagation();
               const state = dragInfo.current;
               if (state.dragging) return;
+              // Convert ray to viser coordinates.
+              const ray = ray_to_viser_coords(viewer, e.ray);
               sendClicksThrottled({
                 type: "SceneNodeClickMessage",
                 name: props.name,
                 // Note that the threejs up is +Y, but we expose a +Z up.
-                ray_origin: [e.ray.origin.x, -e.ray.origin.z, e.ray.origin.y],
-                ray_direction: [
-                  e.ray.direction.x,
-                  -e.ray.direction.z,
-                  e.ray.direction.y,
-                ],
+                ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+                ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
               });
             }}
             onPointerOver={(e) => {
