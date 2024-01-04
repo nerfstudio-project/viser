@@ -49,7 +49,7 @@ import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
-import { ray_to_viser_coords } from "./WorldTransformUtils";
+import { rayToViserCoords } from "./WorldTransformUtils";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -250,7 +250,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
 
         // Convert ray to viser coordinates.
-        const ray = ray_to_viser_coords(viewer, raycaster.ray);
+        const ray = rayToViserCoords(viewer, raycaster.ray);
 
         sendClickThrottled({
           type: "ScenePointerMessage",

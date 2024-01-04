@@ -19,7 +19,7 @@ export function computeT_threeworld_world(viewer: ViewerContextContents) {
 /** Helper for converting a ray from the three.js world frame to the Python
  * world frame. Applies the transformation from computeT_threeworld_world.
  */
-export function ray_to_viser_coords(
+export function rayToViserCoords(
   viewer: ViewerContextContents,
   ray: THREE.Ray,
 ): THREE.Ray {

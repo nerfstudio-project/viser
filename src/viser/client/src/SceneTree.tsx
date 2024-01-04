@@ -11,7 +11,7 @@ import { immerable } from "immer";
 import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
-import { ray_to_viser_coords } from "./WorldTransformUtils";
+import { rayToViserCoords } from "./WorldTransformUtils";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>,
@@ -291,7 +291,7 @@ export function SceneNodeThreeObject(props: {
               const state = dragInfo.current;
               if (state.dragging) return;
               // Convert ray to viser coordinates.
-              const ray = ray_to_viser_coords(viewer, e.ray);
+              const ray = rayToViserCoords(viewer, e.ray);
               sendClicksThrottled({
                 type: "SceneNodeClickMessage",
                 name: props.name,
