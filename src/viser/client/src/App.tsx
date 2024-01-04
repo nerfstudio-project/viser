@@ -9,12 +9,6 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import {
-  EffectComposer,
-  Outline,
-  Selection,
-} from "@react-three/postprocessing";
-import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
 import {
@@ -213,7 +207,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
   return (
     <Canvas
-      camera={{ position: [-3.0, 3.0, -3.0], near: 0.01 }}
+      camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
       gl={{ preserveDrawingBuffer: true }}
       style={{
         position: "relative",
@@ -266,20 +260,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <AdaptiveEvents />
       <SceneContextSetter />
       <SynchronizedCameraControls />
-      <Selection>
-        <SceneNodeThreeObject name="" parent={null} />
-        <EffectComposer enabled={true} autoClear={false}>
-          <Outline
-            hiddenEdgeColor={0xfbff00}
-            visibleEdgeColor={0xfbff00}
-            blendFunction={BlendFunction.SCREEN} // set this to BlendFunction.ALPHA for dark outlines
-            kernelSize={KernelSize.MEDIUM}
-            edgeStrength={30.0}
-            height={480}
-            blur
-          />
-        </EffectComposer>
-      </Selection>
+      <SceneNodeThreeObject name="" parent={null} />
       <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
       <directionalLight color={0xffffff} intensity={1.0} position={[0, 1, 0]} />
       <directionalLight

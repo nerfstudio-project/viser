@@ -6,12 +6,13 @@ import * as THREE from "three";
 import { ViewerContext } from "./App";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
-import { Select } from "@react-three/postprocessing";
 import { immerable } from "immer";
 import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
+import { HoverableContext } from "./ThreeAssets";
+
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>,
@@ -240,6 +241,7 @@ export function SceneNodeThreeObject(props: {
   );
   const [hovered, setHovered] = React.useState(false);
   useCursor(hovered);
+  const hoveredRef = React.useRef(false);
   if (!clickable && hovered) setHovered(false);
 
   if (objNode === undefined || unmount) {
@@ -301,16 +303,21 @@ export function SceneNodeThreeObject(props: {
               });
             }}
             onPointerOver={(e) => {
+              console.log("over");
               if (!isDisplayed()) return;
               e.stopPropagation();
               setHovered(true);
+              hoveredRef.current = true;
             }}
             onPointerOut={() => {
               if (!isDisplayed()) return;
               setHovered(false);
+              hoveredRef.current = false;
             }}
           >
-            <Select enabled={hovered}>{objNode}</Select>
+            <HoverableContext.Provider value={hoveredRef}>
+              {objNode}
+            </HoverableContext.Provider>
           </group>
           {children}
         </ErrorBoundary>

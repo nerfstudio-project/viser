@@ -1,5 +1,6 @@
 import { Instance, Instances } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { createPortal, useFrame } from "@react-three/fiber";
+import { Outlines } from "./Outlines";
 import React from "react";
 import * as THREE from "three";
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -43,7 +44,6 @@ type AllPossibleThreeJSMaterials =
   | LineBasicMaterial
   | LineDashedMaterial;
 
-const axisGeom = new THREE.CylinderGeometry(1.0, 1.0, 1.0, 16, 1);
 const originGeom = new THREE.SphereGeometry(1.0);
 const originMaterial = new THREE.MeshBasicMaterial({ color: 0xecec00 });
 
@@ -52,7 +52,10 @@ export const GlbAsset = React.forwardRef<
   THREE.Group,
   { glb_data: Uint8Array; scale: number }
 >(function GlbAsset({ glb_data, scale }, ref) {
+  // We track both the GLTF asset itself and all meshes within it. Meshes are
+  // used for hover effects.
   const [gltf, setGltf] = React.useState<GLTF>();
+  const [meshes, setMeshes] = React.useState<THREE.Mesh[]>([]);
 
   // glTF/GLB files support animations.
   const mixerRef = React.useRef<THREE.AnimationMixer | null>(null);
@@ -75,6 +78,11 @@ export const GlbAsset = React.forwardRef<
             mixerRef.current!.clipAction(clip).play();
           });
         }
+        const meshes: THREE.Mesh[] = [];
+        gltf?.scene.traverse((obj) => {
+          if (obj instanceof THREE.Mesh) meshes.push(obj);
+        });
+        setMeshes(meshes);
         setGltf(gltf);
       },
       (error) => {
@@ -133,7 +141,12 @@ export const GlbAsset = React.forwardRef<
   return (
     <group ref={ref}>
       {gltf === undefined ? null : (
-        <primitive object={gltf.scene} scale={scale} />
+        <>
+          <primitive object={gltf.scene} scale={scale} />
+          {meshes.map((mesh) =>
+            createPortal(<OutlinesIfHovered alwaysMounted />, mesh),
+          )}
+        </>
       )}
     </group>
   );
@@ -165,26 +178,31 @@ export const CoordinateFrame = React.forwardRef<
                 axes_radius * 2.5,
               )
             }
-          />
-          <Instances geometry={axisGeom}>
+          >
+            <OutlinesIfHovered />
+          </mesh>
+          <Instances>
             <meshBasicMaterial />
+            <cylinderGeometry
+              args={[axes_radius, axes_radius, axes_length, 16]}
+            />
             <Instance
               rotation={new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0)}
               position={[0.5 * axes_length, 0.0, 0.0]}
-              scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
               color={0xcc0000}
-            />
-            <Instance
-              position={[0.0, 0.5 * axes_length, 0.0]}
-              scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
-              color={0x00cc00}
-            />
+            >
+              <OutlinesIfHovered />
+            </Instance>
+            <Instance position={[0.0, 0.5 * axes_length, 0.0]} color={0x00cc00}>
+              <OutlinesIfHovered />
+            </Instance>
             <Instance
               rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
               position={[0.0, 0.0, 0.5 * axes_length]}
-              scale={new THREE.Vector3(axes_radius, axes_length, axes_radius)}
               color={0x0000cc}
-            />
+            >
+              <OutlinesIfHovered />
+            </Instance>
           </Instances>
         </>
       )}
@@ -192,7 +210,6 @@ export const CoordinateFrame = React.forwardRef<
   );
 });
 
-const lineGeom = new THREE.CylinderGeometry(1.0, 1.0, 1.0, 3, 1);
 /** Helper for visualizing camera frustums. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,
@@ -218,7 +235,6 @@ export const CameraFrustum = React.forwardRef<
     return [...Array(points.length - 1).keys()].map((i) => (
       <LineSegmentInstance
         key={i}
-        radius={0.06 * props.scale}
         start={new THREE.Vector3()
           .fromArray(points[i])
           .multiplyScalar(props.scale)}
@@ -232,8 +248,11 @@ export const CameraFrustum = React.forwardRef<
 
   return (
     <group ref={ref}>
-      <Instances limit={9} geometry={lineGeom}>
-        <meshBasicMaterial color={props.color} />
+      <Instances limit={9}>
+        <meshBasicMaterial color={props.color} side={THREE.DoubleSide} />
+        <cylinderGeometry
+          args={[props.scale * 0.03, props.scale * 0.03, 1.0, 3]}
+        />
         {scaledLineSegments([
           // Rectangle.
           [-1, -1, 1],
@@ -284,35 +303,70 @@ export const CameraFrustum = React.forwardRef<
 function LineSegmentInstance(props: {
   start: THREE.Vector3;
   end: THREE.Vector3;
-  radius: number;
   color: number;
 }) {
   const desiredDirection = new THREE.Vector3()
     .subVectors(props.end, props.start)
     .normalize();
   const canonicalDirection = new THREE.Vector3(0.0, 1.0, 0.0);
-  const rotationAxis = new THREE.Vector3()
-    .copy(canonicalDirection)
-    .cross(desiredDirection)
-    .normalize();
-  const rotationAngle = Math.acos(desiredDirection.dot(canonicalDirection));
+  const orientation = new THREE.Quaternion().setFromUnitVectors(
+    canonicalDirection,
+    desiredDirection,
+  );
 
   const length = props.start.distanceTo(props.end);
   const midpoint = new THREE.Vector3()
     .addVectors(props.start, props.end)
     .divideScalar(2.0);
 
-  const orientation = new THREE.Quaternion().setFromAxisAngle(
-    rotationAxis,
-    rotationAngle,
-  );
   return (
-    <>
-      <Instance
-        position={midpoint}
-        quaternion={orientation}
-        scale={[props.radius, length, props.radius]}
-      />
-    </>
+    <Instance
+      position={midpoint}
+      quaternion={orientation}
+      scale={[1.0, length, 1.0]}
+    >
+      <OutlinesIfHovered creaseAngle={0.0} />
+    </Instance>
+  );
+}
+
+export const HoverableContext =
+  React.createContext<React.MutableRefObject<boolean> | null>(null);
+
+/** Outlines object, which should be placed as a child of all meshes that might
+ * be clickable. */
+export function OutlinesIfHovered(
+  props: { alwaysMounted?: boolean; creaseAngle?: number } = {
+    // Can be set to true for objects like meshes which may be slow to mount.
+    // It seems better to set to False for instanced meshes, there may be some
+    // drei or fiber-related race conditions...
+    alwaysMounted: false,
+    // Some thing just look better with no creasing, like camera frustum objects.
+    creaseAngle: Math.PI,
+  },
+) {
+  const groupRef = React.useRef<THREE.Group>(null);
+  const hoveredRef = React.useContext(HoverableContext);
+  const [mounted, setMounted] = React.useState(true);
+
+  useFrame(() => {
+    if (hoveredRef === null) return;
+    if (props.alwaysMounted) {
+      if (groupRef.current === null) return;
+      groupRef.current.visible = hoveredRef.current;
+    } else if (hoveredRef.current != mounted) {
+      setMounted(hoveredRef.current);
+    }
+  });
+  return hoveredRef === null || !mounted ? null : (
+    <Outlines
+      ref={groupRef}
+      thickness={10}
+      screenspace={true}
+      color={0xfbff00}
+      opacity={0.8}
+      transparent={true}
+      angle={props.creaseAngle}
+    />
   );
 }
