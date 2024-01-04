@@ -10,7 +10,12 @@ import { TextureLoader } from "three";
 import { ViewerContext } from "./App";
 import { SceneNode } from "./SceneTree";
 import { syncSearchParamServer } from "./SearchParamsUtils";
-import { CameraFrustum, CoordinateFrame, GlbAsset } from "./ThreeAssets";
+import {
+  CameraFrustum,
+  CoordinateFrame,
+  GlbAsset,
+  OutlinesIfHovered,
+} from "./ThreeAssets";
 import {
   FileDownloadPart,
   FileDownloadStart,
@@ -334,7 +339,11 @@ function useMessageHandler() {
           new SceneNode<THREE.Mesh>(
             message.name,
             (ref) => {
-              return <mesh ref={ref} geometry={geometry} material={material} />;
+              return (
+                <mesh ref={ref} geometry={geometry} material={material}>
+                  <OutlinesIfHovered alwaysMounted />
+                </mesh>
+              );
             },
             () => {
               // TODO: we can switch to the react-three-fiber <bufferGeometry />,
@@ -661,6 +670,7 @@ function useMessageHandler() {
                   return (
                     <group ref={ref}>
                       <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
+                        <OutlinesIfHovered />
                         <planeGeometry
                           attach="geometry"
                           args={[message.render_width, message.render_height]}
