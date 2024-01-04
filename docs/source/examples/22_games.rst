@@ -5,7 +5,7 @@ Games
 ==========================================
 
 
-Some two-player games implemented using scene click evens in viser.
+Some two-player games implemented using scene click events.
 
 
 
