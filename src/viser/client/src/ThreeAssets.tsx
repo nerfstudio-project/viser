@@ -1,5 +1,6 @@
-import { Instance, Instances, Outlines } from "@react-three/drei";
+import { Instance, Instances } from "@react-three/drei";
 import { createPortal, useFrame } from "@react-three/fiber";
+import { Outlines } from "./Outlines";
 import React from "react";
 import * as THREE from "three";
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
@@ -142,29 +143,14 @@ export const GlbAsset = React.forwardRef<
       {gltf === undefined ? null : (
         <>
           <primitive object={gltf.scene} scale={scale} />
-          {meshes.map((mesh) => createPortal(<OutlinesIfHovered />, mesh))}
+          {meshes.map((mesh) =>
+            createPortal(<OutlinesIfHovered alwaysMounted />, mesh),
+          )}
         </>
       )}
     </group>
   );
 });
-
-export const HoverableContext = React.createContext<boolean | null>(null);
-
-/** Outlines object, which should be placed as a child of all meshes that might
- * be clickable. */
-export function OutlinesIfHovered() {
-  const outline = React.useContext(HoverableContext);
-  return outline === null ? null : (
-    <Outlines
-      thickness={8}
-      screenspace={true}
-      transparent={true}
-      opacity={outline ? 1.0 : 0.0}
-      color={0xfbff00}
-    />
-  );
-}
 
 /** Helper for adding coordinate frames as scene nodes. */
 export const CoordinateFrame = React.forwardRef<
@@ -265,7 +251,7 @@ export const CameraFrustum = React.forwardRef<
       <Instances limit={9}>
         <meshBasicMaterial color={props.color} side={THREE.DoubleSide} />
         <cylinderGeometry
-          args={[props.scale * 0.03, props.scale * 0.03, 0.1, 4, 1]}
+          args={[props.scale * 0.03, props.scale * 0.03, 1.0, 3]}
         />
         {scaledLineSegments([
           // Rectangle.
@@ -337,9 +323,50 @@ function LineSegmentInstance(props: {
     <Instance
       position={midpoint}
       quaternion={orientation}
-      scale={[1.0, length * 10.0, 1.0]}
+      scale={[1.0, length, 1.0]}
     >
-      <OutlinesIfHovered />
+      <OutlinesIfHovered creaseAngle={0.0} />
     </Instance>
+  );
+}
+
+export const HoverableContext =
+  React.createContext<React.MutableRefObject<boolean> | null>(null);
+
+/** Outlines object, which should be placed as a child of all meshes that might
+ * be clickable. */
+export function OutlinesIfHovered(
+  props: { alwaysMounted?: boolean; creaseAngle?: number } = {
+    // Can be set to true for objects like meshes which may be slow to mount.
+    // It seems better to set to False for instanced meshes, there may be some
+    // drei or fiber-related race conditions...
+    alwaysMounted: false,
+    // Some thing just look better with no creasing, like camera frustum objects.
+    creaseAngle: Math.PI,
+  },
+) {
+  const groupRef = React.useRef<THREE.Group>(null);
+  const hoveredRef = React.useContext(HoverableContext);
+  const [mounted, setMounted] = React.useState(true);
+
+  useFrame(() => {
+    if (hoveredRef === null) return;
+    if (props.alwaysMounted) {
+      if (groupRef.current === null) return;
+      groupRef.current.visible = hoveredRef.current;
+    } else if (hoveredRef.current != mounted) {
+      setMounted(hoveredRef.current);
+    }
+  });
+  return hoveredRef === null || !mounted ? null : (
+    <Outlines
+      ref={groupRef}
+      thickness={10}
+      screenspace={true}
+      color={0xfbff00}
+      opacity={0.8}
+      transparent={true}
+      angle={props.creaseAngle}
+    />
   );
 }

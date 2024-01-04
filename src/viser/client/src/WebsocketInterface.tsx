@@ -341,7 +341,7 @@ function useMessageHandler() {
             (ref) => {
               return (
                 <mesh ref={ref} geometry={geometry} material={material}>
-                  <OutlinesIfHovered />
+                  <OutlinesIfHovered alwaysMounted />
                 </mesh>
               );
             },

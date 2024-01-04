@@ -239,6 +239,7 @@ export function SceneNodeThreeObject(props: {
   );
   const [hovered, setHovered] = React.useState(false);
   useCursor(hovered);
+  const hoveredRef = React.useRef(false);
   if (!clickable && hovered) setHovered(false);
 
   if (objNode === undefined || unmount) {
@@ -302,16 +303,19 @@ export function SceneNodeThreeObject(props: {
               });
             }}
             onPointerOver={(e) => {
+              console.log("over");
               if (!isDisplayed()) return;
               e.stopPropagation();
               setHovered(true);
+              hoveredRef.current = true;
             }}
             onPointerOut={() => {
               if (!isDisplayed()) return;
               setHovered(false);
+              hoveredRef.current = false;
             }}
           >
-            <HoverableContext.Provider value={hovered}>
+            <HoverableContext.Provider value={hoveredRef}>
               {objNode}
             </HoverableContext.Provider>
           </group>
