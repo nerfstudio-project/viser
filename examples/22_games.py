@@ -58,13 +58,15 @@ def play_connect_4(server: viser.ViserServer) -> None:
         # Drop piece into the column.
         @sphere.on_click
         def _(_) -> None:
+            nonlocal whose_turn
+            whose_turn = "red" if whose_turn != "red" else "yellow"
+
             row = pieces_in_col[col]
             if row == num_rows - 1:
                 sphere.remove()
 
             pieces_in_col[col] += 1
             cylinder = trimesh.creation.cylinder(radius=0.4, height=0.125)
-            nonlocal whose_turn
             piece = server.add_mesh_simple(
                 f"/game_pieces/{row}_{col}",
                 cylinder.vertices,
@@ -79,7 +81,6 @@ def play_connect_4(server: viser.ViserServer) -> None:
                     row_anim,
                 )
                 time.sleep(1.0 / 30.0)
-            whose_turn = "red" if whose_turn != "red" else "yellow"
 
     for col in range(num_cols):
         setup_column(col)
