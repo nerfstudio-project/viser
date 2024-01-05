@@ -43,7 +43,7 @@ import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
-import { computeT_threeworld_world } from "./WorldTransformUtils";
+import { rayToViserCoords } from "./WorldTransformUtils";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -243,24 +243,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
 
-        const T_world_threeworld = computeT_threeworld_world(viewer).invert();
-
-        const origin = raycaster.ray.origin
-          .clone()
-          .applyMatrix4(T_world_threeworld);
-
-        // Compute just the rotation term without new memory allocation; this
-        // will mutate T_world_threeworld!
-        const R_world_threeworld = T_world_threeworld.setPosition(0.0, 0.0, 0);
-        const direction = raycaster.ray.direction
-          .clone()
-          .applyMatrix4(R_world_threeworld);
+        // Convert ray to viser coordinates.
+        const ray = rayToViserCoords(viewer, raycaster.ray);
 
         sendClickThrottled({
           type: "ScenePointerMessage",
           event_type: "click",
-          ray_origin: [origin.x, origin.y, origin.z],
-          ray_direction: [direction.x, direction.y, direction.z],
+          ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+          ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
         });
       }}
     >
