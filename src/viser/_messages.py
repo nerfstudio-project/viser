@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union, List
 
 import numpy as onp
 import numpy.typing as onpt
@@ -58,9 +58,9 @@ class ScenePointerMessage(Message):
     """
 
     # Later we can add `double_click`, `move`, `down`, `up`, etc.
-    event_type: Literal["click"]
-    ray_origin: Tuple[float, float, float]
-    ray_direction: Tuple[float, float, float]
+    event_type: Literal["click", "scribble"]
+    ray_origin: List[Tuple[float, float, float]]
+    ray_direction: List[Tuple[float, float, float]]
 
 
 @dataclasses.dataclass
