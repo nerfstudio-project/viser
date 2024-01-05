@@ -171,16 +171,20 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
+                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                      : message.plane == "yx"
+                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                        : message.plane == "yz"
+                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                          : message.plane == "zx"
+                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                            : message.plane == "zy"
+                              ? new THREE.Euler(
+                                  -Math.PI / 2.0,
+                                  0.0,
+                                  -Math.PI / 2.0,
+                                )
+                              : undefined
                 }
               />
             </group>
@@ -279,7 +283,8 @@ function useMessageHandler() {
           wireframe: message.wireframe,
           transparent: message.opacity !== null,
           opacity: message.opacity ?? 1.0,
-          flatShading: message.flat_shading,
+          // Flat shading only makes sense for non-wireframe materials.
+          flatShading: message.flat_shading && !message.wireframe,
           side: {
             front: THREE.FrontSide,
             back: THREE.BackSide,
@@ -290,19 +295,19 @@ function useMessageHandler() {
           throw new Error(`Should never get here! ${x}`);
         };
         const material =
-          message.material == "standard"
+          message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(3),
-                ...standardArgs,
-              })
-            : message.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.material);
+              ? new THREE.MeshToonMaterial({
+                  gradientMap: generateGradientMap(3),
+                  ...standardArgs,
+                })
+              : message.material == "toon5"
+                ? new THREE.MeshToonMaterial({
+                    gradientMap: generateGradientMap(5),
+                    ...standardArgs,
+                  })
+                : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(

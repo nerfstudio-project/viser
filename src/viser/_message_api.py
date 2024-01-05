@@ -16,6 +16,7 @@ import mimetypes
 import queue
 import threading
 import time
+import warnings
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -713,7 +714,7 @@ class MessageApi(abc.ABC):
         wireframe: bool = False,
         opacity: Optional[float] = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
-        flat_shading: bool = True,
+        flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
@@ -731,8 +732,9 @@ class MessageApi(abc.ABC):
             wireframe: Boolean indicating if the mesh should be rendered as a wireframe.
             opacity: Opacity of the mesh. None means opaque.
             material: Material type of the mesh ('standard', 'toon3', 'toon5').
-            flat_shading: Whether to do flat shading. Set to False to apply smooth
-                shading.
+                This argument is ignored when wireframe=True.
+            flat_shading: Whether to do flat shading. This argument is ignored
+                when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
@@ -741,6 +743,16 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        if wireframe and material != "standard":
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {material=}. Material argument will be ignored.",
+                stacklevel=2,
+            )
+        if wireframe and flat_shading:
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {flat_shading=}. Flat shading argument will be ignored.",
+                stacklevel=2,
+            )
 
         self._queue(
             _messages.MeshMessage(
