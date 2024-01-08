@@ -15,6 +15,7 @@ import {
   CoordinateFrame,
   GlbAsset,
   OutlinesIfHovered,
+  PointCloud,
 } from "./ThreeAssets";
 import {
   FileDownloadPart,
@@ -195,52 +196,25 @@ function useMessageHandler() {
 
       // Add a point cloud.
       case "PointCloudMessage": {
-        const geometry = new THREE.BufferGeometry();
-        const pointCloudMaterial = new THREE.PointsMaterial({
-          size: message.point_size,
-          vertexColors: true,
-          toneMapped: false,
-        });
-
-        // Reinterpret cast: uint8 buffer => float32 for positions.
-        geometry.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(
-            new Float32Array(
-              message.points.buffer.slice(
-                message.points.byteOffset,
-                message.points.byteOffset + message.points.byteLength,
-              ),
-            ),
-            3,
-          ),
-        );
-        geometry.computeBoundingSphere();
-
-        // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
-        geometry.setAttribute(
-          "color",
-          threeColorBufferFromUint8Buffer(message.colors),
-        );
-
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Points>(
-            message.name,
-            (ref) => (
-              <points
-                ref={ref}
-                geometry={geometry}
-                material={pointCloudMaterial}
-              />
-            ),
-            () => {
-              // TODO: we can switch to the react-three-fiber <bufferGeometry />,
-              // <pointsMaterial />, etc components to avoid manual
-              // disposal.
-              geometry.dispose();
-              pointCloudMaterial.dispose();
-            },
-          ),
+          new SceneNode<THREE.Points>(message.name, (ref) => (
+            <PointCloud
+              ref={ref}
+              pointSize={message.point_size}
+              pointBallNorm={message.point_ball_norm}
+              points={
+                new Float32Array(
+                  message.points.buffer.slice(
+                    message.points.byteOffset,
+                    message.points.byteOffset + message.points.byteLength,
+                  ),
+                )
+              }
+              colors={new Float32Array(message.colors).map(
+                (val) => val / 255.0,
+              )}
+            />
+          )),
         );
         return;
       }

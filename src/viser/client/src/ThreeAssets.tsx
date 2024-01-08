@@ -1,5 +1,5 @@
-import { Instance, Instances } from "@react-three/drei";
-import { createPortal, useFrame } from "@react-three/fiber";
+import { Instance, Instances, shaderMaterial } from "@react-three/drei";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { Outlines } from "./Outlines";
 import React from "react";
 import * as THREE from "three";
@@ -24,6 +24,7 @@ import {
   LineDashedMaterial,
 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
+import { ViewerContext } from "./App";
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
@@ -46,6 +47,91 @@ type AllPossibleThreeJSMaterials =
 
 const originGeom = new THREE.SphereGeometry(1.0);
 const originMaterial = new THREE.MeshBasicMaterial({ color: 0xecec00 });
+
+const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
+  { scale: 1.0, point_ball_norm: 0.0 },
+  `
+  varying vec3 vPosition;
+  varying vec3 vColor; // in the vertex shader
+  uniform float scale;
+
+  void main() {
+      vPosition = position;
+      vColor = color;
+      vec4 world_pos = modelViewMatrix * vec4(position, 1.0);
+      gl_Position = projectionMatrix * world_pos;
+      gl_PointSize = (scale / -world_pos.z);
+  }
+   `,
+  `varying vec3 vPosition;
+  varying vec3 vColor;
+  uniform float point_ball_norm;
+
+  void main() {
+      if (!isinf(point_ball_norm)) {
+          float r = pow(
+              pow(abs(gl_PointCoord.x - 0.5), point_ball_norm)
+              + pow(abs(gl_PointCoord.y - 0.5), point_ball_norm),
+              1.0 / point_ball_norm);
+          if (r > 0.5) discard;
+      }
+      gl_FragColor = vec4(vColor, 1.0);
+  }
+   `,
+);
+
+export const PointCloud = React.forwardRef<
+  THREE.Points,
+  {
+    pointSize: number;
+    /** We visualize each point as a 2D ball, which is defined by some norm. */
+    pointBallNorm: number;
+    points: Float32Array;
+    colors: Float32Array;
+  }
+>(function PointCloud(props, ref) {
+  const { gl, camera } = useThree();
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(props.points, 3),
+  );
+  geometry.computeBoundingSphere();
+  geometry.setAttribute(
+    "color",
+    new THREE.Float32BufferAttribute(props.colors, 3),
+  );
+
+  const [material] = React.useState(
+    () => new PointCloudMaterial({ vertexColors: true }),
+  );
+  material.uniforms.scale.value = 10.0;
+  material.uniforms.point_ball_norm.value = props.pointBallNorm;
+
+  React.useEffect(() => {
+    return () => {
+      material.dispose();
+      geometry.dispose();
+    };
+  });
+
+  const rendererSize = new THREE.Vector2();
+  useFrame(() => {
+    // Match point scale to behavior of THREE.PointsMaterial().
+    if (material === undefined) return;
+    // point px height / actual height = point meters height / frustum meters height
+    // frustum meters height = math.tan(fov / 2.0) * z
+    // point px height = (point meters height / math.tan(fov / 2.0) * actual height)  / z
+    material.uniforms.scale.value =
+      (props.pointSize /
+        Math.tan(
+          (((camera as THREE.PerspectiveCamera).fov / 180.0) * Math.PI) / 2.0,
+        )) *
+      gl.getSize(rendererSize).height;
+  });
+  return <points ref={ref} geometry={geometry} material={material} />;
+});
 
 /** Component for rendering the contents of GLB files. */
 export const GlbAsset = React.forwardRef<
