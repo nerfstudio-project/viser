@@ -661,6 +661,9 @@ class MessageApi(abc.ABC):
         points: onp.ndarray,
         colors: onp.ndarray | Tuple[float, float, float],
         point_size: float = 0.1,
+        point_shape: Literal[
+            "square", "diamond", "circle", "rounded", "sparkle"
+        ] = "square",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -672,6 +675,7 @@ class MessageApi(abc.ABC):
             points: Location of points. Should have shape (N, 3).
             colors: Colors of points. Should have shape (N, 3) or (3,).
             point_size: Size of each point.
+            point_shape: Shape to draw each point.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -697,6 +701,13 @@ class MessageApi(abc.ABC):
                 points=points.astype(onp.float32),
                 colors=colors_cast,
                 point_size=point_size,
+                point_ball_norm={
+                    "square": 0.0,
+                    "diamond": 1.0,
+                    "circle": 2.0,
+                    "rounded": 3.0,
+                    "sparkle": 0.6,
+                }[point_shape],
             )
         )
         return PointCloudHandle._make(self, name, wxyz, position, visible)
