@@ -24,7 +24,6 @@ import {
   LineDashedMaterial,
 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
-import { ViewerContext } from "./App";
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
