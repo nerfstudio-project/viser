@@ -702,7 +702,7 @@ class MessageApi(abc.ABC):
                 colors=colors_cast,
                 point_size=point_size,
                 point_ball_norm={
-                    "square": 0.0,
+                    "square": float("inf"),
                     "diamond": 1.0,
                     "circle": 2.0,
                     "rounded": 3.0,
