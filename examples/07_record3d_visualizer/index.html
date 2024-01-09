@@ -361,43 +361,44 @@
 <span class="linenos">100</span>            <span class="n">points</span><span class="o">=</span><span class="n">position</span><span class="p">,</span>
 <span class="linenos">101</span>            <span class="n">colors</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
 <span class="linenos">102</span>            <span class="n">point_size</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
-<span class="linenos">103</span>        <span class="p">)</span>
-<span class="linenos">104</span>
-<span class="linenos">105</span>        <span class="c1"># Place the frustum.</span>
-<span class="linenos">106</span>        <span class="n">fov</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="linenos">107</span>        <span class="n">aspect</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="linenos">108</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_camera_frustum</span><span class="p">(</span>
-<span class="linenos">109</span>            <span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/frustum&quot;</span><span class="p">,</span>
-<span class="linenos">110</span>            <span class="n">fov</span><span class="o">=</span><span class="n">fov</span><span class="p">,</span>
-<span class="linenos">111</span>            <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span>
-<span class="linenos">112</span>            <span class="n">scale</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
-<span class="linenos">113</span>            <span class="n">image</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="p">[::</span><span class="n">downsample_factor</span><span class="p">,</span> <span class="p">::</span><span class="n">downsample_factor</span><span class="p">],</span>
-<span class="linenos">114</span>            <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">T_world_camera</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
-<span class="linenos">115</span>            <span class="n">position</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">T_world_camera</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-<span class="linenos">116</span>        <span class="p">)</span>
-<span class="linenos">117</span>
-<span class="linenos">118</span>        <span class="c1"># Add some axes.</span>
-<span class="linenos">119</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
-<span class="linenos">120</span>            <span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/frustum/axes&quot;</span><span class="p">,</span>
-<span class="linenos">121</span>            <span class="n">axes_length</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
-<span class="linenos">122</span>            <span class="n">axes_radius</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
-<span class="linenos">123</span>        <span class="p">)</span>
-<span class="linenos">124</span>
-<span class="linenos">125</span>    <span class="c1"># Hide all but the current frame.</span>
-<span class="linenos">126</span>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame_node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frame_nodes</span><span class="p">):</span>
-<span class="linenos">127</span>        <span class="n">frame_node</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos">128</span>
-<span class="linenos">129</span>    <span class="c1"># Playback update loop.</span>
-<span class="linenos">130</span>    <span class="n">prev_timestep</span> <span class="o">=</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos">131</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">132</span>        <span class="k">if</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-<span class="linenos">133</span>            <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
-<span class="linenos">134</span>
-<span class="linenos">135</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">gui_framerate</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-<span class="linenos">136</span>
+<span class="linenos">103</span>            <span class="n">point_shape</span><span class="o">=</span><span class="s2">&quot;rounded&quot;</span><span class="p">,</span>
+<span class="linenos">104</span>        <span class="p">)</span>
+<span class="linenos">105</span>
+<span class="linenos">106</span>        <span class="c1"># Place the frustum.</span>
+<span class="linenos">107</span>        <span class="n">fov</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="linenos">108</span>        <span class="n">aspect</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">109</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_camera_frustum</span><span class="p">(</span>
+<span class="linenos">110</span>            <span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/frustum&quot;</span><span class="p">,</span>
+<span class="linenos">111</span>            <span class="n">fov</span><span class="o">=</span><span class="n">fov</span><span class="p">,</span>
+<span class="linenos">112</span>            <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span>
+<span class="linenos">113</span>            <span class="n">scale</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
+<span class="linenos">114</span>            <span class="n">image</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="p">[::</span><span class="n">downsample_factor</span><span class="p">,</span> <span class="p">::</span><span class="n">downsample_factor</span><span class="p">],</span>
+<span class="linenos">115</span>            <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">T_world_camera</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
+<span class="linenos">116</span>            <span class="n">position</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">T_world_camera</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="linenos">117</span>        <span class="p">)</span>
+<span class="linenos">118</span>
+<span class="linenos">119</span>        <span class="c1"># Add some axes.</span>
+<span class="linenos">120</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
+<span class="linenos">121</span>            <span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/frustum/axes&quot;</span><span class="p">,</span>
+<span class="linenos">122</span>            <span class="n">axes_length</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+<span class="linenos">123</span>            <span class="n">axes_radius</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+<span class="linenos">124</span>        <span class="p">)</span>
+<span class="linenos">125</span>
+<span class="linenos">126</span>    <span class="c1"># Hide all but the current frame.</span>
+<span class="linenos">127</span>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame_node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frame_nodes</span><span class="p">):</span>
+<span class="linenos">128</span>        <span class="n">frame_node</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">129</span>
+<span class="linenos">130</span>    <span class="c1"># Playback update loop.</span>
+<span class="linenos">131</span>    <span class="n">prev_timestep</span> <span class="o">=</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">132</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">133</span>        <span class="k">if</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+<span class="linenos">134</span>            <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
+<span class="linenos">135</span>
+<span class="linenos">136</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">gui_framerate</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 <span class="linenos">137</span>
-<span class="linenos">138</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">139</span>    <span class="n">tyro</span><span class="o">.</span><span class="n">cli</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+<span class="linenos">138</span>
+<span class="linenos">139</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">140</span>    <span class="n">tyro</span><span class="o">.</span><span class="n">cli</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
