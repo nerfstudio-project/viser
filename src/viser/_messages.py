@@ -158,7 +158,8 @@ class PointCloudMessage(Message):
     name: str
     points: onpt.NDArray[onp.float32]
     colors: onpt.NDArray[onp.uint8]
-    point_size: float = 0.1
+    point_size: float
+    point_ball_norm: float
 
     def __post_init__(self):
         # Check shapes.
