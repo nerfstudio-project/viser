@@ -9,7 +9,7 @@ import numpy as onp
 import viser
 
 
-def main():
+def main() -> None:
     server = viser.ViserServer()
 
     # Add some common GUI elements: number inputs, sliders, vectors, checkboxes.

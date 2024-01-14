@@ -55,12 +55,13 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
 
-  // TODO: we should clean this up.
+  // We could reduce the redundancy here if we wanted to.
   // https://github.com/nerfstudio-project/viser/issues/39
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
   const setTheme = viewer.useGui((state) => state.setTheme);
+  const setShareUrl = viewer.useGui((state) => state.setShareUrl);
   const addGui = viewer.useGui((state) => state.addGui);
   const addModal = viewer.useGui((state) => state.addModal);
   const removeModal = viewer.useGui((state) => state.removeModal);
@@ -101,6 +102,11 @@ function useMessageHandler() {
     }
 
     switch (message.type) {
+      // Set the share URL.
+      case "ShareUrlUpdated": {
+        setShareUrl(message.share_url);
+        return;
+      }
       // Request a render.
       case "GetRenderRequestMessage": {
         viewer.getRenderRequest.current = message;
@@ -1024,7 +1030,7 @@ export function WebsocketMessageProducer() {
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
         viewer.sceneClickEnable.current = false;
-        viewer.useGui.setState({ websocketConnected: false });
+        viewer.useGui.setState({ shareUrl: null, websocketConnected: false });
         resetGui();
 
         // Try to reconnect.

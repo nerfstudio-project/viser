@@ -31,6 +31,7 @@ interface GuiState {
   theme: Messages.ThemeConfigurationMessage;
   label: string;
   server: string;
+  shareUrl: string | null;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
   guiIdSetFromContainerId: {
@@ -47,6 +48,7 @@ interface GuiState {
 
 interface GuiActions {
   setTheme: (theme: Messages.ThemeConfigurationMessage) => void;
+  setShareUrl: (share_url: string | null) => void;
   addGui: (config: GuiConfig) => void;
   addModal: (config: Messages.GuiModalMessage) => void;
   removeModal: (id: string) => void;
@@ -65,10 +67,12 @@ const cleanGuiState: GuiState = {
     control_width: "medium",
     dark_mode: false,
     show_logo: true,
+    show_share_button: true,
     colors: null,
   },
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.
+  shareUrl: null,
   websocketConnected: false,
   backgroundAvailable: false,
   guiIdSetFromContainerId: {},
@@ -100,6 +104,10 @@ export function useGuiState(initialServer: string) {
         setTheme: (theme) =>
           set((state) => {
             state.theme = theme;
+          }),
+        setShareUrl: (share_url) =>
+          set((state) => {
+            state.shareUrl = share_url;
           }),
         addGui: (guiConfig) =>
           set((state) => {
@@ -150,6 +158,7 @@ export function useGuiState(initialServer: string) {
           }),
         resetGui: () =>
           set((state) => {
+            state.shareUrl = null;
             state.guiIdSetFromContainerId = {};
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
@@ -217,6 +226,11 @@ export function useViserMantineTheme(): MantineThemeOverride {
         },
       },
       Paper: {
+        defaultProps: {
+          radius: "xs",
+        },
+      },
+      ActionIcon: {
         defaultProps: {
           radius: "xs",
         },

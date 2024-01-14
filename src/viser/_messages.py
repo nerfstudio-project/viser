@@ -527,6 +527,7 @@ class ThemeConfigurationMessage(Message):
     control_layout: Literal["floating", "collapsible", "fixed"]
     control_width: Literal["small", "medium", "large"]
     show_logo: bool
+    show_share_button: bool
     dark_mode: bool
     colors: Optional[Tuple[str, str, str, str, str, str, str, str, str, str]]
 
@@ -600,3 +601,20 @@ class FileDownloadPart(Message):
     @override
     def redundancy_key(self) -> str:
         return type(self).__name__ + "-" + self.download_uuid + "-" + str(self.part)
+
+
+@dataclasses.dataclass
+class ShareUrlRequest(Message):
+    """Message from client->server to connect to the share URL server."""
+
+
+@dataclasses.dataclass
+class ShareUrlUpdated(Message):
+    """Message from server->client to indicate that the share URL has been updated."""
+
+    share_url: Optional[str]
+
+
+@dataclasses.dataclass
+class ShareUrlDisconnect(Message):
+    """Message from client->server to disconnect from the share URL server."""

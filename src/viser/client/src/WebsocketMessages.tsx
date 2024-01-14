@@ -613,6 +613,7 @@ export interface ThemeConfigurationMessage {
   control_layout: "floating" | "collapsible" | "fixed";
   control_width: "small" | "medium" | "large";
   show_logo: boolean;
+  show_share_button: boolean;
   dark_mode: boolean;
   colors:
     | [
@@ -698,6 +699,28 @@ export interface FileDownloadPart {
   part: number;
   content: Uint8Array;
 }
+/** Message from client->server to connect to the share URL server.
+ *
+ * (automatically generated)
+ */
+export interface ShareUrlRequest {
+  type: "ShareUrlRequest";
+}
+/** Message from server->client to indicate that the share URL has been updated.
+ *
+ * (automatically generated)
+ */
+export interface ShareUrlUpdated {
+  type: "ShareUrlUpdated";
+  share_url: string | null;
+}
+/** Message from client->server to disconnect from the share URL server.
+ *
+ * (automatically generated)
+ */
+export interface ShareUrlDisconnect {
+  type: "ShareUrlDisconnect";
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -754,4 +777,7 @@ export type Message =
   | GetRenderRequestMessage
   | GetRenderResponseMessage
   | FileDownloadStart
-  | FileDownloadPart;
+  | FileDownloadPart
+  | ShareUrlRequest
+  | ShareUrlUpdated
+  | ShareUrlDisconnect;
