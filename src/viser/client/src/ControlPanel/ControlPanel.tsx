@@ -273,34 +273,42 @@ function ShareButton() {
           </>
         ) : (
           <>
-            <Text>Share URL is connected!</Text>
+            <Text>Share URL is connected:</Text>
             <Stack my="md">
+              <TextInput value={shareUrl} />
               <Flex justify="space-between" columnGap="0.5em" align="center">
-                <TextInput value={shareUrl} style={{ flexGrow: "1" }} />
-                <Tooltip zIndex={100} label="Copy" withinPortal>
-                  <CopyButton value={shareUrl}>
-                    {({ copied, copy }) => (
-                      <ActionIcon size="lg" onClick={copy}>
-                        {copied ? <IconCheck /> : <IconCopy />}
-                      </ActionIcon>
-                    )}
-                  </CopyButton>
+                <CopyButton value={shareUrl}>
+                  {({ copied, copy }) => (
+                    <Button
+                      leftIcon={
+                        copied ? (
+                          <IconCheck height="1.375em" width="1.375em" />
+                        ) : (
+                          <IconCopy height="1.375em" width="1.375em" />
+                        )
+                      }
+                      onClick={copy}
+                      variant={copied ? "outline" : "filled"}
+                      style={{ flexGrow: "1" }}
+                    >
+                      {copied ? "Copied!" : "Copy Share URL"}
+                    </Button>
+                  )}
+                </CopyButton>
+                <Tooltip zIndex={100} label="Disconnect" withinPortal>
+                  <Button
+                    color="red"
+                    onClick={() => {
+                      sendWebsocketMessage(viewer.websocketRef, {
+                        type: "ShareUrlDisconnect",
+                      });
+                      setShareUrl(null);
+                    }}
+                  >
+                    <IconPlugConnectedX />
+                  </Button>
                 </Tooltip>
               </Flex>
-              <Button
-                leftIcon={
-                  <IconPlugConnectedX height="1.375em" width="1.375em" />
-                }
-                color="red"
-                onClick={() => {
-                  sendWebsocketMessage(viewer.websocketRef, {
-                    type: "ShareUrlDisconnect",
-                  });
-                  setShareUrl(null);
-                }}
-              >
-                Disconnect
-              </Button>
             </Stack>
           </>
         )}

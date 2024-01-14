@@ -511,9 +511,7 @@ class ViserServer(MessageApi, GuiApi):
         else:
             # Create a new tunnel!.
             if verbose:
-                rich.print(
-                    "[bold](viser)[/bold] Share URL requested! (expires in 24 hours)"
-                )
+                rich.print("[bold](viser)[/bold] Share URL requested!")
 
             connect_event = threading.Event()
 
@@ -526,7 +524,7 @@ class ViserServer(MessageApi, GuiApi):
                 self._server.broadcast(_messages.ShareUrlUpdated(None))
 
             @self._share_tunnel.on_connect
-            def _() -> None:
+            def _(max_clients: int) -> None:
                 assert self._share_tunnel is not None
                 share_url = self._share_tunnel.get_url()
                 if verbose:
@@ -534,7 +532,7 @@ class ViserServer(MessageApi, GuiApi):
                         rich.print("[bold](viser)[/bold] Could not generate share URL")
                     else:
                         rich.print(
-                            f"[bold](viser)[/bold] Generated share URL: {share_url}"
+                            f"[bold](viser)[/bold] Generated share URL (expires in 24 hours, max {max_clients} clients): {share_url}"
                         )
                 self._server.broadcast(_messages.ShareUrlUpdated(share_url))
                 connect_event.set()

@@ -312,6 +312,11 @@ class Server(MessageHandler):
                     )
 
         # Host client on the same port as the websocket.
+        file_cache: Dict[Path, bytes] = {}
+        file_cache_gzipped: Dict[Path, bytes] = {}
+
+        import gzip
+
         async def viser_http_server(
             path: str, request_headers: websockets.datastructures.Headers
         ) -> Optional[
@@ -327,21 +332,31 @@ class Server(MessageHandler):
             if relpath == ".":
                 relpath = "index.html"
             assert http_server_root is not None
-            source = http_server_root / relpath
+
+            source_path = http_server_root / relpath
+            if not source_path.exists():
+                return (http.HTTPStatus.NOT_FOUND, {}, b"404")  # type: ignore
+
+            use_gzip = "gzip" in request_headers.get("Accept-Encoding", "")
+
+            response_headers = {
+                "Content-Type": str(mimetypes.MimeTypes().guess_type(relpath)[0]),
+            }
+
+            if source_path not in file_cache:
+                file_cache[source_path] = source_path.read_bytes()
+            if use_gzip:
+                response_headers["Content-Encoding"] = "gzip"
+                if source_path not in file_cache_gzipped:
+                    file_cache_gzipped[source_path] = gzip.compress(
+                        file_cache[source_path]
+                    )
+                response_payload = file_cache_gzipped[source_path]
+            else:
+                response_payload = file_cache[source_path]
 
             # Try to read + send over file.
-            try:
-                return (
-                    http.HTTPStatus.OK,
-                    {
-                        "content-type": str(
-                            mimetypes.MimeTypes().guess_type(relpath)[0]
-                        ),
-                    },
-                    source.read_bytes(),
-                )
-            except FileNotFoundError:
-                return (http.HTTPStatus.NOT_FOUND, {}, b"404")  # type: ignore
+            return (http.HTTPStatus.OK, response_headers, response_payload)
 
         for _ in range(500):
             try:

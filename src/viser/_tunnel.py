@@ -66,7 +66,7 @@ class ViserTunnel:
 
         threading.Thread(target=call_on_disconnect).start()
 
-    def on_connect(self, callback: Callable[[], None]) -> None:
+    def on_connect(self, callback: Callable[[int], None]) -> None:
         """Establish the tunnel connection.
 
         Returns URL if tunnel succeeds, otherwise None."""
@@ -76,7 +76,7 @@ class ViserTunnel:
 
         def wait_job() -> None:
             self._connect_event.wait()
-            callback()
+            callback(self._shared_state["max_conn_count"])
 
         threading.Thread(target=wait_job).start()
 
@@ -204,6 +204,7 @@ async def _make_tunnel(
 
     res = response.json()
     shared_state["url"] = res["url"]
+    shared_state["max_conn_count"] = res["max_conn_count"]
     shared_state["status"] = "connected"
     connect_event.set()
 
