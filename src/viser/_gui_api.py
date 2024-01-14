@@ -43,7 +43,7 @@ from ._gui_handles import (
     _make_unique_id,
 )
 from ._icons import base64_from_icon
-from ._icons_enum import Icon
+from ._icons_enum import IconName
 from ._message_api import MessageApi, cast_vector
 
 if TYPE_CHECKING:
@@ -333,7 +333,7 @@ class GuiApi(abc.ABC):
                 "teal",
             ]
         ] = None,
-        icon: Optional[Icon] = None,
+        icon: Optional[IconName] = None,
         order: Optional[float] = None,
     ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
