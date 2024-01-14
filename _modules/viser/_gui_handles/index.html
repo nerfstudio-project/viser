@@ -808,8 +808,10 @@
 <span class="k">def</span> <span class="nf">_get_data_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">image_root</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">image_root</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-            <span class="s2">&quot;No `image_root` provided. All relative paths will be scoped to viser&#39;s&quot;</span>
-            <span class="s2">&quot; installation path.&quot;</span><span class="p">,</span>
+            <span class="p">(</span>
+                <span class="s2">&quot;No `image_root` provided. All relative paths will be scoped to viser&#39;s&quot;</span>
+                <span class="s2">&quot; installation path.&quot;</span>
+            <span class="p">),</span>
             <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">):</span>

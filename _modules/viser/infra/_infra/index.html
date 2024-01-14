@@ -327,7 +327,7 @@
     <span class="k">def</span> <span class="nf">register_handler</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">message_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">TMessage</span><span class="p">],</span>
-        <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">TMessage</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span>
+        <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">TMessage</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a handler for a particular message type.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">message_cls</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_handlers</span><span class="p">:</span>
@@ -340,7 +340,7 @@
     <span class="k">def</span> <span class="nf">unregister_handler</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">message_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">TMessage</span><span class="p">],</span>
-        <span class="n">callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">TMessage</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">TMessage</span><span class="p">],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Unregister a handler for a particular message type.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="p">(</span>
@@ -607,6 +607,11 @@
                     <span class="p">)</span>
 
         <span class="c1"># Host client on the same port as the websocket.</span>
+        <span class="n">file_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">file_cache_gzipped</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="kn">import</span> <span class="nn">gzip</span>
+
         <span class="k">async</span> <span class="k">def</span> <span class="nf">viser_http_server</span><span class="p">(</span>
             <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">:</span> <span class="n">websockets</span><span class="o">.</span><span class="n">datastructures</span><span class="o">.</span><span class="n">Headers</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span>
@@ -622,21 +627,31 @@
             <span class="k">if</span> <span class="n">relpath</span> <span class="o">==</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
                 <span class="n">relpath</span> <span class="o">=</span> <span class="s2">&quot;index.html&quot;</span>
             <span class="k">assert</span> <span class="n">http_server_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="n">source</span> <span class="o">=</span> <span class="n">http_server_root</span> <span class="o">/</span> <span class="n">relpath</span>
+
+            <span class="n">source_path</span> <span class="o">=</span> <span class="n">http_server_root</span> <span class="o">/</span> <span class="n">relpath</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">source_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">,</span> <span class="p">{},</span> <span class="sa">b</span><span class="s2">&quot;404&quot;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+            <span class="n">use_gzip</span> <span class="o">=</span> <span class="s2">&quot;gzip&quot;</span> <span class="ow">in</span> <span class="n">request_headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Accept-Encoding&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+            <span class="n">response_headers</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">mimetypes</span><span class="o">.</span><span class="n">MimeTypes</span><span class="p">()</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">relpath</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">source_path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_cache</span><span class="p">:</span>
+                <span class="n">file_cache</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">use_gzip</span><span class="p">:</span>
+                <span class="n">response_headers</span><span class="p">[</span><span class="s2">&quot;Content-Encoding&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;gzip&quot;</span>
+                <span class="k">if</span> <span class="n">source_path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_cache_gzipped</span><span class="p">:</span>
+                    <span class="n">file_cache_gzipped</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span>
+                        <span class="n">file_cache</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="n">response_payload</span> <span class="o">=</span> <span class="n">file_cache_gzipped</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">response_payload</span> <span class="o">=</span> <span class="n">file_cache</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span>
 
             <span class="c1"># Try to read + send over file.</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">(</span>
-                    <span class="n">http</span><span class="o">.</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span>
-                    <span class="p">{</span>
-                        <span class="s2">&quot;content-type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span>
-                            <span class="n">mimetypes</span><span class="o">.</span><span class="n">MimeTypes</span><span class="p">()</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">relpath</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-                        <span class="p">),</span>
-                    <span class="p">},</span>
-                    <span class="n">source</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">(),</span>
-                <span class="p">)</span>
-            <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">,</span> <span class="p">{},</span> <span class="sa">b</span><span class="s2">&quot;404&quot;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span> <span class="n">response_headers</span><span class="p">,</span> <span class="n">response_payload</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">500</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
