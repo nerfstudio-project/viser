@@ -74,7 +74,11 @@ def main(
         gui_elements.changed = False
 
         full_pose = torch.from_numpy(
-            onp.array([j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
+            onp.array(
+                [j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32
+            )[
+                None, ...
+            ]  # type: ignore
         )
 
         # Get deformed mesh.
@@ -87,7 +91,11 @@ def main(
             expression=None,
             return_verts=True,
             body_pose=full_pose[:, : model.NUM_BODY_JOINTS],  # type: ignore
-            global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].value, dtype=onp.float32)[None, ...]),  # type: ignore
+            global_orient=torch.from_numpy(
+                onp.array(gui_elements.gui_joints[0].value, dtype=onp.float32)[
+                    None, ...
+                ]
+            ),  # type: ignore
             return_full_pose=True,
         )
         joint_positions = output.joints.squeeze(axis=0).detach().cpu().numpy()  # type: ignore
@@ -256,7 +264,8 @@ def make_gui_elements(
 def joint_transforms_and_parents_from_smpl(model, output):
     """Hack at SMPL internals to get coordinate frames corresponding to each joint."""
     v_shaped = model.v_template + smplx.lbs.blend_shapes(  # type: ignore
-        model.betas, model.shapedirs  # type: ignore
+        model.betas,
+        model.shapedirs,  # type: ignore
     )
     J = smplx.lbs.vertices2joints(model.J_regressor, v_shaped)  # type: ignore
     rot_mats = smplx.lbs.batch_rodrigues(output.full_pose.view(-1, 3)).view(  # type: ignore

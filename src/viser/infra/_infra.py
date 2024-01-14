@@ -66,7 +66,7 @@ class MessageHandler:
     def register_handler(
         self,
         message_cls: Type[TMessage],
-        callback: Callable[[ClientId, TMessage], None],
+        callback: Callable[[ClientId, TMessage], Any],
     ) -> None:
         """Register a handler for a particular message type."""
         if message_cls not in self._incoming_handlers:
@@ -76,7 +76,7 @@ class MessageHandler:
     def unregister_handler(
         self,
         message_cls: Type[TMessage],
-        callback: Optional[Callable[[ClientId, TMessage], None]] = None,
+        callback: Optional[Callable[[ClientId, TMessage], Any]] = None,
     ):
         """Unregister a handler for a particular message type."""
         assert (

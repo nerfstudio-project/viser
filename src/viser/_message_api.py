@@ -183,6 +183,7 @@ class MessageApi(abc.ABC):
         control_width: Literal["small", "medium", "large"] = "medium",
         dark_mode: bool = False,
         show_logo: bool = True,
+        show_share_button: bool = True,
         brand_color: Optional[Tuple[int, int, int]] = None,
     ) -> None:
         """Configures the visual appearance of the viser front-end.
@@ -195,6 +196,7 @@ class MessageApi(abc.ABC):
                            "medium", or "large".
             dark_mode: A boolean indicating if dark mode should be enabled.
             show_logo: A boolean indicating if the logo should be displayed.
+            show_share_button: A boolean indicating if the share button should be displayed.
             brand_color: An optional tuple of integers (RGB) representing the brand color.
         """
 
@@ -242,6 +244,7 @@ class MessageApi(abc.ABC):
                 control_width=control_width,
                 dark_mode=dark_mode,
                 show_logo=show_logo,
+                show_share_button=show_share_button,
                 colors=colors_cast,
             ),
         )
@@ -603,8 +606,9 @@ class MessageApi(abc.ABC):
         assert (
             len(points.shape) == 2 and points.shape[-1] == 3
         ), "Shape of points should be (N, 3)."
-        assert colors_cast.shape == points.shape or colors_cast.shape == (
-            3,
+        assert colors_cast.shape in (
+            points.shape,
+            (3,),
         ), "Shape of colors should be (N, 3) or (3,)."
 
         if colors_cast.shape == (3,):

@@ -1,7 +1,6 @@
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import GeneratedGuiContainer from "./Generated";
 import { ViewerContext } from "../App";
-import { useForm } from "@mantine/form";
 
 import ServerControls from "./ServerControls";
 import {
@@ -14,7 +13,6 @@ import {
   Flex,
   Loader,
   Modal,
-  Select,
   Stack,
   Text,
   TextInput,
@@ -36,6 +34,7 @@ import BottomPanel from "./BottomPanel";
 import FloatingPanel from "./FloatingPanel";
 import { ThemeConfigurationMessage } from "../WebsocketMessages";
 import SidebarPanel from "./SidebarPanel";
+import { sendWebsocketMessage } from "../WebsocketFunctions";
 
 // Must match constant in Python.
 const ROOT_CONTAINER_ID = "root";
@@ -186,19 +185,25 @@ function ConnectionStatus() {
 }
 
 function ShareButton() {
-  const { useGui } = React.useContext(ViewerContext)!;
-  const connected = useGui((state) => state.websocketConnected);
-  const shareUrlConnected = true; // Should not be hardcoded.
+  const viewer = React.useContext(ViewerContext)!;
+  const connected = viewer.useGui((state) => state.websocketConnected);
+  const shareUrl = viewer.useGui((state) => state.shareUrl);
+  const setShareUrl = viewer.useGui((state) => state.setShareUrl);
+
+  const [doingSomething, setDoingSomething] = React.useState(false);
 
   const [shareModalOpened, { open: openShareModal, close: closeShareModal }] =
     useDisclosure(false);
 
-  const form = useForm({
-    initialValues: {
-      server: "viser-us-west (https://share.viser.studio)",
-      customServer: "",
-    },
-  });
+  // Turn off loader when share URL is set.
+  React.useEffect(() => {
+    if (shareUrl !== null) {
+      setDoingSomething(false);
+    }
+  }, [shareUrl]);
+
+  if (viewer.useGui((state) => state.theme).show_share_button === false)
+    return null;
 
   return (
     <>
@@ -208,8 +213,14 @@ function ShareButton() {
         withinPortal
       >
         <div>
-          <ActionIcon onClick={openShareModal} disabled={!connected}>
-            <IconShare stroke={1.875} height="1.25em" width="1.25em" />
+          <ActionIcon
+            onClick={(evt) => {
+              evt.stopPropagation();
+              openShareModal();
+            }}
+            disabled={!connected}
+          >
+            <IconShare stroke={2} height="1.125em" width="1.125em" />
           </ActionIcon>
         </div>
       </Tooltip>
@@ -218,41 +229,53 @@ function ShareButton() {
         opened={shareModalOpened}
         onClose={closeShareModal}
         withCloseButton={false}
+        zIndex={100}
+        withinPortal
+        onClick={(evt) => evt.stopPropagation()}
+        onMouseDown={(evt) => evt.stopPropagation()}
+        onMouseMove={(evt) => evt.stopPropagation()}
+        onMouseUp={(evt) => evt.stopPropagation()}
         styles={{ title: { fontWeight: 600 } }}
       >
-        {!shareUrlConnected ? (
+        {shareUrl === null ? (
           <>
-            <Text>Create a public, shareable URL to this Viser instance.</Text>
-            <Stack my="md">
-              <Select
+            {/*<Select
                 label="Server"
-                data={["viser-us-west (https://share.viser.studio)", "Custom"]}
+                data={["viser-us-west (https://share.viser.studio)"]}
                 withinPortal
                 {...form.getInputProps("server")}
-              />
-              <TextInput
-                label="Custom server"
-                disabled={form.getTransformedValues().server != "Custom"}
-                {...form.getInputProps("customServer")}
-              />
-              <Button fullWidth>Request Share URL</Button>
-            </Stack>
-            <Text size="xs">
-              Not working? Please refer to the{" "}
-              <Anchor href="">status issue</Anchor> on GitHub.
-            </Text>
+              /> */}
+            {doingSomething ? (
+              <Stack mb="xl">
+                <Loader size="xl" mx="auto" />
+              </Stack>
+            ) : (
+              <Stack mb="md">
+                <Text>
+                  Create a public, shareable URL to this Viser instance.
+                </Text>
+                <Button
+                  fullWidth
+                  onClick={() => {
+                    sendWebsocketMessage(viewer.websocketRef, {
+                      type: "ShareUrlRequest",
+                    });
+                    setDoingSomething(true); // Loader state will help with debouncing.
+                  }}
+                >
+                  Request Share URL
+                </Button>
+              </Stack>
+            )}
           </>
         ) : (
           <>
             <Text>Share URL is connected!</Text>
-            <Stack mt="md">
+            <Stack my="md">
               <Flex justify="space-between" columnGap="0.5em" align="center">
-                <TextInput
-                  value={"https://ragged-tensor.share.viser.studio"}
-                  style={{ flexGrow: "1" }}
-                />
+                <TextInput value={shareUrl} style={{ flexGrow: "1" }} />
                 <Tooltip zIndex={100} label="Copy" withinPortal>
-                  <CopyButton value="https://ragged-tensor.share.viser.studio">
+                  <CopyButton value={shareUrl}>
                     {({ copied, copy }) => (
                       <ActionIcon size="lg" onClick={copy}>
                         {copied ? <IconCheck /> : <IconCopy />}
@@ -266,12 +289,25 @@ function ShareButton() {
                   <IconPlugConnectedX height="1.375em" width="1.375em" />
                 }
                 color="red"
+                onClick={() => {
+                  sendWebsocketMessage(viewer.websocketRef, {
+                    type: "ShareUrlDisconnect",
+                  });
+                  setShareUrl(null);
+                }}
               >
                 Disconnect
               </Button>
             </Stack>
           </>
         )}
+        <Text size="xs">
+          Not working? Consider{" "}
+          <Anchor href="https://github.com/nerfstudio-project/viser/issues">
+            filing an issue
+          </Anchor>{" "}
+          on GitHub.
+        </Text>
       </Modal>
     </>
   );

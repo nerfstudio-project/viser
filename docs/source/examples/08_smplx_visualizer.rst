@@ -43,7 +43,10 @@ parameters to run this script:
             ext: Literal["npz", "pkl"] = "npz",
             share: bool = False,
         ) -> None:
-            server = viser.ViserServer(share=share)
+            server = viser.ViserServer()
+            if share:
+                server.request_share_url()
+
             server.configure_theme(control_layout="collapsible")
             model = smplx.create(
                 model_path=str(model_path),
@@ -78,7 +81,11 @@ parameters to run this script:
                 gui_elements.changed = False
 
                 full_pose = torch.from_numpy(
-                    onp.array([j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32)[None, ...]  # type: ignore
+                    onp.array(
+                        [j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32
+                    )[
+                        None, ...
+                    ]  # type: ignore
                 )
 
                 # Get deformed mesh.
@@ -91,7 +98,11 @@ parameters to run this script:
                     expression=None,
                     return_verts=True,
                     body_pose=full_pose[:, : model.NUM_BODY_JOINTS],  # type: ignore
-                    global_orient=torch.from_numpy(onp.array(gui_elements.gui_joints[0].value, dtype=onp.float32)[None, ...]),  # type: ignore
+                    global_orient=torch.from_numpy(
+                        onp.array(gui_elements.gui_joints[0].value, dtype=onp.float32)[
+                            None, ...
+                        ]
+                    ),  # type: ignore
                     return_full_pose=True,
                 )
                 joint_positions = output.joints.squeeze(axis=0).detach().cpu().numpy()  # type: ignore
@@ -142,7 +153,6 @@ parameters to run this script:
             # GUI elements: mesh settings + visibility.
             with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
                 gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
-                gui_rgb_text = server.add_gui_text("Color", "")
                 gui_wireframe = server.add_gui_checkbox("Wireframe", initial_value=False)
                 gui_show_controls = server.add_gui_checkbox("Handles", initial_value=False)
 
@@ -261,7 +271,8 @@ parameters to run this script:
         def joint_transforms_and_parents_from_smpl(model, output):
             """Hack at SMPL internals to get coordinate frames corresponding to each joint."""
             v_shaped = model.v_template + smplx.lbs.blend_shapes(  # type: ignore
-                model.betas, model.shapedirs  # type: ignore
+                model.betas,
+                model.shapedirs,  # type: ignore
             )
             J = smplx.lbs.vertices2joints(model.J_regressor, v_shaped)  # type: ignore
             rot_mats = smplx.lbs.batch_rodrigues(output.full_pose.view(-1, 3)).view(  # type: ignore
