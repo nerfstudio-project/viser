@@ -54,7 +54,7 @@ examples = [
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
 [tool.setuptools.package-data]
-viser = ["py.typed", "_icons/tabler-icons.tar", "client/build/**/*"]
+viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/build/**/*"]
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
