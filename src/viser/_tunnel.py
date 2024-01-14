@@ -23,7 +23,8 @@ def _is_multiprocess_ok() -> bool:
 class ViserTunnel:
     """Tunneling utility for internal use.
 
-    This is academic software, and we'd appreciate if you refrained from red-teaming this. :)
+    This is chaotic academic software, and we'd appreciate if you refrained
+    from red-teaming it. :)
     """
 
     def __init__(self, share_domain: str, local_port: int) -> None:
@@ -270,7 +271,7 @@ async def _simple_proxy(
                         asyncio.create_task(relay(local_r, remote_w)),
                         asyncio.create_task(relay(remote_r, local_w)),
                     ),
-                    close_event.wait(),
+                    asyncio.create_task(close_event.wait()),
                 ],
                 return_when=asyncio.FIRST_COMPLETED,
             )

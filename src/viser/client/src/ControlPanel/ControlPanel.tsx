@@ -59,10 +59,10 @@ export default function ControlPanel(props: {
     controlWidthString == "small"
       ? "16em"
       : controlWidthString == "medium"
-      ? "20em"
-      : controlWidthString == "large"
-      ? "24em"
-      : null
+        ? "20em"
+        : controlWidthString == "large"
+          ? "24em"
+          : null
   )!;
 
   const generatedServerToggleButton = (
@@ -201,6 +201,9 @@ function ShareButton() {
       setDoingSomething(false);
     }
   }, [shareUrl]);
+  React.useEffect(() => {
+    if (!connected && shareModalOpened) closeShareModal();
+  }, [connected, shareModalOpened]);
 
   if (viewer.useGui((state) => state.theme).show_share_button === false)
     return null;
