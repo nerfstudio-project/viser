@@ -5,8 +5,6 @@ import time
 from multiprocessing.managers import DictProxy
 from typing import Callable, Literal, Optional
 
-import requests
-
 
 class _ViserTunnel:
     """Tunneling utility for internal use."""
@@ -74,6 +72,8 @@ def _connect_job(local_port: int, shared_state: DictProxy) -> None:
 
 async def _make_tunnel(local_port: int, shared_state: DictProxy) -> None:
     share_domain = "share.viser.studio"
+
+    import requests
 
     try:
         response = requests.request(

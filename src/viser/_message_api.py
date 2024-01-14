@@ -33,10 +33,6 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
-import trimesh
-import trimesh.creation
-import trimesh.exchange
-import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
@@ -58,6 +54,8 @@ from ._scene_handles import (
 )
 
 if TYPE_CHECKING:
+    import trimesh
+
     from ._viser import ClientHandle
     from .infra import ClientId
 
@@ -842,6 +840,8 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        import trimesh.creation
+
         mesh = trimesh.creation.box(dimensions)
 
         return self.add_mesh_simple(
@@ -880,6 +880,8 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        import trimesh.creation
+
         mesh = trimesh.creation.icosphere(subdivisions=subdivisions, radius=radius)
 
         # We use add_mesh_simple() because it lets us do smooth shading;

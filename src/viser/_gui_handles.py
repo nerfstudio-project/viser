@@ -27,7 +27,7 @@ import numpy as onp
 from typing_extensions import Protocol
 
 from ._icons import base64_from_icon
-from ._icons_enum import Icon
+from ._icons_enum import IconName
 from ._message_api import _encode_image_base64
 from ._messages import (
     GuiAddDropdownMessage,
@@ -343,7 +343,7 @@ class GuiTabGroupHandle:
         """Read-only order value, which dictates the position of the GUI element."""
         return self._order
 
-    def add_tab(self, label: str, icon: Optional[Icon] = None) -> GuiTabHandle:
+    def add_tab(self, label: str, icon: Optional[IconName] = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
 
         id = _make_unique_id()
