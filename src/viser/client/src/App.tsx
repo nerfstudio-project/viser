@@ -9,12 +9,6 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import {
-  EffectComposer,
-  Outline,
-  Selection,
-} from "@react-three/postprocessing";
-import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
 import {
@@ -49,7 +43,7 @@ import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
-import { computeR_threeworld_world } from "./WorldTransformUtils";
+import { rayToViserCoords } from "./WorldTransformUtils";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -62,6 +56,7 @@ export type ViewerContextContents = {
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   backgroundMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
+  sendCameraRef: React.MutableRefObject<(() => void) | null>;
   resetCameraViewRef: React.MutableRefObject<(() => void) | null>;
   // Scene node attributes.
   // This is intentionally placed outside of the Zustand state to reduce overhead.
@@ -116,11 +111,17 @@ function ViewerRoot() {
     cameraRef: React.useRef(null),
     backgroundMaterialRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
+    sendCameraRef: React.useRef(null),
     resetCameraViewRef: React.useRef(null),
     // Scene node attributes that aren't placed in the zustand state for performance reasons.
     nodeAttributesFromName: React.useRef({
       "": {
-        wxyz: computeR_threeworld_world([0.0, 0.0, 1.0]),
+        wxyz: (() => {
+          const quat = new THREE.Quaternion().setFromEuler(
+            new THREE.Euler(Math.PI / 2, Math.PI, -Math.PI / 2),
+          );
+          return [quat.w, quat.x, quat.y, quat.z];
+        })(),
       },
     }),
     messageQueueRef: React.useRef([]),
@@ -206,7 +207,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
   return (
     <Canvas
-      camera={{ position: [3.0, 3.0, 3.0] }}
+      camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
       gl={{ preserveDrawingBuffer: true }}
       style={{
         position: "relative",
@@ -230,6 +231,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         mouseVector.y =
           1 -
           2 * (e.nativeEvent.offsetY / viewer.canvasRef.current!.clientHeight);
+        console.log(mouseVector.x, mouseVector.y);
         if (
           mouseVector.x > 1 ||
           mouseVector.x < -1 ||
@@ -241,19 +243,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
 
+        // Convert ray to viser coordinates.
+        const ray = rayToViserCoords(viewer, raycaster.ray);
+
         sendClickThrottled({
           type: "ScenePointerMessage",
           event_type: "click",
-          ray_origin: [
-            raycaster.ray.origin.x,
-            -raycaster.ray.origin.z,
-            raycaster.ray.origin.y,
-          ],
-          ray_direction: [
-            raycaster.ray.direction.x,
-            -raycaster.ray.direction.z,
-            raycaster.ray.direction.y,
-          ],
+          ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+          ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
         });
       }}
     >
@@ -263,20 +260,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <AdaptiveEvents />
       <SceneContextSetter />
       <SynchronizedCameraControls />
-      <Selection>
-        <SceneNodeThreeObject name="" parent={null} />
-        <EffectComposer enabled={true} autoClear={false}>
-          <Outline
-            hiddenEdgeColor={0xfbff00}
-            visibleEdgeColor={0xfbff00}
-            blendFunction={BlendFunction.SCREEN} // set this to BlendFunction.ALPHA for dark outlines
-            kernelSize={KernelSize.MEDIUM}
-            edgeStrength={30.0}
-            height={480}
-            blur
-          />
-        </EffectComposer>
-      </Selection>
+      <SceneNodeThreeObject name="" parent={null} />
       <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
       <directionalLight color={0xffffff} intensity={1.0} position={[0, 1, 0]} />
       <directionalLight

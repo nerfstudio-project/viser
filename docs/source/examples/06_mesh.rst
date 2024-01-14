@@ -22,7 +22,7 @@ Visualize a mesh. To get the demo data, see ``./assets/download_dragon_mesh.sh``
         import viser
         import viser.transforms as tf
 
-        mesh = trimesh.load_mesh(Path(__file__).parent / "assets/dragon.obj")
+        mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
         assert isinstance(mesh, trimesh.Trimesh)
         mesh.apply_scale(0.05)
 

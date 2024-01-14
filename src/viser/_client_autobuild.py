@@ -2,7 +2,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import psutil
 import rich
 
 client_dir = Path(__file__).absolute().parent / "client"
@@ -11,6 +10,8 @@ build_dir = client_dir / "build"
 
 def _check_viser_yarn_running() -> bool:
     """Returns True if the viewer client has been launched via `yarn start`."""
+    import psutil
+
     for process in psutil.process_iter():
         try:
             if Path(process.cwd()).as_posix().endswith("viser/client") and any(
@@ -68,6 +69,7 @@ def ensure_client_is_built() -> None:
             ),
             cwd=client_dir,
             shell=True,
+            check=False,
         )
 
 
@@ -79,10 +81,13 @@ def _install_sandboxed_node() -> Path:
         rich.print("[bold](viser)[/bold] nodejs is set up!")
         return env_dir
 
-    subprocess.run([sys.executable, "-m", "nodeenv", "--node=20.4.0", env_dir])
+    subprocess.run(
+        [sys.executable, "-m", "nodeenv", "--node=20.4.0", env_dir], check=False
+    )
     subprocess.run(
         args=[env_dir / "bin" / "npm", "install", "yarn"],
         input="y\n".encode(),
+        check=False,
     )
     assert (env_dir / "bin" / "npx").exists()
     return env_dir

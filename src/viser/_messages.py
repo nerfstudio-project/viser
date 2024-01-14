@@ -38,13 +38,6 @@ class Message(infra.Message):
 
 
 @dataclasses.dataclass
-class SetUpDirectionMessage(Message):
-    """Message for setting the global up direction."""
-
-    direction: Tuple[float, float, float]
-
-
-@dataclasses.dataclass
 class ViewerCameraMessage(Message):
     """Message for a posed viewer camera.
     Pose is in the form T_world_camera, OpenCV convention, +Z forward."""
@@ -165,7 +158,8 @@ class PointCloudMessage(Message):
     name: str
     points: onpt.NDArray[onp.float32]
     colors: onpt.NDArray[onp.uint8]
-    point_size: float = 0.1
+    point_size: float
+    point_ball_norm: float
 
     def __post_init__(self):
         # Check shapes.

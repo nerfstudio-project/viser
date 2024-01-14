@@ -32,7 +32,9 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
             max_frames: int = 100,
             share: bool = False,
         ) -> None:
-            server = viser.ViserServer(share=share)
+            server = viser.ViserServer()
+            if share:
+                server.request_share_url()
 
             print("Loading frames!")
             loader = viser.extras.Record3dLoader(data_path)
@@ -113,6 +115,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                     points=position,
                     colors=color,
                     point_size=0.01,
+                    point_shape="rounded",
                 )
 
                 # Place the frustum.

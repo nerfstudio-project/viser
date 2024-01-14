@@ -105,6 +105,7 @@ def main(
             points=position,
             colors=color,
             point_size=0.01,
+            point_shape="rounded",
         )
 
         # Place the frustum.
