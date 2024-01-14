@@ -234,7 +234,7 @@ export function useViserMantineTheme(): MantineThemeOverride {
         defaultProps: {
           radius: "xs",
         },
-        },
+      },
       Button: {
         defaultProps: {
           radius: "xs",

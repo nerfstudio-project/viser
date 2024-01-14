@@ -313,11 +313,11 @@ function ShareButton() {
           </>
         )}
         <Text size="xs">
-          Not working? Consider{" "}
+          This feature is experimental. Problems? Consider{" "}
           <Anchor href="https://github.com/nerfstudio-project/viser/issues">
-            filing an issue
-          </Anchor>{" "}
-          on GitHub.
+            reporting on GitHub
+          </Anchor>
+          .
         </Text>
       </Modal>
     </>
