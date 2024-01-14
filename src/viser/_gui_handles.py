@@ -506,8 +506,10 @@ class GuiTabHandle:
 def _get_data_url(url: str, image_root: Optional[Path]) -> str:
     if not url.startswith("http") and not image_root:
         warnings.warn(
-            "No `image_root` provided. All relative paths will be scoped to viser's"
-            " installation path.",
+            (
+                "No `image_root` provided. All relative paths will be scoped to viser's"
+                " installation path."
+            ),
             stacklevel=2,
         )
     if url.startswith("http"):

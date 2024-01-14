@@ -22,7 +22,7 @@ from . import transforms as tf
 from ._gui_api import GuiApi
 from ._message_api import MessageApi, cast_vector
 from ._scene_handles import FrameHandle, _SceneNodeHandleState
-from ._tunnel import _ViserTunnel
+from ._tunnel import ViserTunnel
 
 
 @dataclasses.dataclass
@@ -307,6 +307,10 @@ class ClientHandle(MessageApi, GuiApi):
 SerializedServerState = Tuple[Tuple[bytes, float], ...]
 
 
+def dummy_process() -> None:
+    pass
+
+
 @dataclasses.dataclass
 class _ViserServerState:
     connection: infra.Server
@@ -336,6 +340,7 @@ class ViserServer(MessageApi, GuiApi):
     def _actual_init(
         self, host: str = "0.0.0.0", port: int = 8080, **_deprecated_kwargs
     ):
+        # Create server.
         server = infra.Server(
             host=host,
             port=port,
@@ -427,6 +432,14 @@ class ViserServer(MessageApi, GuiApi):
         # Start the server.
         server.start()
 
+        server.register_handler(
+            _messages.ShareUrlDisconnect,
+            lambda client_id, msg: self.disconnect_share_url(),
+        )
+        server.register_handler(
+            _messages.ShareUrlRequest, lambda client_id, msg: self.request_share_url()
+        )
+
         # Form status print.
         port = server._port  # Port may have changed.
         http_url = f"http://{host}:{port}"
@@ -441,7 +454,7 @@ class ViserServer(MessageApi, GuiApi):
         table.add_row("Websocket", ws_url)
         rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
 
-        self._share_tunnel: Optional[_ViserTunnel] = None
+        self._share_tunnel: Optional[ViserTunnel] = None
 
         # Create share tunnel if requested.
         # This is deprecated: we should use get_share_url() instead.
@@ -490,7 +503,6 @@ class ViserServer(MessageApi, GuiApi):
         Returns:
             Share URL as string, or None if connection fails or is closed.
         """
-
         if self._share_tunnel is not None:
             # Tunnel already exists.
             while self._share_tunnel.get_status() in ("ready", "connecting"):
@@ -499,29 +511,45 @@ class ViserServer(MessageApi, GuiApi):
         else:
             # Create a new tunnel!.
             if verbose:
-                rich.print(
-                    "[bold](viser)[/bold] Share URL requested! (expires in 24 hours)"
-                )
+                rich.print("[bold](viser)[/bold] Share URL requested!")
 
             connect_event = threading.Event()
 
-            self._share_tunnel = _ViserTunnel(self._server._port)
+            self._share_tunnel = ViserTunnel("share.viser.studio", self._server._port)
+
+            @self._share_tunnel.on_disconnect
+            def _() -> None:
+                rich.print("[bold](viser)[/bold] Disconnected from share URL")
+                self._share_tunnel = None
+                self._server.broadcast(_messages.ShareUrlUpdated(None))
 
             @self._share_tunnel.on_connect
-            def _() -> None:
+            def _(max_clients: int) -> None:
                 assert self._share_tunnel is not None
+                share_url = self._share_tunnel.get_url()
                 if verbose:
-                    share_url = self._share_tunnel.get_url()
                     if share_url is None:
                         rich.print("[bold](viser)[/bold] Could not generate share URL")
                     else:
                         rich.print(
-                            f"[bold](viser)[/bold] Generated share URL: {share_url}"
+                            f"[bold](viser)[/bold] Generated share URL (expires in 24 hours, max {max_clients} clients): {share_url}"
                         )
+                self._server.broadcast(_messages.ShareUrlUpdated(share_url))
                 connect_event.set()
 
             connect_event.wait()
-            return self._share_tunnel.get_url()
+
+            url = self._share_tunnel.get_url()
+            return url
+
+    def disconnect_share_url(self) -> None:
+        """Disconnect from the share URL server."""
+        if self._share_tunnel is not None:
+            self._share_tunnel.close()
+        else:
+            rich.print(
+                "[bold](viser)[/bold] Tried to disconnect from share URL, but already disconnected"
+            )
 
     def stop(self) -> None:
         """Stop the Viser server and associated threads and tunnels."""

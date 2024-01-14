@@ -410,7 +410,7 @@ export function Root() {
 
 /** Logo. When clicked, opens an info modal. */
 function ViserLogo() {
-  const [aboutModelOpened, { open: openAbout, close: closeAbout }] =
+  const [aboutModalOpened, { open: openAbout, close: closeAbout }] =
     useDisclosure(false);
   return (
     <>
@@ -428,7 +428,7 @@ function ViserLogo() {
         <Image src="/logo.svg" width="2.5em" height="auto" />
       </Box>
       <Modal
-        opened={aboutModelOpened}
+        opened={aboutModalOpened}
         onClose={closeAbout}
         withCloseButton={false}
         size="xl"
