@@ -10,7 +10,13 @@ import { TextureLoader } from "three";
 import { ViewerContext } from "./App";
 import { SceneNode } from "./SceneTree";
 import { syncSearchParamServer } from "./SearchParamsUtils";
-import { CameraFrustum, CoordinateFrame, GlbAsset } from "./ThreeAssets";
+import {
+  CameraFrustum,
+  CoordinateFrame,
+  GlbAsset,
+  OutlinesIfHovered,
+  PointCloud,
+} from "./ThreeAssets";
 import {
   FileDownloadPart,
   FileDownloadStart,
@@ -28,6 +34,7 @@ import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
+import { computeT_threeworld_world } from "./WorldTransformUtils";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -171,16 +178,20 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
+                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                      : message.plane == "yx"
+                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                        : message.plane == "yz"
+                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                          : message.plane == "zx"
+                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                            : message.plane == "zy"
+                              ? new THREE.Euler(
+                                  -Math.PI / 2.0,
+                                  0.0,
+                                  -Math.PI / 2.0,
+                                )
+                              : undefined
                 }
               />
             </group>
@@ -191,52 +202,25 @@ function useMessageHandler() {
 
       // Add a point cloud.
       case "PointCloudMessage": {
-        const geometry = new THREE.BufferGeometry();
-        const pointCloudMaterial = new THREE.PointsMaterial({
-          size: message.point_size,
-          vertexColors: true,
-          toneMapped: false,
-        });
-
-        // Reinterpret cast: uint8 buffer => float32 for positions.
-        geometry.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(
-            new Float32Array(
-              message.points.buffer.slice(
-                message.points.byteOffset,
-                message.points.byteOffset + message.points.byteLength,
-              ),
-            ),
-            3,
-          ),
-        );
-        geometry.computeBoundingSphere();
-
-        // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
-        geometry.setAttribute(
-          "color",
-          threeColorBufferFromUint8Buffer(message.colors),
-        );
-
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Points>(
-            message.name,
-            (ref) => (
-              <points
-                ref={ref}
-                geometry={geometry}
-                material={pointCloudMaterial}
-              />
-            ),
-            () => {
-              // TODO: we can switch to the react-three-fiber <bufferGeometry />,
-              // <pointsMaterial />, etc components to avoid manual
-              // disposal.
-              geometry.dispose();
-              pointCloudMaterial.dispose();
-            },
-          ),
+          new SceneNode<THREE.Points>(message.name, (ref) => (
+            <PointCloud
+              ref={ref}
+              pointSize={message.point_size}
+              pointBallNorm={message.point_ball_norm}
+              points={
+                new Float32Array(
+                  message.points.buffer.slice(
+                    message.points.byteOffset,
+                    message.points.byteOffset + message.points.byteLength,
+                  ),
+                )
+              }
+              colors={new Float32Array(message.colors).map(
+                (val) => val / 255.0,
+              )}
+            />
+          )),
         );
         return;
       }
@@ -279,7 +263,8 @@ function useMessageHandler() {
           wireframe: message.wireframe,
           transparent: message.opacity !== null,
           opacity: message.opacity ?? 1.0,
-          flatShading: message.flat_shading,
+          // Flat shading only makes sense for non-wireframe materials.
+          flatShading: message.flat_shading && !message.wireframe,
           side: {
             front: THREE.FrontSide,
             back: THREE.BackSide,
@@ -290,19 +275,19 @@ function useMessageHandler() {
           throw new Error(`Should never get here! ${x}`);
         };
         const material =
-          message.material == "standard"
+          message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(3),
-                ...standardArgs,
-              })
-            : message.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.material);
+              ? new THREE.MeshToonMaterial({
+                  gradientMap: generateGradientMap(3),
+                  ...standardArgs,
+                })
+              : message.material == "toon5"
+                ? new THREE.MeshToonMaterial({
+                    gradientMap: generateGradientMap(5),
+                    ...standardArgs,
+                  })
+                : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -339,7 +324,11 @@ function useMessageHandler() {
           new SceneNode<THREE.Mesh>(
             message.name,
             (ref) => {
-              return <mesh ref={ref} geometry={geometry} material={material} />;
+              return (
+                <mesh ref={ref} geometry={geometry} material={material}>
+                  <OutlinesIfHovered alwaysMounted />
+                </mesh>
+              );
             },
             () => {
               // TODO: we can switch to the react-three-fiber <bufferGeometry />,
@@ -432,31 +421,29 @@ function useMessageHandler() {
       case "SetCameraLookAtMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
 
-        const R_threeworld_world = new THREE.Quaternion();
-        R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-        );
+        const T_threeworld_world = computeT_threeworld_world(viewer);
         const target = new THREE.Vector3(
           message.look_at[0],
           message.look_at[1],
           message.look_at[2],
         );
-        target.applyQuaternion(R_threeworld_world);
+        target.applyMatrix4(T_threeworld_world);
         cameraControls.setTarget(target.x, target.y, target.z, false);
         return;
       }
       case "SetCameraUpDirectionMessage": {
         const camera = viewer.cameraRef.current!;
         const cameraControls = viewer.cameraControlRef.current!;
-        const R_threeworld_world = new THREE.Quaternion();
-        R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-        );
+        const T_threeworld_world = computeT_threeworld_world(viewer);
         const updir = new THREE.Vector3(
           message.position[0],
           message.position[1],
           message.position[2],
-        ).applyQuaternion(R_threeworld_world);
+        )
+          .normalize()
+          .applyQuaternion(
+            new THREE.Quaternion().setFromRotationMatrix(T_threeworld_world),
+          );
         camera.up.set(updir.x, updir.y, updir.z);
 
         // Back up position.
@@ -465,7 +452,7 @@ function useMessageHandler() {
 
         cameraControls.updateCameraUp();
 
-        // Restore position, which gets unexpectedly mutated in updateCameraUp().
+        // Restore position, which can get unexpectedly mutated in updateCameraUp().
         cameraControls.setPosition(
           prevPosition.x,
           prevPosition.y,
@@ -477,17 +464,16 @@ function useMessageHandler() {
       case "SetCameraPositionMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
 
-        // Set the camera position. Note that this will shift the orientation as-well.
+        // Set the camera position. Due to the look-at, note that this will
+        // shift the orientation as-well.
         const position_cmd = new THREE.Vector3(
           message.position[0],
           message.position[1],
           message.position[2],
         );
-        const R_worldthree_world = new THREE.Quaternion();
-        R_worldthree_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-        );
-        position_cmd.applyQuaternion(R_worldthree_world);
+
+        const T_threeworld_world = computeT_threeworld_world(viewer);
+        position_cmd.applyMatrix4(T_threeworld_world);
 
         cameraControls.setPosition(
           position_cmd.x,
@@ -503,6 +489,7 @@ function useMessageHandler() {
         camera.setFocalLength(
           (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0),
         );
+        viewer.sendCameraRef.current !== null && viewer.sendCameraRef.current();
         return;
       }
       case "SetOrientationMessage": {
@@ -668,6 +655,7 @@ function useMessageHandler() {
                   return (
                     <group ref={ref}>
                       <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
+                        <OutlinesIfHovered />
                         <planeGeometry
                           attach="geometry"
                           args={[message.render_width, message.render_height]}

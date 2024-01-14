@@ -113,7 +113,7 @@ class MessageWindow:
     """Client that this window will be sent to. Used for ignoring certain messages."""
 
     window_duration_sec: float = 1.0 / 60.0
-    window_max_length: int = 256
+    window_max_length: int = 1024
 
     flush: bool = False
     done: bool = False

@@ -2,14 +2,13 @@ import base64
 import tarfile
 from pathlib import Path
 
-from ._icons_enum import Icon
+from ._icons_enum import IconName
 
 ICONS_DIR = Path(__file__).absolute().parent / "_icons"
 
 
-def base64_from_icon(icon: Icon) -> str:
+def base64_from_icon(icon_name: IconName) -> str:
     """Read an icon and encode it via base64."""
-    icon_name = icon.value
     assert isinstance(icon_name, str)
     icons_tarball = ICONS_DIR / "tabler-icons.tar"
 

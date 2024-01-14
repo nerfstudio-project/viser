@@ -6,7 +6,6 @@ from multiprocessing.managers import DictProxy
 from pathlib import Path
 from typing import Callable, Literal, Optional, Union
 
-import requests
 import rich
 
 
@@ -180,6 +179,10 @@ async def _make_tunnel(
     local_port: int,
     shared_state: Union[DictProxy, dict],
 ) -> None:
+    share_domain = "share.viser.studio"
+
+    import requests
+
     try:
         response = requests.request(
             "GET",

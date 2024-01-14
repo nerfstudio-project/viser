@@ -44,6 +44,7 @@ parameters to run this script:
             share: bool = False,
         ) -> None:
             server = viser.ViserServer()
+            server.set_up_direction("+y")
             if share:
                 server.request_share_url()
 
@@ -55,17 +56,6 @@ parameters to run this script:
                 num_betas=num_betas,
                 num_expression_coeffs=num_expression_coeffs,
                 ext=ext,
-            )
-
-            # Re-orient the model.
-            server.add_frame(
-                "/reoriented",
-                wxyz=(
-                    tf.SO3.exp(onp.array((0.0, 0.0, onp.pi)))
-                    @ tf.SO3.exp(onp.array((onp.pi / 2.0, 0.0, 0.0)))
-                ).wxyz,
-                position=onp.zeros(3),
-                show_axes=False,
             )
 
             # Main loop. We'll just keep read from the joints, deform the mesh, then sending the
@@ -83,9 +73,7 @@ parameters to run this script:
                 full_pose = torch.from_numpy(
                     onp.array(
                         [j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32
-                    )[
-                        None, ...
-                    ]  # type: ignore
+                    )[None, ...]  # type: ignore
                 )
 
                 # Get deformed mesh.
@@ -112,18 +100,19 @@ parameters to run this script:
 
                 # Send mesh to visualizer.
                 server.add_mesh_simple(
-                    "/reoriented/smpl",
+                    "/smpl",
                     vertices=output.vertices.squeeze(axis=0).detach().cpu().numpy(),  # type: ignore
                     faces=model.faces,
                     wireframe=gui_elements.gui_wireframe.value,
                     color=gui_elements.gui_rgb.value,
+                    flat_shading=False,
                 )
 
                 # Update per-joint frames, which are used for transform controls.
                 for i in range(model.NUM_BODY_JOINTS + 1):
                     R = joint_transforms[parents[i], :3, :3]
                     server.add_frame(
-                        f"/reoriented/smpl/joint_{i}",
+                        f"/smpl/joint_{i}",
                         wxyz=((1.0, 0.0, 0.0, 0.0) if i == 0 else tf.SO3.from_matrix(R).wxyz),
                         position=joint_positions[i],
                         show_axes=False,
@@ -237,7 +226,7 @@ parameters to run this script:
             def add_transform_controls(enabled: bool) -> List[viser.TransformControlsHandle]:
                 for i in range(1 + num_body_joints):
                     controls = server.add_transform_controls(
-                        f"/reoriented/smpl/joint_{i}/controls",
+                        f"/smpl/joint_{i}/controls",
                         depth_test=False,
                         line_width=3.5 if i == 0 else 2.0,
                         scale=0.2 if i == 0 else 0.1,

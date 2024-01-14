@@ -6,11 +6,13 @@ import * as THREE from "three";
 import { ViewerContext } from "./App";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
-import { Select } from "@react-three/postprocessing";
 import { immerable } from "immer";
 import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
+import { rayToViserCoords } from "./WorldTransformUtils";
+import { HoverableContext } from "./ThreeAssets";
+
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>,
@@ -24,15 +26,15 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
   public clickable: boolean;
 
   constructor(
-    public name: string,
-    public makeObject: MakeObject<T>,
-    public cleanup?: () => void,
+    public readonly name: string,
+    public readonly makeObject: MakeObject<T>,
+    public readonly cleanup?: () => void,
     /** unmountWhenInvisible is used to unmount <Html /> components when they
      * should be hidden.
      *
      * https://github.com/pmndrs/drei/issues/1323
      */
-    public unmountWhenInvisible?: true,
+    public readonly unmountWhenInvisible?: true,
   ) {
     this.children = [];
     this.clickable = false;
@@ -47,23 +49,52 @@ function SceneNodeThreeChildren(props: {
   parent: THREE.Object3D;
 }) {
   const viewer = React.useContext(ViewerContext)!;
-  const children = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.children,
+
+  const [children, setChildren] = React.useState<string[]>(
+    viewer.useSceneTree.getState().nodeFromName[props.name]?.children ?? [],
   );
+
+  React.useEffect(() => {
+    let updateQueued = false;
+    return viewer.useSceneTree.subscribe((state) => {
+      // Do nothing if an update is already queued.
+      if (updateQueued) return;
+
+      // Do nothing if children haven't changed.
+      const newChildren = state.nodeFromName[props.name]?.children;
+      if (
+        newChildren === undefined ||
+        newChildren === children || // Note that this won't check for elementwise equality!
+        (newChildren.length === 0 && children.length == 0)
+      )
+        return;
+
+      // Queue a (throttled) children update.
+      updateQueued = true;
+      setTimeout(
+        () => {
+          updateQueued = false;
+          const newChildren =
+            viewer.useSceneTree.getState().nodeFromName[props.name]!.children!;
+          setChildren(newChildren);
+        },
+        // Throttle more when we have a lot of children...
+        newChildren.length <= 16 ? 10 : newChildren.length <= 128 ? 50 : 200,
+      );
+    });
+  }, []);
 
   // Create a group of children inside of the parent object.
   return createPortal(
     <group>
       {children &&
-        children.map((child_id) => {
-          return (
-            <SceneNodeThreeObject
-              key={child_id}
-              name={child_id}
-              parent={props.parent}
-            />
-          );
-        })}
+        children.map((child_id) => (
+          <SceneNodeThreeObject
+            key={child_id}
+            name={child_id}
+            parent={props.parent}
+          />
+        ))}
       <SceneNodeLabel name={props.name} />
     </group>,
     props.parent,
@@ -210,6 +241,7 @@ export function SceneNodeThreeObject(props: {
   );
   const [hovered, setHovered] = React.useState(false);
   useCursor(hovered);
+  const hoveredRef = React.useRef(false);
   if (!clickable && hovered) setHovered(false);
 
   if (objNode === undefined || unmount) {
@@ -260,29 +292,32 @@ export function SceneNodeThreeObject(props: {
               e.stopPropagation();
               const state = dragInfo.current;
               if (state.dragging) return;
+              // Convert ray to viser coordinates.
+              const ray = rayToViserCoords(viewer, e.ray);
               sendClicksThrottled({
                 type: "SceneNodeClickMessage",
                 name: props.name,
                 // Note that the threejs up is +Y, but we expose a +Z up.
-                ray_origin: [e.ray.origin.x, -e.ray.origin.z, e.ray.origin.y],
-                ray_direction: [
-                  e.ray.direction.x,
-                  -e.ray.direction.z,
-                  e.ray.direction.y,
-                ],
+                ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+                ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
               });
             }}
             onPointerOver={(e) => {
+              console.log("over");
               if (!isDisplayed()) return;
               e.stopPropagation();
               setHovered(true);
+              hoveredRef.current = true;
             }}
             onPointerOut={() => {
               if (!isDisplayed()) return;
               setHovered(false);
+              hoveredRef.current = false;
             }}
           >
-            <Select enabled={hovered}>{objNode}</Select>
+            <HoverableContext.Provider value={hoveredRef}>
+              {objNode}
+            </HoverableContext.Provider>
           </group>
           {children}
         </ErrorBoundary>

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
-import http.server
+import http
 import mimetypes
 import threading
 from asyncio.events import AbstractEventLoop

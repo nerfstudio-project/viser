@@ -35,9 +35,10 @@ interface GuiState {
   websocketConnected: boolean;
   backgroundAvailable: boolean;
   guiIdSetFromContainerId: {
-    [containerId: string]: Set<string> | undefined;
+    [containerId: string]: { [id: string]: true } | undefined;
   };
   modals: Messages.GuiModalMessage[];
+  guiOrderFromId: { [id: string]: number };
   guiConfigFromId: { [id: string]: GuiConfig };
   guiValueFromId: { [id: string]: any };
   guiAttributeFromId: {
@@ -76,6 +77,7 @@ const cleanGuiState: GuiState = {
   backgroundAvailable: false,
   guiIdSetFromContainerId: {},
   modals: [],
+  guiOrderFromId: {},
   guiConfigFromId: {},
   guiValueFromId: {},
   guiAttributeFromId: {},
@@ -109,10 +111,14 @@ export function useGuiState(initialServer: string) {
           }),
         addGui: (guiConfig) =>
           set((state) => {
+            state.guiOrderFromId[guiConfig.id] = guiConfig.order;
             state.guiConfigFromId[guiConfig.id] = guiConfig;
-            state.guiIdSetFromContainerId[guiConfig.container_id] = new Set(
-              state.guiIdSetFromContainerId[guiConfig.container_id],
-            ).add(guiConfig.id);
+            if (!(guiConfig.container_id in state.guiIdSetFromContainerId)) {
+              state.guiIdSetFromContainerId[guiConfig.container_id] = {};
+            }
+            state.guiIdSetFromContainerId[guiConfig.container_id]![
+              guiConfig.id
+            ] = true;
           }),
         addModal: (modalConfig) =>
           set((state) => {
@@ -144,9 +150,8 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             const guiConfig = state.guiConfigFromId[id];
 
-            state.guiIdSetFromContainerId[guiConfig.container_id]!.delete(
-              guiConfig.id,
-            );
+            delete state.guiIdSetFromContainerId[guiConfig.container_id]![id];
+            delete state.guiOrderFromId[id];
             delete state.guiConfigFromId[id];
             delete state.guiValueFromId[id];
             delete state.guiAttributeFromId[id];
@@ -155,6 +160,7 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.shareUrl = null;
             state.guiIdSetFromContainerId = {};
+            state.guiOrderFromId = {};
             state.guiConfigFromId = {};
             state.guiValueFromId = {};
             state.guiAttributeFromId = {};

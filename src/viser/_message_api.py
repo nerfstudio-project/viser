@@ -16,6 +16,7 @@ import mimetypes
 import queue
 import threading
 import time
+import warnings
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -32,13 +33,10 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
-import trimesh
-import trimesh.creation
-import trimesh.exchange
-import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
+from . import transforms as tf
 from ._scene_handles import (
     CameraFrustumHandle,
     FrameHandle,
@@ -56,6 +54,8 @@ from ._scene_handles import (
 )
 
 if TYPE_CHECKING:
+    import trimesh
+
     from ._viser import ClientHandle
     from .infra import ClientId
 
@@ -248,6 +248,84 @@ class MessageApi(abc.ABC):
                 colors=colors_cast,
             ),
         )
+
+    def set_up_direction(
+        self,
+        direction: Literal["+x", "+y", "+z", "-x", "-y", "-z"]
+        | Tuple[float, float, float]
+        | onp.ndarray,
+    ) -> None:
+        """Set the global up direction of the scene. By default we follow +Z-up
+        (similar to Blender, 3DS Max, ROS, etc), the most common alternative is
+        +Y (OpenGL, Maya, etc).
+
+        Args:
+            direction: New up direction. Can either be a string (one of +x, +y,
+                +z, -x, -y, -z) or a length-3 direction vector.
+        """
+        if isinstance(direction, str):
+            direction = {
+                "+x": (1, 0, 0),
+                "+y": (0, 1, 0),
+                "+z": (0, 0, 1),
+                "-x": (-1, 0, 0),
+                "-y": (0, -1, 0),
+                "-z": (0, 0, -1),
+            }[direction]
+        assert not isinstance(direction, str)
+
+        default_three_up = onp.array([0.0, 1.0, 0.0])
+        direction = onp.asarray(direction)
+
+        def rotate_between(before: onp.ndarray, after: onp.ndarray) -> tf.SO3:
+            assert before.shape == after.shape == (3,)
+            before = before / onp.linalg.norm(before)
+            after = after / onp.linalg.norm(after)
+
+            angle = onp.arccos(onp.clip(onp.dot(before, after), -1, 1))
+            axis = onp.cross(before, after)
+            if onp.allclose(axis, onp.zeros(3), rtol=1e-3, atol=1e-5):
+                unit_vector = onp.arange(3) == onp.argmin(onp.abs(before))
+                axis = onp.cross(before, unit_vector)
+            axis = axis / onp.linalg.norm(axis)
+            return tf.SO3.exp(angle * axis)
+
+        R_threeworld_world = rotate_between(direction, default_three_up)
+
+        # Rotate the world frame such that:
+        #     If we set +Y to up, +X and +Z should face the camera.
+        #     If we set +Z to up, +X and +Y should face the camera.
+        # In App.tsx, the camera is initialized at [-3, 3, -3] in the threejs
+        # coordinate frame.
+        desired_fwd = onp.array([-1.0, 0.0, -1.0]) / onp.sqrt(2.0)
+        current_fwd = R_threeworld_world @ (onp.ones(3) / onp.sqrt(3.0))
+        current_fwd = current_fwd * onp.array([1.0, 0.0, 1.0])
+        current_fwd = current_fwd / onp.linalg.norm(current_fwd)
+        R_threeworld_world = (
+            tf.SO3.from_y_radians(  # Rotate around the null space / up direction.
+                onp.arctan2(
+                    onp.cross(current_fwd, desired_fwd)[1],
+                    onp.dot(current_fwd, desired_fwd),
+                ),
+            )
+            @ R_threeworld_world
+        )
+
+        if not onp.any(onp.isnan(R_threeworld_world.wxyz)):
+            # Set the orientation of the root node.
+            self._queue(
+                _messages.SetOrientationMessage(
+                    "", cast_vector(R_threeworld_world.wxyz, 4)
+                )
+            )
+
+    def set_global_scene_node_visibility(self, visible: bool) -> None:
+        """Set global scene node visibility. If visible is set to False, all scene nodes will be hidden.
+
+        Args:
+            visible: Whether or not all scene nodes should be visible.
+        """
+        self._queue(_messages.SetSceneNodeVisibilityMessage("", visible))
 
     def add_glb(
         self,
@@ -584,6 +662,9 @@ class MessageApi(abc.ABC):
         points: onp.ndarray,
         colors: onp.ndarray | Tuple[float, float, float],
         point_size: float = 0.1,
+        point_shape: Literal[
+            "square", "diamond", "circle", "rounded", "sparkle"
+        ] = "square",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -595,6 +676,7 @@ class MessageApi(abc.ABC):
             points: Location of points. Should have shape (N, 3).
             colors: Colors of points. Should have shape (N, 3) or (3,).
             point_size: Size of each point.
+            point_shape: Shape to draw each point.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -606,10 +688,10 @@ class MessageApi(abc.ABC):
         assert (
             len(points.shape) == 2 and points.shape[-1] == 3
         ), "Shape of points should be (N, 3)."
-        assert colors_cast.shape in (
+        assert colors_cast.shape in {
             points.shape,
             (3,),
-        ), "Shape of colors should be (N, 3) or (3,)."
+        }, "Shape of colors should be (N, 3) or (3,)."
 
         if colors_cast.shape == (3,):
             colors_cast = onp.tile(colors_cast[None, :], reps=(points.shape[0], 1))
@@ -620,6 +702,13 @@ class MessageApi(abc.ABC):
                 points=points.astype(onp.float32),
                 colors=colors_cast,
                 point_size=point_size,
+                point_ball_norm={
+                    "square": float("inf"),
+                    "diamond": 1.0,
+                    "circle": 2.0,
+                    "rounded": 3.0,
+                    "sparkle": 0.6,
+                }[point_shape],
             )
         )
         return PointCloudHandle._make(self, name, wxyz, position, visible)
@@ -637,7 +726,7 @@ class MessageApi(abc.ABC):
         wireframe: bool = False,
         opacity: Optional[float] = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
-        flat_shading: bool = True,
+        flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
@@ -655,8 +744,9 @@ class MessageApi(abc.ABC):
             wireframe: Boolean indicating if the mesh should be rendered as a wireframe.
             opacity: Opacity of the mesh. None means opaque.
             material: Material type of the mesh ('standard', 'toon3', 'toon5').
-            flat_shading: Whether to do flat shading. Set to False to apply smooth
-                shading.
+                This argument is ignored when wireframe=True.
+            flat_shading: Whether to do flat shading. This argument is ignored
+                when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
@@ -665,6 +755,16 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        if wireframe and material != "standard":
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {material=}. Material argument will be ignored.",
+                stacklevel=2,
+            )
+        if wireframe and flat_shading:
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {flat_shading=}. Flat shading argument will be ignored.",
+                stacklevel=2,
+            )
 
         self._queue(
             _messages.MeshMessage(
@@ -743,6 +843,8 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        import trimesh.creation
+
         mesh = trimesh.creation.box(dimensions)
 
         return self.add_mesh_simple(
@@ -781,6 +883,8 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        import trimesh.creation
+
         mesh = trimesh.creation.icosphere(subdivisions=subdivisions, radius=radius)
 
         # We use add_mesh_simple() because it lets us do smooth shading;
@@ -1113,27 +1217,17 @@ class MessageApi(abc.ABC):
             if isinstance(self, ViserServer):
                 # Turn off server-level scene click events.
                 self._queue(_messages.SceneClickEnableMessage(enable=False))
+                self.flush()
 
                 # Catch an unlikely edge case: we need to re-enable click events for
                 # clients that still have callbacks.
                 clients = self.get_clients()
                 if len(clients) > 0:
-                    # TODO: putting this in a thread with an initial sleep is a hack for
-                    # giving us a soft guarantee on message ordering; the enable messages
-                    # need to arrive after the disable one above.
-                    #
-                    # Ideally we should implement a flush() method of some kind that
-                    # empties the message buffer.
-
-                    def reenable() -> None:
-                        time.sleep(1.0 / 60.0)
-                        for client in clients.values():
-                            if len(client._scene_pointer_cb) > 0:
-                                self._queue(
-                                    _messages.SceneClickEnableMessage(enable=True)
-                                )
-
-                    threading.Thread(target=reenable).start()
+                    for client in clients.values():
+                        if len(client._scene_pointer_cb) > 0:
+                            client._queue(
+                                _messages.SceneClickEnableMessage(enable=True)
+                            )
 
             else:
                 assert isinstance(self, ClientHandle)

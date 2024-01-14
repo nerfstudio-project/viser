@@ -43,7 +43,7 @@ from ._gui_handles import (
     _make_unique_id,
 )
 from ._icons import base64_from_icon
-from ._icons_enum import Icon
+from ._icons_enum import IconName
 from ._message_api import MessageApi, cast_vector
 
 if TYPE_CHECKING:
@@ -130,7 +130,17 @@ class GuiApi(abc.ABC):
             return
 
         handle_state = handle._impl
-        value = handle_state.typ(message.value)
+
+        # Do some type casting. This is necessary when we expect floats but the
+        # Javascript side gives us integers.
+        if handle_state.typ is tuple:
+            assert len(message.value) == len(handle_state.value)
+            value = tuple(
+                type(handle_state.value[i])(message.value[i])
+                for i in range(len(message.value))
+            )
+        else:
+            value = handle_state.typ(message.value)
 
         # Only call update when value has actually changed.
         if not handle_state.is_button and value == handle_state.value:
@@ -323,7 +333,7 @@ class GuiApi(abc.ABC):
                 "teal",
             ]
         ] = None,
-        icon: Optional[Icon] = None,
+        icon: Optional[IconName] = None,
         order: Optional[float] = None,
     ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time

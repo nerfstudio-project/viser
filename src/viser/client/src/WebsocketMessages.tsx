@@ -128,6 +128,7 @@ export interface PointCloudMessage {
   points: Uint8Array;
   colors: Uint8Array;
   point_size: number;
+  point_ball_norm: number;
 }
 /** Mesh message.
  *

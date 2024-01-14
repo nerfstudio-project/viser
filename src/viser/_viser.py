@@ -83,9 +83,16 @@ class CameraHandle:
             projected_up_direction = up_direction
 
         new_look_at = look_direction * look_distance + self.position
+
+        # Update lookat and up direction.
         self.look_at = new_look_at
         self.up_direction = projected_up_direction
-        self._state.wxyz = onp.asarray(wxyz)
+
+        # The internal camera orientation should be set in the look_at /
+        # up_direction setters. We can uncomment this assert to check this.
+        # assert onp.allclose(self._state.wxyz, wxyz) or onp.allclose(
+        #     self._state.wxyz, -wxyz
+        # )
 
     @property
     def position(self) -> npt.NDArray[onp.float64]:
@@ -107,6 +114,16 @@ class CameraHandle:
         self._state.client._queue(
             _messages.SetCameraPositionMessage(cast_vector(position, 3))
         )
+
+    def _update_wxyz(self) -> None:
+        """Compute and update the camera orientation from the internal look_at, position, and up vectors."""
+        z = self._state.look_at - self._state.position
+        z /= onp.linalg.norm(z)
+        y = tf.SO3.exp(z * onp.pi) @ self._state.up_direction
+        y = y - onp.dot(z, y) * z
+        y /= onp.linalg.norm(y)
+        x = onp.cross(y, z)
+        self._state.wxyz = tf.SO3.from_matrix(onp.stack([x, y, z], axis=1)).wxyz
 
     @property
     def fov(self) -> float:
@@ -142,6 +159,7 @@ class CameraHandle:
     def look_at(self, look_at: Tuple[float, float, float] | onp.ndarray) -> None:
         self._state.look_at = onp.asarray(look_at)
         self._state.update_timestamp = time.time()
+        self._update_wxyz()
         self._state.client._queue(
             _messages.SetCameraLookAtMessage(cast_vector(look_at, 3))
         )
@@ -157,6 +175,7 @@ class CameraHandle:
         self, up_direction: Tuple[float, float, float] | onp.ndarray
     ) -> None:
         self._state.up_direction = onp.asarray(up_direction)
+        self._update_wxyz()
         self._state.update_timestamp = time.time()
         self._state.client._queue(
             _messages.SetCameraUpDirectionMessage(cast_vector(up_direction, 3))
@@ -444,6 +463,8 @@ class ViserServer(MessageApi, GuiApi):
             self.request_share_url()
 
         self.reset_scene()
+
+        # Create a handle for the world axes, which are hardcoded to exist in the client.
         self.world_axes = FrameHandle(
             _SceneNodeHandleState(
                 "/WorldAxes",
