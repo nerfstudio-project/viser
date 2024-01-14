@@ -1,3 +1,4 @@
+# mypy: disable-error-code="type-var"
 import asyncio
 import multiprocessing as mp
 import threading
@@ -42,6 +43,7 @@ class ViserTunnel:
         self._thread: Optional[threading.Thread] = None
         self._event_loop: Optional[asyncio.AbstractEventLoop] = None
 
+        self._shared_state: Union[DictProxy, dict]
         if self._multiprocess_ok:
             manager = mp.Manager()
             self._connect_event = manager.Event()
