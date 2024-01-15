@@ -42,7 +42,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
     setTime(Date.now());
   }
   React.useEffect(() => {
-    const interval = setInterval(rerenderTable, 500);
+    const interval = setInterval(rerenderTable, 200);
     return () => {
       clearInterval(interval);
     };
@@ -138,6 +138,16 @@ export default function SceneTreeTable(props: { compact: boolean }) {
     [],
   );
 
+  // onPointerOut won't trigger if we close the scene tree with <Esc>. This can
+  // leave scene node labels visible; to fix this, we'll track the currently
+  // shown label and hide it when the table is unmounted.
+  const unmountCallback = React.useRef<() => void>();
+  React.useEffect(() => {
+    return () => {
+      unmountCallback.current !== undefined && unmountCallback.current();
+    };
+  }, []);
+
   const [sceneTreeOpened, { open: openSceneTree, close: closeSceneTree }] =
     useDisclosure(false);
   return (
@@ -190,10 +200,16 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         }}
         mantineTableBodyRowProps={({ row }) => ({
           onPointerOver: () => {
-            setLabelVisibility(row.getValue("name"), true);
+            const name = row.getValue("name") as string;
+            setLabelVisibility(name, true);
+            unmountCallback.current = () => {
+              console.log("close callback");
+              setLabelVisibility(name, false);
+            };
           },
           onPointerOut: () => {
             setLabelVisibility(row.getValue("name"), false);
+            unmountCallback.current = undefined;
           },
           ...(row.subRows === undefined || row.subRows.length === 0
             ? {}
