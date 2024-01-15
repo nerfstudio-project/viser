@@ -132,7 +132,9 @@ TVector = TypeVar("TVector", bound=tuple)
 
 def cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
     if not isinstance(vector, tuple):
-        assert cast(onp.ndarray, vector).shape == (length,)
+        assert cast(onp.ndarray, vector).shape == (
+            length,
+        ), f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
     return cast(TVector, tuple(map(float, vector)))
 
 
