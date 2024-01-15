@@ -13,7 +13,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext } from "./ThreeAssets";
 
-
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>,
 ) => React.ReactNode;
@@ -173,8 +172,12 @@ export function SceneNodeThreeObject(props: {
   function isDisplayed() {
     // We avoid checking obj.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
-    if (viewer.nodeAttributesFromName.current[props.name]?.visibility === false)
-      return false;
+    const attrs = viewer.nodeAttributesFromName.current[props.name];
+    const visibility =
+      (attrs?.overrideVisibility === undefined
+        ? attrs?.visibility
+        : attrs.overrideVisibility) ?? true;
+    if (visibility === false) return false;
     if (props.parent === null) return true;
 
     // Check visibility of parents + ancestors.
@@ -202,23 +205,22 @@ export function SceneNodeThreeObject(props: {
 
     if (obj === null) return;
 
-    const nodeAttributes = viewer.nodeAttributesFromName.current[props.name];
-    if (nodeAttributes === undefined) return;
+    const attrs = viewer.nodeAttributesFromName.current[props.name];
+    if (attrs === undefined) return;
 
-    const visibility = nodeAttributes.visibility;
-    if (visibility !== undefined) {
-      obj.visible = visibility;
-    } else {
-      obj.visible = true;
-    }
+    const visibility =
+      (attrs?.overrideVisibility === undefined
+        ? attrs?.visibility
+        : attrs.overrideVisibility) ?? true;
+    obj.visible = visibility;
 
     let changed = false;
-    const wxyz = nodeAttributes.wxyz;
+    const wxyz = attrs.wxyz;
     if (wxyz !== undefined) {
       changed = true;
       obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
     }
-    const position = nodeAttributes.position;
+    const position = attrs.position;
     if (position !== undefined) {
       changed = true;
       obj.position.set(position[0], position[1], position[2]);
@@ -299,7 +301,11 @@ export function SceneNodeThreeObject(props: {
                 name: props.name,
                 // Note that the threejs up is +Y, but we expose a +Z up.
                 ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
-                ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
+                ray_direction: [
+                  ray.direction.x,
+                  ray.direction.y,
+                  ray.direction.z,
+                ],
               });
             }}
             onPointerOver={(e) => {

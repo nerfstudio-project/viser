@@ -25,16 +25,12 @@ export function rayToViserCoords(
 ): THREE.Ray {
   const T_world_threeworld = computeT_threeworld_world(viewer).invert();
 
-  const origin = ray.origin
-    .clone()
-    .applyMatrix4(T_world_threeworld);
+  const origin = ray.origin.clone().applyMatrix4(T_world_threeworld);
 
   // Compute just the rotation term without new memory allocation; this
   // will mutate T_world_threeworld!
   const R_world_threeworld = T_world_threeworld.setPosition(0.0, 0.0, 0);
-  const direction = ray.direction
-    .clone()
-    .applyMatrix4(R_world_threeworld);
+  const direction = ray.direction.clone().applyMatrix4(R_world_threeworld);
 
   return new THREE.Ray(origin, direction);
 }

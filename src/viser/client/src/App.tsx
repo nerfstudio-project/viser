@@ -66,7 +66,8 @@ export type ViewerContextContents = {
       | {
           wxyz?: [number, number, number, number];
           position?: [number, number, number];
-          visibility?: boolean;
+          visibility?: boolean; // Visibility state from the server.
+          overrideVisibility?: boolean; // Override from the GUI.
         };
   }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
