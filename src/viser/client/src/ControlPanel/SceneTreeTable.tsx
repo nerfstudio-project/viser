@@ -1,10 +1,11 @@
 import { ViewerContext } from "../App";
-import { ActionIcon, Modal } from "@mantine/core";
+import { ActionIcon, Modal, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
   IconCaretDown,
   IconCaretRight,
   IconEye,
+  IconEyeCancel,
   IconEyeOff,
   IconMaximize,
 } from "@tabler/icons-react";
@@ -26,10 +27,10 @@ export default function SceneTreeTable(props: { compact: boolean }) {
   const setLabelVisibility = viewer.useSceneTree(
     (state) => state.setLabelVisibility,
   );
-  function setVisible(name: string, visible: boolean) {
+  function setOverrideVisibility(name: string, visible: boolean) {
     const attr = viewer.nodeAttributesFromName.current;
     if (attr[name] === undefined) attr[name] = {};
-    attr[name]!.visibility = visible;
+    attr[name]!.overrideVisibility = visible;
     rerenderTable();
   }
 
@@ -47,14 +48,6 @@ export default function SceneTreeTable(props: { compact: boolean }) {
     };
   }, []);
 
-  // Debouncing to suppress onMouseEnter and onMouseDown events from
-  // re-renders.
-  const debouncedReady = React.useRef(false);
-  debouncedReady.current = false;
-  setTimeout(() => {
-    debouncedReady.current = true;
-  }, 50);
-
   function getSceneTreeSubRows(
     parentName: string,
     parentCount: number,
@@ -64,8 +57,11 @@ export default function SceneTreeTable(props: { compact: boolean }) {
     if (node === undefined) return [];
 
     return node.children.map((childName) => {
+      const attrs = viewer.nodeAttributesFromName.current[childName];
       const isVisible =
-        viewer.nodeAttributesFromName.current[childName]?.visibility ?? true;
+        (attrs?.overrideVisibility === undefined
+          ? attrs?.visibility
+          : attrs.overrideVisibility) ?? true;
       const isVisibleEffective = isVisible && isParentVisible;
 
       const VisibleIcon = isVisible ? IconEye : IconEyeOff;
@@ -73,30 +69,13 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         name: childName,
         visible: (
           <ActionIcon
-            onMouseDown={() => {
-              const isVisible =
-                viewer.nodeAttributesFromName.current[childName]?.visibility ??
-                true;
-              if (debouncedReady.current) {
-                setVisible(childName, !isVisible);
-              }
-            }}
             onClick={(evt) => {
               // Don't propagate click events to the row containing the icon.
               //
               // If we don't stop propagation, clicking the visibility icon
               // will also expand/collapse nodes in the scene tree.
               evt.stopPropagation();
-            }}
-            onMouseEnter={(event) => {
-              if (event.buttons !== 0) {
-                const isVisible =
-                  viewer.nodeAttributesFromName.current[childName]
-                    ?.visibility ?? true;
-                if (debouncedReady.current) {
-                  setVisible(childName, !isVisible);
-                }
-              }
+              setOverrideVisibility(childName, !isVisible);
             }}
             sx={{ opacity: isVisibleEffective ? "1.0" : "0.5" }}
           >
@@ -252,7 +231,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                       variant="filled"
                       onClick={() => {
                         table.getSelectedRowModel().flatRows.map((row) => {
-                          setVisible(row.getValue("name"), true);
+                          setOverrideVisibility(row.getValue("name"), true);
                         });
                       }}
                     >
@@ -264,12 +243,30 @@ export default function SceneTreeTable(props: { compact: boolean }) {
                       variant="filled"
                       onClick={() => {
                         table.getSelectedRowModel().flatRows.map((row) => {
-                          setVisible(row.getValue("name"), false);
+                          setOverrideVisibility(row.getValue("name"), false);
                         });
                       }}
                     >
                       <IconEyeOff />
                     </ActionIcon>
+                    <Tooltip
+                      zIndex={100}
+                      label="Clear visibility overrides"
+                      withinPortal
+                    >
+                      <ActionIcon
+                        variant="filled"
+                        onClick={() => {
+                          Object.values(
+                            viewer.nodeAttributesFromName.current,
+                          ).forEach((attrs) => {
+                            delete attrs!.overrideVisibility;
+                          });
+                        }}
+                      >
+                        <IconEyeCancel />
+                      </ActionIcon>
+                    </Tooltip>
                   </div>
                 );
               }
