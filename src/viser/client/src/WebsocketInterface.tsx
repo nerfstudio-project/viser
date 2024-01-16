@@ -119,7 +119,7 @@ function useMessageHandler() {
       }
       // Set the GUI panel label.
       case "SetGuiPanelLabelMessage": {
-        viewer.useGui.setState({ label: message.label ?? undefined });
+        viewer.useGui.setState({ label: message.label ?? "" });
         return;
       }
       // Configure the theme.
