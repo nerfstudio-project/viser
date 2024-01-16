@@ -13,7 +13,7 @@ from viser.theme import TitlebarButton, TitlebarConfig, TitlebarImage
 
 
 def main():
-    server = viser.ViserServer()
+    server = viser.ViserServer(label="Viser Theming")
 
     buttons = (
         TitlebarButton(

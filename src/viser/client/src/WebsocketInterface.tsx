@@ -117,12 +117,16 @@ function useMessageHandler() {
         viewer.getRenderRequestState.current = "triggered";
         return;
       }
+      // Set the GUI panel label.
+      case "SetGuiPanelLabelMessage": {
+        viewer.useGui.setState({ label: message.label ?? undefined });
+        return;
+      }
       // Configure the theme.
       case "ThemeConfigurationMessage": {
         setTheme(message);
         return;
       }
-
       // Enable/disable whether scene pointer events are sent.
       case "SceneClickEnableMessage": {
         viewer.sceneClickEnable.current = message.enable;

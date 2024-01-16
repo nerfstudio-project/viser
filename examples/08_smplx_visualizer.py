@@ -21,10 +21,9 @@ import smplx.joint_names
 import smplx.lbs
 import torch
 import tyro
-from typing_extensions import Literal
-
 import viser
 import viser.transforms as tf
+from typing_extensions import Literal
 
 
 def main(
@@ -66,9 +65,7 @@ def main(
         full_pose = torch.from_numpy(
             onp.array(
                 [j.value for j in gui_elements.gui_joints[1:]], dtype=onp.float32
-            )[
-                None, ...
-            ]  # type: ignore
+            )[None, ...]  # type: ignore
         )
 
         # Get deformed mesh.

@@ -618,3 +618,10 @@ class ShareUrlUpdated(Message):
 @dataclasses.dataclass
 class ShareUrlDisconnect(Message):
     """Message from client->server to disconnect from the share URL server."""
+
+
+@dataclasses.dataclass
+class SetGuiPanelLabelMessage(Message):
+    """Message from server->client to set the label of the GUI panel."""
+
+    label: Optional[str]

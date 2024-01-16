@@ -721,6 +721,14 @@ export interface ShareUrlUpdated {
 export interface ShareUrlDisconnect {
   type: "ShareUrlDisconnect";
 }
+/** Message from server->client to set the label of the GUI panel.
+ *
+ * (automatically generated)
+ */
+export interface SetGuiPanelLabelMessage {
+  type: "SetGuiPanelLabelMessage";
+  label: string | null;
+}
 
 export type Message =
   | ViewerCameraMessage
@@ -780,4 +788,5 @@ export type Message =
   | FileDownloadPart
   | ShareUrlRequest
   | ShareUrlUpdated
-  | ShareUrlDisconnect;
+  | ShareUrlDisconnect
+  | SetGuiPanelLabelMessage;

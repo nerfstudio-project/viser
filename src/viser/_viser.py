@@ -277,8 +277,12 @@ class ClientHandle(MessageApi, GuiApi):
         """Returns a context where: all outgoing messages are grouped and applied by
         clients atomically.
 
-        This can be helpful for things like animations, or when we want position and
-        orientation updates to happen synchronously.
+        This should be treated as a soft constraint that's helpful for things
+        like animations, or when we want position and orientation updates to
+        happen synchronously.
+
+        Returns:
+            Context manager.
         """
         # If called multiple times in the same thread, we ignore inner calls.
         thread_id = threading.get_ident()
@@ -327,6 +331,7 @@ class ViserServer(MessageApi, GuiApi):
     Args:
         host: Host to bind server to.
         port: Port to bind server to.
+        label: Label shown at the top of the GUI panel.
     """
 
     world_axes: FrameHandle
@@ -334,11 +339,17 @@ class ViserServer(MessageApi, GuiApi):
     and then hidden by default."""
 
     # Hide deprecated arguments from docstring and type checkers.
-    def __init__(self, host: str = "0.0.0.0", port: int = 8080):
+    def __init__(
+        self, host: str = "0.0.0.0", port: int = 8080, label: Optional[str] = None
+    ):
         ...
 
     def _actual_init(
-        self, host: str = "0.0.0.0", port: int = 8080, **_deprecated_kwargs
+        self,
+        host: str = "0.0.0.0",
+        port: int = 8080,
+        label: Optional[str] = None,
+        **_deprecated_kwargs,
     ):
         # Create server.
         server = infra.Server(
@@ -463,6 +474,7 @@ class ViserServer(MessageApi, GuiApi):
             self.request_share_url()
 
         self.reset_scene()
+        self.set_gui_panel_label(label)
 
         # Create a handle for the world axes, which are hardcoded to exist in the client.
         self.world_axes = FrameHandle(
@@ -600,8 +612,9 @@ class ViserServer(MessageApi, GuiApi):
         """Returns a context where: all outgoing messages are grouped and applied by
         clients atomically.
 
-        This can be helpful for things like animations, or when we want position and
-        orientation updates to happen synchronously.
+        This should be treated as a soft constraint that's helpful for things
+        like animations, or when we want position and orientation updates to
+        happen synchronously.
 
         Returns:
             Context manager.

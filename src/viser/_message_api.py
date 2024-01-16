@@ -177,6 +177,14 @@ class MessageApi(abc.ABC):
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
 
+    def set_gui_panel_label(self, label: Optional[str]) -> None:
+        """Set the main label that appears in the GUI panel.
+
+        Args:
+            label: The new label.
+        """
+        self._queue(_messages.SetGuiPanelLabelMessage(label))
+
     def configure_theme(
         self,
         *,
