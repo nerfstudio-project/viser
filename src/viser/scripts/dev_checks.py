@@ -10,7 +10,7 @@ from rich.style import Style
 CONSOLE = console.Console()
 
 TYPE_TESTS = ["pyright .", "mypy ."]
-FORMAT_TESTS = ["black .", "ruff --fix ."]
+FORMAT_TESTS = ["ruff check --fix .", "ruff format ."]
 
 
 def run_command(command: str, continue_on_fail: bool = False) -> bool:

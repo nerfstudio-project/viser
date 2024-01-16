@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.19"
+version = "0.1.20"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -83,6 +83,7 @@ select = [
     "PLE",  # Pylint errors.
     "PLR",  # Pylint refactor recommendations.
     "PLW",  # Pylint warnings.
+    "I", # Import sorting.
 ]
 ignore = [
     "E741", # Ambiguous variable name. (l, O, or I)
