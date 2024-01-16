@@ -40,8 +40,7 @@ dependencies = [
 dev = [
     "pyright>=1.1.308",
     "mypy>=1.4.1",
-    "ruff==0.1.9",
-    "black==23.11.0",
+    "ruff==0.1.13",
     "pre-commit==3.3.2",
 ]
 examples = [
@@ -59,9 +58,6 @@ viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/build/**/*"]
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
 
-[tool.isort]
-profile = "black"
-
 [tool.mypy]
 python_version = "3.8"
 ignore_missing_imports = true
@@ -71,9 +67,6 @@ disable_error_code="var-annotated"  # Common source of mypy + numpy false positi
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
-
-[tool.black]
-exclude = "viser/client/.nodeenv"
 
 [tool.ruff]
 select = [
