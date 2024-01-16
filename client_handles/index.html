@@ -283,11 +283,15 @@ individual clients and read/write camera information.</p>
 <span class="sig-name descname"><span class="pre">atomic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ClientHandle.atomic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClientHandle.atomic" title="Link to this definition">#</a></dt>
 <dd><p>Returns a context where: all outgoing messages are grouped and applied by
 clients atomically.</p>
-<p>This can be helpful for things like animations, or when we want position and
-orientation updates to happen synchronously.</p>
+<p>This should be treated as a soft constraint that’s helpful for things
+like animations, or when we want position and orientation updates to
+happen synchronously.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>Generator</em>[None, None, None]</p>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Context manager.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Generator</em>[None, None, None]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1245,6 +1249,20 @@ define a kinematic tree.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="viser.ClientHandle.set_gui_panel_label">
+<span class="sig-name descname"><span class="pre">set_gui_panel_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.ClientHandle.set_gui_panel_label" title="Link to this definition">#</a></dt>
+<dd><p>Set the main label that appears in the GUI panel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>label</strong> (<em>str</em><em> | </em><em>None</em>) – The new label.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="viser.ClientHandle.set_up_direction">
 <span class="sig-name descname"><span class="pre">set_up_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘+x’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘+y’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘+z’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘-x’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘-y’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘-z’</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.ClientHandle.set_up_direction" title="Link to this definition">#</a></dt>
 <dd><p>Set the global up direction of the scene. By default we follow +Z-up
@@ -1465,6 +1483,7 @@ too quickly for higher-resolution images.</p></li>
 <li><a class="reference internal" href="#viser.ClientHandle.send_file_download"><code class="docutils literal notranslate"><span class="pre">ClientHandle.send_file_download()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.set_background_image"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_background_image()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.set_global_scene_node_visibility"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_global_scene_node_visibility()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.set_gui_panel_label"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_gui_panel_label()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.set_up_direction"><code class="docutils literal notranslate"><span class="pre">ClientHandle.set_up_direction()</span></code></a></li>
 </ul>
 </li>

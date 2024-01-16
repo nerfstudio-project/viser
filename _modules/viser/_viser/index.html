@@ -547,8 +547,12 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
 <span class="sd">        clients atomically.</span>
 
-<span class="sd">        This can be helpful for things like animations, or when we want position and</span>
-<span class="sd">        orientation updates to happen synchronously.</span>
+<span class="sd">        This should be treated as a soft constraint that&#39;s helpful for things</span>
+<span class="sd">        like animations, or when we want position and orientation updates to</span>
+<span class="sd">        happen synchronously.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Context manager.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># If called multiple times in the same thread, we ignore inner calls.</span>
         <span class="n">thread_id</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
@@ -604,6 +608,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">        host: Host to bind server to.</span>
 <span class="sd">        port: Port to bind server to.</span>
+<span class="sd">        label: Label shown at the top of the GUI panel.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">world_axes</span><span class="p">:</span> <span class="n">FrameHandle</span>
@@ -611,11 +616,17 @@
 <span class="sd">    and then hidden by default.&quot;&quot;&quot;</span>
 
     <span class="c1"># Hide deprecated arguments from docstring and type checkers.</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
         <span class="o">...</span>
 
     <span class="k">def</span> <span class="nf">_actual_init</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">,</span> <span class="o">**</span><span class="n">_deprecated_kwargs</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">,</span>
+        <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">_deprecated_kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># Create server.</span>
         <span class="n">server</span> <span class="o">=</span> <span class="n">infra</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span>
@@ -740,6 +751,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">request_share_url</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_gui_panel_label</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
 
         <span class="c1"># Create a handle for the world axes, which are hardcoded to exist in the client.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span> <span class="o">=</span> <span class="n">FrameHandle</span><span class="p">(</span>
@@ -903,8 +915,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
 <span class="sd">        clients atomically.</span>
 
-<span class="sd">        This can be helpful for things like animations, or when we want position and</span>
-<span class="sd">        orientation updates to happen synchronously.</span>
+<span class="sd">        This should be treated as a soft constraint that&#39;s helpful for things</span>
+<span class="sd">        like animations, or when we want position and orientation updates to</span>
+<span class="sd">        happen synchronously.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Context manager.</span>
