@@ -378,6 +378,7 @@ export const CameraFrustum = React.forwardRef<
             transparent={true}
             side={THREE.DoubleSide}
             map={props.image}
+            toneMapped={false}
           />
         </mesh>
       )}
