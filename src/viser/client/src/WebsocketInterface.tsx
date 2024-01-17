@@ -519,8 +519,6 @@ function useMessageHandler() {
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {
-            texture.encoding = THREE.sRGBEncoding;
-
             const oldBackgroundTexture =
               viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
             viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
