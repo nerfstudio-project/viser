@@ -56,12 +56,10 @@ function useMessageHandler() {
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
   const setTheme = viewer.useGui((state) => state.setTheme);
   const addGui = viewer.useGui((state) => state.addGui);
+  const updateGui = viewer.useGui((state) => state.updateGui);
   const addModal = viewer.useGui((state) => state.addModal);
   const removeModal = viewer.useGui((state) => state.removeModal);
   const removeGui = viewer.useGui((state) => state.removeGui);
-  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
-  const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
-  const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
@@ -89,12 +87,19 @@ function useMessageHandler() {
 
   // Return message handler.
   return (message: Message) => {
-    if (isGuiConfig(message)) {
-      addGui(message);
-      return;
-    }
-
     switch (message.type) {
+      case "GuiAddComponentMessage": {
+        const { id, order, props, container_id } = message;
+        addGui({ id, order, container_id, ...props });
+        return;
+      }
+
+      case "GuiUpdateComponentMessage": {
+        const { id, props } = message;
+        updateGui({ id, ...props });
+        return;
+      }
+
       // Request a render.
       case "GetRenderRequestMessage": {
         viewer.getRenderRequest.current = message;
@@ -711,17 +716,20 @@ function useMessageHandler() {
       }
       // Set the value of a GUI input.
       case "GuiSetValueMessage": {
-        setGuiValue(message.id, message.value);
+        const { id, value } = message;
+        updateGui({ id, value });
         return;
       }
       // Set the hidden state of a GUI input.
       case "GuiSetVisibleMessage": {
-        setGuiVisible(message.id, message.visible);
+        const { id, visible } = message;
+        updateGui({ id, visible });
         return;
       }
       // Set the disabled state of a GUI input.
       case "GuiSetDisabledMessage": {
-        setGuiDisabled(message.id, message.disabled);
+        const { id, disabled } = message;
+        updateGui({ id, disabled });
         return;
       }
       // Remove a GUI input.

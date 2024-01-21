@@ -95,31 +95,9 @@ function GeneratedInput({
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
     return (
-      <Box pb={!last ? "0.125em" : 0}>
-        <GeneratedFolder
-          conf={conf}
-          folderDepth={folderDepth}
-          viewer={viewer}
-        />
-      </Box>
     );
   if (conf.type == "GuiAddTabGroupMessage")
     return <GeneratedTabGroup conf={conf} />;
-  if (conf.type == "GuiAddMarkdownMessage") {
-    let { visible } =
-      viewer.useGui((state) => state.guiAttributeFromId[conf.id]) || {};
-    visible = visible ?? true;
-    if (!visible) return <></>;
-    return (
-      <Box pb="xs" px="sm" style={{ maxWidth: "95%" }}>
-        <ErrorBoundary
-          fallback={<Text align="center">Markdown Failed to Render</Text>}
-        >
-          <Markdown>{conf.markdown}</Markdown>
-        </ErrorBoundary>
-      </Box>
-    );
-  }
 
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
   function updateValue(value: any) {
@@ -149,188 +127,6 @@ function GeneratedInput({
   let labeled = true;
   let input = null;
   switch (conf.type) {
-    case "GuiAddButtonMessage":
-      labeled = false;
-      if (conf.color !== null) {
-        inputColor =
-          computeRelativeLuminance(
-            theme.colors[conf.color][theme.fn.primaryShade()],
-          ) > 50.0
-            ? theme.colors.gray[9]
-            : theme.white;
-      }
-
-      input = (
-        <Button
-          id={conf.id}
-          fullWidth
-          color={conf.color ?? undefined}
-          onClick={() =>
-            messageSender({
-              type: "GuiUpdateMessage",
-              id: conf.id,
-              value: true,
-            })
-          }
-          style={{ height: "2.125em" }}
-          styles={{ inner: { color: inputColor + " !important" } }}
-          disabled={disabled}
-          size="sm"
-          leftIcon={
-            conf.icon_base64 === null ? undefined : (
-              <Image
-                /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-                height="1em"
-                width="1em"
-                opacity={disabled ? 0.3 : 1.0}
-                mr="-0.125em"
-                sx={
-                  inputColor === theme.white
-                    ? {
-                        // Make the color white.
-                        filter: !disabled ? "invert(1)" : undefined,
-                      }
-                    : // Icon will be black by default.
-                      undefined
-                }
-                src={"data:image/svg+xml;base64," + conf.icon_base64}
-              />
-            )
-          }
-        >
-          {conf.label}
-        </Button>
-      );
-      break;
-    case "GuiAddSliderMessage":
-      input = (
-        <Flex justify="space-between">
-          <Box sx={{ flexGrow: 1 }}>
-            <Slider
-              id={conf.id}
-              size="xs"
-              thumbSize={0}
-              styles={(theme) => ({
-                thumb: {
-                  background: theme.fn.primaryColor(),
-                  borderRadius: "0.1em",
-                  height: "0.75em",
-                  width: "0.625em",
-                },
-              })}
-              pt="0.2em"
-              showLabelOnHover={false}
-              min={conf.min}
-              max={conf.max}
-              step={conf.step ?? undefined}
-              precision={conf.precision}
-              value={value}
-              onChange={updateValue}
-              marks={[{ value: conf.min }, { value: conf.max }]}
-              disabled={disabled}
-            />
-            <Flex
-              justify="space-between"
-              fz="0.6rem"
-              c="dimmed"
-              lh="1.2em"
-              lts="-0.5px"
-              mt="-0.0625em"
-              mb="-0.4em"
-            >
-              <Text>{parseInt(conf.min.toFixed(6))}</Text>
-              <Text>{parseInt(conf.max.toFixed(6))}</Text>
-            </Flex>
-          </Box>
-          <NumberInput
-            value={value}
-            onChange={(newValue) => {
-              // Ignore empty values.
-              newValue !== "" && updateValue(newValue);
-            }}
-            size="xs"
-            min={conf.min}
-            max={conf.max}
-            hideControls
-            step={conf.step ?? undefined}
-            precision={conf.precision}
-            sx={{ width: "3rem" }}
-            styles={{
-              input: {
-                padding: "0.375em",
-                letterSpacing: "-0.5px",
-                minHeight: "1.875em",
-                height: "1.875em",
-              },
-            }}
-            ml="xs"
-          />
-        </Flex>
-      );
-      break;
-    case "GuiAddNumberMessage":
-      input = (
-        <NumberInput
-          id={conf.id}
-          value={value ?? conf.initial_value}
-          precision={conf.precision}
-          min={conf.min ?? undefined}
-          max={conf.max ?? undefined}
-          step={conf.step}
-          size="xs"
-          onChange={(newValue) => {
-            // Ignore empty values.
-            newValue !== "" && updateValue(newValue);
-          }}
-          styles={{
-            input: {
-              minHeight: "1.625rem",
-              height: "1.625rem",
-            },
-          }}
-          disabled={disabled}
-          stepHoldDelay={500}
-          stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
-        />
-      );
-      break;
-    case "GuiAddTextMessage":
-      input = (
-        <TextInput
-          value={value ?? conf.initial_value}
-          size="xs"
-          onChange={(value) => {
-            updateValue(value.target.value);
-          }}
-          styles={{
-            input: {
-              minHeight: "1.625rem",
-              height: "1.625rem",
-              padding: "0 0.5em",
-            },
-          }}
-          disabled={disabled}
-        />
-      );
-      break;
-    case "GuiAddCheckboxMessage":
-      input = (
-        <Checkbox
-          id={conf.id}
-          checked={value ?? conf.initial_value}
-          size="xs"
-          onChange={(value) => {
-            updateValue(value.target.checked);
-          }}
-          disabled={disabled}
-          styles={{
-            icon: {
-              color: inputColor + " !important",
-            },
-          }}
-        />
-      );
-      break;
     case "GuiAddVector2Message":
       input = (
         <VectorInput
@@ -387,41 +183,6 @@ function GeneratedInput({
         />
       );
       break;
-    case "GuiAddRgbMessage":
-      input = (
-        <ColorInput
-          disabled={disabled}
-          size="xs"
-          value={rgbToHex(value)}
-          onChange={(v) => updateValue(hexToRgb(v))}
-          format="hex"
-          // zIndex of dropdown should be >modal zIndex.
-          // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
-          dropdownZIndex={1000}
-          withinPortal={true}
-          styles={{
-            input: { height: "1.625rem", minHeight: "1.625rem" },
-            icon: { transform: "scale(0.8)" },
-          }}
-        />
-      );
-      break;
-    case "GuiAddRgbaMessage":
-      input = (
-        <ColorInput
-          disabled={disabled}
-          size="xs"
-          value={rgbaToHex(value)}
-          onChange={(v) => updateValue(hexToRgba(v))}
-          format="hexa"
-          // zIndex of dropdown should be >modal zIndex.
-          // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
-          dropdownZIndex={1000}
-          withinPortal={true}
-          styles={{ input: { height: "1.625rem", minHeight: "1.625rem" } }}
-        />
-      );
-      break;
     case "GuiAddButtonGroupMessage":
       input = (
         <Flex justify="space-between" columnGap="xs">
@@ -447,50 +208,6 @@ function GeneratedInput({
         </Flex>
       );
   }
-
-  if (conf.hint !== null)
-    input = // We need to add <Box /> for inputs that we can't assign refs to.
-      (
-        <Tooltip
-          zIndex={100}
-          label={conf.hint}
-          multiline
-          w="15rem"
-          withArrow
-          openDelay={500}
-          withinPortal
-        >
-          <Box
-            sx={{
-              display:
-                // For checkboxes, we want to make sure that the wrapper
-                // doesn't expand to the full width of the parent. This will
-                // de-center the tooltip.
-                conf.type === "GuiAddCheckboxMessage"
-                  ? "inline-block"
-                  : "block",
-            }}
-          >
-            {input}
-          </Box>
-        </Tooltip>
-      );
-
-  if (labeled)
-    input = (
-      <LabeledInput
-        id={conf.id}
-        label={conf.label}
-        input={input}
-        folderDepth={folderDepth}
-      />
-    );
-
-  return (
-    <Box pb="0.5em" px="xs">
-      {input}
-    </Box>
-  );
 }
 
 function GeneratedFolder({
@@ -560,49 +277,6 @@ function GeneratedFolder({
   );
 }
 
-function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
-  const [tabState, setTabState] = React.useState<TabsValue>("0");
-  const icons = conf.tab_icons_base64;
-
-  return (
-    <Tabs
-      radius="xs"
-      value={tabState}
-      onTabChange={setTabState}
-      sx={{ marginTop: "-0.75em" }}
-    >
-      <Tabs.List>
-        {conf.tab_labels.map((label, index) => (
-          <Tabs.Tab
-            value={index.toString()}
-            key={index}
-            icon={
-              icons[index] === null ? undefined : (
-                <Image
-                  /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-                  height={"1.125em"}
-                  width={"1.125em"}
-                  sx={(theme) => ({
-                    filter:
-                      theme.colorScheme == "dark" ? "invert(1)" : undefined,
-                  })}
-                  src={"data:image/svg+xml;base64," + icons[index]}
-                />
-              )
-            }
-          >
-            {label}
-          </Tabs.Tab>
-        ))}
-      </Tabs.List>
-      {conf.tab_container_ids.map((containerId, index) => (
-        <Tabs.Panel value={index.toString()} key={containerId}>
-          <GeneratedGuiContainer containerId={containerId} />
-        </Tabs.Panel>
-      ))}
-    </Tabs>
-  );
-}
 
 function VectorInput(
   props:
@@ -702,37 +376,4 @@ function LabeledInput(props: {
       <Box sx={{ flexGrow: 1 }}>{props.input}</Box>
     </Flex>
   );
-}
-
-// Color conversion helpers.
-
-function rgbToHex([r, g, b]: [number, number, number]): string {
-  const hexR = r.toString(16).padStart(2, "0");
-  const hexG = g.toString(16).padStart(2, "0");
-  const hexB = b.toString(16).padStart(2, "0");
-  return `#${hexR}${hexG}${hexB}`;
-}
-
-function hexToRgb(hexColor: string): [number, number, number] {
-  const hex = hexColor.slice(1); // Remove the # in #ffffff.
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  return [r, g, b];
-}
-function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
-  const hexR = r.toString(16).padStart(2, "0");
-  const hexG = g.toString(16).padStart(2, "0");
-  const hexB = b.toString(16).padStart(2, "0");
-  const hexA = a.toString(16).padStart(2, "0");
-  return `#${hexR}${hexG}${hexB}${hexA}`;
-}
-
-function hexToRgba(hexColor: string): [number, number, number, number] {
-  const hex = hexColor.slice(1); // Remove the # in #ffffff.
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  const a = parseInt(hex.substring(6, 8), 16);
-  return [r, g, b, a];
 }

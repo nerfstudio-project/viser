@@ -11,6 +11,7 @@ import numpy.typing as onpt
 from typing_extensions import Literal, override
 
 from . import infra, theme
+from ._gui_components import Component
 
 
 class Message(infra.Message):
@@ -35,6 +36,17 @@ class Message(infra.Message):
             parts.append(node_name)
 
         return "_".join(parts)
+
+
+@dataclasses.dataclass
+class GuiAddComponentMessage(Message):
+    """Add a GUI component."""
+
+    order: float
+    id: str
+    container_id: str
+
+    props: Component
 
 
 @dataclasses.dataclass
@@ -332,151 +344,6 @@ class SceneNodeClickMessage(Message):
 @dataclasses.dataclass
 class ResetSceneMessage(Message):
     """Reset scene."""
-
-
-@dataclasses.dataclass
-class GuiAddFolderMessage(Message):
-    order: float
-    id: str
-    label: str
-    container_id: str
-    expand_by_default: bool
-
-
-@dataclasses.dataclass
-class GuiAddMarkdownMessage(Message):
-    order: float
-    id: str
-    markdown: str
-    container_id: str
-
-
-@dataclasses.dataclass
-class GuiAddTabGroupMessage(Message):
-    order: float
-    id: str
-    container_id: str
-    tab_labels: Tuple[str, ...]
-    tab_icons_base64: Tuple[Union[str, None], ...]
-    tab_container_ids: Tuple[str, ...]
-
-
-@dataclasses.dataclass
-class _GuiAddInputBase(Message):
-    """Base message type containing fields commonly used by GUI inputs."""
-
-    order: float
-    id: str
-    label: str
-    container_id: str
-    hint: Optional[str]
-    initial_value: Any
-
-
-@dataclasses.dataclass
-class GuiModalMessage(Message):
-    order: float
-    id: str
-    title: str
-
-
-@dataclasses.dataclass
-class GuiCloseModalMessage(Message):
-    id: str
-
-
-@dataclasses.dataclass
-class GuiAddButtonMessage(_GuiAddInputBase):
-    # All GUI elements currently need an `initial_value` field.
-    # This makes our job on the frontend easier.
-    initial_value: bool
-    color: Optional[
-        Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-    ]
-    icon_base64: Optional[str]
-
-
-@dataclasses.dataclass
-class GuiAddSliderMessage(_GuiAddInputBase):
-    min: float
-    max: float
-    step: Optional[float]
-    initial_value: float
-    precision: int
-
-
-@dataclasses.dataclass
-class GuiAddNumberMessage(_GuiAddInputBase):
-    initial_value: float
-    precision: int
-    step: float
-    min: Optional[float]
-    max: Optional[float]
-
-
-@dataclasses.dataclass
-class GuiAddRgbMessage(_GuiAddInputBase):
-    initial_value: Tuple[int, int, int]
-
-
-@dataclasses.dataclass
-class GuiAddRgbaMessage(_GuiAddInputBase):
-    initial_value: Tuple[int, int, int, int]
-
-
-@dataclasses.dataclass
-class GuiAddCheckboxMessage(_GuiAddInputBase):
-    initial_value: bool
-
-
-@dataclasses.dataclass
-class GuiAddVector2Message(_GuiAddInputBase):
-    initial_value: Tuple[float, float]
-    min: Optional[Tuple[float, float]]
-    max: Optional[Tuple[float, float]]
-    step: float
-    precision: int
-
-
-@dataclasses.dataclass
-class GuiAddVector3Message(_GuiAddInputBase):
-    initial_value: Tuple[float, float, float]
-    min: Optional[Tuple[float, float, float]]
-    max: Optional[Tuple[float, float, float]]
-    step: float
-    precision: int
-
-
-@dataclasses.dataclass
-class GuiAddTextMessage(_GuiAddInputBase):
-    initial_value: str
-
-
-@dataclasses.dataclass
-class GuiAddDropdownMessage(_GuiAddInputBase):
-    initial_value: str
-    options: Tuple[str, ...]
-
-
-@dataclasses.dataclass
-class GuiAddButtonGroupMessage(_GuiAddInputBase):
-    initial_value: str
-    options: Tuple[str, ...]
 
 
 @dataclasses.dataclass

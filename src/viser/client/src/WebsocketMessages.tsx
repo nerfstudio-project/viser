@@ -1,5 +1,200 @@
 // AUTOMATICALLY GENERATED message interfaces, from Python dataclass definitions.
 // This file should not be manually modified.
+export type Property<T> = { path: string } | { value: T };
+
+/** Button(*args, **kwargs)
+ *
+ * (automatically generated)
+ */
+export interface ButtonProps {
+  type: "Button";
+  label: string;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
+  icon_base64: string | null;
+  disabled: boolean;
+  hint: string | null;
+}
+/** TextInput(value: str, label: str, hint: Optional[str], disabled: bool = False)
+ *
+ * (automatically generated)
+ */
+export interface TextInputProps {
+  type: "TextInput";
+  value: string;
+  label: string;
+  hint: string | null;
+  disabled: boolean;
+}
+/** NumberInput(label: str, hint: Optional[str], disabled: bool = False, *, value: float, step: float, min: Optional[float] = None, max: Optional[float] = None, precision: Optional[int] = None)
+ *
+ * (automatically generated)
+ */
+export interface NumberInputProps {
+  type: "NumberInput";
+  value: number;
+  label: string;
+  hint: string | null;
+  disabled: boolean;
+  step: number;
+  min: number | null;
+  max: number | null;
+  precision: number | null;
+}
+/** Slider(label: str, hint: Optional[str], disabled: bool = False, *, value: float, min: Optional[float] = None, max: Optional[float] = None, step: Optional[float] = None, precision: Optional[int] = None)
+ *
+ * (automatically generated)
+ */
+export interface SliderProps {
+  type: "Slider";
+  value: number;
+  label: string;
+  hint: string | null;
+  disabled: boolean;
+  min: number | null;
+  max: number | null;
+  step: number | null;
+  precision: number | null;
+}
+/** Checkbox(label: str, hint: Optional[str], disabled: bool = False, *, value: bool)
+ *
+ * (automatically generated)
+ */
+export interface CheckboxProps {
+  type: "Checkbox";
+  value: boolean;
+  label: string;
+  hint: string | null;
+  disabled: boolean;
+}
+/** RgbInput(label: str, hint: Optional[str], disabled: bool = False, *, value: Tuple[int, int, int])
+ *
+ * (automatically generated)
+ */
+export interface RgbInputProps {
+  type: "RgbInput";
+  value: [number, number, number];
+  label: string;
+  hint: string | null;
+  disabled: boolean;
+}
+
+/** RgbaInput(label: str, hint: Optional[str], disabled: bool = False, *, value: Tuple[int, int, int, int])
+ *
+ * (automatically generated)
+ */
+export interface RgbaInputProps {
+  type: "RgbaInput";
+  value: [number, number, number, number];
+  label: string;
+  hint: string | null;
+  disabled: boolean;
+}
+/** Folder(*args, **kwargs)
+ *
+ * (automatically generated)
+ */
+export interface FolderProps {
+  type: "Folder";
+  label: string;
+  expand_by_default: boolean;
+}
+/** Markdown(*args, **kwargs)
+ *
+ * (automatically generated)
+ */
+export interface MarkdownProps {
+  type: "Markdown";
+  markdown: string;
+}
+/** TabGroup(*args, **kwargs)
+ *
+ * (automatically generated)
+ */
+export interface TabGroupProps {
+  type: "TabGroup";
+  tab_labels: string[];
+  tab_icons_base64: (string | null)[];
+  tab_container_ids: string[];
+}
+/** Modal(*args, **kwargs)
+ *
+ * (automatically generated)
+ */
+export interface ModalProps {
+  type: "Modal";
+  order: number;
+  id: string;
+  title: string;
+}
+/** Vector2Input(label: str, hint: Optional[str], disabled: bool = False, *, value: Tuple[float, float], step: float, min: Optional[Tuple[float, float]] = None, max: Optional[Tuple[float, float]] = None, precision: Optional[int] = None)
+ *
+ * (automatically generated)
+ */
+export interface Vector2InputProps {
+  type: "Vector2Input";
+  value: [number, number];
+  label: string;
+  hint: string | null;
+  disabled: boolean;
+  step: number;
+  min: [number, number] | null;
+  max: [number, number] | null;
+  precision: number | null;
+}
+/** Vector3Input(label: str, hint: Optional[str], disabled: bool = False, *, value: Tuple[float, float, float], min: Optional[Tuple[float, float, float]], max: Optional[Tuple[float, float, float]], step: float, precision: int)
+ *
+ * (automatically generated)
+ */
+export interface Vector3InputProps {
+  type: "Vector3Input";
+  value: [number, number, number];
+  label: string;
+  hint: string | null;
+  disabled: boolean;
+  min: [number, number, number] | null;
+  max: [number, number, number] | null;
+  step: number;
+  precision: number;
+}
+/** Dropdown(label: str, hint: Optional[str], disabled: bool = False, *, value: Optional[str] = None, options: Tuple[str, ...])
+ *
+ * (automatically generated)
+ */
+export interface DropdownProps {
+  type: "Dropdown";
+  value: string | null;
+  label: string;
+  hint: string | null;
+  disabled: boolean;
+  options: string[];
+}
+
+/** Add a GUI component.
+ *
+ * (automatically generated)
+ */
+export interface GuiAddComponentMessage {
+  type: "GuiAddComponentMessage";
+  order: number;
+  id: string;
+  container_id: string;
+  props: AllComponentProps;
+}
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
  *
@@ -299,251 +494,6 @@ export interface SceneNodeClickMessage {
 export interface ResetSceneMessage {
   type: "ResetSceneMessage";
 }
-/** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', expand_by_default: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiAddFolderMessage {
-  type: "GuiAddFolderMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  expand_by_default: boolean;
-}
-/** GuiAddMarkdownMessage(order: 'float', id: 'str', markdown: 'str', container_id: 'str')
- *
- * (automatically generated)
- */
-export interface GuiAddMarkdownMessage {
-  type: "GuiAddMarkdownMessage";
-  order: number;
-  id: string;
-  markdown: string;
-  container_id: string;
-}
-/** GuiAddTabGroupMessage(order: 'float', id: 'str', container_id: 'str', tab_labels: 'Tuple[str, ...]', tab_icons_base64: 'Tuple[Union[str, None], ...]', tab_container_ids: 'Tuple[str, ...]')
- *
- * (automatically generated)
- */
-export interface GuiAddTabGroupMessage {
-  type: "GuiAddTabGroupMessage";
-  order: number;
-  id: string;
-  container_id: string;
-  tab_labels: string[];
-  tab_icons_base64: (string | null)[];
-  tab_container_ids: string[];
-}
-/** Base message type containing fields commonly used by GUI inputs.
- *
- * (automatically generated)
- */
-export interface _GuiAddInputBase {
-  type: "_GuiAddInputBase";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: any;
-}
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]')
- *
- * (automatically generated)
- */
-export interface GuiAddButtonMessage {
-  type: "GuiAddButtonMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: boolean;
-  color:
-    | "dark"
-    | "gray"
-    | "red"
-    | "pink"
-    | "grape"
-    | "violet"
-    | "indigo"
-    | "blue"
-    | "cyan"
-    | "green"
-    | "lime"
-    | "yellow"
-    | "orange"
-    | "teal"
-    | null;
-  icon_base64: string | null;
-}
-/** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int')
- *
- * (automatically generated)
- */
-export interface GuiAddSliderMessage {
-  type: "GuiAddSliderMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: number;
-  min: number;
-  max: number;
-  step: number | null;
-  precision: number;
-}
-/** GuiAddNumberMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
- *
- * (automatically generated)
- */
-export interface GuiAddNumberMessage {
-  type: "GuiAddNumberMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: number;
-  precision: number;
-  step: number;
-  min: number | null;
-  max: number | null;
-}
-/** GuiAddRgbMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[int, int, int]')
- *
- * (automatically generated)
- */
-export interface GuiAddRgbMessage {
-  type: "GuiAddRgbMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: [number, number, number];
-}
-/** GuiAddRgbaMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[int, int, int, int]')
- *
- * (automatically generated)
- */
-export interface GuiAddRgbaMessage {
-  type: "GuiAddRgbaMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: [number, number, number, number];
-}
-/** GuiAddCheckboxMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiAddCheckboxMessage {
-  type: "GuiAddCheckboxMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: boolean;
-}
-/** GuiAddVector2Message(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[float, float]', min: 'Optional[Tuple[float, float]]', max: 'Optional[Tuple[float, float]]', step: 'float', precision: 'int')
- *
- * (automatically generated)
- */
-export interface GuiAddVector2Message {
-  type: "GuiAddVector2Message";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: [number, number];
-  min: [number, number] | null;
-  max: [number, number] | null;
-  step: number;
-  precision: number;
-}
-/** GuiAddVector3Message(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[float, float, float]', min: 'Optional[Tuple[float, float, float]]', max: 'Optional[Tuple[float, float, float]]', step: 'float', precision: 'int')
- *
- * (automatically generated)
- */
-export interface GuiAddVector3Message {
-  type: "GuiAddVector3Message";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: [number, number, number];
-  min: [number, number, number] | null;
-  max: [number, number, number] | null;
-  step: number;
-  precision: number;
-}
-/** GuiAddTextMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'str')
- *
- * (automatically generated)
- */
-export interface GuiAddTextMessage {
-  type: "GuiAddTextMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: string;
-}
-/** GuiAddDropdownMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'str', options: 'Tuple[str, ...]')
- *
- * (automatically generated)
- */
-export interface GuiAddDropdownMessage {
-  type: "GuiAddDropdownMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: string;
-  options: string[];
-}
-/** GuiAddButtonGroupMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'str', options: 'Tuple[str, ...]')
- *
- * (automatically generated)
- */
-export interface GuiAddButtonGroupMessage {
-  type: "GuiAddButtonGroupMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  initial_value: string;
-  options: string[];
-}
-/** GuiModalMessage(order: 'float', id: 'str', title: 'str')
- *
- * (automatically generated)
- */
-export interface GuiModalMessage {
-  type: "GuiModalMessage";
-  order: number;
-  id: string;
-  title: string;
-}
-/** GuiCloseModalMessage(id: 'str')
- *
- * (automatically generated)
- */
-export interface GuiCloseModalMessage {
-  type: "GuiCloseModalMessage";
-  id: string;
-}
 /** Sent server->client to remove a GUI element.
  *
  * (automatically generated)
@@ -698,7 +648,28 @@ export interface FileDownloadPart {
   content: Uint8Array;
 }
 
+export interface ButtonClickCallbackPayload {
+  type: "Button"
+  event: "click"
+}
+
+export type AllComponentProps =
+  | ButtonProps
+  | TextInputProps
+  | NumberInputProps
+  | SliderProps
+  | CheckboxProps
+  | RgbInputProps
+  | RgbaInputProps
+  | FolderProps
+  | MarkdownProps
+  | TabGroupProps
+  | ModalProps
+  | Vector2InputProps
+  | Vector3InputProps
+  | DropdownProps;
 export type Message =
+  | GuiAddComponentMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | SceneClickEnableMessage
@@ -725,23 +696,6 @@ export type Message =
   | SetSceneNodeClickableMessage
   | SceneNodeClickMessage
   | ResetSceneMessage
-  | GuiAddFolderMessage
-  | GuiAddMarkdownMessage
-  | GuiAddTabGroupMessage
-  | _GuiAddInputBase
-  | GuiAddButtonMessage
-  | GuiAddSliderMessage
-  | GuiAddNumberMessage
-  | GuiAddRgbMessage
-  | GuiAddRgbaMessage
-  | GuiAddCheckboxMessage
-  | GuiAddVector2Message
-  | GuiAddVector3Message
-  | GuiAddTextMessage
-  | GuiAddDropdownMessage
-  | GuiAddButtonGroupMessage
-  | GuiModalMessage
-  | GuiCloseModalMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | GuiSetVisibleMessage
