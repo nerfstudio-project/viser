@@ -18,4 +18,5 @@ from ._infra import Server as Server
 from ._messages import Message as Message
 from ._typescript_interface_gen import (
     generate_typescript_interfaces as generate_typescript_interfaces,
+    generate_typescript_components as generate_typescript_components,
 )

@@ -8,6 +8,7 @@ import remarkGfm from "remark-gfm";
 import rehypeColorChips from "rehype-color-chips";
 import {
   Anchor,
+  Box,
   Blockquote,
   Code,
   Image,
@@ -21,6 +22,11 @@ import {
 import { visit } from "unist-util-visit";
 import { Transformer } from "unified";
 import { Element, Root } from "hast";
+
+import { ErrorBoundary } from "react-error-boundary";
+import { MarkdownProps } from "../WebsocketMessages";
+
+
 
 // Custom Rehype to clean up code blocks (Mantine makes these annoying to style)
 // Adds "block" to any code non-inline code block, which gets directly passed into
@@ -166,7 +172,7 @@ async function parseMarkdown(markdown: string) {
  * NOTE: Only run on markdown you trust.
  * It might be worth looking into sandboxing all markdown so that it can't run JS.
  */
-export default function Markdown(props: { children?: string }) {
+export function Markdown(props: { children?: string }) {
   const [child, setChild] = useState<ReactNode>(null);
 
   useEffect(() => {
@@ -180,4 +186,17 @@ export default function Markdown(props: { children?: string }) {
   }, [props.children]);
 
   return child;
+}
+
+
+
+
+export default function MarkdownComponent(conf: MarkdownProps) {
+  return (<Box pb="xs" px="sm" style={{ maxWidth: "95%" }}>
+    <ErrorBoundary
+        fallback={<Text align="center">Markdown Failed to Render</Text>}
+    >
+        <Markdown>{conf.markdown}</Markdown>
+    </ErrorBoundary>
+  </Box>);
 }

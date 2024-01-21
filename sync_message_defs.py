@@ -20,3 +20,14 @@ if __name__ == "__main__":
 
     # Run prettier.
     subprocess.run(args=["npx", "prettier", "-w", str(target_path)], check=False)
+
+    # Write typescript components
+    target_path = pathlib.Path(__file__).parent / pathlib.Path(
+        "src/viser/client/src/GeneratedComponent.tsx"
+    )
+    assert target_path.exists()
+    target_path.write_text(viser.infra.generate_typescript_components())
+    print(f"Wrote to {target_path}")
+
+    # Run prettier.
+    subprocess.run(args=["npx", "prettier", "-w", str(target_path)], check=False)
