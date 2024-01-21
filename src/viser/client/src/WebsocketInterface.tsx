@@ -500,6 +500,7 @@ function useMessageHandler() {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.wxyz = message.wxyz;
+        viewer.sendCameraRef.current !== null && viewer.sendCameraRef.current();
         break;
       }
       case "SetPositionMessage": {
