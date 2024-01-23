@@ -85,8 +85,8 @@ export interface FrameMessage {
 export interface FrameBatchedMessage {
   type: "FrameBatchedMessage";
   name: string;
-  instance_wxyzs: Uint8Array;
-  instance_positions: Uint8Array;
+  wxyzs_batched: Uint8Array;
+  positions_batched: Uint8Array;
   axes_length: number;
   axes_radius: number;
 }

@@ -115,8 +115,8 @@ class FrameBatchedMessage(Message):
     corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`."""
 
     name: str
-    instance_wxyzs: onpt.NDArray[onp.float32]
-    instance_positions: onpt.NDArray[onp.float32]
+    wxyzs_batched: onpt.NDArray[onp.float32]
+    positions_batched: onpt.NDArray[onp.float32]
     axes_length: float
     axes_radius: float
 

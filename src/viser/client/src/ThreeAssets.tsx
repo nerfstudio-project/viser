@@ -241,12 +241,16 @@ export const GlbAsset = React.forwardRef<
 export const CoordinateFrame = React.forwardRef<
   THREE.Group,
   {
-    show_axes?: boolean;
-    axes_length?: number;
-    axes_radius?: number;
+    showAxes?: boolean;
+    axesLength?: number;
+    axesRadius?: number;
   }
 >(function CoordinateFrame(
-  { show_axes = true, axes_length = 0.5, axes_radius = 0.0125 },
+  {
+    showAxes: show_axes = true,
+    axesLength: axes_length = 0.5,
+    axesRadius: axes_radius = 0.0125,
+  },
   ref,
 ) {
   return (
@@ -299,15 +303,15 @@ export const CoordinateFrame = React.forwardRef<
 export const CoordinateFrameBatched = React.forwardRef<
   THREE.Group,
   {
-    instance_wxyzs: Float32Array;
-    instance_positions: Float32Array;
+    wxyzsBatched: Float32Array;
+    positionsBatched: Float32Array;
     axes_length?: number;
     axes_radius?: number;
   }
 >(function CoordinateFrameBatched(
   {
-    instance_wxyzs,
-    instance_positions,
+    wxyzsBatched: instance_wxyzs,
+    positionsBatched: instance_positions,
     axes_length = 0.5,
     axes_radius = 0.0125,
   },

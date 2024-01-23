@@ -582,8 +582,8 @@ class MessageApi(abc.ABC):
     def add_frames_batched(
         self,
         name: str,
-        instance_wxyzs: onp.ndarray,
-        instance_positions: onp.ndarray,
+        wxyzs_batched: Tuple[Tuple[float, float, float, float], ...] | onp.ndarray,
+        positions_batched: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
@@ -599,8 +599,8 @@ class MessageApi(abc.ABC):
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
-            instanced_wxyzs: Float array of shape (N,4).
-            instanced_positions: Float array of shape (N,3).
+            wxyzs_batched: Float array of shape (N,4).
+            positions_batched: Float array of shape (N,3).
             axes_length: Length of each axis.
             axes_radius: Radius of each axis.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
@@ -610,14 +610,17 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
-        num_frames = instance_wxyzs.shape[0]
-        assert instance_wxyzs.shape == (num_frames, 4)
-        assert instance_positions.shape == (num_frames, 3)
+        wxyzs_batched = onp.asarray(wxyzs_batched)
+        positions_batched = onp.asarray(positions_batched)
+
+        num_frames = wxyzs_batched.shape[0]
+        assert wxyzs_batched.shape == (num_frames, 4)
+        assert positions_batched.shape == (num_frames, 3)
         self._queue(
             _messages.FrameBatchedMessage(
                 name=name,
-                instance_wxyzs=instance_wxyzs.astype(onp.float32),
-                instance_positions=instance_positions.astype(onp.float32),
+                wxyzs_batched=wxyzs_batched.astype(onp.float32),
+                positions_batched=positions_batched.astype(onp.float32),
                 axes_length=axes_length,
                 axes_radius=axes_radius,
             )

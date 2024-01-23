@@ -13,7 +13,7 @@ import { syncSearchParamServer } from "./SearchParamsUtils";
 import {
   CameraFrustum,
   CoordinateFrame,
-  CoordinateFrameBatched,
+  CoordinateFrameBatched as CoordinateFramesBatched,
   GlbAsset,
   OutlinesIfHovered,
   PointCloud,
@@ -80,7 +80,7 @@ function useMessageHandler() {
     if (!(parent_name in nodeFromName)) {
       addSceneNodeMakeParents(
         new SceneNode<THREE.Group>(parent_name, (ref) => (
-          <CoordinateFrame ref={ref} show_axes={false} />
+          <CoordinateFrame ref={ref} showAxes={false} />
         )),
       );
     }
@@ -145,9 +145,9 @@ function useMessageHandler() {
           new SceneNode<THREE.Group>(message.name, (ref) => (
             <CoordinateFrame
               ref={ref}
-              show_axes={message.show_axes}
-              axes_length={message.axes_length}
-              axes_radius={message.axes_radius}
+              showAxes={message.show_axes}
+              axesLength={message.axes_length}
+              axesRadius={message.axes_radius}
             />
           )),
         );
@@ -158,23 +158,23 @@ function useMessageHandler() {
       case "FrameBatchedMessage": {
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => (
-            <CoordinateFrameBatched
+            <CoordinateFramesBatched
               ref={ref}
-              instance_wxyzs={
+              wxyzsBatched={
                 new Float32Array(
-                  message.instance_wxyzs.buffer.slice(
-                    message.instance_wxyzs.byteOffset,
-                    message.instance_wxyzs.byteOffset +
-                      message.instance_wxyzs.byteLength,
+                  message.wxyzs_batched.buffer.slice(
+                    message.wxyzs_batched.byteOffset,
+                    message.wxyzs_batched.byteOffset +
+                      message.wxyzs_batched.byteLength,
                   ),
                 )
               }
-              instance_positions={
+              positionsBatched={
                 new Float32Array(
-                  message.instance_positions.buffer.slice(
-                    message.instance_positions.byteOffset,
-                    message.instance_positions.byteOffset +
-                      message.instance_positions.byteLength,
+                  message.positions_batched.buffer.slice(
+                    message.positions_batched.byteOffset,
+                    message.positions_batched.byteOffset +
+                      message.positions_batched.byteLength,
                   ),
                 )
               }
