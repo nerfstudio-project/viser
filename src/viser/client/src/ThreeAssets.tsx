@@ -300,7 +300,7 @@ export const CoordinateFrame = React.forwardRef<
 });
 
 /** Helper for adding batched/instanced coordinate frames as scene nodes. */
-export const CoordinateFrameBatched = React.forwardRef<
+export const InstancedAxes = React.forwardRef<
   THREE.Group,
   {
     wxyzsBatched: Float32Array;
@@ -308,7 +308,7 @@ export const CoordinateFrameBatched = React.forwardRef<
     axes_length?: number;
     axes_radius?: number;
   }
->(function CoordinateFrameBatched(
+>(function InstancedAxes(
   {
     wxyzsBatched: instance_wxyzs,
     positionsBatched: instance_positions,
@@ -393,7 +393,9 @@ export const CoordinateFrameBatched = React.forwardRef<
       <instancedMesh
         ref={axesRef}
         args={[cylinderGeom, material, (instance_wxyzs.length / 4) * 3]}
-      />
+      >
+        <OutlinesIfHovered />
+      </instancedMesh>
     </group>
   );
 });

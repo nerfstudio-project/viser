@@ -38,9 +38,9 @@ from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 from . import _messages, infra, theme
 from . import transforms as tf
 from ._scene_handles import (
+    BatchedAxesHandle,
     CameraFrustumHandle,
     FrameHandle,
-    FramesBatchedHandle,
     GlbHandle,
     Gui3dContainerHandle,
     ImageHandle,
@@ -553,8 +553,14 @@ class MessageApi(abc.ABC):
     ) -> FrameHandle:
         """Add a coordinate frame to the scene.
 
-        This method is used for adding a visual representation of a coordinate frame,
-        which can help in understanding the orientation and position of objects in 3D space.
+        This method is used for adding a visual representation of a coordinate
+        frame, which can help in understanding the orientation and position of
+        objects in 3D space.
+
+        For cases where we want to visualize many coordinate frames, like
+        trajectories containing thousands or tens of thousands of frames,
+        batching and calling `add_batched_axes()` may be a better choice than calling
+        `add_frame()` in a loop.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -579,53 +585,60 @@ class MessageApi(abc.ABC):
         )
         return FrameHandle._make(self, name, wxyz, position, visible)
 
-    def add_frames_batched(
+    def add_batched_axes(
         self,
         name: str,
-        wxyzs_batched: Tuple[Tuple[float, float, float, float], ...] | onp.ndarray,
-        positions_batched: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        batched_wxyzs: Tuple[Tuple[float, float, float, float], ...] | onp.ndarray,
+        batched_positions: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> FramesBatchedHandle:
-        """Visualize a batched set of coordinate frames.
+    ) -> BatchedAxesHandle:
+        """Visualize batched sets of coordinate frame axes.
 
-        This method is useful for adding visual representation of many
-        coordinate frames (tens or hundreds of thousands), particularly when
-        `add_frame()` is too slow.
+        The functionality of `add_batched_axes()` overlaps significantly with
+        `add_frame()` when `show_axes=True`. The primary difference is that
+        `add_batched_axes()` supports multiple axes via the `wxyzs_batched`
+        (shape Nx4) and `positions_batched` (shape Nx3) arguments.
+
+        Axes that are batched and rendered via a single call to
+        `add_batched_axes()` are instanced on the client; this will be much
+        faster to render than `add_frame()` called in a loop.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
-            wxyzs_batched: Float array of shape (N,4).
-            positions_batched: Float array of shape (N,3).
+            batched_wxyzs: Float array of shape (N,4).
+            batched_positions: Float array of shape (N,3).
             axes_length: Length of each axis.
             axes_radius: Radius of each axis.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+                This will be applied to all axes.
             position: Translation to parent frame from local frame (t_pl).
+                This will be applied to all axes.
             visible: Whether or not this scene node is initially visible.
 
         Returns:
             Handle for manipulating scene node.
         """
-        wxyzs_batched = onp.asarray(wxyzs_batched)
-        positions_batched = onp.asarray(positions_batched)
+        batched_wxyzs = onp.asarray(batched_wxyzs)
+        batched_positions = onp.asarray(batched_positions)
 
-        num_frames = wxyzs_batched.shape[0]
-        assert wxyzs_batched.shape == (num_frames, 4)
-        assert positions_batched.shape == (num_frames, 3)
+        num_axes = batched_wxyzs.shape[0]
+        assert batched_wxyzs.shape == (num_axes, 4)
+        assert batched_positions.shape == (num_axes, 3)
         self._queue(
-            _messages.FrameBatchedMessage(
+            _messages.BatchedAxesMessage(
                 name=name,
-                wxyzs_batched=wxyzs_batched.astype(onp.float32),
-                positions_batched=positions_batched.astype(onp.float32),
+                wxyzs_batched=batched_wxyzs.astype(onp.float32),
+                positions_batched=batched_positions.astype(onp.float32),
                 axes_length=axes_length,
                 axes_radius=axes_radius,
             )
         )
-        return FramesBatchedHandle._make(self, name, wxyz, position, visible)
+        return BatchedAxesHandle._make(self, name, wxyz, position, visible)
 
     def add_grid(
         self,

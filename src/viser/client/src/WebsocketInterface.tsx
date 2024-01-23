@@ -13,7 +13,7 @@ import { syncSearchParamServer } from "./SearchParamsUtils";
 import {
   CameraFrustum,
   CoordinateFrame,
-  CoordinateFrameBatched as CoordinateFramesBatched,
+  InstancedAxes,
   GlbAsset,
   OutlinesIfHovered,
   PointCloud,
@@ -154,11 +154,14 @@ function useMessageHandler() {
         return;
       }
 
-      // Add a coordinate frame.
-      case "FrameBatchedMessage": {
+      // Add axes to visualize.
+      case "BatchedAxesMessage": {
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => (
-            <CoordinateFramesBatched
+            // Minor naming discrepancy: I think "batched" will be clearer to
+            // folks on the Python side, but instanced is somewhat more
+            // precise.
+            <InstancedAxes
               ref={ref}
               wxyzsBatched={
                 new Float32Array(
