@@ -241,12 +241,16 @@ export const GlbAsset = React.forwardRef<
 export const CoordinateFrame = React.forwardRef<
   THREE.Group,
   {
-    show_axes?: boolean;
-    axes_length?: number;
-    axes_radius?: number;
+    showAxes?: boolean;
+    axesLength?: number;
+    axesRadius?: number;
   }
 >(function CoordinateFrame(
-  { show_axes = true, axes_length = 0.5, axes_radius = 0.0125 },
+  {
+    showAxes: show_axes = true,
+    axesLength: axes_length = 0.5,
+    axesRadius: axes_radius = 0.0125,
+  },
   ref,
 ) {
   return (
@@ -266,7 +270,7 @@ export const CoordinateFrame = React.forwardRef<
           >
             <OutlinesIfHovered />
           </mesh>
-          <Instances>
+          <Instances limit={3}>
             <meshBasicMaterial />
             <cylinderGeometry
               args={[axes_radius, axes_radius, axes_length, 16]}
@@ -295,6 +299,104 @@ export const CoordinateFrame = React.forwardRef<
   );
 });
 
+/** Helper for adding batched/instanced coordinate frames as scene nodes. */
+export const CoordinateFrameBatched = React.forwardRef<
+  THREE.Group,
+  {
+    wxyzsBatched: Float32Array;
+    positionsBatched: Float32Array;
+    axes_length?: number;
+    axes_radius?: number;
+  }
+>(function CoordinateFrameBatched(
+  {
+    wxyzsBatched: instance_wxyzs,
+    positionsBatched: instance_positions,
+    axes_length = 0.5,
+    axes_radius = 0.0125,
+  },
+  ref,
+) {
+  const axesRef = React.useRef<THREE.InstancedMesh>(null);
+
+  const cylinderGeom = new THREE.CylinderGeometry(
+    axes_radius,
+    axes_radius,
+    axes_length,
+    16,
+  );
+  const material = new MeshBasicMaterial();
+
+  // Dispose when done.
+  React.useEffect(() => {
+    return () => {
+      cylinderGeom.dispose();
+      material.dispose();
+    };
+  });
+
+  // Update instance matrices and colors.
+  React.useEffect(() => {
+    // Pre-allocate to avoid garbage collector from running during loop.
+    const T_world_frame = new THREE.Matrix4();
+    const T_world_framex = new THREE.Matrix4();
+    const T_world_framey = new THREE.Matrix4();
+    const T_world_framez = new THREE.Matrix4();
+
+    const T_frame_framex = new THREE.Matrix4()
+      .makeRotationFromEuler(new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0))
+      .setPosition(0.5 * axes_length, 0.0, 0.0);
+    const T_frame_framey = new THREE.Matrix4()
+      .makeRotationFromEuler(new THREE.Euler(0.0, 0.0, 0.0))
+      .setPosition(0.0, 0.5 * axes_length, 0.0);
+    const T_frame_framez = new THREE.Matrix4()
+      .makeRotationFromEuler(new THREE.Euler(Math.PI / 2.0, 0.0, 0.0))
+      .setPosition(0.0, 0.0, 0.5 * axes_length);
+
+    const tmpQuat = new THREE.Quaternion();
+
+    const red = new THREE.Color(0xcc0000);
+    const green = new THREE.Color(0x00cc00);
+    const blue = new THREE.Color(0x0000cc);
+
+    for (let i = 0; i < instance_wxyzs.length / 4; i++) {
+      T_world_frame.makeRotationFromQuaternion(
+        tmpQuat.set(
+          instance_wxyzs[i * 4 + 1],
+          instance_wxyzs[i * 4 + 2],
+          instance_wxyzs[i * 4 + 3],
+          instance_wxyzs[i * 4 + 0],
+        ),
+      ).setPosition(
+        instance_positions[i * 3 + 0],
+        instance_positions[i * 3 + 1],
+        instance_positions[i * 3 + 2],
+      );
+      T_world_framex.copy(T_world_frame).multiply(T_frame_framex);
+      T_world_framey.copy(T_world_frame).multiply(T_frame_framey);
+      T_world_framez.copy(T_world_frame).multiply(T_frame_framez);
+
+      axesRef.current!.setMatrixAt(i * 3 + 0, T_world_framex);
+      axesRef.current!.setMatrixAt(i * 3 + 1, T_world_framey);
+      axesRef.current!.setMatrixAt(i * 3 + 2, T_world_framez);
+
+      axesRef.current!.setColorAt(i * 3 + 0, red);
+      axesRef.current!.setColorAt(i * 3 + 1, green);
+      axesRef.current!.setColorAt(i * 3 + 2, blue);
+    }
+    axesRef.current!.instanceMatrix.needsUpdate = true;
+    axesRef.current!.instanceColor!.needsUpdate = true;
+  }, [instance_wxyzs, instance_positions]);
+
+  return (
+    <group ref={ref}>
+      <instancedMesh
+        ref={axesRef}
+        args={[cylinderGeom, material, (instance_wxyzs.length / 4) * 3]}
+      />
+    </group>
+  );
+});
 /** Helper for visualizing camera frustums. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,

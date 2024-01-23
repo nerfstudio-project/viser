@@ -108,6 +108,20 @@ class FrameMessage(Message):
 
 
 @dataclasses.dataclass
+class FrameBatchedMessage(Message):
+    """Batched coordinate frames message.
+
+    Position and orientation should follow a `T_parent_local` convention, which
+    corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`."""
+
+    name: str
+    wxyzs_batched: onpt.NDArray[onp.float32]
+    positions_batched: onpt.NDArray[onp.float32]
+    axes_length: float
+    axes_radius: float
+
+
+@dataclasses.dataclass
 class GridMessage(Message):
     """Grid message. Helpful for visualizing things like ground planes."""
 

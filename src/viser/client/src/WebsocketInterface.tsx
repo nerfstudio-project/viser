@@ -13,6 +13,7 @@ import { syncSearchParamServer } from "./SearchParamsUtils";
 import {
   CameraFrustum,
   CoordinateFrame,
+  CoordinateFrameBatched as CoordinateFramesBatched,
   GlbAsset,
   OutlinesIfHovered,
   PointCloud,
@@ -79,7 +80,7 @@ function useMessageHandler() {
     if (!(parent_name in nodeFromName)) {
       addSceneNodeMakeParents(
         new SceneNode<THREE.Group>(parent_name, (ref) => (
-          <CoordinateFrame ref={ref} show_axes={false} />
+          <CoordinateFrame ref={ref} showAxes={false} />
         )),
       );
     }
@@ -144,7 +145,39 @@ function useMessageHandler() {
           new SceneNode<THREE.Group>(message.name, (ref) => (
             <CoordinateFrame
               ref={ref}
-              show_axes={message.show_axes}
+              showAxes={message.show_axes}
+              axesLength={message.axes_length}
+              axesRadius={message.axes_radius}
+            />
+          )),
+        );
+        return;
+      }
+
+      // Add a coordinate frame.
+      case "FrameBatchedMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => (
+            <CoordinateFramesBatched
+              ref={ref}
+              wxyzsBatched={
+                new Float32Array(
+                  message.wxyzs_batched.buffer.slice(
+                    message.wxyzs_batched.byteOffset,
+                    message.wxyzs_batched.byteOffset +
+                      message.wxyzs_batched.byteLength,
+                  ),
+                )
+              }
+              positionsBatched={
+                new Float32Array(
+                  message.positions_batched.buffer.slice(
+                    message.positions_batched.byteOffset,
+                    message.positions_batched.byteOffset +
+                      message.positions_batched.byteLength,
+                  ),
+                )
+              }
               axes_length={message.axes_length}
               axes_radius={message.axes_radius}
             />
