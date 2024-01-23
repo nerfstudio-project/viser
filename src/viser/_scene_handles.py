@@ -187,6 +187,11 @@ class PointCloudHandle(SceneNodeHandle):
 
 
 @dataclasses.dataclass
+class FramesBatchedHandle(SceneNodeHandle):
+    """Handle for batched coordinate frames."""
+
+
+@dataclasses.dataclass
 class FrameHandle(_ClickableSceneNodeHandle):
     """Handle for coordinate frames."""
 
