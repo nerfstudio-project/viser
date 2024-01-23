@@ -96,10 +96,7 @@ class GlbMessage(Message):
 
 @dataclasses.dataclass
 class FrameMessage(Message):
-    """Coordinate frame message.
-
-    Position and orientation should follow a `T_parent_local` convention, which
-    corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`."""
+    """Coordinate frame message."""
 
     name: str
     show_axes: bool = True
@@ -108,10 +105,10 @@ class FrameMessage(Message):
 
 
 @dataclasses.dataclass
-class FrameBatchedMessage(Message):
-    """Batched coordinate frames message.
+class BatchedAxesMessage(Message):
+    """Batched axes message.
 
-    Position and orientation should follow a `T_parent_local` convention, which
+    Positions and orientations should follow a `T_parent_local` convention, which
     corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`."""
 
     name: str

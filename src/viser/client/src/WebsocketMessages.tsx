@@ -63,9 +63,6 @@ export interface GlbMessage {
 }
 /** Coordinate frame message.
  *
- * Position and orientation should follow a `T_parent_local` convention, which
- * corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`.
- *
  * (automatically generated)
  */
 export interface FrameMessage {
@@ -75,15 +72,15 @@ export interface FrameMessage {
   axes_length: number;
   axes_radius: number;
 }
-/** Batched coordinate frames message.
+/** Batched axes message.
  *
- * Position and orientation should follow a `T_parent_local` convention, which
+ * Positions and orientations should follow a `T_parent_local` convention, which
  * corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`.
  *
  * (automatically generated)
  */
-export interface FrameBatchedMessage {
-  type: "FrameBatchedMessage";
+export interface BatchedAxesMessage {
+  type: "BatchedAxesMessage";
   name: string;
   wxyzs_batched: Uint8Array;
   positions_batched: Uint8Array;
@@ -752,7 +749,7 @@ export type Message =
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
-  | FrameBatchedMessage
+  | BatchedAxesMessage
   | GridMessage
   | LabelMessage
   | Gui3DMessage
