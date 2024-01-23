@@ -385,17 +385,15 @@ faster to render than <code class="docutils literal notranslate"><span class="pr
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> (<em>str</em>) – A scene tree name. Names in the format of /parent/child can be used to
 define a kinematic tree.</p></li>
-<li><p><strong>wxyzs_batched</strong> – Float array of shape (N,4).</p></li>
-<li><p><strong>positions_batched</strong> – Float array of shape (N,3).</p></li>
+<li><p><strong>batched_wxyzs</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – Float array of shape (N,4).</p></li>
+<li><p><strong>batched_positions</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – Float array of shape (N,3).</p></li>
 <li><p><strong>axes_length</strong> (<em>float</em>) – Length of each axis.</p></li>
 <li><p><strong>axes_radius</strong> (<em>float</em>) – Radius of each axis.</p></li>
 <li><p><strong>wxyz</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Quaternion rotation to parent frame from local frame (R_pl).
-This will be applied to all inner axes.</p></li>
+This will be applied to all axes.</p></li>
 <li><p><strong>position</strong> (<em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>] </em><em>| </em><em>ndarray</em>) – Translation to parent frame from local frame (t_pl).
-This will be applied to all inner axes.</p></li>
+This will be applied to all axes.</p></li>
 <li><p><strong>visible</strong> (<em>bool</em>) – Whether or not this scene node is initially visible.</p></li>
-<li><p><strong>batched_wxyzs</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
-<li><p><strong>batched_positions</strong> (<em>Tuple</em><em>[</em><em>Tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>…</em><em>] </em><em>| </em><em>ndarray</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
