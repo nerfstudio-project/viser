@@ -266,7 +266,7 @@ export const CoordinateFrame = React.forwardRef<
           >
             <OutlinesIfHovered />
           </mesh>
-          <Instances>
+          <Instances limit={3}>
             <meshBasicMaterial />
             <cylinderGeometry
               args={[axes_radius, axes_radius, axes_length, 16]}
@@ -295,6 +295,97 @@ export const CoordinateFrame = React.forwardRef<
   );
 });
 
+/** Helper for adding batched/instanced coordinate frames as scene nodes. */
+export const CoordinateFrameBatched = React.forwardRef<
+  THREE.Group,
+  {
+    instance_wxyzs: Float32Array;
+    instance_positions: Float32Array;
+    axes_length?: number;
+    axes_radius?: number;
+  }
+>(function CoordinateFrameBatched(
+  {
+    instance_wxyzs,
+    instance_positions,
+    axes_length = 0.5,
+    axes_radius = 0.0125,
+  },
+  ref,
+) {
+  console.log(instance_wxyzs.length);
+  console.log(instance_positions.length);
+
+  const axesRef = React.useRef<THREE.InstancedMesh>(null);
+
+  React.useEffect(() => {
+    console.log("hi");
+    const tmpMatrix = new THREE.Matrix4();
+    const matrixX = new THREE.Matrix4();
+    const matrixY = new THREE.Matrix4();
+    const matrixZ = new THREE.Matrix4();
+    const tmpQuat = new THREE.Quaternion();
+
+    const xRot = new THREE.Matrix4()
+      .makeRotationFromEuler(new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0))
+      .setPosition(0.5 * axes_length, 0.0, 0.0);
+    const yRot = new THREE.Matrix4()
+      .makeRotationFromEuler(new THREE.Euler(0.0, 0.0, 0.0))
+      .setPosition(0.0, 0.5 * axes_length, 0.0);
+    const zRot = new THREE.Matrix4()
+      .makeRotationFromEuler(new THREE.Euler(Math.PI / 2.0, 0.0, 0.0))
+      .setPosition(0.0, 0.0, 0.5 * axes_length);
+
+    const red = new THREE.Color(0xcc0000);
+    const green = new THREE.Color(0x00cc00);
+    const blue = new THREE.Color(0x0000cc);
+
+    for (let i = 0; i < instance_wxyzs.length / 4; i++) {
+      console.log(i);
+      tmpMatrix
+        .makeRotationFromQuaternion(
+          tmpQuat.set(
+            instance_wxyzs[i * 4 + 1],
+            instance_wxyzs[i * 4 + 2],
+            instance_wxyzs[i * 4 + 3],
+            instance_wxyzs[i * 4 + 0],
+          ),
+        )
+        .setPosition(
+          instance_positions[i * 3 + 0],
+          instance_positions[i * 3 + 1],
+          instance_positions[i * 3 + 2],
+        );
+      matrixX.copy(tmpMatrix).multiply(xRot);
+      matrixY.copy(tmpMatrix).multiply(yRot);
+      matrixZ.copy(tmpMatrix).multiply(zRot);
+
+      axesRef.current!.setMatrixAt(i * 3 + 0, matrixX);
+      axesRef.current!.setMatrixAt(i * 3 + 1, matrixY);
+      axesRef.current!.setMatrixAt(i * 3 + 2, matrixZ);
+
+      axesRef.current!.setColorAt(i * 3 + 0, red);
+      axesRef.current!.setColorAt(i * 3 + 1, green);
+      axesRef.current!.setColorAt(i * 3 + 2, blue);
+    }
+    console.log(axesRef.current!.instanceColor);
+    axesRef.current!.instanceMatrix.needsUpdate = true;
+    axesRef.current!.instanceColor!.needsUpdate = true;
+  });
+
+  return (
+    <group ref={ref}>
+      <instancedMesh
+        ref={axesRef}
+        args={[
+          new THREE.CylinderGeometry(axes_radius, axes_radius, axes_length, 16),
+          new MeshBasicMaterial(),
+          (instance_wxyzs.length / 4) * 3,
+        ]}
+      />
+    </group>
+  );
+});
 /** Helper for visualizing camera frustums. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,

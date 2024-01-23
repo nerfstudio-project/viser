@@ -13,6 +13,7 @@ import { syncSearchParamServer } from "./SearchParamsUtils";
 import {
   CameraFrustum,
   CoordinateFrame,
+  CoordinateFrameBatched,
   GlbAsset,
   OutlinesIfHovered,
   PointCloud,
@@ -145,6 +146,38 @@ function useMessageHandler() {
             <CoordinateFrame
               ref={ref}
               show_axes={message.show_axes}
+              axes_length={message.axes_length}
+              axes_radius={message.axes_radius}
+            />
+          )),
+        );
+        return;
+      }
+
+      // Add a coordinate frame.
+      case "FrameBatchedMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => (
+            <CoordinateFrameBatched
+              ref={ref}
+              instance_wxyzs={
+                new Float32Array(
+                  message.instance_wxyzs.buffer.slice(
+                    message.instance_wxyzs.byteOffset,
+                    message.instance_wxyzs.byteOffset +
+                      message.instance_wxyzs.byteLength,
+                  ),
+                )
+              }
+              instance_positions={
+                new Float32Array(
+                  message.instance_positions.buffer.slice(
+                    message.instance_positions.byteOffset,
+                    message.instance_positions.byteOffset +
+                      message.instance_positions.byteLength,
+                  ),
+                )
+              }
               axes_length={message.axes_length}
               axes_radius={message.axes_radius}
             />

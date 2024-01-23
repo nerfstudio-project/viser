@@ -40,6 +40,7 @@ from . import transforms as tf
 from ._scene_handles import (
     CameraFrustumHandle,
     FrameHandle,
+    FramesBatchedHandle,
     GlbHandle,
     Gui3dContainerHandle,
     ImageHandle,
@@ -577,6 +578,51 @@ class MessageApi(abc.ABC):
             )
         )
         return FrameHandle._make(self, name, wxyz, position, visible)
+
+    def add_frames_batched(
+        self,
+        name: str,
+        instance_wxyzs: onp.ndarray,
+        instance_positions: onp.ndarray,
+        axes_length: float = 0.5,
+        axes_radius: float = 0.025,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> FramesBatchedHandle:
+        """Visualize a batched set of coordinate frames.
+
+        This method is useful for adding visual representation of many
+        coordinate frames (tens or hundreds of thousands), particularly when
+        `add_frame()` is too slow.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            instanced_wxyzs: Float array of shape (N,4).
+            instanced_positions: Float array of shape (N,3).
+            axes_length: Length of each axis.
+            axes_radius: Radius of each axis.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        num_frames = instance_wxyzs.shape[0]
+        assert instance_wxyzs.shape == (num_frames, 4)
+        assert instance_positions.shape == (num_frames, 3)
+        self._queue(
+            _messages.FrameBatchedMessage(
+                name=name,
+                instance_wxyzs=instance_wxyzs.astype(onp.float32),
+                instance_positions=instance_positions.astype(onp.float32),
+                axes_length=axes_length,
+                axes_radius=axes_radius,
+            )
+        )
+        return FramesBatchedHandle._make(self, name, wxyz, position, visible)
 
     def add_grid(
         self,

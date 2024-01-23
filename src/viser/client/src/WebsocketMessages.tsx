@@ -75,6 +75,21 @@ export interface FrameMessage {
   axes_length: number;
   axes_radius: number;
 }
+/** Batched coordinate frames message.
+ *
+ * Position and orientation should follow a `T_parent_local` convention, which
+ * corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`.
+ *
+ * (automatically generated)
+ */
+export interface FrameBatchedMessage {
+  type: "FrameBatchedMessage";
+  name: string;
+  instance_wxyzs: Uint8Array;
+  instance_positions: Uint8Array;
+  axes_length: number;
+  axes_radius: number;
+}
 /** Grid message. Helpful for visualizing things like ground planes.
  *
  * (automatically generated)
@@ -737,6 +752,7 @@ export type Message =
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
+  | FrameBatchedMessage
   | GridMessage
   | LabelMessage
   | Gui3DMessage
