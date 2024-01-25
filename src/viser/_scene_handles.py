@@ -86,6 +86,10 @@ class SceneNodeHandle:
 
         out.wxyz = wxyz
         out.position = position
+
+        # Toggle visibility to make sure we send a
+        # SetSceneNodeVisibilityMessage to the client.
+        out._impl.visible = not visible
         out.visible = visible
         return out
 

@@ -75,6 +75,16 @@ function useMessageHandler() {
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(node: SceneNode<any>) {
+    // Make sure scene node is in attributes.
+    const attrs = viewer.nodeAttributesFromName.current;
+    if (!(node.name in attrs)) {
+      attrs[node.name] = {};
+    }
+
+    // Don't update the pose of the object until we've made a new one!
+    attrs[node.name]!.poseUpdateState = "waitForMakeObject";
+
+    // Make sure parents exists.
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
     const parent_name = node.name.split("/").slice(0, -1).join("/");
     if (!(parent_name in nodeFromName)) {
@@ -85,15 +95,6 @@ function useMessageHandler() {
       );
     }
     addSceneNode(node);
-
-    // Retain visibility, but reset orientation and position.
-    // If we hide a scene node, it should stay hidden even if it's re-added/updated!
-    const attrs = viewer.nodeAttributesFromName.current;
-    if (node.name in attrs) {
-      attrs[node.name] = {
-        overrideVisibility: attrs[node.name]?.overrideVisibility,
-      };
-    }
   }
 
   const mantineTheme = useViserMantineTheme();
@@ -536,13 +537,16 @@ function useMessageHandler() {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.wxyz = message.wxyz;
-        viewer.sendCameraRef.current !== null && viewer.sendCameraRef.current();
+        if (attr[message.name]!.poseUpdateState == "updated")
+          attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
       case "SetPositionMessage": {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.position = message.position;
+        if (attr[message.name]!.poseUpdateState == "updated")
+          attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
       case "SetSceneNodeVisibilityMessage": {
@@ -717,7 +721,7 @@ function useMessageHandler() {
         );
         return;
       }
-      // Remove a scene node by name.
+      // Remove a scene node and its children by name.
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
