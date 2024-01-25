@@ -348,6 +348,10 @@
 
         <span class="n">out</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">wxyz</span>
         <span class="n">out</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position</span>
+
+        <span class="c1"># Toggle visibility to make sure we send a</span>
+        <span class="c1"># SetSceneNodeVisibilityMessage to the client.</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">visible</span>
         <span class="n">out</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">visible</span>
         <span class="k">return</span> <span class="n">out</span>
 
