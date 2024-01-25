@@ -853,8 +853,7 @@ class MessageApi(abc.ABC):
                 material=material,
             )
         )
-        node_handle = MeshHandle._make(self, name, wxyz, position, visible)
-        return node_handle
+        return MeshHandle._make(self, name, wxyz, position, visible)
 
     def add_mesh_trimesh(
         self,

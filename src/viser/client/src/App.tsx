@@ -64,6 +64,7 @@ export type ViewerContextContents = {
     [name: string]:
       | undefined
       | {
+          poseUpdateState?: "updated" | "needsUpdate" | "waitForMakeObject";
           wxyz?: [number, number, number, number];
           position?: [number, number, number];
           visibility?: boolean; // Visibility state from the server.

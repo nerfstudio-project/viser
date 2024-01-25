@@ -155,10 +155,18 @@ export function SceneNodeThreeObject(props: {
   // For not-fully-understood reasons, wrapping makeObject with useMemo() fixes
   // stability issues (eg breaking runtime errors) associated with
   // PivotControls.
-  const objNode = React.useMemo(
-    () => makeObject && makeObject(setRef),
-    [makeObject],
-  );
+  const objNode = React.useMemo(() => {
+    if (makeObject === undefined) return null;
+
+    // Pose will need to be updated.
+    const attrs = viewer.nodeAttributesFromName.current;
+    if (!(props.name in attrs)) {
+      attrs[props.name] = {};
+    }
+    attrs[props.name]!.poseUpdateState = "needsUpdate";
+
+    return makeObject(setRef);
+  }, [makeObject]);
   const children =
     obj === null ? null : (
       <SceneNodeThreeChildren name={props.name} parent={obj} />
@@ -214,20 +222,18 @@ export function SceneNodeThreeObject(props: {
         : attrs.overrideVisibility) ?? true;
     obj.visible = visibility;
 
-    let changed = false;
-    const wxyz = attrs.wxyz;
-    if (wxyz !== undefined) {
-      changed = true;
-      obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-    }
-    const position = attrs.position;
-    if (position !== undefined) {
-      changed = true;
-      obj.position.set(position[0], position[1], position[2]);
-    }
+    if (attrs.poseUpdateState == "needsUpdate") {
+      attrs.poseUpdateState = "updated";
+      const wxyz = attrs.wxyz;
+      if (wxyz !== undefined) {
+        obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+      }
+      const position = attrs.position;
+      if (position !== undefined) {
+        obj.position.set(position[0], position[1], position[2]);
+      }
 
-    // Update matrices if necessary. This is necessary for PivotControls.
-    if (changed) {
+      // Update matrices if necessary. This is necessary for PivotControls.
       if (!obj.matrixAutoUpdate) obj.updateMatrix();
       if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
     }
