@@ -15,6 +15,7 @@ from typing import (
     Any,
     Dict,
     List,
+    Union,
     Optional,
     Sequence,
     Tuple,
@@ -797,7 +798,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-        marks: Optional[List[Tuple[IntOrFloat, Optional[str]]]] = None,
+        marks: Optional[List[Union[Tuple[IntOrFloat, Optional[str]], IntOrFloat]]] = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a slider to the GUI. Types of the min, max, step, and initial value should match.
 
@@ -849,7 +850,7 @@ class GuiApi(abc.ABC):
                 initial_value=initial_value,
                 precision=_compute_precision_digits(step),
                 marks=[
-                    {"value": x[0], "label": x[1]} if isinstance(x, tuple) else {"value": x}
+                    {"value": float(x[0]), "label": x[1]} if isinstance(x, tuple) else {"value": float(x)}
                     for x in marks
                 ] if marks is not None else None,
             ),
@@ -871,7 +872,7 @@ class GuiApi(abc.ABC):
         hint: Optional[str] = None,
         order: Optional[float] = None,
         fixed_endpoints: bool = False,
-        marks: Optional[List[Tuple[IntOrFloat, Optional[str]]]] = None,
+        marks: Optional[List[Union[Tuple[IntOrFloat, Optional[str]], IntOrFloat]]] = None,
     ) -> GuiInputHandle[List[IntOrFloat]]:
         """Add a multi slider to the GUI. Types of the min, max, step, and initial value should match.
         Args:
@@ -894,13 +895,7 @@ class GuiApi(abc.ABC):
         if step > max - min:
             step = max - min
         assert all(max >= x >= min for x in initial_value)
-
-        # GUI callbacks cast incoming values to match the type of the initial value. If
-        # the min, max, or step is a float, we should cast to a float.
-        if len(initial_value) > 0 and (type(initial_value[0]) is int and (
-            type(min) is float or type(max) is float or type(step) is float
-        )):
-            initial_value = [float(x) for x in initial_value]  # type: ignore
+        _initial_value = [float(x) for x in initial_value]
 
         id = _make_unique_id()
         order = _apply_default_order(order)
@@ -916,11 +911,11 @@ class GuiApi(abc.ABC):
                 min_range=min_range,
                 max=max,
                 step=step,
-                initial_value=initial_value,
+                initial_value=_initial_value,
                 fixed_endpoints=fixed_endpoints,
                 precision=_compute_precision_digits(step),
                 marks=[
-                    {"value": x[0], "label": x[1]} if isinstance(x, tuple) else {"value": x}
+                    {"value": float(x[0]), "label": x[1]} if isinstance(x, tuple) else {"value": float(x)}
                     for x in marks
                 ] if marks is not None else None,
             ),
