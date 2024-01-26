@@ -1,8 +1,8 @@
 import dataclasses
-from typing import Any, ClassVar, Type, Union, cast, get_type_hints, List
+from typing import Any, ClassVar, Type, Union, cast, get_type_hints
 
 import numpy as onp
-from typing_extensions import Literal, NotRequired, get_args, get_origin, is_typeddict
+from typing_extensions import Literal, get_args, get_origin, is_typeddict
 
 try:
     from typing import Literal as LiteralAlt

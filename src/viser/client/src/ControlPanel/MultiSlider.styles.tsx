@@ -93,7 +93,7 @@ interface TrackStyles {
     inverted: boolean;
     thumbSize?: number;
   }
-  
+
   export const useTrackStyles = createStyles(
     (theme, { radius, color, disabled, inverted, thumbSize }: TrackStyles, { size }) => ({
       trackContainer: {
@@ -102,16 +102,16 @@ interface TrackStyles {
         width: '100%',
         height: `calc(${getSize({ sizes, size })} * 2)`,
         cursor: 'pointer',
-  
+
         '&:has(~ input:disabled)': {
           '&': {
             pointerEvents: 'none',
           },
-  
+
           '& .mantine-Slider-thumb': {
             display: 'none',
           },
-  
+
           '& .mantine-Slider-track::before': {
             content: '""',
             backgroundColor: inverted
@@ -122,7 +122,7 @@ interface TrackStyles {
               ? theme.colors.dark[4]
               : theme.colors.gray[2],
           },
-  
+
           '& .mantine-Slider-bar': {
             backgroundColor: inverted
               ? theme.colorScheme === 'dark'
@@ -134,14 +134,14 @@ interface TrackStyles {
           },
         },
       },
-  
+
       track: {
         position: 'relative',
         height: getSize({ sizes, size }),
         width: '100%',
         marginRight: thumbSize ? rem(thumbSize / 2) : getSize({ size, sizes }),
         marginLeft: thumbSize ? rem(thumbSize / 2) : getSize({ size, sizes }),
-  
+
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -162,7 +162,7 @@ interface TrackStyles {
           zIndex: 0,
         },
       },
-  
+
       bar: {
         position: 'absolute',
         zIndex: 1,

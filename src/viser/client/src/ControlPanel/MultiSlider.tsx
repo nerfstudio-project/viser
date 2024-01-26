@@ -10,8 +10,8 @@ import {
   getSize,
   rem,
 } from '@mantine/styles';
-import { 
-  MantineTransition, 
+import {
+  MantineTransition,
   Box,
   Transition,
 } from '@mantine/core';
