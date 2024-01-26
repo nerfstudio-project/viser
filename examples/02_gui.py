@@ -57,6 +57,14 @@ def main() -> None:
                 "Color",
                 initial_value=(255, 255, 0),
             )
+            server.add_gui_multi_slider(
+                "Multi slider",
+                min=0,
+                max=100,
+                step=1,
+                initial_value=(0, 30, 100),
+                marks=[0, 25, 50, 75, (100, "max")],
+            )
 
     # Pre-generate a point cloud to send.
     point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(5000, 3))

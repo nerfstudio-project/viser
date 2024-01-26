@@ -391,7 +391,7 @@ export interface GuiAddButtonMessage {
     | null;
   icon_base64: string | null;
 }
-/** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int')
+/** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', marks: 'Optional[List[GuiSliderMark]]' = None)
  *
  * (automatically generated)
  */
@@ -407,6 +407,27 @@ export interface GuiAddSliderMessage {
   max: number;
   step: number | null;
   precision: number;
+  marks: { value: number; label?: string | null }[] | null;
+}
+/** GuiAddMultiSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'List[float]', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, marks: 'Optional[List[GuiSliderMark]]' = None)
+ *
+ * (automatically generated)
+ */
+export interface GuiAddMultiSliderMessage {
+  type: "GuiAddMultiSliderMessage";
+  order: number;
+  id: string;
+  label: string;
+  container_id: string;
+  hint: string | null;
+  initial_value: number[];
+  min: number;
+  max: number;
+  step: number | null;
+  min_range: number | null;
+  precision: number;
+  fixed_endpoints: boolean;
+  marks: { value: number; label?: string | null }[] | null;
 }
 /** GuiAddNumberMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
  *
@@ -776,6 +797,7 @@ export type Message =
   | _GuiAddInputBase
   | GuiAddButtonMessage
   | GuiAddSliderMessage
+  | GuiAddMultiSliderMessage
   | GuiAddNumberMessage
   | GuiAddRgbMessage
   | GuiAddRgbaMessage

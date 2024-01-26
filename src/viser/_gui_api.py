@@ -797,6 +797,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        marks: Optional[List[Tuple[IntOrFloat, Optional[str]]]] = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a slider to the GUI. Types of the min, max, step, and initial value should match.
 
@@ -810,6 +811,7 @@ class GuiApi(abc.ABC):
             visible: Whether the slider is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            marks: List of marks to display below the slider.
 
         Returns:
             A handle that can be used to interact with the GUI element.
@@ -846,6 +848,81 @@ class GuiApi(abc.ABC):
                 step=step,
                 initial_value=initial_value,
                 precision=_compute_precision_digits(step),
+                marks=[
+                    {"value": x[0], "label": x[1]} if isinstance(x, tuple) else {"value": x}
+                    for x in marks
+                ] if marks is not None else None,
+            ),
+            disabled=disabled,
+            visible=visible,
+            is_button=False,
+        )
+
+    def add_gui_multi_slider(
+        self,
+        label: str,
+        min: IntOrFloat,
+        max: IntOrFloat,
+        step: IntOrFloat,
+        initial_value: List[IntOrFloat],
+        disabled: bool = False,
+        visible: bool = True,
+        min_range: Optional[IntOrFloat] = None,
+        hint: Optional[str] = None,
+        order: Optional[float] = None,
+        fixed_endpoints: bool = False,
+        marks: Optional[List[Tuple[IntOrFloat, Optional[str]]]] = None,
+    ) -> GuiInputHandle[List[IntOrFloat]]:
+        """Add a multi slider to the GUI. Types of the min, max, step, and initial value should match.
+        Args:
+            label: Label to display on the slider.
+            min: Minimum value of the slider.
+            max: Maximum value of the slider.
+            step: Step size of the slider.
+            initial_value: Initial values of the slider.
+            disabled: Whether the slider is disabled.
+            visible: Whether the slider is visible.
+            min_range: Optional minimum difference between two values of the slider.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+            fixed_endpoints: Whether the endpoints of the slider are fixed.
+            marks: List of marks to display below the slider.
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        assert max >= min
+        if step > max - min:
+            step = max - min
+        assert all(max >= x >= min for x in initial_value)
+
+        # GUI callbacks cast incoming values to match the type of the initial value. If
+        # the min, max, or step is a float, we should cast to a float.
+        if len(initial_value) > 0 and (type(initial_value[0]) is int and (
+            type(min) is float or type(max) is float or type(step) is float
+        )):
+            initial_value = [float(x) for x in initial_value]  # type: ignore
+
+        id = _make_unique_id()
+        order = _apply_default_order(order)
+        return self._create_gui_input(
+            initial_value=initial_value,
+            message=_messages.GuiAddMultiSliderMessage(
+                order=order,
+                id=id,
+                label=label,
+                container_id=self._get_container_id(),
+                hint=hint,
+                min=min,
+                min_range=min_range,
+                max=max,
+                step=step,
+                initial_value=initial_value,
+                fixed_endpoints=fixed_endpoints,
+                precision=_compute_precision_digits(step),
+                marks=[
+                    {"value": x[0], "label": x[1]} if isinstance(x, tuple) else {"value": x}
+                    for x in marks
+                ] if marks is not None else None,
             ),
             disabled=disabled,
             visible=visible,
