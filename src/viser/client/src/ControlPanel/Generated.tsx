@@ -27,6 +27,7 @@ import {
   TextInput,
   Tooltip,
 } from "@mantine/core";
+import { MultiSlider } from "./MultiSlider";
 import React from "react";
 import Markdown from "../Markdown";
 import { ErrorBoundary } from "react-error-boundary";
@@ -226,7 +227,7 @@ function GeneratedInput({
               precision={conf.precision}
               value={value}
               onChange={updateValue}
-              marks={[{ value: conf.min }, { value: conf.max }]}
+              marks={conf.marks === null ? [{ value: conf.min }, { value: conf.max }] : conf.marks}
               disabled={disabled}
             />
             <Flex
@@ -266,6 +267,29 @@ function GeneratedInput({
             ml="xs"
           />
         </Flex>
+      );
+      break;
+    case "GuiAddMultiSliderMessage":
+      return (
+        <Box pb="0.5em" px="xs">
+          {conf.label !== undefined && (<Text size="sm">{conf.label}</Text>)}
+          <MultiSlider
+            id={conf.id}
+            pt="0.2em"
+            showLabelOnHover={false}
+            min={conf.min}
+            max={conf.max}
+            mb={conf.marks?.some(x => x.label) && "xl" || undefined}
+            minRange={conf.min_range ?? undefined}
+            step={conf.step ?? undefined}
+            precision={conf.precision}
+            fixedEndpoints={conf.fixed_endpoints}
+            value={value}
+            onChange={updateValue}
+            marks={conf.marks || [{ value: conf.min }, { value: conf.max }]}
+            disabled={disabled}
+          />
+          </Box>
       );
       break;
     case "GuiAddNumberMessage":
