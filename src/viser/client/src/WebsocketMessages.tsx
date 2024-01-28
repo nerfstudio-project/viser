@@ -92,7 +92,6 @@ export interface RgbInputProps {
   hint: string | null;
   disabled: boolean;
 }
-
 /** RgbaInput(label: str, hint: Optional[str], disabled: bool = False, *, value: Tuple[int, int, int, int])
  *
  * (automatically generated)
@@ -646,11 +645,6 @@ export interface FileDownloadPart {
   download_uuid: string;
   part: number;
   content: Uint8Array;
-}
-
-export interface ButtonClickCallbackPayload {
-  type: "Button"
-  event: "click"
 }
 
 export type AllComponentProps =

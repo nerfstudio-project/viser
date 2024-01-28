@@ -1,5 +1,5 @@
 import { ButtonProps } from '../WebsocketMessages';
-import { GuiProps } from '../ControlPanel/GuiState';
+import { useComponentContext } from '../ControlPanel/GuiState';
 import { computeRelativeLuminance } from "../ControlPanel/GuiState";
 import { Box, Button, Image } from '@mantine/core';
 import { WrapInputDefault } from './utils';
@@ -7,14 +7,14 @@ import { useMantineTheme } from '@mantine/core';
 
 
 export default function ButtonComponent({ 
-  id,
   onClick, 
   disabled, 
   color,
   label,
   icon_base64 
-} : GuiProps<ButtonProps>) {
+} : ButtonProps) {
   const theme = useMantineTheme();
+  const id = useComponentContext<ButtonProps>();
   let inputColor =
     computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
     ? theme.colors.gray[9]
