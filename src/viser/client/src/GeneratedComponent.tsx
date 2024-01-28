@@ -31,43 +31,70 @@ import Modal from "./components/Modal";
 import Vector2Input from "./components/Vector2Input";
 import Vector3Input from "./components/Vector3Input";
 import Dropdown from "./components/Dropdown";
-import { GuiProps, GuiGenerateContextProps } from "./ControlPanel/GuiState";
+import React, { useContext } from "react";
+import { GuiProps, GuiGenerateContextProps, GuiGenerateContext } from "./ControlPanel/GuiState";
 
 
-export type GeneratedComponentProps<T extends AllComponentProps> = T & GuiGenerateContextProps<Omit<T, "type">> & { id: string };
+type GenericGeneratedComponentProps<T> = T extends AllComponentProps ? T & GuiGenerateContextProps<Omit<T, "type">> & { id: string }: never;
+export type GeneratedComponentProps = GenericGeneratedComponentProps<AllComponentProps>;
 
 
-export default function GeneratedComponent({ type, ...props }: AllComponentProps) {
+function assertUnknownComponent(x: string): never {
+    throw new Error(`Component type ${x} is not known.`);
+}
+
+
+export default function GeneratedComponent(props: AllComponentProps) {
+  const { type } = props;
+  const id = "test";
+  const contextProps = useContext(GuiGenerateContext)! as GuiGenerateContextProps<Omit<typeof props, "type">>;
+  let component = null;
   switch (type) {
     case "Button":
-      return <Button {...props} id="" />;
+      component = <Button {...props} {...contextProps} />;
+      break;
     case "TextInput":
-      return <TextInput {...props} />;
+      component = <TextInput {...props} {...contextProps} />;
+      break;
     case "NumberInput":
-      return <NumberInput {...props} />;
+      component = <NumberInput {...props} {...contextProps} />;
+      break;
     case "Slider":
-      return <Slider {...props} />;
+      component = <Slider {...props} {...contextProps} />;
+      break;
     case "Checkbox":
-      return <Checkbox {...props} />;
+      component = <Checkbox {...props} {...contextProps} />;
+      break;
     case "RgbInput":
-      return <RgbInput {...props} />;
+      component = <RgbInput {...props} {...contextProps} />;
+      break;
     case "RgbaInput":
-      return <RgbaInput {...props} />;
+      component = <RgbaInput {...props} {...contextProps} />;
+      break;
     case "Folder":
-      return <Folder {...props} />;
+      component = <Folder {...props} {...contextProps} />;
+      break;
     case "Markdown":
-      return <Markdown {...props} />;
+      component = <Markdown {...props} {...contextProps} />;
+      break;
     case "TabGroup":
-      return <TabGroup {...props} />;
+      component = <TabGroup {...props} {...contextProps} />;
+      break;
     case "Modal":
-      return <Modal {...props} />;
+      component = <Modal {...props} {...contextProps} />;
+      break;
     case "Vector2Input":
-      return <Vector2Input {...props} />;
+      component = <Vector2Input {...props} />;
+      break;
     case "Vector3Input":
-      return <Vector3Input {...props} />;
+      component = <Vector3Input {...props} />;
+      break;
     case "Dropdown":
-      return <Dropdown {...props} />;
+      component = <Dropdown {...props} />;
+      break;
     default:
-      throw new Error(`Unknown component type ${type}`);
+      assertUnknownComponent(type);
   }
+  const currentContextProps = { ...contextProps, id };
+  return <GuiGenerateContext.Provider value={currentContextProps}>{component}</GuiGenerateContext.Provider>
 }

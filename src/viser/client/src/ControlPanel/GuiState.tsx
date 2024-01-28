@@ -8,15 +8,25 @@ import { ViewerContext } from "../App";
 import { MantineThemeOverride } from "@mantine/core";
 
 
-export type GuiGenerateContextProps<T extends Omit<Messages.AllComponentProps, "type">> = {
-  update: (changes: Partial<T>) => void;
+export type GuiGenerateContextProps<T> = T extends Omit<Messages.AllComponentProps, "type"> ? {
+  id: string,
+  update: (changes: Partial<T>) => T;
   renderContainer: (containerId: string, incrementFolderDepth?: boolean) => React.ReactNode;
   folderDepth: number;
-};
+} : never;
 export const GuiGenerateContext = React.createContext<GuiGenerateContextProps<any> | null>(null);
+export type GuiProps<T> = T extends Messages.AllComponentProps ?  Omit<T, "type"> & { id: string }: never;
+export function useGuiComponentContext<T extends Messages.AllComponentProps>() {
+  return React.useContext(GuiGenerateContext)! as GuiGenerateContextProps<GuiProps<T>>;
+}
+export type SetProps<T> = T extends Messages.AllComponentProps ? (id: string, callback: (props: T) => Partial<T>) => void : never;
 
-
-export type GuiProps<T extends Messages.AllComponentProps> = Omit<T, "type"> & GuiGenerateContextProps<Omit<T, "type">> & { id: string };
+export interface GuiAttributes {
+  containerId: string;
+  order: number;
+  visible?: boolean;
+  disabled?: boolean;
+}
 
 interface GuiState {
   theme: Messages.ThemeConfigurationMessage;
@@ -28,12 +38,12 @@ interface GuiState {
     [containerId: string]: { [id: string]: true } | undefined;
   };
   modals: Messages.GuiModalMessage[];
-  guiOrderFromId: { [id: string]: number };
-  guiConfigFromId: { [id: string]: Messages.AllComponentProps & { container_id: string } };
   guiCallbackFromId: { [id: string]: { [callback: string]: (value: any) => void } };
-  guiValueFromId: { [id: string]: any };
+  guiPropsFromId: { [id: string]: Messages.AllComponentProps };
+  setProps: SetProps;
+  setAttributes: (id: string, callback: (props: GuiAttributes) => GuiAttributes) => void;
   guiAttributeFromId: {
-    [id: string]: { visible?: boolean; disabled?: boolean } | undefined;
+    [id: string]: GuiAttributes | undefined;
   };
 }
 
@@ -65,9 +75,9 @@ const cleanGuiState: GuiState = {
   backgroundAvailable: false,
   guiIdSetFromContainerId: {},
   modals: [],
-  guiOrderFromId: {},
-  guiConfigFromId: {},
-  guiValueFromId: {},
+  setAttributes: () => {},
+  setProps: () => {},
+  guiPropsFromId: {},
   guiAttributeFromId: {},
   guiCallbackFromId: {},
 };
@@ -115,24 +125,14 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.modals = state.modals.filter((m) => m.id !== id);
           }),
-        setGuiValue: (id, value) =>
-          set((state) => {
-            state.guiValueFromId[id] = value;
-          }),
-        setGuiVisible: (id, visible) =>
-          set((state) => {
-            state.guiAttributeFromId[id] = {
-              ...state.guiAttributeFromId[id],
-              visible: visible,
-            };
-          }),
-        setGuiDisabled: (id, disabled) =>
-          set((state) => {
-            state.guiAttributeFromId[id] = {
-              ...state.guiAttributeFromId[id],
-              disabled: disabled,
-            };
-          }),
+        setProps: (id, callback) =>
+         set((state) => {
+            state.guiPropsFromId[id] = {...state.guiPropsFromId[id], ...callback(state.guiPropsFromId[id])};
+         }),
+        setAttributes: (id, callback) =>
+         set((state) => {
+            state.guiAttributeFromId[id] = callback(state.guiAttributeFromId[id]);
+         }),
         removeGui: (id) =>
           set((state) => {
             const guiConfig = state.guiConfigFromId[id];
@@ -140,7 +140,7 @@ export function useGuiState(initialServer: string) {
             delete state.guiIdSetFromContainerId[guiConfig.container_id]![id];
             delete state.guiOrderFromId[id];
             delete state.guiConfigFromId[id];
-            delete state.guiValueFromId[id];
+            delete state.guiPropsFromId[id];
             delete state.guiAttributeFromId[id];
           }),
         resetGui: () =>
@@ -148,7 +148,7 @@ export function useGuiState(initialServer: string) {
             state.guiIdSetFromContainerId = {};
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
-            state.guiValueFromId = {};
+            state.guiPropsFromId = {};
             state.guiAttributeFromId = {};
           }),
         dispatchCallback: (id, callback, value) =>
