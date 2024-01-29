@@ -281,10 +281,10 @@ function GeneratedInput({
           thumbSize={0}
           styles={(theme) => ({
             thumb: {
-              background: theme.fn.primaryColor(),
               borderRadius: "0.1em",
               height: "0.75em",
               width: "0.625em",
+              background: disabled ? undefined : theme.fn.primaryColor(),
             },
           })}
           pt="0.2em"

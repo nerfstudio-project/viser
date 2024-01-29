@@ -49,17 +49,25 @@ export const useThumbStyles = createStyles((theme, { color, disabled, thumbSize 
     ...theme.fn.focusStyles(),
     boxSizing: 'border-box',
     position: 'absolute',
-    display: disabled ? 'none' : 'flex',
+    display: 'flex',
     height: thumbSize ? rem(thumbSize) : `calc(${getSize({ sizes, size })} * 2)`,
     width: thumbSize ? rem(thumbSize) : `calc(${getSize({ sizes, size })} * 2)`,
     backgroundColor:
-      theme.colorScheme === 'dark'
-        ? theme.fn.themeColor(color, theme.fn.primaryShade())
-        : theme.white,
+      disabled ? 
+        theme.colorScheme === 'dark' ?
+          theme.colors.dark[3] :
+          theme.colors.gray[4] :
+        theme.colorScheme === 'dark'
+          ? theme.fn.themeColor(color, theme.fn.primaryShade())
+          : theme.white,
     border: `${rem(4)} solid ${
-      theme.colorScheme === 'dark'
-        ? theme.white
-        : theme.fn.themeColor(color, theme.fn.primaryShade())
+      disabled ? 
+        theme.colorScheme === 'dark' ?
+          theme.colors.dark[3] :
+          theme.colors.gray[4] :
+        theme.colorScheme === 'dark'
+          ? theme.white
+          : theme.fn.themeColor(color, theme.fn.primaryShade())
     }`,
     color:
       theme.colorScheme === 'dark'
@@ -67,7 +75,7 @@ export const useThumbStyles = createStyles((theme, { color, disabled, thumbSize 
         : theme.fn.themeColor(color, theme.fn.primaryShade()),
     transform: 'translate(-50%, -50%)',
     top: '50%',
-    cursor: 'pointer',
+    cursor: disabled ? 'not-allowed' : 'pointer',
     borderRadius: 1000,
     alignItems: 'center',
     justifyContent: 'center',
