@@ -36,14 +36,14 @@ def main(
             min=0,
             max=num_frames - 1,
             step=1,
-            initial_value=0,
+            value=0,
             disabled=True,
         )
         gui_next_frame = server.add_gui_button("Next Frame", disabled=True)
         gui_prev_frame = server.add_gui_button("Prev Frame", disabled=True)
         gui_playing = server.add_gui_checkbox("Playing", True)
         gui_framerate = server.add_gui_slider(
-            "FPS", min=1, max=60, step=0.1, initial_value=loader.fps
+            "FPS", min=1, max=60, step=0.1, value=loader.fps
         )
         gui_framerate_options = server.add_gui_button_group(
             "FPS options", ("10", "20", "30", "60")

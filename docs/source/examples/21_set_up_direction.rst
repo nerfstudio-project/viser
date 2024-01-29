@@ -23,7 +23,7 @@ Set Up Direction
             server.world_axes.visible = True
             gui_up = server.add_gui_vector3(
                 "Up Direction",
-                initial_value=(0.0, 0.0, 1.0),
+                value=(0.0, 0.0, 1.0),
                 step=0.01,
             )
 

@@ -27,13 +27,13 @@ Click on meshes to select them. The index of the last clicked mesh is displayed 
             with server.add_gui_folder("Last clicked"):
                 x_value = server.add_gui_number(
                     label="x",
-                    initial_value=0,
+                    value=0,
                     disabled=True,
                     hint="x coordinate of the last clicked mesh",
                 )
                 y_value = server.add_gui_number(
                     label="y",
-                    initial_value=0,
+                    value=0,
                     disabled=True,
                     hint="y coordinate of the last clicked mesh",
                 )

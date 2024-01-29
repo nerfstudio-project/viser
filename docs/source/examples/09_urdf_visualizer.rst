@@ -52,7 +52,7 @@ Examples:
                     min=lower,
                     max=upper,
                     step=1e-3,
-                    initial_value=initial_angle,
+                    value=initial_angle,
                 )
                 slider.on_update(  # When sliders move, we update the URDF configuration.
                     lambda _: urdf.update_cfg(onp.array([gui.value for gui in gui_joints]))

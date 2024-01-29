@@ -21,7 +21,7 @@ def _(client: viser.ClientHandle) -> None:
         print(f"New camera on client {client.client_id}!")
 
     # Show the client ID in the GUI.
-    gui_info = client.add_gui_text("Client ID", initial_value=str(client.client_id))
+    gui_info = client.add_gui_text("Client ID", value=str(client.client_id))
     gui_info.disabled = True
 
 

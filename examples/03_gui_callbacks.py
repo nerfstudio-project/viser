@@ -36,12 +36,10 @@ def main() -> None:
     gui_plane.on_update(lambda _: update_plane())
 
     with server.add_gui_folder("Control", expand_by_default=False):
-        gui_show_frame = server.add_gui_checkbox("Show Frame", initial_value=True)
-        gui_show_everything = server.add_gui_checkbox(
-            "Show Everything", initial_value=True
-        )
+        gui_show_frame = server.add_gui_checkbox("Show Frame", value=True)
+        gui_show_everything = server.add_gui_checkbox("Show Everything", value=True)
         gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
-        gui_include_z = server.add_gui_checkbox("Z in dropdown", initial_value=True)
+        gui_include_z = server.add_gui_checkbox("Z in dropdown", value=True)
 
         @gui_include_z.on_update
         def _(_) -> None:
@@ -49,10 +47,10 @@ def main() -> None:
 
         with server.add_gui_folder("Sliders"):
             gui_location = server.add_gui_slider(
-                "Location", min=-5.0, max=5.0, step=0.05, initial_value=0.0
+                "Location", min=-5.0, max=5.0, step=0.05, value=0.0
             )
             gui_num_points = server.add_gui_slider(
-                "# Points", min=1000, max=200_000, step=1000, initial_value=10_000
+                "# Points", min=1000, max=200_000, step=1000, value=10_000
             )
 
     def draw_frame() -> None:
