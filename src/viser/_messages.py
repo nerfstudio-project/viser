@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union
 
 import numpy as onp
 import numpy.typing as onpt
@@ -434,7 +434,7 @@ class GuiAddSliderMessage(_GuiAddInputBase):
     step: Optional[float]
     initial_value: float
     precision: int
-    marks: Optional[List[GuiSliderMark]] = None
+    marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
 @dataclasses.dataclass
@@ -443,10 +443,10 @@ class GuiAddMultiSliderMessage(_GuiAddInputBase):
     max: float
     step: Optional[float]
     min_range: Optional[float]
-    initial_value: List[float]
+    initial_value: Tuple[float, ...]
     precision: int
     fixed_endpoints: bool = False
-    marks: Optional[List[GuiSliderMark]] = None
+    marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
 @dataclasses.dataclass

@@ -7,17 +7,15 @@ import {
   useMantineTheme,
   useComponentDefaultProps,
   Selectors,
-  getSize,
-  rem,
 } from '@mantine/styles';
 import {
   MantineTransition,
   Box,
   Transition,
 } from '@mantine/core';
-import { sizes, useSliderRootStyles, useThumbStyles, useTrackStyles, useMarksStyles } from './MultiSlider.styles';
+import { useSliderRootStyles, useThumbStyles, useTrackStyles, useMarksStyles } from './MultiSlider.styles';
 
-export function getClientPosition(event: any) {
+function getClientPosition(event: any) {
   if ('TouchEvent' in window && event instanceof window.TouchEvent) {
     const touch = event.touches[0];
     return touch.clientX;
@@ -87,7 +85,7 @@ export const SliderRoot = forwardRef<HTMLDivElement, SliderRootProps>(
       size,
       classNames,
       styles,
-      disabled,
+      disabled,  // eslint-disable-line @typescript-eslint/no-unused-vars
       unstyled,
       variant,
       ...others
@@ -423,11 +421,8 @@ export interface MultiSliderProps
   /** If true label will be not be hidden when user stops dragging */
   labelAlwaysOn?: boolean;
 
-  /** First thumb aria-label */
-  thumbFromLabel?: string;
-
-  /** Second thumb aria-label */
-  thumbToLabel?: string;
+  /** Thumb aria-label */
+  thumbLabels?: string[];
 
   /**If true slider label will appear on hover */
   showLabelOnHover?: boolean;
@@ -458,9 +453,7 @@ const defaultProps: Partial<MultiSliderProps> = {
   labelTransition: 'skew-down',
   labelTransitionDuration: 0,
   labelAlwaysOn: false,
-  thumbFromLabel: '',
   thumbChildren: null,
-  thumbToLabel: '',
   showLabelOnHover: true,
   disabled: false,
   scale: (v) => v,
@@ -490,8 +483,7 @@ export const MultiSlider = forwardRef<HTMLDivElement, MultiSliderProps>((props, 
     labelTransitionDuration,
     labelTransitionTimingFunction,
     labelAlwaysOn,
-    thumbFromLabel,
-    thumbToLabel,
+    thumbLabels,
     showLabelOnHover,
     thumbChildren,
     disabled,
@@ -751,7 +743,7 @@ export const MultiSlider = forwardRef<HTMLDivElement, MultiSliderProps>((props, 
           ref={(node) => {
             thumbs.current[index] = node;
           }}
-          thumbLabel={thumbFromLabel}
+          thumbLabel={thumbLabels ? thumbLabels[index] : ''}
           onMouseDown={() => handleThumbMouseDown(index)}
           onFocus={() => setFocused(index)}
           showLabelOnHover={showLabelOnHover}

@@ -149,6 +149,7 @@ function GeneratedInput({
 
   let labeled = true;
   let input = null;
+  let containerProps = {};
   switch (conf.type) {
     case "GuiAddButtonMessage":
       labeled = false;
@@ -268,29 +269,41 @@ function GeneratedInput({
           />
         </Flex>
       );
+
+      if (conf.marks?.some(x => x.label))
+        containerProps = { ...containerProps, "mb": "md" };
       break;
     case "GuiAddMultiSliderMessage":
-      return (
-        <Box pb="0.5em" px="xs">
-          {conf.label !== undefined && (<Text size="sm">{conf.label}</Text>)}
-          <MultiSlider
-            id={conf.id}
-            pt="0.2em"
-            showLabelOnHover={false}
-            min={conf.min}
-            max={conf.max}
-            mb={conf.marks?.some(x => x.label) && "xl" || undefined}
-            minRange={conf.min_range ?? undefined}
-            step={conf.step ?? undefined}
-            precision={conf.precision}
-            fixedEndpoints={conf.fixed_endpoints}
-            value={value}
-            onChange={updateValue}
-            marks={conf.marks || [{ value: conf.min }, { value: conf.max }]}
-            disabled={disabled}
-          />
-          </Box>
+      input = (
+        <MultiSlider
+          id={conf.id}
+          size="xs"
+          thumbSize={0}
+          styles={(theme) => ({
+            thumb: {
+              background: theme.fn.primaryColor(),
+              borderRadius: "0.1em",
+              height: "0.75em",
+              width: "0.625em",
+            },
+          })}
+          pt="0.2em"
+          showLabelOnHover={false}
+          min={conf.min}
+          max={conf.max}
+          step={conf.step ?? undefined}
+          precision={conf.precision}
+          value={value}
+          onChange={updateValue}
+          marks={conf.marks === null ? [{ value: conf.min }, { value: conf.max }] : conf.marks}
+          disabled={disabled}
+          fixedEndpoints={conf.fixed_endpoints}
+          minRange={conf.min_range || undefined}
+        />
       );
+
+      if (conf.marks?.some(x => x.label))
+        containerProps = { ...containerProps, "mb": "md" };
       break;
     case "GuiAddNumberMessage":
       input = (
@@ -511,7 +524,7 @@ function GeneratedInput({
     );
 
   return (
-    <Box pb="0.5em" px="xs">
+    <Box pb="0.5em" px="xs" {...containerProps}>
       {input}
     </Box>
   );
