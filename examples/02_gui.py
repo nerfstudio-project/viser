@@ -62,8 +62,8 @@ def main() -> None:
                 min=0,
                 max=100,
                 step=1,
-                initial_value=[0, 30, 100],
-                marks=[0, 25, 50, 75, (100, "max")],
+                initial_value=(0, 30, 100),
+                marks=(0, 25, 50, 75, (100, "max")),
             )
 
     # Pre-generate a point cloud to send.
