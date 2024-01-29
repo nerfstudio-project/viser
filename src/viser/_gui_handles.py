@@ -319,8 +319,10 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
                 label=self._impl.label,
                 container_id=self._impl.container_id,
                 hint=self._impl.hint,
-                initial_value=self._impl.initial_value,
+                value=self._impl.initial_value,
                 options=self._impl_options,
+                visible=self._impl.visible,
+                disabled=self._impl.disabled,
             )
         )
 
@@ -337,6 +339,7 @@ class GuiTabGroupHandle:
     _gui_api: GuiApi
     _container_id: str  # Parent.
     _order: float
+    _visible: bool
 
     @property
     def order(self) -> float:
@@ -374,6 +377,7 @@ class GuiTabGroupHandle:
                 tab_labels=tuple(self._labels),
                 tab_icons_base64=tuple(self._icons_base64),
                 tab_container_ids=tuple(tab._id for tab in self._tabs),
+                visible=self._visible,
             )
         )
 
@@ -567,6 +571,7 @@ class GuiMarkdownHandle:
                 id=self._id,
                 markdown=_parse_markdown(content, self._image_root),
                 container_id=self._container_id,
+                visible=self._visible,
             )
         )
 

@@ -40,10 +40,6 @@ interface GuiState {
   modals: Messages.GuiModalMessage[];
   guiOrderFromId: { [id: string]: number };
   guiConfigFromId: { [id: string]: GuiConfig };
-  guiValueFromId: { [id: string]: any };
-  guiAttributeFromId: {
-    [id: string]: { visible?: boolean; disabled?: boolean } | undefined;
-  };
 }
 
 interface GuiActions {
@@ -79,8 +75,6 @@ const cleanGuiState: GuiState = {
   modals: [],
   guiOrderFromId: {},
   guiConfigFromId: {},
-  guiValueFromId: {},
-  guiAttributeFromId: {},
 };
 
 export function computeRelativeLuminance(color: string) {
@@ -130,21 +124,18 @@ export function useGuiState(initialServer: string) {
           }),
         setGuiValue: (id, value) =>
           set((state) => {
-            state.guiValueFromId[id] = value;
+            const config = state.guiConfigFromId[id] as any;
+            state.guiConfigFromId[id] = {...config, value} as GuiConfig;
           }),
         setGuiVisible: (id, visible) =>
           set((state) => {
-            state.guiAttributeFromId[id] = {
-              ...state.guiAttributeFromId[id],
-              visible: visible,
-            };
+            const config = state.guiConfigFromId[id] as any;
+            state.guiConfigFromId[id] = {...config, visible} as GuiConfig;
           }),
         setGuiDisabled: (id, disabled) =>
           set((state) => {
-            state.guiAttributeFromId[id] = {
-              ...state.guiAttributeFromId[id],
-              disabled: disabled,
-            };
+            const config = state.guiConfigFromId[id] as any;
+            state.guiConfigFromId[id] = {...config, disabled} as GuiConfig;
           }),
         removeGui: (id) =>
           set((state) => {
@@ -153,8 +144,6 @@ export function useGuiState(initialServer: string) {
             delete state.guiIdSetFromContainerId[guiConfig.container_id]![id];
             delete state.guiOrderFromId[id];
             delete state.guiConfigFromId[id];
-            delete state.guiValueFromId[id];
-            delete state.guiAttributeFromId[id];
           }),
         resetGui: () =>
           set((state) => {
@@ -162,8 +151,6 @@ export function useGuiState(initialServer: string) {
             state.guiIdSetFromContainerId = {};
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
-            state.guiValueFromId = {};
-            state.guiAttributeFromId = {};
           }),
       })),
     ),
