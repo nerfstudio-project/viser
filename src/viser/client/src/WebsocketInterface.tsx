@@ -666,10 +666,9 @@ function useMessageHandler() {
                           evt.stopPropagation();
                         }}
                       >
-                        <GeneratedGuiContainer
-                          containerId={message.container_id}
-                          viewer={viewer}
-                        />
+                        <ViewerContext.Provider value={viewer}>
+                          <GeneratedGuiContainer containerId={message.container_id} />
+                        </ViewerContext.Provider>
                       </Paper>
                     </MantineProvider>
                   </Html>

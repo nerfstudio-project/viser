@@ -319,8 +319,10 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
                 label=self._impl.label,
                 container_id=self._impl.container_id,
                 hint=self._impl.hint,
-                initial_value=self._impl.initial_value,
+                value=self._impl.initial_value,
                 options=self._impl_options,
+                visible=self._impl.visible,
+                disabled=self._impl.disabled,
             )
         )
 
