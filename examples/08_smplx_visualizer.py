@@ -133,9 +133,9 @@ def make_gui_elements(
 
     # GUI elements: mesh settings + visibility.
     with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
-        gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
-        gui_wireframe = server.add_gui_checkbox("Wireframe", initial_value=False)
-        gui_show_controls = server.add_gui_checkbox("Handles", initial_value=False)
+        gui_rgb = server.add_gui_rgb("Color", value=(90, 200, 255))
+        gui_wireframe = server.add_gui_checkbox("Wireframe", value=False)
+        gui_show_controls = server.add_gui_checkbox("Handles", value=False)
 
         @gui_rgb.on_update
         def _(_):
@@ -167,7 +167,7 @@ def make_gui_elements(
         gui_betas = []
         for i in range(num_betas):
             beta = server.add_gui_slider(
-                f"beta{i}", min=-5.0, max=5.0, step=0.01, initial_value=0.0
+                f"beta{i}", min=-5.0, max=5.0, step=0.01, value=0.0
             )
             gui_betas.append(beta)
 
@@ -202,7 +202,7 @@ def make_gui_elements(
         for i in range(num_body_joints + 1):
             gui_joint = server.add_gui_vector3(
                 label=smplx.joint_names.JOINT_NAMES[i],
-                initial_value=(0.0, 0.0, 0.0),
+                value=(0.0, 0.0, 0.0),
                 step=0.05,
             )
             gui_joints.append(gui_joint)

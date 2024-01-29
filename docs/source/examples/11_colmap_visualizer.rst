@@ -68,16 +68,16 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                 min=1,
                 max=len(points3d),
                 step=1,
-                initial_value=min(len(points3d), 50_000),
+                value=min(len(points3d), 50_000),
             )
             gui_frames = server.add_gui_slider(
                 "Max frames",
                 min=1,
                 max=len(images),
                 step=1,
-                initial_value=min(len(images), 100),
+                value=min(len(images), 100),
             )
-            gui_point_size = server.add_gui_number("Point size", initial_value=0.05)
+            gui_point_size = server.add_gui_number("Point size", value=0.05)
 
             def visualize_colmap() -> None:
                 """Send all COLMAP elements to viser for visualization. This could be optimized

@@ -30,7 +30,7 @@ Examples of using modals in Viser.
 
                     gui_title = client.add_gui_text(
                         "Title",
-                        initial_value="My Modal",
+                        value="My Modal",
                     )
 
                     modal_button = client.add_gui_button("Show more modals")

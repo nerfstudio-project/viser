@@ -47,16 +47,16 @@ def main():
     gui_theme_code = server.add_gui_markdown("no theme applied yet")
 
     # GUI elements for controllable values.
-    titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
-    dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
-    show_logo = server.add_gui_checkbox("Show logo", initial_value=True)
-    show_share_button = server.add_gui_checkbox("Show share button", initial_value=True)
+    titlebar = server.add_gui_checkbox("Titlebar", value=True)
+    dark_mode = server.add_gui_checkbox("Dark mode", value=True)
+    show_logo = server.add_gui_checkbox("Show logo", value=True)
+    show_share_button = server.add_gui_checkbox("Show share button", value=True)
     brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
     control_layout = server.add_gui_dropdown(
         "Control layout", ("floating", "fixed", "collapsible")
     )
     control_width = server.add_gui_dropdown(
-        "Control width", ("small", "medium", "large"), initial_value="medium"
+        "Control width", ("small", "medium", "large"), value="medium"
     )
     synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
 

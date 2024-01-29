@@ -55,6 +55,35 @@ TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 T = TypeVar("T")
 
 
+@overload
+def _handle_value(
+    value: Optional[T], initial_value: Optional[T], allow_none: Literal[True]
+) -> Optional[T]:
+    ...
+
+
+@overload
+def _handle_value(
+    value: Optional[T], initial_value: Optional[T], allow_none: bool = ...
+) -> T:
+    ...
+
+
+def _handle_value(
+    value: Optional[T], initial_value: Optional[T], allow_none: bool = False
+):
+    """
+    Handles the deprecated `initial_value` argument for GUI elements.
+    """
+    if initial_value is not None:
+        assert value is None, "Cannot specify both value and initial_value."
+        warnings.warn("initial_value is deprecated. Use value instead.")
+        value = initial_value
+    if not allow_none:
+        assert value is not None, "Must specify either value or initial_value."
+    return value
+
+
 def _compute_step(x: Optional[float]) -> float:  # type: ignore
     """For number inputs: compute an increment size from some number.
 
@@ -261,6 +290,7 @@ class GuiApi(abc.ABC):
     def add_gui_tab_group(
         self,
         order: Optional[float] = None,
+        visible: bool = True,
     ) -> GuiTabGroupHandle:
         """Add a tab group.
 
@@ -280,6 +310,7 @@ class GuiApi(abc.ABC):
             _gui_api=self,
             _container_id=self._get_container_id(),
             _order=order,
+            _visible=visible,
         )
 
     def add_gui_markdown(
@@ -287,6 +318,7 @@ class GuiApi(abc.ABC):
         content: str,
         image_root: Optional[Path] = None,
         order: Optional[float] = None,
+        visible: bool = True,
     ) -> GuiMarkdownHandle:
         """Add markdown to the GUI.
 
@@ -294,6 +326,7 @@ class GuiApi(abc.ABC):
             content: Markdown content to display.
             image_root: Optional root directory to resolve relative image paths.
             order: Optional ordering, smallest values will be displayed first.
+            visible: Whether the component is visible.
 
         Returns:
             A handle that can be used to interact with the GUI element.
@@ -301,7 +334,7 @@ class GuiApi(abc.ABC):
         handle = GuiMarkdownHandle(
             _gui_api=self,
             _id=_make_unique_id(),
-            _visible=True,
+            _visible=visible,
             _container_id=self._get_container_id(),
             _order=_apply_default_order(order),
             _image_root=image_root,
@@ -391,6 +424,8 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        *,
+        value: Optional[TLiteralString] = None,
     ) -> GuiButtonGroupHandle[TLiteralString]:
         ...
 
@@ -403,6 +438,8 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        *,
+        value: Optional[TString] = None,
     ) -> GuiButtonGroupHandle[TString]:
         ...
 
@@ -414,6 +451,8 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        *,
+        value: Optional[TLiteralString | TString] = None,
     ) -> GuiButtonGroupHandle[Any]:  # Return types are specified in overloads.
         """Add a button group to the GUI.
 
@@ -428,7 +467,10 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        value = options[0]
+        if value is None:
+            value = options[0]
+        else:
+            assert value in options, "Initial value must be one of the options."
         id = _make_unique_id()
         order = _apply_default_order(order)
         return GuiButtonGroupHandle(
@@ -451,26 +493,28 @@ class GuiApi(abc.ABC):
     def add_gui_checkbox(
         self,
         label: str,
-        initial_value: bool,
+        value: Optional[bool] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[bool] = None,
     ) -> GuiInputHandle[bool]:
         """Add a checkbox to the GUI.
 
         Args:
             label: Label to display on the checkbox.
-            initial_value: Initial value of the checkbox.
+            value: Initial value of the checkbox.
             disabled: Whether the checkbox is disabled.
             visible: Whether the checkbox is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            initial_value: [DEPRECATED] Use `value` instead.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        value = initial_value
+        value = _handle_value(value, initial_value)
         assert isinstance(value, bool)
         id = _make_unique_id()
         order = _apply_default_order(order)
@@ -491,26 +535,28 @@ class GuiApi(abc.ABC):
     def add_gui_text(
         self,
         label: str,
-        initial_value: str,
+        value: Optional[str] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[str] = None,
     ) -> GuiInputHandle[str]:
         """Add a text input to the GUI.
 
         Args:
             label: Label to display on the text input.
-            initial_value: Initial value of the text input.
+            value: Initial value of the text input.
             disabled: Whether the text input is disabled.
             visible: Whether the text input is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            initial_value: [DEPRECATED] Use `value` instead.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        value = initial_value
+        value = _handle_value(value, initial_value)
         assert isinstance(value, str)
         id = _make_unique_id()
         order = _apply_default_order(order)
@@ -531,7 +577,7 @@ class GuiApi(abc.ABC):
     def add_gui_number(
         self,
         label: str,
-        initial_value: IntOrFloat,
+        value: Optional[IntOrFloat] = None,
         min: Optional[IntOrFloat] = None,
         max: Optional[IntOrFloat] = None,
         step: Optional[IntOrFloat] = None,
@@ -539,12 +585,13 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[IntOrFloat] = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a number input to the GUI, with user-specifiable bound and precision parameters.
 
         Args:
             label: Label to display on the number input.
-            initial_value: Initial value of the number input.
+            value: Initial value of the number input.
             min: Optional minimum value of the number input.
             max: Optional maximum value of the number input.
             step: Optional step size of the number input. Computed automatically if not
@@ -553,11 +600,12 @@ class GuiApi(abc.ABC):
             visible: Whether the number input is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            initial_value: [DEPRECATED] Use `value` instead.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        value = initial_value
+        value = _handle_value(value, initial_value)
 
         assert isinstance(value, (int, float))
 
@@ -600,7 +648,7 @@ class GuiApi(abc.ABC):
     def add_gui_vector2(
         self,
         label: str,
-        initial_value: Tuple[float, float] | onp.ndarray,
+        value: Optional[Tuple[float, float] | onp.ndarray] = None,
         min: Tuple[float, float] | onp.ndarray | None = None,
         max: Tuple[float, float] | onp.ndarray | None = None,
         step: Optional[float] = None,
@@ -608,12 +656,13 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[Tuple[float, float] | onp.ndarray] = None,
     ) -> GuiInputHandle[Tuple[float, float]]:
         """Add a length-2 vector input to the GUI.
 
         Args:
             label: Label to display on the vector input.
-            initial_value: Initial value of the vector input.
+            value: Initial value of the vector input.
             min: Optional minimum value of the vector input.
             max: Optional maximum value of the vector input.
             step: Optional step size of the vector input. Computed automatically if not
@@ -621,12 +670,12 @@ class GuiApi(abc.ABC):
             visible: Whether the vector input is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            initial_value: [DEPRECATED] Use `value` instead.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        value = initial_value
-        value = cast_vector(value, 2)
+        _value = cast_vector(_handle_value(value, initial_value), 2)
         min = cast_vector(min, 2) if min is not None else None
         max = cast_vector(max, 2) if max is not None else None
         id = _make_unique_id()
@@ -634,7 +683,7 @@ class GuiApi(abc.ABC):
 
         if step is None:
             possible_steps: List[float] = []
-            possible_steps.extend([_compute_step(x) for x in value])
+            possible_steps.extend([_compute_step(x) for x in _value])
             if min is not None:
                 possible_steps.extend([_compute_step(x) for x in min])
             if max is not None:
@@ -642,14 +691,14 @@ class GuiApi(abc.ABC):
             step = float(onp.min(possible_steps))
 
         return self._create_gui_input(
-            value,
+            _value,
             message=_messages.GuiAddVector2Message(
                 order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
                 hint=hint,
-                value=value,
+                value=_value,
                 min=min,
                 max=max,
                 step=step,
@@ -662,7 +711,7 @@ class GuiApi(abc.ABC):
     def add_gui_vector3(
         self,
         label: str,
-        initial_value: Tuple[float, float, float] | onp.ndarray,
+        value: Optional[Tuple[float, float, float] | onp.ndarray] = None,
         min: Tuple[float, float, float] | onp.ndarray | None = None,
         max: Tuple[float, float, float] | onp.ndarray | None = None,
         step: Optional[float] = None,
@@ -670,12 +719,13 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[Tuple[float, float, float] | onp.ndarray] = None,
     ) -> GuiInputHandle[Tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI.
 
         Args:
             label: Label to display on the vector input.
-            initial_value: Initial value of the vector input.
+            value: Initial value of the vector input.
             min: Optional minimum value of the vector input.
             max: Optional maximum value of the vector input.
             step: Optional step size of the vector input. Computed automatically if not
@@ -683,12 +733,12 @@ class GuiApi(abc.ABC):
             visible: Whether the vector input is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            initial_value: [DEPRECATED] Use `value` instead.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        value = initial_value
-        value = cast_vector(value, 2)
+        _value = cast_vector(_handle_value(value, initial_value), 2)
         min = cast_vector(min, 3) if min is not None else None
         max = cast_vector(max, 3) if max is not None else None
         id = _make_unique_id()
@@ -696,7 +746,7 @@ class GuiApi(abc.ABC):
 
         if step is None:
             possible_steps: List[float] = []
-            possible_steps.extend([_compute_step(x) for x in value])
+            possible_steps.extend([_compute_step(x) for x in _value])
             if min is not None:
                 possible_steps.extend([_compute_step(x) for x in min])
             if max is not None:
@@ -704,14 +754,14 @@ class GuiApi(abc.ABC):
             step = float(onp.min(possible_steps))
 
         return self._create_gui_input(
-            value,
+            _value,
             message=_messages.GuiAddVector3Message(
                 order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
                 hint=hint,
-                value=value,
+                value=_value,
                 min=min,
                 max=max,
                 step=step,
@@ -727,11 +777,12 @@ class GuiApi(abc.ABC):
         self,
         label: str,
         options: Sequence[TLiteralString],
-        initial_value: Optional[TLiteralString] = None,
+        value: Optional[TLiteralString] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[TLiteralString | TString] = None,
     ) -> GuiDropdownHandle[TLiteralString]:
         ...
 
@@ -740,11 +791,12 @@ class GuiApi(abc.ABC):
         self,
         label: str,
         options: Sequence[TString],
-        initial_value: Optional[TString] = None,
+        value: Optional[TString] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[TLiteralString | TString] = None,
     ) -> GuiDropdownHandle[TString]:
         ...
 
@@ -752,41 +804,43 @@ class GuiApi(abc.ABC):
         self,
         label: str,
         options: Sequence[TLiteralString] | Sequence[TString],
-        initial_value: Optional[TLiteralString | TString] = None,
+        value: Optional[TLiteralString | TString] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[TLiteralString | TString] = None,
     ) -> GuiDropdownHandle[Any]:  # Output type is specified in overloads.
         """Add a dropdown to the GUI.
 
         Args:
             label: Label to display on the dropdown.
             options: Sequence of options to display in the dropdown.
-            initial_value: Initial value of the dropdown.
+            value: Initial value of the dropdown.
             disabled: Whether the dropdown is disabled.
             visible: Whether the dropdown is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            initial_value: [DEPRECATED] Use `value` instead.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        value = initial_value
-        if value is None:
-            value = options[0]
+        _value = _handle_value(value, initial_value, allow_none=True)
+        if _value is None:
+            _value = options[0]
         id = _make_unique_id()
         order = _apply_default_order(order)
         return GuiDropdownHandle(
             self._create_gui_input(
-                value,
+                _value,
                 message=_messages.GuiAddDropdownMessage(
                     order=order,
                     id=id,
                     label=label,
                     container_id=self._get_container_id(),
                     hint=hint,
-                    value=value,
+                    value=_value,
                     options=tuple(options),
                     disabled=disabled,
                     visible=visible,
@@ -801,11 +855,12 @@ class GuiApi(abc.ABC):
         min: IntOrFloat,
         max: IntOrFloat,
         step: IntOrFloat,
-        initial_value: IntOrFloat,
+        value: Optional[IntOrFloat] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[IntOrFloat] = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a slider to the GUI. Types of the min, max, step, and initial value should match.
 
@@ -814,27 +869,28 @@ class GuiApi(abc.ABC):
             min: Minimum value of the slider.
             max: Maximum value of the slider.
             step: Step size of the slider.
-            initial_value: Initial value of the slider.
+            value: Initial value of the slider.
             disabled: Whether the slider is disabled.
             visible: Whether the slider is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            initial_value: [DEPRECATED] Use `value` instead.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        value = initial_value
+        _value: IntOrFloat = _handle_value(value, initial_value)
         assert max >= min
         if step > max - min:
             step = max - min
-        assert max >= value >= min
+        assert max >= _value >= min
 
         # GUI callbacks cast incoming values to match the type of the initial value. If
         # the min, max, or step is a float, we should cast to a float.
-        if type(value) is int and (
+        if type(_value) is int and (
             type(min) is float or type(max) is float or type(step) is float
         ):
-            value = float(value)  # type: ignore
+            _value = float(_value)  # type: ignore
 
         # TODO: as of 6/5/2023, this assert will break something in nerfstudio. (at
         # least LERF)
@@ -844,7 +900,7 @@ class GuiApi(abc.ABC):
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
-            value,
+            _value,
             message=_messages.GuiAddSliderMessage(
                 order=order,
                 id=id,
@@ -854,7 +910,7 @@ class GuiApi(abc.ABC):
                 min=min,
                 max=max,
                 step=step,
-                value=value,
+                value=_value,
                 precision=_compute_precision_digits(step),
                 visible=visible,
                 disabled=disabled,
@@ -865,27 +921,29 @@ class GuiApi(abc.ABC):
     def add_gui_rgb(
         self,
         label: str,
-        initial_value: Tuple[int, int, int],
+        value: Optional[Tuple[int, int, int]] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[Tuple[int, int, int]] = None,
     ) -> GuiInputHandle[Tuple[int, int, int]]:
         """Add an RGB picker to the GUI.
 
         Args:
             label: Label to display on the RGB picker.
-            initial_value: Initial value of the RGB picker.
+            value: Initial value of the RGB picker.
             disabled: Whether the RGB picker is disabled.
             visible: Whether the RGB picker is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            initial_value: [DEPRECATED] Use `value` instead.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
 
-        value = initial_value
+        value = _handle_value(value, initial_value)
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
@@ -905,26 +963,28 @@ class GuiApi(abc.ABC):
     def add_gui_rgba(
         self,
         label: str,
-        initial_value: Tuple[int, int, int, int],
+        value: Optional[Tuple[int, int, int, int]] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
+        initial_value: Optional[Tuple[int, int, int, int]] = None,
     ) -> GuiInputHandle[Tuple[int, int, int, int]]:
         """Add an RGBA picker to the GUI.
 
         Args:
             label: Label to display on the RGBA picker.
-            initial_value: Initial value of the RGBA picker.
+            value: Initial value of the RGBA picker.
             disabled: Whether the RGBA picker is disabled.
             visible: Whether the RGBA picker is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            initial_value: [DEPRECATED] Use `value` instead.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        value = initial_value
+        value = _handle_value(value, initial_value)
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(

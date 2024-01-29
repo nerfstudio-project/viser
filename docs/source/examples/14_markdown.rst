@@ -26,7 +26,7 @@ Viser GUI has MDX 2 support.
         here = Path(__file__).absolute().parent
 
         button = server.add_gui_button("Remove blurb")
-        checkbox = server.add_gui_checkbox("Visibility", initial_value=True)
+        checkbox = server.add_gui_checkbox("Visibility", value=True)
 
         markdown_source = (here / "./assets/mdx_example.mdx").read_text()
         markdown_blurb = server.add_gui_markdown(
