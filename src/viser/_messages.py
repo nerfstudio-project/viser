@@ -353,6 +353,7 @@ class GuiAddFolderMessage(Message):
     label: str
     container_id: str
     expand_by_default: bool
+    visible: bool
 
 
 @dataclasses.dataclass
@@ -361,6 +362,7 @@ class GuiAddMarkdownMessage(Message):
     id: str
     markdown: str
     container_id: str
+    visible: bool
 
 
 @dataclasses.dataclass
@@ -371,6 +373,7 @@ class GuiAddTabGroupMessage(Message):
     tab_labels: Tuple[str, ...]
     tab_icons_base64: Tuple[Union[str, None], ...]
     tab_container_ids: Tuple[str, ...]
+    visible: bool
 
 
 @dataclasses.dataclass
@@ -382,7 +385,9 @@ class _GuiAddInputBase(Message):
     label: str
     container_id: str
     hint: Optional[str]
-    initial_value: Any
+    value: Any
+    visible: bool
+    disabled: bool
 
 
 @dataclasses.dataclass
@@ -399,9 +404,9 @@ class GuiCloseModalMessage(Message):
 
 @dataclasses.dataclass
 class GuiAddButtonMessage(_GuiAddInputBase):
-    # All GUI elements currently need an `initial_value` field.
+    # All GUI elements currently need an `value` field.
     # This makes our job on the frontend easier.
-    initial_value: bool
+    value: bool
     color: Optional[
         Literal[
             "dark",
@@ -428,13 +433,13 @@ class GuiAddSliderMessage(_GuiAddInputBase):
     min: float
     max: float
     step: Optional[float]
-    initial_value: float
+    value: float
     precision: int
 
 
 @dataclasses.dataclass
 class GuiAddNumberMessage(_GuiAddInputBase):
-    initial_value: float
+    value: float
     precision: int
     step: float
     min: Optional[float]
@@ -443,22 +448,22 @@ class GuiAddNumberMessage(_GuiAddInputBase):
 
 @dataclasses.dataclass
 class GuiAddRgbMessage(_GuiAddInputBase):
-    initial_value: Tuple[int, int, int]
+    value: Tuple[int, int, int]
 
 
 @dataclasses.dataclass
 class GuiAddRgbaMessage(_GuiAddInputBase):
-    initial_value: Tuple[int, int, int, int]
+    value: Tuple[int, int, int, int]
 
 
 @dataclasses.dataclass
 class GuiAddCheckboxMessage(_GuiAddInputBase):
-    initial_value: bool
+    value: bool
 
 
 @dataclasses.dataclass
 class GuiAddVector2Message(_GuiAddInputBase):
-    initial_value: Tuple[float, float]
+    value: Tuple[float, float]
     min: Optional[Tuple[float, float]]
     max: Optional[Tuple[float, float]]
     step: float
@@ -467,7 +472,7 @@ class GuiAddVector2Message(_GuiAddInputBase):
 
 @dataclasses.dataclass
 class GuiAddVector3Message(_GuiAddInputBase):
-    initial_value: Tuple[float, float, float]
+    value: Tuple[float, float, float]
     min: Optional[Tuple[float, float, float]]
     max: Optional[Tuple[float, float, float]]
     step: float
@@ -476,18 +481,18 @@ class GuiAddVector3Message(_GuiAddInputBase):
 
 @dataclasses.dataclass
 class GuiAddTextMessage(_GuiAddInputBase):
-    initial_value: str
+    value: str
 
 
 @dataclasses.dataclass
 class GuiAddDropdownMessage(_GuiAddInputBase):
-    initial_value: str
+    value: str
     options: Tuple[str, ...]
 
 
 @dataclasses.dataclass
 class GuiAddButtonGroupMessage(_GuiAddInputBase):
-    initial_value: str
+    value: str
     options: Tuple[str, ...]
 
 
