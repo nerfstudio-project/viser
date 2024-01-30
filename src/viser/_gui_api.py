@@ -136,18 +136,40 @@ def _apply_default_order(order: Optional[float]) -> float:
 class ComponentHandle(Generic[TProps]):
     _id: str
     _props: TProps
-    _api_update: Callable[[str, dict], None]
+    _gui_api: 'GuiApi'
     _update_timestamp: float
+    _container_id: str
+    _backup_container_id: Optional[str] = None
 
-    def __init__(self, update: Callable[[str, Dict[str, Any]]], id: str, props: TProps):
+    def __init__(self, gui_api: 'GuiApi', id: str, props: TProps):
         self._id = id
         self._props = props
-        self._api_update = update
+        self._gui_api = gui_api
         self._update_timestamp = time.time()
+        self._container_id = gui_api._get_container_id()
+        props._order = _apply_default_order(props._order)
+        self._register()
+
+    def _register(self):
+        self._gui_api._get_api()._queue(_messages.GuiAddComponentMessage(
+            order=self.order,
+            id=self.id,
+            props=self._props,
+            container_id=self._container_id,
+        ))
 
     @property
     def id(self):
         return self._id
+
+    def __enter__(self):
+        self._backup_container_id = self._gui_api._get_container_id()
+        self._gui_api._set_container_id(self.id)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._gui_api._set_container_id(self._backup_container_id)
+        return None
 
     def _update(self, **kwargs):
         for k, v in kwargs.items():
@@ -157,7 +179,7 @@ class ComponentHandle(Generic[TProps]):
         self._update_timestamp = time.time()
 
         # Raise message to update component.
-        self._api_update(self.id, kwargs)
+        self._gui_api._get_api()._queue(_messages.GuiUpdateComponentMessage(id=id, **kwargs))
 
     def property(self, name: str) -> Property[T]:
         props = object.__getattribute__(self, "_props")
@@ -269,13 +291,6 @@ class GuiApi(abc.ABC, GuiApiMixin):
         self._get_api()._queue(_messages.GuiUpdateMessage(id=id, **kwargs))
 
     def gui_add_component(self, props: TProps) -> TProps:
-        props.order = _apply_default_order(props.order)
-        handle = ComponentHandle(self._update_component_props, id=_make_unique_id(), props=props)
-        self._get_api()._queue(_messages.GuiAddComponentMessage(
-            order=handle.order,
-            id=handle.id,
-            props=props,
-            container_id=self._get_container_id()
-        ))
+        handle = ComponentHandle(self, id=_make_unique_id(), props=props)
         self._gui_handle_from_id[handle.id] = handle
         return handle

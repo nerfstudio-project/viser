@@ -16,7 +16,7 @@ def main():
     with server.add_gui_folder("Read-only"):
         gui_counter = server.add_gui_number(
             "Counter",
-            initial_value=0,
+            value=0,
             disabled=True,
         )
 
@@ -25,38 +25,38 @@ def main():
             min=0,
             max=100,
             step=1,
-            initial_value=0,
+            value=0,
             disabled=True,
         )
 
     with server.add_gui_folder("Editable"):
         gui_vector2 = server.add_gui_vector2(
             "Position",
-            initial_value=(0.0, 0.0),
+            value=(0.0, 0.0),
             step=0.1,
         )
         gui_vector3 = server.add_gui_vector3(
             "Size",
-            initial_value=(1.0, 1.0, 1.0),
+            value=(1.0, 1.0, 1.0),
             step=0.25,
         )
         with server.add_gui_folder("Text toggle"):
             gui_checkbox_hide = server.add_gui_checkbox(
                 "Hide",
-                initial_value=False,
+                value=False,
             )
             gui_text = server.add_gui_text(
                 "Text",
-                initial_value="Hello world",
+                value="Hello world",
             )
             gui_button = server.add_gui_button("Button")
             gui_checkbox_disable = server.add_gui_checkbox(
                 "Disable",
-                initial_value=False,
+                value=False,
             )
             gui_rgb = server.add_gui_rgb(
                 "Color",
-                initial_value=(255, 255, 0),
+                value=(255, 255, 0),
             )
 
     # Pre-generate a point cloud to send.
