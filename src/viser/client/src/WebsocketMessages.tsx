@@ -2,7 +2,8 @@
 // This file should not be manually modified.
 export type Property<T> = { path: string } | { value: T };
 
-/** Button(*args, **kwargs)
+/** Button component
+ *
  *
  * (automatically generated)
  */
@@ -29,7 +30,7 @@ export interface ButtonProps {
   disabled: boolean;
   hint: string | null;
 }
-/** TextInput(value: str, label: str, hint: Optional[str], disabled: bool = False)
+/** TextInput(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, value: str, label: str, hint: Optional[str], disabled: bool = False)
  *
  * (automatically generated)
  */
@@ -40,7 +41,7 @@ export interface TextInputProps {
   hint: string | null;
   disabled: boolean;
 }
-/** NumberInput(label: str, hint: Optional[str], disabled: bool = False, *, value: float, step: float, min: Optional[float] = None, max: Optional[float] = None, precision: Optional[int] = None)
+/** NumberInput(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, value: float, label: str, hint: Optional[str], disabled: bool = False, step: float, min: Optional[float] = None, max: Optional[float] = None, precision: Optional[int] = None)
  *
  * (automatically generated)
  */
@@ -55,7 +56,7 @@ export interface NumberInputProps {
   max: number | null;
   precision: number | null;
 }
-/** Slider(label: str, hint: Optional[str], disabled: bool = False, *, value: float, min: Optional[float] = None, max: Optional[float] = None, step: Optional[float] = None, precision: Optional[int] = None)
+/** Slider(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, value: float, label: str, hint: Optional[str], disabled: bool = False, min: Optional[float] = None, max: Optional[float] = None, step: Optional[float] = None, precision: Optional[int] = None)
  *
  * (automatically generated)
  */
@@ -70,7 +71,7 @@ export interface SliderProps {
   step: number | null;
   precision: number | null;
 }
-/** Checkbox(label: str, hint: Optional[str], disabled: bool = False, *, value: bool)
+/** Checkbox(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, value: bool, label: str, hint: Optional[str], disabled: bool = False)
  *
  * (automatically generated)
  */
@@ -81,7 +82,7 @@ export interface CheckboxProps {
   hint: string | null;
   disabled: boolean;
 }
-/** RgbInput(label: str, hint: Optional[str], disabled: bool = False, *, value: Tuple[int, int, int])
+/** RgbInput(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, value: Tuple[int, int, int], label: str, hint: Optional[str], disabled: bool = False)
  *
  * (automatically generated)
  */
@@ -92,7 +93,7 @@ export interface RgbInputProps {
   hint: string | null;
   disabled: boolean;
 }
-/** RgbaInput(label: str, hint: Optional[str], disabled: bool = False, *, value: Tuple[int, int, int, int])
+/** RgbaInput(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, value: Tuple[int, int, int, int], label: str, hint: Optional[str], disabled: bool = False)
  *
  * (automatically generated)
  */
@@ -103,7 +104,7 @@ export interface RgbaInputProps {
   hint: string | null;
   disabled: boolean;
 }
-/** Folder(*args, **kwargs)
+/** Folder(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, label: str, expand_by_default: bool = True)
  *
  * (automatically generated)
  */
@@ -112,7 +113,7 @@ export interface FolderProps {
   label: string;
   expand_by_default: boolean;
 }
-/** Markdown(*args, **kwargs)
+/** Markdown(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, markdown: str)
  *
  * (automatically generated)
  */
@@ -120,7 +121,7 @@ export interface MarkdownProps {
   type: "Markdown";
   markdown: string;
 }
-/** TabGroup(*args, **kwargs)
+/** TabGroup(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, tab_labels: Tuple[str, ...], tab_icons_base64: Tuple[Optional[str], ...], tab_container_ids: Tuple[str, ...])
  *
  * (automatically generated)
  */
@@ -130,7 +131,7 @@ export interface TabGroupProps {
   tab_icons_base64: (string | null)[];
   tab_container_ids: string[];
 }
-/** Modal(*args, **kwargs)
+/** Modal(*, order: float = <property object at 0x7fb18dbf9c10>, id: str = <property object at 0x7fb18dbf9bc0>, title: str)
  *
  * (automatically generated)
  */
@@ -140,7 +141,7 @@ export interface ModalProps {
   id: string;
   title: string;
 }
-/** Vector2Input(label: str, hint: Optional[str], disabled: bool = False, *, value: Tuple[float, float], step: float, min: Optional[Tuple[float, float]] = None, max: Optional[Tuple[float, float]] = None, precision: Optional[int] = None)
+/** Vector2Input(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, value: Tuple[float, float], label: str, hint: Optional[str], disabled: bool = False, step: float, min: Optional[Tuple[float, float]] = None, max: Optional[Tuple[float, float]] = None, precision: Optional[int] = None)
  *
  * (automatically generated)
  */
@@ -155,7 +156,7 @@ export interface Vector2InputProps {
   max: [number, number] | null;
   precision: number | null;
 }
-/** Vector3Input(label: str, hint: Optional[str], disabled: bool = False, *, value: Tuple[float, float, float], min: Optional[Tuple[float, float, float]], max: Optional[Tuple[float, float, float]], step: float, precision: int)
+/** Vector3Input(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, value: Tuple[float, float, float], label: str, hint: Optional[str], disabled: bool = False, min: Optional[Tuple[float, float, float]], max: Optional[Tuple[float, float, float]], step: float, precision: int)
  *
  * (automatically generated)
  */
@@ -170,7 +171,7 @@ export interface Vector3InputProps {
   step: number;
   precision: number;
 }
-/** Dropdown(label: str, hint: Optional[str], disabled: bool = False, *, value: Optional[str] = None, options: Tuple[str, ...])
+/** Dropdown(*, order: dataclasses.InitVar[typing.Optional[float]] = <property object at 0x7fb18dbf9c10>, value: Optional[str] = None, label: str, hint: Optional[str], disabled: bool = False, options: Tuple[str, ...])
  *
  * (automatically generated)
  */
