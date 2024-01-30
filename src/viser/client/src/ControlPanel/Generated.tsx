@@ -27,6 +27,7 @@ import {
   TextInput,
   Tooltip,
 } from "@mantine/core";
+import { MultiSlider } from "./MultiSlider";
 import React from "react";
 import Markdown from "../Markdown";
 import { ErrorBoundary } from "react-error-boundary";
@@ -148,6 +149,7 @@ function GeneratedInput({
 
   let labeled = true;
   let input = null;
+  let containerProps = {};
   switch (conf.type) {
     case "GuiAddButtonMessage":
       labeled = false;
@@ -205,43 +207,92 @@ function GeneratedInput({
     case "GuiAddSliderMessage":
       input = (
         <Flex justify="space-between">
-          <Box sx={{ flexGrow: 1 }}>
-            <Slider
-              id={conf.id}
-              size="xs"
-              thumbSize={0}
-              styles={(theme) => ({
-                thumb: {
-                  background: theme.fn.primaryColor(),
-                  borderRadius: "0.1em",
-                  height: "0.75em",
-                  width: "0.625em",
-                },
-              })}
-              pt="0.2em"
-              showLabelOnHover={false}
-              min={conf.min}
-              max={conf.max}
-              step={conf.step ?? undefined}
-              precision={conf.precision}
-              value={value}
-              onChange={updateValue}
-              marks={[{ value: conf.min }, { value: conf.max }]}
-              disabled={disabled}
-            />
-            <Flex
-              justify="space-between"
-              fz="0.6rem"
-              c="dimmed"
-              lh="1.2em"
-              lts="-0.5px"
-              mt="-0.0625em"
-              mb="-0.4em"
-            >
-              <Text>{parseInt(conf.min.toFixed(6))}</Text>
-              <Text>{parseInt(conf.max.toFixed(6))}</Text>
-            </Flex>
-          </Box>
+          <Slider
+            id={conf.id}
+            size="xs"
+            thumbSize={0}
+            style={{ flexGrow: 1 }}
+            styles={(theme) => ({
+              thumb: {
+                background: theme.fn.primaryColor(),
+                borderRadius: "0.1rem",
+                height: "0.75rem",
+                width: "0.625rem",
+              },
+              trackContainer: {
+                zIndex: 3,
+                position: "relative",
+              },
+              markLabel: {
+                transform: "translate(-50%, 0.03rem)",
+                fontSize: "0.6rem",
+                textAlign: "center",
+              },
+              marksContainer: {
+                left: "0.2rem",
+                right: "0.2rem",
+              },
+              markWrapper: {
+                position: "absolute",
+                top: `0.03rem`,
+                ...(conf.marks === null
+                  ? /*  Shift the mark labels so they don't spill too far out the left/right when we only have min and max marks. */
+                    {
+                      ":first-child": {
+                        "div:nth-child(2)": {
+                          transform: "translate(-0.2rem, 0.03rem)",
+                        },
+                      },
+                      ":last-child": {
+                        "div:nth-child(2)": {
+                          transform: "translate(-90%, 0.03rem)",
+                        },
+                      },
+                    }
+                  : {}),
+              },
+              mark: {
+                border: "0px solid transparent",
+                background:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[4]
+                    : theme.colors.gray[2],
+                width: "0.42rem",
+                height: "0.42rem",
+                transform: `translateX(-50%)`,
+              },
+              markFilled: {
+                background: disabled
+                  ? theme.colorScheme === "dark"
+                    ? theme.colors.dark[3]
+                    : theme.colors.gray[4]
+                  : theme.fn.primaryColor(),
+              },
+            })}
+            pt="0.2em"
+            showLabelOnHover={false}
+            min={conf.min}
+            max={conf.max}
+            step={conf.step ?? undefined}
+            precision={conf.precision}
+            value={value}
+            onChange={updateValue}
+            marks={
+              conf.marks === null
+                ? [
+                    {
+                      value: conf.min,
+                      label: `${parseInt(conf.min.toFixed(6))}`,
+                    },
+                    {
+                      value: conf.max,
+                      label: `${parseInt(conf.max.toFixed(6))}`,
+                    },
+                  ]
+                : conf.marks
+            }
+            disabled={disabled}
+          />
           <NumberInput
             value={value}
             onChange={(newValue) => {
@@ -267,6 +318,100 @@ function GeneratedInput({
           />
         </Flex>
       );
+      break;
+    case "GuiAddMultiSliderMessage":
+      input = (
+        <MultiSlider
+          id={conf.id}
+          size="xs"
+          thumbSize={0}
+          styles={(theme) => ({
+            thumb: {
+              background: theme.fn.primaryColor(),
+              borderRadius: "0.1rem",
+              height: "0.75rem",
+              width: "0.625rem",
+            },
+            trackContainer: {
+              zIndex: 3,
+              position: "relative",
+            },
+            markLabel: {
+              transform: "translate(-50%, 0.03rem)",
+              fontSize: "0.6rem",
+              textAlign: "center",
+            },
+            marksContainer: {
+              left: "0.2rem",
+              right: "0.2rem",
+            },
+            markWrapper: {
+              position: "absolute",
+              top: `0.03rem`,
+              ...(conf.marks === null
+                ? /*  Shift the mark labels so they don't spill too far out the left/right when we only have min and max marks. */
+                  {
+                    ":first-child": {
+                      "div:nth-child(2)": {
+                        transform: "translate(-0.2rem, 0.03rem)",
+                      },
+                    },
+                    ":last-child": {
+                      "div:nth-child(2)": {
+                        transform: "translate(-90%, 0.03rem)",
+                      },
+                    },
+                  }
+                : {}),
+            },
+            mark: {
+              border: "0px solid transparent",
+              background:
+                theme.colorScheme === "dark"
+                  ? theme.colors.dark[4]
+                  : theme.colors.gray[2],
+              width: "0.42rem",
+              height: "0.42rem",
+              transform: `translateX(-50%)`,
+            },
+            markFilled: {
+              background: disabled
+                ? theme.colorScheme === "dark"
+                  ? theme.colors.dark[3]
+                  : theme.colors.gray[4]
+                : theme.fn.primaryColor(),
+            },
+          })}
+          pt="0.2em"
+          showLabelOnHover={false}
+          min={conf.min}
+          max={conf.max}
+          step={conf.step ?? undefined}
+          precision={conf.precision}
+          value={value}
+          onChange={updateValue}
+          marks={
+            conf.marks === null
+              ? [
+                  {
+                    value: conf.min,
+                    label: `${parseInt(conf.min.toFixed(6))}`,
+                  },
+                  {
+                    value: conf.max,
+                    label: `${parseInt(conf.max.toFixed(6))}`,
+                  },
+                ]
+              : conf.marks
+          }
+          disabled={disabled}
+          fixedEndpoints={conf.fixed_endpoints}
+          minRange={conf.min_range || undefined}
+        />
+      );
+
+      if (conf.marks?.some((x) => x.label) || conf.marks === null)
+        containerProps = { ...containerProps, mb: "xs" };
       break;
     case "GuiAddNumberMessage":
       input = (
@@ -487,7 +632,7 @@ function GeneratedInput({
     );
 
   return (
-    <Box pb="0.5em" px="xs">
+    <Box pb="0.5em" px="xs" {...containerProps}>
       {input}
     </Box>
   );
