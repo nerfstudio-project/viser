@@ -349,8 +349,11 @@ class MessageApi(abc.ABC):
     ) -> GlbHandle:
         """Add a general 3D asset via binary glTF (GLB).
 
-        To load glTF files from disk, you can convert to GLB via a library like
-        `pygltflib`.
+        For glTF files, it's often simpler to use `trimesh.load()` with
+        `.add_mesh_trimesh()`. This will call `.add_glb()` under the hood.
+
+        For glTF features not supported by trimesh, glTF to GLB conversion can
+        also be done programatically with libraries like `pygltflib`.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
