@@ -19,7 +19,6 @@ from typing import (
     Sequence,
     Tuple,
     TypeVar,
-    Union,
     overload,
 )
 
@@ -794,13 +793,11 @@ class GuiApi(abc.ABC):
         max: IntOrFloat,
         step: IntOrFloat,
         initial_value: IntOrFloat,
+        marks: Optional[Tuple[IntOrFloat | Tuple[IntOrFloat, str], ...]] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-        marks: Optional[
-            Tuple[Union[Tuple[IntOrFloat, Optional[str]], IntOrFloat], ...]
-        ] = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a slider to the GUI. Types of the min, max, step, and initial value should match.
 
@@ -810,11 +807,13 @@ class GuiApi(abc.ABC):
             max: Maximum value of the slider.
             step: Step size of the slider.
             initial_value: Initial value of the slider.
+            marks: Tuple of marks to display below the slider. Each mark should
+                either be a numerical or a (number, label) tuple, where the
+                label is provided as a string.
             disabled: Whether the slider is disabled.
             visible: Whether the slider is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
-            marks: List of marks to display below the slider.
 
         Returns:
             A handle that can be used to interact with the GUI element.
@@ -826,6 +825,8 @@ class GuiApi(abc.ABC):
 
         # GUI callbacks cast incoming values to match the type of the initial value. If
         # the min, max, or step is a float, we should cast to a float.
+        #
+        # This should also match what the IntOrFloat TypeVar resolves to.
         if type(initial_value) is int and (
             type(min) is float or type(max) is float or type(step) is float
         ):
@@ -872,30 +873,32 @@ class GuiApi(abc.ABC):
         max: IntOrFloat,
         step: IntOrFloat,
         initial_value: Tuple[IntOrFloat, ...],
+        min_range: Optional[IntOrFloat] = None,
+        fixed_endpoints: bool = False,
+        marks: Optional[Tuple[IntOrFloat | Tuple[IntOrFloat, str], ...]] = None,
         disabled: bool = False,
         visible: bool = True,
-        min_range: Optional[IntOrFloat] = None,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-        fixed_endpoints: bool = False,
-        marks: Optional[
-            Tuple[Union[Tuple[IntOrFloat, Optional[str]], IntOrFloat], ...]
-        ] = None,
     ) -> GuiInputHandle[Tuple[IntOrFloat, ...]]:
         """Add a multi slider to the GUI. Types of the min, max, step, and initial value should match.
+
         Args:
             label: Label to display on the slider.
             min: Minimum value of the slider.
             max: Maximum value of the slider.
             step: Step size of the slider.
             initial_value: Initial values of the slider.
+            min_range: Optional minimum difference between two values of the slider.
+            fixed_endpoints: Whether the endpoints of the slider are fixed.
+            marks: Tuple of marks to display below the slider. Each mark should
+                either be a numerical or a (number, label) tuple, where the
+                label is provided as a string.
             disabled: Whether the slider is disabled.
             visible: Whether the slider is visible.
-            min_range: Optional minimum difference between two values of the slider.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
-            fixed_endpoints: Whether the endpoints of the slider are fixed.
-            marks: List of marks to display below the slider.
+
         Returns:
             A handle that can be used to interact with the GUI element.
         """
@@ -903,7 +906,18 @@ class GuiApi(abc.ABC):
         if step > max - min:
             step = max - min
         assert all(max >= x >= min for x in initial_value)
-        _initial_value = tuple(float(x) for x in initial_value)
+
+        # GUI callbacks cast incoming values to match the type of the initial value. If
+        # any of the arguments are floats, we should always use a float value.
+        #
+        # This should also match what the IntOrFloat TypeVar resolves to.
+        if (
+            type(min) is float
+            or type(max) is float
+            or type(step) is float
+            or type(min_range) is float
+        ):
+            initial_value = tuple(float(x) for x in initial_value)  # type: ignore
 
         id = _make_unique_id()
         order = _apply_default_order(order)
@@ -919,7 +933,7 @@ class GuiApi(abc.ABC):
                 min_range=min_range,
                 max=max,
                 step=step,
-                initial_value=_initial_value,
+                initial_value=initial_value,
                 fixed_endpoints=fixed_endpoints,
                 precision=_compute_precision_digits(step),
                 marks=tuple(
