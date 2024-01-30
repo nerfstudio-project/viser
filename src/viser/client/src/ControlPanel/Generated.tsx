@@ -207,47 +207,71 @@ function GeneratedInput({
     case "GuiAddSliderMessage":
       input = (
         <Flex justify="space-between">
-          <Box sx={{ flexGrow: 1 }}>
-            <Slider
-              id={conf.id}
-              size="xs"
-              thumbSize={0}
-              styles={(theme) => ({
-                thumb: {
-                  background: theme.fn.primaryColor(),
-                  borderRadius: "0.1em",
-                  height: "0.75em",
-                  width: "0.625em",
-                },
-              })}
-              pt="0.2em"
-              showLabelOnHover={false}
-              min={conf.min}
-              max={conf.max}
-              step={conf.step ?? undefined}
-              precision={conf.precision}
-              value={value}
-              onChange={updateValue}
-              marks={
-                conf.marks === null
-                  ? [{ value: conf.min }, { value: conf.max }]
-                  : conf.marks
-              }
-              disabled={disabled}
-            />
-            <Flex
-              justify="space-between"
-              fz="0.6rem"
-              c="dimmed"
-              lh="1.2em"
-              lts="-0.5px"
-              mt="-0.0625em"
-              mb="-0.4em"
-            >
-              <Text>{parseInt(conf.min.toFixed(6))}</Text>
-              <Text>{parseInt(conf.max.toFixed(6))}</Text>
-            </Flex>
-          </Box>
+          <Slider
+            id={conf.id}
+            size="xs"
+            thumbSize={0}
+            style={{flexGrow: 1}}
+            styles={(theme) => ({
+              thumb: {
+                background: theme.fn.primaryColor(),
+                borderRadius: "0.1rem",
+                height: "0.75rem",
+                width: "0.625rem",
+              },
+              trackContainer: {
+                zIndex: 3,
+                position: "relative",
+              },
+              markLabel: {
+                transform: 'translate(-50%, 0.0938rem)',
+                fontSize: "0.6rem",
+                textAlign: "center",
+              },
+              marksContainer: {
+                left: '0.2rem',
+                right: '0.2rem',
+              },
+              markWrapper: {
+                position: "absolute",
+                top: `0.06rem`
+              },
+              mark: {
+                opacity: disabled ? "0" : undefined,
+                border: "0px solid transparent",
+                background:
+                  theme.colorScheme === "dark"
+                    ? theme.colors.dark[4]
+                    : theme.colors.gray[2],
+                width: "0.42rem",
+                height: "0.42rem",
+                transform: `translateX(-50%)`,
+              },
+              markFilled: {
+                opacity: "0",
+              },
+            })}
+            pt="0.2em"
+            showLabelOnHover={false}
+            min={conf.min}
+            max={conf.max}
+            step={conf.step ?? undefined}
+            precision={conf.precision}
+            value={value}
+            onChange={updateValue}
+            marks={
+              conf.marks === null
+                ? [{ 
+                    value: conf.min, 
+                    label: `${parseInt(conf.min.toFixed(6))}`
+                  }, { 
+                    value: conf.max,
+                    label: `${parseInt(conf.max.toFixed(6))}` 
+                    }]
+                : conf.marks
+            }
+            disabled={disabled}
+          />
           <NumberInput
             value={value}
             onChange={(newValue) => {
@@ -273,9 +297,6 @@ function GeneratedInput({
           />
         </Flex>
       );
-
-      if (conf.marks?.some((x) => x.label))
-        containerProps = { ...containerProps, mb: "md" };
       break;
     case "GuiAddMultiSliderMessage":
       input = (
@@ -285,10 +306,41 @@ function GeneratedInput({
           thumbSize={0}
           styles={(theme) => ({
             thumb: {
-              borderRadius: "0.1em",
-              height: "0.75em",
-              width: "0.625em",
-              background: disabled ? undefined : theme.fn.primaryColor(),
+              background: theme.fn.primaryColor(),
+              borderRadius: "0.1rem",
+              height: "0.75rem",
+              width: "0.625rem",
+            },
+            trackContainer: {
+              zIndex: 3,
+              position: "relative",
+            },
+            markLabel: {
+              transform: 'translate(-50%, 0.0938rem)',
+              fontSize: "0.6rem",
+              textAlign: "center",
+            },
+            marksContainer: {
+              left: '0.2rem',
+              right: '0.2rem',
+            },
+            markWrapper: {
+              position: "absolute",
+              top: `0.06rem`
+            },
+            mark: {
+              opacity: disabled ? "0" : undefined,
+              border: "0px solid transparent",
+              background:
+                theme.colorScheme === "dark"
+                  ? theme.colors.dark[4]
+                  : theme.colors.gray[2],
+              width: "0.42rem",
+              height: "0.42rem",
+              transform: `translateX(-50%)`,
+            },
+            markFilled: {
+              opacity: "0",
             },
           })}
           pt="0.2em"
@@ -301,7 +353,13 @@ function GeneratedInput({
           onChange={updateValue}
           marks={
             conf.marks === null
-              ? [{ value: conf.min }, { value: conf.max }]
+              ? [{ 
+                  value: conf.min, 
+                  label: `${parseInt(conf.min.toFixed(6))}`
+                }, { 
+                  value: conf.max,
+                  label: `${parseInt(conf.max.toFixed(6))}` 
+                  }]
               : conf.marks
           }
           disabled={disabled}
@@ -310,8 +368,8 @@ function GeneratedInput({
         />
       );
 
-      if (conf.marks?.some((x) => x.label))
-        containerProps = { ...containerProps, mb: "md" };
+      if (conf.marks?.some((x) => x.label) || conf.marks === null)
+        containerProps = { ...containerProps, mb: "xs" };
       break;
     case "GuiAddNumberMessage":
       input = (

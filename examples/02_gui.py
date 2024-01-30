@@ -71,7 +71,7 @@ def main() -> None:
                 max=10,
                 step=1,
                 initial_value=3,
-                marks=(0, 5, (7, "7"), 10),
+                marks=((0, "0"), (5, "5"), (7, "7"), 10),
             )
 
     # Pre-generate a point cloud to send.
