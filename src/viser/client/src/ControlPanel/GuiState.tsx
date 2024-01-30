@@ -17,6 +17,7 @@ export type GuiConfig =
   | Messages.GuiAddRgbMessage
   | Messages.GuiAddRgbaMessage
   | Messages.GuiAddSliderMessage
+  | Messages.GuiAddMultiSliderMessage
   | Messages.GuiAddButtonGroupMessage
   | Messages.GuiAddTextMessage
   | Messages.GuiAddVector2Message
