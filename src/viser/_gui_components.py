@@ -1,13 +1,19 @@
-from dataclasses import field, InitVar
+import typing
+from dataclasses import field, InitVar, KW_ONLY
 from functools import wraps
 import time
 from typing import Optional, Literal, Union, TypeVar, Generic, Tuple, Type
 from typing import Callable, Any
 from dataclasses import dataclass
+
 try:
     from typing import Concatenate
 except ImportError:
     from typing_extensions import Concatenate
+try:
+    from typing import Self
+except ImportError:
+    from typing_extensions import Self
 try:
     from typing import Protocol
 except ImportError:
@@ -19,13 +25,15 @@ except ImportError:
 
 
 TProps = TypeVar("TProps")
-TReturn = TypeVar('TReturn')
-TArgs = ParamSpec('TArgs')
+TReturn = TypeVar("TReturn")
+TArgs = ParamSpec("TArgs")
 T = TypeVar("T")
 
 
 def copy_signature(fn_signature: Callable[TArgs, Any]):
-    def wrapper(fn: Callable[..., TReturn]) -> Callable[Concatenate[Any, TArgs], TReturn]:
+    def wrapper(
+        fn: Callable[..., TReturn]
+    ) -> Callable[Concatenate[Any, TArgs], TReturn]:
         out = wraps(fn_signature)(fn)
         # TODO: perhaps copy signature from fn_signature and get help for arguments
         out.__doc__ = f"""Creates a new GUI {fn_signature.__name__} component and returns a handle to it.
@@ -34,6 +42,7 @@ Returns:
     The component handle.
 """
         return out
+
     return wrapper
 
 
@@ -68,10 +77,18 @@ class GuiComponent(Protocol):
         raise NotImplementedError()
 
 
-@dataclass(kw_only=True)
+class GuiContainer(Protocol):
+    def __enter__(self) -> Self:
+        raise NotImplementedError()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return None
+
+
+@dataclass
 class Button(GuiComponent, Protocol):
-    """Button component
-    """
+    """Button component"""
+
     label: str
     """Button label"""
     color: Optional[
@@ -101,32 +118,37 @@ class Button(GuiComponent, Protocol):
     """Button tooltip."""
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Input(GuiComponent, Protocol):
-    value: str
     label: str
-    hint: Optional[str]
+    _: KW_ONLY
+    hint: Optional[str] = None
     disabled: bool = False
 
 
 @dataclass(kw_only=True)
 class TextInput(Input, Protocol):
-    pass
+    value: str
 
-@dataclass(kw_only=True)
-class Folder(GuiComponent, Protocol):
+
+@dataclass
+class Folder(GuiComponent, GuiContainer, Protocol):
     label: str
+    _: KW_ONLY
     expand_by_default: bool = True
+
 
 @dataclass(kw_only=True)
 class Markdown(GuiComponent, Protocol):
     markdown: str
+
 
 @dataclass(kw_only=True)
 class TabGroup(GuiComponent, Protocol):
     tab_labels: Tuple[str, ...]
     tab_icons_base64: Tuple[Union[str, None], ...]
     tab_container_ids: Tuple[str, ...]
+
 
 @dataclass(kw_only=True)
 class Modal(GuiComponent, Protocol):
@@ -144,10 +166,10 @@ class Slider(Input, Protocol):
     precision: Optional[int] = None
 
 
-@dataclass(kw_only=True)
+@dataclass
 class NumberInput(Input, Protocol):
     value: float
-    step: float
+    step: Optional[float] = None
     min: Optional[float] = None
     max: Optional[float] = None
     precision: Optional[int] = None
@@ -158,17 +180,17 @@ class RgbInput(Input, Protocol):
     value: Tuple[int, int, int]
 
 
-@dataclass(kw_only=True)
+@dataclass
 class RgbaInput(Input, Protocol):
     value: Tuple[int, int, int, int]
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Checkbox(Input, Protocol):
     value: bool
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Vector2Input(Input, Protocol):
     value: Tuple[float, float]
     step: float
@@ -177,19 +199,24 @@ class Vector2Input(Input, Protocol):
     precision: Optional[int] = None
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Vector3Input(Input, Protocol):
     value: Tuple[float, float, float]
-    min: Optional[Tuple[float, float, float]]
-    max: Optional[Tuple[float, float, float]]
     step: float
-    precision: int
+    min: Optional[Tuple[float, float, float]] = None
+    max: Optional[Tuple[float, float, float]] = None
+    precision: Optional[int] = None
 
 
-@dataclass(kw_only=True)
+@dataclass
 class Dropdown(Input, Protocol):
     options: Tuple[str, ...]
     value: Optional[str] = None
+
+    def __post_init__(self, *args, **kwargs):
+        if self.value is None and len(self.options) > 0:
+            self.value = self.options[0]
+        return super().__post_init__(*args, **kwargs)
 
 
 class GuiApiMixin:
@@ -199,7 +226,7 @@ class GuiApiMixin:
         return self.gui_add_component(props)
 
     @copy_signature(TextInput)
-    def gui_add_text_input(self, *args, **kwargs) -> TextInput:
+    def add_gui_text(self, *args, **kwargs) -> TextInput:
         props = TextInput(*args, **kwargs)
         return self.gui_add_component(props)
 

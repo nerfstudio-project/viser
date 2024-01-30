@@ -52,18 +52,11 @@ function GeneratedComponentFromId<T extends AllComponentProps>({ id }: { id: str
 export default function GeneratedGuiContainer({
   // We need to take viewer as input in drei's <Html /> elements, where contexts break.
   containerId,
-  viewer,
   folderDepth,
 }: {
   containerId: string;
-  viewer?: ViewerContextContents;
   folderDepth?: number;
 }) {
-  if (viewer !== undefined) {
-    return <ViewerContext.Provider value={viewer}>
-      <GeneratedGuiContainer containerId={containerId} folderDepth={folderDepth} />
-    </ViewerContext.Provider>
-  }
   const viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet =
@@ -82,18 +75,13 @@ export default function GeneratedGuiContainer({
     <Box pt="0.75em">
       {guiIdOrderPairArray
         .sort((a, b) => a.order - b.order)
-        .map((pair, index) => {
-          const props = 
-          return (
-            <GuiGenerateContext.Provider key={pair.id} value={pair.id
-            <GeneratedInput
+        .map((pair, index) => <GeneratedInput
               id={pair.id}
               viewer={viewer}
               folderDepth={folderDepth ?? 0}
               last={index === guiIdOrderPairArray.length - 1}
             />
-          ); 
-        })}
+        )}
     </Box>
   );
   return out;
@@ -118,9 +106,10 @@ function GeneratedInput({
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
     return (
+  <></>
     );
   if (conf.type == "GuiAddTabGroupMessage")
-    return <GeneratedTabGroup conf={conf} />;
+    return <></>;
 
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
   function updateValue(value: any) {
