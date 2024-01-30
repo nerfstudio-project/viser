@@ -1,7 +1,7 @@
-from dataclasses import field
+from dataclasses import field, InitVar
 from functools import wraps
 import time
-from typing import Optional, Literal, Union, TypeVar, Generic, Tuple
+from typing import Optional, Literal, Union, TypeVar, Generic, Tuple, Type
 from typing import Callable, Any
 from dataclasses import dataclass
 try:
@@ -26,7 +26,14 @@ T = TypeVar("T")
 
 def copy_signature(fn_signature: Callable[TArgs, Any]):
     def wrapper(fn: Callable[..., TReturn]) -> Callable[Concatenate[Any, TArgs], TReturn]:
-        return wraps(fn_signature)(fn)
+        out = wraps(fn_signature)(fn)
+        # TODO: perhaps copy signature from fn_signature and get help for arguments
+        out.__doc__ = f"""Creates a new GUI {fn_signature.__name__} component and returns a handle to it.
+
+Returns:
+    The component handle.
+"""
+        return out
     return wrapper
 
 
@@ -42,41 +49,31 @@ class Property(Generic[T]):
         self.setter(value)
 
 
-class ComponentHandle(Generic[TProps]):
-    def __init__(self, update, id: str, props: TProps):
-        self.id = id
-        self._props = props
-        self._api_update = update
-        self._update_timestamp = time.time()
+@dataclass(kw_only=True)
+class GuiComponent(Protocol):
+    order: InitVar[Optional[float]] = None
 
-    def _update(self, **kwargs):
-        for k, v in kwargs.items():
-            if not hasattr(self._props, k):
-                raise AttributeError(f"Component has no property {k}")
-            setattr(self._props, k, v)
-        self._update_timestamp = time.time()
+    @property
+    def order(self) -> Optional[float]:
+        return object.__getattribute__(self, "_order")
 
-        # Raise message to update component.
-        self._api_update(self._impl.id, kwargs)
+    @property
+    def id(self):
+        raise NotImplementedError()
+
+    def __post_init__(self, order: Optional[float]):
+        object.__setattr__(self, "_order", order)
 
     def property(self, name: str) -> Property[T]:
-        if not hasattr(self._props, name):
-            raise AttributeError(f"Component has no property {name}")
-        return Property(
-            lambda: getattr(self._props, name),
-            lambda value: self._update(**{name: value}),
-        )
-
-    def __getattribute__(self, name: str) -> T:
-        if not hasattr(ComponentHandle, name):
-            return self.property(name).get()
-        else:
-            return super().__getattribute__(name)
+        raise NotImplementedError()
 
 
-@dataclass
-class Button(Protocol):
+@dataclass(kw_only=True)
+class Button(GuiComponent, Protocol):
+    """Button component
+    """
     label: str
+    """Button label"""
     color: Optional[
         Literal[
             "dark",
@@ -95,47 +92,51 @@ class Button(Protocol):
             "teal",
         ]
     ] = None
+    """Button color"""
     icon_base64: Optional[str] = None
+    """Icon to display on the button, as a base64-encoded SVG image."""
     disabled: bool = False
+    """Whether the button is disabled."""
     hint: Optional[str] = None
+    """Button tooltip."""
 
 
-@dataclass
-class Input(Protocol):
+@dataclass(kw_only=True)
+class Input(GuiComponent, Protocol):
     value: str
     label: str
     hint: Optional[str]
     disabled: bool = False
 
 
-@dataclass
-class TextInput(Input):
+@dataclass(kw_only=True)
+class TextInput(Input, Protocol):
     pass
 
-@dataclass
-class Folder(Protocol):
+@dataclass(kw_only=True)
+class Folder(GuiComponent, Protocol):
     label: str
     expand_by_default: bool = True
 
-@dataclass
-class Markdown(Protocol):
+@dataclass(kw_only=True)
+class Markdown(GuiComponent, Protocol):
     markdown: str
 
-@dataclass
-class TabGroup(Protocol):
+@dataclass(kw_only=True)
+class TabGroup(GuiComponent, Protocol):
     tab_labels: Tuple[str, ...]
     tab_icons_base64: Tuple[Union[str, None], ...]
     tab_container_ids: Tuple[str, ...]
 
-@dataclass
-class Modal(Protocol):
+@dataclass(kw_only=True)
+class Modal(GuiComponent, Protocol):
     order: float
     id: str
     title: str
 
 
 @dataclass(kw_only=True)
-class Slider(Input):
+class Slider(Input, Protocol):
     value: float
     min: Optional[float] = None
     max: Optional[float] = None
@@ -144,7 +145,7 @@ class Slider(Input):
 
 
 @dataclass(kw_only=True)
-class NumberInput(Input):
+class NumberInput(Input, Protocol):
     value: float
     step: float
     min: Optional[float] = None
@@ -153,22 +154,22 @@ class NumberInput(Input):
 
 
 @dataclass(kw_only=True)
-class RgbInput(Input):
+class RgbInput(Input, Protocol):
     value: Tuple[int, int, int]
 
 
 @dataclass(kw_only=True)
-class RgbaInput(Input):
+class RgbaInput(Input, Protocol):
     value: Tuple[int, int, int, int]
 
 
 @dataclass(kw_only=True)
-class Checkbox(Input):
+class Checkbox(Input, Protocol):
     value: bool
 
 
 @dataclass(kw_only=True)
-class Vector2Input(Input):
+class Vector2Input(Input, Protocol):
     value: Tuple[float, float]
     step: float
     min: Optional[Tuple[float, float]] = None
@@ -177,7 +178,7 @@ class Vector2Input(Input):
 
 
 @dataclass(kw_only=True)
-class Vector3Input(Input):
+class Vector3Input(Input, Protocol):
     value: Tuple[float, float, float]
     min: Optional[Tuple[float, float, float]]
     max: Optional[Tuple[float, float, float]]
@@ -186,234 +187,83 @@ class Vector3Input(Input):
 
 
 @dataclass(kw_only=True)
-class Dropdown(Input):
+class Dropdown(Input, Protocol):
     options: Tuple[str, ...]
     value: Optional[str] = None
 
 
-# Create handles for each component.
-# This is a workaround for Python's lack of support for
-# type intersection. See:
-# https://github.com/python/typing/issues/18
-
-class ButtonHandle(ComponentHandle[Button], Button):
-    pass
-
-
-class TextInputHandle(ComponentHandle[TextInput], TextInput):
-    pass
-
-
-class NumberInputHandle(ComponentHandle[NumberInput], NumberInput):
-    pass
-
-
-class SliderHandle(ComponentHandle[Slider], Slider):
-    pass
-
-
-class CheckboxHandle(ComponentHandle[Checkbox], Checkbox):
-    pass
-
-
-class RgbInputHandle(ComponentHandle[RgbInput], RgbInput):
-    pass
-
-
-class RgbaInputHandle(ComponentHandle[RgbaInput], RgbaInput):
-    pass
-
-
-class FolderHandle(ComponentHandle[Folder], Folder):
-    pass
-
-
-class MarkdownHandle(ComponentHandle[Markdown], Markdown):
-    pass
-
-
-class TabGroupHandle(ComponentHandle[TabGroup], TabGroup):
-    pass
-
-
-class ModalHandle(ComponentHandle[Modal], Modal):
-    pass
-
-
-class Vector2InputHandle(ComponentHandle[Vector2Input], Vector2Input):
-    pass
-
-
-class Vector3InputHandle(ComponentHandle[Vector3Input], Vector3Input):
-    pass
-
-
-class DropdownHandle(ComponentHandle[Dropdown], Dropdown):
-    pass
-
-
-# This could also be done with typing, but not at the moment:
-# https://peps.python.org/pep-0612/#concatenating-keyword-parameters
-# For now we have to copy the signature manually.
-@dataclass
-class _AddComponentProtocol(Protocol):
-    order: Optional[float] = field(default=None, kw_only=True)
-
-    @staticmethod
-    def split_kwargs(kwargs):
-        kwargs = kwargs.copy()
-        main_kwargs = {}
-        for k in kwargs:
-            if k in vars(_AddComponentProtocol):
-                main_kwargs[k] = kwargs.pop(k)
-        return main_kwargs, kwargs
-
-@dataclass
-class _AddButtonProtocol(_AddComponentProtocol, Button):
-    pass
-
-
-@dataclass
-class _AddTextInputProtocol(_AddComponentProtocol, TextInput):
-    pass
-
-@dataclass
-class _AddNumberInputProtocol(_AddComponentProtocol, NumberInput):
-    pass
-
-@dataclass
-class _AddSliderProtocol(_AddComponentProtocol, Slider):
-    pass
-
-
-@dataclass
-class _AddCheckboxProtocol(_AddComponentProtocol, Checkbox):
-    pass
-
-
-@dataclass
-class _AddRgbInputProtocol(_AddComponentProtocol, RgbInput):
-    pass
-
-
-@dataclass
-class _AddRgbaInputProtocol(_AddComponentProtocol, RgbaInput):
-    pass
-
-
-@dataclass
-class _AddFolderProtocol(_AddComponentProtocol, Folder):
-    pass
-
-
-@dataclass
-class _AddMarkdownProtocol(_AddComponentProtocol, Markdown):
-    pass
-
-
-@dataclass
-class _AddTabGroupProtocol(_AddComponentProtocol, TabGroup):
-    pass
-
-
-@dataclass
-class _AddModalProtocol(_AddComponentProtocol, Modal):
-    pass
-
-
-@dataclass
-class _AddVector2InputProtocol(_AddComponentProtocol, Vector2Input):
-    pass
-
-
-@dataclass
-class _AddVector3InputProtocol(_AddComponentProtocol, Vector3Input):
-    pass
-
-
-@dataclass
-class _AddDropdownProtocol(_AddComponentProtocol, Dropdown):
-    pass
-
-
 class GuiApiMixin:
-    @copy_signature(_AddButtonProtocol)
-    def add_gui_button(self, *args, **kwargs) -> ButtonHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(Button(*args, **kwargs), order=main_kwargs)
+    @copy_signature(Button)
+    def add_gui_button(self, *args, **kwargs) -> Button:
+        props = Button(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddTextInputProtocol)
-    def gui_add_text_input(self, *args, **kwargs) -> TextInputHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(TextInput(*args, **kwargs), order=main_kwargs)
+    @copy_signature(TextInput)
+    def gui_add_text_input(self, *args, **kwargs) -> TextInput:
+        props = TextInput(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddNumberInputProtocol)
-    def add_gui_number(self, *args, **kwargs) -> NumberInputHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(NumberInput(*args, **kwargs), order=main_kwargs)
+    @copy_signature(NumberInput)
+    def add_gui_number(self, *args, **kwargs) -> NumberInput:
+        props = NumberInput(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddModalProtocol)
-    def add_gui_modal(self, *args, **kwargs) -> ModalHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(Modal(*args, **kwargs), order=main_kwargs)
+    @copy_signature(Modal)
+    def add_gui_modal(self, *args, **kwargs) -> Modal:
+        props = Modal(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddSliderProtocol)
-    def add_gui_slider(self, *args, **kwargs) -> SliderHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(Slider(*args, **kwargs), order=main_kwargs)
+    @copy_signature(Slider)
+    def add_gui_slider(self, *args, **kwargs) -> Slider:
+        props = Slider(*args, **kwargs)
+        return self.gui_add_component(props)
 
+    @copy_signature(Checkbox)
+    def add_gui_checkbox(self, *args, **kwargs) -> Checkbox:
+        props = Checkbox(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddCheckboxProtocol)
-    def add_gui_checkbox(self, *args, **kwargs) -> CheckboxHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(Checkbox(*args, **kwargs), order=main_kwargs)
+    @copy_signature(RgbInput)
+    def add_gui_rgb(self, *args, **kwargs) -> RgbInput:
+        props = RgbInput(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddRgbInputProtocol)
-    def add_gui_rgb(self, *args, **kwargs) -> RgbInputHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(RgbInput(*args, **kwargs), order=main_kwargs)
+    @copy_signature(RgbaInput)
+    def add_gui_rgba(self, *args, **kwargs) -> RgbaInput:
+        props = RgbaInput(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddRgbaInputProtocol)
-    def add_gui_rgba(self, *args, **kwargs) -> RgbaInputHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(RgbaInput(*args, **kwargs), order=main_kwargs)
+    @copy_signature(Folder)
+    def add_gui_folder(self, *args, **kwargs) -> Folder:
+        props = Folder(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddFolderProtocol)
-    def add_gui_folder(self, *args, **kwargs) -> FolderHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(Folder(*args, **kwargs), order=main_kwargs)
+    @copy_signature(Markdown)
+    def add_gui_markdown(self, *args, **kwargs) -> Markdown:
+        props = Markdown(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddMarkdownProtocol)
-    def add_gui_markdown(self, *args, **kwargs) -> MarkdownHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(Markdown(*args, **kwargs), order=main_kwargs)
+    @copy_signature(TabGroup)
+    def add_gui_tab_group(self, *args, **kwargs) -> TabGroup:
+        props = TabGroup(*args, **kwargs)
+        return self.gui_add_component(props)
 
+    @copy_signature(Vector2Input)
+    def add_gui_vector2(self, *args, **kwargs) -> Vector2Input:
+        props = Vector2Input(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddTabGroupProtocol)
-    def add_gui_tab_group(self, *args, **kwargs) -> TabGroupHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(TabGroup(*args, **kwargs), order=main_kwargs)
+    @copy_signature(Vector3Input)
+    def add_gui_vector3(self, *args, **kwargs) -> Vector3Input:
+        props = Vector3Input(*args, **kwargs)
+        return self.gui_add_component(props)
 
+    @copy_signature(Dropdown)
+    def add_gui_dropdown(self, *args, **kwargs) -> Dropdown:
+        props = Dropdown(*args, **kwargs)
+        return self.gui_add_component(props)
 
-    @copy_signature(_AddVector2InputProtocol)
-    def add_gui_vector2(self, *args, **kwargs) -> Vector2InputHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(Vector2Input(*args, **kwargs), order=main_kwargs)
-
-
-    @copy_signature(_AddVector3InputProtocol)
-    def add_gui_vector3(self, *args, **kwargs) -> Vector3InputHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(Vector3Input(*args, **kwargs), order=main_kwargs)
-
-
-    @copy_signature(_AddDropdownProtocol)
-    def add_gui_dropdown(self, *args, **kwargs) -> DropdownHandle:
-        main_kwargs, kwargs = _AddComponentProtocol.split_kwargs(kwargs)
-        self.gui_add_component(Dropdown(*args, **kwargs), order=main_kwargs)
-
-
-    def gui_add_component(self, component: Any, order: Optional[float] = None):
+    def gui_add_component(self, props: TProps) -> TProps:
         raise NotImplementedError()
 
 
