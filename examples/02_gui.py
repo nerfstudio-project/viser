@@ -57,13 +57,21 @@ def main() -> None:
                 "Color",
                 initial_value=(255, 255, 0),
             )
-            server.add_gui_multi_slider(
-                "Multi slider",  # type: ignore
+            gui_multi_slider = server.add_gui_multi_slider(
+                "Multi slider",
                 min=0,
                 max=100,
                 step=1,
                 initial_value=(0, 30, 100),
                 marks=(0, 25, 50, 75, (100, "max")),
+            )
+            gui_slider_positions = server.add_gui_slider(
+                "Multi slider positions",
+                min=0,
+                max=10,
+                step=1,
+                initial_value=3,
+                marks=(0, 5, (7, "7"), 10),
             )
 
     # Pre-generate a point cloud to send.
@@ -94,6 +102,12 @@ def main() -> None:
         gui_text.visible = not gui_checkbox_hide.value
         gui_button.visible = not gui_checkbox_hide.value
         gui_rgb.disabled = gui_checkbox_disable.value
+
+        # Update the number of handles in the multi-slider.
+        if gui_slider_positions.value != len(gui_multi_slider.value):
+            gui_multi_slider.value = onp.linspace(
+                0, 100, gui_slider_positions.value, dtype=onp.int64
+            )
 
         counter += 1
         time.sleep(0.01)

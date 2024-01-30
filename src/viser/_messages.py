@@ -12,9 +12,7 @@ from typing_extensions import Literal, NotRequired, TypedDict, override
 
 from . import infra, theme
 
-GuiSliderMark = TypedDict(
-    "GuiSliderMark", {"value": float, "label": NotRequired[Optional[str]]}
-)
+GuiSliderMark = TypedDict("GuiSliderMark", {"value": float, "label": NotRequired[str]})
 
 
 class Message(infra.Message):

@@ -228,7 +228,11 @@ function GeneratedInput({
               precision={conf.precision}
               value={value}
               onChange={updateValue}
-              marks={conf.marks === null ? [{ value: conf.min }, { value: conf.max }] : conf.marks}
+              marks={
+                conf.marks === null
+                  ? [{ value: conf.min }, { value: conf.max }]
+                  : conf.marks
+              }
               disabled={disabled}
             />
             <Flex
@@ -270,8 +274,8 @@ function GeneratedInput({
         </Flex>
       );
 
-      if (conf.marks?.some(x => x.label))
-        containerProps = { ...containerProps, "mb": "md" };
+      if (conf.marks?.some((x) => x.label))
+        containerProps = { ...containerProps, mb: "md" };
       break;
     case "GuiAddMultiSliderMessage":
       input = (
@@ -295,15 +299,19 @@ function GeneratedInput({
           precision={conf.precision}
           value={value}
           onChange={updateValue}
-          marks={conf.marks === null ? [{ value: conf.min }, { value: conf.max }] : conf.marks}
+          marks={
+            conf.marks === null
+              ? [{ value: conf.min }, { value: conf.max }]
+              : conf.marks
+          }
           disabled={disabled}
           fixedEndpoints={conf.fixed_endpoints}
           minRange={conf.min_range || undefined}
         />
       );
 
-      if (conf.marks?.some(x => x.label))
-        containerProps = { ...containerProps, "mb": "md" };
+      if (conf.marks?.some((x) => x.label))
+        containerProps = { ...containerProps, mb: "md" };
       break;
     case "GuiAddNumberMessage":
       input = (

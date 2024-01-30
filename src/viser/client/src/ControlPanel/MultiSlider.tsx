@@ -1,5 +1,5 @@
-import React, { useRef, useState, forwardRef, useEffect } from 'react';
-import { useMove, useUncontrolled } from '@mantine/hooks';
+import React, { useRef, useState, forwardRef, useEffect } from "react";
+import { useMove, useUncontrolled } from "@mantine/hooks";
 import {
   DefaultProps,
   MantineNumberSize,
@@ -7,16 +7,17 @@ import {
   useMantineTheme,
   useComponentDefaultProps,
   Selectors,
-} from '@mantine/styles';
+} from "@mantine/styles";
+import { MantineTransition, Box, Transition } from "@mantine/core";
 import {
-  MantineTransition,
-  Box,
-  Transition,
-} from '@mantine/core';
-import { useSliderRootStyles, useThumbStyles, useTrackStyles, useMarksStyles } from './MultiSlider.styles';
+  useSliderRootStyles,
+  useThumbStyles,
+  useTrackStyles,
+  useMarksStyles,
+} from "./MultiSlider.styles";
 
 function getClientPosition(event: any) {
-  if ('TouchEvent' in window && event instanceof window.TouchEvent) {
+  if ("TouchEvent" in window && event instanceof window.TouchEvent) {
     const touch = event.touches[0];
     return touch.clientX;
   }
@@ -71,7 +72,7 @@ export type SliderRootStylesNames = Selectors<typeof useSliderRootStyles>;
 
 export interface SliderRootProps
   extends DefaultProps<SliderRootStylesNames>,
-    React.ComponentPropsWithoutRef<'div'> {
+    React.ComponentPropsWithoutRef<"div"> {
   size: MantineNumberSize;
   children: React.ReactNode;
   disabled: boolean;
@@ -85,27 +86,33 @@ export const SliderRoot = forwardRef<HTMLDivElement, SliderRootProps>(
       size,
       classNames,
       styles,
-      disabled,  // eslint-disable-line @typescript-eslint/no-unused-vars
+      disabled, // eslint-disable-line @typescript-eslint/no-unused-vars
       unstyled,
       variant,
       ...others
     }: SliderRootProps,
-    ref
+    ref,
   ) => {
-    const { classes, cx } = useSliderRootStyles((null as unknown) as void,{
-      name: 'Slider',
+    const { classes, cx } = useSliderRootStyles(null as unknown as void, {
+      name: "Slider",
       classNames,
       styles,
       unstyled,
       variant,
       size,
     });
-    return <Box {...others} tabIndex={-1} className={cx(classes.root, className)} ref={ref} />;
-  }
+    return (
+      <Box
+        {...others}
+        tabIndex={-1}
+        className={cx(classes.root, className)}
+        ref={ref}
+      />
+    );
+  },
 );
 
-SliderRoot.displayName = '@mantine/core/SliderRoot';
-
+SliderRoot.displayName = "@mantine/core/SliderRoot";
 
 export type ThumbStylesNames = Selectors<typeof useThumbStyles>;
 
@@ -115,11 +122,14 @@ export interface ThumbProps extends DefaultProps<ThumbStylesNames> {
   value: number;
   position: number;
   dragging: boolean;
+  clicked: boolean;
   color: MantineColor;
   size: MantineNumberSize;
   label: React.ReactNode;
   onKeyDownCapture?(event: React.KeyboardEvent<HTMLDivElement>): void;
-  onMouseDown?(event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>): void;
+  onMouseDown?(
+    event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>,
+  ): void;
   labelTransition?: MantineTransition;
   labelTransitionDuration?: number;
   labelTransitionTimingFunction?: string;
@@ -144,6 +154,7 @@ export const Thumb = forwardRef<HTMLDivElement, ThumbProps>(
       position,
       label,
       dragging,
+      clicked,
       onMouseDown,
       onKeyDownCapture,
       color,
@@ -165,18 +176,19 @@ export const Thumb = forwardRef<HTMLDivElement, ThumbProps>(
       thumbSize,
       variant,
     }: ThumbProps,
-    ref
+    ref,
   ) => {
     const { classes, cx, theme } = useThumbStyles(
       { color, disabled, thumbSize },
-      { name: 'Slider', classNames, styles, unstyled, variant, size }
+      { name: "Slider", classNames, styles, unstyled, variant, size },
     );
     const [focused, setFocused] = useState(false);
 
-    const isVisible = labelAlwaysOn || dragging || focused || (showLabelOnHover && isHovered);
+    const isVisible =
+      labelAlwaysOn || dragging || focused || (showLabelOnHover && isHovered);
 
     return (
-      <Box<'div'>
+      <Box<"div">
         tabIndex={0}
         role="slider"
         aria-label={thumbLabel}
@@ -187,37 +199,42 @@ export const Thumb = forwardRef<HTMLDivElement, ThumbProps>(
         className={cx(classes.thumb, { [classes.dragging]: dragging })}
         onFocus={() => {
           setFocused(true);
-          typeof onFocus === 'function' && onFocus();
+          typeof onFocus === "function" && onFocus();
         }}
         onBlur={() => {
           setFocused(false);
-          typeof onBlur === 'function' && onBlur();
+          typeof onBlur === "function" && onBlur();
         }}
         onTouchStart={onMouseDown}
         onMouseDown={onMouseDown}
         onKeyDownCapture={onKeyDownCapture}
         onClick={(event) => event.stopPropagation()}
-        style={{ [theme.dir === 'rtl' ? 'right' : 'left']: `${position}%` }}
+        style={{
+          [theme.dir === "rtl" ? "right" : "left"]: `${position}%`,
+          zIndex: clicked ? 1000 : undefined,
+        }}
       >
         {children}
         <Transition
-          mounted={(label != null && isVisible) || false}
+          mounted={label != null && isVisible == true}
           duration={labelTransitionDuration}
-          transition={labelTransition ?? 'skew-down'}
-          timingFunction={labelTransitionTimingFunction || theme.transitionTimingFunction}
+          transition={labelTransition ?? "skew-down"}
+          timingFunction={
+            labelTransitionTimingFunction || theme.transitionTimingFunction
+          }
         >
           {(transitionStyles) => (
-            <div style={transitionStyles} className={classes.label}>
+            <div className={classes.label} style={transitionStyles}>
               {label}
             </div>
           )}
         </Transition>
       </Box>
     );
-  }
+  },
 );
 
-Thumb.displayName = '@mantine/core/SliderThumb';
+Thumb.displayName = "@mantine/core/SliderThumb";
 
 export type MarksStylesNames = Selectors<typeof useMarksStyles>;
 
@@ -249,7 +266,7 @@ export function Marks({
 }: MarksProps) {
   const { classes, cx } = useMarksStyles(
     { color, disabled, thumbSize },
-    { name: 'Slider', classNames, styles, unstyled, variant, size }
+    { name: "Slider", classNames, styles, unstyled, variant, size },
   );
 
   const items = marks.map((mark, index) => (
@@ -284,11 +301,11 @@ export function Marks({
   return <div className={classes.marksContainer}>{items}</div>;
 }
 
-Marks.displayName = '@mantine/core/SliderMarks';
+Marks.displayName = "@mantine/core/SliderMarks";
 
-
-
-export type TrackStylesNames = Selectors<typeof useTrackStyles> | MarksStylesNames;
+export type TrackStylesNames =
+  | Selectors<typeof useTrackStyles>
+  | MarksStylesNames;
 
 export interface TrackProps extends DefaultProps<TrackStylesNames> {
   marks: { value: number; label?: React.ReactNode }[];
@@ -302,7 +319,7 @@ export interface TrackProps extends DefaultProps<TrackStylesNames> {
   onChange(value: number): void;
   disabled: boolean;
   variant: string;
-  containerProps?: React.PropsWithRef<React.ComponentProps<'div'>>;
+  containerProps?: React.PropsWithRef<React.ComponentProps<"div">>;
 }
 
 export function Track({
@@ -321,15 +338,13 @@ export function Track({
 }: TrackProps) {
   const { classes } = useTrackStyles(
     { color, radius, disabled, inverted: false },
-    { name: 'Slider', classNames, styles, unstyled, variant, size }
+    { name: "Slider", classNames, styles, unstyled, variant, size },
   );
 
   return (
     <>
       <div className={classes.trackContainer} {...containerProps}>
-        <div className={classes.track}>
-          {children}
-        </div>
+        <div className={classes.track}>{children}</div>
       </div>
 
       <Marks
@@ -347,9 +362,7 @@ export function Track({
   );
 }
 
-Track.displayName = '@mantine/core/SliderTrack';
-
-
+Track.displayName = "@mantine/core/SliderTrack";
 
 export type MultiSliderStylesNames =
   | SliderRootStylesNames
@@ -361,7 +374,10 @@ type Value = number[];
 
 export interface MultiSliderProps
   extends DefaultProps<MultiSliderStylesNames>,
-    Omit<React.ComponentPropsWithoutRef<'div'>, 'value' | 'onChange' | 'defaultValue'> {
+    Omit<
+      React.ComponentPropsWithoutRef<"div">,
+      "value" | "onChange" | "defaultValue"
+    > {
   variant?: string;
 
   /** Color from theme.colors */
@@ -443,14 +459,14 @@ export interface MultiSliderProps
 }
 
 const defaultProps: Partial<MultiSliderProps> = {
-  size: 'md',
-  radius: 'xl',
+  size: "md",
+  radius: "xl",
   min: 0,
   max: 100,
   step: 1,
   marks: [],
   label: (f) => f,
-  labelTransition: 'skew-down',
+  labelTransition: "skew-down",
   labelTransitionDuration: 0,
   labelAlwaysOn: false,
   thumbChildren: null,
@@ -460,307 +476,337 @@ const defaultProps: Partial<MultiSliderProps> = {
   fixedEndpoints: false,
 };
 
-export const MultiSlider = forwardRef<HTMLDivElement, MultiSliderProps>((props, ref) => {
-  const {
-    classNames,
-    styles,
-    color,
-    value,
-    onChange,
-    onChangeEnd,
-    size,
-    radius,
-    min,
-    max,
-    minRange,
-    step,
-    precision,
-    defaultValue,
-    name,
-    marks,
-    label,
-    labelTransition,
-    labelTransitionDuration,
-    labelTransitionTimingFunction,
-    labelAlwaysOn,
-    thumbLabels,
-    showLabelOnHover,
-    thumbChildren,
-    disabled,
-    unstyled,
-    thumbSize,
-    scale,
-    variant,
-    fixedEndpoints,
-    ...others
-  } = useComponentDefaultProps('MultiSlider', defaultProps, props) as any;
-  const _minRange = minRange || step;
+export const MultiSlider = forwardRef<HTMLDivElement, MultiSliderProps>(
+  (props, ref) => {
+    const {
+      classNames,
+      styles,
+      color,
+      value,
+      onChange,
+      onChangeEnd,
+      size,
+      radius,
+      min,
+      max,
+      minRange,
+      step,
+      precision,
+      defaultValue,
+      name,
+      marks,
+      label,
+      labelTransition,
+      labelTransitionDuration,
+      labelTransitionTimingFunction,
+      labelAlwaysOn,
+      thumbLabels,
+      showLabelOnHover,
+      thumbChildren,
+      disabled,
+      unstyled,
+      thumbSize,
+      scale,
+      variant,
+      fixedEndpoints,
+      ...others
+    } = useComponentDefaultProps("MultiSlider", defaultProps, props) as any;
+    const _minRange = minRange || step;
 
-  const theme = useMantineTheme();
-  const [focused, setFocused] = useState(-1);
-  const [hovered, setHovered] = useState(false);
-  const [_value, setValue] = useUncontrolled<Value>({
-    value,
-    defaultValue,
-    finalValue: [min, max],
-    onChange,
-  });
-  const valueRef = useRef(_value);
-  const thumbs = useRef<(HTMLDivElement | null)[]>([]);
-  const thumbIndex = useRef<number>(-1);
-  const positions = _value.map(x => getPosition({ value: x, min, max}));
+    const theme = useMantineTheme();
+    const [focused, setFocused] = useState(-1);
+    const [hovered, setHovered] = useState(false);
+    const [_value, setValue] = useUncontrolled<Value>({
+      value,
+      defaultValue,
+      finalValue: [min, max],
+      onChange,
+    });
+    const valueRef = useRef(_value);
+    const thumbs = useRef<(HTMLDivElement | null)[]>([]);
+    const thumbIndex = useRef<number>(-1);
+    const positions = _value.map((x) => getPosition({ value: x, min, max }));
 
-  const _setValue = (val: Value) => {
-    setValue(val);
-    valueRef.current = val;
-  };
+    const _setValue = (val: Value) => {
+      setValue(val);
+      valueRef.current = val;
+    };
 
-  useEffect(
-    () => {
-      if (Array.isArray(value)) {
-        valueRef.current = value;
+    useEffect(
+      () => {
+        if (Array.isArray(value)) {
+          valueRef.current = value;
+        }
+      },
+      Array.isArray(value) ? [value[0], value[1]] : [null, null],
+    );
+
+    const setRangedValue = (
+      val: number,
+      index: number,
+      triggerChangeEnd: boolean,
+    ) => {
+      const clone: Value = [...valueRef.current];
+      clone[index] = val;
+
+      if (index < clone.length - 1) {
+        if (val > clone[index + 1] - (_minRange - 0.000000001)) {
+          clone[index] = Math.max(min, clone[index + 1] - _minRange);
+        }
+
+        if (val > (max - (_minRange - 0.000000001) || min)) {
+          clone[index] = valueRef.current[index];
+        }
       }
-    },
-    Array.isArray(value) ? [value[0], value[1]] : [null, null]
-  );
 
-  const setRangedValue = (val: number, index: number, triggerChangeEnd: boolean) => {
-    const clone: Value = [...valueRef.current];
-    clone[index] = val;
-
-    if (index < clone.length - 1) {
-      if (val > clone[index + 1] - (_minRange - 0.000000001)) {
-        clone[index] = Math.max(min, clone[index + 1] - _minRange);
+      if (index > 0) {
+        if (val < clone[index - 1] + _minRange) {
+          clone[index] = Math.min(max, clone[index - 1] + _minRange);
+        }
       }
 
-      if (val > (max - (_minRange - 0.000000001) || min)) {
+      if (fixedEndpoints && (index === 0 || index == clone.length - 1)) {
         clone[index] = valueRef.current[index];
       }
-    }
 
-    if (index > 0) {
-      if (val < clone[index - 1] + _minRange) {
-        clone[index] = Math.min(max, clone[index - 1] + _minRange);
+      _setValue(clone);
+
+      if (triggerChangeEnd) {
+        onChangeEnd?.(valueRef.current);
       }
+    };
+
+    const handleChange = (val: number) => {
+      if (!disabled) {
+        const nextValue = getChangeValue({
+          value: val,
+          min,
+          max,
+          step,
+          precision,
+        });
+        setRangedValue(nextValue, thumbIndex.current, false);
+      }
+    };
+
+    const { ref: container, active } = useMove(
+      ({ x }) => handleChange(x),
+      { onScrubEnd: () => onChangeEnd?.(valueRef.current) },
+      theme.dir,
+    );
+
+    function handleThumbMouseDown(index: number) {
+      thumbIndex.current = index;
     }
 
-    if (fixedEndpoints && (index === 0 || index == clone.length - 1)) {
-      clone[index] = valueRef.current[index];
-    }
+    const handleTrackMouseDownCapture = (
+      event:
+        | React.MouseEvent<HTMLDivElement>
+        | React.TouchEvent<HTMLDivElement>,
+    ) => {
+      container.current.focus();
+      const rect = container.current.getBoundingClientRect();
+      const changePosition = getClientPosition(event.nativeEvent);
+      const changeValue = getChangeValue({
+        value: changePosition - rect.left,
+        max,
+        min,
+        step,
+        containerWidth: rect.width,
+      });
 
-    _setValue(clone);
+      const _nearestHandle = _value
+        .map((v) => Math.abs(v - changeValue))
+        .indexOf(Math.min(..._value.map((v) => Math.abs(v - changeValue))));
 
-    if (triggerChangeEnd) {
-      onChangeEnd?.(valueRef.current);
-    }
-  };
+      thumbIndex.current = _nearestHandle;
+    };
 
-  const handleChange = (val: number) => {
-    if (!disabled) {
-      const nextValue = getChangeValue({ value: val, min, max, step, precision });
-      setRangedValue(nextValue, thumbIndex.current, false);
-    }
-  };
+    const getFocusedThumbIndex = () => {
+      if (focused !== 1 && focused !== 0) {
+        setFocused(0);
+        return 0;
+      }
 
-  const { ref: container, active } = useMove(
-    ({ x }) => handleChange(x),
-    { onScrubEnd: () => onChangeEnd?.(valueRef.current) },
-    theme.dir
-  );
+      return focused;
+    };
 
-  function handleThumbMouseDown(index: number) {
-    thumbIndex.current = index;
-  }
+    const handleTrackKeydownCapture = (
+      event: React.KeyboardEvent<HTMLDivElement>,
+    ) => {
+      if (!disabled) {
+        switch (event.key) {
+          case "ArrowUp": {
+            event.preventDefault();
+            const focusedIndex = getFocusedThumbIndex();
+            thumbs.current[focusedIndex]?.focus();
+            setRangedValue(
+              Math.min(
+                Math.max(valueRef.current[focusedIndex] + step, min),
+                max,
+              ),
+              focusedIndex,
+              true,
+            );
+            break;
+          }
+          case "ArrowRight": {
+            event.preventDefault();
+            const focusedIndex = getFocusedThumbIndex();
+            thumbs.current[focusedIndex]?.focus();
+            setRangedValue(
+              Math.min(
+                Math.max(
+                  theme.dir === "rtl"
+                    ? valueRef.current[focusedIndex] - step
+                    : valueRef.current[focusedIndex] + step,
+                  min,
+                ),
+                max,
+              ),
+              focusedIndex,
+              true,
+            );
+            break;
+          }
 
-  const handleTrackMouseDownCapture = (
-    event: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>
-  ) => {
-    container.current.focus();
-    const rect = container.current.getBoundingClientRect();
-    const changePosition = getClientPosition(event.nativeEvent);
-    const changeValue = getChangeValue({
-      value: changePosition - rect.left,
+          case "ArrowDown": {
+            event.preventDefault();
+            const focusedIndex = getFocusedThumbIndex();
+            thumbs.current[focusedIndex]?.focus();
+            setRangedValue(
+              Math.min(
+                Math.max(valueRef.current[focusedIndex] - step, min),
+                max,
+              ),
+              focusedIndex,
+              true,
+            );
+            break;
+          }
+          case "ArrowLeft": {
+            event.preventDefault();
+            const focusedIndex = getFocusedThumbIndex();
+            thumbs.current[focusedIndex]?.focus();
+            setRangedValue(
+              Math.min(
+                Math.max(
+                  theme.dir === "rtl"
+                    ? valueRef.current[focusedIndex] + step
+                    : valueRef.current[focusedIndex] - step,
+                  min,
+                ),
+                max,
+              ),
+              focusedIndex,
+              true,
+            );
+            break;
+          }
+
+          default: {
+            break;
+          }
+        }
+      }
+    };
+
+    const sharedThumbProps = {
       max,
       min,
-      step,
-      containerWidth: rect.width,
-    });
+      color,
+      size,
+      labelTransition,
+      labelTransitionDuration,
+      labelTransitionTimingFunction,
+      labelAlwaysOn,
+      onBlur: () => setFocused(-1),
+      classNames,
+      styles,
+    };
 
-    const _nearestHandle = _value.map((v) => Math.abs(v - changeValue)).indexOf(Math.min(..._value.map((v) => Math.abs(v - changeValue))));
+    const hasArrayThumbChildren = Array.isArray(thumbChildren);
 
-    thumbIndex.current = _nearestHandle;
-  };
-
-  const getFocusedThumbIndex = () => {
-    if (focused !== 1 && focused !== 0) {
-      setFocused(0);
-      return 0;
-    }
-
-    return focused;
-  };
-
-  const handleTrackKeydownCapture = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!disabled) {
-      switch (event.key) {
-        case 'ArrowUp': {
-          event.preventDefault();
-          const focusedIndex = getFocusedThumbIndex();
-          thumbs.current[focusedIndex]?.focus();
-          setRangedValue(
-            Math.min(Math.max(valueRef.current[focusedIndex] + step, min), max),
-            focusedIndex,
-            true
-          );
-          break;
-        }
-        case 'ArrowRight': {
-          event.preventDefault();
-          const focusedIndex = getFocusedThumbIndex();
-          thumbs.current[focusedIndex]?.focus();
-          setRangedValue(
-            Math.min(
-              Math.max(
-                theme.dir === 'rtl'
-                  ? valueRef.current[focusedIndex] - step
-                  : valueRef.current[focusedIndex] + step,
-                min
-              ),
-              max
-            ),
-            focusedIndex,
-            true
-          );
-          break;
-        }
-
-        case 'ArrowDown': {
-          event.preventDefault();
-          const focusedIndex = getFocusedThumbIndex();
-          thumbs.current[focusedIndex]?.focus();
-          setRangedValue(
-            Math.min(Math.max(valueRef.current[focusedIndex] - step, min), max),
-            focusedIndex,
-            true
-          );
-          break;
-        }
-        case 'ArrowLeft': {
-          event.preventDefault();
-          const focusedIndex = getFocusedThumbIndex();
-          thumbs.current[focusedIndex]?.focus();
-          setRangedValue(
-            Math.min(
-              Math.max(
-                theme.dir === 'rtl'
-                  ? valueRef.current[focusedIndex] + step
-                  : valueRef.current[focusedIndex] - step,
-                min
-              ),
-              max
-            ),
-            focusedIndex,
-            true
-          );
-          break;
-        }
-
-        default: {
-          break;
-        }
-      }
-    }
-  };
-
-  const sharedThumbProps = {
-    max,
-    min,
-    color,
-    size,
-    labelTransition,
-    labelTransitionDuration,
-    labelTransitionTimingFunction,
-    labelAlwaysOn,
-    onBlur: () => setFocused(-1),
-    classNames,
-    styles,
-  };
-
-  const hasArrayThumbChildren = Array.isArray(thumbChildren);
-
-  return (
-    <SliderRoot
-      {...others}
-      size={size}
-      ref={ref}
-      styles={styles}
-      classNames={classNames}
-      disabled={disabled}
-      unstyled={unstyled}
-      variant={variant}
-    >
-      <Track
-        marks={marks}
+    return (
+      <SliderRoot
+        {...others}
         size={size}
-        thumbSize={thumbSize}
-        radius={radius}
-        color={color}
-        min={min}
-        max={max}
+        ref={ref}
         styles={styles}
         classNames={classNames}
-        onChange={(val) => {
-          const nearestValue = Math.abs(_value[0] - val) > Math.abs(_value[1] - val) ? 1 : 0;
-          const clone: Value = [..._value];
-          clone[nearestValue] = val;
-          _setValue(clone);
-        }}
         disabled={disabled}
         unstyled={unstyled}
         variant={variant}
-        containerProps={{
-          ref: container,
-          onMouseEnter: showLabelOnHover ? () => setHovered(true) : undefined,
-          onMouseLeave: showLabelOnHover ? () => setHovered(false) : undefined,
-          onTouchStartCapture: handleTrackMouseDownCapture,
-          onTouchEndCapture: () => {
-            thumbIndex.current = -1;
-          },
-          onMouseDownCapture: handleTrackMouseDownCapture,
-          onMouseUpCapture: () => {
-            thumbIndex.current = -1;
-          },
-          onKeyDownCapture: handleTrackKeydownCapture,
-        }}
-      >{_value.map((value, index) => (
-        <Thumb
-          {...sharedThumbProps}
-          value={scale(value)}
-          key={index}
-          position={positions[index]}
-          dragging={active}
-          label={typeof label === 'function' ? label(scale(value)) : label}
-          ref={(node) => {
-            thumbs.current[index] = node;
+      >
+        <Track
+          marks={marks}
+          size={size}
+          thumbSize={thumbSize}
+          radius={radius}
+          color={color}
+          min={min}
+          max={max}
+          styles={styles}
+          classNames={classNames}
+          onChange={(val) => {
+            const nearestValue =
+              Math.abs(_value[0] - val) > Math.abs(_value[1] - val) ? 1 : 0;
+            const clone: Value = [..._value];
+            clone[nearestValue] = val;
+            _setValue(clone);
           }}
-          thumbLabel={thumbLabels ? thumbLabels[index] : ''}
-          onMouseDown={() => handleThumbMouseDown(index)}
-          onFocus={() => setFocused(index)}
-          showLabelOnHover={showLabelOnHover}
-          isHovered={hovered}
           disabled={disabled}
           unstyled={unstyled}
-          thumbSize={thumbSize}
           variant={variant}
+          containerProps={{
+            ref: container,
+            onMouseEnter: showLabelOnHover ? () => setHovered(true) : undefined,
+            onMouseLeave: showLabelOnHover
+              ? () => setHovered(false)
+              : undefined,
+            onTouchStartCapture: handleTrackMouseDownCapture,
+            onTouchEndCapture: () => {
+              thumbIndex.current = -1;
+            },
+            onMouseDownCapture: handleTrackMouseDownCapture,
+            onMouseUpCapture: () => {
+              thumbIndex.current = -1;
+            },
+            onKeyDownCapture: handleTrackKeydownCapture,
+          }}
         >
-          {hasArrayThumbChildren ? thumbChildren[index] : thumbChildren}
-        </Thumb>))}
-      </Track>
-      {_value.map((value, index) => (
-        <input type="hidden" name={`${name}[]`} key={index} value={value} />
-      ))}
-    </SliderRoot>
-  );
-});
+          {_value.map((value, index) => (
+            <Thumb
+              {...sharedThumbProps}
+              value={scale(value)}
+              key={index}
+              position={positions[index]}
+              dragging={active}
+              clicked={thumbIndex.current == index}
+              label={typeof label === "function" ? label(scale(value)) : label}
+              ref={(node) => {
+                thumbs.current[index] = node;
+              }}
+              thumbLabel={thumbLabels ? thumbLabels[index] : ""}
+              onMouseDown={() => handleThumbMouseDown(index)}
+              onFocus={() => setFocused(index)}
+              showLabelOnHover={showLabelOnHover}
+              isHovered={hovered}
+              disabled={disabled}
+              unstyled={unstyled}
+              thumbSize={thumbSize}
+              variant={variant}
+            >
+              {hasArrayThumbChildren ? thumbChildren[index] : thumbChildren}
+            </Thumb>
+          ))}
+        </Track>
+        {_value.map((value, index) => (
+          <input type="hidden" name={`${name}[]`} key={index} value={value} />
+        ))}
+      </SliderRoot>
+    );
+  },
+);
 
-MultiSlider.displayName = 'MultiSlider';
+MultiSlider.displayName = "MultiSlider";
