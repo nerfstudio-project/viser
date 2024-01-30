@@ -224,7 +224,16 @@ export const Thumb = forwardRef<HTMLDivElement, ThumbProps>(
           }
         >
           {(transitionStyles) => (
-            <div className={classes.label} style={transitionStyles}>
+            <div
+              className={classes.label}
+              style={{
+                ...transitionStyles,
+                border: clicked
+                  ? "1px solid " + theme.colors.dark[3]
+                  : undefined,
+                transform: clicked ? "translateY(-1px)" : undefined,
+              }}
+            >
               {label}
             </div>
           )}

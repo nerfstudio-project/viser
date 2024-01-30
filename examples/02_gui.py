@@ -1,3 +1,8 @@
+# mypy: disable-error-code="assignment"
+#
+# Asymmetric properties are supported in Pyright, but not yet in mypy.
+# - https://github.com/python/mypy/issues/3004
+# - https://github.com/python/mypy/pull/11643
 """GUI basics
 
 Examples of basic GUI elements that we can create, read from, and write to."""
@@ -63,10 +68,9 @@ def main() -> None:
                 max=100,
                 step=1,
                 initial_value=(0, 30, 100),
-                marks=(0, 25, 50, 75, (100, "max")),
             )
             gui_slider_positions = server.add_gui_slider(
-                "Multi slider positions",
+                "# sliders",
                 min=0,
                 max=10,
                 step=1,

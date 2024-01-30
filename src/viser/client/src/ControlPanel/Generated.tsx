@@ -211,7 +211,7 @@ function GeneratedInput({
             id={conf.id}
             size="xs"
             thumbSize={0}
-            style={{flexGrow: 1}}
+            style={{ flexGrow: 1 }}
             styles={(theme) => ({
               thumb: {
                 background: theme.fn.primaryColor(),
@@ -224,20 +224,34 @@ function GeneratedInput({
                 position: "relative",
               },
               markLabel: {
-                transform: 'translate(-50%, 0.0938rem)',
+                transform: "translate(-50%, 0.03rem)",
                 fontSize: "0.6rem",
                 textAlign: "center",
               },
               marksContainer: {
-                left: '0.2rem',
-                right: '0.2rem',
+                left: "0.2rem",
+                right: "0.2rem",
               },
               markWrapper: {
                 position: "absolute",
-                top: `0.06rem`
+                top: `0.03rem`,
+                ...(conf.marks === null
+                  ? /*  Shift the mark labels so they don't spill too far out the left/right when we only have min and max marks. */
+                    {
+                      ":first-child": {
+                        "div:nth-child(2)": {
+                          transform: "translate(-0.2rem, 0.03rem)",
+                        },
+                      },
+                      ":last-child": {
+                        "div:nth-child(2)": {
+                          transform: "translate(-90%, 0.03rem)",
+                        },
+                      },
+                    }
+                  : {}),
               },
               mark: {
-                opacity: disabled ? "0" : undefined,
                 border: "0px solid transparent",
                 background:
                   theme.colorScheme === "dark"
@@ -248,7 +262,11 @@ function GeneratedInput({
                 transform: `translateX(-50%)`,
               },
               markFilled: {
-                opacity: "0",
+                background: disabled
+                  ? theme.colorScheme === "dark"
+                    ? theme.colors.dark[3]
+                    : theme.colors.gray[4]
+                  : theme.fn.primaryColor(),
               },
             })}
             pt="0.2em"
@@ -261,13 +279,16 @@ function GeneratedInput({
             onChange={updateValue}
             marks={
               conf.marks === null
-                ? [{ 
-                    value: conf.min, 
-                    label: `${parseInt(conf.min.toFixed(6))}`
-                  }, { 
-                    value: conf.max,
-                    label: `${parseInt(conf.max.toFixed(6))}` 
-                    }]
+                ? [
+                    {
+                      value: conf.min,
+                      label: `${parseInt(conf.min.toFixed(6))}`,
+                    },
+                    {
+                      value: conf.max,
+                      label: `${parseInt(conf.max.toFixed(6))}`,
+                    },
+                  ]
                 : conf.marks
             }
             disabled={disabled}
@@ -316,20 +337,34 @@ function GeneratedInput({
               position: "relative",
             },
             markLabel: {
-              transform: 'translate(-50%, 0.0938rem)',
+              transform: "translate(-50%, 0.03rem)",
               fontSize: "0.6rem",
               textAlign: "center",
             },
             marksContainer: {
-              left: '0.2rem',
-              right: '0.2rem',
+              left: "0.2rem",
+              right: "0.2rem",
             },
             markWrapper: {
               position: "absolute",
-              top: `0.06rem`
+              top: `0.03rem`,
+              ...(conf.marks === null
+                ? /*  Shift the mark labels so they don't spill too far out the left/right when we only have min and max marks. */
+                  {
+                    ":first-child": {
+                      "div:nth-child(2)": {
+                        transform: "translate(-0.2rem, 0.03rem)",
+                      },
+                    },
+                    ":last-child": {
+                      "div:nth-child(2)": {
+                        transform: "translate(-90%, 0.03rem)",
+                      },
+                    },
+                  }
+                : {}),
             },
             mark: {
-              opacity: disabled ? "0" : undefined,
               border: "0px solid transparent",
               background:
                 theme.colorScheme === "dark"
@@ -340,7 +375,11 @@ function GeneratedInput({
               transform: `translateX(-50%)`,
             },
             markFilled: {
-              opacity: "0",
+              background: disabled
+                ? theme.colorScheme === "dark"
+                  ? theme.colors.dark[3]
+                  : theme.colors.gray[4]
+                : theme.fn.primaryColor(),
             },
           })}
           pt="0.2em"
@@ -353,13 +392,16 @@ function GeneratedInput({
           onChange={updateValue}
           marks={
             conf.marks === null
-              ? [{ 
-                  value: conf.min, 
-                  label: `${parseInt(conf.min.toFixed(6))}`
-                }, { 
-                  value: conf.max,
-                  label: `${parseInt(conf.max.toFixed(6))}` 
-                  }]
+              ? [
+                  {
+                    value: conf.min,
+                    label: `${parseInt(conf.min.toFixed(6))}`,
+                  },
+                  {
+                    value: conf.max,
+                    label: `${parseInt(conf.max.toFixed(6))}`,
+                  },
+                ]
               : conf.marks
           }
           disabled={disabled}
