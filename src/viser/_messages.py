@@ -8,11 +8,9 @@ from typing import Any, Optional, Tuple, Union
 
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Literal, NotRequired, TypedDict, override
+from typing_extensions import Literal, override
 
 from . import infra, theme
-
-GuiSliderMark = TypedDict("GuiSliderMark", {"value": float, "label": NotRequired[str]})
 
 
 class Message(infra.Message):
@@ -432,19 +430,6 @@ class GuiAddSliderMessage(_GuiAddInputBase):
     step: Optional[float]
     initial_value: float
     precision: int
-    marks: Optional[Tuple[GuiSliderMark, ...]] = None
-
-
-@dataclasses.dataclass
-class GuiAddMultiSliderMessage(_GuiAddInputBase):
-    min: float
-    max: float
-    step: Optional[float]
-    min_range: Optional[float]
-    initial_value: Tuple[float, ...]
-    precision: int
-    fixed_endpoints: bool = False
-    marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
 @dataclasses.dataclass

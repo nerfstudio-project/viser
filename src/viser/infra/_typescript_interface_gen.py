@@ -2,7 +2,7 @@ import dataclasses
 from typing import Any, ClassVar, Type, Union, cast, get_type_hints
 
 import numpy as onp
-from typing_extensions import Literal, NotRequired, get_args, get_origin, is_typeddict
+from typing_extensions import Literal, get_args, get_origin, is_typeddict
 
 try:
     from typing import Literal as LiteralAlt
@@ -52,19 +52,12 @@ def _get_ts_type(typ: Type[Any]) -> str:
             )
             + ")"
         )
-    elif origin_typ is list:
-        args = get_args(typ)
-        return _get_ts_type(args[0]) + "[]"
     elif is_typeddict(typ):
         hints = get_type_hints(typ)
-        optional_keys = getattr(typ, "__optional_keys__", [])
 
         def fmt(key):
             val = hints[key]
-            optional = key in optional_keys
-            if get_origin(val) is NotRequired:
-                val = get_args(val)[0]
-            ret = f"'{key}'{'?' if optional else ''}" + ": " + _get_ts_type(val)
+            ret = f"'{key}'" + ": " + _get_ts_type(val)
             return ret
 
         ret = "{" + ", ".join(map(fmt, hints)) + "}"
