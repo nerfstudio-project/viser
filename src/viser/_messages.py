@@ -4,16 +4,20 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple, Union, TypeVar, Callable, Type, Dict, cast
 
 import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import Literal, override
+import msgpack
 
 from . import infra, theme
 
 
 class Message(infra.Message):
+    _tags: Tuple[str, ...] = tuple()
+
+
     @override
     def redundancy_key(self) -> str:
         """Returns a unique key for this message, used for detecting redundant
@@ -35,6 +39,21 @@ class Message(infra.Message):
             parts.append(node_name)
 
         return "_".join(parts)
+
+
+T = TypeVar("T", bound=Message)
+
+
+def tag_class(tag: str) -> Callable[[T], T]:
+    """Decorator for tagging a class with a `type` field."""
+
+    def wrapper(cls: T) -> T:
+        cls._tags = (cls._tags or ()) + (tag,)
+        return cls
+
+    return wrapper
+
+
 
 
 @dataclasses.dataclass
@@ -346,6 +365,7 @@ class ResetSceneMessage(Message):
     """Reset scene."""
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddFolderMessage(Message):
     order: float
@@ -356,6 +376,7 @@ class GuiAddFolderMessage(Message):
     visible: bool
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddMarkdownMessage(Message):
     order: float
@@ -365,6 +386,7 @@ class GuiAddMarkdownMessage(Message):
     visible: bool
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddTabGroupMessage(Message):
     order: float
@@ -402,6 +424,7 @@ class GuiCloseModalMessage(Message):
     id: str
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddButtonMessage(_GuiAddInputBase):
     # All GUI elements currently need an `value` field.
@@ -428,6 +451,7 @@ class GuiAddButtonMessage(_GuiAddInputBase):
     icon_base64: Optional[str]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddSliderMessage(_GuiAddInputBase):
     min: float
@@ -437,6 +461,7 @@ class GuiAddSliderMessage(_GuiAddInputBase):
     precision: int
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddNumberMessage(_GuiAddInputBase):
     value: float
@@ -446,21 +471,25 @@ class GuiAddNumberMessage(_GuiAddInputBase):
     max: Optional[float]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddRgbMessage(_GuiAddInputBase):
     value: Tuple[int, int, int]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddRgbaMessage(_GuiAddInputBase):
     value: Tuple[int, int, int, int]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddCheckboxMessage(_GuiAddInputBase):
     value: bool
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddVector2Message(_GuiAddInputBase):
     value: Tuple[float, float]
@@ -470,6 +499,7 @@ class GuiAddVector2Message(_GuiAddInputBase):
     precision: int
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddVector3Message(_GuiAddInputBase):
     value: Tuple[float, float, float]
@@ -479,17 +509,20 @@ class GuiAddVector3Message(_GuiAddInputBase):
     precision: int
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddTextMessage(_GuiAddInputBase):
     value: str
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddDropdownMessage(_GuiAddInputBase):
     value: str
     options: Tuple[str, ...]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddButtonGroupMessage(_GuiAddInputBase):
     value: str
@@ -503,36 +536,48 @@ class GuiRemoveMessage(Message):
     id: str
 
 
-@dataclasses.dataclass
 class GuiUpdateMessage(Message):
-    """Sent client->server when a GUI input is changed."""
+    """Sent client<->server when a GUI component is changed."""
 
-    id: str
-    value: Any
+    def __init__(self, id: str, type: Type[Message], **changes):
+        self.id = id
+        self._type = type
+        for k, v in changes.items():
+            setattr(self, k, v)
 
+    def as_serializable_dict(self) -> Dict[str, Any]:
+        """Convert a Python Message object into bytes."""
+        from viser.infra._messages import get_type_hints_cached, _prepare_for_serialization
+        hints = get_type_hints_cached(self._type)
+        mapping = {
+            k: _prepare_for_serialization(v, hints[k]) for k, v in vars(self).items() if k != "_type"
+        }
+        mapping["component_type"] = self._type.__name__
+        mapping["type"] = type(self).__name__
+        return mapping
 
-@dataclasses.dataclass
-class GuiSetVisibleMessage(Message):
-    """Sent client->server when a GUI input is changed."""
+    @classmethod
+    def _from_serializable_dict(cls, mapping: Dict[str, Any]) -> Dict[str, Any]:
+        mapping["type"] = mapping.pop("component_type")
+        message_type = Message._subclass_from_type_string()[cast(str, mapping.pop("type"))]
+        kwargs = message_type._from_serializable_dict(mapping)
+        kwargs["type"] = message_type
+        return kwargs
 
-    id: str
-    visible: bool
+    @classmethod
+    def _get_ts_type(cls):
+        return f'''
+type _GuiComponentPropsPartial<T> = T extends T ? Partial<Omit<T, "type" | "container_id" | "id" | "order">>: never;
+export type GuiComponentPropsPartial = _GuiComponentPropsPartial<GuiAddComponentMessage>;
+export type _GuiComponentNames<T> = T extends GuiAddComponentMessage ? T["type"] : never;
+export type GuiComponentNames = _GuiComponentNames<GuiAddComponentMessage>;
+export type {cls.__name__} = {{
+  id: string;
+  type: "{cls.__name__}";
+  component_type: GuiComponentNames;
+}} & GuiComponentPropsPartial;
+'''
 
-
-@dataclasses.dataclass
-class GuiSetDisabledMessage(Message):
-    """Sent client->server when a GUI input is changed."""
-
-    id: str
-    disabled: bool
-
-
-@dataclasses.dataclass
-class GuiSetValueMessage(Message):
-    """Sent server->client to set the value of a particular input."""
-
-    id: str
-    value: Any
 
 
 @dataclasses.dataclass

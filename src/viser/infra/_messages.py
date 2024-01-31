@@ -77,24 +77,19 @@ class Message(abc.ABC):
 
     def as_serializable_dict(self) -> Dict[str, Any]:
         """Convert a Python Message object into bytes."""
-        hints = get_type_hints_cached(type(self))
+        message_type = type(self)
+        hints = get_type_hints_cached(message_type)
         out = {
             k: _prepare_for_serialization(v, hints[k]) for k, v in vars(self).items()
         }
-        out["type"] = type(self).__name__
+        out["type"] = message_type.__name__
         return out
 
     @classmethod
-    def deserialize(cls, message: bytes) -> Message:
-        """Convert bytes into a Python Message object."""
-        mapping = msgpack.unpackb(message)
+    def _from_serializable_dict(cls, mapping: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert a dict message back into a Python Message object."""
 
-        # msgpack deserializes to lists by default, but all of our annotations use
-        # tuples.
-        mapping = {
-            k: tuple(v) if isinstance(v, list) else v for k, v in mapping.items()
-        }
-        message_type = cls._subclass_from_type_string()[cast(str, mapping.pop("type"))]
+        hints = get_type_hints_cached(cls)
 
         # If annotated as a float but we got an integer, cast to float. These
         # are both `number` in Javascript.
@@ -109,9 +104,22 @@ class Message(abc.ABC):
             else:
                 return value
 
-        type_hints = get_type_hints(message_type)
-        mapping = {k: coerce_floats(v, type_hints[k]) for k, v in mapping.items()}
-        return message_type(**mapping)  # type: ignore
+        mapping = {k: coerce_floats(v, hints[k]) for k, v in mapping.items()}
+        return mapping
+
+    @classmethod
+    def deserialize(cls, message: bytes) -> Message:
+        """Convert bytes into a Python Message object."""
+        mapping = msgpack.unpackb(message)
+
+        # msgpack deserializes to lists by default, but all of our annotations use
+        # tuples.
+        mapping = {
+            k: tuple(v) if isinstance(v, list) else v for k, v in mapping.items()
+        }
+        message_type = cls._subclass_from_type_string()[cast(str, mapping.pop("type"))]
+        message_kwargs = message_type._from_serializable_dict(mapping)
+        return message_type(**message_kwargs)
 
     @classmethod
     @functools.lru_cache(maxsize=100)

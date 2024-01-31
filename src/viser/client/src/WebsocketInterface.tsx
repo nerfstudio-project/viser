@@ -67,9 +67,7 @@ function useMessageHandler() {
   const addModal = viewer.useGui((state) => state.addModal);
   const removeModal = viewer.useGui((state) => state.removeModal);
   const removeGui = viewer.useGui((state) => state.removeGui);
-  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
-  const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
-  const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
+  const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
@@ -746,19 +744,11 @@ function useMessageHandler() {
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
         return;
       }
-      // Set the value of a GUI input.
-      case "GuiSetValueMessage": {
-        setGuiValue(message.id, message.value);
-        return;
-      }
-      // Set the hidden state of a GUI input.
-      case "GuiSetVisibleMessage": {
-        setGuiVisible(message.id, message.visible);
-        return;
-      }
-      // Set the disabled state of a GUI input.
-      case "GuiSetDisabledMessage": {
-        setGuiDisabled(message.id, message.disabled);
+      // Update props of a GUI component
+      case "GuiUpdateMessage": {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, type, component_type, ...changes } = message;
+        updateGuiProps(message.id, changes);
         return;
       }
       // Remove a GUI input.

@@ -7,21 +7,7 @@ import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from "../App";
 import { MantineThemeOverride } from "@mantine/core";
 
-export type GuiConfig =
-  | Messages.GuiAddButtonMessage
-  | Messages.GuiAddCheckboxMessage
-  | Messages.GuiAddDropdownMessage
-  | Messages.GuiAddFolderMessage
-  | Messages.GuiAddTabGroupMessage
-  | Messages.GuiAddNumberMessage
-  | Messages.GuiAddRgbMessage
-  | Messages.GuiAddRgbaMessage
-  | Messages.GuiAddSliderMessage
-  | Messages.GuiAddButtonGroupMessage
-  | Messages.GuiAddTextMessage
-  | Messages.GuiAddVector2Message
-  | Messages.GuiAddVector3Message
-  | Messages.GuiAddMarkdownMessage;
+export type GuiConfig = Messages.GuiAddComponentMessage;
 
 export function isGuiConfig(message: Messages.Message): message is GuiConfig {
   return message.type.startsWith("GuiAdd");
@@ -48,9 +34,7 @@ interface GuiActions {
   addGui: (config: GuiConfig) => void;
   addModal: (config: Messages.GuiModalMessage) => void;
   removeModal: (id: string) => void;
-  setGuiValue: (id: string, value: any) => void;
-  setGuiVisible: (id: string, visible: boolean) => void;
-  setGuiDisabled: (id: string, visible: boolean) => void;
+  updateGuiProps: (id: string, changes: Messages.GuiComponentPropsPartial) => Messages.GuiAddComponentMessage;
   removeGui: (id: string) => void;
   resetGui: () => void;
 }
@@ -92,7 +76,7 @@ export function computeRelativeLuminance(color: string) {
 export function useGuiState(initialServer: string) {
   return React.useState(() =>
     create(
-      immer<GuiState & GuiActions>((set) => ({
+      immer<GuiState & GuiActions>((set, get) => ({
         ...cleanGuiState,
         server: initialServer,
         setTheme: (theme) =>
@@ -122,21 +106,6 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.modals = state.modals.filter((m) => m.id !== id);
           }),
-        setGuiValue: (id, value) =>
-          set((state) => {
-            const config = state.guiConfigFromId[id] as any;
-            state.guiConfigFromId[id] = {...config, value} as GuiConfig;
-          }),
-        setGuiVisible: (id, visible) =>
-          set((state) => {
-            const config = state.guiConfigFromId[id] as any;
-            state.guiConfigFromId[id] = {...config, visible} as GuiConfig;
-          }),
-        setGuiDisabled: (id, disabled) =>
-          set((state) => {
-            const config = state.guiConfigFromId[id] as any;
-            state.guiConfigFromId[id] = {...config, disabled} as GuiConfig;
-          }),
         removeGui: (id) =>
           set((state) => {
             const guiConfig = state.guiConfigFromId[id];
@@ -152,6 +121,14 @@ export function useGuiState(initialServer: string) {
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
           }),
+        updateGuiProps: (id, changes) => {
+          set((state) => {
+            const config = state.guiConfigFromId[id];
+            if (config === undefined) return;
+            state.guiConfigFromId[id] = {...config, ...changes} as GuiConfig;
+          });
+          return get().guiConfigFromId[id];
+        }
       })),
     ),
   )[0];

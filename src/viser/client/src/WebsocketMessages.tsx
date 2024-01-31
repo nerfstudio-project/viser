@@ -592,42 +592,26 @@ export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
   id: string;
 }
-/** Sent client->server when a GUI input is changed.
+/** Sent client<->server when a GUI component is changed.
  *
  * (automatically generated)
  */
-export interface GuiUpdateMessage {
+
+type _GuiComponentPropsPartial<T> = T extends T
+  ? Partial<Omit<T, "type" | "container_id" | "id" | "order">>
+  : never;
+export type GuiComponentPropsPartial =
+  _GuiComponentPropsPartial<GuiAddComponentMessage>;
+export type _GuiComponentNames<T> = T extends GuiAddComponentMessage
+  ? T["type"]
+  : never;
+export type GuiComponentNames = _GuiComponentNames<GuiAddComponentMessage>;
+export type GuiUpdateMessage = {
+  id: string;
   type: "GuiUpdateMessage";
-  id: string;
-  value: any;
-}
-/** Sent client->server when a GUI input is changed.
- *
- * (automatically generated)
- */
-export interface GuiSetVisibleMessage {
-  type: "GuiSetVisibleMessage";
-  id: string;
-  visible: boolean;
-}
-/** Sent client->server when a GUI input is changed.
- *
- * (automatically generated)
- */
-export interface GuiSetDisabledMessage {
-  type: "GuiSetDisabledMessage";
-  id: string;
-  disabled: boolean;
-}
-/** Sent server->client to set the value of a particular input.
- *
- * (automatically generated)
- */
-export interface GuiSetValueMessage {
-  type: "GuiSetValueMessage";
-  id: string;
-  value: any;
-}
+  component_type: GuiComponentNames;
+} & GuiComponentPropsPartial;
+
 /** Message from server->client to configure parts of the GUI.
  *
  * (automatically generated)
@@ -816,9 +800,6 @@ export type Message =
   | GuiCloseModalMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
-  | GuiSetVisibleMessage
-  | GuiSetDisabledMessage
-  | GuiSetValueMessage
   | ThemeConfigurationMessage
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
@@ -830,3 +811,18 @@ export type Message =
   | ShareUrlUpdated
   | ShareUrlDisconnect
   | SetGuiPanelLabelMessage;
+export type GuiAddComponentMessage =
+  | GuiAddFolderMessage
+  | GuiAddMarkdownMessage
+  | GuiAddTabGroupMessage
+  | GuiAddButtonMessage
+  | GuiAddSliderMessage
+  | GuiAddNumberMessage
+  | GuiAddRgbMessage
+  | GuiAddRgbaMessage
+  | GuiAddCheckboxMessage
+  | GuiAddVector2Message
+  | GuiAddVector3Message
+  | GuiAddTextMessage
+  | GuiAddDropdownMessage
+  | GuiAddButtonGroupMessage;

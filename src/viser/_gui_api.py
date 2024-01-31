@@ -960,6 +960,7 @@ class GuiApi(abc.ABC):
         # Construct handle.
         handle_state = _GuiHandleState(
             label=message.label,
+            message_type=type(message),
             typ=type(value),
             gui_api=self,
             value=value,
@@ -981,7 +982,7 @@ class GuiApi(abc.ABC):
         if not is_button:
 
             def sync_other_clients(client_id: ClientId, value: Any) -> None:
-                message = _messages.GuiSetValueMessage(id=handle_state.id, value=value)
+                message = _messages.GuiUpdateMessage(handle_state.id, handle_state.message_type, value=value)
                 message.excluded_self_client = client_id
                 self._get_api()._queue(message)
 

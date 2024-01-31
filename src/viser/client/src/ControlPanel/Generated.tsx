@@ -60,11 +60,11 @@ export default function GeneratedGuiContainer({ containerId }: { containerId: st
   const viewer = React.useContext(ViewerContext)!;
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
   function setValue(id: string, value: any) {
-    setGuiValue(id, value);
-    messageSender({ type: "GuiUpdateMessage", id: id, value: value });
+    const { type } = updateGuiProps(id, { value });
+    messageSender({ type: "GuiUpdateMessage", component_type: type, id, value });
   }
 
-  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
+  const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   return <GuiComponentContext.Provider value={{
     folderDepth: 0,
     GuiContainer: GuiContainer,

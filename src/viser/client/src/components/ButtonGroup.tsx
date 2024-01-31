@@ -7,6 +7,7 @@ import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 export default function ButtonGroupComponent({
   id,
   hint,
+  type,
   label,
   visible,
   disabled,
@@ -22,6 +23,7 @@ export default function ButtonGroupComponent({
           onClick={() =>
             messageSender({
               type: "GuiUpdateMessage",
+              component_type: type,
               id: id,
               value: option,
             })
