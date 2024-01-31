@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Optional, Tuple, Union, TypeVar, Callable, Type, Dict, cast
+from typing import Any, Optional, Tuple, Union, TypeVar, Callable, Type, Dict, cast, ClassVar
 
 import numpy as onp
 import numpy.typing as onpt
@@ -15,7 +15,7 @@ from . import infra, theme
 
 
 class Message(infra.Message):
-    _tags: Tuple[str, ...] = tuple()
+    _tags: ClassVar[Tuple[str, ...]] = tuple()
 
 
     @override
@@ -41,7 +41,7 @@ class Message(infra.Message):
         return "_".join(parts)
 
 
-T = TypeVar("T", bound=Message)
+T = TypeVar("T", bound=Type[Message])
 
 
 def tag_class(tag: str) -> Callable[[T], T]:
@@ -544,6 +544,9 @@ class GuiUpdateMessage(Message):
         self._type = type
         for k, v in changes.items():
             setattr(self, k, v)
+
+    def changes(self):
+        return {k: v for k, v in vars(self).items() if k not in {"id", "_type"}}
 
     def as_serializable_dict(self) -> Dict[str, Any]:
         """Convert a Python Message object into bytes."""

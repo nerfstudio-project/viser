@@ -18,6 +18,38 @@ else:
     ClientId = Any
 
 
+def _prepare_for_deserialization(value: Any, annotation: Type) -> Any:
+    # If annotated as a float but we got an integer, cast to float. These
+    # are both `number` in Javascript.
+    if annotation is float:
+        return float(value)
+    elif annotation is int:
+        return int(value)
+    elif get_origin(annotation) is tuple:
+        out = []
+        args = get_args(annotation)
+        if ... in args:
+            if len(value) < len(args) - 1:
+                warnings.warn(f"[viser] {value} does not match annotation {annotation}")
+                return value
+            ellipsis_index = args.index(...)
+            num_ellipsis = len(value) - len(args) + 2
+            args = args[:(ellipsis_index - 1)] + tuple(args[ellipsis_index - 1] for _ in range(num_ellipsis)) + args[ellipsis_index + 1 :]
+
+        if len(value) != len(args):
+            warnings.warn(f"[viser] {value} does not match annotation {annotation}")
+            return value
+
+        for i, v in enumerate(value):
+            out.append(
+                # Hack to be OK with wrong type annotations.
+                # https://github.com/nerfstudio-project/nerfstudio/pull/1805
+                _prepare_for_deserialization(v, args[i]) if i < len(args) else v
+            )
+        return tuple(out)
+    return value
+
+
 def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     """Prepare any special types for serialization."""
 
@@ -38,19 +70,25 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
 
         out = []
         args = get_args(annotation)
-        if len(args) >= 1:
-            if len(args) >= 2 and args[1] == ...:
-                args = (args[0],) * len(value)
-            elif len(value) != len(args):
+        if ... in args:
+            if len(value) < len(args) - 1:
                 warnings.warn(f"[viser] {value} does not match annotation {annotation}")
+                return value
+            ellipsis_index = args.index(...)
+            num_ellipsis = len(value) - len(args) + 2
+            args = args[:(ellipsis_index - 1)] + tuple(args[ellipsis_index - 1] for _ in range(num_ellipsis)) + args[ellipsis_index + 1 :]
 
-            for i, v in enumerate(value):
-                out.append(
-                    # Hack to be OK with wrong type annotations.
-                    # https://github.com/nerfstudio-project/nerfstudio/pull/1805
-                    _prepare_for_serialization(v, args[i]) if i < len(args) else v
-                )
-            return tuple(out)
+        if len(value) != len(args):
+            warnings.warn(f"[viser] {value} does not match annotation {annotation}")
+            return value
+
+        for i, v in enumerate(value):
+            out.append(
+                # Hack to be OK with wrong type annotations.
+                # https://github.com/nerfstudio-project/nerfstudio/pull/1805
+                _prepare_for_serialization(v, args[i]) if i < len(args) else v
+            )
+        return tuple(out)
 
     # For arrays, we serialize underlying data directly. The client is responsible for
     # reading using the correct dtype.
@@ -91,20 +129,7 @@ class Message(abc.ABC):
 
         hints = get_type_hints_cached(cls)
 
-        # If annotated as a float but we got an integer, cast to float. These
-        # are both `number` in Javascript.
-        def coerce_floats(value: Any, annotation: Type[Any]) -> Any:
-            if annotation is float:
-                return float(value)
-            elif get_origin(annotation) is tuple:
-                return tuple(
-                    coerce_floats(value[i], typ)
-                    for i, typ in enumerate(get_args(annotation))
-                )
-            else:
-                return value
-
-        mapping = {k: coerce_floats(v, hints[k]) for k, v in mapping.items()}
+        mapping = {k: _prepare_for_deserialization(v, hints[k]) for k, v in mapping.items()}
         return mapping
 
     @classmethod

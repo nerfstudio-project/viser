@@ -88,11 +88,13 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
             out_lines.append(" * (automatically generated)")
             out_lines.append(" */")
 
-        for tag in cls._tags or []:
+        for tag in getattr(cls, "_tags", []):
             tag_map[tag].append(cls.__name__)
 
-        if hasattr(cls, "_get_ts_type"):
-            out_lines.append(cls._get_ts_type())
+        get_ts_type = getattr(cls, "_get_ts_type", None)
+        if get_ts_type is not None:
+            assert callable(get_ts_type)
+            out_lines.append(get_ts_type())
             continue
 
         out_lines.append(f"export interface {cls.__name__} " + "{")

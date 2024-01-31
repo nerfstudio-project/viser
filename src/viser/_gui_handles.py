@@ -20,7 +20,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
-    ClassVar,
+    Any,
 )
 
 import imageio.v3 as iio
@@ -84,7 +84,7 @@ class _GuiHandleState(Generic[T]):
     is_button: bool
     """Indicates a button element, which requires special handling."""
 
-    sync_cb: Optional[Callable[[ClientId, T], None]]
+    sync_cb: Optional[Callable[[ClientId, Dict[str, Any]], None]]
     """Callback for synchronizing inputs across clients."""
 
     disabled: bool

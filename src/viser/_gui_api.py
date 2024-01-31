@@ -131,24 +131,35 @@ class GuiApi(abc.ABC):
 
         handle_state = handle._impl
 
-        # Do some type casting. This is necessary when we expect floats but the
-        # Javascript side gives us integers.
-        if handle_state.typ is tuple:
-            assert len(message.value) == len(handle_state.value)
-            value = tuple(
-                type(handle_state.value[i])(message.value[i])
-                for i in range(len(message.value))
-            )
-        else:
-            value = handle_state.typ(message.value)
+        has_changed = False
+        changes = message.changes()
+        for k, v in changes.items():
+            current_value = getattr(handle_state, k, None)
+            if current_value != v:
+                has_changed = True
+
+        if "value" in changes:
+            # Do some type casting. This is necessary when we expect floats but the
+            # Javascript side gives us integers.
+            value = changes["value"]
+            if handle_state.typ is tuple:
+                assert len(value) == len(handle_state.value)
+                value = tuple(
+                    type(handle_state.value[i])(message.value[i])
+                    for i in range(len(value))
+                )
+            else:
+                value = handle_state.typ(value)
+            changes["value"] = value
 
         # Only call update when value has actually changed.
-        if not handle_state.is_button and value == handle_state.value:
+        if not handle_state.is_button and not has_changed:
             return
 
         # Update state.
         with self._get_api()._atomic_lock:
-            handle_state.value = value
+            for k, v in changes.items():
+                setattr(handle_state, k, v)
             handle_state.update_timestamp = time.time()
 
         # Trigger callbacks.
@@ -166,7 +177,7 @@ class GuiApi(abc.ABC):
 
             cb(GuiEvent(client, client_id, handle))
         if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, value)
+            handle_state.sync_cb(client_id, changes)
 
     def _get_container_id(self) -> str:
         """Get container ID associated with the current thread."""
@@ -981,8 +992,8 @@ class GuiApi(abc.ABC):
         # This will be a no-op for client handles.
         if not is_button:
 
-            def sync_other_clients(client_id: ClientId, value: Any) -> None:
-                message = _messages.GuiUpdateMessage(handle_state.id, handle_state.message_type, value=value)
+            def sync_other_clients(client_id: ClientId, changes) -> None:
+                message = _messages.GuiUpdateMessage(handle_state.id, handle_state.message_type, **changes)
                 message.excluded_self_client = client_id
                 self._get_api()._queue(message)
 
