@@ -20,7 +20,7 @@ import {
   Modal,
   useMantineTheme,
 } from "@mantine/core";
-import React from "react";
+import React, { useEffect } from "react";
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 
 import "./index.css";
@@ -45,6 +45,7 @@ import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { normalizeClick, isClickValid } from "./ClickUtils";
+import { maxHeaderSize } from "http";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -84,6 +85,8 @@ export type ViewerContextContents = {
     dragScreenPos: [number, number][];  //  List of mouse positions.
     dragLock: number;  // Only allow one drag event at a time.
   }>;
+  // 2D canvas for drawing -- can be used to give feedback on cursor movement, or more. 
+  canvas2dRef: React.MutableRefObject<HTMLCanvasElement | null>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -142,6 +145,7 @@ function ViewerRoot() {
       dragScreenPos: [],
       dragLock: 0,
     }),
+    canvas2dRef: React.useRef(null),
   };
 
   return (
@@ -199,6 +203,7 @@ function ViewerContents() {
               position: "relative",
             })}
           >
+            <Viewer2DCanvas />
             <ViewerCanvas>
               <FrameSynchronizedMessageHandler />
             </ViewerCanvas>
@@ -292,6 +297,23 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         drag_info.dragOrigin!.push([ray.origin.x, ray.origin.y, ray.origin.z]);
         drag_info.dragDirection!.push([ray.direction.x, ray.direction.y, ray.direction.z]);
         drag_info.dragScreenPos.push([e.nativeEvent.offsetX, e.nativeEvent.offsetY]);
+
+        const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.beginPath();
+        ctx.fillStyle = "blue";
+        ctx.strokeStyle = "blue";
+        ctx.globalAlpha = 0.2;
+        ctx.moveTo(dragScreenPos[dragScreenPos.length-2][0], dragScreenPos[dragScreenPos.length-2][1]);
+        ctx.lineTo(dragScreenPos[dragScreenPos.length-1][0], dragScreenPos[dragScreenPos.length-1][1]);
+        // ctx.fillRect(
+        //   dragScreenPos[0][0],
+        //   dragScreenPos[0][1],
+        //   e.nativeEvent.offsetX - dragScreenPos[0][0],
+        //   e.nativeEvent.offsetY - dragScreenPos[0][1]
+        //   );
+        ctx.globalAlpha = 1.0;
+        ctx.stroke();
       }}
       onPointerUp={(e) => {
         // Only handle if click events are enabled, and if pointer was down (i.e., dragging).
@@ -304,6 +326,9 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         if (drag_info.dragOrigin!.length == 0) {
           return;
         }
+
+        const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         // If there's only one pointer, send a click message.
         // The message will return origin/direction lists of length 1.
@@ -349,6 +374,30 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       />
     </Canvas>
   );
+}
+
+/* HTML Canvas, for drawing 2D. */
+function Viewer2DCanvas() {
+  const viewer = React.useContext(ViewerContext)!;
+  useEffect(() => {
+    const canvas = viewer.canvas2dRef.current!.getContext("2d")!.canvas;
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+  }, []);
+  return (
+    <canvas
+      ref={viewer.canvas2dRef}
+      style={
+        {
+          position: "absolute",
+          zIndex: 1,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+        }
+      }
+    ></canvas>
+  )
 }
 
 /* Background image with support for depth compositing. */
