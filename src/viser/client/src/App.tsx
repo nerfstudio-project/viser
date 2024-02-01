@@ -77,13 +77,11 @@ export type ViewerContextContents = {
     "ready" | "triggered" | "pause" | "in_progress"
   >;
   getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
-  sceneClickEnable: React.MutableRefObject<boolean>;
   // Track click drag events.
-  sceneClickDragInfo: React.MutableRefObject<{
-    dragOrigin: [number, number, number][];  // List of ray origins from click drag.
-    dragDirection: [number, number, number][];  // List of ray directions.
-    dragScreenPos: [number, number][];  //  List of mouse positions.
-    dragLock: number;  // Only allow one drag event at a time.
+  sceneClickInfo: React.MutableRefObject<{
+    enabled: boolean;  // Enable click events.
+    screenEventList: React.PointerEvent<HTMLDivElement>[];  //  List of mouse positions
+    listening: boolean;  // Only allow one drag event at a time.
   }>;
   // 2D canvas for drawing -- can be used to give feedback on cursor movement, or more. 
   canvas2dRef: React.MutableRefObject<HTMLCanvasElement | null>;
@@ -138,12 +136,10 @@ function ViewerRoot() {
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
-    sceneClickEnable: React.useRef(false),
-    sceneClickDragInfo: React.useRef({
-      dragOrigin: [],
-      dragDirection: [],
-      dragScreenPos: [],
-      dragLock: 0,
+    sceneClickInfo: React.useRef({
+      enabled: false,
+      screenEventList: [],
+      listening: false,
     }),
     canvas2dRef: React.useRef(null),
   };
@@ -238,41 +234,33 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       ref={viewer.canvasRef}
       // Handle scene click events (onPointerDown, onPointerMove, onPointerUp)
       onPointerDown={(e) => {
+        const click_info = viewer.sceneClickInfo.current!;
+
         // Only handle click events if enabled.
-        if (!viewer.sceneClickEnable.current) return;
+        if (!click_info.enabled) return;
 
         // Check if click is valid.
         const mouseVector = normalizeClick(viewer, e);
         if (!isClickValid(mouseVector)) return;
 
-        const drag_info = viewer.sceneClickDragInfo.current!;
-
         // Only allow one drag event at a time.
-        if (drag_info.dragLock > 0) return;
-        drag_info.dragLock += 1;
-
-        // Reset drag info.
-        drag_info.dragOrigin = [];
-        drag_info.dragDirection = [];
-        drag_info.dragScreenPos = [];
+        if (click_info.listening) return;
+        click_info.listening = true;
 
         // Disable camera controls -- we don't want the camera to move while we're click-dragging.
         viewer.cameraControlRef.current!.enabled = false;
 
-        // Cast ray from current click and camera pos, and convert to viser coordinates.
-        const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
-        const ray = rayToViserCoords(viewer, raycaster.ray);
+        // Keep track of the first click position.
+        click_info.screenEventList = [e];
 
-        // Add ray to drag info.
-        drag_info.dragOrigin!.push([ray.origin.x, ray.origin.y, ray.origin.z]);
-        drag_info.dragDirection!.push([ray.direction.x, ray.direction.y, ray.direction.z]);
-        drag_info.dragScreenPos.push([e.nativeEvent.offsetX, e.nativeEvent.offsetY]);
+        const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       }}
       onPointerMove={(e) => {
+        const click_info = viewer.sceneClickInfo.current!;
+
         // Only handle if click events are enabled, and if pointer is down (i.e., dragging).
-        if (!viewer.sceneClickEnable.current) return;
-        if (viewer.sceneClickDragInfo.current.dragLock == 0) return;
+        if (!click_info.enabled || !click_info.listening) return;
 
         // Check if click is valid.
         const mouseVector = normalizeClick(viewer, e);
@@ -280,23 +268,17 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
 
         // Check if mouse position has changed sufficiently from last position.
         // Uses 3px as a threshood, similar to drag detection in `SceneNodeClickMessage` from `SceneTree.tsx`.
-        const drag_info = viewer.sceneClickDragInfo.current!;
-        const dragScreenPos = drag_info.dragScreenPos
+        const screenEventList = viewer.sceneClickInfo.current!.screenEventList;
+        const firstScreenEvent = screenEventList[0];
+        const lastScreenEvent = screenEventList![screenEventList.length-1]
         if (
-          (Math.abs(e.nativeEvent.offsetX - dragScreenPos![dragScreenPos.length-1][0]) <= 3) &&
-          (Math.abs(e.nativeEvent.offsetY - dragScreenPos![dragScreenPos.length-1][1]) <= 3)
+          (Math.abs(e.nativeEvent.offsetX - lastScreenEvent.nativeEvent.offsetX) <= 3) &&
+          (Math.abs(e.nativeEvent.offsetY - lastScreenEvent.nativeEvent.offsetY) <= 3)
         )
           return;
 
-        // Cast ray from current click and camera pos, and convert to viser coordinates.
-        const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
-        const ray = rayToViserCoords(viewer, raycaster.ray);
-
-        // Add ray to drag info.
-        drag_info.dragOrigin!.push([ray.origin.x, ray.origin.y, ray.origin.z]);
-        drag_info.dragDirection!.push([ray.direction.x, ray.direction.y, ray.direction.z]);
-        drag_info.dragScreenPos.push([e.nativeEvent.offsetX, e.nativeEvent.offsetY]);
+        // Add the new mouse position to the list.
+        screenEventList.push(e);
 
         const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -304,58 +286,91 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         ctx.fillStyle = "blue";
         ctx.strokeStyle = "blue";
         ctx.globalAlpha = 0.2;
-        ctx.moveTo(dragScreenPos[dragScreenPos.length-2][0], dragScreenPos[dragScreenPos.length-2][1]);
-        ctx.lineTo(dragScreenPos[dragScreenPos.length-1][0], dragScreenPos[dragScreenPos.length-1][1]);
-        // ctx.fillRect(
-        //   dragScreenPos[0][0],
-        //   dragScreenPos[0][1],
-        //   e.nativeEvent.offsetX - dragScreenPos[0][0],
-        //   e.nativeEvent.offsetY - dragScreenPos[0][1]
-        //   );
+        ctx.fillRect(
+          firstScreenEvent.nativeEvent.offsetX,
+          firstScreenEvent.nativeEvent.offsetY,
+          e.nativeEvent.offsetX - firstScreenEvent.nativeEvent.offsetX,
+          e.nativeEvent.offsetY - firstScreenEvent.nativeEvent.offsetY
+          );
         ctx.globalAlpha = 1.0;
         ctx.stroke();
       }}
       onPointerUp={(e) => {
+        const click_info = viewer.sceneClickInfo.current!;
+
         // Only handle if click events are enabled, and if pointer was down (i.e., dragging).
-        if (!viewer.sceneClickEnable.current) return;
-        if (viewer.sceneClickDragInfo.current.dragLock == 0) return;
-
-        const drag_info = viewer.sceneClickDragInfo.current!;
-
-        // If there's no pointer information recorded, don't send a message.
-        if (drag_info.dragOrigin!.length == 0) {
-          return;
-        }
+        if (!click_info.enabled) return;
+        if (!click_info.listening) return;
 
         const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         // If there's only one pointer, send a click message.
         // The message will return origin/direction lists of length 1.
-        if (drag_info.dragOrigin!.length == 1) {
+        if (click_info.screenEventList!.length == 1) {
+          const raycaster = new THREE.Raycaster();
+          const mouseVector = normalizeClick(viewer, e);
+          raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
+          const ray = rayToViserCoords(viewer, raycaster.ray);
+
           sendClickThrottled({
             type: "ScenePointerMessage",
             event_type: "click",
-            ray_origin: drag_info.dragOrigin,
-            ray_direction: drag_info.dragDirection,
+            ray_origin: [[ray.origin.x, ray.origin.y, ray.origin.z]],
+            ray_direction: [[ray.direction.x, ray.direction.y, ray.direction.z]],
           });
         }
 
-        // If the ScenePointerEvent had mouse drag movement, we will send *two* messages:
-        //  1. A "scribble" message, which will return the full origin/direction lists of length N.
-        //  2. A "box" message, which will return ...?
+        // If the ScenePointerEvent had mouse drag movement, we will send a "box" message:
+        // 1. use the first and last mouse positions to create a box.
+        const screenEventList = viewer.sceneClickInfo.current!.screenEventList;
+        const firstScreenEvent = screenEventList[0];
+        const lastScreenEvent = screenEventList![screenEventList.length-1];
+
+        const firstMouseVector = normalizeClick(viewer, firstScreenEvent);
+        const lastMouseVector = normalizeClick(viewer, lastScreenEvent);
+
+        const x_min = Math.min(firstMouseVector.x, lastMouseVector.x);
+        const x_max = Math.max(firstMouseVector.x, lastMouseVector.x);
+        const y_min = Math.min(firstMouseVector.y, lastMouseVector.y);
+        const y_max = Math.max(firstMouseVector.y, lastMouseVector.y);
+        
+        // Box corners in screen space. The ordering is:
+        // A -- B
+        // |    |
+        // D -- C
+        const screenBoxList = [
+          [x_min, y_max],  // A
+          [x_max, y_max],  // B
+          [x_max, y_min],  // C
+          [x_min, y_min],  // D
+        ]
+
+        const rayList = screenBoxList.map((screenPos) => {
+          const raycaster = new THREE.Raycaster();
+          const mouseVector = new THREE.Vector2(screenPos[0], screenPos[1]);
+          raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
+          const ray = rayToViserCoords(viewer, raycaster.ray);
+          return ray;
+        });
+
         sendClickThrottled({
           type: "ScenePointerMessage",
-          event_type: "scribble",
-          ray_origin: drag_info.dragOrigin,
-          ray_direction: drag_info.dragDirection,
+          event_type: "box",
+            ray_origin: [[rayList[0].origin.x, rayList[0].origin.y, rayList[0].origin.z]],
+            ray_direction: [
+              [rayList[0].direction.x, rayList[0].direction.y, rayList[0].direction.z],
+              [rayList[1].direction.x, rayList[1].direction.y, rayList[1].direction.z],
+              [rayList[2].direction.x, rayList[2].direction.y, rayList[2].direction.z],
+              [rayList[3].direction.x, rayList[3].direction.y, rayList[3].direction.z],
+            ],
         });
 
         // Re-enable camera controls! Was disabled in `onPointerDown`, to allow for mouse drag w/o camera movement.
         viewer.cameraControlRef.current!.enabled = true;
 
         // Release drag lock.
-        drag_info.dragLock -= 1;
+        click_info.listening = false;
       }}
     >
       {children}

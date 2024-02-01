@@ -114,7 +114,7 @@ function useMessageHandler() {
 
       // Enable/disable whether scene pointer events are sent.
       case "SceneClickEnableMessage": {
-        viewer.sceneClickEnable.current = message.enable;
+        viewer.sceneClickInfo.current!.enabled = message.enable;
 
         // Update cursor to indicate whether the scene can be clicked.
         viewer.canvasRef.current!.style.cursor = message.enable
@@ -1049,7 +1049,7 @@ export function WebsocketMessageProducer() {
         console.log(`Disconnected! ${server} code=${event.code}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
-        viewer.sceneClickEnable.current = false;
+        viewer.sceneClickInfo.current!.enabled = false;
         viewer.useGui.setState({ websocketConnected: false });
         resetGui();
 
