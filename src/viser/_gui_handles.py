@@ -263,6 +263,30 @@ class GuiButtonHandle(_GuiInputHandle[bool]):
 
 
 @dataclasses.dataclass
+class UploadedFile:
+    """Result of a file upload."""
+
+    name: str
+    """Name of the file."""
+    content: bytes
+    """Contents of the file."""
+
+
+@dataclasses.dataclass
+class GuiUploadButtonHandle(_GuiInputHandle[Optional[UploadedFile]]):
+    """Handle for a button input in our visualizer.
+
+    Lets us detect clicks."""
+
+    def on_upload(
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
+        """Attach a function to call when a button is pressed. Happens in a thread."""
+        self._impl.update_cb.append(func)
+        return func
+
+
+@dataclasses.dataclass
 class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
     """Handle for a button group input in our visualizer.
 

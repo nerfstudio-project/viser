@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import abc
 import dataclasses
+import functools
 import threading
 import time
 import warnings
@@ -18,12 +19,20 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Type,
     TypeVar,
+    Union,
     overload,
 )
 
 import numpy as onp
-from typing_extensions import Literal, LiteralString
+from typing_extensions import (
+    Literal,
+    LiteralString,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from . import _messages
 from ._gui_handles import (
@@ -37,7 +46,9 @@ from ._gui_handles import (
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiTabGroupHandle,
+    GuiUploadButtonHandle,
     SupportsRemoveProtocol,
+    UploadedFile,
     _GuiHandleState,
     _GuiInputHandle,
     _make_unique_id,
@@ -106,6 +117,64 @@ def _apply_default_order(order: Optional[float]) -> float:
     return _global_order_counter
 
 
+@functools.lru_cache(maxsize=None)
+def get_type_hints_cached(cls: Type[Any]) -> Dict[str, Any]:
+    return get_type_hints(cls)  # type: ignore
+
+
+def cast_value(tp, value):
+    """Cast a value to a type, or raise a TypeError if it cannot be cast."""
+    origin = get_origin(tp)
+    if origin is Literal:
+        for val in get_args(tp):
+            try:
+                value_casted = cast_value(type(val), value)
+                if val == value_casted:
+                    return value_casted
+            except ValueError:
+                pass
+            except TypeError:
+                pass
+        raise TypeError(f"Value {value} is not in {get_args(tp)}")
+
+    if origin is Union:
+        for t in get_args(tp):
+            try:
+                return cast_value(t, value)
+            except ValueError:
+                pass
+            except TypeError:
+                pass
+        raise TypeError(f"Value {value} is not in {tp}")
+
+    if tp is type(None):
+        if str(value).lower() == "none":
+            return None
+        else:
+            raise TypeError(f"Value {value} is not None")
+
+    if tp is bool:
+        if str(value).lower() in {"true", "1", "yes"}:
+            return True
+        elif str(value).lower() in {"false", "0", "no"}:
+            return False
+        else:
+            raise TypeError(f"Value {value} is not a bool")
+
+    if tp in {int, float, bool, str}:
+        return tp(value)
+
+    if dataclasses.is_dataclass(tp):
+        return tp(
+            **{k: cast_value(v, value[k]) for k, v in get_type_hints_cached(tp).items()}
+        )
+
+    if isinstance(value, tp):
+        return value
+
+    raise TypeError(f"Cannot cast value {value} to type {tp}")
+
+
 class GuiApi(abc.ABC):
     _target_container_from_thread_id: Dict[int, str] = {}
     """ID of container to put GUI elements into."""
@@ -133,14 +202,7 @@ class GuiApi(abc.ABC):
 
         # Do some type casting. This is necessary when we expect floats but the
         # Javascript side gives us integers.
-        if handle_state.typ is tuple:
-            assert len(message.value) == len(handle_state.value)
-            value = tuple(
-                type(handle_state.value[i])(message.value[i])
-                for i in range(len(message.value))
-            )
-        else:
-            value = handle_state.typ(message.value)
+        value = cast_value(handle_state.typ, message.value)
 
         # Only call update when value has actually changed.
         if not handle_state.is_button and value == handle_state.value:
@@ -371,6 +433,75 @@ class GuiApi(abc.ABC):
                 disabled=disabled,
                 visible=visible,
                 is_button=True,
+            )._impl
+        )
+
+    def add_gui_upload_button(
+        self,
+        label: str,
+        disabled: bool = False,
+        visible: bool = True,
+        hint: Optional[str] = None,
+        color: Optional[
+            Literal[
+                "dark",
+                "gray",
+                "red",
+                "pink",
+                "grape",
+                "violet",
+                "indigo",
+                "blue",
+                "cyan",
+                "green",
+                "lime",
+                "yellow",
+                "orange",
+                "teal",
+            ]
+        ] = None,
+        icon: Optional[IconName] = None,
+        mime_type: str = "*/*",
+        order: Optional[float] = None,
+    ) -> GuiUploadButtonHandle:
+        """Add a button to the GUI. The value of this input is set to `True` every time
+        it is clicked; to detect clicks, we can manually set it back to `False`.
+
+        Args:
+            label: Label to display on the button.
+            visible: Whether the button is visible.
+            disabled: Whether the button is disabled.
+            hint: Optional hint to display on hover.
+            color: Optional color to use for the button.
+            icon: Optional icon to display on the button.
+            mime_type: Optional MIME type to filter the files that can be uploaded.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+
+        # Re-wrap the GUI handle with a button interface.
+        id = _make_unique_id()
+        order = _apply_default_order(order)
+        return GuiUploadButtonHandle(
+            self._create_gui_input(
+                initial_value=False,
+                message=_messages.GuiAddUploadButtonMessage(
+                    order=order,
+                    id=id,
+                    label=label,
+                    container_id=self._get_container_id(),
+                    hint=hint,
+                    initial_value=False,
+                    color=color,
+                    mime_type=mime_type,
+                    icon_base64=None if icon is None else base64_from_icon(icon),
+                ),
+                disabled=disabled,
+                visible=visible,
+                is_button=True,
+                typ=UploadedFile,
             )._impl
         )
 
@@ -1034,6 +1165,7 @@ class GuiApi(abc.ABC):
         disabled: bool,
         visible: bool,
         is_button: bool = False,
+        typ: Optional[Type[T]] = None,
     ) -> GuiInputHandle[T]:
         """Private helper for adding a simple GUI element."""
 
@@ -1043,7 +1175,7 @@ class GuiApi(abc.ABC):
         # Construct handle.
         handle_state = _GuiHandleState(
             label=message.label,
-            typ=type(initial_value),
+            typ=typ if typ is not None else type(initial_value),
             gui_api=self,
             value=initial_value,
             update_timestamp=time.time(),

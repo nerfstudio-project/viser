@@ -426,6 +426,31 @@ class GuiAddButtonMessage(_GuiAddInputBase):
 
 
 @dataclasses.dataclass
+class GuiAddUploadButtonMessage(GuiAddButtonMessage):
+    initial_value: Any
+    color: Optional[
+        Literal[
+            "dark",
+            "gray",
+            "red",
+            "pink",
+            "grape",
+            "violet",
+            "indigo",
+            "blue",
+            "cyan",
+            "green",
+            "lime",
+            "yellow",
+            "orange",
+            "teal",
+        ]
+    ]
+    icon_base64: Optional[str]
+    mime_type: str
+
+
+@dataclasses.dataclass
 class GuiAddSliderMessage(_GuiAddInputBase):
     min: float
     max: float

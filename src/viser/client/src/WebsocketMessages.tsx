@@ -361,7 +361,7 @@ export interface _GuiAddInputBase {
   hint: string | null;
   initial_value: any;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_base64: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -390,6 +390,37 @@ export interface GuiAddButtonMessage {
     | "teal"
     | null;
   icon_base64: string | null;
+}
+/** GuiAddUploadButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Any', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]', mime_type: 'str')
+ *
+ * (automatically generated)
+ */
+export interface GuiAddUploadButtonMessage {
+  type: "GuiAddUploadButtonMessage";
+  order: number;
+  id: string;
+  label: string;
+  container_id: string;
+  hint: string | null;
+  initial_value: any;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
+  icon_base64: string | null;
+  mime_type: string;
 }
 /** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
  *
@@ -796,6 +827,7 @@ export type Message =
   | GuiAddTabGroupMessage
   | _GuiAddInputBase
   | GuiAddButtonMessage
+  | GuiAddUploadButtonMessage
   | GuiAddSliderMessage
   | GuiAddMultiSliderMessage
   | GuiAddNumberMessage

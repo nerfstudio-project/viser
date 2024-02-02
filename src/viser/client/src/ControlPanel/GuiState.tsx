@@ -9,6 +9,7 @@ import { MantineThemeOverride } from "@mantine/core";
 
 export type GuiConfig =
   | Messages.GuiAddButtonMessage
+  | Messages.GuiAddUploadButtonMessage
   | Messages.GuiAddCheckboxMessage
   | Messages.GuiAddDropdownMessage
   | Messages.GuiAddFolderMessage
