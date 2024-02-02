@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import abc
+import dataclasses
 import functools
 import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast
@@ -20,6 +21,8 @@ else:
 
 def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     """Prepare any special types for serialization."""
+    if annotation is Any:
+        annotation = type(value)
 
     # Coerce some scalar types: if we've annotated as float / int but we get an
     # onp.float32 / onp.int64, for example, we should cast automatically.
@@ -48,7 +51,9 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
                 out.append(
                     # Hack to be OK with wrong type annotations.
                     # https://github.com/nerfstudio-project/nerfstudio/pull/1805
-                    _prepare_for_serialization(v, args[i]) if i < len(args) else v
+                    _prepare_for_serialization(v, args[i])
+                    if i < len(args)
+                    else v
                 )
             return tuple(out)
 
@@ -56,6 +61,13 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     # reading using the correct dtype.
     if isinstance(value, onp.ndarray):
         return value.data if value.data.c_contiguous else value.copy().data
+
+    if dataclasses.is_dataclass(annotation):
+        types = get_type_hints_cached(annotation)
+        value = {
+            k: _prepare_for_serialization(v, types[k])
+            for k, v in dataclasses.asdict(value).items()
+        }
 
     return value
 

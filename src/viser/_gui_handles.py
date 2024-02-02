@@ -273,7 +273,7 @@ class UploadedFile:
 
 
 @dataclasses.dataclass
-class GuiUploadButtonHandle(_GuiInputHandle[Optional[UploadedFile]]):
+class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
     """Handle for a button input in our visualizer.
 
     Lets us detect clicks."""

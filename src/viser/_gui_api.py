@@ -147,20 +147,6 @@ def cast_value(tp, value):
                 pass
         raise TypeError(f"Value {value} is not in {tp}")
 
-    if tp is type(None):
-        if str(value).lower() == "none":
-            return None
-        else:
-            raise TypeError(f"Value {value} is not None")
-
-    if tp is bool:
-        if str(value).lower() in {"true", "1", "yes"}:
-            return True
-        elif str(value).lower() in {"false", "0", "no"}:
-            return False
-        else:
-            raise TypeError(f"Value {value} is not a bool")
-
     if tp in {int, float, bool, str}:
         return tp(value)
 
@@ -484,16 +470,17 @@ class GuiApi(abc.ABC):
         # Re-wrap the GUI handle with a button interface.
         id = _make_unique_id()
         order = _apply_default_order(order)
+        initial_value = UploadedFile("", b"")
         return GuiUploadButtonHandle(
             self._create_gui_input(
-                initial_value=False,
+                initial_value=initial_value,
                 message=_messages.GuiAddUploadButtonMessage(
                     order=order,
                     id=id,
                     label=label,
                     container_id=self._get_container_id(),
                     hint=hint,
-                    initial_value=False,
+                    initial_value=initial_value,
                     color=color,
                     mime_type=mime_type,
                     icon_base64=None if icon is None else base64_from_icon(icon),
@@ -501,7 +488,6 @@ class GuiApi(abc.ABC):
                 disabled=disabled,
                 visible=visible,
                 is_button=True,
-                typ=UploadedFile,
             )._impl
         )
 
@@ -1165,7 +1151,6 @@ class GuiApi(abc.ABC):
         disabled: bool,
         visible: bool,
         is_button: bool = False,
-        typ: Optional[Type[T]] = None,
     ) -> GuiInputHandle[T]:
         """Private helper for adding a simple GUI element."""
 
@@ -1175,7 +1160,7 @@ class GuiApi(abc.ABC):
         # Construct handle.
         handle_state = _GuiHandleState(
             label=message.label,
-            typ=typ if typ is not None else type(initial_value),
+            typ=type(initial_value),
             gui_api=self,
             value=initial_value,
             update_timestamp=time.time(),
