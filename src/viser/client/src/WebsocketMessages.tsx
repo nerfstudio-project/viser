@@ -763,6 +763,16 @@ export interface FileTransferPart {
   part: number;
   content: Uint8Array;
 }
+/** Send a file for clients to download or upload files from client.
+ *
+ * (automatically generated)
+ */
+export interface FileTransferPartAck {
+  type: "FileTransferPartAck";
+  transfer_uuid: string;
+  transferred_bytes: number;
+  total_bytes: number;
+}
 /** Message from client->server to connect to the share URL server.
  *
  * (automatically generated)
@@ -853,6 +863,7 @@ export type Message =
   | GetRenderResponseMessage
   | FileTransferStart
   | FileTransferPart
+  | FileTransferPartAck
   | ShareUrlRequest
   | ShareUrlUpdated
   | ShareUrlDisconnect

@@ -57,6 +57,7 @@ from ._gui_handles import (
 from ._icons import base64_from_icon
 from ._icons_enum import IconName
 from ._message_api import MessageApi, cast_vector
+from ._messages import FileTransferPartAck
 
 if TYPE_CHECKING:
     from .infra import ClientId
@@ -168,6 +169,7 @@ class FileUploadState(TypedDict):
     num_parts: int
     parts: List[bytes]
     completed_parts: List[bool]
+    total_bytes: int
 
 
 class GuiApi(abc.ABC):
@@ -244,6 +246,7 @@ class GuiApi(abc.ABC):
             "num_parts": message.part_count,
             "parts": [b"" for _ in range(message.part_count)],
             "completed_parts": [False for _ in range(message.part_count)],
+            "total_bytes": message.size_bytes,
         }
 
     def _handle_file_transfer_part(
@@ -256,6 +259,13 @@ class GuiApi(abc.ABC):
         state["parts"][message.part] = message.content
         state["completed_parts"][message.part] = True
         # print(f"Part {message.part}, completed {sum(state['completed_parts'])} of {state['num_parts']}.")
+        transferred_bytes = sum(len(part) for part in state["parts"])
+        total_bytes = state["total_bytes"]
+
+        # Send ack to the server.
+        self._get_api()._queue(
+            FileTransferPartAck(message.transfer_uuid, transferred_bytes, total_bytes)
+        )
 
         if not all(state["completed_parts"]):
             return

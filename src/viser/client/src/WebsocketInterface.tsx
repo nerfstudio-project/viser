@@ -71,6 +71,7 @@ function useMessageHandler() {
   const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
   const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
+  const updateUploadState = viewer.useGui((state) => state.updateUploadState);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -832,6 +833,14 @@ function useMessageHandler() {
         fileDownloadHandler(message);
         return;
       }
+      case "FileTransferPartAck": {
+        updateUploadState({
+          transferId: message.transfer_uuid,
+          uploadedBytes: message.transferred_bytes,
+          totalBytes: message.total_bytes,
+        });
+        return;
+      }
       default: {
         console.log("Received message did not match any known types:", message);
         return;
@@ -928,6 +937,7 @@ function useFileDownloadHandler() {
     }
   };
 }
+
 
 export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();

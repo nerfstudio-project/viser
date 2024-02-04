@@ -3,12 +3,14 @@ import {
   GuiAddTabGroupMessage,
 } from "../WebsocketMessages";
 import { ViewerContext, ViewerContextContents } from "../App";
-import { makeThrottledMessageSender, useFileUpload } from "../WebsocketFunctions";
+import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { computeRelativeLuminance } from "./GuiState";
+import { v4 as uuid } from "uuid";
 import {
   Collapse,
   Image,
   Paper,
+  Progress,
   Tabs,
   TabsValue,
   useMantineTheme,
@@ -32,7 +34,9 @@ import React from "react";
 import Markdown from "../Markdown";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDisclosure } from "@mantine/hooks";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import { IconCheck, IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
+import { pack } from "msgpackr";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -94,7 +98,7 @@ function GeneratedInput({
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
   const conf = viewer.useGui((state) => state.guiConfigFromId[id]);
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
-  const { isUploading, upload } = useFileUpload({ websocketRef: viewer.websocketRef });
+  const { isUploading, upload } = useFileUpload({ viewer, componentId: id });
 
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
@@ -229,10 +233,7 @@ function GeneratedInput({
             onChange={(e) => {
               const input = e.target as HTMLInputElement;
               if (!input.files) return;
-              upload({
-                file: input.files[0],
-                componentId: conf.id,
-              });
+              upload(input.files[0]);
             }}
           />
           <Button
@@ -951,4 +952,126 @@ function hexToRgba(hexColor: string): [number, number, number, number] {
   const b = parseInt(hex.substring(4, 6), 16);
   const a = parseInt(hex.substring(6, 8), 16);
   return [r, g, b, a];
+}
+
+function useFileUpload({
+  viewer,
+  componentId,
+}: {
+  componentId: string,
+  viewer: ViewerContextContents
+}) {
+  const websocketRef = viewer.websocketRef;
+  const updateUploadState = viewer.useGui((state) => state.updateUploadState)
+  const uploadState = viewer.useGui((state) => state.uploadsInProgress[componentId]);
+  const totalBytes = uploadState?.totalBytes;
+
+  // Cache total bytes string
+  const totalBytesString = React.useMemo(() => {
+    if (totalBytes === undefined) return "";
+    let displaySize = totalBytes;
+    const displayUnits = ["B", "K", "M", "G", "T", "P"];
+    let displayUnitIndex = 0;
+    while (
+      displaySize >= 100 &&
+      displayUnitIndex < displayUnits.length - 1
+    ) {
+      displaySize /= 1024;
+      displayUnitIndex += 1;
+    }
+    return `${displaySize.toFixed(1)}${displayUnits[displayUnitIndex]}`;
+  }, [totalBytes]);
+
+  // Update notification status
+  React.useMemo(() => {
+    if (uploadState === undefined) return;
+    const {
+      notificationId,
+      filename,
+    } = uploadState;
+    if (uploadState.uploadedBytes === 0) {
+      // Show notification.
+      notifications.show({
+        id: notificationId,
+        title: "Uploading " + `${filename} (${totalBytesString})`,
+        message: <Progress size="sm" value={0} />,
+        autoClose: false,
+        withCloseButton: false,
+        loading: true,
+      });
+    } else if (uploadState.uploadedBytes === uploadState.totalBytes) {
+      // Upload finished
+      notifications.update({
+        id: notificationId,
+        title: "Uploaded " + `${filename} (${totalBytesString})`,
+        message: "File uploaded successfully.",
+        autoClose: true,
+        withCloseButton: true,
+        loading: false,
+        icon: <IconCheck />,
+      });
+    } else {
+      // Update progress
+      const progressValue = uploadState.uploadedBytes / uploadState.totalBytes;
+      notifications.update({
+        id: notificationId,
+        title: "Uploading " + `${filename} (${totalBytesString})`,
+        message: <Progress size="sm" value={101 * progressValue} />,
+        autoClose: false,
+        withCloseButton: false,
+        loading: true,
+      });
+    }
+  }, [uploadState, totalBytesString]);
+
+  const isUploading = (
+    uploadState !== undefined &&
+    uploadState.uploadedBytes < uploadState.totalBytes
+  );
+
+  async function upload(file: File) {
+    const chunkSize = 512 * 1024; // bytes
+    const numChunks = Math.ceil(file.size / chunkSize);
+    const transferUuid = `${componentId}/${uuid()}`;
+    const notificationId = "upload-" + transferUuid;
+
+    const send = (message: Parameters<typeof pack>[0]) => websocketRef.current?.send(pack(message));
+
+    // Begin upload by setting initial state
+    updateUploadState({
+      transferId: transferUuid,
+      uploadedBytes: 0,
+      totalBytes: file.size,
+      filename: file.name,
+      notificationId,
+    });
+
+    send({
+      type: "FileTransferStart",
+      transfer_uuid: transferUuid,
+      filename: file.name,
+      mime_type: file.type,
+      size_bytes: file.size,
+      part_count: numChunks,
+    });
+
+    for (let i = 0; i < numChunks; i++) {
+      const start = i * chunkSize;
+      const end = (i + 1) * chunkSize;
+      const chunk = file.slice(start, end);
+      const buffer = await chunk.arrayBuffer();
+
+      send({
+        type: "FileTransferPart",
+        transfer_uuid: transferUuid,
+        part: i,
+        content: new Uint8Array(buffer),
+      });
+    }
+  }
+
+  return {
+    isUploading,
+    upload
+  }
 }

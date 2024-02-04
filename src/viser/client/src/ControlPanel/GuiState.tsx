@@ -46,6 +46,14 @@ interface GuiState {
   guiAttributeFromId: {
     [id: string]: { visible?: boolean; disabled?: boolean } | undefined;
   };
+  uploadsInProgress: {
+    [id: string]: {
+      notificationId: string;
+      uploadedBytes: number;
+      totalBytes: number;
+      filename: string;
+    }
+  }
 }
 
 interface GuiActions {
@@ -59,6 +67,7 @@ interface GuiActions {
   setGuiDisabled: (id: string, visible: boolean) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
+  updateUploadState: (state: ({ uploadedBytes: number, totalBytes: number } | GuiState["uploadsInProgress"][string]) & { transferId: string }) => void;
 }
 
 const cleanGuiState: GuiState = {
@@ -83,6 +92,7 @@ const cleanGuiState: GuiState = {
   guiConfigFromId: {},
   guiValueFromId: {},
   guiAttributeFromId: {},
+  uploadsInProgress: {},
 };
 
 export function computeRelativeLuminance(color: string) {
@@ -167,6 +177,15 @@ export function useGuiState(initialServer: string) {
             state.guiValueFromId = {};
             state.guiAttributeFromId = {};
           }),
+        updateUploadState: (state) =>
+          set((globalState) => {
+            const { transferId, ...rest } = state;
+            const componentId = transferId.split("/")[0];
+            globalState.uploadsInProgress[componentId] = {
+              ...globalState.uploadsInProgress[componentId],
+              ...rest
+            };
+          })
       })),
     ),
   )[0];

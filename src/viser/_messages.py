@@ -655,6 +655,25 @@ class FileTransferPart(Message):
 
 
 @dataclasses.dataclass
+class FileTransferPartAck(Message):
+    """Send a file for clients to download or upload files from client."""
+
+    transfer_uuid: str
+    transferred_bytes: int
+    total_bytes: int
+
+    @override
+    def redundancy_key(self) -> str:
+        return (
+            type(self).__name__
+            + "-"
+            + self.transfer_uuid
+            + "-"
+            + str(self.transferred_bytes)
+        )
+
+
+@dataclasses.dataclass
 class ShareUrlRequest(Message):
     """Message from client->server to connect to the share URL server."""
 
