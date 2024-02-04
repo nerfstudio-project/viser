@@ -29,6 +29,7 @@ import numpy as onp
 from typing_extensions import (
     Literal,
     LiteralString,
+    TypedDict,
     get_args,
     get_origin,
     get_type_hints,
@@ -161,6 +162,14 @@ def cast_value(tp, value):
     raise TypeError(f"Cannot cast value {value} to type {tp}")
 
 
+class FileUploadState(TypedDict):
+    filename: str
+    mime_type: str
+    num_parts: int
+    parts: List[bytes]
+    completed_parts: List[bool]
+
+
 class GuiApi(abc.ABC):
     _target_container_from_thread_id: Dict[int, str] = {}
     """ID of container to put GUI elements into."""
@@ -172,8 +181,16 @@ class GuiApi(abc.ABC):
         self._container_handle_from_id: Dict[str, GuiContainerProtocol] = {
             "root": _RootGuiContainer({})
         }
+        self._current_file_upload_states: Dict[str, FileUploadState] = {}
         self._get_api()._message_handler.register_handler(
             _messages.GuiUpdateMessage, self._handle_gui_updates
+        )
+        self._get_api()._message_handler.register_handler(
+            _messages.FileTransferStart, self._handle_file_transfer_start
+        )
+        self._get_api()._message_handler.register_handler(
+            _messages.FileTransferPart,
+            self._handle_file_transfer_part,
         )
 
     def _handle_gui_updates(
@@ -193,6 +210,69 @@ class GuiApi(abc.ABC):
         # Only call update when value has actually changed.
         if not handle_state.is_button and value == handle_state.value:
             return
+
+        # Update state.
+        with self._get_api()._atomic_lock:
+            handle_state.value = value
+            handle_state.update_timestamp = time.time()
+
+        # Trigger callbacks.
+        for cb in handle_state.update_cb:
+            from ._viser import ClientHandle, ViserServer
+
+            # Get the handle of the client that triggered this event.
+            api = self._get_api()
+            if isinstance(api, ClientHandle):
+                client = api
+            elif isinstance(api, ViserServer):
+                client = api.get_clients()[client_id]
+            else:
+                assert False
+
+            cb(GuiEvent(client, client_id, handle))
+        if handle_state.sync_cb is not None:
+            handle_state.sync_cb(client_id, value)
+
+    def _handle_file_transfer_start(
+        self, client_id: ClientId, message: _messages.FileTransferStart
+    ) -> None:
+        if "/" not in message.transfer_uuid:
+            return
+        self._current_file_upload_states[message.transfer_uuid] = {
+            "filename": message.filename,
+            "mime_type": message.mime_type,
+            "num_parts": message.part_count,
+            "parts": [b"" for _ in range(message.part_count)],
+            "completed_parts": [False for _ in range(message.part_count)],
+        }
+
+    def _handle_file_transfer_part(
+        self, client_id: ClientId, message: _messages.FileTransferPart
+    ) -> None:
+        if message.transfer_uuid not in self._current_file_upload_states:
+            return
+
+        state = self._current_file_upload_states[message.transfer_uuid]
+        state["parts"][message.part] = message.content
+        state["completed_parts"][message.part] = True
+        # print(f"Part {message.part}, completed {sum(state['completed_parts'])} of {state['num_parts']}.")
+
+        if not all(state["completed_parts"]):
+            return
+
+        # Finish the upload.
+        state = self._current_file_upload_states.pop(message.transfer_uuid)
+        component_id = message.transfer_uuid.split("/", 1)[0]
+        handle = self._gui_handle_from_id.get(component_id, None)
+        if handle is None:
+            return
+
+        handle_state = handle._impl
+
+        value = UploadedFile(
+            name=state["filename"],
+            content=b"".join(state["parts"]),
+        )
 
         # Update state.
         with self._get_api()._atomic_lock:

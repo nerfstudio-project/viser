@@ -279,7 +279,7 @@ class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
     Lets us detect clicks."""
 
     def on_upload(
-        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+        self: TGuiHandle, func: Callable[[GuiEvent[UploadedFile]], None]
     ) -> Callable[[GuiEvent[TGuiHandle]], None]:
         """Attach a function to call when a button is pressed. Happens in a thread."""
         self._impl.update_cb.append(func)

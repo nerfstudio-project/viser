@@ -19,8 +19,8 @@ import {
   PointCloud,
 } from "./ThreeAssets";
 import {
-  FileDownloadPart,
-  FileDownloadStart,
+  FileTransferPart,
+  FileTransferStart,
   Message,
 } from "./WebsocketMessages";
 import styled from "@emotion/styled";
@@ -827,8 +827,8 @@ function useMessageHandler() {
         );
         return;
       }
-      case "FileDownloadStart":
-      case "FileDownloadPart": {
+      case "FileTransferStart":
+      case "FileTransferPart": {
         fileDownloadHandler(message);
         return;
       }
@@ -843,7 +843,7 @@ function useMessageHandler() {
 function useFileDownloadHandler() {
   const downloadStatesRef = React.useRef<{
     [uuid: string]: {
-      metadata: FileDownloadStart;
+      metadata: FileTransferStart;
       notificationId: string;
       parts: Uint8Array[];
       bytesDownloaded: number;
@@ -851,12 +851,12 @@ function useFileDownloadHandler() {
     };
   }>({});
 
-  return (message: FileDownloadStart | FileDownloadPart) => {
-    const notificationId = "download-" + message.download_uuid;
+  return (message: FileTransferStart | FileTransferPart) => {
+    const notificationId = "download-" + message.transfer_uuid;
 
     // Create or update download state.
     switch (message.type) {
-      case "FileDownloadStart": {
+      case "FileTransferStart": {
         let displaySize = message.size_bytes;
         const displayUnits = ["B", "K", "M", "G", "T", "P"];
         let displayUnitIndex = 0;
@@ -867,7 +867,7 @@ function useFileDownloadHandler() {
           displaySize /= 1024;
           displayUnitIndex += 1;
         }
-        downloadStatesRef.current[message.download_uuid] = {
+        downloadStatesRef.current[message.transfer_uuid] = {
           metadata: message,
           notificationId: notificationId,
           parts: [],
@@ -878,8 +878,8 @@ function useFileDownloadHandler() {
         };
         break;
       }
-      case "FileDownloadPart": {
-        const downloadState = downloadStatesRef.current[message.download_uuid];
+      case "FileTransferPart": {
+        const downloadState = downloadStatesRef.current[message.transfer_uuid];
         if (message.part != downloadState.parts.length) {
           console.error(
             "A file download message was dropped; this should never happen!",
@@ -892,7 +892,7 @@ function useFileDownloadHandler() {
     }
 
     // Show notification.
-    const downloadState = downloadStatesRef.current[message.download_uuid];
+    const downloadState = downloadStatesRef.current[message.transfer_uuid];
     const progressValue =
       (100.0 * downloadState.bytesDownloaded) /
       downloadState.metadata.size_bytes;
@@ -924,7 +924,7 @@ function useFileDownloadHandler() {
       link.download = downloadState.metadata.filename;
       link.click();
       link.remove();
-      delete downloadStatesRef.current[message.download_uuid];
+      delete downloadStatesRef.current[message.transfer_uuid];
     }
   };
 }

@@ -745,21 +745,21 @@ export interface GetRenderResponseMessage {
  *
  * (automatically generated)
  */
-export interface FileDownloadStart {
-  type: "FileDownloadStart";
-  download_uuid: string;
+export interface FileTransferStart {
+  type: "FileTransferStart";
+  transfer_uuid: string;
   filename: string;
   mime_type: string;
   part_count: number;
   size_bytes: number;
 }
-/** Send a file for clients to download.
+/** Send a file for clients to download or upload files from client.
  *
  * (automatically generated)
  */
-export interface FileDownloadPart {
-  type: "FileDownloadPart";
-  download_uuid: string;
+export interface FileTransferPart {
+  type: "FileTransferPart";
+  transfer_uuid: string;
   part: number;
   content: Uint8Array;
 }
@@ -851,8 +851,8 @@ export type Message =
   | CubicBezierSplineMessage
   | GetRenderRequestMessage
   | GetRenderResponseMessage
-  | FileDownloadStart
-  | FileDownloadPart
+  | FileTransferStart
+  | FileTransferPart
   | ShareUrlRequest
   | ShareUrlUpdated
   | ShareUrlDisconnect

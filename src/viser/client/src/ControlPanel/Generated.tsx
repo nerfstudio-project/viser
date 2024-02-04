@@ -3,7 +3,7 @@ import {
   GuiAddTabGroupMessage,
 } from "../WebsocketMessages";
 import { ViewerContext, ViewerContextContents } from "../App";
-import { makeThrottledMessageSender } from "../WebsocketFunctions";
+import { makeThrottledMessageSender, useFileUpload } from "../WebsocketFunctions";
 import { computeRelativeLuminance } from "./GuiState";
 import {
   Collapse,
@@ -93,6 +93,8 @@ function GeneratedInput({
   const fileUploadRef = React.useRef<HTMLInputElement>(null);
   if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
   const conf = viewer.useGui((state) => state.guiConfigFromId[id]);
+  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
+  const { isUploading, upload } = useFileUpload({ websocketRef: viewer.websocketRef });
 
   // Handle nested containers.
   if (conf.type == "GuiAddFolderMessage")
@@ -123,7 +125,6 @@ function GeneratedInput({
     );
   }
 
-  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
   function updateValue(value: any) {
     setGuiValue(conf.id, value);
     messageSender({ type: "GuiUpdateMessage", id: conf.id, value: value });
@@ -207,6 +208,7 @@ function GeneratedInput({
       break;
     case "GuiAddUploadButtonMessage":
       labeled = false;
+      if (isUploading) disabled = true;
       if (conf.color !== null) {
         inputColor =
           computeRelativeLuminance(
@@ -225,24 +227,12 @@ function GeneratedInput({
             accept={conf.mime_type}
             ref={fileUploadRef}
             onChange={(e) => {
-              const reader = new FileReader();
               const input = e.target as HTMLInputElement;
               if (!input.files) return;
-              const file = input.files[0];
-              reader.onload = () => {
-                const arrayBuffer = reader.result as ArrayBuffer;
-                const payload = new Uint8Array(arrayBuffer);
-                messageSender({
-                  type: "GuiUpdateMessage",
-                  id: conf.id,
-                  value: {
-                    name: file.name,
-                    content: payload,
-                    mime_type: file.type,
-                  },
-                });
-              };
-              reader.readAsArrayBuffer(file);
+              upload({
+                file: input.files[0],
+                componentId: conf.id,
+              });
             }}
           />
           <Button

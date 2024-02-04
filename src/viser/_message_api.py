@@ -1381,8 +1381,8 @@ class MessageApi(abc.ABC):
 
         uuid = _make_unique_id()
         self._queue(
-            _messages.FileDownloadStart(
-                download_uuid=uuid,
+            _messages.FileTransferStart(
+                uuid,
                 filename=filename,
                 mime_type=mime_type,
                 part_count=len(parts),
@@ -1391,7 +1391,7 @@ class MessageApi(abc.ABC):
         )
 
         for i, part in enumerate(parts):
-            self._queue(_messages.FileDownloadPart(uuid, part=i, content=part))
+            self._queue(_messages.FileTransferPart(uuid, part=i, content=part))
             self.flush()
 
     @abc.abstractmethod

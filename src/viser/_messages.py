@@ -627,10 +627,10 @@ class GetRenderResponseMessage(Message):
 
 
 @dataclasses.dataclass
-class FileDownloadStart(Message):
+class FileTransferStart(Message):
     """Signal that a file is about to be sent."""
 
-    download_uuid: str
+    transfer_uuid: str
     filename: str
     mime_type: str
     part_count: int
@@ -638,20 +638,20 @@ class FileDownloadStart(Message):
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + self.download_uuid
+        return type(self).__name__ + "-" + self.transfer_uuid
 
 
 @dataclasses.dataclass
-class FileDownloadPart(Message):
-    """Send a file for clients to download."""
+class FileTransferPart(Message):
+    """Send a file for clients to download or upload files from client."""
 
-    download_uuid: str
+    transfer_uuid: str
     part: int
     content: bytes
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + self.download_uuid + "-" + str(self.part)
+        return type(self).__name__ + "-" + self.transfer_uuid + "-" + str(self.part)
 
 
 @dataclasses.dataclass
