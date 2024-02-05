@@ -52,8 +52,8 @@ interface GuiState {
       uploadedBytes: number;
       totalBytes: number;
       filename: string;
-    }
-  }
+    };
+  };
 }
 
 interface GuiActions {
@@ -67,7 +67,12 @@ interface GuiActions {
   setGuiDisabled: (id: string, visible: boolean) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
-  updateUploadState: (state: ({ uploadedBytes: number, totalBytes: number } | GuiState["uploadsInProgress"][string]) & { transferId: string }) => void;
+  updateUploadState: (
+    state: (
+      | { uploadedBytes: number; totalBytes: number }
+      | GuiState["uploadsInProgress"][string]
+    ) & { componentId: string },
+  ) => void;
 }
 
 const cleanGuiState: GuiState = {
@@ -179,13 +184,12 @@ export function useGuiState(initialServer: string) {
           }),
         updateUploadState: (state) =>
           set((globalState) => {
-            const { transferId, ...rest } = state;
-            const componentId = transferId.split("/")[0];
+            const { componentId, ...rest } = state;
             globalState.uploadsInProgress[componentId] = {
               ...globalState.uploadsInProgress[componentId],
-              ...rest
+              ...rest,
             };
-          })
+          }),
       })),
     ),
   )[0];

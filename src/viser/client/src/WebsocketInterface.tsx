@@ -835,7 +835,7 @@ function useMessageHandler() {
       }
       case "FileTransferPartAck": {
         updateUploadState({
-          transferId: message.transfer_uuid,
+          componentId: message.source_component_id!,
           uploadedBytes: message.transferred_bytes,
           totalBytes: message.total_bytes,
         });
@@ -937,7 +937,6 @@ function useFileDownloadHandler() {
     }
   };
 }
-
 
 export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();

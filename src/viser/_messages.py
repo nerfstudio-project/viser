@@ -630,6 +630,8 @@ class GetRenderResponseMessage(Message):
 class FileTransferStart(Message):
     """Signal that a file is about to be sent."""
 
+    source_component_id: Optional[str]
+    """Origin GUI component, used for client->server file uploads."""
     transfer_uuid: str
     filename: str
     mime_type: str
@@ -645,6 +647,8 @@ class FileTransferStart(Message):
 class FileTransferPart(Message):
     """Send a file for clients to download or upload files from client."""
 
+    # TODO: it would make sense to rename all "id" instances to "uuid" for GUI component ids.
+    source_component_id: Optional[str]
     transfer_uuid: str
     part: int
     content: bytes
@@ -658,6 +662,7 @@ class FileTransferPart(Message):
 class FileTransferPartAck(Message):
     """Send a file for clients to download or upload files from client."""
 
+    source_component_id: Optional[str]
     transfer_uuid: str
     transferred_bytes: int
     total_bytes: int

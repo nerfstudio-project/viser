@@ -1382,7 +1382,8 @@ class MessageApi(abc.ABC):
         uuid = _make_unique_id()
         self._queue(
             _messages.FileTransferStart(
-                uuid,
+                source_component_id=None,
+                transfer_uuid=uuid,
                 filename=filename,
                 mime_type=mime_type,
                 part_count=len(parts),
@@ -1391,7 +1392,14 @@ class MessageApi(abc.ABC):
         )
 
         for i, part in enumerate(parts):
-            self._queue(_messages.FileTransferPart(uuid, part=i, content=part))
+            self._queue(
+                _messages.FileTransferPart(
+                    None,
+                    transfer_uuid=uuid,
+                    part=i,
+                    content=part,
+                )
+            )
             self.flush()
 
     @abc.abstractmethod

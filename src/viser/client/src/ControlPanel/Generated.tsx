@@ -958,12 +958,14 @@ function useFileUpload({
   viewer,
   componentId,
 }: {
-  componentId: string,
-  viewer: ViewerContextContents
+  componentId: string;
+  viewer: ViewerContextContents;
 }) {
   const websocketRef = viewer.websocketRef;
-  const updateUploadState = viewer.useGui((state) => state.updateUploadState)
-  const uploadState = viewer.useGui((state) => state.uploadsInProgress[componentId]);
+  const updateUploadState = viewer.useGui((state) => state.updateUploadState);
+  const uploadState = viewer.useGui(
+    (state) => state.uploadsInProgress[componentId],
+  );
   const totalBytes = uploadState?.totalBytes;
 
   // Cache total bytes string
@@ -972,10 +974,7 @@ function useFileUpload({
     let displaySize = totalBytes;
     const displayUnits = ["B", "K", "M", "G", "T", "P"];
     let displayUnitIndex = 0;
-    while (
-      displaySize >= 100 &&
-      displayUnitIndex < displayUnits.length - 1
-    ) {
+    while (displaySize >= 100 && displayUnitIndex < displayUnits.length - 1) {
       displaySize /= 1024;
       displayUnitIndex += 1;
     }
@@ -983,12 +982,9 @@ function useFileUpload({
   }, [totalBytes]);
 
   // Update notification status
-  React.useMemo(() => {
+  React.useEffect(() => {
     if (uploadState === undefined) return;
-    const {
-      notificationId,
-      filename,
-    } = uploadState;
+    const { notificationId, filename } = uploadState;
     if (uploadState.uploadedBytes === 0) {
       // Show notification.
       notifications.show({
@@ -999,47 +995,48 @@ function useFileUpload({
         withCloseButton: false,
         loading: true,
       });
-    } else if (uploadState.uploadedBytes === uploadState.totalBytes) {
-      // Upload finished
-      notifications.update({
-        id: notificationId,
-        title: "Uploaded " + `${filename} (${totalBytesString})`,
-        message: "File uploaded successfully.",
-        autoClose: true,
-        withCloseButton: true,
-        loading: false,
-        icon: <IconCheck />,
-      });
     } else {
-      // Update progress
+      // Update progress.
       const progressValue = uploadState.uploadedBytes / uploadState.totalBytes;
+      const isDone = progressValue === 1.0;
       notifications.update({
         id: notificationId,
         title: "Uploading " + `${filename} (${totalBytesString})`,
-        message: <Progress size="sm" value={101 * progressValue} />,
-        autoClose: false,
-        withCloseButton: false,
-        loading: true,
+        message: !isDone ? (
+          <Progress
+            size="sm"
+            // Default transition time is 100ms.
+            // In Mantine v7, the transitionDuration prop can be used.
+            styles={{ bar: { transition: "width 10ms linear" } }}
+            value={100 * progressValue}
+          />
+        ) : (
+          "File uploaded successfully."
+        ),
+        autoClose: isDone,
+        withCloseButton: isDone,
+        loading: !isDone,
+        icon: isDone ? <IconCheck /> : undefined,
       });
     }
   }, [uploadState, totalBytesString]);
 
-  const isUploading = (
+  const isUploading =
     uploadState !== undefined &&
-    uploadState.uploadedBytes < uploadState.totalBytes
-  );
+    uploadState.uploadedBytes < uploadState.totalBytes;
 
   async function upload(file: File) {
     const chunkSize = 512 * 1024; // bytes
     const numChunks = Math.ceil(file.size / chunkSize);
-    const transferUuid = `${componentId}/${uuid()}`;
+    const transferUuid = uuid();
     const notificationId = "upload-" + transferUuid;
 
-    const send = (message: Parameters<typeof pack>[0]) => websocketRef.current?.send(pack(message));
+    const send = (message: Parameters<typeof pack>[0]) =>
+      websocketRef.current?.send(pack(message));
 
     // Begin upload by setting initial state
     updateUploadState({
-      transferId: transferUuid,
+      componentId: componentId,
       uploadedBytes: 0,
       totalBytes: file.size,
       filename: file.name,
@@ -1048,6 +1045,7 @@ function useFileUpload({
 
     send({
       type: "FileTransferStart",
+      source_component_id: componentId,
       transfer_uuid: transferUuid,
       filename: file.name,
       mime_type: file.type,
@@ -1063,6 +1061,7 @@ function useFileUpload({
 
       send({
         type: "FileTransferPart",
+        source_component_id: componentId,
         transfer_uuid: transferUuid,
         part: i,
         content: new Uint8Array(buffer),
@@ -1072,6 +1071,6 @@ function useFileUpload({
 
   return {
     isUploading,
-    upload
-  }
+    upload,
+  };
 }

@@ -747,6 +747,7 @@ export interface GetRenderResponseMessage {
  */
 export interface FileTransferStart {
   type: "FileTransferStart";
+  source_component_id: string | null;
   transfer_uuid: string;
   filename: string;
   mime_type: string;
@@ -759,6 +760,7 @@ export interface FileTransferStart {
  */
 export interface FileTransferPart {
   type: "FileTransferPart";
+  source_component_id: string | null;
   transfer_uuid: string;
   part: number;
   content: Uint8Array;
@@ -769,6 +771,7 @@ export interface FileTransferPart {
  */
 export interface FileTransferPartAck {
   type: "FileTransferPartAck";
+  source_component_id: string | null;
   transfer_uuid: string;
   transferred_bytes: number;
   total_bytes: number;

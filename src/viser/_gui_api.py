@@ -166,10 +166,11 @@ def cast_value(tp, value):
 class FileUploadState(TypedDict):
     filename: str
     mime_type: str
-    num_parts: int
-    parts: List[bytes]
-    completed_parts: List[bool]
+    part_count: int
+    parts: Dict[int, bytes]
     total_bytes: int
+    transferred_bytes: int
+    lock: threading.Lock
 
 
 class GuiApi(abc.ABC):
@@ -184,6 +185,7 @@ class GuiApi(abc.ABC):
             "root": _RootGuiContainer({})
         }
         self._current_file_upload_states: Dict[str, FileUploadState] = {}
+
         self._get_api()._message_handler.register_handler(
             _messages.GuiUpdateMessage, self._handle_gui_updates
         )
@@ -238,15 +240,16 @@ class GuiApi(abc.ABC):
     def _handle_file_transfer_start(
         self, client_id: ClientId, message: _messages.FileTransferStart
     ) -> None:
-        if "/" not in message.transfer_uuid:
+        if message.source_component_id not in self._gui_handle_from_id:
             return
         self._current_file_upload_states[message.transfer_uuid] = {
             "filename": message.filename,
             "mime_type": message.mime_type,
-            "num_parts": message.part_count,
-            "parts": [b"" for _ in range(message.part_count)],
-            "completed_parts": [False for _ in range(message.part_count)],
+            "part_count": message.part_count,
+            "parts": {},
             "total_bytes": message.size_bytes,
+            "transferred_bytes": 0,
+            "lock": threading.Lock(),
         }
 
     def _handle_file_transfer_part(
@@ -254,26 +257,33 @@ class GuiApi(abc.ABC):
     ) -> None:
         if message.transfer_uuid not in self._current_file_upload_states:
             return
+        assert message.source_component_id in self._gui_handle_from_id
 
         state = self._current_file_upload_states[message.transfer_uuid]
         state["parts"][message.part] = message.content
-        state["completed_parts"][message.part] = True
-        # print(f"Part {message.part}, completed {sum(state['completed_parts'])} of {state['num_parts']}.")
-        transferred_bytes = sum(len(part) for part in state["parts"])
         total_bytes = state["total_bytes"]
 
-        # Send ack to the server.
-        self._get_api()._queue(
-            FileTransferPartAck(message.transfer_uuid, transferred_bytes, total_bytes)
-        )
+        with state["lock"]:
+            state["transferred_bytes"] += len(message.content)
 
-        if not all(state["completed_parts"]):
-            return
+            # Send ack to the server.
+            self._get_api()._queue(
+                FileTransferPartAck(
+                    source_component_id=message.source_component_id,
+                    transfer_uuid=message.transfer_uuid,
+                    transferred_bytes=state["transferred_bytes"],
+                    total_bytes=total_bytes,
+                )
+            )
+
+            if state["transferred_bytes"] < total_bytes:
+                return
 
         # Finish the upload.
+        assert state["transferred_bytes"] == total_bytes
         state = self._current_file_upload_states.pop(message.transfer_uuid)
-        component_id = message.transfer_uuid.split("/", 1)[0]
-        handle = self._gui_handle_from_id.get(component_id, None)
+
+        handle = self._gui_handle_from_id.get(message.source_component_id, None)
         if handle is None:
             return
 
@@ -281,7 +291,7 @@ class GuiApi(abc.ABC):
 
         value = UploadedFile(
             name=state["filename"],
-            content=b"".join(state["parts"]),
+            content=b"".join(state["parts"][i] for i in range(state["part_count"])),
         )
 
         # Update state.
