@@ -592,26 +592,16 @@ export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
   id: string;
 }
-/** Sent client<->server when a GUI component is changed.
+/** Sent client<->server when any property of a GUI component is changed.
  *
  * (automatically generated)
  */
-
-type _GuiComponentPropsPartial<T> = T extends T
-  ? Partial<Omit<T, "type" | "container_id" | "id" | "order">>
-  : never;
-export type GuiComponentPropsPartial =
-  _GuiComponentPropsPartial<GuiAddComponentMessage>;
-export type _GuiComponentNames<T> = T extends GuiAddComponentMessage
-  ? T["type"]
-  : never;
-export type GuiComponentNames = _GuiComponentNames<GuiAddComponentMessage>;
-export type GuiUpdateMessage = {
-  id: string;
+export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
-  component_type: GuiComponentNames;
-} & GuiComponentPropsPartial;
-
+  id: string;
+  prop_name: string;
+  prop_value: any;
+}
 /** Message from server->client to configure parts of the GUI.
  *
  * (automatically generated)

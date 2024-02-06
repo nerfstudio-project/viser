@@ -4,19 +4,29 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Optional, Tuple, Union, TypeVar, Callable, Type, Dict, cast, ClassVar
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+)
 
+import msgpack
 import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import Literal, override
-import msgpack
 
 from . import infra, theme
 
 
 class Message(infra.Message):
     _tags: ClassVar[Tuple[str, ...]] = tuple()
-
 
     @override
     def redundancy_key(self) -> str:
@@ -52,8 +62,6 @@ def tag_class(tag: str) -> Callable[[T], T]:
         return cls
 
     return wrapper
-
-
 
 
 @dataclasses.dataclass
@@ -536,51 +544,17 @@ class GuiRemoveMessage(Message):
     id: str
 
 
+@dataclasses.dataclass
 class GuiUpdateMessage(Message):
-    """Sent client<->server when a GUI component is changed."""
+    """Sent client<->server when any property of a GUI component is changed."""
 
-    def __init__(self, id: str, type: Type[Message], **changes):
-        self.id = id
-        self._type = type
-        for k, v in changes.items():
-            setattr(self, k, v)
+    id: str
+    prop_name: str
+    prop_value: Any
 
-    def changes(self):
-        return {k: v for k, v in vars(self).items() if k not in {"id", "_type"}}
-
-    def as_serializable_dict(self) -> Dict[str, Any]:
-        """Convert a Python Message object into bytes."""
-        from viser.infra._messages import get_type_hints_cached, _prepare_for_serialization
-        hints = get_type_hints_cached(self._type)
-        mapping = {
-            k: _prepare_for_serialization(v, hints[k]) for k, v in vars(self).items() if k != "_type"
-        }
-        mapping["component_type"] = self._type.__name__
-        mapping["type"] = type(self).__name__
-        return mapping
-
-    @classmethod
-    def _from_serializable_dict(cls, mapping: Dict[str, Any]) -> Dict[str, Any]:
-        mapping["type"] = mapping.pop("component_type")
-        message_type = Message._subclass_from_type_string()[cast(str, mapping.pop("type"))]
-        kwargs = message_type._from_serializable_dict(mapping)
-        kwargs["type"] = message_type
-        return kwargs
-
-    @classmethod
-    def _get_ts_type(cls):
-        return f'''
-type _GuiComponentPropsPartial<T> = T extends T ? Partial<Omit<T, "type" | "container_id" | "id" | "order">>: never;
-export type GuiComponentPropsPartial = _GuiComponentPropsPartial<GuiAddComponentMessage>;
-export type _GuiComponentNames<T> = T extends GuiAddComponentMessage ? T["type"] : never;
-export type GuiComponentNames = _GuiComponentNames<GuiAddComponentMessage>;
-export type {cls.__name__} = {{
-  id: string;
-  type: "{cls.__name__}";
-  component_type: GuiComponentNames;
-}} & GuiComponentPropsPartial;
-'''
-
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.id + "-" + self.prop_name
 
 
 @dataclasses.dataclass

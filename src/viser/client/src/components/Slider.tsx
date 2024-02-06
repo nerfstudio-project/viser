@@ -1,18 +1,18 @@
 import React from "react";
 import { GuiAddSliderMessage } from "../WebsocketMessages";
-import {
-  Slider,
-  Box,
-  Flex,
-  Text,
-  NumberInput,
-} from "@mantine/core";
+import { Slider, Box, Flex, Text, NumberInput } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViserInputComponent } from "./common";
 
-
-
-export default function SliderComponent({ id, label, hint, visible, disabled, value, ...otherProps }: GuiAddSliderMessage) {
+export default function SliderComponent({
+  id,
+  label,
+  hint,
+  visible,
+  disabled,
+  value,
+  ...otherProps
+}: GuiAddSliderMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   const updateValue = (value: number) => setValue(id, value);
@@ -85,7 +85,13 @@ export default function SliderComponent({ id, label, hint, visible, disabled, va
   const containerProps = {};
   // if (marks?.some(x => x.label))
   //   containerProps = { ...containerProps, "mb": "md" };
-    
-  input = <Flex justify="space-between" {...containerProps}>{input}</Flex>
-  return <ViserInputComponent {...{ id, hint, label } }>{input}</ViserInputComponent>;
+
+  input = (
+    <Flex justify="space-between" {...containerProps}>
+      {input}
+    </Flex>
+  );
+  return (
+    <ViserInputComponent {...{ id, hint, label }}>{input}</ViserInputComponent>
+  );
 }

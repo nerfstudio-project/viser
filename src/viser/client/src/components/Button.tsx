@@ -1,19 +1,18 @@
-import {
-  GuiAddButtonMessage,
-} from "../WebsocketMessages";
+import { GuiAddButtonMessage } from "../WebsocketMessages";
 import { computeRelativeLuminance } from "../ControlPanel/GuiState";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
-import {
-  Box,
-  Image,
-  useMantineTheme,
-} from "@mantine/core";
+import { Box, Image, useMantineTheme } from "@mantine/core";
 
 import { Button } from "@mantine/core";
 import React from "react";
 
-        
-export default function ButtonComponent({ id, visible, disabled, label, type, ...otherProps }: GuiAddButtonMessage) {
+export default function ButtonComponent({
+  id,
+  visible,
+  disabled,
+  label,
+  ...otherProps
+}: GuiAddButtonMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
   const theme = useMantineTheme();
   const { color, icon_base64 } = otherProps;
@@ -32,9 +31,9 @@ export default function ButtonComponent({ id, visible, disabled, label, type, ..
         onClick={() =>
           messageSender({
             type: "GuiUpdateMessage",
-            component_type: type,
             id: id,
-            value: true,
+            prop_name: "value",
+            prop_value: true,
           })
         }
         style={{ height: "2.125em" }}

@@ -665,7 +665,9 @@ function useMessageHandler() {
                         }}
                       >
                         <ViewerContext.Provider value={viewer}>
-                          <GeneratedGuiContainer containerId={message.container_id} />
+                          <GeneratedGuiContainer
+                            containerId={message.container_id}
+                          />
                         </ViewerContext.Provider>
                       </Paper>
                     </MantineProvider>
@@ -746,9 +748,7 @@ function useMessageHandler() {
       }
       // Update props of a GUI component
       case "GuiUpdateMessage": {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id, type, component_type, ...changes } = message;
-        updateGuiProps(message.id, changes);
+        updateGuiProps(message.id, message.prop_name, message.prop_value);
         return;
       }
       // Remove a GUI input.

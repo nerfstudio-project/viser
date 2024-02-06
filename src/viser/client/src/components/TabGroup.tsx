@@ -4,10 +4,9 @@ import { Tabs, TabsValue } from "@mantine/core";
 import { Image } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 
-
-export default function TabGroupComponent({ 
+export default function TabGroupComponent({
   tab_labels,
-  tab_icons_base64, 
+  tab_icons_base64,
   tab_container_ids,
   visible,
 }: GuiAddTabGroupMessage) {

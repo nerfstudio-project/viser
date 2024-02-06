@@ -3,8 +3,10 @@ import Markdown from "../Markdown";
 import { ErrorBoundary } from "react-error-boundary";
 import { GuiAddMarkdownMessage } from "../WebsocketMessages";
 
-    
-export default function MarkdownComponent({ visible, markdown }: GuiAddMarkdownMessage) {
+export default function MarkdownComponent({
+  visible,
+  markdown,
+}: GuiAddMarkdownMessage) {
   if (!visible) return <></>;
   return (
     <Box pb="xs" px="sm" style={{ maxWidth: "95%" }}>

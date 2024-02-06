@@ -1,14 +1,18 @@
-import * as React from 'react';
-import {
-  Box,
-  Flex,
-  Text,
-  NumberInput,
-  Tooltip,
-} from '@mantine/core';
+import * as React from "react";
+import { Box, Flex, Text, NumberInput, Tooltip } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 
-export function ViserInputComponent({ id, label, hint, children }: { id: string, children: React.ReactNode, label?: string, hint?: string | null }) {
+export function ViserInputComponent({
+  id,
+  label,
+  hint,
+  children,
+}: {
+  id: string;
+  children: React.ReactNode;
+  label?: string;
+  hint?: string | null;
+}) {
   const { folderDepth } = React.useContext(GuiComponentContext)!;
   if (hint !== undefined && hint !== null) {
     children = // We need to add <Box /> for inputs that we can't assign refs to.
@@ -44,7 +48,6 @@ export function ViserInputComponent({ id, label, hint, children }: { id: string,
   );
 }
 
-
 /** GUI input with a label horizontally placed to the left of it. */
 function LabeledInput(props: {
   id: string;
@@ -79,7 +82,6 @@ function LabeledInput(props: {
     </Flex>
   );
 }
-
 
 export function VectorInput(
   props:

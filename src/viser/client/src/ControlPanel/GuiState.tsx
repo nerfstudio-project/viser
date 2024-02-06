@@ -34,7 +34,7 @@ interface GuiActions {
   addGui: (config: GuiConfig) => void;
   addModal: (config: Messages.GuiModalMessage) => void;
   removeModal: (id: string) => void;
-  updateGuiProps: (id: string, changes: Messages.GuiComponentPropsPartial) => Messages.GuiAddComponentMessage;
+  updateGuiProps: (id: string, prop_name: string, prop_value: any) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
 }
@@ -76,7 +76,7 @@ export function computeRelativeLuminance(color: string) {
 export function useGuiState(initialServer: string) {
   return React.useState(() =>
     create(
-      immer<GuiState & GuiActions>((set, get) => ({
+      immer<GuiState & GuiActions>((set) => ({
         ...cleanGuiState,
         server: initialServer,
         setTheme: (theme) =>
@@ -121,14 +121,19 @@ export function useGuiState(initialServer: string) {
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
           }),
-        updateGuiProps: (id, changes) => {
+        updateGuiProps: (id, name, value) => {
           set((state) => {
             const config = state.guiConfigFromId[id];
-            if (config === undefined) return;
-            state.guiConfigFromId[id] = {...config, ...changes} as GuiConfig;
+            if (config === undefined) {
+              console.error("Tried to update non-existent component", id);
+              return;
+            }
+            state.guiConfigFromId[id] = {
+              ...config,
+              [name]: value,
+            } as GuiConfig;
           });
-          return get().guiConfigFromId[id];
-        }
+        },
       })),
     ),
   )[0];

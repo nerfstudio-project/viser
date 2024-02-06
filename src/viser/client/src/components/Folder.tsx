@@ -6,7 +6,6 @@ import { Box, Collapse, Paper } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViewerContext } from "../App";
 
-      
 export default function FolderComponent({
   id,
   label,
@@ -15,9 +14,7 @@ export default function FolderComponent({
 }: GuiAddFolderMessage) {
   const viewer = React.useContext(ViewerContext)!;
   const [opened, { toggle }] = useDisclosure(expand_by_default);
-  const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[id],
-  );
+  const guiIdSet = viewer.useGui((state) => state.guiIdSetFromContainerId[id]);
   const guiContext = React.useContext(GuiComponentContext)!;
   const isEmpty = guiIdSet === undefined || Object.keys(guiIdSet).length === 0;
 
@@ -62,10 +59,12 @@ export default function FolderComponent({
         />
       </Paper>
       <Collapse in={opened && !isEmpty} pt="0.2em">
-        <GuiComponentContext.Provider value={({
-          ...guiContext,
-          folderDepth: guiContext.folderDepth + 1,
-        })}>
+        <GuiComponentContext.Provider
+          value={{
+            ...guiContext,
+            folderDepth: guiContext.folderDepth + 1,
+          }}
+        >
           <guiContext.GuiContainer containerId={id} />
         </GuiComponentContext.Provider>
       </Collapse>

@@ -5,24 +5,33 @@ import { rgbToHex, hexToRgb } from "./utils";
 import { ViserInputComponent } from "./common";
 import { GuiAddRgbMessage } from "../WebsocketMessages";
 
-export default function RgbComponent({ id, label, hint, value, disabled, visible }: GuiAddRgbMessage) {
+export default function RgbComponent({
+  id,
+  label,
+  hint,
+  value,
+  disabled,
+  visible,
+}: GuiAddRgbMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
-  return <ViserInputComponent {...{ id, hint, label }}>
-    <ColorInput
-      disabled={disabled}
-      size="xs"
-      value={rgbToHex(value)}
-      onChange={(v) => setValue(id, hexToRgb(v))}
-      format="hex"
-      // zIndex of dropdown should be >modal zIndex.
-      // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
-      dropdownZIndex={1000}
-      withinPortal
-      styles={{
-        input: { height: "1.625rem", minHeight: "1.625rem" },
-        icon: { transform: "scale(0.8)" },
-      }}
-    />
-  </ViserInputComponent>;
+  return (
+    <ViserInputComponent {...{ id, hint, label }}>
+      <ColorInput
+        disabled={disabled}
+        size="xs"
+        value={rgbToHex(value)}
+        onChange={(v) => setValue(id, hexToRgb(v))}
+        format="hex"
+        // zIndex of dropdown should be >modal zIndex.
+        // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
+        dropdownZIndex={1000}
+        withinPortal
+        styles={{
+          input: { height: "1.625rem", minHeight: "1.625rem" },
+          icon: { transform: "scale(0.8)" },
+        }}
+      />
+    </ViserInputComponent>
+  );
 }

@@ -14,7 +14,12 @@ export function hexToRgb(hexColor: string): [number, number, number] {
   const b = parseInt(hex.substring(4, 6), 16);
   return [r, g, b];
 }
-export function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
+export function rgbaToHex([r, g, b, a]: [
+  number,
+  number,
+  number,
+  number,
+]): string {
   const hexR = r.toString(16).padStart(2, "0");
   const hexG = g.toString(16).padStart(2, "0");
   const hexB = b.toString(16).padStart(2, "0");

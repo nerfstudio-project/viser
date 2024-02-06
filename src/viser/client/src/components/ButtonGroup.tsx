@@ -7,7 +7,6 @@ import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 export default function ButtonGroupComponent({
   id,
   hint,
-  type,
   label,
   visible,
   disabled,
@@ -15,28 +14,30 @@ export default function ButtonGroupComponent({
 }: GuiAddButtonGroupMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
-  return <ViserInputComponent {...{ id, hint, label }}>
-    <Flex justify="space-between" columnGap="xs">
-      {options.map((option, index) => (
-        <Button
-          key={index}
-          onClick={() =>
-            messageSender({
-              type: "GuiUpdateMessage",
-              component_type: type,
-              id: id,
-              value: option,
-            })
-          }
-          style={{ flexGrow: 1, width: 0 }}
-          disabled={disabled}
-          compact
-          size="xs"
-          variant="outline"
-        >
-          {option}
-        </Button>
-      ))}
-    </Flex>
-  </ViserInputComponent>;
+  return (
+    <ViserInputComponent {...{ id, hint, label }}>
+      <Flex justify="space-between" columnGap="xs">
+        {options.map((option, index) => (
+          <Button
+            key={index}
+            onClick={() =>
+              messageSender({
+                type: "GuiUpdateMessage",
+                id: id,
+                prop_name: "value",
+                prop_value: option,
+              })
+            }
+            style={{ flexGrow: 1, width: 0 }}
+            disabled={disabled}
+            compact
+            size="xs"
+            variant="outline"
+          >
+            {option}
+          </Button>
+        ))}
+      </Flex>
+    </ViserInputComponent>
+  );
 }

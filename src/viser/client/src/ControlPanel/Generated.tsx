@@ -3,9 +3,7 @@ import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiConfig } from "./GuiState";
 import { GuiComponentContext } from "./GuiComponentContext";
 
-import {
-  Box,
-} from "@mantine/core";
+import { Box } from "@mantine/core";
 import React from "react";
 import ButtonComponent from "../components/Button";
 import SliderComponent from "../components/Slider";
@@ -21,7 +19,6 @@ import ButtonGroupComponent from "../components/ButtonGroup";
 import MarkdownComponent from "../components/Markdown";
 import TabGroupComponent from "../components/TabGroup";
 import FolderComponent from "../components/Folder";
-
 
 function GuiContainer({ containerId }: { containerId: string }) {
   const viewer = React.useContext(ViewerContext)!;
@@ -40,7 +37,9 @@ function GuiContainer({ containerId }: { containerId: string }) {
   }));
   let pb = undefined;
   guiIdOrderPairArray = guiIdOrderPairArray.sort((a, b) => a.order - b.order);
-  const inputProps = viewer.useGui((state) => guiIdOrderPairArray.map(pair => state.guiConfigFromId[pair.id]));
+  const inputProps = viewer.useGui((state) =>
+    guiIdOrderPairArray.map((pair) => state.guiConfigFromId[pair.id]),
+  );
   const lastProps = inputProps && inputProps[inputProps.length - 1];
 
   // Done to match the old behaviour. Is it still needed?
@@ -49,31 +48,45 @@ function GuiContainer({ containerId }: { containerId: string }) {
   }
   const out = (
     <Box pt="0.75em" pb={pb}>
-      {inputProps.map((conf) => <GeneratedInput key={conf.id} {...conf} />)}
+      {inputProps.map((conf) => (
+        <GeneratedInput key={conf.id} {...conf} />
+      ))}
     </Box>
   );
   return out;
 }
 
 /** Root of generated inputs. */
-export default function GeneratedGuiContainer({ containerId }: { containerId: string; }) {
+export default function GeneratedGuiContainer({
+  containerId,
+}: {
+  containerId: string;
+}) {
   const viewer = React.useContext(ViewerContext)!;
-  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
-  function setValue(id: string, value: any) {
-    const { type } = updateGuiProps(id, { value });
-    messageSender({ type: "GuiUpdateMessage", component_type: type, id, value });
-  }
-
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
-  return <GuiComponentContext.Provider value={{
-    folderDepth: 0,
-    GuiContainer: GuiContainer,
-    messageSender: messageSender,
-    setValue: setValue,
-  }}>
-    <GuiContainer containerId={containerId} />
-  </GuiComponentContext.Provider>
+  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
 
+  function setValue(id: string, value: any) {
+    updateGuiProps(id, "value", value);
+    messageSender({
+      type: "GuiUpdateMessage",
+      id: id,
+      prop_name: "value",
+      prop_value: value,
+    });
+  }
+  return (
+    <GuiComponentContext.Provider
+      value={{
+        folderDepth: 0,
+        GuiContainer: GuiContainer,
+        messageSender: messageSender,
+        setValue: setValue,
+      }}
+    >
+      <GuiContainer containerId={containerId} />
+    </GuiComponentContext.Provider>
+  );
 }
 
 /** A single generated GUI element. */
@@ -92,7 +105,7 @@ function GeneratedInput(conf: GuiConfig) {
     case "GuiAddNumberMessage":
       return <NumberInputComponent {...conf} />;
     case "GuiAddTextMessage":
-      return <TextInputComponent {...conf} />; 
+      return <TextInputComponent {...conf} />;
     case "GuiAddCheckboxMessage":
       return <CheckboxComponent {...conf} />;
     case "GuiAddVector2Message":
