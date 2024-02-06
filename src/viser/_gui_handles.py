@@ -30,7 +30,6 @@ from ._icons import base64_from_icon
 from ._icons_enum import IconName
 from ._message_api import _encode_image_base64
 from ._messages import (
-        GuiAddTabGroupMessage,
     GuiCloseModalMessage,
     GuiRemoveMessage,
     GuiUpdateMessage,
