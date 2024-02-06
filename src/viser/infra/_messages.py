@@ -34,7 +34,11 @@ def _prepare_for_deserialization(value: Any, annotation: Type) -> Any:
                 return value
             ellipsis_index = args.index(...)
             num_ellipsis = len(value) - len(args) + 2
-            args = args[:(ellipsis_index - 1)] + tuple(args[ellipsis_index - 1] for _ in range(num_ellipsis)) + args[ellipsis_index + 1 :]
+            args = (
+                args[: (ellipsis_index - 1)]
+                + tuple(args[ellipsis_index - 1] for _ in range(num_ellipsis))
+                + args[ellipsis_index + 1 :]
+            )
 
         if len(value) != len(args):
             warnings.warn(f"[viser] {value} does not match annotation {annotation}")
@@ -76,7 +80,11 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
                 return value
             ellipsis_index = args.index(...)
             num_ellipsis = len(value) - len(args) + 2
-            args = args[:(ellipsis_index - 1)] + tuple(args[ellipsis_index - 1] for _ in range(num_ellipsis)) + args[ellipsis_index + 1 :]
+            args = (
+                args[: (ellipsis_index - 1)]
+                + tuple(args[ellipsis_index - 1] for _ in range(num_ellipsis))
+                + args[ellipsis_index + 1 :]
+            )
 
         if len(value) != len(args):
             warnings.warn(f"[viser] {value} does not match annotation {annotation}")
@@ -129,7 +137,9 @@ class Message(abc.ABC):
 
         hints = get_type_hints_cached(cls)
 
-        mapping = {k: _prepare_for_deserialization(v, hints[k]) for k, v in mapping.items()}
+        mapping = {
+            k: _prepare_for_deserialization(v, hints[k]) for k, v in mapping.items()
+        }
         return mapping
 
     @classmethod
