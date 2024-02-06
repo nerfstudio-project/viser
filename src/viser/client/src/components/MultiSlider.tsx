@@ -3,7 +3,7 @@ import { GuiAddMultiSliderMessage } from "../WebsocketMessages";
 import { Box } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViserInputComponent } from "./common";
-import { MultiSlider } from "./MultiSlider/MultiSlider";
+import { MultiSlider } from "./MultiSliderPrimitive/MultiSlider";
 
 export default function MultiSliderComponent({
   id,
