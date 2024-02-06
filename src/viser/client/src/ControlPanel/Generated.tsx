@@ -1,51 +1,60 @@
-import {
-  GuiAddFolderMessage,
-  GuiAddTabGroupMessage,
-} from "../WebsocketMessages";
-import { ViewerContext, ViewerContextContents } from "../App";
+import { ViewerContext } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
-import { computeRelativeLuminance } from "./GuiState";
-import {
-  Collapse,
-  Image,
-  Paper,
-  Tabs,
-  TabsValue,
-  useMantineTheme,
-} from "@mantine/core";
+import { GuiComponentContext } from "./GuiComponentContext";
 
-import {
-  Box,
-  Button,
-  Checkbox,
-  ColorInput,
-  Flex,
-  NumberInput,
-  Select,
-  Slider,
-  Text,
-  TextInput,
-  Tooltip,
-} from "@mantine/core";
-import { MultiSlider } from "./MultiSlider";
+import { Box } from "@mantine/core";
 import React from "react";
-import Markdown from "../Markdown";
-import { ErrorBoundary } from "react-error-boundary";
-import { useDisclosure } from "@mantine/hooks";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
+import ButtonComponent from "../components/Button";
+import SliderComponent from "../components/Slider";
+import NumberInputComponent from "../components/NumberInput";
+import TextInputComponent from "../components/TextInput";
+import CheckboxComponent from "../components/Checkbox";
+import Vector2Component from "../components/Vector2";
+import Vector3Component from "../components/Vector3";
+import DropdownComponent from "../components/Dropdown";
+import RgbComponent from "../components/Rgb";
+import RgbaComponent from "../components/Rgba";
+import ButtonGroupComponent from "../components/ButtonGroup";
+import MarkdownComponent from "../components/Markdown";
+import TabGroupComponent from "../components/TabGroup";
+import FolderComponent from "../components/Folder";
+import MultiSliderComponent from "../components/MultiSlider";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
-  // We need to take viewer as input in drei's <Html /> elements, where contexts break.
   containerId,
-  viewer,
-  folderDepth,
 }: {
   containerId: string;
-  viewer?: ViewerContextContents;
-  folderDepth?: number;
 }) {
-  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
+  const viewer = React.useContext(ViewerContext)!;
+  const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
+  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
+
+  function setValue(id: string, value: any) {
+    updateGuiProps(id, "value", value);
+    messageSender({
+      type: "GuiUpdateMessage",
+      id: id,
+      prop_name: "value",
+      prop_value: value,
+    });
+  }
+  return (
+    <GuiComponentContext.Provider
+      value={{
+        folderDepth: 0,
+        GuiContainer: GuiContainer,
+        messageSender: messageSender,
+        setValue: setValue,
+      }}
+    >
+      <GuiContainer containerId={containerId} />
+    </GuiComponentContext.Provider>
+  );
+}
+
+function GuiContainer({ containerId }: { containerId: string }) {
+  const viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet =
     viewer.useGui((state) => state.guiIdSetFromContainerId[containerId]) ?? {};
@@ -55,829 +64,61 @@ export default function GeneratedGuiContainer({
   const guiOrderFromId = viewer!.useGui((state) => state.guiOrderFromId);
   if (guiIdSet === undefined) return null;
 
-  const guiIdOrderPairArray = guiIdArray.map((id) => ({
+  let guiIdOrderPairArray = guiIdArray.map((id) => ({
     id: id,
     order: guiOrderFromId[id],
   }));
+  guiIdOrderPairArray = guiIdOrderPairArray.sort((a, b) => a.order - b.order);
   const out = (
-    <Box pt="0.75em">
-      {guiIdOrderPairArray
-        .sort((a, b) => a.order - b.order)
-        .map((pair, index) => (
-          <GeneratedInput
-            key={pair.id}
-            id={pair.id}
-            viewer={viewer}
-            folderDepth={folderDepth ?? 0}
-            last={index === guiIdOrderPairArray.length - 1}
-          />
-        ))}
+    <Box pt="xs" pb="xs">
+      {guiIdOrderPairArray.map((pair) => (
+        <GeneratedInput key={pair.id} guiId={pair.id} />
+      ))}
     </Box>
   );
   return out;
 }
 
 /** A single generated GUI element. */
-function GeneratedInput({
-  id,
-  viewer,
-  folderDepth,
-  last,
-}: {
-  id: string;
-  viewer?: ViewerContextContents;
-  folderDepth: number;
-  last: boolean;
-}) {
-  // Handle GUI input types.
-  if (viewer === undefined) viewer = React.useContext(ViewerContext)!;
-  const conf = viewer.useGui((state) => state.guiConfigFromId[id]);
-
-  // Handle nested containers.
-  if (conf.type == "GuiAddFolderMessage")
-    return (
-      <Box pb={!last ? "0.125em" : 0}>
-        <GeneratedFolder
-          conf={conf}
-          folderDepth={folderDepth}
-          viewer={viewer}
-        />
-      </Box>
-    );
-  if (conf.type == "GuiAddTabGroupMessage")
-    return <GeneratedTabGroup conf={conf} />;
-  if (conf.type == "GuiAddMarkdownMessage") {
-    let { visible } =
-      viewer.useGui((state) => state.guiAttributeFromId[conf.id]) || {};
-    visible = visible ?? true;
-    if (!visible) return <></>;
-    return (
-      <Box pb="xs" px="sm" style={{ maxWidth: "95%" }}>
-        <ErrorBoundary
-          fallback={<Text align="center">Markdown Failed to Render</Text>}
-        >
-          <Markdown>{conf.markdown}</Markdown>
-        </ErrorBoundary>
-      </Box>
-    );
-  }
-
-  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
-  function updateValue(value: any) {
-    setGuiValue(conf.id, value);
-    messageSender({ type: "GuiUpdateMessage", id: conf.id, value: value });
-  }
-
-  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
-  const value =
-    viewer.useGui((state) => state.guiValueFromId[conf.id]) ??
-    conf.initial_value;
-  const theme = useMantineTheme();
-
-  let { visible, disabled } =
-    viewer.useGui((state) => state.guiAttributeFromId[conf.id]) || {};
-
-  visible = visible ?? true;
-  disabled = disabled ?? false;
-
-  if (!visible) return <></>;
-
-  let inputColor =
-    computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
-      ? theme.colors.gray[9]
-      : theme.white;
-
-  let labeled = true;
-  let input = null;
-  let containerProps = {};
+function GeneratedInput(props: { guiId: string }) {
+  const viewer = React.useContext(ViewerContext)!;
+  const conf = viewer.useGui((state) => state.guiConfigFromId[props.guiId]);
   switch (conf.type) {
+    case "GuiAddFolderMessage":
+      return <FolderComponent {...conf} />;
+    case "GuiAddTabGroupMessage":
+      return <TabGroupComponent {...conf} />;
+    case "GuiAddMarkdownMessage":
+      return <MarkdownComponent {...conf} />;
     case "GuiAddButtonMessage":
-      labeled = false;
-      if (conf.color !== null) {
-        inputColor =
-          computeRelativeLuminance(
-            theme.colors[conf.color][theme.fn.primaryShade()],
-          ) > 50.0
-            ? theme.colors.gray[9]
-            : theme.white;
-      }
-
-      input = (
-        <Button
-          id={conf.id}
-          fullWidth
-          color={conf.color ?? undefined}
-          onClick={() =>
-            messageSender({
-              type: "GuiUpdateMessage",
-              id: conf.id,
-              value: true,
-            })
-          }
-          style={{ height: "2.125em" }}
-          styles={{ inner: { color: inputColor + " !important" } }}
-          disabled={disabled}
-          size="sm"
-          leftIcon={
-            conf.icon_base64 === null ? undefined : (
-              <Image
-                /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-                height="1em"
-                width="1em"
-                opacity={disabled ? 0.3 : 1.0}
-                mr="-0.125em"
-                sx={
-                  inputColor === theme.white
-                    ? {
-                        // Make the color white.
-                        filter: !disabled ? "invert(1)" : undefined,
-                      }
-                    : // Icon will be black by default.
-                      undefined
-                }
-                src={"data:image/svg+xml;base64," + conf.icon_base64}
-              />
-            )
-          }
-        >
-          {conf.label}
-        </Button>
-      );
-      break;
+      return <ButtonComponent {...conf} />;
     case "GuiAddSliderMessage":
-      input = (
-        <Flex justify="space-between">
-          <Slider
-            id={conf.id}
-            size="xs"
-            thumbSize={0}
-            style={{ flexGrow: 1 }}
-            styles={(theme) => ({
-              thumb: {
-                background: theme.fn.primaryColor(),
-                borderRadius: "0.1rem",
-                height: "0.75rem",
-                width: "0.625rem",
-              },
-              trackContainer: {
-                zIndex: 3,
-                position: "relative",
-              },
-              markLabel: {
-                transform: "translate(-50%, 0.03rem)",
-                fontSize: "0.6rem",
-                textAlign: "center",
-              },
-              marksContainer: {
-                left: "0.2rem",
-                right: "0.2rem",
-              },
-              markWrapper: {
-                position: "absolute",
-                top: `0.03rem`,
-                ...(conf.marks === null
-                  ? /*  Shift the mark labels so they don't spill too far out the left/right when we only have min and max marks. */
-                    {
-                      ":first-child": {
-                        "div:nth-child(2)": {
-                          transform: "translate(-0.2rem, 0.03rem)",
-                        },
-                      },
-                      ":last-child": {
-                        "div:nth-child(2)": {
-                          transform: "translate(-90%, 0.03rem)",
-                        },
-                      },
-                    }
-                  : {}),
-              },
-              mark: {
-                border: "0px solid transparent",
-                background:
-                  theme.colorScheme === "dark"
-                    ? theme.colors.dark[4]
-                    : theme.colors.gray[2],
-                width: "0.42rem",
-                height: "0.42rem",
-                transform: `translateX(-50%)`,
-              },
-              markFilled: {
-                background: disabled
-                  ? theme.colorScheme === "dark"
-                    ? theme.colors.dark[3]
-                    : theme.colors.gray[4]
-                  : theme.fn.primaryColor(),
-              },
-            })}
-            pt="0.2em"
-            showLabelOnHover={false}
-            min={conf.min}
-            max={conf.max}
-            step={conf.step ?? undefined}
-            precision={conf.precision}
-            value={value}
-            onChange={updateValue}
-            marks={
-              conf.marks === null
-                ? [
-                    {
-                      value: conf.min,
-                      label: `${parseInt(conf.min.toFixed(6))}`,
-                    },
-                    {
-                      value: conf.max,
-                      label: `${parseInt(conf.max.toFixed(6))}`,
-                    },
-                  ]
-                : conf.marks
-            }
-            disabled={disabled}
-          />
-          <NumberInput
-            value={value}
-            onChange={(newValue) => {
-              // Ignore empty values.
-              newValue !== "" && updateValue(newValue);
-            }}
-            size="xs"
-            min={conf.min}
-            max={conf.max}
-            hideControls
-            step={conf.step ?? undefined}
-            precision={conf.precision}
-            sx={{ width: "3rem" }}
-            styles={{
-              input: {
-                padding: "0.375em",
-                letterSpacing: "-0.5px",
-                minHeight: "1.875em",
-                height: "1.875em",
-              },
-            }}
-            ml="xs"
-          />
-        </Flex>
-      );
-      break;
+      return <SliderComponent {...conf} />;
     case "GuiAddMultiSliderMessage":
-      input = (
-        <MultiSlider
-          id={conf.id}
-          size="xs"
-          thumbSize={0}
-          styles={(theme) => ({
-            thumb: {
-              background: theme.fn.primaryColor(),
-              borderRadius: "0.1rem",
-              height: "0.75rem",
-              width: "0.625rem",
-            },
-            trackContainer: {
-              zIndex: 3,
-              position: "relative",
-            },
-            markLabel: {
-              transform: "translate(-50%, 0.03rem)",
-              fontSize: "0.6rem",
-              textAlign: "center",
-            },
-            marksContainer: {
-              left: "0.2rem",
-              right: "0.2rem",
-            },
-            markWrapper: {
-              position: "absolute",
-              top: `0.03rem`,
-              ...(conf.marks === null
-                ? /*  Shift the mark labels so they don't spill too far out the left/right when we only have min and max marks. */
-                  {
-                    ":first-child": {
-                      "div:nth-child(2)": {
-                        transform: "translate(-0.2rem, 0.03rem)",
-                      },
-                    },
-                    ":last-child": {
-                      "div:nth-child(2)": {
-                        transform: "translate(-90%, 0.03rem)",
-                      },
-                    },
-                  }
-                : {}),
-            },
-            mark: {
-              border: "0px solid transparent",
-              background:
-                theme.colorScheme === "dark"
-                  ? theme.colors.dark[4]
-                  : theme.colors.gray[2],
-              width: "0.42rem",
-              height: "0.42rem",
-              transform: `translateX(-50%)`,
-            },
-            markFilled: {
-              background: disabled
-                ? theme.colorScheme === "dark"
-                  ? theme.colors.dark[3]
-                  : theme.colors.gray[4]
-                : theme.fn.primaryColor(),
-            },
-          })}
-          pt="0.2em"
-          showLabelOnHover={false}
-          min={conf.min}
-          max={conf.max}
-          step={conf.step ?? undefined}
-          precision={conf.precision}
-          value={value}
-          onChange={updateValue}
-          marks={
-            conf.marks === null
-              ? [
-                  {
-                    value: conf.min,
-                    label: `${parseInt(conf.min.toFixed(6))}`,
-                  },
-                  {
-                    value: conf.max,
-                    label: `${parseInt(conf.max.toFixed(6))}`,
-                  },
-                ]
-              : conf.marks
-          }
-          disabled={disabled}
-          fixedEndpoints={conf.fixed_endpoints}
-          minRange={conf.min_range || undefined}
-        />
-      );
-
-      if (conf.marks?.some((x) => x.label) || conf.marks === null)
-        containerProps = { ...containerProps, mb: "xs" };
-      break;
+      return <MultiSliderComponent {...conf} />;
     case "GuiAddNumberMessage":
-      input = (
-        <NumberInput
-          id={conf.id}
-          value={value ?? conf.initial_value}
-          precision={conf.precision}
-          min={conf.min ?? undefined}
-          max={conf.max ?? undefined}
-          step={conf.step}
-          size="xs"
-          onChange={(newValue) => {
-            // Ignore empty values.
-            newValue !== "" && updateValue(newValue);
-          }}
-          styles={{
-            input: {
-              minHeight: "1.625rem",
-              height: "1.625rem",
-            },
-          }}
-          disabled={disabled}
-          stepHoldDelay={500}
-          stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
-        />
-      );
-      break;
+      return <NumberInputComponent {...conf} />;
     case "GuiAddTextMessage":
-      input = (
-        <TextInput
-          value={value ?? conf.initial_value}
-          size="xs"
-          onChange={(value) => {
-            updateValue(value.target.value);
-          }}
-          styles={{
-            input: {
-              minHeight: "1.625rem",
-              height: "1.625rem",
-              padding: "0 0.5em",
-            },
-          }}
-          disabled={disabled}
-        />
-      );
-      break;
+      return <TextInputComponent {...conf} />;
     case "GuiAddCheckboxMessage":
-      input = (
-        <Checkbox
-          id={conf.id}
-          checked={value ?? conf.initial_value}
-          size="xs"
-          onChange={(value) => {
-            updateValue(value.target.checked);
-          }}
-          disabled={disabled}
-          styles={{
-            icon: {
-              color: inputColor + " !important",
-            },
-          }}
-        />
-      );
-      break;
+      return <CheckboxComponent {...conf} />;
     case "GuiAddVector2Message":
-      input = (
-        <VectorInput
-          id={conf.id}
-          n={2}
-          value={value ?? conf.initial_value}
-          onChange={updateValue}
-          min={conf.min}
-          max={conf.max}
-          step={conf.step}
-          precision={conf.precision}
-          disabled={disabled}
-        />
-      );
-      break;
+      return <Vector2Component {...conf} />;
     case "GuiAddVector3Message":
-      input = (
-        <VectorInput
-          id={conf.id}
-          n={3}
-          value={value ?? conf.initial_value}
-          onChange={updateValue}
-          min={conf.min}
-          max={conf.max}
-          step={conf.step}
-          precision={conf.precision}
-          disabled={disabled}
-        />
-      );
-      break;
+      return <Vector3Component {...conf} />;
     case "GuiAddDropdownMessage":
-      input = (
-        <Select
-          id={conf.id}
-          radius="xs"
-          value={value}
-          data={conf.options}
-          onChange={updateValue}
-          searchable
-          maxDropdownHeight={400}
-          size="xs"
-          styles={{
-            input: {
-              padding: "0.5em",
-              letterSpacing: "-0.5px",
-              minHeight: "1.625rem",
-              height: "1.625rem",
-            },
-          }}
-          // zIndex of dropdown should be >modal zIndex.
-          // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
-          zIndex={1000}
-          withinPortal
-        />
-      );
-      break;
+      return <DropdownComponent {...conf} />;
     case "GuiAddRgbMessage":
-      input = (
-        <ColorInput
-          disabled={disabled}
-          size="xs"
-          value={rgbToHex(value)}
-          onChange={(v) => updateValue(hexToRgb(v))}
-          format="hex"
-          // zIndex of dropdown should be >modal zIndex.
-          // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
-          dropdownZIndex={1000}
-          withinPortal
-          styles={{
-            input: { height: "1.625rem", minHeight: "1.625rem" },
-            icon: { transform: "scale(0.8)" },
-          }}
-        />
-      );
-      break;
+      return <RgbComponent {...conf} />;
     case "GuiAddRgbaMessage":
-      input = (
-        <ColorInput
-          disabled={disabled}
-          size="xs"
-          value={rgbaToHex(value)}
-          onChange={(v) => updateValue(hexToRgba(v))}
-          format="hexa"
-          // zIndex of dropdown should be >modal zIndex.
-          // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
-          dropdownZIndex={1000}
-          withinPortal
-          styles={{ input: { height: "1.625rem", minHeight: "1.625rem" } }}
-        />
-      );
-      break;
+      return <RgbaComponent {...conf} />;
     case "GuiAddButtonGroupMessage":
-      input = (
-        <Flex justify="space-between" columnGap="xs">
-          {conf.options.map((option, index) => (
-            <Button
-              key={index}
-              onClick={() =>
-                messageSender({
-                  type: "GuiUpdateMessage",
-                  id: conf.id,
-                  value: option,
-                })
-              }
-              style={{ flexGrow: 1, width: 0 }}
-              disabled={disabled}
-              compact
-              size="xs"
-              variant="outline"
-            >
-              {option}
-            </Button>
-          ))}
-        </Flex>
-      );
+      return <ButtonGroupComponent {...conf} />;
+    default:
+      assertNeverType(conf);
   }
-
-  if (conf.hint !== null)
-    input = // We need to add <Box /> for inputs that we can't assign refs to.
-      (
-        <Tooltip
-          zIndex={100}
-          label={conf.hint}
-          multiline
-          w="15rem"
-          withArrow
-          openDelay={500}
-          withinPortal
-        >
-          <Box
-            sx={{
-              display:
-                // For checkboxes, we want to make sure that the wrapper
-                // doesn't expand to the full width of the parent. This will
-                // de-center the tooltip.
-                conf.type === "GuiAddCheckboxMessage"
-                  ? "inline-block"
-                  : "block",
-            }}
-          >
-            {input}
-          </Box>
-        </Tooltip>
-      );
-
-  if (labeled)
-    input = (
-      <LabeledInput
-        id={conf.id}
-        label={conf.label}
-        input={input}
-        folderDepth={folderDepth}
-      />
-    );
-
-  return (
-    <Box pb="0.5em" px="xs" {...containerProps}>
-      {input}
-    </Box>
-  );
 }
 
-function GeneratedFolder({
-  conf,
-  folderDepth,
-  viewer,
-}: {
-  conf: GuiAddFolderMessage;
-  folderDepth: number;
-  viewer: ViewerContextContents;
-}) {
-  const [opened, { toggle }] = useDisclosure(conf.expand_by_default);
-  const guiIdSet = viewer.useGui(
-    (state) => state.guiIdSetFromContainerId[conf.id],
-  );
-  const isEmpty = guiIdSet === undefined || Object.keys(guiIdSet).length === 0;
-
-  const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
-  return (
-    <Paper
-      withBorder
-      pt="0.0625em"
-      mx="xs"
-      mt="xs"
-      mb="sm"
-      sx={{ position: "relative" }}
-    >
-      <Paper
-        sx={{
-          fontSize: "0.875em",
-          position: "absolute",
-          padding: "0 0.375em 0 0.375em",
-          top: 0,
-          left: "0.375em",
-          transform: "translateY(-50%)",
-          cursor: isEmpty ? undefined : "pointer",
-          userSelect: "none",
-          fontWeight: 500,
-        }}
-        onClick={toggle}
-      >
-        {conf.label}
-        <ToggleIcon
-          style={{
-            width: "0.9em",
-            height: "0.9em",
-            strokeWidth: 3,
-            top: "0.1em",
-            position: "relative",
-            marginLeft: "0.25em",
-            marginRight: "-0.1em",
-            opacity: 0.5,
-            display: isEmpty ? "none" : undefined,
-          }}
-        />
-      </Paper>
-      <Collapse in={opened && !isEmpty} pt="0.2em">
-        <GeneratedGuiContainer
-          containerId={conf.id}
-          folderDepth={folderDepth + 1}
-        />
-      </Collapse>
-      <Collapse in={!(opened && !isEmpty)}>
-        <Box p="xs"></Box>
-      </Collapse>
-    </Paper>
-  );
-}
-
-function GeneratedTabGroup({ conf }: { conf: GuiAddTabGroupMessage }) {
-  const [tabState, setTabState] = React.useState<TabsValue>("0");
-  const icons = conf.tab_icons_base64;
-
-  return (
-    <Tabs
-      radius="xs"
-      value={tabState}
-      onTabChange={setTabState}
-      sx={{ marginTop: "-0.75em" }}
-    >
-      <Tabs.List>
-        {conf.tab_labels.map((label, index) => (
-          <Tabs.Tab
-            value={index.toString()}
-            key={index}
-            icon={
-              icons[index] === null ? undefined : (
-                <Image
-                  /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-                  height={"1.125em"}
-                  width={"1.125em"}
-                  sx={(theme) => ({
-                    filter:
-                      theme.colorScheme == "dark" ? "invert(1)" : undefined,
-                  })}
-                  src={"data:image/svg+xml;base64," + icons[index]}
-                />
-              )
-            }
-          >
-            {label}
-          </Tabs.Tab>
-        ))}
-      </Tabs.List>
-      {conf.tab_container_ids.map((containerId, index) => (
-        <Tabs.Panel value={index.toString()} key={containerId}>
-          <GeneratedGuiContainer containerId={containerId} />
-        </Tabs.Panel>
-      ))}
-    </Tabs>
-  );
-}
-
-function VectorInput(
-  props:
-    | {
-        id: string;
-        n: 2;
-        value: [number, number];
-        min: [number, number] | null;
-        max: [number, number] | null;
-        step: number;
-        precision: number;
-        onChange: (value: number[]) => void;
-        disabled: boolean;
-      }
-    | {
-        id: string;
-        n: 3;
-        value: [number, number, number];
-        min: [number, number, number] | null;
-        max: [number, number, number] | null;
-        step: number;
-        precision: number;
-        onChange: (value: number[]) => void;
-        disabled: boolean;
-      },
-) {
-  return (
-    <Flex justify="space-between" columnGap="0.5em">
-      {[...Array(props.n).keys()].map((i) => (
-        <NumberInput
-          id={i === 0 ? props.id : undefined}
-          key={i}
-          value={props.value[i]}
-          onChange={(v) => {
-            const updated = [...props.value];
-            updated[i] = v === "" ? 0.0 : v;
-            props.onChange(updated);
-          }}
-          size="xs"
-          styles={{
-            root: { flexGrow: 1, width: 0 },
-            input: {
-              paddingLeft: "0.5em",
-              paddingRight: "1.75em",
-              textAlign: "right",
-              minHeight: "1.875em",
-              height: "1.875em",
-            },
-            rightSection: { width: "1.2em" },
-            control: {
-              width: "1.1em",
-            },
-          }}
-          precision={props.precision}
-          step={props.step}
-          min={props.min === null ? undefined : props.min[i]}
-          max={props.max === null ? undefined : props.max[i]}
-          stepHoldDelay={500}
-          stepHoldInterval={(t) => Math.max(1000 / t ** 2, 25)}
-          disabled={props.disabled}
-        />
-      ))}
-    </Flex>
-  );
-}
-
-/** GUI input with a label horizontally placed to the left of it. */
-function LabeledInput(props: {
-  id: string;
-  label: string;
-  input: React.ReactNode;
-  folderDepth: number;
-}) {
-  return (
-    <Flex align="center">
-      <Box
-        // The per-layer offset here is just eyeballed.
-        w={`${7.25 - props.folderDepth * 0.6375}em`}
-        pr="xs"
-        sx={{ flexShrink: 0, position: "relative" }}
-      >
-        <Text
-          c="dimmed"
-          fz="0.875em"
-          fw="450"
-          lh="1.375em"
-          lts="-0.75px"
-          unselectable="off"
-          sx={{
-            width: "100%",
-            boxSizing: "content-box",
-          }}
-        >
-          <label htmlFor={props.id}>{props.label}</label>
-        </Text>
-      </Box>
-      <Box sx={{ flexGrow: 1 }}>{props.input}</Box>
-    </Flex>
-  );
-}
-
-// Color conversion helpers.
-
-function rgbToHex([r, g, b]: [number, number, number]): string {
-  const hexR = r.toString(16).padStart(2, "0");
-  const hexG = g.toString(16).padStart(2, "0");
-  const hexB = b.toString(16).padStart(2, "0");
-  return `#${hexR}${hexG}${hexB}`;
-}
-
-function hexToRgb(hexColor: string): [number, number, number] {
-  const hex = hexColor.slice(1); // Remove the # in #ffffff.
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  return [r, g, b];
-}
-function rgbaToHex([r, g, b, a]: [number, number, number, number]): string {
-  const hexR = r.toString(16).padStart(2, "0");
-  const hexG = g.toString(16).padStart(2, "0");
-  const hexB = b.toString(16).padStart(2, "0");
-  const hexA = a.toString(16).padStart(2, "0");
-  return `#${hexR}${hexG}${hexB}${hexA}`;
-}
-
-function hexToRgba(hexColor: string): [number, number, number, number] {
-  const hex = hexColor.slice(1); // Remove the # in #ffffff.
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  const a = parseInt(hex.substring(6, 8), 16);
-  return [r, g, b, a];
+function assertNeverType(x: never): never {
+  throw new Error("Unexpected object: " + (x as any).type);
 }

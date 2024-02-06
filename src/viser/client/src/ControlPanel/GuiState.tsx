@@ -7,22 +7,7 @@ import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from "../App";
 import { MantineThemeOverride } from "@mantine/core";
 
-export type GuiConfig =
-  | Messages.GuiAddButtonMessage
-  | Messages.GuiAddCheckboxMessage
-  | Messages.GuiAddDropdownMessage
-  | Messages.GuiAddFolderMessage
-  | Messages.GuiAddTabGroupMessage
-  | Messages.GuiAddNumberMessage
-  | Messages.GuiAddRgbMessage
-  | Messages.GuiAddRgbaMessage
-  | Messages.GuiAddSliderMessage
-  | Messages.GuiAddMultiSliderMessage
-  | Messages.GuiAddButtonGroupMessage
-  | Messages.GuiAddTextMessage
-  | Messages.GuiAddVector2Message
-  | Messages.GuiAddVector3Message
-  | Messages.GuiAddMarkdownMessage;
+export type GuiConfig = Messages.GuiAddComponentMessage;
 
 export function isGuiConfig(message: Messages.Message): message is GuiConfig {
   return message.type.startsWith("GuiAdd");
@@ -41,10 +26,6 @@ interface GuiState {
   modals: Messages.GuiModalMessage[];
   guiOrderFromId: { [id: string]: number };
   guiConfigFromId: { [id: string]: GuiConfig };
-  guiValueFromId: { [id: string]: any };
-  guiAttributeFromId: {
-    [id: string]: { visible?: boolean; disabled?: boolean } | undefined;
-  };
 }
 
 interface GuiActions {
@@ -53,9 +34,7 @@ interface GuiActions {
   addGui: (config: GuiConfig) => void;
   addModal: (config: Messages.GuiModalMessage) => void;
   removeModal: (id: string) => void;
-  setGuiValue: (id: string, value: any) => void;
-  setGuiVisible: (id: string, visible: boolean) => void;
-  setGuiDisabled: (id: string, visible: boolean) => void;
+  updateGuiProps: (id: string, prop_name: string, prop_value: any) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
 }
@@ -80,8 +59,6 @@ const cleanGuiState: GuiState = {
   modals: [],
   guiOrderFromId: {},
   guiConfigFromId: {},
-  guiValueFromId: {},
-  guiAttributeFromId: {},
 };
 
 export function computeRelativeLuminance(color: string) {
@@ -129,24 +106,6 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.modals = state.modals.filter((m) => m.id !== id);
           }),
-        setGuiValue: (id, value) =>
-          set((state) => {
-            state.guiValueFromId[id] = value;
-          }),
-        setGuiVisible: (id, visible) =>
-          set((state) => {
-            state.guiAttributeFromId[id] = {
-              ...state.guiAttributeFromId[id],
-              visible: visible,
-            };
-          }),
-        setGuiDisabled: (id, disabled) =>
-          set((state) => {
-            state.guiAttributeFromId[id] = {
-              ...state.guiAttributeFromId[id],
-              disabled: disabled,
-            };
-          }),
         removeGui: (id) =>
           set((state) => {
             const guiConfig = state.guiConfigFromId[id];
@@ -154,8 +113,6 @@ export function useGuiState(initialServer: string) {
             delete state.guiIdSetFromContainerId[guiConfig.container_id]![id];
             delete state.guiOrderFromId[id];
             delete state.guiConfigFromId[id];
-            delete state.guiValueFromId[id];
-            delete state.guiAttributeFromId[id];
           }),
         resetGui: () =>
           set((state) => {
@@ -163,9 +120,20 @@ export function useGuiState(initialServer: string) {
             state.guiIdSetFromContainerId = {};
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
-            state.guiValueFromId = {};
-            state.guiAttributeFromId = {};
           }),
+        updateGuiProps: (id, name, value) => {
+          set((state) => {
+            const config = state.guiConfigFromId[id];
+            if (config === undefined) {
+              console.error("Tried to update non-existent component", id);
+              return;
+            }
+            state.guiConfigFromId[id] = {
+              ...config,
+              [name]: value,
+            } as GuiConfig;
+          });
+        },
       })),
     ),
   )[0];

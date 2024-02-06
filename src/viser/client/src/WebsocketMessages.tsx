@@ -312,7 +312,7 @@ export interface SceneNodeClickMessage {
 export interface ResetSceneMessage {
   type: "ResetSceneMessage";
 }
-/** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', expand_by_default: 'bool')
+/** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', expand_by_default: 'bool', visible: 'bool')
  *
  * (automatically generated)
  */
@@ -323,8 +323,9 @@ export interface GuiAddFolderMessage {
   label: string;
   container_id: string;
   expand_by_default: boolean;
+  visible: boolean;
 }
-/** GuiAddMarkdownMessage(order: 'float', id: 'str', markdown: 'str', container_id: 'str')
+/** GuiAddMarkdownMessage(order: 'float', id: 'str', markdown: 'str', container_id: 'str', visible: 'bool')
  *
  * (automatically generated)
  */
@@ -334,8 +335,9 @@ export interface GuiAddMarkdownMessage {
   id: string;
   markdown: string;
   container_id: string;
+  visible: boolean;
 }
-/** GuiAddTabGroupMessage(order: 'float', id: 'str', container_id: 'str', tab_labels: 'Tuple[str, ...]', tab_icons_base64: 'Tuple[Union[str, None], ...]', tab_container_ids: 'Tuple[str, ...]')
+/** GuiAddTabGroupMessage(order: 'float', id: 'str', container_id: 'str', tab_labels: 'Tuple[str, ...]', tab_icons_base64: 'Tuple[Union[str, None], ...]', tab_container_ids: 'Tuple[str, ...]', visible: 'bool')
  *
  * (automatically generated)
  */
@@ -347,6 +349,7 @@ export interface GuiAddTabGroupMessage {
   tab_labels: string[];
   tab_icons_base64: (string | null)[];
   tab_container_ids: string[];
+  visible: boolean;
 }
 /** Base message type containing fields commonly used by GUI inputs.
  *
@@ -359,9 +362,11 @@ export interface _GuiAddInputBase {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: any;
+  value: any;
+  visible: boolean;
+  disabled: boolean;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_base64: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -372,7 +377,9 @@ export interface GuiAddButtonMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: boolean;
+  value: boolean;
+  visible: boolean;
+  disabled: boolean;
   color:
     | "dark"
     | "gray"
@@ -391,7 +398,7 @@ export interface GuiAddButtonMessage {
     | null;
   icon_base64: string | null;
 }
-/** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
+/** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'float', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
  *
  * (automatically generated)
  */
@@ -402,14 +409,16 @@ export interface GuiAddSliderMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: number;
+  value: number;
+  visible: boolean;
+  disabled: boolean;
   min: number;
   max: number;
   step: number | null;
   precision: number;
   marks: { value: number; label?: string }[] | null;
 }
-/** GuiAddMultiSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[float, ...]', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
+/** GuiAddMultiSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
  *
  * (automatically generated)
  */
@@ -420,7 +429,9 @@ export interface GuiAddMultiSliderMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: number[];
+  value: any;
+  visible: boolean;
+  disabled: boolean;
   min: number;
   max: number;
   step: number | null;
@@ -429,7 +440,7 @@ export interface GuiAddMultiSliderMessage {
   fixed_endpoints: boolean;
   marks: { value: number; label?: string }[] | null;
 }
-/** GuiAddNumberMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'float', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
+/** GuiAddNumberMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'float', visible: 'bool', disabled: 'bool', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
  *
  * (automatically generated)
  */
@@ -440,13 +451,15 @@ export interface GuiAddNumberMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: number;
+  value: number;
+  visible: boolean;
+  disabled: boolean;
   precision: number;
   step: number;
   min: number | null;
   max: number | null;
 }
-/** GuiAddRgbMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[int, int, int]')
+/** GuiAddRgbMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Tuple[int, int, int]', visible: 'bool', disabled: 'bool')
  *
  * (automatically generated)
  */
@@ -457,9 +470,11 @@ export interface GuiAddRgbMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: [number, number, number];
+  value: [number, number, number];
+  visible: boolean;
+  disabled: boolean;
 }
-/** GuiAddRgbaMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[int, int, int, int]')
+/** GuiAddRgbaMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Tuple[int, int, int, int]', visible: 'bool', disabled: 'bool')
  *
  * (automatically generated)
  */
@@ -470,9 +485,11 @@ export interface GuiAddRgbaMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: [number, number, number, number];
+  value: [number, number, number, number];
+  visible: boolean;
+  disabled: boolean;
 }
-/** GuiAddCheckboxMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'bool')
+/** GuiAddCheckboxMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool')
  *
  * (automatically generated)
  */
@@ -483,9 +500,11 @@ export interface GuiAddCheckboxMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: boolean;
+  value: boolean;
+  visible: boolean;
+  disabled: boolean;
 }
-/** GuiAddVector2Message(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[float, float]', min: 'Optional[Tuple[float, float]]', max: 'Optional[Tuple[float, float]]', step: 'float', precision: 'int')
+/** GuiAddVector2Message(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Tuple[float, float]', visible: 'bool', disabled: 'bool', min: 'Optional[Tuple[float, float]]', max: 'Optional[Tuple[float, float]]', step: 'float', precision: 'int')
  *
  * (automatically generated)
  */
@@ -496,13 +515,15 @@ export interface GuiAddVector2Message {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: [number, number];
+  value: [number, number];
+  visible: boolean;
+  disabled: boolean;
   min: [number, number] | null;
   max: [number, number] | null;
   step: number;
   precision: number;
 }
-/** GuiAddVector3Message(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'Tuple[float, float, float]', min: 'Optional[Tuple[float, float, float]]', max: 'Optional[Tuple[float, float, float]]', step: 'float', precision: 'int')
+/** GuiAddVector3Message(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Tuple[float, float, float]', visible: 'bool', disabled: 'bool', min: 'Optional[Tuple[float, float, float]]', max: 'Optional[Tuple[float, float, float]]', step: 'float', precision: 'int')
  *
  * (automatically generated)
  */
@@ -513,13 +534,15 @@ export interface GuiAddVector3Message {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: [number, number, number];
+  value: [number, number, number];
+  visible: boolean;
+  disabled: boolean;
   min: [number, number, number] | null;
   max: [number, number, number] | null;
   step: number;
   precision: number;
 }
-/** GuiAddTextMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'str')
+/** GuiAddTextMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'str', visible: 'bool', disabled: 'bool')
  *
  * (automatically generated)
  */
@@ -530,9 +553,11 @@ export interface GuiAddTextMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: string;
+  value: string;
+  visible: boolean;
+  disabled: boolean;
 }
-/** GuiAddDropdownMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'str', options: 'Tuple[str, ...]')
+/** GuiAddDropdownMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'str', visible: 'bool', disabled: 'bool', options: 'Tuple[str, ...]')
  *
  * (automatically generated)
  */
@@ -543,10 +568,12 @@ export interface GuiAddDropdownMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: string;
+  value: string;
+  visible: boolean;
+  disabled: boolean;
   options: string[];
 }
-/** GuiAddButtonGroupMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', initial_value: 'str', options: 'Tuple[str, ...]')
+/** GuiAddButtonGroupMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'str', visible: 'bool', disabled: 'bool', options: 'Tuple[str, ...]')
  *
  * (automatically generated)
  */
@@ -557,7 +584,9 @@ export interface GuiAddButtonGroupMessage {
   label: string;
   container_id: string;
   hint: string | null;
-  initial_value: string;
+  value: string;
+  visible: boolean;
+  disabled: boolean;
   options: string[];
 }
 /** GuiModalMessage(order: 'float', id: 'str', title: 'str')
@@ -586,41 +615,15 @@ export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
   id: string;
 }
-/** Sent client->server when a GUI input is changed.
+/** Sent client<->server when any property of a GUI component is changed.
  *
  * (automatically generated)
  */
 export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
   id: string;
-  value: any;
-}
-/** Sent client->server when a GUI input is changed.
- *
- * (automatically generated)
- */
-export interface GuiSetVisibleMessage {
-  type: "GuiSetVisibleMessage";
-  id: string;
-  visible: boolean;
-}
-/** Sent client->server when a GUI input is changed.
- *
- * (automatically generated)
- */
-export interface GuiSetDisabledMessage {
-  type: "GuiSetDisabledMessage";
-  id: string;
-  disabled: boolean;
-}
-/** Sent server->client to set the value of a particular input.
- *
- * (automatically generated)
- */
-export interface GuiSetValueMessage {
-  type: "GuiSetValueMessage";
-  id: string;
-  value: any;
+  prop_name: string;
+  prop_value: any;
 }
 /** Message from server->client to configure parts of the GUI.
  *
@@ -811,9 +814,6 @@ export type Message =
   | GuiCloseModalMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
-  | GuiSetVisibleMessage
-  | GuiSetDisabledMessage
-  | GuiSetValueMessage
   | ThemeConfigurationMessage
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
@@ -825,3 +825,19 @@ export type Message =
   | ShareUrlUpdated
   | ShareUrlDisconnect
   | SetGuiPanelLabelMessage;
+export type GuiAddComponentMessage =
+  | GuiAddFolderMessage
+  | GuiAddMarkdownMessage
+  | GuiAddTabGroupMessage
+  | GuiAddButtonMessage
+  | GuiAddSliderMessage
+  | GuiAddMultiSliderMessage
+  | GuiAddNumberMessage
+  | GuiAddRgbMessage
+  | GuiAddRgbaMessage
+  | GuiAddCheckboxMessage
+  | GuiAddVector2Message
+  | GuiAddVector3Message
+  | GuiAddTextMessage
+  | GuiAddDropdownMessage
+  | GuiAddButtonGroupMessage;

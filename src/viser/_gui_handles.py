@@ -10,6 +10,7 @@ import warnings
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
+    Any,
     Callable,
     Dict,
     Generic,
@@ -29,14 +30,10 @@ from ._icons import base64_from_icon
 from ._icons_enum import IconName
 from ._message_api import _encode_image_base64
 from ._messages import (
-    GuiAddDropdownMessage,
-    GuiAddMarkdownMessage,
-    GuiAddTabGroupMessage,
     GuiCloseModalMessage,
     GuiRemoveMessage,
-    GuiSetDisabledMessage,
-    GuiSetValueMessage,
-    GuiSetVisibleMessage,
+    GuiUpdateMessage,
+    Message,
 )
 from .infra import ClientId
 
@@ -84,7 +81,7 @@ class _GuiHandleState(Generic[T]):
     is_button: bool
     """Indicates a button element, which requires special handling."""
 
-    sync_cb: Optional[Callable[[ClientId, T], None]]
+    sync_cb: Optional[Callable[[ClientId, str, Any], None]]
     """Callback for synchronizing inputs across clients."""
 
     disabled: bool
@@ -94,6 +91,8 @@ class _GuiHandleState(Generic[T]):
     id: str
     initial_value: T
     hint: Optional[str]
+
+    message_type: Type[Message]
 
 
 @dataclasses.dataclass
@@ -137,7 +136,7 @@ class _GuiInputHandle(Generic[T]):
         # Send to client, except for buttons.
         if not self._impl.is_button:
             self._impl.gui_api._get_api()._queue(
-                GuiSetValueMessage(self._impl.id, value)  # type: ignore
+                GuiUpdateMessage(self._impl.id, "value", value)
             )
 
         # Set internal state. We automatically convert numpy arrays to the expected
@@ -176,7 +175,7 @@ class _GuiInputHandle(Generic[T]):
             return
 
         self._impl.gui_api._get_api()._queue(
-            GuiSetDisabledMessage(self._impl.id, disabled=disabled)
+            GuiUpdateMessage(self._impl.id, "disabled", disabled)
         )
         self._impl.disabled = disabled
 
@@ -192,7 +191,7 @@ class _GuiInputHandle(Generic[T]):
             return
 
         self._impl.gui_api._get_api()._queue(
-            GuiSetVisibleMessage(self._impl.id, visible=visible)
+            GuiUpdateMessage(self._impl.id, "visible", visible)
         )
         self._impl.visible = visible
 
@@ -312,15 +311,7 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
             self._impl.initial_value = self._impl_options[0]
 
         self._impl.gui_api._get_api()._queue(
-            GuiAddDropdownMessage(
-                order=self._impl.order,
-                id=self._impl.id,
-                label=self._impl.label,
-                container_id=self._impl.container_id,
-                hint=self._impl.hint,
-                initial_value=self._impl.initial_value,
-                options=self._impl_options,
-            )
+            GuiUpdateMessage(self._impl.id, "options", self._impl_options)
         )
 
         if self.value not in self._impl_options:
@@ -334,7 +325,6 @@ class GuiTabGroupHandle:
     _icons_base64: List[Optional[str]]
     _tabs: List[GuiTabHandle]
     _gui_api: GuiApi
-    _container_id: str  # Parent.
     _order: float
 
     @property
@@ -364,15 +354,20 @@ class GuiTabGroupHandle:
         self._gui_api._get_api()._queue(GuiRemoveMessage(self._tab_group_id))
 
     def _sync_with_client(self) -> None:
-        """Send a message that syncs tab state with the client."""
+        """Send messages for syncing tab state with the client."""
         self._gui_api._get_api()._queue(
-            GuiAddTabGroupMessage(
-                order=self.order,
-                id=self._tab_group_id,
-                container_id=self._container_id,
-                tab_labels=tuple(self._labels),
-                tab_icons_base64=tuple(self._icons_base64),
-                tab_container_ids=tuple(tab._id for tab in self._tabs),
+            GuiUpdateMessage(self._tab_group_id, "tab_labels", tuple(self._labels))
+        )
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(
+                self._tab_group_id, "tab_icons_base64", tuple(self._icons_base64)
+            )
+        )
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(
+                self._tab_group_id,
+                "tab_container_ids",
+                tuple(tab._id for tab in self._tabs),
             )
         )
 
@@ -561,11 +556,10 @@ class GuiMarkdownHandle:
     def content(self, content: str) -> None:
         self._content = content
         self._gui_api._get_api()._queue(
-            GuiAddMarkdownMessage(
-                order=self._order,
-                id=self._id,
-                markdown=_parse_markdown(content, self._image_root),
-                container_id=self._container_id,
+            GuiUpdateMessage(
+                self._id,
+                "markdown",
+                _parse_markdown(content, self._image_root),
             )
         )
 
@@ -585,7 +579,7 @@ class GuiMarkdownHandle:
         if visible == self.visible:
             return
 
-        self._gui_api._get_api()._queue(GuiSetVisibleMessage(self._id, visible=visible))
+        self._gui_api._get_api()._queue(GuiUpdateMessage(self._id, "visible", visible))
         self._visible = visible
 
     def __post_init__(self) -> None:
