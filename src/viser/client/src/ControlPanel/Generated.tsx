@@ -1,6 +1,5 @@
 import { ViewerContext } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
-import { GuiConfig } from "./GuiState";
 import { GuiComponentContext } from "./GuiComponentContext";
 
 import { Box } from "@mantine/core";
@@ -20,42 +19,6 @@ import MarkdownComponent from "../components/Markdown";
 import TabGroupComponent from "../components/TabGroup";
 import FolderComponent from "../components/Folder";
 import MultiSliderComponent from "../components/MultiSlider";
-
-function GuiContainer({ containerId }: { containerId: string }) {
-  const viewer = React.useContext(ViewerContext)!;
-
-  const guiIdSet =
-    viewer.useGui((state) => state.guiIdSetFromContainerId[containerId]) ?? {};
-
-  // Render each GUI element in this container.
-  const guiIdArray = [...Object.keys(guiIdSet)];
-  const guiOrderFromId = viewer!.useGui((state) => state.guiOrderFromId);
-  if (guiIdSet === undefined) return null;
-
-  let guiIdOrderPairArray = guiIdArray.map((id) => ({
-    id: id,
-    order: guiOrderFromId[id],
-  }));
-  let pb = undefined;
-  guiIdOrderPairArray = guiIdOrderPairArray.sort((a, b) => a.order - b.order);
-  const inputProps = viewer.useGui((state) =>
-    guiIdOrderPairArray.map((pair) => state.guiConfigFromId[pair.id]),
-  );
-  const lastProps = inputProps && inputProps[inputProps.length - 1];
-
-  // Done to match the old behaviour. Is it still needed?
-  if (lastProps !== undefined && lastProps.type === "GuiAddFolderMessage") {
-    pb = "0.125em";
-  }
-  const out = (
-    <Box pt="0.75em" pb={pb}>
-      {inputProps.map((conf) => (
-        <GeneratedInput key={conf.id} {...conf} />
-      ))}
-    </Box>
-  );
-  return out;
-}
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -90,8 +53,36 @@ export default function GeneratedGuiContainer({
   );
 }
 
+function GuiContainer({ containerId }: { containerId: string }) {
+  const viewer = React.useContext(ViewerContext)!;
+
+  const guiIdSet =
+    viewer.useGui((state) => state.guiIdSetFromContainerId[containerId]) ?? {};
+
+  // Render each GUI element in this container.
+  const guiIdArray = [...Object.keys(guiIdSet)];
+  const guiOrderFromId = viewer!.useGui((state) => state.guiOrderFromId);
+  if (guiIdSet === undefined) return null;
+
+  let guiIdOrderPairArray = guiIdArray.map((id) => ({
+    id: id,
+    order: guiOrderFromId[id],
+  }));
+  guiIdOrderPairArray = guiIdOrderPairArray.sort((a, b) => a.order - b.order);
+  const out = (
+    <Box pt="xs" pb="xs">
+      {guiIdOrderPairArray.map((pair) => (
+        <GeneratedInput key={pair.id} guiId={pair.id} />
+      ))}
+    </Box>
+  );
+  return out;
+}
+
 /** A single generated GUI element. */
-function GeneratedInput(conf: GuiConfig) {
+function GeneratedInput(props: { guiId: string }) {
+  const viewer = React.useContext(ViewerContext)!;
+  const conf = viewer.useGui((state) => state.guiConfigFromId[props.guiId]);
   switch (conf.type) {
     case "GuiAddFolderMessage":
       return <FolderComponent {...conf} />;
