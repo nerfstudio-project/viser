@@ -82,6 +82,7 @@ export default function SliderComponent({
           },
         })}
         pt="0.2em"
+        pb="0.4em"
         showLabelOnHover={false}
         min={min}
         max={max}
@@ -130,8 +131,6 @@ export default function SliderComponent({
       />
     </Flex>
   );
-
-  const containerProps = {};
 
   return (
     <ViserInputComponent {...{ id, hint, label }}>{input}</ViserInputComponent>

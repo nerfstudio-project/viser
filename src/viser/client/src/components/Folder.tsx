@@ -26,8 +26,11 @@ export default function FolderComponent({
       pt="0.0625em"
       mx="xs"
       mt="xs"
-      mb="sm"
-      sx={{ position: "relative" }}
+      sx={{
+        position: "relative",
+        marginBottom: "1.5em",
+        ":last-child": { marginBottom: "0.375em" },
+      }}
     >
       <Paper
         sx={{

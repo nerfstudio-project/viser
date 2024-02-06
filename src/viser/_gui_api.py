@@ -282,15 +282,25 @@ class GuiApi(abc.ABC):
         """
         tab_group_id = _make_unique_id()
         order = _apply_default_order(order)
+
+        self._get_api()._queue(
+            _messages.GuiAddTabGroupMessage(
+                order=order,
+                id=tab_group_id,
+                container_id=self._get_container_id(),
+                tab_labels=(),
+                visible=visible,
+                tab_icons_base64=(),
+                tab_container_ids=(),
+            )
+        )
         return GuiTabGroupHandle(
             _tab_group_id=tab_group_id,
             _labels=[],
             _icons_base64=[],
             _tabs=[],
             _gui_api=self,
-            _container_id=self._get_container_id(),
             _order=order,
-            _visible=visible,
         )
 
     def add_gui_markdown(

@@ -30,6 +30,7 @@ from ._icons import base64_from_icon
 from ._icons_enum import IconName
 from ._message_api import _encode_image_base64
 from ._messages import (
+        GuiAddTabGroupMessage,
     GuiCloseModalMessage,
     GuiRemoveMessage,
     GuiUpdateMessage,
@@ -325,9 +326,7 @@ class GuiTabGroupHandle:
     _icons_base64: List[Optional[str]]
     _tabs: List[GuiTabHandle]
     _gui_api: GuiApi
-    _container_id: str  # Parent.
     _order: float
-    _visible: bool
 
     @property
     def order(self) -> float:
@@ -356,7 +355,7 @@ class GuiTabGroupHandle:
         self._gui_api._get_api()._queue(GuiRemoveMessage(self._tab_group_id))
 
     def _sync_with_client(self) -> None:
-        """Send a message that syncs tab state with the client."""
+        """Send messages for syncing tab state with the client."""
         self._gui_api._get_api()._queue(
             GuiUpdateMessage(self._tab_group_id, "tab_labels", tuple(self._labels))
         )

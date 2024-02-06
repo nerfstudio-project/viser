@@ -1,6 +1,6 @@
 import React from "react";
 import { GuiAddMultiSliderMessage } from "../WebsocketMessages";
-import { Flex } from "@mantine/core";
+import { Box } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViserInputComponent } from "./common";
 import { MultiSlider } from "./MultiSlider/MultiSlider";
@@ -20,7 +20,7 @@ export default function MultiSliderComponent({
   const { min, max, precision, step, marks, fixed_endpoints, min_range } =
     otherProps;
   const input = (
-    <Flex justify="space-between">
+    <Box mt="0.2em" mb="0.4em">
       <MultiSlider
         id={id}
         size="xs"
@@ -108,7 +108,7 @@ export default function MultiSliderComponent({
         fixedEndpoints={fixed_endpoints}
         minRange={min_range || undefined}
       />
-    </Flex>
+    </Box>
   );
 
   return (

@@ -28,19 +28,9 @@ def _prepare_for_deserialization(value: Any, annotation: Type) -> Any:
     elif get_origin(annotation) is tuple:
         out = []
         args = get_args(annotation)
-        if ... in args:
-            if len(value) < len(args) - 1:
-                warnings.warn(f"[viser] {value} does not match annotation {annotation}")
-                return value
-            ellipsis_index = args.index(...)
-            num_ellipsis = len(value) - len(args) + 2
-            args = (
-                args[: (ellipsis_index - 1)]
-                + tuple(args[ellipsis_index - 1] for _ in range(num_ellipsis))
-                + args[ellipsis_index + 1 :]
-            )
-
-        if len(value) != len(args):
+        if len(args) >= 2 and args[1] == ...:
+            args = (args[0],) * len(value)
+        elif len(value) != len(args):
             warnings.warn(f"[viser] {value} does not match annotation {annotation}")
             return value
 
@@ -74,19 +64,9 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
 
         out = []
         args = get_args(annotation)
-        if ... in args:
-            if len(value) < len(args) - 1:
-                warnings.warn(f"[viser] {value} does not match annotation {annotation}")
-                return value
-            ellipsis_index = args.index(...)
-            num_ellipsis = len(value) - len(args) + 2
-            args = (
-                args[: (ellipsis_index - 1)]
-                + tuple(args[ellipsis_index - 1] for _ in range(num_ellipsis))
-                + args[ellipsis_index + 1 :]
-            )
-
-        if len(value) != len(args):
+        if len(args) >= 2 and args[1] == ...:
+            args = (args[0],) * len(value)
+        elif len(value) != len(args):
             warnings.warn(f"[viser] {value} does not match annotation {annotation}")
             return value
 
