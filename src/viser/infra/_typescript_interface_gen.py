@@ -127,8 +127,8 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
     # Generate union type over all tags.
     for tag, cls_names in tag_map.items():
         out_lines.append(f"export type {tag} = ")
-        for cls in cls_names:
-            out_lines.append(f"  | {cls}")
+        for cls_name in cls_names:
+            out_lines.append(f"  | {cls_name}")
         out_lines[-1] = out_lines[-1] + ";"
 
     interfaces = "\n".join(out_lines) + "\n"

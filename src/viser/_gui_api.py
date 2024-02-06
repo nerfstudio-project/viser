@@ -10,19 +10,38 @@ import threading
 import time
 import warnings
 from pathlib import Path
-from typing import (TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple,
-                    TypeVar, overload)
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    overload,
+)
 
 import numpy as onp
 from typing_extensions import Literal, LiteralString
 
 from . import _messages
-from ._gui_handles import (GuiButtonGroupHandle, GuiButtonHandle,
-                           GuiContainerProtocol, GuiDropdownHandle, GuiEvent,
-                           GuiFolderHandle, GuiInputHandle, GuiMarkdownHandle,
-                           GuiModalHandle, GuiTabGroupHandle,
-                           SupportsRemoveProtocol, _GuiHandleState,
-                           _GuiInputHandle, _make_unique_id)
+from ._gui_handles import (
+    GuiButtonGroupHandle,
+    GuiButtonHandle,
+    GuiContainerProtocol,
+    GuiDropdownHandle,
+    GuiEvent,
+    GuiFolderHandle,
+    GuiInputHandle,
+    GuiMarkdownHandle,
+    GuiModalHandle,
+    GuiTabGroupHandle,
+    SupportsRemoveProtocol,
+    _GuiHandleState,
+    _GuiInputHandle,
+    _make_unique_id,
+)
 from ._icons import base64_from_icon
 from ._icons_enum import IconName
 from ._message_api import MessageApi, cast_vector
@@ -938,7 +957,8 @@ class GuiApi(abc.ABC):
                 max=max,
                 step=step,
                 value=initial_value,
-                visible=visible,disabled=disabled,
+                visible=visible,
+                disabled=disabled,
                 fixed_endpoints=fixed_endpoints,
                 precision=_compute_precision_digits(step),
                 marks=tuple(
