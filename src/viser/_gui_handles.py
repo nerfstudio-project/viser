@@ -20,7 +20,6 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
-    Union,
 )
 
 import imageio.v3 as iio
@@ -129,7 +128,7 @@ class _GuiInputHandle(Generic[T]):
         return self._impl.value
 
     @value.setter
-    def value(self, value: Union[T, onp.ndarray]) -> None:
+    def value(self, value: T | onp.ndarray) -> None:
         if isinstance(value, onp.ndarray):
             assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
             value = tuple(map(float, value))  # type: ignore

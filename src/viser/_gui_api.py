@@ -10,38 +10,19 @@ import threading
 import time
 import warnings
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    TypeVar,
-    overload,
-)
+from typing import (TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Tuple,
+                    TypeVar, overload)
 
 import numpy as onp
 from typing_extensions import Literal, LiteralString
 
 from . import _messages
-from ._gui_handles import (
-    GuiButtonGroupHandle,
-    GuiButtonHandle,
-    GuiContainerProtocol,
-    GuiDropdownHandle,
-    GuiEvent,
-    GuiFolderHandle,
-    GuiInputHandle,
-    GuiMarkdownHandle,
-    GuiModalHandle,
-    GuiTabGroupHandle,
-    SupportsRemoveProtocol,
-    _GuiHandleState,
-    _GuiInputHandle,
-    _make_unique_id,
-)
+from ._gui_handles import (GuiButtonGroupHandle, GuiButtonHandle,
+                           GuiContainerProtocol, GuiDropdownHandle, GuiEvent,
+                           GuiFolderHandle, GuiInputHandle, GuiMarkdownHandle,
+                           GuiModalHandle, GuiTabGroupHandle,
+                           SupportsRemoveProtocol, _GuiHandleState,
+                           _GuiInputHandle, _make_unique_id)
 from ._icons import base64_from_icon
 from ._icons_enum import IconName
 from ._message_api import MessageApi, cast_vector
@@ -815,6 +796,7 @@ class GuiApi(abc.ABC):
         max: IntOrFloat,
         step: IntOrFloat,
         initial_value: IntOrFloat,
+        marks: Optional[Tuple[IntOrFloat | Tuple[IntOrFloat, str], ...]] = None,
         disabled: bool = False,
         visible: bool = True,
         hint: Optional[str] = None,
@@ -828,6 +810,9 @@ class GuiApi(abc.ABC):
             max: Maximum value of the slider.
             step: Step size of the slider.
             initial_value: Initial value of the slider.
+            marks: Tuple of marks to display below the slider. Each mark should
+                either be a numerical or a (number, label) tuple, where the
+                label is provided as a string.
             disabled: Whether the slider is disabled.
             visible: Whether the slider is visible.
             hint: Optional hint to display on hover.
@@ -844,6 +829,8 @@ class GuiApi(abc.ABC):
 
         # GUI callbacks cast incoming values to match the type of the initial value. If
         # the min, max, or step is a float, we should cast to a float.
+        #
+        # This should also match what the IntOrFloat TypeVar resolves to.
         if type(value) is int and (
             type(min) is float or type(max) is float or type(step) is float
         ):
@@ -871,6 +858,97 @@ class GuiApi(abc.ABC):
                 precision=_compute_precision_digits(step),
                 visible=visible,
                 disabled=disabled,
+                marks=tuple(
+                    {"value": float(x[0]), "label": x[1]}
+                    if isinstance(x, tuple)
+                    else {"value": float(x)}
+                    for x in marks
+                )
+                if marks is not None
+                else None,
+            ),
+            is_button=False,
+        )
+
+    def add_gui_multi_slider(
+        self,
+        label: str,
+        min: IntOrFloat,
+        max: IntOrFloat,
+        step: IntOrFloat,
+        initial_value: Tuple[IntOrFloat, ...],
+        min_range: Optional[IntOrFloat] = None,
+        fixed_endpoints: bool = False,
+        marks: Optional[Tuple[IntOrFloat | Tuple[IntOrFloat, str], ...]] = None,
+        disabled: bool = False,
+        visible: bool = True,
+        hint: Optional[str] = None,
+        order: Optional[float] = None,
+    ) -> GuiInputHandle[Tuple[IntOrFloat, ...]]:
+        """Add a multi slider to the GUI. Types of the min, max, step, and initial value should match.
+
+        Args:
+            label: Label to display on the slider.
+            min: Minimum value of the slider.
+            max: Maximum value of the slider.
+            step: Step size of the slider.
+            initial_value: Initial values of the slider.
+            min_range: Optional minimum difference between two values of the slider.
+            fixed_endpoints: Whether the endpoints of the slider are fixed.
+            marks: Tuple of marks to display below the slider. Each mark should
+                either be a numerical or a (number, label) tuple, where the
+                label is provided as a string.
+            disabled: Whether the slider is disabled.
+            visible: Whether the slider is visible.
+            hint: Optional hint to display on hover.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        assert max >= min
+        if step > max - min:
+            step = max - min
+        assert all(max >= x >= min for x in initial_value)
+
+        # GUI callbacks cast incoming values to match the type of the initial value. If
+        # any of the arguments are floats, we should always use a float value.
+        #
+        # This should also match what the IntOrFloat TypeVar resolves to.
+        if (
+            type(min) is float
+            or type(max) is float
+            or type(step) is float
+            or type(min_range) is float
+        ):
+            initial_value = tuple(float(x) for x in initial_value)  # type: ignore
+
+        id = _make_unique_id()
+        order = _apply_default_order(order)
+        return self._create_gui_input(
+            value=initial_value,
+            message=_messages.GuiAddMultiSliderMessage(
+                order=order,
+                id=id,
+                label=label,
+                container_id=self._get_container_id(),
+                hint=hint,
+                min=min,
+                min_range=min_range,
+                max=max,
+                step=step,
+                value=initial_value,
+                visible=visible,disabled=disabled,
+                fixed_endpoints=fixed_endpoints,
+                precision=_compute_precision_digits(step),
+                marks=tuple(
+                    {"value": float(x[0]), "label": x[1]}
+                    if isinstance(x, tuple)
+                    else {"value": float(x)}
+                    for x in marks
+                )
+                if marks is not None
+                else None,
             ),
             is_button=False,
         )

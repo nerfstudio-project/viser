@@ -19,6 +19,7 @@ import ButtonGroupComponent from "../components/ButtonGroup";
 import MarkdownComponent from "../components/Markdown";
 import TabGroupComponent from "../components/TabGroup";
 import FolderComponent from "../components/Folder";
+import MultiSliderComponent from "../components/MultiSlider";
 
 function GuiContainer({ containerId }: { containerId: string }) {
   const viewer = React.useContext(ViewerContext)!;
@@ -102,6 +103,8 @@ function GeneratedInput(conf: GuiConfig) {
       return <ButtonComponent {...conf} />;
     case "GuiAddSliderMessage":
       return <SliderComponent {...conf} />;
+    case "GuiAddMultiSliderMessage":
+      return <MultiSliderComponent {...conf} />;
     case "GuiAddNumberMessage":
       return <NumberInputComponent {...conf} />;
     case "GuiAddTextMessage":

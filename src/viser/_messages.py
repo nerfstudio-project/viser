@@ -4,22 +4,15 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, ClassVar, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Literal, override
+from typing_extensions import Literal, NotRequired, TypedDict, override
 
 from . import infra, theme
+
+GuiSliderMark = TypedDict("GuiSliderMark", {"value": float, "label": NotRequired[str]})
 
 
 class Message(infra.Message):
@@ -464,6 +457,19 @@ class GuiAddSliderMessage(_GuiAddInputBase):
     step: Optional[float]
     value: float
     precision: int
+    marks: Optional[Tuple[GuiSliderMark, ...]] = None
+
+
+@tag_class("GuiAddComponentMessage")
+@dataclasses.dataclass
+class GuiAddMultiSliderMessage(_GuiAddInputBase):
+    min: float
+    max: float
+    step: Optional[float]
+    min_range: Optional[float]
+    precision: int
+    fixed_endpoints: bool = False
+    marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
 @tag_class("GuiAddComponentMessage")
