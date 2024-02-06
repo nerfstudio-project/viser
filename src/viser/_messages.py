@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Callable, ClassVar, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as onp
 import numpy.typing as onpt
@@ -16,6 +16,8 @@ GuiSliderMark = TypedDict("GuiSliderMark", {"value": float, "label": NotRequired
 
 
 class Message(infra.Message):
+    _tags: ClassVar[Tuple[str, ...]] = tuple()
+
     @override
     def redundancy_key(self) -> str:
         """Returns a unique key for this message, used for detecting redundant
@@ -37,6 +39,19 @@ class Message(infra.Message):
             parts.append(node_name)
 
         return "_".join(parts)
+
+
+T = TypeVar("T", bound=Type[Message])
+
+
+def tag_class(tag: str) -> Callable[[T], T]:
+    """Decorator for tagging a class with a `type` field."""
+
+    def wrapper(cls: T) -> T:
+        cls._tags = (cls._tags or ()) + (tag,)
+        return cls
+
+    return wrapper
 
 
 @dataclasses.dataclass
@@ -348,6 +363,7 @@ class ResetSceneMessage(Message):
     """Reset scene."""
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddFolderMessage(Message):
     order: float
@@ -355,16 +371,20 @@ class GuiAddFolderMessage(Message):
     label: str
     container_id: str
     expand_by_default: bool
+    visible: bool
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddMarkdownMessage(Message):
     order: float
     id: str
     markdown: str
     container_id: str
+    visible: bool
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddTabGroupMessage(Message):
     order: float
@@ -373,6 +393,7 @@ class GuiAddTabGroupMessage(Message):
     tab_labels: Tuple[str, ...]
     tab_icons_base64: Tuple[Union[str, None], ...]
     tab_container_ids: Tuple[str, ...]
+    visible: bool
 
 
 @dataclasses.dataclass
@@ -384,7 +405,9 @@ class _GuiAddInputBase(Message):
     label: str
     container_id: str
     hint: Optional[str]
-    initial_value: Any
+    value: Any
+    visible: bool
+    disabled: bool
 
 
 @dataclasses.dataclass
@@ -399,11 +422,12 @@ class GuiCloseModalMessage(Message):
     id: str
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddButtonMessage(_GuiAddInputBase):
-    # All GUI elements currently need an `initial_value` field.
+    # All GUI elements currently need an `value` field.
     # This makes our job on the frontend easier.
-    initial_value: bool
+    value: bool
     color: Optional[
         Literal[
             "dark",
@@ -425,84 +449,94 @@ class GuiAddButtonMessage(_GuiAddInputBase):
     icon_base64: Optional[str]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddSliderMessage(_GuiAddInputBase):
     min: float
     max: float
     step: Optional[float]
-    initial_value: float
+    value: float
     precision: int
     marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddMultiSliderMessage(_GuiAddInputBase):
     min: float
     max: float
     step: Optional[float]
     min_range: Optional[float]
-    initial_value: Tuple[float, ...]
     precision: int
     fixed_endpoints: bool = False
     marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddNumberMessage(_GuiAddInputBase):
-    initial_value: float
+    value: float
     precision: int
     step: float
     min: Optional[float]
     max: Optional[float]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddRgbMessage(_GuiAddInputBase):
-    initial_value: Tuple[int, int, int]
+    value: Tuple[int, int, int]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddRgbaMessage(_GuiAddInputBase):
-    initial_value: Tuple[int, int, int, int]
+    value: Tuple[int, int, int, int]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddCheckboxMessage(_GuiAddInputBase):
-    initial_value: bool
+    value: bool
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddVector2Message(_GuiAddInputBase):
-    initial_value: Tuple[float, float]
+    value: Tuple[float, float]
     min: Optional[Tuple[float, float]]
     max: Optional[Tuple[float, float]]
     step: float
     precision: int
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddVector3Message(_GuiAddInputBase):
-    initial_value: Tuple[float, float, float]
+    value: Tuple[float, float, float]
     min: Optional[Tuple[float, float, float]]
     max: Optional[Tuple[float, float, float]]
     step: float
     precision: int
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddTextMessage(_GuiAddInputBase):
-    initial_value: str
+    value: str
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddDropdownMessage(_GuiAddInputBase):
-    initial_value: str
+    value: str
     options: Tuple[str, ...]
 
 
+@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddButtonGroupMessage(_GuiAddInputBase):
-    initial_value: str
+    value: str
     options: Tuple[str, ...]
 
 
@@ -515,34 +549,15 @@ class GuiRemoveMessage(Message):
 
 @dataclasses.dataclass
 class GuiUpdateMessage(Message):
-    """Sent client->server when a GUI input is changed."""
+    """Sent client<->server when any property of a GUI component is changed."""
 
     id: str
-    value: Any
+    prop_name: str
+    prop_value: Any
 
-
-@dataclasses.dataclass
-class GuiSetVisibleMessage(Message):
-    """Sent client->server when a GUI input is changed."""
-
-    id: str
-    visible: bool
-
-
-@dataclasses.dataclass
-class GuiSetDisabledMessage(Message):
-    """Sent client->server when a GUI input is changed."""
-
-    id: str
-    disabled: bool
-
-
-@dataclasses.dataclass
-class GuiSetValueMessage(Message):
-    """Sent server->client to set the value of a particular input."""
-
-    id: str
-    value: Any
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.id + "-" + self.prop_name
 
 
 @dataclasses.dataclass

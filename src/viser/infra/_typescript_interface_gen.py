@@ -1,4 +1,5 @@
 import dataclasses
+from collections import defaultdict
 from typing import Any, ClassVar, Type, Union, cast, get_type_hints
 
 import numpy as onp
@@ -81,6 +82,7 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
     """Generate TypeScript definitions for all subclasses of a base message class."""
     out_lines = []
     message_types = message_cls.get_subclasses()
+    tag_map = defaultdict(list)
 
     # Generate interfaces for each specific message.
     for cls in message_types:
@@ -92,6 +94,15 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
             out_lines.append(" *")
             out_lines.append(" * (automatically generated)")
             out_lines.append(" */")
+
+        for tag in getattr(cls, "_tags", []):
+            tag_map[tag].append(cls.__name__)
+
+        get_ts_type = getattr(cls, "_get_ts_type", None)
+        if get_ts_type is not None:
+            assert callable(get_ts_type)
+            out_lines.append(get_ts_type())
+            continue
 
         out_lines.append(f"export interface {cls.__name__} " + "{")
         out_lines.append(f'  type: "{cls.__name__}";')
@@ -112,6 +123,13 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
     for cls in message_types:
         out_lines.append(f"  | {cls.__name__}")
     out_lines[-1] = out_lines[-1] + ";"
+
+    # Generate union type over all tags.
+    for tag, cls_names in tag_map.items():
+        out_lines.append(f"export type {tag} = ")
+        for cls_name in cls_names:
+            out_lines.append(f"  | {cls_name}")
+        out_lines[-1] = out_lines[-1] + ";"
 
     interfaces = "\n".join(out_lines) + "\n"
 
