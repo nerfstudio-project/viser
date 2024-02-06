@@ -256,6 +256,7 @@
         <article role="main">
           <h1>Source code for viser.infra._typescript_interface_gen</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">dataclasses</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">get_type_hints</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
@@ -340,6 +341,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate TypeScript definitions for all subclasses of a base message class.&quot;&quot;&quot;</span>
     <span class="n">out_lines</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">message_types</span> <span class="o">=</span> <span class="n">message_cls</span><span class="o">.</span><span class="n">get_subclasses</span><span class="p">()</span>
+    <span class="n">tag_map</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 
     <span class="c1"># Generate interfaces for each specific message.</span>
     <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">message_types</span><span class="p">:</span>
@@ -351,6 +353,15 @@
             <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; *&quot;</span><span class="p">)</span>
             <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; * (automatically generated)&quot;</span><span class="p">)</span>
             <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; */&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;_tags&quot;</span><span class="p">,</span> <span class="p">[]):</span>
+            <span class="n">tag_map</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="n">get_ts_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;_get_ts_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">get_ts_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">callable</span><span class="p">(</span><span class="n">get_ts_type</span><span class="p">)</span>
+            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_ts_type</span><span class="p">())</span>
+            <span class="k">continue</span>
 
         <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;export interface </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="o">+</span> <span class="s2">&quot;{&quot;</span><span class="p">)</span>
         <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  type: &quot;</span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">&quot;;&#39;</span><span class="p">)</span>
@@ -371,6 +382,13 @@
     <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="n">message_types</span><span class="p">:</span>
         <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  | </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">out_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span>
+
+    <span class="c1"># Generate union type over all tags.</span>
+    <span class="k">for</span> <span class="n">tag</span><span class="p">,</span> <span class="n">cls_names</span> <span class="ow">in</span> <span class="n">tag_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;export type </span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2"> = &quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">cls_name</span> <span class="ow">in</span> <span class="n">cls_names</span><span class="p">:</span>
+            <span class="n">out_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  | </span><span class="si">{</span><span class="n">cls_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">out_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span>
 
     <span class="n">interfaces</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
 

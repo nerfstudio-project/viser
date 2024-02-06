@@ -267,6 +267,7 @@
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">,</span>
     <span class="n">Dict</span><span class="p">,</span>
     <span class="n">Generic</span><span class="p">,</span>
@@ -286,14 +287,10 @@
 <span class="kn">from</span> <span class="nn">._icons_enum</span> <span class="kn">import</span> <span class="n">IconName</span>
 <span class="kn">from</span> <span class="nn">._message_api</span> <span class="kn">import</span> <span class="n">_encode_image_base64</span>
 <span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">GuiAddDropdownMessage</span><span class="p">,</span>
-    <span class="n">GuiAddMarkdownMessage</span><span class="p">,</span>
-    <span class="n">GuiAddTabGroupMessage</span><span class="p">,</span>
     <span class="n">GuiCloseModalMessage</span><span class="p">,</span>
     <span class="n">GuiRemoveMessage</span><span class="p">,</span>
-    <span class="n">GuiSetDisabledMessage</span><span class="p">,</span>
-    <span class="n">GuiSetValueMessage</span><span class="p">,</span>
-    <span class="n">GuiSetVisibleMessage</span><span class="p">,</span>
+    <span class="n">GuiUpdateMessage</span><span class="p">,</span>
+    <span class="n">Message</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.infra</span> <span class="kn">import</span> <span class="n">ClientId</span>
 
@@ -341,7 +338,7 @@
     <span class="n">is_button</span><span class="p">:</span> <span class="nb">bool</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates a button element, which requires special handling.&quot;&quot;&quot;</span>
 
-    <span class="n">sync_cb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
+    <span class="n">sync_cb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Callback for synchronizing inputs across clients.&quot;&quot;&quot;</span>
 
     <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span>
@@ -351,6 +348,8 @@
     <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">initial_value</span><span class="p">:</span> <span class="n">T</span>
     <span class="n">hint</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+
+    <span class="n">message_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Message</span><span class="p">]</span>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -394,7 +393,7 @@
         <span class="c1"># Send to client, except for buttons.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">is_button</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-                <span class="n">GuiSetValueMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="n">GuiUpdateMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
             <span class="p">)</span>
 
         <span class="c1"># Set internal state. We automatically convert numpy arrays to the expected</span>
@@ -433,7 +432,7 @@
             <span class="k">return</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-            <span class="n">GuiSetDisabledMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="n">disabled</span><span class="p">)</span>
+            <span class="n">GuiUpdateMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;disabled&quot;</span><span class="p">,</span> <span class="n">disabled</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">disabled</span>
 
@@ -449,7 +448,7 @@
             <span class="k">return</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-            <span class="n">GuiSetVisibleMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="n">visible</span><span class="p">)</span>
+            <span class="n">GuiUpdateMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;visible&quot;</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">visible</span>
 
@@ -592,15 +591,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">initial_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-            <span class="n">GuiAddDropdownMessage</span><span class="p">(</span>
-                <span class="n">order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-                <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-                <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
-                <span class="n">container_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">container_id</span><span class="p">,</span>
-                <span class="n">hint</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">hint</span><span class="p">,</span>
-                <span class="n">initial_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">initial_value</span><span class="p">,</span>
-                <span class="n">options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="n">GuiUpdateMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">&quot;options&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl_options</span><span class="p">:</span>
@@ -617,7 +608,6 @@
     <span class="n">_icons_base64</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span>
     <span class="n">_tabs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">GuiTabHandle</span><span class="p">]</span>
     <span class="n">_gui_api</span><span class="p">:</span> <span class="n">GuiApi</span>
-    <span class="n">_container_id</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># Parent.</span>
     <span class="n">_order</span><span class="p">:</span> <span class="nb">float</span>
 
     <span class="nd">@property</span>
@@ -653,15 +643,20 @@
 
 
     <span class="k">def</span> <span class="nf">_sync_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a message that syncs tab state with the client.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send messages for syncing tab state with the client.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-            <span class="n">GuiAddTabGroupMessage</span><span class="p">(</span>
-                <span class="n">order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-                <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">,</span>
-                <span class="n">container_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">,</span>
-                <span class="n">tab_labels</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">),</span>
-                <span class="n">tab_icons_base64</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_icons_base64</span><span class="p">),</span>
-                <span class="n">tab_container_ids</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">tab</span><span class="o">.</span><span class="n">_id</span> <span class="k">for</span> <span class="n">tab</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tabs</span><span class="p">),</span>
+            <span class="n">GuiUpdateMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">,</span> <span class="s2">&quot;tab_labels&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_labels</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+            <span class="n">GuiUpdateMessage</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">,</span> <span class="s2">&quot;tab_icons_base64&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_icons_base64</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+            <span class="n">GuiUpdateMessage</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">,</span>
+                <span class="s2">&quot;tab_container_ids&quot;</span><span class="p">,</span>
+                <span class="nb">tuple</span><span class="p">(</span><span class="n">tab</span><span class="o">.</span><span class="n">_id</span> <span class="k">for</span> <span class="n">tab</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tabs</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="p">)</span></div>
 
@@ -865,11 +860,10 @@
     <span class="k">def</span> <span class="nf">content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_content</span> <span class="o">=</span> <span class="n">content</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
-            <span class="n">GuiAddMarkdownMessage</span><span class="p">(</span>
-                <span class="n">order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">,</span>
-                <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span>
-                <span class="n">markdown</span><span class="o">=</span><span class="n">_parse_markdown</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_root</span><span class="p">),</span>
-                <span class="n">container_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id</span><span class="p">,</span>
+            <span class="n">GuiUpdateMessage</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span>
+                <span class="s2">&quot;markdown&quot;</span><span class="p">,</span>
+                <span class="n">_parse_markdown</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_root</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="p">)</span>
 
@@ -889,7 +883,7 @@
         <span class="k">if</span> <span class="n">visible</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">visible</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiSetVisibleMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">visible</span><span class="o">=</span><span class="n">visible</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_api</span><span class="p">()</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">GuiUpdateMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="s2">&quot;visible&quot;</span><span class="p">,</span> <span class="n">visible</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_visible</span> <span class="o">=</span> <span class="n">visible</span>
 
 <div class="viewcode-block" id="GuiMarkdownHandle.__post_init__">
