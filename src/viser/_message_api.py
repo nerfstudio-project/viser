@@ -1381,7 +1381,7 @@ class MessageApi(abc.ABC):
 
         uuid = _make_unique_id()
 
-        from ._viser import ViserServer
+        from ._viser import ClientHandle, ViserServer
 
         # If called on the server handle, send the file to each client.
         # If called on the client handle, send the file to just that client.
