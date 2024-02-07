@@ -113,7 +113,7 @@ function useMessageHandler() {
       }
 
       // Enable/disable whether scene pointer events are sent.
-      case "SceneClickEnableMessage": {
+      case "ScenePointerEnableMessage": {
         viewer.sceneClickInfo.current!.enabled = message.enable;
 
         // Update cursor to indicate whether the scene can be clicked.

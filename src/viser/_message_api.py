@@ -1180,7 +1180,7 @@ class MessageApi(abc.ABC):
 
         # If this is the first callback.
         if len(self._scene_pointer_cb) == 1:
-            self._queue(_messages.SceneClickEnableMessage(enable=True))
+            self._queue(_messages.ScenePointerEnableMessage(enable=True))
         return func
 
     def remove_scene_click_callback(
@@ -1201,7 +1201,7 @@ class MessageApi(abc.ABC):
 
             if isinstance(self, ViserServer):
                 # Turn off server-level scene click events.
-                self._queue(_messages.SceneClickEnableMessage(enable=False))
+                self._queue(_messages.ScenePointerEnableMessage(enable=False))
                 self.flush()
 
                 # Catch an unlikely edge case: we need to re-enable click events for
@@ -1211,7 +1211,7 @@ class MessageApi(abc.ABC):
                     for client in clients.values():
                         if len(client._scene_pointer_cb) > 0:
                             client._queue(
-                                _messages.SceneClickEnableMessage(enable=True)
+                                _messages.ScenePointerEnableMessage(enable=True)
                             )
 
             else:
@@ -1220,7 +1220,7 @@ class MessageApi(abc.ABC):
                 # Turn off scene click events for clients, but only if there's no
                 # server-level scene click events.
                 if len(self._state.viser_server._scene_pointer_cb) == 0:
-                    self._queue(_messages.SceneClickEnableMessage(enable=False))
+                    self._queue(_messages.ScenePointerEnableMessage(enable=False))
 
     def add_3d_gui_container(
         self,

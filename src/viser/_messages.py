@@ -65,7 +65,7 @@ class ScenePointerMessage(Message):
 
 
 @dataclasses.dataclass
-class SceneClickEnableMessage(Message):
+class ScenePointerEnableMessage(Message):
     """Message to enable/disable scene click events."""
 
     enable: bool

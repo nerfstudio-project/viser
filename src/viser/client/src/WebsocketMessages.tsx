@@ -32,8 +32,8 @@ export interface ScenePointerMessage {
  *
  * (automatically generated)
  */
-export interface SceneClickEnableMessage {
-  type: "SceneClickEnableMessage";
+export interface ScenePointerEnableMessage {
+  type: "ScenePointerEnableMessage";
   enable: boolean;
 }
 /** Variant of CameraMessage used for visualizing camera frustums.
@@ -702,7 +702,7 @@ export interface FileDownloadPart {
 export type Message =
   | ViewerCameraMessage
   | ScenePointerMessage
-  | SceneClickEnableMessage
+  | ScenePointerEnableMessage
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
