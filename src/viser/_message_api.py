@@ -1380,19 +1380,36 @@ class MessageApi(abc.ABC):
         ]
 
         uuid = _make_unique_id()
-        self._queue(
-            _messages.FileDownloadStart(
-                download_uuid=uuid,
-                filename=filename,
-                mime_type=mime_type,
-                part_count=len(parts),
-                size_bytes=len(content),
-            )
-        )
 
-        for i, part in enumerate(parts):
-            self._queue(_messages.FileDownloadPart(uuid, part=i, content=part))
-            self.flush()
+        from ._viser import ViserServer
+
+        # If called on the server handle, send the file to each client.
+        # If called on the client handle, send the file to just that client.
+        #
+        # We avoid calling ViserServer._queue() here because it will create a
+        # "persistent" message, which is saved and sent to all new clients in
+        # the future. While this makes sense for things like GUI components or
+        # 3D assets, this produces unintuitive behavior for file downloads.
+        if isinstance(self, ViserServer):
+            clients = list(self.get_clients().values())
+        elif isinstance(self, ClientHandle):
+            clients = [self]
+        else:
+            assert False
+
+        for client in clients:
+            client._queue(
+                _messages.FileDownloadStart(
+                    download_uuid=uuid,
+                    filename=filename,
+                    mime_type=mime_type,
+                    part_count=len(parts),
+                    size_bytes=len(content),
+                )
+            )
+            for i, part in enumerate(parts):
+                client._queue(_messages.FileDownloadPart(uuid, part=i, content=part))
+                client.flush()
 
     @abc.abstractmethod
     def flush(self) -> None:
