@@ -33,15 +33,12 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 import numpy.typing as onpt
-import trimesh
-import trimesh.creation
-import trimesh.exchange
-import trimesh.visual
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages, infra, theme
 from . import transforms as tf
 from ._scene_handles import (
+    BatchedAxesHandle,
     CameraFrustumHandle,
     FrameHandle,
     GlbHandle,
@@ -58,6 +55,8 @@ from ._scene_handles import (
 )
 
 if TYPE_CHECKING:
+    import trimesh
+
     from ._viser import ClientHandle
     from .infra import ClientId
 
@@ -134,7 +133,9 @@ TVector = TypeVar("TVector", bound=tuple)
 
 def cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
     if not isinstance(vector, tuple):
-        assert cast(onp.ndarray, vector).shape == (length,)
+        assert cast(onp.ndarray, vector).shape == (
+            length,
+        ), f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
     return cast(TVector, tuple(map(float, vector)))
 
 
@@ -177,6 +178,14 @@ class MessageApi(abc.ABC):
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
 
+    def set_gui_panel_label(self, label: Optional[str]) -> None:
+        """Set the main label that appears in the GUI panel.
+
+        Args:
+            label: The new label.
+        """
+        self._queue(_messages.SetGuiPanelLabelMessage(label))
+
     def configure_theme(
         self,
         *,
@@ -185,6 +194,7 @@ class MessageApi(abc.ABC):
         control_width: Literal["small", "medium", "large"] = "medium",
         dark_mode: bool = False,
         show_logo: bool = True,
+        show_share_button: bool = True,
         brand_color: Optional[Tuple[int, int, int]] = None,
     ) -> None:
         """Configures the visual appearance of the viser front-end.
@@ -197,6 +207,7 @@ class MessageApi(abc.ABC):
                            "medium", or "large".
             dark_mode: A boolean indicating if dark mode should be enabled.
             show_logo: A boolean indicating if the logo should be displayed.
+            show_share_button: A boolean indicating if the share button should be displayed.
             brand_color: An optional tuple of integers (RGB) representing the brand color.
         """
 
@@ -244,6 +255,7 @@ class MessageApi(abc.ABC):
                 control_width=control_width,
                 dark_mode=dark_mode,
                 show_logo=show_logo,
+                show_share_button=show_share_button,
                 colors=colors_cast,
             ),
         )
@@ -337,8 +349,11 @@ class MessageApi(abc.ABC):
     ) -> GlbHandle:
         """Add a general 3D asset via binary glTF (GLB).
 
-        To load glTF files from disk, you can convert to GLB via a library like
-        `pygltflib`.
+        For glTF files, it's often simpler to use `trimesh.load()` with
+        `.add_mesh_trimesh()`. This will call `.add_glb()` under the hood.
+
+        For glTF features not supported by trimesh, glTF to GLB conversion can
+        also be done programatically with libraries like `pygltflib`.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -541,8 +556,14 @@ class MessageApi(abc.ABC):
     ) -> FrameHandle:
         """Add a coordinate frame to the scene.
 
-        This method is used for adding a visual representation of a coordinate frame,
-        which can help in understanding the orientation and position of objects in 3D space.
+        This method is used for adding a visual representation of a coordinate
+        frame, which can help in understanding the orientation and position of
+        objects in 3D space.
+
+        For cases where we want to visualize many coordinate frames, like
+        trajectories containing thousands or tens of thousands of frames,
+        batching and calling `add_batched_axes()` may be a better choice than calling
+        `add_frame()` in a loop.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -566,6 +587,61 @@ class MessageApi(abc.ABC):
             )
         )
         return FrameHandle._make(self, name, wxyz, position, visible)
+
+    def add_batched_axes(
+        self,
+        name: str,
+        batched_wxyzs: Tuple[Tuple[float, float, float, float], ...] | onp.ndarray,
+        batched_positions: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        axes_length: float = 0.5,
+        axes_radius: float = 0.025,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> BatchedAxesHandle:
+        """Visualize batched sets of coordinate frame axes.
+
+        The functionality of `add_batched_axes()` overlaps significantly with
+        `add_frame()` when `show_axes=True`. The primary difference is that
+        `add_batched_axes()` supports multiple axes via the `wxyzs_batched`
+        (shape Nx4) and `positions_batched` (shape Nx3) arguments.
+
+        Axes that are batched and rendered via a single call to
+        `add_batched_axes()` are instanced on the client; this will be much
+        faster to render than `add_frame()` called in a loop.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            batched_wxyzs: Float array of shape (N,4).
+            batched_positions: Float array of shape (N,3).
+            axes_length: Length of each axis.
+            axes_radius: Radius of each axis.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+                This will be applied to all axes.
+            position: Translation to parent frame from local frame (t_pl).
+                This will be applied to all axes.
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        batched_wxyzs = onp.asarray(batched_wxyzs)
+        batched_positions = onp.asarray(batched_positions)
+
+        num_axes = batched_wxyzs.shape[0]
+        assert batched_wxyzs.shape == (num_axes, 4)
+        assert batched_positions.shape == (num_axes, 3)
+        self._queue(
+            _messages.BatchedAxesMessage(
+                name=name,
+                wxyzs_batched=batched_wxyzs.astype(onp.float32),
+                positions_batched=batched_positions.astype(onp.float32),
+                axes_length=axes_length,
+                axes_radius=axes_radius,
+            )
+        )
+        return BatchedAxesHandle._make(self, name, wxyz, position, visible)
 
     def add_grid(
         self,
@@ -661,6 +737,9 @@ class MessageApi(abc.ABC):
         points: onp.ndarray,
         colors: onp.ndarray | Tuple[float, float, float],
         point_size: float = 0.1,
+        point_shape: Literal[
+            "square", "diamond", "circle", "rounded", "sparkle"
+        ] = "square",
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -672,6 +751,7 @@ class MessageApi(abc.ABC):
             points: Location of points. Should have shape (N, 3).
             colors: Colors of points. Should have shape (N, 3) or (3,).
             point_size: Size of each point.
+            point_shape: Shape to draw each point.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -697,6 +777,13 @@ class MessageApi(abc.ABC):
                 points=points.astype(onp.float32),
                 colors=colors_cast,
                 point_size=point_size,
+                point_ball_norm={
+                    "square": float("inf"),
+                    "diamond": 1.0,
+                    "circle": 2.0,
+                    "rounded": 3.0,
+                    "sparkle": 0.6,
+                }[point_shape],
             )
         )
         return PointCloudHandle._make(self, name, wxyz, position, visible)
@@ -769,8 +856,7 @@ class MessageApi(abc.ABC):
                 material=material,
             )
         )
-        node_handle = MeshHandle._make(self, name, wxyz, position, visible)
-        return node_handle
+        return MeshHandle._make(self, name, wxyz, position, visible)
 
     def add_mesh_trimesh(
         self,
@@ -831,6 +917,8 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        import trimesh.creation
+
         mesh = trimesh.creation.box(dimensions)
 
         return self.add_mesh_simple(
@@ -869,6 +957,8 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        import trimesh.creation
+
         mesh = trimesh.creation.icosphere(subdivisions=subdivisions, radius=radius)
 
         # We use add_mesh_simple() because it lets us do smooth shading;
@@ -1291,19 +1381,36 @@ class MessageApi(abc.ABC):
         ]
 
         uuid = _make_unique_id()
-        self._queue(
-            _messages.FileDownloadStart(
-                download_uuid=uuid,
-                filename=filename,
-                mime_type=mime_type,
-                part_count=len(parts),
-                size_bytes=len(content),
-            )
-        )
 
-        for i, part in enumerate(parts):
-            self._queue(_messages.FileDownloadPart(uuid, part=i, content=part))
-            self.flush()
+        from ._viser import ClientHandle, ViserServer
+
+        # If called on the server handle, send the file to each client.
+        # If called on the client handle, send the file to just that client.
+        #
+        # We avoid calling ViserServer._queue() here because it will create a
+        # "persistent" message, which is saved and sent to all new clients in
+        # the future. While this makes sense for things like GUI components or
+        # 3D assets, this produces unintuitive behavior for file downloads.
+        if isinstance(self, ViserServer):
+            clients = list(self.get_clients().values())
+        elif isinstance(self, ClientHandle):
+            clients = [self]
+        else:
+            assert False
+
+        for client in clients:
+            client._queue(
+                _messages.FileDownloadStart(
+                    download_uuid=uuid,
+                    filename=filename,
+                    mime_type=mime_type,
+                    part_count=len(parts),
+                    size_bytes=len(content),
+                )
+            )
+            for i, part in enumerate(parts):
+                client._queue(_messages.FileDownloadPart(uuid, part=i, content=part))
+                client.flush()
 
     @abc.abstractmethod
     def flush(self) -> None:

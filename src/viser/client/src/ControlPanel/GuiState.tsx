@@ -7,21 +7,7 @@ import { immer } from "zustand/middleware/immer";
 import { ViewerContext } from "../App";
 import { MantineThemeOverride } from "@mantine/core";
 
-export type GuiConfig =
-  | Messages.GuiAddButtonMessage
-  | Messages.GuiAddCheckboxMessage
-  | Messages.GuiAddDropdownMessage
-  | Messages.GuiAddFolderMessage
-  | Messages.GuiAddTabGroupMessage
-  | Messages.GuiAddNumberMessage
-  | Messages.GuiAddRgbMessage
-  | Messages.GuiAddRgbaMessage
-  | Messages.GuiAddSliderMessage
-  | Messages.GuiAddButtonGroupMessage
-  | Messages.GuiAddTextMessage
-  | Messages.GuiAddVector2Message
-  | Messages.GuiAddVector3Message
-  | Messages.GuiAddMarkdownMessage;
+export type GuiConfig = Messages.GuiAddComponentMessage;
 
 export function isGuiConfig(message: Messages.Message): message is GuiConfig {
   return message.type.startsWith("GuiAdd");
@@ -31,6 +17,7 @@ interface GuiState {
   theme: Messages.ThemeConfigurationMessage;
   label: string;
   server: string;
+  shareUrl: string | null;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
   guiIdSetFromContainerId: {
@@ -39,20 +26,15 @@ interface GuiState {
   modals: Messages.GuiModalMessage[];
   guiOrderFromId: { [id: string]: number };
   guiConfigFromId: { [id: string]: GuiConfig };
-  guiValueFromId: { [id: string]: any };
-  guiAttributeFromId: {
-    [id: string]: { visible?: boolean; disabled?: boolean } | undefined;
-  };
 }
 
 interface GuiActions {
   setTheme: (theme: Messages.ThemeConfigurationMessage) => void;
+  setShareUrl: (share_url: string | null) => void;
   addGui: (config: GuiConfig) => void;
   addModal: (config: Messages.GuiModalMessage) => void;
   removeModal: (id: string) => void;
-  setGuiValue: (id: string, value: any) => void;
-  setGuiVisible: (id: string, visible: boolean) => void;
-  setGuiDisabled: (id: string, visible: boolean) => void;
+  updateGuiProps: (id: string, prop_name: string, prop_value: any) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
 }
@@ -65,18 +47,18 @@ const cleanGuiState: GuiState = {
     control_width: "medium",
     dark_mode: false,
     show_logo: true,
+    show_share_button: true,
     colors: null,
   },
   label: "",
   server: "ws://localhost:8080", // Currently this will always be overridden.
+  shareUrl: null,
   websocketConnected: false,
   backgroundAvailable: false,
   guiIdSetFromContainerId: {},
   modals: [],
   guiOrderFromId: {},
   guiConfigFromId: {},
-  guiValueFromId: {},
-  guiAttributeFromId: {},
 };
 
 export function computeRelativeLuminance(color: string) {
@@ -101,6 +83,10 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.theme = theme;
           }),
+        setShareUrl: (share_url) =>
+          set((state) => {
+            state.shareUrl = share_url;
+          }),
         addGui: (guiConfig) =>
           set((state) => {
             state.guiOrderFromId[guiConfig.id] = guiConfig.order;
@@ -120,24 +106,6 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             state.modals = state.modals.filter((m) => m.id !== id);
           }),
-        setGuiValue: (id, value) =>
-          set((state) => {
-            state.guiValueFromId[id] = value;
-          }),
-        setGuiVisible: (id, visible) =>
-          set((state) => {
-            state.guiAttributeFromId[id] = {
-              ...state.guiAttributeFromId[id],
-              visible: visible,
-            };
-          }),
-        setGuiDisabled: (id, disabled) =>
-          set((state) => {
-            state.guiAttributeFromId[id] = {
-              ...state.guiAttributeFromId[id],
-              disabled: disabled,
-            };
-          }),
         removeGui: (id) =>
           set((state) => {
             const guiConfig = state.guiConfigFromId[id];
@@ -145,17 +113,27 @@ export function useGuiState(initialServer: string) {
             delete state.guiIdSetFromContainerId[guiConfig.container_id]![id];
             delete state.guiOrderFromId[id];
             delete state.guiConfigFromId[id];
-            delete state.guiValueFromId[id];
-            delete state.guiAttributeFromId[id];
           }),
         resetGui: () =>
           set((state) => {
+            state.shareUrl = null;
             state.guiIdSetFromContainerId = {};
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
-            state.guiValueFromId = {};
-            state.guiAttributeFromId = {};
           }),
+        updateGuiProps: (id, name, value) => {
+          set((state) => {
+            const config = state.guiConfigFromId[id];
+            if (config === undefined) {
+              console.error("Tried to update non-existent component", id);
+              return;
+            }
+            state.guiConfigFromId[id] = {
+              ...config,
+              [name]: value,
+            } as GuiConfig;
+          });
+        },
       })),
     ),
   )[0];
@@ -217,6 +195,11 @@ export function useViserMantineTheme(): MantineThemeOverride {
         },
       },
       Paper: {
+        defaultProps: {
+          radius: "xs",
+        },
+      },
+      ActionIcon: {
         defaultProps: {
           radius: "xs",
         },

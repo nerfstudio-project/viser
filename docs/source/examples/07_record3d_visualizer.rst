@@ -115,6 +115,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                     points=position,
                     colors=color,
                     point_size=0.01,
+                    point_shape="rounded",
                 )
 
                 # Place the frustum.

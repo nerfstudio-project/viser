@@ -13,7 +13,6 @@ from typing import List
 import numpy as onp
 import trimesh.creation
 import trimesh.ray
-import shapely
 
 import viser
 import viser.transforms as tf

@@ -7,8 +7,8 @@ from typing import Tuple, cast
 
 import imageio.v3 as iio
 import liblzfse
-import numpy as onp
 import numpy as np
+import numpy as onp
 import numpy.typing as onpt
 import skimage.transform
 from scipy.spatial.transform import Rotation

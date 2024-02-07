@@ -9,11 +9,10 @@ from typing import List
 
 import numpy as onp
 import tyro
-from tqdm.auto import tqdm
-
 import viser
 import viser.extras
 import viser.transforms as tf
+from tqdm.auto import tqdm
 
 
 def main(
@@ -105,6 +104,7 @@ def main(
             points=position,
             colors=color,
             point_size=0.01,
+            point_shape="rounded",
         )
 
         # Place the frustum.

@@ -13,8 +13,10 @@ import { syncSearchParamServer } from "./SearchParamsUtils";
 import {
   CameraFrustum,
   CoordinateFrame,
+  InstancedAxes,
   GlbAsset,
   OutlinesIfHovered,
+  PointCloud,
 } from "./ThreeAssets";
 import {
   FileDownloadPart,
@@ -54,39 +56,43 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
 
-  // TODO: we should clean this up.
+  // We could reduce the redundancy here if we wanted to.
   // https://github.com/nerfstudio-project/viser/issues/39
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
   const setTheme = viewer.useGui((state) => state.setTheme);
+  const setShareUrl = viewer.useGui((state) => state.setShareUrl);
   const addGui = viewer.useGui((state) => state.addGui);
   const addModal = viewer.useGui((state) => state.addModal);
   const removeModal = viewer.useGui((state) => state.removeModal);
   const removeGui = viewer.useGui((state) => state.removeGui);
-  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
-  const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
-  const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
+  const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(node: SceneNode<any>) {
+    // Make sure scene node is in attributes.
+    const attrs = viewer.nodeAttributesFromName.current;
+    if (!(node.name in attrs)) {
+      attrs[node.name] = {};
+    }
+
+    // Don't update the pose of the object until we've made a new one!
+    attrs[node.name]!.poseUpdateState = "waitForMakeObject";
+
+    // Make sure parents exists.
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
     const parent_name = node.name.split("/").slice(0, -1).join("/");
     if (!(parent_name in nodeFromName)) {
       addSceneNodeMakeParents(
         new SceneNode<THREE.Group>(parent_name, (ref) => (
-          <CoordinateFrame ref={ref} show_axes={false} />
+          <CoordinateFrame ref={ref} showAxes={false} />
         )),
       );
     }
     addSceneNode(node);
-
-    const attrs = viewer.nodeAttributesFromName.current;
-    if (node.name in attrs) {
-      delete attrs[node.name];
-    }
   }
 
   const mantineTheme = useViserMantineTheme();
@@ -100,10 +106,20 @@ function useMessageHandler() {
     }
 
     switch (message.type) {
+      // Set the share URL.
+      case "ShareUrlUpdated": {
+        setShareUrl(message.share_url);
+        return;
+      }
       // Request a render.
       case "GetRenderRequestMessage": {
         viewer.getRenderRequest.current = message;
         viewer.getRenderRequestState.current = "triggered";
+        return;
+      }
+      // Set the GUI panel label.
+      case "SetGuiPanelLabelMessage": {
+        viewer.useGui.setState({ label: message.label ?? "" });
         return;
       }
       // Configure the theme.
@@ -111,7 +127,6 @@ function useMessageHandler() {
         setTheme(message);
         return;
       }
-
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         viewer.sceneClickInfo.current!.enabled = message.enable;
@@ -129,7 +144,42 @@ function useMessageHandler() {
           new SceneNode<THREE.Group>(message.name, (ref) => (
             <CoordinateFrame
               ref={ref}
-              show_axes={message.show_axes}
+              showAxes={message.show_axes}
+              axesLength={message.axes_length}
+              axesRadius={message.axes_radius}
+            />
+          )),
+        );
+        return;
+      }
+
+      // Add axes to visualize.
+      case "BatchedAxesMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => (
+            // Minor naming discrepancy: I think "batched" will be clearer to
+            // folks on the Python side, but instanced is somewhat more
+            // precise.
+            <InstancedAxes
+              ref={ref}
+              wxyzsBatched={
+                new Float32Array(
+                  message.wxyzs_batched.buffer.slice(
+                    message.wxyzs_batched.byteOffset,
+                    message.wxyzs_batched.byteOffset +
+                      message.wxyzs_batched.byteLength,
+                  ),
+                )
+              }
+              positionsBatched={
+                new Float32Array(
+                  message.positions_batched.buffer.slice(
+                    message.positions_batched.byteOffset,
+                    message.positions_batched.byteOffset +
+                      message.positions_batched.byteLength,
+                  ),
+                )
+              }
               axes_length={message.axes_length}
               axes_radius={message.axes_radius}
             />
@@ -171,20 +221,16 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                      : message.plane == "yx"
-                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                        : message.plane == "yz"
-                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                          : message.plane == "zx"
-                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                            : message.plane == "zy"
-                              ? new THREE.Euler(
-                                  -Math.PI / 2.0,
-                                  0.0,
-                                  -Math.PI / 2.0,
-                                )
-                              : undefined
+                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                    : message.plane == "yx"
+                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                    : message.plane == "yz"
+                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                    : message.plane == "zx"
+                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                    : message.plane == "zy"
+                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
+                    : undefined
                 }
               />
             </group>
@@ -195,52 +241,25 @@ function useMessageHandler() {
 
       // Add a point cloud.
       case "PointCloudMessage": {
-        const geometry = new THREE.BufferGeometry();
-        const pointCloudMaterial = new THREE.PointsMaterial({
-          size: message.point_size,
-          vertexColors: true,
-          toneMapped: false,
-        });
-
-        // Reinterpret cast: uint8 buffer => float32 for positions.
-        geometry.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(
-            new Float32Array(
-              message.points.buffer.slice(
-                message.points.byteOffset,
-                message.points.byteOffset + message.points.byteLength,
-              ),
-            ),
-            3,
-          ),
-        );
-        geometry.computeBoundingSphere();
-
-        // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
-        geometry.setAttribute(
-          "color",
-          threeColorBufferFromUint8Buffer(message.colors),
-        );
-
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Points>(
-            message.name,
-            (ref) => (
-              <points
-                ref={ref}
-                geometry={geometry}
-                material={pointCloudMaterial}
-              />
-            ),
-            () => {
-              // TODO: we can switch to the react-three-fiber <bufferGeometry />,
-              // <pointsMaterial />, etc components to avoid manual
-              // disposal.
-              geometry.dispose();
-              pointCloudMaterial.dispose();
-            },
-          ),
+          new SceneNode<THREE.Points>(message.name, (ref) => (
+            <PointCloud
+              ref={ref}
+              pointSize={message.point_size}
+              pointBallNorm={message.point_ball_norm}
+              points={
+                new Float32Array(
+                  message.points.buffer.slice(
+                    message.points.byteOffset,
+                    message.points.byteOffset + message.points.byteLength,
+                  ),
+                )
+              }
+              colors={new Float32Array(message.colors).map(
+                (val) => val / 255.0,
+              )}
+            />
+          )),
         );
         return;
       }
@@ -298,16 +317,16 @@ function useMessageHandler() {
           message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-              ? new THREE.MeshToonMaterial({
-                  gradientMap: generateGradientMap(3),
-                  ...standardArgs,
-                })
-              : message.material == "toon5"
-                ? new THREE.MeshToonMaterial({
-                    gradientMap: generateGradientMap(5),
-                    ...standardArgs,
-                  })
-                : assertUnreachable(message.material);
+            ? new THREE.MeshToonMaterial({
+                gradientMap: generateGradientMap(3),
+                ...standardArgs,
+              })
+            : message.material == "toon5"
+            ? new THREE.MeshToonMaterial({
+                gradientMap: generateGradientMap(5),
+                ...standardArgs,
+              })
+            : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -516,12 +535,16 @@ function useMessageHandler() {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.wxyz = message.wxyz;
+        if (attr[message.name]!.poseUpdateState == "updated")
+          attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
       case "SetPositionMessage": {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.position = message.position;
+        if (attr[message.name]!.poseUpdateState == "updated")
+          attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
       case "SetSceneNodeVisibilityMessage": {
@@ -535,8 +558,6 @@ function useMessageHandler() {
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {
-            texture.encoding = THREE.sRGBEncoding;
-
             const oldBackgroundTexture =
               viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
             viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
@@ -643,10 +664,11 @@ function useMessageHandler() {
                           evt.stopPropagation();
                         }}
                       >
-                        <GeneratedGuiContainer
-                          containerId={message.container_id}
-                          viewer={viewer}
-                        />
+                        <ViewerContext.Provider value={viewer}>
+                          <GeneratedGuiContainer
+                            containerId={message.container_id}
+                          />
+                        </ViewerContext.Provider>
                       </Paper>
                     </MantineProvider>
                   </Html>
@@ -698,7 +720,7 @@ function useMessageHandler() {
         );
         return;
       }
-      // Remove a scene node by name.
+      // Remove a scene node and its children by name.
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
@@ -724,19 +746,9 @@ function useMessageHandler() {
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
         return;
       }
-      // Set the value of a GUI input.
-      case "GuiSetValueMessage": {
-        setGuiValue(message.id, message.value);
-        return;
-      }
-      // Set the hidden state of a GUI input.
-      case "GuiSetVisibleMessage": {
-        setGuiVisible(message.id, message.visible);
-        return;
-      }
-      // Set the disabled state of a GUI input.
-      case "GuiSetDisabledMessage": {
-        setGuiDisabled(message.id, message.disabled);
+      // Update props of a GUI component
+      case "GuiUpdateMessage": {
+        updateGuiProps(message.id, message.prop_name, message.prop_value);
         return;
       }
       // Remove a GUI input.

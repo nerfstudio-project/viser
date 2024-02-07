@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.17"
+version = "0.1.23"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -40,8 +40,7 @@ dependencies = [
 dev = [
     "pyright>=1.1.308",
     "mypy>=1.4.1",
-    "ruff==0.1.9",
-    "black==23.11.0",
+    "ruff==0.1.13",
     "pre-commit==3.3.2",
 ]
 examples = [
@@ -54,13 +53,10 @@ examples = [
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
 [tool.setuptools.package-data]
-viser = ["py.typed", "_icons/tabler-icons.tar", "client/build/**/*"]
+viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/build/**/*"]
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
-
-[tool.isort]
-profile = "black"
 
 [tool.mypy]
 python_version = "3.8"
@@ -72,9 +68,6 @@ disable_error_code="var-annotated"  # Common source of mypy + numpy false positi
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
 
-[tool.black]
-exclude = "viser/client/.nodeenv"
-
 [tool.ruff]
 select = [
     "E",  # pycodestyle errors.
@@ -83,6 +76,7 @@ select = [
     "PLE",  # Pylint errors.
     "PLR",  # Pylint refactor recommendations.
     "PLW",  # Pylint warnings.
+    "I", # Import sorting.
 ]
 ignore = [
     "E741", # Ambiguous variable name. (l, O, or I)

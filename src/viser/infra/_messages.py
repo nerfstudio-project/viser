@@ -18,6 +18,32 @@ else:
     ClientId = Any
 
 
+def _prepare_for_deserialization(value: Any, annotation: Type) -> Any:
+    # If annotated as a float but we got an integer, cast to float. These
+    # are both `number` in Javascript.
+    if annotation is float:
+        return float(value)
+    elif annotation is int:
+        return int(value)
+    elif get_origin(annotation) is tuple:
+        out = []
+        args = get_args(annotation)
+        if len(args) >= 2 and args[1] == ...:
+            args = (args[0],) * len(value)
+        elif len(value) != len(args):
+            warnings.warn(f"[viser] {value} does not match annotation {annotation}")
+            return value
+
+        for i, v in enumerate(value):
+            out.append(
+                # Hack to be OK with wrong type annotations.
+                # https://github.com/nerfstudio-project/nerfstudio/pull/1805
+                _prepare_for_deserialization(v, args[i]) if i < len(args) else v
+            )
+        return tuple(out)
+    return value
+
+
 def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     """Prepare any special types for serialization."""
 
@@ -38,21 +64,19 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
 
         out = []
         args = get_args(annotation)
-        if len(args) >= 1:
-            if len(args) >= 2 and args[1] == ...:
-                args = (args[0],) * len(value)
-            elif len(value) != len(args):
-                warnings.warn(f"[viser] {value} does not match annotation {annotation}")
+        if len(args) >= 2 and args[1] == ...:
+            args = (args[0],) * len(value)
+        elif len(value) != len(args):
+            warnings.warn(f"[viser] {value} does not match annotation {annotation}")
+            return value
 
-            for i, v in enumerate(value):
-                out.append(
-                    # Hack to be OK with wrong type annotations.
-                    # https://github.com/nerfstudio-project/nerfstudio/pull/1805
-                    _prepare_for_serialization(v, args[i])
-                    if i < len(args)
-                    else v
-                )
-            return tuple(out)
+        for i, v in enumerate(value):
+            out.append(
+                # Hack to be OK with wrong type annotations.
+                # https://github.com/nerfstudio-project/nerfstudio/pull/1805
+                _prepare_for_serialization(v, args[i]) if i < len(args) else v
+            )
+        return tuple(out)
 
     # For arrays, we serialize underlying data directly. The client is responsible for
     # reading using the correct dtype.
@@ -79,12 +103,24 @@ class Message(abc.ABC):
 
     def as_serializable_dict(self) -> Dict[str, Any]:
         """Convert a Python Message object into bytes."""
-        hints = get_type_hints_cached(type(self))
+        message_type = type(self)
+        hints = get_type_hints_cached(message_type)
         out = {
             k: _prepare_for_serialization(v, hints[k]) for k, v in vars(self).items()
         }
-        out["type"] = type(self).__name__
+        out["type"] = message_type.__name__
         return out
+
+    @classmethod
+    def _from_serializable_dict(cls, mapping: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert a dict message back into a Python Message object."""
+
+        hints = get_type_hints_cached(cls)
+
+        mapping = {
+            k: _prepare_for_deserialization(v, hints[k]) for k, v in mapping.items()
+        }
+        return mapping
 
     @classmethod
     def deserialize(cls, message: bytes) -> Message:
@@ -97,23 +133,8 @@ class Message(abc.ABC):
             k: tuple(v) if isinstance(v, list) else v for k, v in mapping.items()
         }
         message_type = cls._subclass_from_type_string()[cast(str, mapping.pop("type"))]
-
-        # If annotated as a float but we got an integer, cast to float. These
-        # are both `number` in Javascript.
-        def coerce_floats(value: Any, annotation: Type[Any]) -> Any:
-            if annotation is float:
-                return float(value)
-            elif get_origin(annotation) is tuple:
-                return tuple(
-                    coerce_floats(value[i], typ)
-                    for i, typ in enumerate(get_args(annotation))
-                )
-            else:
-                return value
-
-        type_hints = get_type_hints(message_type)
-        mapping = {k: coerce_floats(v, type_hints[k]) for k, v in mapping.items()}
-        return message_type(**mapping)  # type: ignore
+        message_kwargs = message_type._from_serializable_dict(mapping)
+        return message_type(**message_kwargs)
 
     @classmethod
     @functools.lru_cache(maxsize=100)

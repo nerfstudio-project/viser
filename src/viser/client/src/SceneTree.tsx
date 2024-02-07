@@ -13,7 +13,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext } from "./ThreeAssets";
 
-
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>,
 ) => React.ReactNode;
@@ -156,10 +155,18 @@ export function SceneNodeThreeObject(props: {
   // For not-fully-understood reasons, wrapping makeObject with useMemo() fixes
   // stability issues (eg breaking runtime errors) associated with
   // PivotControls.
-  const objNode = React.useMemo(
-    () => makeObject && makeObject(setRef),
-    [makeObject],
-  );
+  const objNode = React.useMemo(() => {
+    if (makeObject === undefined) return null;
+
+    // Pose will need to be updated.
+    const attrs = viewer.nodeAttributesFromName.current;
+    if (!(props.name in attrs)) {
+      attrs[props.name] = {};
+    }
+    attrs[props.name]!.poseUpdateState = "needsUpdate";
+
+    return makeObject(setRef);
+  }, [makeObject]);
   const children =
     obj === null ? null : (
       <SceneNodeThreeChildren name={props.name} parent={obj} />
@@ -173,8 +180,12 @@ export function SceneNodeThreeObject(props: {
   function isDisplayed() {
     // We avoid checking obj.visible because obj may be unmounted when
     // unmountWhenInvisible=true.
-    if (viewer.nodeAttributesFromName.current[props.name]?.visibility === false)
-      return false;
+    const attrs = viewer.nodeAttributesFromName.current[props.name];
+    const visibility =
+      (attrs?.overrideVisibility === undefined
+        ? attrs?.visibility
+        : attrs.overrideVisibility) ?? true;
+    if (visibility === false) return false;
     if (props.parent === null) return true;
 
     // Check visibility of parents + ancestors.
@@ -202,30 +213,27 @@ export function SceneNodeThreeObject(props: {
 
     if (obj === null) return;
 
-    const nodeAttributes = viewer.nodeAttributesFromName.current[props.name];
-    if (nodeAttributes === undefined) return;
+    const attrs = viewer.nodeAttributesFromName.current[props.name];
+    if (attrs === undefined) return;
 
-    const visibility = nodeAttributes.visibility;
-    if (visibility !== undefined) {
-      obj.visible = visibility;
-    } else {
-      obj.visible = true;
-    }
+    const visibility =
+      (attrs?.overrideVisibility === undefined
+        ? attrs?.visibility
+        : attrs.overrideVisibility) ?? true;
+    obj.visible = visibility;
 
-    let changed = false;
-    const wxyz = nodeAttributes.wxyz;
-    if (wxyz !== undefined) {
-      changed = true;
-      obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-    }
-    const position = nodeAttributes.position;
-    if (position !== undefined) {
-      changed = true;
-      obj.position.set(position[0], position[1], position[2]);
-    }
+    if (attrs.poseUpdateState == "needsUpdate") {
+      attrs.poseUpdateState = "updated";
+      const wxyz = attrs.wxyz;
+      if (wxyz !== undefined) {
+        obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+      }
+      const position = attrs.position;
+      if (position !== undefined) {
+        obj.position.set(position[0], position[1], position[2]);
+      }
 
-    // Update matrices if necessary. This is necessary for PivotControls.
-    if (changed) {
+      // Update matrices if necessary. This is necessary for PivotControls.
       if (!obj.matrixAutoUpdate) obj.updateMatrix();
       if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
     }
@@ -299,7 +307,11 @@ export function SceneNodeThreeObject(props: {
                 name: props.name,
                 // Note that the threejs up is +Y, but we expose a +Z up.
                 ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
-                ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
+                ray_direction: [
+                  ray.direction.x,
+                  ray.direction.y,
+                  ray.direction.z,
+                ],
               });
             }}
             onPointerOver={(e) => {
