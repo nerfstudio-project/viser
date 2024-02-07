@@ -316,13 +316,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           sendClickThrottled({
             type: "ScenePointerMessage",
             event_type: "click",
-            ray_origin: [[ray.origin.x, ray.origin.y, ray.origin.z]],
-            ray_direction: [[ray.direction.x, ray.direction.y, ray.direction.z]],
+            ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+            ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
+            screen_pos: [[mouseVector.x, mouseVector.y]]
           });
         }
 
         // If the ScenePointerEvent had mouse drag movement, we will send a "box" message:
-        // 1. use the first and last mouse positions to create a box.
+        // Use the first and last mouse positions to create a box.
         const screenEventList = viewer.sceneClickInfo.current!.screenEventList;
         const firstScreenEvent = screenEventList[0];
         const lastScreenEvent = screenEventList![screenEventList.length-1];
@@ -335,35 +336,18 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const y_min = Math.min(firstMouseVector.y, lastMouseVector.y);
         const y_max = Math.max(firstMouseVector.y, lastMouseVector.y);
         
-        // Box corners in screen space. The ordering is:
-        // A -- B
-        // |    |
-        // D -- C
-        const screenBoxList = [
-          [x_min, y_max],  // A
-          [x_max, y_max],  // B
-          [x_max, y_min],  // C
-          [x_min, y_min],  // D
+        // Send the upper-left and lower-right corners of the box.
+        const screenBoxList: [number, number][] = [
+          [x_min, y_min],
+          [x_max, y_max],
         ]
-
-        const rayList = screenBoxList.map((screenPos) => {
-          const raycaster = new THREE.Raycaster();
-          const mouseVector = new THREE.Vector2(screenPos[0], screenPos[1]);
-          raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
-          const ray = rayToViserCoords(viewer, raycaster.ray);
-          return ray;
-        });
 
         sendClickThrottled({
           type: "ScenePointerMessage",
           event_type: "box",
-            ray_origin: [[rayList[0].origin.x, rayList[0].origin.y, rayList[0].origin.z]],
-            ray_direction: [
-              [rayList[0].direction.x, rayList[0].direction.y, rayList[0].direction.z],
-              [rayList[1].direction.x, rayList[1].direction.y, rayList[1].direction.z],
-              [rayList[2].direction.x, rayList[2].direction.y, rayList[2].direction.z],
-              [rayList[3].direction.x, rayList[3].direction.y, rayList[3].direction.z],
-            ],
+          ray_origin: null,
+          ray_direction: null,
+          screen_pos: screenBoxList
         });
 
         // Re-enable camera controls! Was disabled in `onPointerDown`, to allow for mouse drag w/o camera movement.

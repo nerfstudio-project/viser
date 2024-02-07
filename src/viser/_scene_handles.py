@@ -38,12 +38,16 @@ class ScenePointerEvent:
     """Client that triggered this event."""
     client_id: int
     """ID of client that triggered this event."""
-    event: Literal["click"]
-    """Type of event that was triggered. Currently we only support clicks."""
-    ray_origin: Tuple[float, float, float]
+    event: Literal["click", "box"]
+    """Type of event that was triggered. Currently we only support clicks and box selections."""
+    ray_origin: Optional[Tuple[float, float, float]]
     """Origin of 3D ray corresponding to this click, in world coordinates."""
-    ray_direction: Tuple[float, float, float]
+    ray_direction: Optional[Tuple[float, float, float]]
     """Direction of 3D ray corresponding to this click, in world coordinates."""
+    screen_pos: List[Tuple[float, float]]
+    """Screen position of the click on the screen (NDC coordinates, -1 to 1).
+    (-1, -1) is the bottom-left corner, (1, 1) is the top-right corner.
+    For a box selection, this includes the top-left and bottom-right corners of the box."""
 
 
 TSceneNodeHandle = TypeVar("TSceneNodeHandle", bound="SceneNodeHandle")

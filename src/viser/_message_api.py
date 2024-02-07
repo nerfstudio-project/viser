@@ -1163,6 +1163,7 @@ class MessageApi(abc.ABC):
                 event=message.event_type,
                 ray_origin=message.ray_origin,
                 ray_direction=message.ray_direction,
+                screen_pos=message.screen_pos,
             )
             cb(event)
 

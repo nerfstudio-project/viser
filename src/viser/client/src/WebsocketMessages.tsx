@@ -24,8 +24,9 @@ export interface ViewerCameraMessage {
 export interface ScenePointerMessage {
   type: "ScenePointerMessage";
   event_type: "click" | "box";
-  ray_origin: [number, number, number][];
-  ray_direction: [number, number, number][];
+  ray_origin: [number, number, number] | null;
+  ray_direction: [number, number, number] | null;
+  screen_pos: [number, number][];
 }
 /** Message to enable/disable scene click events.
  *
