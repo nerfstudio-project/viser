@@ -131,13 +131,10 @@ class GuiApi(abc.ABC):
         handle_state = handle._impl
 
         has_changed = False
+        updates_cast = {}
         for prop_name, prop_value in message.updates.items():
             assert hasattr(handle_state, prop_name)
             current_value = getattr(handle_state, prop_name)
-
-            if current_value != prop_value:
-                has_changed = True
-                setattr(handle_state, prop_name, prop_value)
 
             # Do some type casting. This is brittle, but necessary when we
             # expect floats but the Javascript side gives us integers.
@@ -150,6 +147,14 @@ class GuiApi(abc.ABC):
                     )
                 else:
                     prop_value = handle_state.typ(prop_value)
+
+            # Update handle property.
+            if current_value != prop_value:
+                has_changed = True
+                setattr(handle_state, prop_name, prop_value)
+
+            # Save value, which might have been cast.
+            updates_cast[prop_name] = prop_value
 
         # Only call update when value has actually changed.
         if not handle_state.is_button and not has_changed:
@@ -171,7 +176,7 @@ class GuiApi(abc.ABC):
             cb(GuiEvent(client, client_id, handle))
 
         if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, message.updates)
+            handle_state.sync_cb(client_id, updates_cast)
 
     def _get_container_id(self) -> str:
         """Get container ID associated with the current thread."""
