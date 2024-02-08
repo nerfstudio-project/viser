@@ -622,7 +622,7 @@ export interface GuiRemoveMessage {
 export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
   id: string;
-  updates: { [key: string]: any };
+  updates: Partial<GuiAddComponentMessage>;
 }
 /** Message from server->client to configure parts of the GUI.
  *

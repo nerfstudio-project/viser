@@ -8,7 +8,7 @@ from typing import Any, Callable, ClassVar, Dict, Optional, Tuple, Type, TypeVar
 
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Literal, NotRequired, TypedDict, override
+from typing_extensions import Annotated, Literal, NotRequired, TypedDict, override
 
 from . import infra, theme
 
@@ -552,7 +552,10 @@ class GuiUpdateMessage(Message):
     """Sent client<->server when any property of a GUI component is changed."""
 
     id: str
-    updates: Dict[str, Any]
+    updates: Annotated[
+        Dict[str, Any],
+        infra.TypeScriptAnnotationOverride("Partial<GuiAddComponentMessage>"),
+    ]
     """Mapping from property name to new value."""
 
     @override
