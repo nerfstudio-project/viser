@@ -59,13 +59,7 @@ def _get_ts_type(typ: Type[Any]) -> str:
     elif origin_typ is dict:
         args = get_args(typ)
         assert len(args) == 2
-        return (
-            "{ [key: "
-            + _get_ts_type(args[0])
-            + "]: "
-            + _get_ts_type(args[1])
-            + " }"
-        )
+        return "{ [key: " + _get_ts_type(args[0]) + "]: " + _get_ts_type(args[1]) + " }"
     elif is_typeddict(typ):
         hints = get_type_hints(typ)
         optional_keys = getattr(typ, "__optional_keys__", [])
