@@ -13,7 +13,6 @@ from typing import List
 import numpy as onp
 import trimesh.creation
 import trimesh.ray
-
 import viser
 import viser.transforms as tf
 
@@ -38,7 +37,6 @@ add_button_handle = server.add_gui_button("Add sphere")
 
 @add_button_handle.on_click
 def _(_):
-    global mesh_handle
     add_button_handle.disabled = True
 
     @server.on_scene_click
@@ -79,13 +77,15 @@ def _(_):
             # Put the mesh in the camera frame.
             R_world_mesh = tf.SO3(mesh_handle.wxyz)
             R_mesh_world = R_world_mesh.inverse()
-            R_camera_world = tf.SE3.from_rotation_and_translation(tf.SO3(camera.wxyz), camera.position).inverse()
+            R_camera_world = tf.SE3.from_rotation_and_translation(
+                tf.SO3(camera.wxyz), camera.position
+            ).inverse()
             vertices = mesh.vertices
             vertices = (R_mesh_world.as_matrix() @ vertices.T).T
             vertices = (
-                R_camera_world.as_matrix() @ 
-                onp.hstack([vertices, onp.ones((vertices.shape[0], 1))]).T
-                ).T[:, :3]
+                R_camera_world.as_matrix()
+                @ onp.hstack([vertices, onp.ones((vertices.shape[0], 1))]).T
+            ).T[:, :3]
 
             # Get the camera intrinsics, and project the vertices onto the image plane.
             # Initially, the screen coordinate system is:
@@ -96,7 +96,7 @@ def _(_):
             # ... doesn't match the NDC coordinates! This is in OpenCV's coordinate system.
             fov, aspect = camera.fov, camera.aspect
             vertices_proj = vertices[:, :2] / vertices[:, 2].reshape(-1, 1)
-            vertices_proj /= onp.tan(fov/2)
+            vertices_proj /= onp.tan(fov / 2)
             vertices_proj[:, 0] /= aspect
 
             # Flip the y-axis to match the NDC coordinates.
@@ -104,9 +104,9 @@ def _(_):
 
             # Select the vertices that lie inside the 2D selected box, once projected.
             mask = (
-                (vertices_proj > onp.array(message.screen_pos[0])) & 
-                (vertices_proj < onp.array(message.screen_pos[1]))
-                ).all(axis=1)[..., None]
+                (vertices_proj > onp.array(message.screen_pos[0]))
+                & (vertices_proj < onp.array(message.screen_pos[1]))
+            ).all(axis=1)[..., None]
 
             # Update the mesh color based on whether the vertices are inside the box
             mesh.visual.vertex_colors = onp.where(

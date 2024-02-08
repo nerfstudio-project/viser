@@ -45,7 +45,6 @@ import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure, useViewportSize } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { normalizeClick, isClickValid } from "./ClickUtils";
-import { maxHeaderSize } from "http";
 
 export type ViewerContextContents = {
   // Zustand hooks.
