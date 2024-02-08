@@ -19,6 +19,12 @@ import viser.transforms as tf
 server = viser.ViserServer()
 server.set_up_direction("+y")
 
+# Set up the camera -- this gives a nice view of the full mesh.
+@server.on_client_connect
+def _(client: viser.ClientHandle) -> None:
+    client.camera.position = (0.0, 0.0, -10.0)
+    client.camera.wxyz = (0.0, 0.0, 0.0, 1.0)
+
 mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
 assert isinstance(mesh, trimesh.Trimesh)
 mesh.apply_scale(0.05)
@@ -73,6 +79,7 @@ def _(_):
 
         elif message.event == "box":
             camera = message.client.camera
+            print(camera.wxyz)
 
             # Put the mesh in the camera frame.
             R_world_mesh = tf.SO3(mesh_handle.wxyz)
