@@ -128,35 +128,37 @@ class GuiApi(abc.ABC):
         handle = self._gui_handle_from_id.get(message.id, None)
         if handle is None:
             return
-
-        prop_name = message.prop_name
-        prop_value = message.prop_value
-        del message
-
         handle_state = handle._impl
-        assert hasattr(handle_state, prop_name)
-        current_value = getattr(handle_state, prop_name)
 
-        has_changed = current_value != prop_value
+        has_changed = False
+        updates_cast = {}
+        for prop_name, prop_value in message.updates.items():
+            assert hasattr(handle_state, prop_name)
+            current_value = getattr(handle_state, prop_name)
 
-        if prop_name == "value":
-            # Do some type casting. This is necessary when we expect floats but the
-            # Javascript side gives us integers.
-            if handle_state.typ is tuple:
-                assert len(prop_value) == len(handle_state.value)
-                prop_value = tuple(
-                    type(handle_state.value[i])(prop_value[i])
-                    for i in range(len(prop_value))
-                )
-            else:
-                prop_value = handle_state.typ(prop_value)
+            # Do some type casting. This is brittle, but necessary when we
+            # expect floats but the Javascript side gives us integers.
+            if prop_name == "value":
+                if handle_state.typ is tuple:
+                    assert len(prop_value) == len(handle_state.value)
+                    prop_value = tuple(
+                        type(handle_state.value[i])(prop_value[i])
+                        for i in range(len(prop_value))
+                    )
+                else:
+                    prop_value = handle_state.typ(prop_value)
+
+            # Update handle property.
+            if current_value != prop_value:
+                has_changed = True
+                setattr(handle_state, prop_name, prop_value)
+
+            # Save value, which might have been cast.
+            updates_cast[prop_name] = prop_value
 
         # Only call update when value has actually changed.
         if not handle_state.is_button and not has_changed:
             return
-
-        # Update state.
-        setattr(handle_state, prop_name, prop_value)
 
         # Trigger callbacks.
         for cb in handle_state.update_cb:
@@ -174,7 +176,7 @@ class GuiApi(abc.ABC):
             cb(GuiEvent(client, client_id, handle))
 
         if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, prop_name, prop_value)
+            handle_state.sync_cb(client_id, updates_cast)
 
     def _get_container_id(self) -> str:
         """Get container ID associated with the current thread."""
@@ -1080,7 +1082,6 @@ class GuiApi(abc.ABC):
             typ=type(value),
             gui_api=self,
             value=value,
-            initial_value=value,
             update_timestamp=time.time(),
             container_id=self._get_container_id(),
             update_cb=[],
@@ -1098,11 +1099,9 @@ class GuiApi(abc.ABC):
         if not is_button:
 
             def sync_other_clients(
-                client_id: ClientId, prop_name: str, prop_value: Any
+                client_id: ClientId, updates: Dict[str, Any]
             ) -> None:
-                message = _messages.GuiUpdateMessage(
-                    handle_state.id, prop_name, prop_value
-                )
+                message = _messages.GuiUpdateMessage(handle_state.id, updates)
                 message.excluded_self_client = client_id
                 self._get_api()._queue(message)
 

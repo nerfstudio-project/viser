@@ -748,7 +748,7 @@ function useMessageHandler() {
       }
       // Update props of a GUI component
       case "GuiUpdateMessage": {
-        updateGuiProps(message.id, message.prop_name, message.prop_value);
+        updateGuiProps(message.id, message.updates);
         return;
       }
       // Remove a GUI input.

@@ -100,6 +100,7 @@ def main() -> None:
                 * color_coeffs[:, None]
             ).astype(onp.uint8),
             position=gui_vector2.value + (0,),
+            point_shape="circle",
         )
 
         # We can use `.visible` and `.disabled` to toggle GUI elements.
