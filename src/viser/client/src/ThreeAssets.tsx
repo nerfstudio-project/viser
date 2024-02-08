@@ -89,7 +89,7 @@ export const PointCloud = React.forwardRef<
     colors: Float32Array;
   }
 >(function PointCloud(props, ref) {
-  const { gl, camera } = useThree();
+  const getThreeState = useThree((state) => state.get);
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute(
@@ -125,9 +125,11 @@ export const PointCloud = React.forwardRef<
     material.uniforms.scale.value =
       (props.pointSize /
         Math.tan(
-          (((camera as THREE.PerspectiveCamera).fov / 180.0) * Math.PI) / 2.0,
+          (((getThreeState().camera as THREE.PerspectiveCamera).fov / 180.0) *
+            Math.PI) /
+            2.0,
         )) *
-      gl.getSize(rendererSize).height;
+      getThreeState().gl.getSize(rendererSize).height;
   });
   return <points ref={ref} geometry={geometry} material={material} />;
 });
