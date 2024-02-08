@@ -107,7 +107,7 @@ export const Outlines = React.forwardRef<THREE.Group, OutlinesProps>(
     const [material] = React.useState(
       () => new OutlinesMaterial({ side: THREE.BackSide }),
     );
-    const { gl } = useThree();
+    const gl = useThree((state) => state.gl);
     const contextSize = gl.getDrawingBufferSize(new THREE.Vector2());
     React.useMemo(() => extend({ OutlinesMaterial }), []);
 
