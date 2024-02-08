@@ -24,8 +24,7 @@ export default function ButtonGroupComponent({
               messageSender({
                 type: "GuiUpdateMessage",
                 id: id,
-                prop_name: "value",
-                prop_value: option,
+                updates: { value: option },
               })
             }
             style={{ flexGrow: 1, width: 0 }}

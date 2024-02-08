@@ -31,12 +31,11 @@ export default function GeneratedGuiContainer({
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
 
   function setValue(id: string, value: any) {
-    updateGuiProps(id, "value", value);
+    updateGuiProps(id, {value: value});
     messageSender({
       type: "GuiUpdateMessage",
       id: id,
-      prop_name: "value",
-      prop_value: value,
+      updates: { value: value },
     });
   }
   return (

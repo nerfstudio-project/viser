@@ -34,7 +34,7 @@ interface GuiActions {
   addGui: (config: GuiConfig) => void;
   addModal: (config: Messages.GuiModalMessage) => void;
   removeModal: (id: string) => void;
-  updateGuiProps: (id: string, prop_name: string, prop_value: any) => void;
+  updateGuiProps: (id: string, updates: { [key: string]: any }) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
 }
@@ -121,16 +121,25 @@ export function useGuiState(initialServer: string) {
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
           }),
-        updateGuiProps: (id, name, value) => {
+        updateGuiProps: (id, updates) => {
           set((state) => {
             const config = state.guiConfigFromId[id];
             if (config === undefined) {
               console.error("Tried to update non-existent component", id);
               return;
             }
+
+            // Double-check that key exists.
+            Object.keys(updates).forEach((key) => {
+              if (!(key in config))
+                console.error(
+                  `Tried to update nonexistent property '${key}' of GUI element ${id}!`,
+                );
+            });
+
             state.guiConfigFromId[id] = {
               ...config,
-              [name]: value,
+              ...updates,
             } as GuiConfig;
           });
         },

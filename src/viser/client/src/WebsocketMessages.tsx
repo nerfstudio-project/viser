@@ -622,8 +622,7 @@ export interface GuiRemoveMessage {
 export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
   id: string;
-  prop_name: string;
-  prop_value: any;
+  updates: { [key: string]: any };
 }
 /** Message from server->client to configure parts of the GUI.
  *

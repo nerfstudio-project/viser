@@ -32,8 +32,7 @@ export default function ButtonComponent({
           messageSender({
             type: "GuiUpdateMessage",
             id: id,
-            prop_name: "value",
-            prop_value: true,
+            updates: { value: true },
           })
         }
         style={{ height: "2.125em" }}
