@@ -57,12 +57,14 @@ def ensure_client_is_built() -> None:
 
     # Install nodejs and build if necessary. We assume bash is installed.
     if build:
-        env_dir = _install_sandboxed_node()
-        npx_path = env_dir / "bin" / "npx"
+        node_exec_dir = _install_sandboxed_node()
+        npx_path = node_exec_dir / "npx"
+
+        
         subprocess.run(
             args=(
                 "bash -c '"
-                f"source {env_dir / 'bin' / 'activate'};"
+                f"source {node_exec_dir / 'activate'};"
                 f"{npx_path} yarn install;"
                 f"{npx_path} yarn run build;"
                 "'"
@@ -77,20 +79,26 @@ def _install_sandboxed_node() -> Path:
     """Install a sandboxed copy of nodejs using nodeenv, and return a path to the
     environment root."""
     env_dir = client_dir / ".nodeenv"
-    if (env_dir / "bin" / "npx").exists():
+    node_exec_dir = env_dir / "bin"
+
+    """On windows inside .nodeenv no bin-folder exists. Instead the executables are kept in Scripts."""
+    if not node_exec_dir.exists():
+        node_exec_dir = env_dir / "Scripts"
+
+    if (node_exec_dir / "npx").exists():
         rich.print("[bold](viser)[/bold] nodejs is set up!")
-        return env_dir
+        return node_exec_dir
 
     subprocess.run(
         [sys.executable, "-m", "nodeenv", "--node=20.4.0", env_dir], check=False
     )
     subprocess.run(
-        args=[env_dir / "bin" / "npm", "install", "yarn"],
+        args=[node_exec_dir / "npm", "install", "yarn"],
         input="y\n".encode(),
         check=False,
     )
-    assert (env_dir / "bin" / "npx").exists()
-    return env_dir
+    assert (node_exec_dir / "npx").exists()
+    return node_exec_dir
 
 
 def _modified_time_recursive(dir: Path) -> float:
