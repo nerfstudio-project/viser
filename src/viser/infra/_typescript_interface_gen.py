@@ -103,6 +103,9 @@ def _get_ts_type(typ: Type[Any]) -> str:
 
 @dataclasses.dataclass(frozen=True)
 class TypeScriptAnnotationOverride:
+    """Use with `typing.Annotated[]` to override the automatically-generated
+    TypeScript annotation corresponding to a dataclass field."""
+
     annotation: str
 
 
