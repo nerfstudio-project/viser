@@ -102,19 +102,11 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
         for tag in getattr(cls, "_tags", []):
             tag_map[tag].append(cls.__name__)
 
-        get_ts_type = getattr(cls, "_get_ts_type", None)
-        if get_ts_type is not None:
-            assert callable(get_ts_type)
-            out_lines.append(get_ts_type())
-            continue
-
         out_lines.append(f"export interface {cls.__name__} " + "{")
         out_lines.append(f'  type: "{cls.__name__}";')
         field_names = set([f.name for f in dataclasses.fields(cls)])  # type: ignore
         for name, typ in get_type_hints(cls).items():
-            if typ == ClassVar[str]:
-                typ = f'"{getattr(cls, name)}"'
-            elif name in field_names:
+            if name in field_names:
                 typ = _get_ts_type(typ)
             else:
                 continue
