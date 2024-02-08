@@ -4,11 +4,11 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Callable, ClassVar, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Callable, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Literal, NotRequired, TypedDict, override
+from typing_extensions import Annotated, Literal, NotRequired, TypedDict, override
 
 from . import infra, theme
 
@@ -552,12 +552,21 @@ class GuiUpdateMessage(Message):
     """Sent client<->server when any property of a GUI component is changed."""
 
     id: str
-    prop_name: str
-    prop_value: Any
+    updates: Annotated[
+        Dict[str, Any],
+        infra.TypeScriptAnnotationOverride("Partial<GuiAddComponentMessage>"),
+    ]
+    """Mapping from property name to new value."""
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + self.id + "-" + self.prop_name
+        return (
+            type(self).__name__
+            + "-"
+            + self.id
+            + "-"
+            + ",".join(list(self.updates.keys()))
+        )
 
 
 @dataclasses.dataclass
