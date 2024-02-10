@@ -80,7 +80,8 @@ export type ViewerContextContents = {
   getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
   // Track click drag events.
   sceneClickInfo: React.MutableRefObject<{
-    enabled: boolean;  // Enable click events.
+    enabled_click: boolean;  // Enable click events.
+    enabled_box: boolean;  // Enable box events.
     screenEventList: React.PointerEvent<HTMLDivElement>[];  //  List of mouse positions
     listening: boolean;  // Only allow one drag event at a time.
   }>;
@@ -138,7 +139,8 @@ function ViewerRoot() {
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
     sceneClickInfo: React.useRef({
-      enabled: false,
+      enabled_click: false,
+      enabled_box: false,
       screenEventList: [],
       listening: false,
     }),
@@ -238,7 +240,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const click_info = viewer.sceneClickInfo.current!;
 
         // Only handle click events if enabled.
-        if (!click_info.enabled) return;
+        if (!(click_info.enabled_click || click_info.enabled_box)) return;
 
         // Check if click is valid.
         const mouseVector = normalizeClick(viewer, e);
@@ -261,7 +263,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const click_info = viewer.sceneClickInfo.current!;
 
         // Only handle if click events are enabled, and if pointer is down (i.e., dragging).
-        if (!click_info.enabled || !click_info.listening) return;
+        if (!(click_info.enabled_click || click_info.enabled_box) || !click_info.listening) return;
 
         // Check if click is valid.
         const mouseVector = normalizeClick(viewer, e);
@@ -281,26 +283,29 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         // Add the new mouse position to the list.
         screenEventList.push(e);
 
-        const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.beginPath();
-        ctx.fillStyle = "blue";
-        ctx.strokeStyle = "blue";
-        ctx.globalAlpha = 0.2;
-        ctx.fillRect(
-          firstScreenEvent.nativeEvent.offsetX,
-          firstScreenEvent.nativeEvent.offsetY,
-          e.nativeEvent.offsetX - firstScreenEvent.nativeEvent.offsetX,
-          e.nativeEvent.offsetY - firstScreenEvent.nativeEvent.offsetY
-          );
-        ctx.globalAlpha = 1.0;
-        ctx.stroke();
+        // If we're listening for scene box events, draw the box on the 2D canvas for user feedback.
+        if (click_info.enabled_box) {
+          const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          ctx.beginPath();
+          ctx.fillStyle = "blue";
+          ctx.strokeStyle = "blue";
+          ctx.globalAlpha = 0.2;
+          ctx.fillRect(
+            firstScreenEvent.nativeEvent.offsetX,
+            firstScreenEvent.nativeEvent.offsetY,
+            e.nativeEvent.offsetX - firstScreenEvent.nativeEvent.offsetX,
+            e.nativeEvent.offsetY - firstScreenEvent.nativeEvent.offsetY
+            );
+          ctx.globalAlpha = 1.0;
+          ctx.stroke();
+        }
       }}
       onPointerUp={(e) => {
         const click_info = viewer.sceneClickInfo.current!;
 
         // Only handle if click events are enabled, and if pointer was down (i.e., dragging).
-        if (!click_info.enabled) return;
+        if (!(click_info.enabled_click || click_info.enabled_box)) return;
         if (!click_info.listening) return;
 
         const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
@@ -308,7 +313,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
 
         // If there's only one pointer, send a click message.
         // The message will return origin/direction lists of length 1.
-        if (click_info.screenEventList!.length == 1) {
+        if (click_info.screenEventList!.length == 1 && click_info.enabled_click) {
           const raycaster = new THREE.Raycaster();
           const mouseVector = normalizeClick(viewer, e);
           raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
@@ -343,13 +348,15 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           [x_max, y_max],
         ]
 
-        sendClickThrottled({
-          type: "ScenePointerMessage",
-          event_type: "box",
-          ray_origin: null,
-          ray_direction: null,
-          screen_pos: screenBoxList
-        });
+        if (click_info.enabled_box) {
+          sendClickThrottled({
+            type: "ScenePointerMessage",
+            event_type: "box",
+            ray_origin: null,
+            ray_direction: null,
+            screen_pos: screenBoxList
+          });
+        }
 
         // Re-enable camera controls! Was disabled in `onPointerDown`, to allow for mouse drag w/o camera movement.
         viewer.cameraControlRef.current!.enabled = true;

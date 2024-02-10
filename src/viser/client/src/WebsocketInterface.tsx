@@ -129,7 +129,19 @@ function useMessageHandler() {
       }
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
-        viewer.sceneClickInfo.current!.enabled = message.enable;
+        switch (message.event_type) {
+          case "click":
+            viewer.sceneClickInfo.current!.enabled_click = message.enable;
+            break;
+          case "box":
+            viewer.sceneClickInfo.current!.enabled_box = message.enable;
+            break;
+          default:
+            console.error(
+              "Received an unknown scene pointer event type:",
+              message.event_type,
+            );
+        }
 
         // Update cursor to indicate whether the scene can be clicked.
         viewer.canvasRef.current!.style.cursor = message.enable
@@ -1061,7 +1073,8 @@ export function WebsocketMessageProducer() {
         console.log(`Disconnected! ${server} code=${event.code}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
-        viewer.sceneClickInfo.current!.enabled = false;
+        viewer.sceneClickInfo.current!.enabled_click = false;
+        viewer.sceneClickInfo.current!.enabled_box = false;
         viewer.useGui.setState({ websocketConnected: false });
         resetGui();
 

@@ -38,7 +38,7 @@ class ScenePointerEvent:
     """Client that triggered this event."""
     client_id: int
     """ID of client that triggered this event."""
-    event: Literal["click", "box"]
+    event_type: _messages.SCENEPOINTER_EVENT_TYPE
     """Type of event that was triggered. Currently we only support clicks and box selections."""
     ray_origin: Optional[Tuple[float, float, float]]
     """Origin of 3D ray corresponding to this click, in world coordinates."""
