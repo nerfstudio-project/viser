@@ -2,233 +2,99 @@ from __future__ import annotations
 
 import dataclasses
 import re
-import threading
-import time
 import urllib.parse
-import uuid
 import warnings
 from pathlib import Path
 from typing import (
-    TYPE_CHECKING,
-    Any,
     Callable,
-    Dict,
     Generic,
-    Iterable,
     List,
+    Literal,
     Optional,
+    Sequence,
     Tuple,
-    Type,
+    TypedDict,
     TypeVar,
 )
 
 import imageio.v3 as iio
-import numpy as onp
-from typing_extensions import Protocol
+import numpy as np
+from typing_extensions import NotRequired
 
+from . import _messages
+from ._gui_api_core import Component, ComponentMeta
 from ._icons import base64_from_icon
 from ._icons_enum import IconName
-from ._message_api import _encode_image_base64
-from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
-from .infra import ClientId
-
-if TYPE_CHECKING:
-    from ._gui_api import GuiApi
-    from ._viser import ClientHandle
+from ._message_api import _encode_image_base64, cast_vector
 
 
-T = TypeVar("T")
-TGuiHandle = TypeVar("TGuiHandle", bound="_GuiInputHandle")
+TGuiHandle = TypeVar("TGuiHandle")
+TPayload = TypeVar("TPayload", bound=type)
+IntOrFloat = TypeVar("IntOrFloat", int, float)
+Color = Literal[
+    "dark",
+    "gray",
+    "red",
+    "pink",
+    "grape",
+    "violet",
+    "indigo",
+    "blue",
+    "cyan",
+    "green",
+    "lime",
+    "yellow",
+    "orange",
+    "teal",
+]
+GuiSliderMark = TypedDict("GuiSliderMark", {"value": float, "label": NotRequired[str]})
 
 
-def _make_unique_id() -> str:
-    """Return a unique ID for referencing GUI elements."""
-    return str(uuid.uuid4())
+def _compute_precision_digits(x: float) -> int:
+    """For number inputs: compute digits of precision from some number.
+
+    Example inputs/outputs:
+        100 => 0
+        12 => 0
+        12.1 => 1
+        10.2 => 1
+        0.007 => 3
+    """
+    digits = 0
+    while x != round(x, ndigits=digits) and digits < 7:
+        digits += 1
+    return digits
 
 
-class GuiContainerProtocol(Protocol):
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
-        default_factory=dict
-    )
+def _compute_step(x: Optional[float]) -> float:  # type: ignore
+    """For number inputs: compute an increment size from some number.
 
-
-class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None:
-        ...
-
-
-@dataclasses.dataclass
-class _GuiHandleState(Generic[T]):
-    """Internal API for GUI elements."""
-
-    label: str
-    typ: Type[T]
-    gui_api: GuiApi
-    value: T
-    update_timestamp: float
-
-    container_id: str
-    """Container that this GUI input was placed into."""
-
-    update_cb: List[Callable[[GuiEvent], None]]
-    """Registered functions to call when this input is updated."""
-
-    is_button: bool
-    """Indicates a button element, which requires special handling."""
-
-    sync_cb: Optional[Callable[[ClientId, Dict[str, Any]], None]]
-    """Callback for synchronizing inputs across clients."""
-
-    disabled: bool
-    visible: bool
-
-    order: float
-    id: str
-    hint: Optional[str]
-
-    message_type: Type[Message]
-
-
-@dataclasses.dataclass
-class _GuiInputHandle(Generic[T]):
-    # Let's shove private implementation details in here...
-    _impl: _GuiHandleState[T]
-
-    # Should we use @property for get_value / set_value, set_hidden, etc?
-    #
-    # Benefits:
-    #   @property is syntactically very nice.
-    #   `gui.value = ...` is really tempting!
-    #   Feels a bit more magical.
-    #
-    # Downsides:
-    #   Consistency: not everything that can be written can be read, and not everything
-    #   that can be read can be written. `get_`/`set_` makes this really clear.
-    #   Clarity: some things that we read (like client mappings) are copied before
-    #   they're returned. An attribute access obfuscates the overhead here.
-    #   Flexibility: getter/setter types should match. https://github.com/python/mypy/issues/3004
-    #   Feels a bit more magical.
-    #
-    # Is this worth the tradeoff?
-
-    @property
-    def order(self) -> float:
-        """Read-only order value, which dictates the position of the GUI element."""
-        return self._impl.order
-
-    @property
-    def value(self) -> T:
-        """Value of the GUI input. Synchronized automatically when assigned."""
-        return self._impl.value
-
-    @value.setter
-    def value(self, value: T | onp.ndarray) -> None:
-        if isinstance(value, onp.ndarray):
-            assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
-            value = tuple(map(float, value))  # type: ignore
-
-        # Send to client, except for buttons.
-        if not self._impl.is_button:
-            self._impl.gui_api._get_api()._queue(
-                GuiUpdateMessage(self._impl.id, {"value": value})
-            )
-
-        # Set internal state. We automatically convert numpy arrays to the expected
-        # internal type. (eg 1D arrays to tuples)
-        self._impl.value = type(self._impl.value)(value)  # type: ignore
-        self._impl.update_timestamp = time.time()
-
-        # Call update callbacks.
-        for cb in self._impl.update_cb:
-            # Pushing callbacks into separate threads helps prevent deadlocks when we
-            # have a lock in a callback. TODO: revisit other callbacks.
-            threading.Thread(
-                target=lambda: cb(
-                    GuiEvent(
-                        client_id=None,
-                        client=None,
-                        target=self,
-                    )
-                )
-            ).start()
-
-    @property
-    def update_timestamp(self) -> float:
-        """Read-only timestamp when this input was last updated."""
-        return self._impl.update_timestamp
-
-    @property
-    def disabled(self) -> bool:
-        """Allow/disallow user interaction with the input. Synchronized automatically
-        when assigned."""
-        return self._impl.disabled
-
-    @disabled.setter
-    def disabled(self, disabled: bool) -> None:
-        if disabled == self.disabled:
-            return
-
-        self._impl.gui_api._get_api()._queue(
-            GuiUpdateMessage(self._impl.id, {"disabled": disabled})
-        )
-        self._impl.disabled = disabled
-
-    @property
-    def visible(self) -> bool:
-        """Temporarily show or hide this GUI element from the visualizer. Synchronized
-        automatically when assigned."""
-        return self._impl.visible
-
-    @visible.setter
-    def visible(self, visible: bool) -> None:
-        if visible == self.visible:
-            return
-
-        self._impl.gui_api._get_api()._queue(
-            GuiUpdateMessage(self._impl.id, {"visible": visible})
-        )
-        self._impl.visible = visible
-
-    def __post_init__(self) -> None:
-        """We need to register ourself after construction for callbacks to work."""
-        gui_api = self._impl.gui_api
-
-        # TODO: the current way we track GUI handles and children is fairly manual +
-        # error-prone. We should revist this design.
-        gui_api._gui_handle_from_id[self._impl.id] = self
-        parent = gui_api._container_handle_from_id[self._impl.container_id]
-        parent._children[self._impl.id] = self
-
-    def remove(self) -> None:
-        """Permanently remove this GUI element from the visualizer."""
-        gui_api = self._impl.gui_api
-        gui_api._get_api()._queue(GuiRemoveMessage(self._impl.id))
-        gui_api._gui_handle_from_id.pop(self._impl.id)
-
-
-StringType = TypeVar("StringType", bound=str)
-
-
-# GuiInputHandle[T] is used for all inputs except for buttons.
-#
-# We inherit from _GuiInputHandle to special-case buttons because the usage semantics
-# are slightly different: we have `on_click()` instead of `on_update()`.
-@dataclasses.dataclass
-class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
-    """Handle for a general GUI inputs in our visualizer.
-
-    Lets us get values, set values, and detect updates."""
-
-    def on_update(
-        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
-    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
-        """Attach a function to call when a GUI input is updated. Happens in a thread."""
-        self._impl.update_cb.append(func)
-        return func
+    Example inputs/outputs:
+        100 => 1
+        12 => 1
+        12.1 => 0.1
+        12.02 => 0.01
+        0.004 => 0.001
+    """
+    return 1 if x is None else 10 ** (-_compute_precision_digits(x))
 
 
 @dataclasses.dataclass(frozen=True)
 class GuiEvent(Generic[TGuiHandle]):
+    """Information associated with a GUI event, such as an update or click.
+
+    Passed as input to callback functions."""
+
+    client: Optional["_viser.ClientHandle"]
+    """Client that triggered this event."""
+    client_id: Optional[int]
+    """ID of client that triggered this event."""
+    target: TGuiHandle
+    """GUI element that was affected."""
+
+
+@dataclasses.dataclass(frozen=True)
+class GuiEventWithPayload(Generic[TGuiHandle, TPayload]):
     """Information associated with a GUI event, such as an update or click.
 
     Passed as input to callback functions."""
@@ -239,259 +105,143 @@ class GuiEvent(Generic[TGuiHandle]):
     """ID of client that triggered this event."""
     target: TGuiHandle
     """GUI element that was affected."""
+    payload: TPayload
+    """Payload associated with this event."""
 
 
-@dataclasses.dataclass
-class GuiButtonHandle(_GuiInputHandle[bool]):
-    """Handle for a button input in our visualizer.
+class InputComponent(metaclass=ComponentMeta, abstract=True):
+    """Base class for all input components."""
 
-    Lets us detect clicks."""
+    label: str
+    """Label to display on the text input."""
+    _: dataclasses.KW_ONLY
+    disabled: bool = False
+    """Whether the text input is disabled."""
+    visible: bool = True
+    """Whether the text input is visible."""
+    hint: Optional[str] = None
+    """Optional hint to display on hover."""
 
-    def on_click(
-        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
-    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
-        """Attach a function to call when a button is pressed. Happens in a thread."""
-        self._impl.update_cb.append(func)
-        return func
+
+class Button(Component, metaclass=ComponentMeta):
+    """Add a button to the GUI. The value of this input is set to `True` every time
+    it is clicked; to detect clicks, we can manually set it back to `False`.
+
+    Args:
+        label: Label to display on the button.
+        visible: Whether the button is visible.
+        disabled: Whether the button is disabled.
+        hint: Optional hint to display on hover.
+        icon: Optional icon to display on the button.
+        order: Optional ordering, smallest values will be displayed first.
+    """
+
+    label: str
+    """The text of the button"""
+
+    _: dataclasses.KW_ONLY
+    color: Optional[Color] = None
+    """Optional color to use for the button."""
+    icon_base64: Optional[str] = dataclasses.field(init=False, default=None)
+
+    disabled: bool = False
+    """Whether the text input is disabled."""
+    hint: Optional[str] = None
+    """Optional hint to display on hover."""
+
+    def __set_icon__(self, icon: Optional[IconName] = None) -> None:
+        """Optional icon to display on the button."""
+        # Convert the icon to base64
+        self.icon_base64 = base64_from_icon(icon)
+
+    def on_click(self, callback: Callable[[GuiEvent["Button"]], None]) -> None:
+        ...
 
 
-@dataclasses.dataclass
-class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
+class Text(Component, metaclass=ComponentMeta):
+    value: str = ""
+    """Initial value of the text input."""
+
+
+class ButtonGroup(InputComponent, metaclass=ComponentMeta):
     """Handle for a button group input in our visualizer.
 
     Lets us detect clicks."""
 
+    options: Sequence[str]
+    """Sequence of options to display as buttons."""
+
     def on_click(
-        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
-    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
+        self, func: Callable[[GuiEventWithPayload["ButtonGroup", str]], None]
+    ) -> Callable[[GuiEventWithPayload["ButtonGroup", str]], None]:
         """Attach a function to call when a button is pressed. Happens in a thread."""
-        self._impl.update_cb.append(func)
-        return func
-
-    @property
-    def disabled(self) -> bool:
-        """Button groups cannot be disabled."""
-        return False
-
-    @disabled.setter
-    def disabled(self, disabled: bool) -> None:
-        """Button groups cannot be disabled."""
-        assert not disabled, "Button groups cannot be disabled."
+        ...
 
 
-@dataclasses.dataclass
-class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
+class Dropdown(InputComponent, metaclass=ComponentMeta):
     """Handle for a dropdown-style GUI input in our visualizer.
 
     Lets us get values, set values, and detect updates."""
 
-    _impl_options: Tuple[StringType, ...]
+    options: Tuple[str]
+    """Sequence of options to display in the dropdown."""
+    value: str = dataclasses.field(kw_only=True, default=None)
+    """Value of the dropdown"""
 
-    @property
-    def options(self) -> Tuple[StringType, ...]:
-        """Options for our dropdown. Synchronized automatically when assigned.
+    def __set_value__(self, value: Optional[str] = None) -> None:
+        """Value of the dropdown"""
+        if value is None:
+            value = self.options[0]
+        self.value = value
 
-        For projects that care about typing: the static type of `options` should be
-        consistent with the `StringType` associated with a handle. Literal types will be
-        inferred where possible when handles are instantiated; for the most flexibility,
-        we can declare handles as `GuiDropdownHandle[str]`.
-        """
-        return self._impl_options
-
-    @options.setter
-    def options(self, options: Iterable[StringType]) -> None:
-        self._impl_options = tuple(options)
-
-        need_to_overwrite_value = self.value not in self._impl_options
-        if need_to_overwrite_value:
-            self._impl.gui_api._get_api()._queue(
-                GuiUpdateMessage(
-                    self._impl.id,
-                    {"options": self._impl_options, "value": self._impl_options[0]},
-                )
-            )
-            self._impl.value = self._impl_options[0]
-        else:
-            self._impl.gui_api._get_api()._queue(
-                GuiUpdateMessage(
-                    self._impl.id,
-                    {"options": self._impl_options},
-                )
-            )
+    def __set_options__(self, options: Sequence[str]) -> None:
+        """Sequence of options to display in the dropdown."""
+        self.options = tuple(options)
+        if self.value not in options:
+            self.value = options[0]
 
 
-@dataclasses.dataclass(frozen=True)
-class GuiTabGroupHandle:
-    _tab_group_id: str
-    _labels: List[str]
-    _icons_base64: List[Optional[str]]
-    _tabs: List[GuiTabHandle]
-    _gui_api: GuiApi
-    _order: float
+class TabGroupTab(Component, metaclass=ComponentMeta, is_container=True):
+    """Handle for a tab in our visualizer.
 
-    @property
-    def order(self) -> float:
-        """Read-only order value, which dictates the position of the GUI element."""
-        return self._order
+    Lets us add GUI elements to it and remove it."""
 
-    def add_tab(self, label: str, icon: Optional[IconName] = None) -> GuiTabHandle:
+    label: str
+    """Label to display on the tab."""
+    icon_base64: Optional[str] = dataclasses.field(init=False, default=None)
+    """Optional icon to display on the tab."""
+
+    def __set_icon__(self, icon: Optional[IconName] = None) -> None:
+        """The icon to set"""
+        self.icon_base64 = base64_from_icon(icon)
+
+
+class TabGroup(Component, metaclass=ComponentMeta):
+    def add_tab(self, label: str, icon: Optional[IconName] = None) -> TabGroupTab:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
-
-        id = _make_unique_id()
-
-        # We may want to make this thread-safe in the future.
-        out = GuiTabHandle(_parent=self, _id=id)
-
-        self._labels.append(label)
-        self._icons_base64.append(None if icon is None else base64_from_icon(icon))
-        self._tabs.append(out)
-
-        self._sync_with_client()
-        return out
-
-    def remove(self) -> None:
-        """Remove this tab group and all contained GUI elements."""
-        for tab in self._tabs:
-            tab.remove()
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._tab_group_id))
-
-    def _sync_with_client(self) -> None:
-        """Send messages for syncing tab state with the client."""
-        self._gui_api._get_api()._queue(
-            GuiUpdateMessage(
-                self._tab_group_id,
-                {
-                    "tab_labels": tuple(self._labels),
-                    "tab_icons_base64": tuple(self._icons_base64),
-                    "tab_container_ids": tuple(tab._id for tab in self._tabs),
-                },
-            )
-        )
+        return TabGroupTab(container_id=self.id, label=label, icon=icon)
 
 
-@dataclasses.dataclass
-class GuiFolderHandle:
-    """Use as a context to place GUI elements into a folder."""
+class Folder(Component, metaclass=ComponentMeta, is_container=True):
+    """Add a folder, and return a handle that can be used to populate it."""
 
-    _gui_api: GuiApi
-    _id: str  # Used as container ID for children.
-    _order: float
-    _parent_container_id: str  # Container ID of parent.
-    _container_id_restore: Optional[str] = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
-        default_factory=dict
-    )
-
-    @property
-    def order(self) -> float:
-        """Read-only order value, which dictates the position of the GUI element."""
-        return self._order
-
-    def __enter__(self) -> GuiFolderHandle:
-        self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._id)
-        return self
-
-    def __exit__(self, *args) -> None:
-        del args
-        assert self._container_id_restore is not None
-        self._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
-
-    def __post_init__(self) -> None:
-        self._gui_api._container_handle_from_id[self._id] = self
-        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
-        parent._children[self._id] = self
-
-    def remove(self) -> None:
-        """Permanently remove this folder and all contained GUI elements from the
-        visualizer."""
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._id))
-        self._gui_api._container_handle_from_id.pop(self._id)
-        for child in self._children.values():
-            child.remove()
+    label: str
+    """Label to display on the folder."""
+    _: dataclasses.KW_ONLY
+    expand_by_default: bool = True
+    """Open the folder by default. Set to False to collapse it by default."""
 
 
-@dataclasses.dataclass
-class GuiModalHandle:
-    """Use as a context to place GUI elements into a modal."""
+class Modal:
+    """Show a modal window, which can be useful for popups and messages, then return
+    a handle that can be used to populate it."""
 
-    _gui_api: GuiApi
-    _id: str  # Used as container ID of children.
-    _container_id_restore: Optional[str] = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
-        default_factory=dict
-    )
-
-    def __enter__(self) -> GuiModalHandle:
-        self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._id)
-        return self
-
-    def __exit__(self, *args) -> None:
-        del args
-        assert self._container_id_restore is not None
-        self._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
-
-    def __post_init__(self) -> None:
-        self._gui_api._container_handle_from_id[self._id] = self
+    title: str
+    """Title to display on the modal."""
 
     def close(self) -> None:
         """Close this modal and permananently remove all contained GUI elements."""
-        self._gui_api._get_api()._queue(
-            GuiCloseModalMessage(self._id),
-        )
-        self._gui_api._container_handle_from_id.pop(self._id)
-        for child in self._children.values():
-            child.remove()
-
-
-@dataclasses.dataclass
-class GuiTabHandle:
-    """Use as a context to place GUI elements into a tab."""
-
-    _parent: GuiTabGroupHandle
-    _id: str  # Used as container ID of children.
-    _container_id_restore: Optional[str] = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
-        default_factory=dict
-    )
-
-    def __enter__(self) -> GuiTabHandle:
-        self._container_id_restore = self._parent._gui_api._get_container_id()
-        self._parent._gui_api._set_container_id(self._id)
-        return self
-
-    def __exit__(self, *args) -> None:
-        del args
-        assert self._container_id_restore is not None
-        self._parent._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
-
-    def __post_init__(self) -> None:
-        self._parent._gui_api._container_handle_from_id[self._id] = self
-
-    def remove(self) -> None:
-        """Permanently remove this tab and all contained GUI elements from the
-        visualizer."""
-        # We may want to make this thread-safe in the future.
-        container_index = -1
-        for i, tab in enumerate(self._parent._tabs):
-            if tab is self:
-                container_index = i
-                break
-        assert container_index != -1, "Tab already removed!"
-
-        self._parent._gui_api._container_handle_from_id.pop(self._id)
-
-        self._parent._labels.pop(container_index)
-        self._parent._icons_base64.pop(container_index)
-        self._parent._tabs.pop(container_index)
-        self._parent._sync_with_client()
-
-        for child in self._children.values():
-            child.remove()
+        raise NotImplementedError()
 
 
 def _get_data_url(url: str, image_root: Optional[Path]) -> str:
@@ -531,61 +281,226 @@ def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
     return markdown
 
 
-@dataclasses.dataclass
-class GuiMarkdownHandle:
-    """Use to remove markdown."""
+class Markdown(Component, metaclass=ComponentMeta):
+    """Add markdown to the GUI."""
 
-    _gui_api: GuiApi
-    _id: str
-    _visible: bool
-    _container_id: str  # Parent.
-    _order: float
-    _image_root: Optional[Path]
-    _content: Optional[str]
+    content: Optional[str] = None
+    """Markdown content to display."""
+    _: dataclasses.KW_ONLY
+    image_root: Optional[Path] = None
+    """Optional root directory to resolve relative image paths."""
+    hint: Optional[str] = None
+    """Optional hint to display on hover."""
 
-    @property
-    def content(self) -> str:
-        """Current content of this markdown element. Synchronized automatically when assigned."""
-        assert self._content is not None
-        return self._content
+    def __prepare_message__(self, props):
+        if "content" in props:
+            content = props.pop("content")
+            props["markdown"] = _parse_markdown(content, self.image_root)
+        props.pop("image_root", None)
+        return props
 
-    @content.setter
-    def content(self, content: str) -> None:
-        self._content = content
-        self._gui_api._get_api()._queue(
-            GuiUpdateMessage(
-                self._id,
-                {"markdown": _parse_markdown(content, self._image_root)},
+
+class Checkbox(InputComponent, metaclass=ComponentMeta):
+    """Add a checkbox to the GUI."""
+
+    value: bool = dataclasses.field(default=False, kw_only=True)
+    """Value of the checkbox."""
+
+
+class Number(InputComponent, metaclass=ComponentMeta):
+    """Add a number input to the GUI, with user-specifiable bound and precision parameters."""
+
+    value: IntOrFloat
+    """Value of the number input."""
+    _: dataclasses.KW_ONLY
+    min: Optional[IntOrFloat] = None
+    """Optional minimum value of the number input."""
+    max: Optional[IntOrFloat] = None
+    """Optional maximum value of the number input."""
+    step: Optional[IntOrFloat]
+    """Optional step size of the number input. Computed automatically if not specified."""
+
+    def __set_step__(self, step: Optional[IntOrFloat] = None) -> None:
+        if step is None:
+            # It's ok that `step` is always a float, even if the value is an integer,
+            # because things all become `number` types after serialization.
+            step = float(  # type: ignore
+                np.min(
+                    [
+                        _compute_step(self.value),
+                        _compute_step(self.min),
+                        _compute_step(self.max),
+                    ]
+                )
             )
+        self.step = step
+
+
+class Vector2(InputComponent, metaclass=ComponentMeta):
+    """Add a length-2 vector input to the GUI."""
+
+    value: Tuple[float, float]
+    """Initial value of the vector input."""
+    _: dataclasses.KW_ONLY
+    min: Tuple[float, float] | None = None
+    """Optional minimum value of the vector input."""
+    max: Tuple[float, float] | None = None
+    """Optional maximum value of the vector input."""
+    step: Optional[float] = None
+    """Optional step size of the vector input. Computed automatically if not present."""
+
+    def __set_value__(self, value: Tuple[float, float] | np.ndarray) -> None:
+        self.value = cast_vector(value, 2)
+
+    def __set_min__(
+        self, value: Tuple[float, float] | np.ndarray | None = None
+    ) -> None:
+        self.min = cast_vector(value, 2) if min is not None else None
+
+    def __set_max__(
+        self, value: Tuple[float, float] | np.ndarray | None = None
+    ) -> None:
+        self.max = cast_vector(value, 2) if max is not None else None
+
+    def __set_step__(self, step: Optional[float] = None) -> None:
+        # TODO: fix dependencies when setting values!!
+        if step is None:
+            possible_steps: List[float] = []
+            possible_steps.extend([_compute_step(x) for x in self.value])
+            if min is not None:
+                possible_steps.extend([_compute_step(x) for x in self.min])
+            if max is not None:
+                possible_steps.extend([_compute_step(x) for x in self.max])
+            step = float(np.min(possible_steps))
+        self.step = step
+
+
+class Vector3(InputComponent, metaclass=ComponentMeta):
+    """Add a length-3 vector input to the GUI."""
+
+    value: Tuple[float, float, float]
+    """Initial value of the vector input."""
+    _: dataclasses.KW_ONLY
+    min: Tuple[float, float, float] | None = None
+    """Optional minimum value of the vector input."""
+    max: Tuple[float, float, float] | None = None
+    """Optional maximum value of the vector input."""
+    step: Optional[float] = None
+    """Optional step size of the vector input. Computed automatically if not present."""
+
+    def __set_value__(self, value: Tuple[float, float, float] | np.ndarray) -> None:
+        self.value = cast_vector(value, 3)
+
+    def __set_min__(
+        self, value: Tuple[float, float, float] | np.ndarray | None = None
+    ) -> None:
+        self.min = cast_vector(value, 3) if min is not None else None
+
+    def __set_max__(
+        self, value: Tuple[float, float, float] | np.ndarray | None = None
+    ) -> None:
+        self.max = cast_vector(value, 3) if max is not None else None
+
+    def __set_step__(self, step: Optional[float] = None) -> None:
+        # TODO: fix dependencies when setting values!!
+        if step is None:
+            possible_steps: List[float] = []
+            possible_steps.extend([_compute_step(x) for x in self.value])
+            if min is not None:
+                possible_steps.extend([_compute_step(x) for x in self.min])
+            if max is not None:
+                possible_steps.extend([_compute_step(x) for x in self.max])
+            step = float(np.min(possible_steps))
+        self.step = step
+
+
+class Slider(InputComponent, metaclass=ComponentMeta):
+    """Add a slider to the GUI. Types of the min, max, step, and initial value should match."""
+
+    value: IntOrFloat
+    """Value of the slider."""
+    _: dataclasses.KW_ONLY
+    min: IntOrFloat
+    """Minimum value of the slider."""
+    max: IntOrFloat
+    """Maximum value of the slider."""
+    step: IntOrFloat
+    """Step size of the slider."""
+
+    marks: Optional[Tuple[_messages.Mark]] = None
+
+    def __set_marks__(
+        self, marks: Optional[Tuple[IntOrFloat | Tuple[IntOrFloat, str], ...]] = None
+    ) -> None:
+        """Tuple of marks to display below the slider. Each mark should
+        either be a numerical or a (number, label) tuple, where the
+        label is provided as a string."""
+        self.marks = (
+            tuple(
+                {"value": float(x[0]), "label": x[1]}
+                if isinstance(x, tuple)
+                else {"value": float(x)}
+                for x in marks
+            )
+            if marks is not None
+            else None
         )
-
-    @property
-    def order(self) -> float:
-        """Read-only order value, which dictates the position of the GUI element."""
-        return self._order
-
-    @property
-    def visible(self) -> bool:
-        """Temporarily show or hide this GUI element from the visualizer. Synchronized
-        automatically when assigned."""
-        return self._visible
-
-    @visible.setter
-    def visible(self, visible: bool) -> None:
-        if visible == self.visible:
-            return
-
-        self._gui_api._get_api()._queue(
-            GuiUpdateMessage(self._id, {"visible": visible})
-        )
-        self._visible = visible
 
     def __post_init__(self) -> None:
-        """We need to register ourself after construction for callbacks to work."""
-        parent = self._gui_api._container_handle_from_id[self._container_id]
-        parent._children[self._id] = self
+        assert self.max >= self.min
+        if self.step > self.max - self.min:
+            self.step = self.max - self.min
+        assert self.max >= self.value >= self.min
 
-    def remove(self) -> None:
-        """Permanently remove this markdown from the visualizer."""
-        api = self._gui_api._get_api()
-        api._queue(GuiRemoveMessage(self._id))
+
+class MultiSlider(InputComponent, metaclass=ComponentMeta):
+    """Add a multi slider to the GUI. Types of the min, max, step, and initial value should match."""
+
+    value: IntOrFloat
+    """Value of the slider."""
+    _: dataclasses.KW_ONLY
+    min: IntOrFloat
+    """Minimum value of the slider."""
+    max: IntOrFloat
+    """Maximum value of the slider."""
+    step: IntOrFloat
+    """Step size of the slider."""
+
+    min_range: Optional[IntOrFloat] = None
+    """Optional minimum difference between two values of the slider."""
+
+    fixed_endpoints: bool = False
+    """Whether the endpoints of the slider are fixed."""
+
+    marks: Optional[Tuple[_messages.Mark]] = None
+
+    def __set_marks__(
+        self, marks: Optional[Tuple[IntOrFloat | Tuple[IntOrFloat, str], ...]] = None
+    ) -> None:
+        """Tuple of marks to display below the slider. Each mark should
+        either be a numerical or a (number, label) tuple, where the
+        label is provided as a string."""
+        self.marks = (
+            tuple(
+                {"value": float(x[0]), "label": x[1]}
+                if isinstance(x, tuple)
+                else {"value": float(x)}
+                for x in marks
+            )
+            if marks is not None
+            else None
+        )
+
+
+class Rgb(InputComponent, metaclass=ComponentMeta):
+    """Add an RGB picker to the GUI."""
+
+    value: Tuple[int, int, int]
+    """Value of the RGBA picker."""
+
+
+class Rgba(InputComponent, metaclass=ComponentMeta):
+    """Add an RGBA picker to the GUI."""
+
+    value: Tuple[int, int, int, int]
+    """Value of the RGBA picker."""
