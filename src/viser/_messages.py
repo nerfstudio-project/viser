@@ -386,6 +386,17 @@ class GuiAddMarkdownMessage(Message):
 
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
+class GuiAddTabGroupTabMessage(Message):
+    order: float
+    id: str
+    container_id: str
+    label: str
+    icon_base64: Optional[str]
+    visible: bool
+
+
+@tag_class("GuiAddComponentMessage")
+@dataclasses.dataclass
 class GuiAddTabGroupMessage(Message):
     order: float
     id: str

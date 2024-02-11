@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING
 
-from ._gui_handles import GuiButtonGroupHandle as GuiButtonGroupHandle
-from ._gui_handles import GuiButtonHandle as GuiButtonHandle
-from ._gui_handles import GuiDropdownHandle as GuiDropdownHandle
-from ._gui_handles import GuiEvent as GuiEvent
-from ._gui_handles import GuiFolderHandle as GuiFolderHandle
-from ._gui_handles import GuiInputHandle as GuiInputHandle
-from ._gui_handles import GuiMarkdownHandle as GuiMarkdownHandle
-from ._gui_handles import GuiTabGroupHandle as GuiTabGroupHandle
-from ._gui_handles import GuiTabHandle as GuiTabHandle
+# from ._gui_handles import GuiButtonGroupHandle as GuiButtonGroupHandle
+# from ._gui_handles import GuiButtonHandle as GuiButtonHandle
+# from ._gui_handles import GuiDropdownHandle as GuiDropdownHandle
+# from ._gui_handles import GuiEvent as GuiEvent
+# from ._gui_handles import GuiFolderHandle as GuiFolderHandle
+# from ._gui_handles import GuiInputHandle as GuiInputHandle
+# from ._gui_handles import GuiMarkdownHandle as GuiMarkdownHandle
+# from ._gui_handles import GuiTabGroupHandle as GuiTabGroupHandle
+# from ._gui_handles import GuiTabHandle as GuiTabHandle
 from ._icons_enum import Icon as Icon
 from ._icons_enum import IconName as IconName
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle
@@ -29,5 +29,5 @@ from ._viser import ViserServer as ViserServer
 
 if not TYPE_CHECKING:
     # Backwards compatibility.
-    GuiHandle = GuiInputHandle
+    # GuiHandle = GuiInputHandle
     ClickEvent = SceneNodePointerEvent
