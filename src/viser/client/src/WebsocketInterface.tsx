@@ -147,6 +147,7 @@ function useMessageHandler() {
               showAxes={message.show_axes}
               axesLength={message.axes_length}
               axesRadius={message.axes_radius}
+              originRadius={message.origin_radius}
             />
           )),
         );
