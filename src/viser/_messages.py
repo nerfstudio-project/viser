@@ -116,9 +116,10 @@ class FrameMessage(Message):
     """Coordinate frame message."""
 
     name: str
-    show_axes: bool = True
-    axes_length: float = 0.5
-    axes_radius: float = 0.025
+    show_axes: bool
+    axes_length: float
+    axes_radius: float
+    origin_radius: float
 
 
 @dataclasses.dataclass

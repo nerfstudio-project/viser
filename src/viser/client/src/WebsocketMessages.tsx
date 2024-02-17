@@ -71,6 +71,7 @@ export interface FrameMessage {
   show_axes: boolean;
   axes_length: number;
   axes_radius: number;
+  origin_radius: number;
 }
 /** Batched axes message.
  *
