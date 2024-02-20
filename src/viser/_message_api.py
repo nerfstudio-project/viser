@@ -666,11 +666,9 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> SceneNodeHandle:
-        """Add a grid to the scene.
+        """Add a 2D grid to the scene.
 
-        This method creates a grid which can be used as a reference for scaling and
-        positioning objects in the scene. It's particularly useful for providing a sense
-        of scale and orientation.
+        This can be useful as a size, orientation, or ground plane reference.
 
         Args:
             name: Name of the grid.

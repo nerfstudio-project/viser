@@ -160,7 +160,8 @@ class GuiApi(abc.ABC):
         if not handle_state.is_button and not has_changed:
             return
 
-        # Trigger callbacks.
+        # GUI element has been updated!
+        handle_state.update_timestamp = time.time()
         for cb in handle_state.update_cb:
             from ._viser import ClientHandle, ViserServer
 
