@@ -10,6 +10,7 @@ import warnings
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
+    Any,
     Callable,
     Dict,
     Generic,
@@ -19,7 +20,6 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
-    Union,
 )
 
 import imageio.v3 as iio
@@ -27,18 +27,9 @@ import numpy as onp
 from typing_extensions import Protocol
 
 from ._icons import base64_from_icon
-from ._icons_enum import Icon
+from ._icons_enum import IconName
 from ._message_api import _encode_image_base64
-from ._messages import (
-    GuiAddDropdownMessage,
-    GuiAddMarkdownMessage,
-    GuiAddTabGroupMessage,
-    GuiCloseModalMessage,
-    GuiRemoveMessage,
-    GuiSetDisabledMessage,
-    GuiSetValueMessage,
-    GuiSetVisibleMessage,
-)
+from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
 from .infra import ClientId
 
 if TYPE_CHECKING:
@@ -85,7 +76,7 @@ class _GuiHandleState(Generic[T]):
     is_button: bool
     """Indicates a button element, which requires special handling."""
 
-    sync_cb: Optional[Callable[[ClientId, T], None]]
+    sync_cb: Optional[Callable[[ClientId, Dict[str, Any]], None]]
     """Callback for synchronizing inputs across clients."""
 
     disabled: bool
@@ -93,8 +84,9 @@ class _GuiHandleState(Generic[T]):
 
     order: float
     id: str
-    initial_value: T
     hint: Optional[str]
+
+    message_type: Type[Message]
 
 
 @dataclasses.dataclass
@@ -130,7 +122,7 @@ class _GuiInputHandle(Generic[T]):
         return self._impl.value
 
     @value.setter
-    def value(self, value: Union[T, onp.ndarray]) -> None:
+    def value(self, value: T | onp.ndarray) -> None:
         if isinstance(value, onp.ndarray):
             assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
             value = tuple(map(float, value))  # type: ignore
@@ -138,7 +130,7 @@ class _GuiInputHandle(Generic[T]):
         # Send to client, except for buttons.
         if not self._impl.is_button:
             self._impl.gui_api._get_api()._queue(
-                GuiSetValueMessage(self._impl.id, value)  # type: ignore
+                GuiUpdateMessage(self._impl.id, {"value": value})
             )
 
         # Set internal state. We automatically convert numpy arrays to the expected
@@ -177,7 +169,7 @@ class _GuiInputHandle(Generic[T]):
             return
 
         self._impl.gui_api._get_api()._queue(
-            GuiSetDisabledMessage(self._impl.id, disabled=disabled)
+            GuiUpdateMessage(self._impl.id, {"disabled": disabled})
         )
         self._impl.disabled = disabled
 
@@ -193,7 +185,7 @@ class _GuiInputHandle(Generic[T]):
             return
 
         self._impl.gui_api._get_api()._queue(
-            GuiSetVisibleMessage(self._impl.id, visible=visible)
+            GuiUpdateMessage(self._impl.id, {"visible": visible})
         )
         self._impl.visible = visible
 
@@ -309,23 +301,23 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
     @options.setter
     def options(self, options: Iterable[StringType]) -> None:
         self._impl_options = tuple(options)
-        if self._impl.initial_value not in self._impl_options:
-            self._impl.initial_value = self._impl_options[0]
 
-        self._impl.gui_api._get_api()._queue(
-            GuiAddDropdownMessage(
-                order=self._impl.order,
-                id=self._impl.id,
-                label=self._impl.label,
-                container_id=self._impl.container_id,
-                hint=self._impl.hint,
-                initial_value=self._impl.initial_value,
-                options=self._impl_options,
+        need_to_overwrite_value = self.value not in self._impl_options
+        if need_to_overwrite_value:
+            self._impl.gui_api._get_api()._queue(
+                GuiUpdateMessage(
+                    self._impl.id,
+                    {"options": self._impl_options, "value": self._impl_options[0]},
+                )
             )
-        )
-
-        if self.value not in self._impl_options:
-            self.value = self._impl_options[0]
+            self._impl.value = self._impl_options[0]
+        else:
+            self._impl.gui_api._get_api()._queue(
+                GuiUpdateMessage(
+                    self._impl.id,
+                    {"options": self._impl_options},
+                )
+            )
 
 
 @dataclasses.dataclass(frozen=True)
@@ -335,7 +327,6 @@ class GuiTabGroupHandle:
     _icons_base64: List[Optional[str]]
     _tabs: List[GuiTabHandle]
     _gui_api: GuiApi
-    _container_id: str  # Parent.
     _order: float
 
     @property
@@ -343,7 +334,7 @@ class GuiTabGroupHandle:
         """Read-only order value, which dictates the position of the GUI element."""
         return self._order
 
-    def add_tab(self, label: str, icon: Optional[Icon] = None) -> GuiTabHandle:
+    def add_tab(self, label: str, icon: Optional[IconName] = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
 
         id = _make_unique_id()
@@ -365,15 +356,15 @@ class GuiTabGroupHandle:
         self._gui_api._get_api()._queue(GuiRemoveMessage(self._tab_group_id))
 
     def _sync_with_client(self) -> None:
-        """Send a message that syncs tab state with the client."""
+        """Send messages for syncing tab state with the client."""
         self._gui_api._get_api()._queue(
-            GuiAddTabGroupMessage(
-                order=self.order,
-                id=self._tab_group_id,
-                container_id=self._container_id,
-                tab_labels=tuple(self._labels),
-                tab_icons_base64=tuple(self._icons_base64),
-                tab_container_ids=tuple(tab._id for tab in self._tabs),
+            GuiUpdateMessage(
+                self._tab_group_id,
+                {
+                    "tab_labels": tuple(self._labels),
+                    "tab_icons_base64": tuple(self._icons_base64),
+                    "tab_container_ids": tuple(tab._id for tab in self._tabs),
+                },
             )
         )
 
@@ -506,7 +497,10 @@ class GuiTabHandle:
 def _get_data_url(url: str, image_root: Optional[Path]) -> str:
     if not url.startswith("http") and not image_root:
         warnings.warn(
-            "No `image_root` provided. All relative paths will be scoped to viser's installation path.",
+            (
+                "No `image_root` provided. All relative paths will be scoped to viser's"
+                " installation path."
+            ),
             stacklevel=2,
         )
     if url.startswith("http"):
@@ -529,7 +523,9 @@ def _get_data_url(url: str, image_root: Optional[Path]) -> str:
 def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
     markdown = re.sub(
         r"\!\[([^]]*)\]\(([^]]*)\)",
-        lambda match: f"![{match.group(1)}]({_get_data_url(match.group(2), image_root)})",
+        lambda match: (
+            f"![{match.group(1)}]({_get_data_url(match.group(2), image_root)})"
+        ),
         markdown,
     )
     return markdown
@@ -557,11 +553,9 @@ class GuiMarkdownHandle:
     def content(self, content: str) -> None:
         self._content = content
         self._gui_api._get_api()._queue(
-            GuiAddMarkdownMessage(
-                order=self._order,
-                id=self._id,
-                markdown=_parse_markdown(content, self._image_root),
-                container_id=self._container_id,
+            GuiUpdateMessage(
+                self._id,
+                {"markdown": _parse_markdown(content, self._image_root)},
             )
         )
 
@@ -581,7 +575,9 @@ class GuiMarkdownHandle:
         if visible == self.visible:
             return
 
-        self._gui_api._get_api()._queue(GuiSetVisibleMessage(self._id, visible=visible))
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(self._id, {"visible": visible})
+        )
         self._visible = visible
 
     def __post_init__(self) -> None:

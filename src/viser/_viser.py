@@ -22,7 +22,7 @@ from . import transforms as tf
 from ._gui_api import GuiApi
 from ._message_api import MessageApi, cast_vector
 from ._scene_handles import FrameHandle, _SceneNodeHandleState
-from ._tunnel import _ViserTunnel
+from ._tunnel import ViserTunnel
 
 
 @dataclasses.dataclass
@@ -83,9 +83,16 @@ class CameraHandle:
             projected_up_direction = up_direction
 
         new_look_at = look_direction * look_distance + self.position
+
+        # Update lookat and up direction.
         self.look_at = new_look_at
         self.up_direction = projected_up_direction
-        self._state.wxyz = onp.asarray(wxyz)
+
+        # The internal camera orientation should be set in the look_at /
+        # up_direction setters. We can uncomment this assert to check this.
+        # assert onp.allclose(self._state.wxyz, wxyz) or onp.allclose(
+        #     self._state.wxyz, -wxyz
+        # )
 
     @property
     def position(self) -> npt.NDArray[onp.float64]:
@@ -107,6 +114,16 @@ class CameraHandle:
         self._state.client._queue(
             _messages.SetCameraPositionMessage(cast_vector(position, 3))
         )
+
+    def _update_wxyz(self) -> None:
+        """Compute and update the camera orientation from the internal look_at, position, and up vectors."""
+        z = self._state.look_at - self._state.position
+        z /= onp.linalg.norm(z)
+        y = tf.SO3.exp(z * onp.pi) @ self._state.up_direction
+        y = y - onp.dot(z, y) * z
+        y /= onp.linalg.norm(y)
+        x = onp.cross(y, z)
+        self._state.wxyz = tf.SO3.from_matrix(onp.stack([x, y, z], axis=1)).wxyz
 
     @property
     def fov(self) -> float:
@@ -142,6 +159,7 @@ class CameraHandle:
     def look_at(self, look_at: Tuple[float, float, float] | onp.ndarray) -> None:
         self._state.look_at = onp.asarray(look_at)
         self._state.update_timestamp = time.time()
+        self._update_wxyz()
         self._state.client._queue(
             _messages.SetCameraLookAtMessage(cast_vector(look_at, 3))
         )
@@ -157,6 +175,7 @@ class CameraHandle:
         self, up_direction: Tuple[float, float, float] | onp.ndarray
     ) -> None:
         self._state.up_direction = onp.asarray(up_direction)
+        self._update_wxyz()
         self._state.update_timestamp = time.time()
         self._state.client._queue(
             _messages.SetCameraUpDirectionMessage(cast_vector(up_direction, 3))
@@ -252,15 +271,18 @@ class ClientHandle(MessageApi, GuiApi):
         """Define how the message API should send messages."""
         self._state.connection.send(message)
 
+    @override
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
-        """Returns a context where:
-        - No incoming messages, like camera or GUI state updates, are processed.
-        - `viser` will attempt to group outgoing messages, which will then be sent after
-          the context is exited.
+        """Returns a context where: all outgoing messages are grouped and applied by
+        clients atomically.
 
-        This can be helpful for things like animations, or when we want position and
-        orientation updates to happen synchronously.
+        This should be treated as a soft constraint that's helpful for things
+        like animations, or when we want position and orientation updates to
+        happen synchronously.
+
+        Returns:
+            Context manager.
         """
         # If called multiple times in the same thread, we ignore inner calls.
         thread_id = threading.get_ident()
@@ -277,10 +299,20 @@ class ClientHandle(MessageApi, GuiApi):
             self._atomic_lock.release()
             self._locked_thread_id = -1
 
+    @override
+    def flush(self) -> None:
+        """Flush the outgoing message buffer. Any buffered messages will immediately be
+        sent. (by default they are windowed)"""
+        self._state.server.flush_client(self.client_id)
+
 
 # We can serialize the state of a ViserServer via a tuple of
 # (serialized message, timestamp) pairs.
 SerializedServerState = Tuple[Tuple[bytes, float], ...]
+
+
+def dummy_process() -> None:
+    pass
 
 
 @dataclasses.dataclass
@@ -299,15 +331,27 @@ class ViserServer(MessageApi, GuiApi):
     Args:
         host: Host to bind server to.
         port: Port to bind server to.
-        share: Experimental. If set to `True`, create and print a public, shareable URL
-            for this instance of viser.
+        label: Label shown at the top of the GUI panel.
     """
 
     world_axes: FrameHandle
     """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
     and then hidden by default."""
 
-    def __init__(self, host: str = "0.0.0.0", port: int = 8080, share: bool = False):
+    # Hide deprecated arguments from docstring and type checkers.
+    def __init__(
+        self, host: str = "0.0.0.0", port: int = 8080, label: Optional[str] = None
+    ):
+        ...
+
+    def _actual_init(
+        self,
+        host: str = "0.0.0.0",
+        port: int = 8080,
+        label: Optional[str] = None,
+        **_deprecated_kwargs,
+    ):
+        # Create server.
         server = infra.Server(
             host=host,
             port=port,
@@ -358,7 +402,7 @@ class ViserServer(MessageApi, GuiApi):
                 assert client_id == client.client_id
 
                 # Update the client's camera.
-                with client._atomic_lock:
+                with client.atomic():
                     client.camera._state = _CameraHandleState(
                         client,
                         onp.array(message.wxyz),
@@ -399,6 +443,14 @@ class ViserServer(MessageApi, GuiApi):
         # Start the server.
         server.start()
 
+        server.register_handler(
+            _messages.ShareUrlDisconnect,
+            lambda client_id, msg: self.disconnect_share_url(),
+        )
+        server.register_handler(
+            _messages.ShareUrlRequest, lambda client_id, msg: self.request_share_url()
+        )
+
         # Form status print.
         port = server._port  # Port may have changed.
         http_url = f"http://{host}:{port}"
@@ -411,28 +463,20 @@ class ViserServer(MessageApi, GuiApi):
         )
         table.add_row("HTTP", http_url)
         table.add_row("Websocket", ws_url)
+        rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
+
+        self._share_tunnel: Optional[ViserTunnel] = None
 
         # Create share tunnel if requested.
-        if not share:
-            self._share_tunnel = None
-            rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
-        else:
-            rich.print(
-                "[bold](viser)[/bold] Share URL requested! (expires in 24 hours)"
-            )
-            self._share_tunnel = _ViserTunnel(port)
-
-            @self._share_tunnel.on_connect
-            def _() -> None:
-                assert self._share_tunnel is not None
-                share_url = self._share_tunnel.get_url()
-                if share_url is None:
-                    rich.print("[bold](viser)[/bold] Could not generate share URL")
-                else:
-                    table.add_row("Share URL", share_url)
-                rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
+        # This is deprecated: we should use get_share_url() instead.
+        share = _deprecated_kwargs.get("share", False)
+        if share:
+            self.request_share_url()
 
         self.reset_scene()
+        self.set_gui_panel_label(label)
+
+        # Create a handle for the world axes, which are hardcoded to exist in the client.
         self.world_axes = FrameHandle(
             _SceneNodeHandleState(
                 "/WorldAxes",
@@ -443,25 +487,95 @@ class ViserServer(MessageApi, GuiApi):
         )
         self.world_axes.visible = False
 
+    def get_host(self) -> str:
+        """Returns the host address of the Viser server.
+
+        Returns:
+            Host address as string.
+        """
+        return self._server._host
+
+    def get_port(self) -> int:
+        """Returns the port of the Viser server. This could be different from the
+        originally requested one.
+
+        Returns:
+            Port as integer.
+        """
+        return self._server._port
+
+    def request_share_url(self, verbose: bool = True) -> Optional[str]:
+        """Request a share URL for the Viser server, which allows for public access.
+        On the first call, will block until a connecting with the share URL server is
+        established. Afterwards, the URL will be returned directly.
+
+        This is an experimental feature that relies on an external server; it shouldn't
+        be relied on for critical applications.
+
+        Returns:
+            Share URL as string, or None if connection fails or is closed.
+        """
+        if self._share_tunnel is not None:
+            # Tunnel already exists.
+            while self._share_tunnel.get_status() in ("ready", "connecting"):
+                time.sleep(0.05)
+            return self._share_tunnel.get_url()
+        else:
+            # Create a new tunnel!.
+            if verbose:
+                rich.print("[bold](viser)[/bold] Share URL requested!")
+
+            connect_event = threading.Event()
+
+            self._share_tunnel = ViserTunnel("share.viser.studio", self._server._port)
+
+            @self._share_tunnel.on_disconnect
+            def _() -> None:
+                rich.print("[bold](viser)[/bold] Disconnected from share URL")
+                self._share_tunnel = None
+                self._server.broadcast(_messages.ShareUrlUpdated(None))
+
+            @self._share_tunnel.on_connect
+            def _(max_clients: int) -> None:
+                assert self._share_tunnel is not None
+                share_url = self._share_tunnel.get_url()
+                if verbose:
+                    if share_url is None:
+                        rich.print("[bold](viser)[/bold] Could not generate share URL")
+                    else:
+                        rich.print(
+                            f"[bold](viser)[/bold] Generated share URL (expires in 24 hours, max {max_clients} clients): {share_url}"
+                        )
+                self._server.broadcast(_messages.ShareUrlUpdated(share_url))
+                connect_event.set()
+
+            connect_event.wait()
+
+            url = self._share_tunnel.get_url()
+            return url
+
+    def disconnect_share_url(self) -> None:
+        """Disconnect from the share URL server."""
+        if self._share_tunnel is not None:
+            self._share_tunnel.close()
+        else:
+            rich.print(
+                "[bold](viser)[/bold] Tried to disconnect from share URL, but already disconnected"
+            )
+
     def stop(self) -> None:
         """Stop the Viser server and associated threads and tunnels."""
         self._server.stop()
         if self._share_tunnel is not None:
             self._share_tunnel.close()
 
-    @override
-    def _get_api(self) -> MessageApi:
-        """Message API to use."""
-        return self
-
-    @override
-    def _queue_unsafe(self, message: _messages.Message) -> None:
-        """Define how the message API should send messages."""
-        self._server.broadcast(message)
-
     def get_clients(self) -> Dict[int, ClientHandle]:
         """Creates and returns a copy of the mapping from connected client IDs to
-        handles."""
+        handles.
+
+        Returns:
+            Dictionary of clients.
+        """
         with self._state.client_lock:
             return self._state.connected_clients.copy()
 
@@ -492,14 +606,18 @@ class ViserServer(MessageApi, GuiApi):
         self._client_disconnect_cb.append(cb)
         return cb
 
+    @override
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
-        """Returns a context where:
-        - All outgoing messages are grouped and applied by clients atomically.
-        - No incoming messages, like camera or GUI state updates, are processed.
+        """Returns a context where: all outgoing messages are grouped and applied by
+        clients atomically.
 
-        This can be helpful for things like animations, or when we want position and
-        orientation updates to happen synchronously.
+        This should be treated as a soft constraint that's helpful for things
+        like animations, or when we want position and orientation updates to
+        happen synchronously.
+
+        Returns:
+            Context manager.
         """
         # Acquire the global atomic lock.
         # If called multiple times in the same thread, we ignore inner calls.
@@ -523,3 +641,22 @@ class ViserServer(MessageApi, GuiApi):
         if got_lock:
             self._atomic_lock.release()
             self._locked_thread_id = -1
+
+    @override
+    def flush(self) -> None:
+        """Flush the outgoing message buffer. Any buffered messages will immediately be
+        sent. (by default they are windowed)"""
+        self._server.flush()
+
+    @override
+    def _get_api(self) -> MessageApi:
+        """Message API to use."""
+        return self
+
+    @override
+    def _queue_unsafe(self, message: _messages.Message) -> None:
+        """Define how the message API should send messages."""
+        self._server.broadcast(message)
+
+
+ViserServer.__init__ = ViserServer._actual_init  # type: ignore

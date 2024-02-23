@@ -11,77 +11,87 @@ import time
 import viser
 from viser.theme import TitlebarButton, TitlebarConfig, TitlebarImage
 
-server = viser.ViserServer()
 
-buttons = (
-    TitlebarButton(
-        text="Getting Started",
-        icon=None,
-        href="https://nerf.studio",
-    ),
-    TitlebarButton(
-        text="Github",
-        icon="GitHub",
-        href="https://github.com/nerfstudio-project/nerfstudio",
-    ),
-    TitlebarButton(
-        text="Documentation",
-        icon="Description",
-        href="https://docs.nerf.studio",
-    ),
-)
-image = TitlebarImage(
-    image_url_light="https://docs.nerf.studio/en/latest/_static/imgs/logo.png",
-    image_url_dark="https://docs.nerf.studio/en/latest/_static/imgs/logo-dark.png",
-    image_alt="NerfStudio Logo",
-    href="https://docs.nerf.studio/",
-)
-titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
+def main():
+    server = viser.ViserServer(label="Viser Theming")
 
-server.add_gui_markdown(
-    "Viser includes support for light theming via the `.configure_theme()` method."
-)
-
-# GUI elements for controllable values.
-control_layout = server.add_gui_dropdown(
-    "Control layout", ("floating", "fixed", "collapsible")
-)
-titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
-dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
-brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
-synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
-
-gui_theme_code = server.add_gui_markdown("no theme applied yet")
-
-
-def synchronize_theme() -> None:
-    global gui_theme_code
-    server.configure_theme(
-        dark_mode=dark_mode.value,
-        titlebar_content=titlebar_theme if titlebar.value else None,
-        control_layout=control_layout.value,
-        brand_color=brand_color.value,
+    buttons = (
+        TitlebarButton(
+            text="Getting Started",
+            icon=None,
+            href="https://nerf.studio",
+        ),
+        TitlebarButton(
+            text="Github",
+            icon="GitHub",
+            href="https://github.com/nerfstudio-project/nerfstudio",
+        ),
+        TitlebarButton(
+            text="Documentation",
+            icon="Description",
+            href="https://docs.nerf.studio",
+        ),
     )
-    server.world_axes.visible = True
+    image = TitlebarImage(
+        image_url_light="https://docs.nerf.studio/_static/imgs/logo.png",
+        image_url_dark="https://docs.nerf.studio/_static/imgs/logo-dark.png",
+        image_alt="NerfStudio Logo",
+        href="https://docs.nerf.studio/",
+    )
+    titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
-    gui_theme_code.remove()
-    gui_theme_code = server.add_gui_markdown(
-        f"""
-        ### Current applied theme
-        ```
+    server.add_gui_markdown(
+        "Viser includes support for light theming via the `.configure_theme()` method."
+    )
+
+    gui_theme_code = server.add_gui_markdown("no theme applied yet")
+
+    # GUI elements for controllable values.
+    titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
+    dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
+    show_logo = server.add_gui_checkbox("Show logo", initial_value=True)
+    show_share_button = server.add_gui_checkbox("Show share button", initial_value=True)
+    brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
+    control_layout = server.add_gui_dropdown(
+        "Control layout", ("floating", "fixed", "collapsible")
+    )
+    control_width = server.add_gui_dropdown(
+        "Control width", ("small", "medium", "large"), initial_value="medium"
+    )
+    synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
+
+    def synchronize_theme() -> None:
         server.configure_theme(
-            dark_mode={dark_mode.value},
-            titlebar_content={"titlebar_content" if titlebar.value else None},
-            control_layout="{control_layout.value}",
-            brand_color={brand_color.value},
+            titlebar_content=titlebar_theme if titlebar.value else None,
+            control_layout=control_layout.value,
+            control_width=control_width.value,
+            dark_mode=dark_mode.value,
+            show_logo=show_logo.value,
+            show_share_button=show_share_button.value,
+            brand_color=brand_color.value,
         )
-        ```
+        gui_theme_code.content = f"""
+            ### Current applied theme
+            ```
+            server.configure_theme(
+                titlebar_content={"titlebar_content" if titlebar.value else None},
+                control_layout="{control_layout.value}",
+                control_width="{control_width.value}",
+                dark_mode={dark_mode.value},
+                show_logo={show_logo.value},
+                show_share_button={show_share_button.value},
+                brand_color={brand_color.value},
+            )
+            ```
         """
-    )
+
+    synchronize.on_click(lambda _: synchronize_theme())
+    synchronize_theme()
+
+    while True:
+        time.sleep(10.0)
 
 
-synchronize.on_click(lambda _: synchronize_theme())
-synchronize_theme()
-
-while True:
-    time.sleep(10.0)
+# main()
+if __name__ == "__main__":
+    main()

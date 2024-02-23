@@ -49,9 +49,10 @@ class SE2(_base.SEBase[SO2]):
 
     # SE-specific.
 
-    @staticmethod
+    @classmethod
     @override
     def from_rotation_and_translation(
+        cls,
         rotation: SO2,
         translation: hints.Array,
     ) -> "SE2":
@@ -75,14 +76,14 @@ class SE2(_base.SEBase[SO2]):
 
     # Factory.
 
-    @staticmethod
+    @classmethod
     @override
-    def identity() -> "SE2":
+    def identity(cls) -> "SE2":
         return SE2(unit_complex_xy=onp.array([1.0, 0.0, 0.0, 0.0]))
 
-    @staticmethod
+    @classmethod
     @override
-    def from_matrix(matrix: hints.Array) -> "SE2":
+    def from_matrix(cls, matrix: hints.Array) -> "SE2":
         assert matrix.shape == (3, 3)
         # Currently assumes bottom row is [0, 0, 1].
         return SE2.from_rotation_and_translation(
@@ -109,9 +110,9 @@ class SE2(_base.SEBase[SO2]):
 
     # Operations.
 
-    @staticmethod
+    @classmethod
     @override
-    def exp(tangent: hints.Array) -> "SE2":
+    def exp(cls, tangent: hints.Array) -> "SE2":
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se2.hpp#L558
         # Also see:

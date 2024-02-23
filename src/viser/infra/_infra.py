@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
-import http.server
+import http
 import mimetypes
 import threading
 from asyncio.events import AbstractEventLoop
@@ -35,8 +35,10 @@ from websockets.legacy.server import WebSocketServerProtocol
 
 from ._async_message_buffer import (
     DONE_SENTINEL,
+    FLUSH_SENTINEL,
     AsyncMessageBuffer,
     DoneSentinel,
+    FlushSentinel,
     MessageWindow,
 )
 from ._messages import Message
@@ -64,7 +66,7 @@ class MessageHandler:
     def register_handler(
         self,
         message_cls: Type[TMessage],
-        callback: Callable[[ClientId, TMessage], None],
+        callback: Callable[[ClientId, TMessage], Any],
     ) -> None:
         """Register a handler for a particular message type."""
         if message_cls not in self._incoming_handlers:
@@ -74,7 +76,7 @@ class MessageHandler:
     def unregister_handler(
         self,
         message_cls: Type[TMessage],
-        callback: Optional[Callable[[ClientId, TMessage], None]] = None,
+        callback: Optional[Callable[[ClientId, TMessage], Any]] = None,
     ):
         """Unregister a handler for a particular message type."""
         assert (
@@ -157,6 +159,8 @@ class Server(MessageHandler):
         self._thread_executor = ThreadPoolExecutor(max_workers=32)
         self._shutdown_event = threading.Event()
 
+        self._client_state_from_id: Dict[int, _ClientHandleState] = {}
+
     def start(self) -> None:
         """Start the server."""
 
@@ -194,6 +198,16 @@ class Server(MessageHandler):
         they will receive a buffered set of previously broadcasted messages. The buffer
         is culled using the value of `message.redundancy_key()`."""
         self._broadcast_buffer.push(message)
+
+    def flush(self) -> None:
+        """Flush the outgoing message buffer for broadcasted messages. Any buffered
+        messages will immediately be sent. (by default they are windowed)"""
+        self._broadcast_buffer.push(FLUSH_SENTINEL)
+
+    def flush_client(self, client_id: int) -> None:
+        """Flush the outgoing message buffer for a particular client. Any buffered
+        messages will immediately be sent. (by default they are windowed)"""
+        self._client_state_from_id[client_id].message_buffer.put_nowait(FLUSH_SENTINEL)
 
     def _background_worker(self, ready_sem: threading.Semaphore) -> None:
         host = self._host
@@ -235,6 +249,7 @@ class Server(MessageHandler):
                 event_loop=event_loop,
             )
             client_connection = ClientConnection(client_id, client_state)
+            self._client_state_from_id[client_id] = client_state
 
             def handle_incoming(message: Message) -> None:
                 self._thread_executor.submit(
@@ -288,6 +303,7 @@ class Server(MessageHandler):
                     cb(client_connection)
 
                 # Cleanup.
+                self._client_state_from_id.pop(client_id)
                 total_connections -= 1
                 if self._verbose:
                     rich.print(
@@ -296,6 +312,11 @@ class Server(MessageHandler):
                     )
 
         # Host client on the same port as the websocket.
+        file_cache: Dict[Path, bytes] = {}
+        file_cache_gzipped: Dict[Path, bytes] = {}
+
+        import gzip
+
         async def viser_http_server(
             path: str, request_headers: websockets.datastructures.Headers
         ) -> Optional[
@@ -311,21 +332,31 @@ class Server(MessageHandler):
             if relpath == ".":
                 relpath = "index.html"
             assert http_server_root is not None
-            source = http_server_root / relpath
+
+            source_path = http_server_root / relpath
+            if not source_path.exists():
+                return (http.HTTPStatus.NOT_FOUND, {}, b"404")  # type: ignore
+
+            use_gzip = "gzip" in request_headers.get("Accept-Encoding", "")
+
+            response_headers = {
+                "Content-Type": str(mimetypes.MimeTypes().guess_type(relpath)[0]),
+            }
+
+            if source_path not in file_cache:
+                file_cache[source_path] = source_path.read_bytes()
+            if use_gzip:
+                response_headers["Content-Encoding"] = "gzip"
+                if source_path not in file_cache_gzipped:
+                    file_cache_gzipped[source_path] = gzip.compress(
+                        file_cache[source_path]
+                    )
+                response_payload = file_cache_gzipped[source_path]
+            else:
+                response_payload = file_cache[source_path]
 
             # Try to read + send over file.
-            try:
-                return (
-                    http.HTTPStatus.OK,
-                    {
-                        "content-type": str(
-                            mimetypes.MimeTypes().guess_type(relpath)[0]
-                        ),
-                    },
-                    source.read_bytes(),
-                )
-            except FileNotFoundError:
-                return (http.HTTPStatus.NOT_FOUND, {}, b"404")  # type: ignore
+            return (http.HTTPStatus.OK, response_headers, response_payload)
 
         for _ in range(500):
             try:
@@ -353,7 +384,9 @@ class Server(MessageHandler):
 async def _client_producer(
     websocket: WebSocketServerProtocol,
     client_id: ClientId,
-    get_next: Callable[[], Coroutine[None, None, Union[Message, DoneSentinel]]],
+    get_next: Callable[
+        [], Coroutine[None, None, Union[Message, FlushSentinel, DoneSentinel]]
+    ],
     client_api_version: Literal[0, 1],
 ) -> None:
     """Infinite loop to send messages from a buffer to a single client."""
@@ -373,6 +406,8 @@ async def _client_producer(
                 assert isinstance(serialized, bytes)
                 await websocket.send(serialized)
             elif client_api_version == 0:
+                # Clients built for the original viser API didn't do any windowing of
+                # messages.
                 for msg in outgoing:
                     serialized = msgpack.packb(msg.as_serializable_dict())
                     assert isinstance(serialized, bytes)

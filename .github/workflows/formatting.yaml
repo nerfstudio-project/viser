@@ -21,6 +21,6 @@ jobs:
           pip install --upgrade pip
           pip install -e ".[dev,examples]"
       - name: Run Ruff
-        run: ruff docs/ src/ examples/
-      - name: Run Black
-        run: black docs/ src/ examples/ --check
+        run: ruff check docs/ src/ examples/
+      - name: Run Ruff format
+        run: ruff format docs/ src/ examples/ --check

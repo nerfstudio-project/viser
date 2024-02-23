@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.7"
+version = "0.1.24"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -21,7 +21,7 @@ classifiers = [
 dependencies = [
     "websockets>=10.4",
     "numpy>=1.0.0",
-    "msgpack>=1.0.0",
+    "msgpack>=1.0.7",
     "imageio>=2.0.0",
     "pyliblzfse>=0.4.1",
     "scikit-image>=0.18.0",
@@ -40,8 +40,7 @@ dependencies = [
 dev = [
     "pyright>=1.1.308",
     "mypy>=1.4.1",
-    "ruff==0.0.267",
-    "black==23.3.0",
+    "ruff==0.1.13",
     "pre-commit==3.3.2",
 ]
 examples = [
@@ -54,13 +53,10 @@ examples = [
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
 [tool.setuptools.package-data]
-viser = ["py.typed", "_icons/tabler-icons.tar", "client/build/**/*"]
+viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/build/**/*"]
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
-
-[tool.isort]
-profile = "black"
 
 [tool.mypy]
 python_version = "3.8"
@@ -72,9 +68,6 @@ disable_error_code="var-annotated"  # Common source of mypy + numpy false positi
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
 
-[tool.black]
-exclude = "viser/client/.nodeenv"
-
 [tool.ruff]
 select = [
     "E",  # pycodestyle errors.
@@ -83,10 +76,12 @@ select = [
     "PLE",  # Pylint errors.
     "PLR",  # Pylint refactor recommendations.
     "PLW",  # Pylint warnings.
+    "I", # Import sorting.
 ]
 ignore = [
     "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
+    "E721",  # Do not compare types, use `isinstance()`.
     "F722",  # Forward annotation false positive from jaxtyping. Should be caught by pyright.
     "F821",  # Forward annotation false positive from jaxtyping. Should be caught by pyright.
     "PLR2004",  # Magic value used in comparison.

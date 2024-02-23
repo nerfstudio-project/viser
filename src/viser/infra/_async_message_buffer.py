@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import dataclasses
 import time
 from asyncio.events import AbstractEventLoop
-from typing import Any, AsyncGenerator, Awaitable, Dict, Optional, Sequence, Union
+from typing import Any, AsyncGenerator, Dict, Optional, Sequence, Union
 
 from typing_extensions import Literal, TypeGuard
 
@@ -19,10 +21,12 @@ class AsyncMessageBuffer:
     message_event: asyncio.Event = dataclasses.field(default_factory=asyncio.Event)
 
     message_counter: int = 0
-    message_from_id: Dict[int, Message] = dataclasses.field(default_factory=dict)
+    message_from_id: Dict[int, Union[Message, FlushSentinel]] = dataclasses.field(
+        default_factory=dict
+    )
     id_from_redundancy_key: Dict[str, int] = dataclasses.field(default_factory=dict)
 
-    def push(self, message: Message) -> None:
+    def push(self, message: Union[Message, FlushSentinel]) -> None:
         """Push a new message to our buffer, and remove old redundant ones."""
         # Add message to buffer.
         new_message_id = self.message_counter
@@ -31,7 +35,11 @@ class AsyncMessageBuffer:
 
         # If an existing message with the same key already exists in our buffer, we
         # don't need the old one anymore. :-)
-        redundancy_key = message.redundancy_key()
+        if isinstance(message, Message):
+            redundancy_key = message.redundancy_key()
+        else:
+            redundancy_key = FLUSH_SENTINEL
+
         if redundancy_key is not None and redundancy_key in self.id_from_redundancy_key:
             old_message_id = self.id_from_redundancy_key.pop(redundancy_key)
             self.message_from_id.pop(old_message_id)
@@ -82,12 +90,19 @@ class AsyncMessageBuffer:
                 yield out
 
 
-DONE_SENTINEL = "done_sentinel"
 DoneSentinel = Literal["done_sentinel"]
+DONE_SENTINEL: DoneSentinel = "done_sentinel"
+
+FlushSentinel = Literal["flush_sentinel"]
+FLUSH_SENTINEL: FlushSentinel = "flush_sentinel"
 
 
 def is_done_sentinel(x: Any) -> TypeGuard[DoneSentinel]:
     return x == DONE_SENTINEL
+
+
+def is_flush_sentinel(x: Any) -> TypeGuard[FlushSentinel]:
+    return x == FLUSH_SENTINEL
 
 
 @dataclasses.dataclass
@@ -98,8 +113,9 @@ class MessageWindow:
     """Client that this window will be sent to. Used for ignoring certain messages."""
 
     window_duration_sec: float = 1.0 / 60.0
-    window_max_length: int = 256
+    window_max_length: int = 1024
 
+    flush: bool = False
     done: bool = False
 
     _window_start_time: float = -1
@@ -107,7 +123,9 @@ class MessageWindow:
     """We use a redundancy key -> message dictionary to track our window. This helps us
     eliminate redundant messages."""
 
-    def append_to_window(self, message: Union[Message, DoneSentinel]) -> None:
+    def append_to_window(
+        self, message: Union[Message, DoneSentinel, FlushSentinel]
+    ) -> None:
         """Append a message to our window."""
         if isinstance(message, Message):
             if message.excluded_self_client == self.client_id:
@@ -115,26 +133,29 @@ class MessageWindow:
             if len(self._window) == 0:
                 self._window_start_time = time.time()
             self._window[message.redundancy_key()] = message
+        elif is_flush_sentinel(message):
+            self.flush = True
         else:
             assert is_done_sentinel(message)
             self.done = True
 
     async def wait_and_append_to_window(
-        self, message: Awaitable[Union[Message, DoneSentinel]]
+        self,
+        message_task: asyncio.Task[Union[Message, DoneSentinel, FlushSentinel]],
     ) -> bool:
         """Async version of `append_to_window()`. Returns `True` if successful, `False`
         if timed out."""
         if len(self._window) == 0:
-            self.append_to_window(await message)
+            self.append_to_window(await message_task)
             return True
 
-        message = asyncio.shield(message)
         (done, pending) = await asyncio.wait(
-            [message], timeout=self.max_time_until_ready()
+            [message_task],
+            timeout=self.max_time_until_ready(),
         )
         del pending
-        if message in done:
-            self.append_to_window(await message)
+        if message_task in done:  # Cast to prevent type narrowing.
+            self.append_to_window(await message_task)
             return True
         return False
 
@@ -150,7 +171,10 @@ class MessageWindow:
         """Returns window of messages if ready. Otherwise, returns None."""
         # Are we ready to send?
         ready = False
-        if (
+        if self.flush:
+            ready = True
+            self.flush = False
+        elif (
             len(self._window) > 0
             and time.time() - self._window_start_time >= self.window_duration_sec
         ):

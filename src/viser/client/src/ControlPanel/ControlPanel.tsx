@@ -1,12 +1,21 @@
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import GeneratedGuiContainer from "./Generated";
 import { ViewerContext } from "../App";
+
 import ServerControls from "./ServerControls";
 import {
   ActionIcon,
+  Anchor,
   Box,
+  Button,
   Collapse,
+  CopyButton,
+  Flex,
   Loader,
+  Modal,
+  Stack,
+  Text,
+  TextInput,
   Tooltip,
   Transition,
   useMantineTheme,
@@ -15,12 +24,17 @@ import {
   IconAdjustments,
   IconCloudCheck,
   IconArrowBack,
+  IconShare,
+  IconCopy,
+  IconCheck,
+  IconPlugConnectedX,
 } from "@tabler/icons-react";
 import React from "react";
 import BottomPanel from "./BottomPanel";
 import FloatingPanel from "./FloatingPanel";
 import { ThemeConfigurationMessage } from "../WebsocketMessages";
 import SidebarPanel from "./SidebarPanel";
+import { sendWebsocketMessage } from "../WebsocketFunctions";
 
 // Must match constant in Python.
 const ROOT_CONTAINER_ID = "root";
@@ -37,6 +51,19 @@ export default function ControlPanel(props: {
     (state) => "root" in state.guiIdSetFromContainerId,
   );
   const [showSettings, { toggle }] = useDisclosure(false);
+
+  const controlWidthString = viewer.useGui(
+    (state) => state.theme.control_width,
+  );
+  const controlWidth = (
+    controlWidthString == "small"
+      ? "16em"
+      : controlWidthString == "medium"
+      ? "20em"
+      : controlWidthString == "large"
+      ? "24em"
+      : null
+  )!;
 
   const generatedServerToggleButton = (
     <Box sx={{ display: showGenerated ? undefined : "none" }}>
@@ -63,7 +90,7 @@ export default function ControlPanel(props: {
 
   const panelContents = (
     <>
-      <Collapse in={!showGenerated || showSettings} p="xs">
+      <Collapse in={!showGenerated || showSettings} p="xs" pt="0.375em">
         <ServerControls />
       </Collapse>
       <Collapse in={showGenerated && !showSettings}>
@@ -79,6 +106,7 @@ export default function ControlPanel(props: {
         <BottomPanel.Handle>
           <ConnectionStatus />
           <BottomPanel.HideWhenCollapsed>
+            <ShareButton />
             {generatedServerToggleButton}
           </BottomPanel.HideWhenCollapsed>
         </BottomPanel.Handle>
@@ -88,10 +116,11 @@ export default function ControlPanel(props: {
   } else if (props.control_layout === "floating") {
     /* Floating layout. */
     return (
-      <FloatingPanel>
+      <FloatingPanel width={controlWidth}>
         <FloatingPanel.Handle>
           <ConnectionStatus />
           <FloatingPanel.HideWhenCollapsed>
+            <ShareButton />
             {generatedServerToggleButton}
           </FloatingPanel.HideWhenCollapsed>
         </FloatingPanel.Handle>
@@ -101,9 +130,13 @@ export default function ControlPanel(props: {
   } else {
     /* Sidebar view. */
     return (
-      <SidebarPanel collapsible={props.control_layout === "collapsible"}>
+      <SidebarPanel
+        width={controlWidth}
+        collapsible={props.control_layout === "collapsible"}
+      >
         <SidebarPanel.Handle>
           <ConnectionStatus />
+          <ShareButton />
           {generatedServerToggleButton}
         </SidebarPanel.Handle>
         <SidebarPanel.Contents>{panelContents}</SidebarPanel.Contents>
@@ -120,15 +153,15 @@ function ConnectionStatus() {
 
   return (
     <>
-      <div style={{ width: "1.4em" }} /> {/* Spacer. */}
+      <div style={{ width: "1.1em" }} /> {/* Spacer. */}
       <Transition transition="skew-down" mounted={connected}>
         {(styles) => (
           <IconCloudCheck
             color={"#0b0"}
             style={{
               position: "absolute",
-              width: "1.5em",
-              height: "1.5em",
+              width: "1.25em",
+              height: "1.25em",
               ...styles,
             }}
           />
@@ -144,9 +177,149 @@ function ConnectionStatus() {
           />
         )}
       </Transition>
-      <Box px="xs" sx={{ flexGrow: 1 }}>
+      <Box px="xs" sx={{ flexGrow: 1 }} lts={"-0.5px"} pt="0.1em">
         {label !== "" ? label : connected ? "Connected" : "Connecting..."}
       </Box>
+    </>
+  );
+}
+
+function ShareButton() {
+  const viewer = React.useContext(ViewerContext)!;
+  const connected = viewer.useGui((state) => state.websocketConnected);
+  const shareUrl = viewer.useGui((state) => state.shareUrl);
+  const setShareUrl = viewer.useGui((state) => state.setShareUrl);
+
+  const [doingSomething, setDoingSomething] = React.useState(false);
+
+  const [shareModalOpened, { open: openShareModal, close: closeShareModal }] =
+    useDisclosure(false);
+
+  // Turn off loader when share URL is set.
+  React.useEffect(() => {
+    if (shareUrl !== null) {
+      setDoingSomething(false);
+    }
+  }, [shareUrl]);
+  React.useEffect(() => {
+    if (!connected && shareModalOpened) closeShareModal();
+  }, [connected, shareModalOpened]);
+
+  if (viewer.useGui((state) => state.theme).show_share_button === false)
+    return null;
+
+  return (
+    <>
+      <Tooltip
+        zIndex={100}
+        label={connected ? "Share" : "Share (needs connection)"}
+        withinPortal
+      >
+        <div>
+          <ActionIcon
+            onClick={(evt) => {
+              evt.stopPropagation();
+              openShareModal();
+            }}
+            disabled={!connected}
+          >
+            <IconShare stroke={2} height="1.125em" width="1.125em" />
+          </ActionIcon>
+        </div>
+      </Tooltip>
+      <Modal
+        title="Share"
+        opened={shareModalOpened}
+        onClose={closeShareModal}
+        withCloseButton={false}
+        zIndex={100}
+        withinPortal
+        onClick={(evt) => evt.stopPropagation()}
+        onMouseDown={(evt) => evt.stopPropagation()}
+        onMouseMove={(evt) => evt.stopPropagation()}
+        onMouseUp={(evt) => evt.stopPropagation()}
+        styles={{ title: { fontWeight: 600 } }}
+      >
+        {shareUrl === null ? (
+          <>
+            {/*<Select
+                label="Server"
+                data={["viser-us-west (https://share.viser.studio)"]}
+                withinPortal
+                {...form.getInputProps("server")}
+              /> */}
+            {doingSomething ? (
+              <Stack mb="xl">
+                <Loader size="xl" mx="auto" />
+              </Stack>
+            ) : (
+              <Stack mb="md">
+                <Text>
+                  Create a public, shareable URL to this Viser instance.
+                </Text>
+                <Button
+                  fullWidth
+                  onClick={() => {
+                    sendWebsocketMessage(viewer.websocketRef, {
+                      type: "ShareUrlRequest",
+                    });
+                    setDoingSomething(true); // Loader state will help with debouncing.
+                  }}
+                >
+                  Request Share URL
+                </Button>
+              </Stack>
+            )}
+          </>
+        ) : (
+          <>
+            <Text>Share URL is connected:</Text>
+            <Stack my="md">
+              <TextInput value={shareUrl} />
+              <Flex justify="space-between" columnGap="0.5em" align="center">
+                <CopyButton value={shareUrl}>
+                  {({ copied, copy }) => (
+                    <Button
+                      leftIcon={
+                        copied ? (
+                          <IconCheck height="1.375em" width="1.375em" />
+                        ) : (
+                          <IconCopy height="1.375em" width="1.375em" />
+                        )
+                      }
+                      onClick={copy}
+                      variant={copied ? "outline" : "filled"}
+                      style={{ flexGrow: "1" }}
+                    >
+                      {copied ? "Copied!" : "Copy Share URL"}
+                    </Button>
+                  )}
+                </CopyButton>
+                <Tooltip zIndex={100} label="Disconnect" withinPortal>
+                  <Button
+                    color="red"
+                    onClick={() => {
+                      sendWebsocketMessage(viewer.websocketRef, {
+                        type: "ShareUrlDisconnect",
+                      });
+                      setShareUrl(null);
+                    }}
+                  >
+                    <IconPlugConnectedX />
+                  </Button>
+                </Tooltip>
+              </Flex>
+            </Stack>
+          </>
+        )}
+        <Text size="xs">
+          This feature is experimental. Problems? Consider{" "}
+          <Anchor href="https://github.com/nerfstudio-project/viser/issues">
+            reporting on GitHub
+          </Anchor>
+          .
+        </Text>
+      </Modal>
     </>
   );
 }

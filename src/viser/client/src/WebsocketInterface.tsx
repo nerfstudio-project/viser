@@ -1,6 +1,7 @@
 import AwaitLock from "await-lock";
 import { CatmullRomLine, CubicBezierLine, Grid } from "@react-three/drei";
 import { unpack } from "msgpackr";
+import { notifications } from "@mantine/notifications";
 
 import React, { useContext } from "react";
 import * as THREE from "three";
@@ -9,8 +10,19 @@ import { TextureLoader } from "three";
 import { ViewerContext } from "./App";
 import { SceneNode } from "./SceneTree";
 import { syncSearchParamServer } from "./SearchParamsUtils";
-import { CameraFrustum, CoordinateFrame, GlbAsset } from "./ThreeAssets";
-import { Message } from "./WebsocketMessages";
+import {
+  CameraFrustum,
+  CoordinateFrame,
+  InstancedAxes,
+  GlbAsset,
+  OutlinesIfHovered,
+  PointCloud,
+} from "./ThreeAssets";
+import {
+  FileDownloadPart,
+  FileDownloadStart,
+  Message,
+} from "./WebsocketMessages";
 import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import {
@@ -21,8 +33,10 @@ import {
 import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { MantineProvider, Paper } from "@mantine/core";
 import GaussianSplats from "./Splatting/GaussianSplats";
+import { MantineProvider, Paper, Progress } from "@mantine/core";
+import { IconCheck } from "@tabler/icons-react";
+import { computeT_threeworld_world } from "./WorldTransformUtils";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function linearColorArrayFromSrgbColorArray(colors: ArrayBuffer) {
@@ -48,30 +62,39 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
 
-  // TODO: we should clean this up.
+  // We could reduce the redundancy here if we wanted to.
   // https://github.com/nerfstudio-project/viser/issues/39
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
   const setTheme = viewer.useGui((state) => state.setTheme);
+  const setShareUrl = viewer.useGui((state) => state.setShareUrl);
   const addGui = viewer.useGui((state) => state.addGui);
   const addModal = viewer.useGui((state) => state.addModal);
   const removeModal = viewer.useGui((state) => state.removeModal);
   const removeGui = viewer.useGui((state) => state.removeGui);
-  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
-  const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
-  const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
+  const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(node: SceneNode<any>) {
+    // Make sure scene node is in attributes.
+    const attrs = viewer.nodeAttributesFromName.current;
+    if (!(node.name in attrs)) {
+      attrs[node.name] = {};
+    }
+
+    // Don't update the pose of the object until we've made a new one!
+    attrs[node.name]!.poseUpdateState = "waitForMakeObject";
+
+    // Make sure parents exists.
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
     const parent_name = node.name.split("/").slice(0, -1).join("/");
     if (!(parent_name in nodeFromName)) {
       addSceneNodeMakeParents(
         new SceneNode<THREE.Group>(parent_name, (ref) => (
-          <CoordinateFrame ref={ref} show_axes={false} />
+          <CoordinateFrame ref={ref} showAxes={false} />
         )),
       );
     }
@@ -79,6 +102,7 @@ function useMessageHandler() {
   }
 
   const mantineTheme = useViserMantineTheme();
+  const fileDownloadHandler = useFileDownloadHandler();
 
   // Return message handler.
   return (message: Message) => {
@@ -88,10 +112,20 @@ function useMessageHandler() {
     }
 
     switch (message.type) {
+      // Set the share URL.
+      case "ShareUrlUpdated": {
+        setShareUrl(message.share_url);
+        return;
+      }
       // Request a render.
       case "GetRenderRequestMessage": {
         viewer.getRenderRequest.current = message;
         viewer.getRenderRequestState.current = "triggered";
+        return;
+      }
+      // Set the GUI panel label.
+      case "SetGuiPanelLabelMessage": {
+        viewer.useGui.setState({ label: message.label ?? "" });
         return;
       }
       // Configure the theme.
@@ -99,7 +133,6 @@ function useMessageHandler() {
         setTheme(message);
         return;
       }
-
       // Enable/disable whether scene pointer events are sent.
       case "SceneClickEnableMessage": {
         viewer.sceneClickEnable.current = message.enable;
@@ -117,7 +150,43 @@ function useMessageHandler() {
           new SceneNode<THREE.Group>(message.name, (ref) => (
             <CoordinateFrame
               ref={ref}
-              show_axes={message.show_axes}
+              showAxes={message.show_axes}
+              axesLength={message.axes_length}
+              axesRadius={message.axes_radius}
+              originRadius={message.origin_radius}
+            />
+          )),
+        );
+        return;
+      }
+
+      // Add axes to visualize.
+      case "BatchedAxesMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => (
+            // Minor naming discrepancy: I think "batched" will be clearer to
+            // folks on the Python side, but instanced is somewhat more
+            // precise.
+            <InstancedAxes
+              ref={ref}
+              wxyzsBatched={
+                new Float32Array(
+                  message.wxyzs_batched.buffer.slice(
+                    message.wxyzs_batched.byteOffset,
+                    message.wxyzs_batched.byteOffset +
+                      message.wxyzs_batched.byteLength,
+                  ),
+                )
+              }
+              positionsBatched={
+                new Float32Array(
+                  message.positions_batched.buffer.slice(
+                    message.positions_batched.byteOffset,
+                    message.positions_batched.byteOffset +
+                      message.positions_batched.byteLength,
+                  ),
+                )
+              }
               axes_length={message.axes_length}
               axes_radius={message.axes_radius}
             />
@@ -147,7 +216,7 @@ function useMessageHandler() {
                 rotation={
                   // There's redundancy here when we set the side to
                   // THREE.DoubleSide, where xy and yx should be the same.
-                  // 
+                  //
                   // But it makes sense to keep this parameterization because
                   // specifying planes by xy seems more natural than the normal
                   // direction (z, +z, or -z), and it opens the possibility of
@@ -159,16 +228,20 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
+                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                      : message.plane == "yx"
+                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                        : message.plane == "yz"
+                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                          : message.plane == "zx"
+                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                            : message.plane == "zy"
+                              ? new THREE.Euler(
+                                  -Math.PI / 2.0,
+                                  0.0,
+                                  -Math.PI / 2.0,
+                                )
+                              : undefined
                 }
               />
             </group>
@@ -179,52 +252,25 @@ function useMessageHandler() {
 
       // Add a point cloud.
       case "PointCloudMessage": {
-        const geometry = new THREE.BufferGeometry();
-        const pointCloudMaterial = new THREE.PointsMaterial({
-          size: message.point_size,
-          vertexColors: true,
-          toneMapped: false,
-        });
-
-        // Reinterpret cast: uint8 buffer => float32 for positions.
-        geometry.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(
-            new Float32Array(
-              message.points.buffer.slice(
-                message.points.byteOffset,
-                message.points.byteOffset + message.points.byteLength,
-              ),
-            ),
-            3,
-          ),
-        );
-        geometry.computeBoundingSphere();
-
-        // Wrap uint8 buffer for colors. Note that we need to set normalized=true.
-        geometry.setAttribute(
-          "color",
-          threeColorBufferFromUint8Buffer(message.colors),
-        );
-
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Points>(
-            message.name,
-            (ref) => (
-              <points
-                ref={ref}
-                geometry={geometry}
-                material={pointCloudMaterial}
-              />
-            ),
-            () => {
-              // TODO: we can switch to the react-three-fiber <bufferGeometry />,
-              // <pointsMaterial />, etc components to avoid manual
-              // disposal.
-              geometry.dispose();
-              pointCloudMaterial.dispose();
-            },
-          ),
+          new SceneNode<THREE.Points>(message.name, (ref) => (
+            <PointCloud
+              ref={ref}
+              pointSize={message.point_size}
+              pointBallNorm={message.point_ball_norm}
+              points={
+                new Float32Array(
+                  message.points.buffer.slice(
+                    message.points.byteOffset,
+                    message.points.byteOffset + message.points.byteLength,
+                  ),
+                )
+              }
+              colors={new Float32Array(message.colors).map(
+                (val) => val / 255.0,
+              )}
+            />
+          )),
         );
         return;
       }
@@ -242,18 +288,56 @@ function useMessageHandler() {
       // Add mesh
       case "MeshMessage": {
         const geometry = new THREE.BufferGeometry();
-        const material = new THREE.MeshStandardMaterial({
+
+        const generateGradientMap = (shades: 3 | 5) => {
+          const texture = new THREE.DataTexture(
+            Uint8Array.from(
+              shades == 3
+                ? [0, 0, 0, 255, 128, 128, 128, 255, 255, 255, 255, 255]
+                : [
+                    0, 0, 0, 255, 64, 64, 64, 255, 128, 128, 128, 255, 192, 192,
+                    192, 255, 255, 255, 255, 255,
+                  ],
+            ),
+            shades,
+            1,
+            THREE.RGBAFormat,
+          );
+
+          texture.needsUpdate = true;
+          return texture;
+        };
+        const standardArgs = {
           color: message.color || undefined,
           vertexColors: message.vertex_colors !== null,
           wireframe: message.wireframe,
           transparent: message.opacity !== null,
-          opacity: message.opacity ?? undefined,
+          opacity: message.opacity ?? 1.0,
+          // Flat shading only makes sense for non-wireframe materials.
+          flatShading: message.flat_shading && !message.wireframe,
           side: {
             front: THREE.FrontSide,
             back: THREE.BackSide,
             double: THREE.DoubleSide,
           }[message.side],
-        });
+        };
+        const assertUnreachable = (x: never): never => {
+          throw new Error(`Should never get here! ${x}`);
+        };
+        const material =
+          message.material == "standard" || message.wireframe
+            ? new THREE.MeshStandardMaterial(standardArgs)
+            : message.material == "toon3"
+              ? new THREE.MeshToonMaterial({
+                  gradientMap: generateGradientMap(3),
+                  ...standardArgs,
+                })
+              : message.material == "toon5"
+                ? new THREE.MeshToonMaterial({
+                    gradientMap: generateGradientMap(5),
+                    ...standardArgs,
+                  })
+                : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -290,7 +374,11 @@ function useMessageHandler() {
           new SceneNode<THREE.Mesh>(
             message.name,
             (ref) => {
-              return <mesh ref={ref} geometry={geometry} material={material} />;
+              return (
+                <mesh ref={ref} geometry={geometry} material={material}>
+                  <OutlinesIfHovered alwaysMounted />
+                </mesh>
+              );
             },
             () => {
               // TODO: we can switch to the react-three-fiber <bufferGeometry />,
@@ -383,31 +471,29 @@ function useMessageHandler() {
       case "SetCameraLookAtMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
 
-        const R_threeworld_world = new THREE.Quaternion();
-        R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-        );
+        const T_threeworld_world = computeT_threeworld_world(viewer);
         const target = new THREE.Vector3(
           message.look_at[0],
           message.look_at[1],
           message.look_at[2],
         );
-        target.applyQuaternion(R_threeworld_world);
+        target.applyMatrix4(T_threeworld_world);
         cameraControls.setTarget(target.x, target.y, target.z, false);
         return;
       }
       case "SetCameraUpDirectionMessage": {
         const camera = viewer.cameraRef.current!;
         const cameraControls = viewer.cameraControlRef.current!;
-        const R_threeworld_world = new THREE.Quaternion();
-        R_threeworld_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-        );
+        const T_threeworld_world = computeT_threeworld_world(viewer);
         const updir = new THREE.Vector3(
           message.position[0],
           message.position[1],
           message.position[2],
-        ).applyQuaternion(R_threeworld_world);
+        )
+          .normalize()
+          .applyQuaternion(
+            new THREE.Quaternion().setFromRotationMatrix(T_threeworld_world),
+          );
         camera.up.set(updir.x, updir.y, updir.z);
 
         // Back up position.
@@ -416,7 +502,7 @@ function useMessageHandler() {
 
         cameraControls.updateCameraUp();
 
-        // Restore position, which gets unexpectedly mutated in updateCameraUp().
+        // Restore position, which can get unexpectedly mutated in updateCameraUp().
         cameraControls.setPosition(
           prevPosition.x,
           prevPosition.y,
@@ -428,17 +514,16 @@ function useMessageHandler() {
       case "SetCameraPositionMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
 
-        // Set the camera position. Note that this will shift the orientation as-well.
+        // Set the camera position. Due to the look-at, note that this will
+        // shift the orientation as-well.
         const position_cmd = new THREE.Vector3(
           message.position[0],
           message.position[1],
           message.position[2],
         );
-        const R_worldthree_world = new THREE.Quaternion();
-        R_worldthree_world.setFromEuler(
-          new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-        );
-        position_cmd.applyQuaternion(R_worldthree_world);
+
+        const T_threeworld_world = computeT_threeworld_world(viewer);
+        position_cmd.applyMatrix4(T_threeworld_world);
 
         cameraControls.setPosition(
           position_cmd.x,
@@ -454,18 +539,23 @@ function useMessageHandler() {
         camera.setFocalLength(
           (0.5 * camera.getFilmHeight()) / Math.tan(message.fov / 2.0),
         );
+        viewer.sendCameraRef.current !== null && viewer.sendCameraRef.current();
         return;
       }
       case "SetOrientationMessage": {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.wxyz = message.wxyz;
+        if (attr[message.name]!.poseUpdateState == "updated")
+          attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
       case "SetPositionMessage": {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.position = message.position;
+        if (attr[message.name]!.poseUpdateState == "updated")
+          attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
       case "SetSceneNodeVisibilityMessage": {
@@ -479,8 +569,6 @@ function useMessageHandler() {
         new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_rgb}`,
           (texture) => {
-            texture.encoding = THREE.sRGBEncoding;
-
             const oldBackgroundTexture =
               viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
             viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
@@ -563,9 +651,12 @@ function useMessageHandler() {
           new SceneNode<THREE.Group>(
             message.name,
             (ref) => {
-              // We wrap with <group /> because Html doesn't implement THREE.Object3D.
+              // We wrap with <group /> because Html doesn't implement
+              // THREE.Object3D. The initial position is intended to be
+              // off-screen; it will be overwritten with the actual position
+              // after the component is mounted.
               return (
-                <group ref={ref}>
+                <group ref={ref} position={new THREE.Vector3(1e8, 1e8, 1e8)}>
                   <Html prepend={false}>
                     <MantineProvider
                       withGlobalStyles
@@ -574,8 +665,8 @@ function useMessageHandler() {
                     >
                       <Paper
                         sx={{
-                          width: "20em",
-                          fontSize: "0.8em",
+                          width: "18em",
+                          fontSize: "0.875em",
                           marginLeft: "1em",
                           marginTop: "1em",
                         }}
@@ -584,10 +675,11 @@ function useMessageHandler() {
                           evt.stopPropagation();
                         }}
                       >
-                        <GeneratedGuiContainer
-                          containerId={message.container_id}
-                          viewer={viewer}
-                        />
+                        <ViewerContext.Provider value={viewer}>
+                          <GeneratedGuiContainer
+                            containerId={message.container_id}
+                          />
+                        </ViewerContext.Provider>
                       </Paper>
                     </MantineProvider>
                   </Html>
@@ -616,6 +708,7 @@ function useMessageHandler() {
                   return (
                     <group ref={ref}>
                       <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
+                        <OutlinesIfHovered />
                         <planeGeometry
                           attach="geometry"
                           args={[message.render_width, message.render_height]}
@@ -638,7 +731,7 @@ function useMessageHandler() {
         );
         return;
       }
-      // Remove a scene node by name.
+      // Remove a scene node and its children by name.
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
@@ -664,19 +757,9 @@ function useMessageHandler() {
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
         return;
       }
-      // Set the value of a GUI input.
-      case "GuiSetValueMessage": {
-        setGuiValue(message.id, message.value);
-        return;
-      }
-      // Set the hidden state of a GUI input.
-      case "GuiSetVisibleMessage": {
-        setGuiVisible(message.id, message.visible);
-        return;
-      }
-      // Set the disabled state of a GUI input.
-      case "GuiSetDisabledMessage": {
-        setGuiDisabled(message.id, message.disabled);
+      // Update props of a GUI component
+      case "GuiUpdateMessage": {
+        updateGuiProps(message.id, message.updates);
         return;
       }
       // Remove a GUI input.
@@ -711,6 +794,8 @@ function useMessageHandler() {
                   tension={message.tension}
                   lineWidth={message.line_width}
                   color={message.color}
+                  // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
+                  segments={(message.segments ?? undefined) as undefined}
                 ></CatmullRomLine>
               </group>
             );
@@ -732,6 +817,8 @@ function useMessageHandler() {
                     midB={message.control_points[2 * i + 1]}
                     lineWidth={message.line_width}
                     color={message.color}
+                    // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
+                    segments={(message.segments ?? undefined) as undefined}
                   ></CubicBezierLine>
                 ))}
               </group>
@@ -776,10 +863,104 @@ function useMessageHandler() {
         );
         return;
       }
+      case "FileDownloadStart":
+      case "FileDownloadPart": {
+        fileDownloadHandler(message);
+        return;
+      }
       default: {
         console.log("Received message did not match any known types:", message);
         return;
       }
+    }
+  };
+}
+
+function useFileDownloadHandler() {
+  const downloadStatesRef = React.useRef<{
+    [uuid: string]: {
+      metadata: FileDownloadStart;
+      notificationId: string;
+      parts: Uint8Array[];
+      bytesDownloaded: number;
+      displayFilesize: string;
+    };
+  }>({});
+
+  return (message: FileDownloadStart | FileDownloadPart) => {
+    const notificationId = "download-" + message.download_uuid;
+
+    // Create or update download state.
+    switch (message.type) {
+      case "FileDownloadStart": {
+        let displaySize = message.size_bytes;
+        const displayUnits = ["B", "K", "M", "G", "T", "P"];
+        let displayUnitIndex = 0;
+        while (
+          displaySize >= 100 &&
+          displayUnitIndex < displayUnits.length - 1
+        ) {
+          displaySize /= 1024;
+          displayUnitIndex += 1;
+        }
+        downloadStatesRef.current[message.download_uuid] = {
+          metadata: message,
+          notificationId: notificationId,
+          parts: [],
+          bytesDownloaded: 0,
+          displayFilesize: `${displaySize.toFixed(1)}${
+            displayUnits[displayUnitIndex]
+          }`,
+        };
+        break;
+      }
+      case "FileDownloadPart": {
+        const downloadState = downloadStatesRef.current[message.download_uuid];
+        if (message.part != downloadState.parts.length) {
+          console.error(
+            "A file download message was dropped; this should never happen!",
+          );
+        }
+        downloadState.parts.push(message.content);
+        downloadState.bytesDownloaded += message.content.length;
+        break;
+      }
+    }
+
+    // Show notification.
+    const downloadState = downloadStatesRef.current[message.download_uuid];
+    const progressValue =
+      (100.0 * downloadState.bytesDownloaded) /
+      downloadState.metadata.size_bytes;
+    const isDone =
+      downloadState.bytesDownloaded == downloadState.metadata.size_bytes;
+
+    (downloadState.bytesDownloaded == 0
+      ? notifications.show
+      : notifications.update)({
+      title:
+        (isDone ? "Downloaded " : "Downloading ") +
+        `${downloadState.metadata.filename} (${downloadState.displayFilesize})`,
+      message: <Progress size="sm" value={progressValue} />,
+      id: notificationId,
+      autoClose: isDone,
+      withCloseButton: isDone,
+      loading: !isDone,
+      icon: isDone ? <IconCheck /> : undefined,
+    });
+
+    // If done: download file and clear state.
+    if (isDone) {
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(
+        new Blob(downloadState.parts, {
+          type: downloadState.metadata.mime_type,
+        }),
+      );
+      link.download = downloadState.metadata.filename;
+      link.click();
+      link.remove();
+      delete downloadStatesRef.current[message.download_uuid];
     }
   };
 }
@@ -928,7 +1109,7 @@ export function WebsocketMessageProducer() {
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
         viewer.sceneClickEnable.current = false;
-        viewer.useGui.setState({ websocketConnected: false });
+        viewer.useGui.setState({ shareUrl: null, websocketConnected: false });
         resetGui();
 
         // Try to reconnect.

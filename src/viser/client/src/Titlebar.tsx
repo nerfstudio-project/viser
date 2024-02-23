@@ -146,7 +146,11 @@ export function Titlebar() {
         zIndex: 5,
       }}
     >
-      <Paper p="xs" shadow="md" sx={{ height: "100%" }}>
+      <Paper
+        p="xs"
+        shadow="0 0 0.8em 0 rgba(0,0,0,0.1)"
+        sx={{ height: "100%" }}
+      >
         <Container
           fluid
           sx={() => ({
@@ -168,7 +172,9 @@ export function Titlebar() {
               },
             })}
           >
-            {buttons?.map((btn) => TitlebarButton(btn))}
+            {buttons?.map((btn, index) => (
+              <TitlebarButton {...btn} key={index} />
+            ))}
           </Group>
           <Burger
             size="sm"
@@ -192,7 +198,7 @@ export function Titlebar() {
             position: "relative",
             top: 0,
             left: "-0.625rem",
-            zIndex: 10000000,
+            zIndex: 1000,
             height: burgerOpen ? "calc(100vh - 2.375em)" : "0",
             width: "100vw",
             transition: "all 0.5s",
@@ -200,7 +206,9 @@ export function Titlebar() {
             padding: burgerOpen ? "1rem" : "0",
           })}
         >
-          {buttons?.map((btn) => MobileTitlebarButton(btn))}
+          {buttons?.map((btn, index) => (
+            <MobileTitlebarButton {...btn} key={index} />
+          ))}
         </Paper>
       </Paper>
     </Header>

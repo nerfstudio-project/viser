@@ -30,7 +30,7 @@ export default function BottomPanel({
         sx={{
           boxSizing: "border-box",
           width: "100%",
-          zIndex: 100,
+          zIndex: 10,
           position: "fixed",
           bottom: 0,
           left: 0,

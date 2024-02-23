@@ -1,14 +1,6 @@
 import { ViewerContext } from "../App";
-import {
-  Anchor,
-  Button,
-  Box,
-  Divider,
-  Stack,
-  Switch,
-  TextInput,
-} from "@mantine/core";
-import { IconBrandGithub, IconHomeMove, IconPhoto } from "@tabler/icons-react";
+import { Button, Divider, Stack, Switch, Text, TextInput } from "@mantine/core";
+import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
 import { Stats } from "@react-three/drei";
 import React from "react";
 import SceneTreeTable from "./SceneTreeTable";
@@ -35,6 +27,13 @@ export default function ServerControls() {
             viewer.useGui.setState({ server: event.currentTarget.value })
           }
           onKeyDown={triggerBlur}
+          styles={{
+            input: {
+              minHeight: "1.75rem",
+              height: "1.75rem",
+              padding: "0 0.5em",
+            },
+          }}
         />
         <TextInput
           label="Label"
@@ -43,6 +42,14 @@ export default function ServerControls() {
             viewer.useGui.setState({ label: event.currentTarget.value })
           }
           onKeyDown={triggerBlur}
+          styles={{
+            input: {
+              minHeight: "1.75rem",
+              height: "1.75rem",
+              padding: "0 0.5em",
+            },
+          }}
+          mb="0.375em"
         />
         <Button
           onClick={async () => {
@@ -100,6 +107,7 @@ export default function ServerControls() {
           }}
           fullWidth
           leftIcon={<IconPhoto size="1rem" />}
+          style={{ height: "1.875rem" }}
         >
           Export Canvas
         </Button>
@@ -109,28 +117,21 @@ export default function ServerControls() {
           }}
           fullWidth
           leftIcon={<IconHomeMove size="1rem" />}
+          style={{ height: "1.875rem" }}
         >
           Reset View
         </Button>
         <Switch
+          radius="sm"
           label="WebGL Statistics"
           onChange={(event) => {
             setShowStats(event.currentTarget.checked);
           }}
+          size="sm"
         />
         <Divider mt="xs" />
-        Scene tree
+        <Text fw={500}>Scene tree</Text>
         <MemoizedTable compact={true} />
-        <Anchor
-          mt="xs"
-          href="https://github.com/nerfstudio-project/viser"
-          target="_blank"
-          sx={{ display: "flex", alignItems: "center", gap: "0.3em" }}
-          color="dimmed"
-        >
-          <IconBrandGithub height="1.5em" style={{ display: "block" }} />{" "}
-          <Box>nerfstudio-project/viser</Box>
-        </Anchor>
       </Stack>
     </>
   );
