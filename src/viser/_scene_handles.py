@@ -49,6 +49,11 @@ class ScenePointerEvent:
     (-1, -1) is the bottom-left corner, (1, 1) is the top-right corner.
     For a box selection, this includes the top-left and bottom-right corners of the box."""
 
+    @property
+    def event(self):
+        """Deprecated. Use `event_type` instead."""
+        return self.event_type
+
 
 TSceneNodeHandle = TypeVar("TSceneNodeHandle", bound="SceneNodeHandle")
 

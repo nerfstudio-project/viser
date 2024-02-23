@@ -1263,6 +1263,19 @@ class MessageApi(abc.ABC):
             )
             cb(event)
 
+    def on_scene_click(
+        self,
+        func: Callable[[ScenePointerEvent], None],
+    ) -> Callable[[ScenePointerEvent], None]:
+        """
+        Deprecated. Use `on_scene_pointer` instead.
+        Registers a callback for scene click events. (event_type == "click")
+
+        Args:
+            func: The callback function to add.
+        """
+        return self.on_scene_pointer(event_type="click")(func)
+
     def on_scene_pointer(
         self,
         event_type: _messages.SCENEPOINTER_EVENT_TYPE
