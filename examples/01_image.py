@@ -11,10 +11,10 @@ from pathlib import Path
 
 import imageio.v3 as iio
 import numpy as onp
-
 import viser
 
-if __name__ == "__main__":
+
+def main() -> None:
     server = viser.ViserServer()
 
     # Add a background image.
@@ -49,3 +49,7 @@ if __name__ == "__main__":
             position=(2.0, 2.0, -1e-2),
         )
         time.sleep(0.2)
+
+
+if __name__ == "__main__":
+    main()

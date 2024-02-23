@@ -3,7 +3,7 @@ from typing import ClassVar, Generic, Type, TypeVar, Union, overload
 
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import final, override
+from typing_extensions import Self, final, override
 
 from . import hints
 
@@ -36,11 +36,11 @@ class MatrixLieGroup(abc.ABC):
     # Shared implementations.
 
     @overload
-    def __matmul__(self: GroupType, other: GroupType) -> GroupType:
+    def __matmul__(self, other: hints.Array) -> onpt.NDArray[onp.floating]:
         ...
 
     @overload
-    def __matmul__(self, other: hints.Array) -> onpt.NDArray[onp.floating]:
+    def __matmul__(self: GroupType, other: GroupType) -> GroupType:
         ...
 
     def __matmul__(
@@ -106,7 +106,7 @@ class MatrixLieGroup(abc.ABC):
         """
 
     @abc.abstractmethod
-    def multiply(self: GroupType, other: GroupType) -> GroupType:
+    def multiply(self: Self, other: Self) -> Self:
         """Composes this transformation with another.
 
         Returns:
@@ -151,7 +151,7 @@ class MatrixLieGroup(abc.ABC):
         """
 
     @abc.abstractmethod
-    def inverse(self: GroupType) -> GroupType:
+    def inverse(self: Self) -> Self:
         """Computes the inverse of our transform.
 
         Returns:
@@ -159,7 +159,7 @@ class MatrixLieGroup(abc.ABC):
         """
 
     @abc.abstractmethod
-    def normalize(self: GroupType) -> GroupType:
+    def normalize(self: Self) -> Self:
         """Normalize/projects values and returns.
 
         Returns:
@@ -243,8 +243,8 @@ class SEBase(Generic[ContainedSOType], MatrixLieGroup):
     def apply(self, target: hints.Array) -> onpt.NDArray[onp.floating]:
         return self.rotation() @ target + self.translation()  # type: ignore
 
-    @final
     @override
+    @final
     def multiply(self: SEGroupType, other: SEGroupType) -> SEGroupType:
         return type(self).from_rotation_and_translation(
             rotation=self.rotation() @ other.rotation(),

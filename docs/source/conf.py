@@ -50,6 +50,7 @@ extensions = [
     "m2r2",
     "sphinxcontrib.programoutput",
     "sphinxcontrib.ansi",
+    "sphinxcontrib.googleanalytics",  # google analytics extension https://github.com/sphinx-contrib/googleanalytics/tree/master
 ]
 programoutput_use_ansi = True
 html_ansi_stylesheet = "black-on-white.css"
@@ -71,8 +72,8 @@ html_theme_options = {
             "class": "",
         },
     ],
-    "light_logo": "viser.svg",
-    "dark_logo": "viser.svg",
+    "light_logo": "viser_banner.svg",
+    "dark_logo": "viser_banner_dark.svg",
 }
 
 # Pull documentation types from hints
@@ -216,6 +217,9 @@ texinfo_documents = [
 
 
 # -- Extension configuration --------------------------------------------------
+
+# Google Analytics ID
+googleanalytics_id = "G-RRGY51J5ZH"
 
 # -- Options for todo extension ----------------------------------------------
 

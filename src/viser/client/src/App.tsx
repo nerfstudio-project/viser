@@ -1,4 +1,6 @@
 // @refresh reset
+import { Notifications } from "@mantine/notifications";
+
 import {
   AdaptiveDpr,
   AdaptiveEvents,
@@ -7,15 +9,17 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import {
-  EffectComposer,
-  Outline,
-  Selection,
-} from "@react-three/postprocessing";
-import { BlendFunction, KernelSize } from "postprocessing";
 
 import { SynchronizedCameraControls } from "./CameraControls";
-import { Box, MantineProvider, MediaQuery } from "@mantine/core";
+import {
+  Anchor,
+  Box,
+  Image,
+  MantineProvider,
+  MediaQuery,
+  Modal,
+  useMantineTheme,
+} from "@mantine/core";
 import React from "react";
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 
@@ -38,6 +42,8 @@ import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
+import { useDisclosure } from "@mantine/hooks";
+import { rayToViserCoords } from "./WorldTransformUtils";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -50,6 +56,7 @@ export type ViewerContextContents = {
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   backgroundMaterialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
   cameraControlRef: React.MutableRefObject<CameraControls | null>;
+  sendCameraRef: React.MutableRefObject<(() => void) | null>;
   resetCameraViewRef: React.MutableRefObject<(() => void) | null>;
   // Scene node attributes.
   // This is intentionally placed outside of the Zustand state to reduce overhead.
@@ -57,9 +64,11 @@ export type ViewerContextContents = {
     [name: string]:
       | undefined
       | {
+          poseUpdateState?: "updated" | "needsUpdate" | "waitForMakeObject";
           wxyz?: [number, number, number, number];
           position?: [number, number, number];
-          visibility?: boolean;
+          visibility?: boolean; // Visibility state from the server.
+          overrideVisibility?: boolean; // Override from the GUI.
         };
   }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
@@ -104,9 +113,19 @@ function ViewerRoot() {
     cameraRef: React.useRef(null),
     backgroundMaterialRef: React.useRef(null),
     cameraControlRef: React.useRef(null),
+    sendCameraRef: React.useRef(null),
     resetCameraViewRef: React.useRef(null),
     // Scene node attributes that aren't placed in the zustand state for performance reasons.
-    nodeAttributesFromName: React.useRef({}),
+    nodeAttributesFromName: React.useRef({
+      "": {
+        wxyz: (() => {
+          const quat = new THREE.Quaternion().setFromEuler(
+            new THREE.Euler(Math.PI / 2, Math.PI, -Math.PI / 2),
+          );
+          return [quat.w, quat.x, quat.y, quat.z];
+        })(),
+      },
+    }),
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
@@ -130,6 +149,15 @@ function ViewerContents() {
       withNormalizeCSS
       theme={useViserMantineTheme()}
     >
+      <Notifications
+        position="top-left"
+        containerWidth="20em"
+        styles={{
+          root: {
+            boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1) !important",
+          },
+        }}
+      />
       <Titlebar />
       <ViserModal />
       <Box
@@ -142,18 +170,29 @@ function ViewerContents() {
           flexDirection: "row",
         }}
       >
-        <MediaQuery smallerThan={"xs"} styles={{ right: 0, bottom: "3.5em" }}>
+        <MediaQuery
+          smallerThan={"xs"}
+          styles={{
+            right: 0,
+            bottom:
+              "4.5em" /* 4em to account for BottomPanel minimum height. */,
+          }}
+        >
           <Box
             sx={(theme) => ({
               backgroundColor:
                 theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
               flexGrow: 1,
               width: "10em",
+              position: "relative",
             })}
           >
             <ViewerCanvas>
               <FrameSynchronizedMessageHandler />
             </ViewerCanvas>
+            {viewer.useGui((state) => state.theme.show_logo) ? (
+              <ViserLogo />
+            ) : null}
           </Box>
         </MediaQuery>
         <ControlPanel control_layout={control_layout} />
@@ -170,8 +209,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
   return (
     <Canvas
-      camera={{ position: [3.0, 3.0, -3.0] }}
-      gl={{ antialias: false, outputEncoding: THREE.sRGBEncoding }}
+      camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
+      gl={{ preserveDrawingBuffer: true }}
       style={{
         position: "relative",
         zIndex: 0,
@@ -194,6 +233,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         mouseVector.y =
           1 -
           2 * (e.nativeEvent.offsetY / viewer.canvasRef.current!.clientHeight);
+        console.log(mouseVector.x, mouseVector.y);
         if (
           mouseVector.x > 1 ||
           mouseVector.x < -1 ||
@@ -205,19 +245,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const raycaster = new THREE.Raycaster();
         raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
 
+        // Convert ray to viser coordinates.
+        const ray = rayToViserCoords(viewer, raycaster.ray);
+
         sendClickThrottled({
           type: "ScenePointerMessage",
           event_type: "click",
-          ray_origin: [
-            raycaster.ray.origin.x,
-            -raycaster.ray.origin.z,
-            raycaster.ray.origin.y,
-          ],
-          ray_direction: [
-            raycaster.ray.direction.x,
-            -raycaster.ray.direction.z,
-            raycaster.ray.direction.y,
-          ],
+          ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
+          ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
         });
       }}
     >
@@ -227,21 +262,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <AdaptiveEvents />
       <SceneContextSetter />
       <SynchronizedCameraControls />
-      <Selection>
-        <SceneNodeThreeObject name="" parent={null} />
-        <EffectComposer enabled={false} autoClear={false}>
-          <Outline
-            hiddenEdgeColor={0xfbff00}
-            visibleEdgeColor={0xfbff00}
-            blendFunction={BlendFunction.SCREEN} // set this to BlendFunction.ALPHA for dark outlines
-            kernelSize={KernelSize.MEDIUM}
-            edgeStrength={30.0}
-            height={480}
-            blur
-          />
-        </EffectComposer>
-      </Selection>
+      <SceneNodeThreeObject name="" parent={null} />
       <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
+      <directionalLight color={0xffffff} intensity={1.0} position={[0, 1, 0]} />
+      <directionalLight
+        color={0xffffff}
+        intensity={0.2}
+        position={[0, -1, 0]}
+      />
     </Canvas>
   );
 }
@@ -257,7 +285,7 @@ function BackgroundImage() {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
   `.trim();
-  const fragShader = `  
+  const fragShader = `
   #include <packing>
   precision highp float;
   precision highp int;
@@ -379,5 +407,77 @@ export function Root() {
     >
       <ViewerRoot />
     </Box>
+  );
+}
+
+/** Logo. When clicked, opens an info modal. */
+function ViserLogo() {
+  const [aboutModalOpened, { open: openAbout, close: closeAbout }] =
+    useDisclosure(false);
+  return (
+    <>
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "1em",
+          left: "1em",
+          cursor: "pointer",
+        }}
+        component="a"
+        onClick={openAbout}
+        title="About Viser"
+      >
+        <Image src="/logo.svg" width="2.5em" height="auto" />
+      </Box>
+      <Modal
+        opened={aboutModalOpened}
+        onClose={closeAbout}
+        withCloseButton={false}
+        size="xl"
+        ta="center"
+      >
+        <Box>
+          <Image
+            src={
+              useMantineTheme().colorScheme === "dark"
+                ? "viser_banner_dark.svg"
+                : "viser_banner.svg"
+            }
+            radius="xs"
+          />
+          <Box mt="1.625em">
+            Viser is a 3D visualization toolkit developed at UC Berkeley.
+          </Box>
+          <p>
+            <Anchor
+              href="https://github.com/nerfstudio-project/"
+              target="_blank"
+              fw="600"
+              sx={{ "&:focus": { outline: "none" } }}
+            >
+              Nerfstudio
+            </Anchor>
+            &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <Anchor
+              href="https://github.com/nerfstudio-project/viser"
+              target="_blank"
+              fw="600"
+              sx={{ "&:focus": { outline: "none" } }}
+            >
+              GitHub
+            </Anchor>
+            &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <Anchor
+              href="https://viser.studio"
+              target="_blank"
+              fw="600"
+              sx={{ "&:focus": { outline: "none" } }}
+            >
+              Documentation
+            </Anchor>
+          </p>
+        </Box>
+      </Modal>
+    </>
   );
 }

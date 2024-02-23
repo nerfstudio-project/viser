@@ -24,6 +24,9 @@ jobs:
           pip install build twine
           # Build client files.
           python -c "import viser; viser.ViserServer()"
+      - name: Strip unsupported tags in README
+        run: |
+          sed -i '/<!-- pypi-strip -->/,/<!-- \/pypi-strip -->/d' README.md
       - name: Build and publish
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}

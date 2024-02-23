@@ -27,8 +27,27 @@ we get updates.
 
             gui_reset_scene = server.add_gui_button("Reset Scene")
 
-            with server.add_gui_folder("Control"):
-                gui_show = server.add_gui_checkbox("Show Frame", initial_value=True)
+            gui_plane = server.add_gui_dropdown(
+                "Grid plane", ("xz", "xy", "yx", "yz", "zx", "zy")
+            )
+
+            def update_plane() -> None:
+                server.add_grid(
+                    "/grid",
+                    width=10.0,
+                    height=20.0,
+                    width_segments=10,
+                    height_segments=20,
+                    plane=gui_plane.value,
+                )
+
+            gui_plane.on_update(lambda _: update_plane())
+
+            with server.add_gui_folder("Control", expand_by_default=False):
+                gui_show_frame = server.add_gui_checkbox("Show Frame", initial_value=True)
+                gui_show_everything = server.add_gui_checkbox(
+                    "Show Everything", initial_value=True
+                )
                 gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
                 gui_include_z = server.add_gui_checkbox("Z in dropdown", initial_value=True)
 
@@ -59,7 +78,7 @@ we get updates.
                     "/frame",
                     wxyz=(1.0, 0.0, 0.0, 0.0),
                     position=pos,
-                    show_axes=gui_show.value,
+                    show_axes=gui_show_frame.value,
                     axes_length=5.0,
                 )
 
@@ -73,7 +92,10 @@ we get updates.
 
             # We can (optionally) also attach callbacks!
             # Here, we update the point clouds + frames whenever any of the GUI items are updated.
-            gui_show.on_update(lambda _: draw_frame())
+            gui_show_frame.on_update(lambda _: draw_frame())
+            gui_show_everything.on_update(
+                lambda _: server.set_global_scene_node_visibility(gui_show_everything.value)
+            )
             gui_axis.on_update(lambda _: draw_frame())
             gui_location.on_update(lambda _: draw_frame())
             gui_num_points.on_update(lambda _: draw_points())
@@ -81,7 +103,7 @@ we get updates.
             @gui_reset_scene.on_click
             def _(_) -> None:
                 """Reset the scene when the reset button is clicked."""
-                gui_show.value = True
+                gui_show_frame.value = True
                 gui_location.value = 0.0
                 gui_axis.value = "x"
                 gui_num_points.value = 10_000
@@ -90,6 +112,7 @@ we get updates.
                 draw_points()
 
             # Finally, let's add the initial frame + point cloud and just loop infinitely. :)
+            update_plane()
             draw_frame()
             draw_points()
             while True:

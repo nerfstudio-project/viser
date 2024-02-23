@@ -17,5 +17,8 @@ from ._infra import MessageHandler as MessageHandler
 from ._infra import Server as Server
 from ._messages import Message as Message
 from ._typescript_interface_gen import (
+    TypeScriptAnnotationOverride as TypeScriptAnnotationOverride,
+)
+from ._typescript_interface_gen import (
     generate_typescript_interfaces as generate_typescript_interfaces,
 )

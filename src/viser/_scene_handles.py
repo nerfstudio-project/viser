@@ -86,6 +86,10 @@ class SceneNodeHandle:
 
         out.wxyz = wxyz
         out.position = position
+
+        # Toggle visibility to make sure we send a
+        # SetSceneNodeVisibilityMessage to the client.
+        out._impl.visible = not visible
         out.visible = visible
         return out
 
@@ -130,6 +134,8 @@ class SceneNodeHandle:
 
     @visible.setter
     def visible(self, visible: bool) -> None:
+        if visible == self._impl.visible:
+            return
         self._impl.api._queue(
             _messages.SetSceneNodeVisibilityMessage(self._impl.name, visible)
         )
@@ -182,6 +188,11 @@ class CameraFrustumHandle(_ClickableSceneNodeHandle):
 @dataclasses.dataclass
 class PointCloudHandle(SceneNodeHandle):
     """Handle for point clouds. Does not support click events."""
+
+
+@dataclasses.dataclass
+class BatchedAxesHandle(_ClickableSceneNodeHandle):
+    """Handle for batched coordinate frames."""
 
 
 @dataclasses.dataclass

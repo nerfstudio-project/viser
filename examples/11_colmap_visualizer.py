@@ -3,16 +3,16 @@
 Visualize COLMAP sparse reconstruction outputs. To get demo data, see `./assets/download_colmap_garden.sh`.
 """
 
+import random
 import time
 from pathlib import Path
 
 import imageio.v3 as iio
 import numpy as onp
 import tyro
-from tqdm.auto import tqdm
-
 import viser
 import viser.transforms as tf
+from tqdm.auto import tqdm
 from viser.extras.colmap import (
     read_cameras_binary,
     read_images_binary,
@@ -89,7 +89,7 @@ def main(
 
         # Interpret the images and cameras.
         img_ids = [im.id for im in images.values()]
-        onp.random.shuffle(img_ids)
+        random.shuffle(img_ids)
         img_ids = sorted(img_ids[: gui_frames.value])
 
         def attach_callback(

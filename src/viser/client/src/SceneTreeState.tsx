@@ -20,23 +20,13 @@ export interface SceneTreeActions extends SceneTreeState {
 }
 
 // Create default scene tree state.
-// By default, the y-axis is up. Let's rotate everything so Z is up instead.
-const makeRoot: MakeObject<THREE.Group> = (ref) => (
-  <group
-    ref={ref}
-    quaternion={new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(-Math.PI / 2.0, 0.0, 0.0),
-    )}
-  />
-);
 const rootAxesTemplate: MakeObject<THREE.Group> = (ref) => (
   <CoordinateFrame ref={ref} />
 );
 
-const rootNodeTemplate = new SceneNode(
-  "",
-  makeRoot,
-) as SceneNode<THREE.Object3D>;
+const rootNodeTemplate = new SceneNode<THREE.Group>("", (ref) => (
+  <group ref={ref} />
+)) as SceneNode<THREE.Object3D>;
 
 const rootAxesNode = new SceneNode(
   "/WorldAxes",

@@ -9,9 +9,8 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 import pyrealsense2 as rs  # type: ignore
-from tqdm.auto import tqdm
-
 import viser
+from tqdm.auto import tqdm
 
 
 @contextlib.contextmanager

@@ -14,9 +14,11 @@ export const SidebarPanelContext = React.createContext<null | {
 export default function SidebarPanel({
   children,
   collapsible,
+  width,
 }: {
   children: string | React.ReactNode;
   collapsible: boolean;
+  width: string;
 }) {
   const [collapsed, { toggle: toggleCollapsed }] = useDisclosure(false);
 
@@ -62,10 +64,10 @@ export default function SidebarPanel({
       {collapsedView}
       {/* Using an <Aside /> below will break Mantine color inputs. */}
       <Paper
-        shadow="xl"
+        shadow="0 0 1em 0 rgba(0,0,0,0.1)"
         component={ScrollArea}
         sx={{
-          width: collapsed ? 0 : "20em",
+          width: collapsed ? 0 : width,
           boxSizing: "content-box",
           transition: "width 0.5s 0s",
           zIndex: 10,
@@ -73,8 +75,8 @@ export default function SidebarPanel({
       >
         <Box
           /* Prevent DOM reflow, as well as internals from getting too wide.
-           * Hardcoded to match the width of the wrapper element above. */
-          w="20em"
+           * Needs to match the width of the wrapper element above. */
+          w={width}
         >
           {children}
         </Box>
@@ -109,10 +111,11 @@ SidebarPanel.Handle = function SidebarPanelHandle({
     <Box
       p="xs"
       sx={(theme) => ({
-        backgroundColor:
+        borderBottom: "1px solid",
+        borderColor:
           theme.colorScheme == "dark"
-            ? theme.colors.dark[5]
-            : theme.colors.gray[1],
+            ? theme.colors.dark[4]
+            : theme.colors.gray[3],
         lineHeight: "1.5em",
         fontWeight: 400,
         position: "relative",

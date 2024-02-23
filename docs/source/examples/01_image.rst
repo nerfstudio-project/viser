@@ -24,7 +24,8 @@ NeRFs), or images to render as 3D textures.
 
         import viser
 
-        if __name__ == "__main__":
+
+        def main() -> None:
             server = viser.ViserServer()
 
             # Add a background image.
@@ -59,3 +60,7 @@ NeRFs), or images to render as 3D textures.
                     position=(2.0, 2.0, -1e-2),
                 )
                 time.sleep(0.2)
+
+
+        if __name__ == "__main__":
+            main()

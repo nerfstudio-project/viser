@@ -12,6 +12,9 @@ export default defineConfig({
     port: 3000,
     hmr: { port: 1025 },
   },
+  worker: {
+    format: "es",
+  },
   build: {
     outDir: "build",
     target: browserslistToEsbuild(),

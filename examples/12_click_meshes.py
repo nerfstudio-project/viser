@@ -6,9 +6,6 @@ Click on meshes to select them. The index of the last clicked mesh is displayed 
 import time
 
 import matplotlib
-import numpy as onp
-import trimesh.creation
-
 import viser
 
 
@@ -43,33 +40,33 @@ def main() -> None:
 
         def create_mesh(counter: int) -> None:
             if counter == 0:
-                mesh = trimesh.creation.box((0.5, 0.5, 0.5))
-            elif counter == 1:
-                mesh = trimesh.creation.box((0.5, 0.5, 0.5))
+                color = (0.8, 0.8, 0.8)
             else:
-                mesh = trimesh.creation.icosphere(subdivisions=2, radius=0.4)
+                index = (i * grid_shape[1] + j) / (grid_shape[0] * grid_shape[1])
+                color = colormap(index)[:3]
 
-            colors = colormap(
-                (i * grid_shape[1] + j + onp.random.rand(mesh.vertices.shape[0]))
-                / (grid_shape[0] * grid_shape[1])
-            )
-            if counter != 0:
-                assert mesh.visual is not None
-                mesh.visual.vertex_colors = colors
-
-            handle = server.add_mesh_trimesh(
-                name=f"/sphere_{i}_{j}",
-                mesh=mesh,
-                position=(i, j, 0.0),
-            )
+            if counter in (0, 1):
+                handle = server.add_box(
+                    name=f"/sphere_{i}_{j}",
+                    position=(i, j, 0.0),
+                    color=color,
+                    dimensions=(0.5, 0.5, 0.5),
+                )
+            else:
+                handle = server.add_icosphere(
+                    name=f"/sphere_{i}_{j}",
+                    radius=0.4,
+                    color=color,
+                    position=(i, j, 0.0),
+                )
 
             @handle.on_click
             def _(_) -> None:
                 x_value.value = i
                 y_value.value = j
 
-                # The new mesh will replace the old one because the names (/sphere_{i}_{j}) are
-                # the same.
+                # The new mesh will replace the old one because the names
+                # /sphere_{i}_{j} are the same.
                 create_mesh((counter + 1) % 3)
 
         create_mesh(0)

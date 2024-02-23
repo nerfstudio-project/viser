@@ -34,7 +34,7 @@ function GeneratedModal({
       }}
       withCloseButton={false}
       centered
-      zIndex={10000 + index}
+      zIndex={100 + index}
     >
       <GeneratedGuiContainer containerId={conf.id} />
     </Modal>

@@ -159,14 +159,14 @@ class SO3(_base.SOBase):
 
     # Factory.
 
-    @staticmethod
     @override
-    def identity() -> SO3:
+    @classmethod
+    def identity(cls) -> SO3:
         return SO3(wxyz=onp.array([1.0, 0.0, 0.0, 0.0]))
 
-    @staticmethod
     @override
-    def from_matrix(matrix: onpt.NDArray[onp.floating]) -> SO3:
+    @classmethod
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> SO3:
         assert matrix.shape == (3, 3)
 
         # Modified from:
@@ -307,9 +307,9 @@ class SO3(_base.SOBase):
             )
         )
 
-    @staticmethod
+    @classmethod
     @override
-    def exp(tangent: onpt.NDArray[onp.floating]) -> SO3:
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> SO3:
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/so3.hpp#L583
         assert tangent.shape == (3,)

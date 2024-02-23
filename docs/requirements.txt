@@ -4,3 +4,4 @@ docutils==0.20.1
 m2r2==0.3.3.post2
 git+https://github.com/brentyi/sphinxcontrib-programoutput.git
 git+https://github.com/brentyi/ansi.git
+git+https://github.com/sphinx-contrib/googleanalytics.git

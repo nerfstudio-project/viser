@@ -16,6 +16,8 @@ connected clients. When a scene node is added to a client (for example, via
 
 .. autoclass:: viser.FrameHandle
 
+.. autoclass:: viser.FramesBatchedHandle
+
 .. autoclass:: viser.GlbHandle
 
 .. autoclass:: viser.Gui3dContainerHandle

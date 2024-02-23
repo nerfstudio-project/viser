@@ -10,6 +10,7 @@ from ._gui_handles import GuiMarkdownHandle as GuiMarkdownHandle
 from ._gui_handles import GuiTabGroupHandle as GuiTabGroupHandle
 from ._gui_handles import GuiTabHandle as GuiTabHandle
 from ._icons_enum import Icon as Icon
+from ._icons_enum import IconName as IconName
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle
 from ._scene_handles import FrameHandle as FrameHandle
 from ._scene_handles import GlbHandle as GlbHandle

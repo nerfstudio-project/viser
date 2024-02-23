@@ -20,7 +20,7 @@ Examples of basic GUI elements that we can create, read from, and write to.
         import viser
 
 
-        def main():
+        def main() -> None:
             server = viser.ViserServer()
 
             # Add some common GUI elements: number inputs, sliders, vectors, checkboxes.

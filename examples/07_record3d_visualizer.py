@@ -9,11 +9,10 @@ from typing import List
 
 import numpy as onp
 import tyro
-from tqdm.auto import tqdm
-
 import viser
 import viser.extras
 import viser.transforms as tf
+from tqdm.auto import tqdm
 
 
 def main(
@@ -22,7 +21,9 @@ def main(
     max_frames: int = 100,
     share: bool = False,
 ) -> None:
-    server = viser.ViserServer(share=share)
+    server = viser.ViserServer()
+    if share:
+        server.request_share_url()
 
     print("Loading frames!")
     loader = viser.extras.Record3dLoader(data_path)
@@ -80,6 +81,7 @@ def main(
             frame_nodes[current_timestep].visible = True
             frame_nodes[prev_timestep].visible = False
         prev_timestep = current_timestep
+        server.flush()  # Optional!
 
     # Load in frames.
     server.add_frame(
@@ -102,6 +104,7 @@ def main(
             points=position,
             colors=color,
             point_size=0.01,
+            point_shape="rounded",
         )
 
         # Place the frustum.

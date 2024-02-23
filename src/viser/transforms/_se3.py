@@ -54,9 +54,10 @@ class SE3(_base.SEBase[SO3]):
 
     # SE-specific.
 
-    @staticmethod
+    @classmethod
     @override
     def from_rotation_and_translation(
+        cls,
         rotation: SO3,
         translation: onpt.NDArray[onp.floating],
     ) -> SE3:
@@ -78,14 +79,14 @@ class SE3(_base.SEBase[SO3]):
 
     # Factory.
 
-    @staticmethod
+    @classmethod
     @override
-    def identity() -> SE3:
+    def identity(cls) -> SE3:
         return SE3(wxyz_xyz=onp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]))
 
-    @staticmethod
+    @classmethod
     @override
-    def from_matrix(matrix: onpt.NDArray[onp.floating]) -> SE3:
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> SE3:
         assert matrix.shape == (4, 4)
         # Currently assumes bottom row is [0, 0, 0, 1].
         return SE3.from_rotation_and_translation(
@@ -115,9 +116,9 @@ class SE3(_base.SEBase[SO3]):
 
     # Operations.
 
-    @staticmethod
+    @classmethod
     @override
-    def exp(tangent: onpt.NDArray[onp.floating]) -> SE3:
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> SE3:
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se3.hpp#L761
 

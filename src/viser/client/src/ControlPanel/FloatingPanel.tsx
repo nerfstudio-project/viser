@@ -8,6 +8,7 @@ import { useDisclosure } from "@mantine/hooks";
 const FloatingPanelContext = React.createContext<null | {
   wrapperRef: React.RefObject<HTMLDivElement>;
   expanded: boolean;
+  width: string;
   maxHeight: number;
   toggleExpanded: () => void;
   dragHandler: (
@@ -27,8 +28,10 @@ const FloatingPanelContext = React.createContext<null | {
 /** A floating panel for displaying controls. */
 export default function FloatingPanel({
   children,
+  width,
 }: {
   children: string | React.ReactNode;
+  width: string;
 }) {
   const panelWrapperRef = React.useRef<HTMLDivElement>(null);
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(true);
@@ -202,6 +205,7 @@ export default function FloatingPanel({
       value={{
         wrapperRef: panelWrapperRef,
         expanded: expanded,
+        width: width,
         maxHeight: maxHeight,
         toggleExpanded: toggleExpanded,
         dragHandler: dragHandler,
@@ -209,11 +213,11 @@ export default function FloatingPanel({
       }}
     >
       <Paper
-        radius="sm"
-        shadow="lg"
+        radius="xs"
+        shadow="0.1em 0 1em 0 rgba(0,0,0,0.1)"
         sx={{
           boxSizing: "border-box",
-          width: "20em",
+          width: width,
           zIndex: 10,
           position: "absolute",
           top: "1em",
@@ -242,12 +246,8 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 
   return (
     <Box
-      sx={(theme) => ({
+      sx={{
         borderRadius: "0.2em 0.2em 0 0",
-        backgroundColor:
-          theme.colorScheme === "dark"
-            ? theme.colors.dark[5]
-            : theme.colors.gray[1],
         lineHeight: "1.5em",
         cursor: "pointer",
         position: "relative",
@@ -255,9 +255,9 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         userSelect: "none",
         display: "flex",
         alignItems: "center",
-        padding: "0 0.8em",
-        height: "2.5em",
-      })}
+        padding: "0 0.75em",
+        height: "2.75em",
+      }}
       onClick={() => {
         const state = panelContext.dragInfo.current;
         if (state.dragging) {
@@ -286,11 +286,18 @@ FloatingPanel.Contents = function FloatingPanelContents({
   const context = React.useContext(FloatingPanelContext)!;
   return (
     <Collapse in={context.expanded}>
-      <ScrollArea.Autosize mah={context!.maxHeight}>
+      <ScrollArea.Autosize mah={context.maxHeight} placeholder={null}>
         <Box
-          /* Prevent internals from getting too wide. Hardcoded to match the
+          /* Prevent internals from getting too wide. Needs to match the
            * width of the wrapper element above. */
-          w="20em"
+          w={context.width}
+          sx={(theme) => ({
+            borderTop: "1px solid",
+            borderColor:
+              theme.colorScheme == "dark"
+                ? theme.colors.dark[4]
+                : theme.colors.gray[3],
+          })}
         >
           {children}
         </Box>

@@ -6,7 +6,6 @@ import time
 
 import imageio.v3 as iio
 import numpy as onp
-
 import viser
 
 
@@ -35,9 +34,11 @@ def main():
             )
             images.append(client.camera.get_render(height=720, width=1280))
 
-        print("Writing GIF...")
-        iio.imwrite("saved.gif", images)
-        print("Wrote GIF!")
+        print("Generating and sending GIF...")
+        client.send_file_download(
+            "image.gif", iio.imwrite("<bytes>", images, extension=".gif")
+        )
+        print("Done!")
 
     while True:
         time.sleep(10.0)
