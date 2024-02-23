@@ -81,6 +81,7 @@ class ViewerCameraMessage(Message):
 # The list of scene pointer events supported by the viser frontend.
 SCENEPOINTER_EVENT_TYPE = Literal["click", "box"]
 
+
 @dataclasses.dataclass
 class ScenePointerMessage(Message):
     """Message for a raycast-like pointer in the scene.
