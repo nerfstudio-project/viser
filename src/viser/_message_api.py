@@ -11,7 +11,6 @@ import abc
 import base64
 import colorsys
 import contextlib
-from dataclasses import fields
 import io
 import mimetypes
 import queue
@@ -23,13 +22,13 @@ from typing import (
     Callable,
     Dict,
     Generator,
-    get_args,
     List,
     Optional,
     Tuple,
     TypeVar,
     Union,
     cast,
+    get_args,
 )
 
 import imageio.v3 as iio
@@ -160,7 +159,7 @@ class MessageApi(abc.ABC):
         self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
 
         # Callbacks for scene pointer events -- by default don't enable them.
-        self._scene_pointer_cb: Dict[str, List[Callable[[ScenePointerEvent], None]]] = {
+        self._scene_pointer_cb: Dict[_messages.SCENEPOINTER_EVENT_TYPE, List[Callable[[ScenePointerEvent], None]]] = {
             event_type: [] for event_type in get_args(_messages.SCENEPOINTER_EVENT_TYPE)
         }
         self._scene_pointer_enabled = False
@@ -1295,12 +1294,14 @@ class MessageApi(abc.ABC):
         Args:
             func: The callback function to remove.
         """
+        # Loop through the dictionary of callbacks to find the function.
         curr_event_type, curr_scene_pointer_list = None, None
         for (event_type, scene_pointer_list) in self._scene_pointer_cb.items():
             if func in scene_pointer_list:
                 curr_event_type, curr_scene_pointer_list = event_type, scene_pointer_list
-        if curr_scene_pointer_list is None:
-            assert "Callback not found in scene pointer list."
+        assert (
+            (curr_event_type is not None) and (curr_scene_pointer_list is not None)
+        ), "Callback not found in scene pointer list."
 
         curr_scene_pointer_list.remove(func)
 

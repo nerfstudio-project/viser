@@ -22,8 +22,8 @@ server.set_up_direction("+y")
 # Set up the camera -- this gives a nice view of the full mesh.
 @server.on_client_connect
 def _(client: viser.ClientHandle) -> None:
-    client.camera.position = (0.0, 0.0, -10.0)
-    client.camera.wxyz = (0.0, 0.0, 0.0, 1.0)
+    client.camera.position = onp.array([0.0, 0.0, -10.0])
+    client.camera.wxyz = onp.array([0.0, 0.0, 0.0, 1.0])
 
 mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
 assert isinstance(mesh, trimesh.Trimesh)
@@ -38,8 +38,8 @@ mesh_handle = server.add_mesh_trimesh(
 hit_pos_handles: List[viser.GlbHandle] = []
 
 # Button to add spheres; when clicked, we add a scene pointer event listener.
-click_button_handle = server.add_gui_button("Add sphere", icon=viser.Icon.pointer)
-paint_button_handle = server.add_gui_button("Paint mesh", icon=viser.Icon.paint)
+click_button_handle = server.add_gui_button("Add sphere", icon=viser.Icon.POINTER)
+paint_button_handle = server.add_gui_button("Paint mesh", icon=viser.Icon.PAINT)
 
 @click_button_handle.on_click
 def _(_):
