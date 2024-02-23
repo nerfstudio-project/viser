@@ -64,7 +64,7 @@ def _(_):
 
         # Successful click => remove callback.
         click_button_handle.disabled = False
-        server.remove_scene_click_callback(scene_click_cb)
+        server.remove_scene_pointer_callback(scene_click_cb)
 
         # Get the first hit position (based on distance from the ray origin).
         hit_pos = min(hit_pos, key=lambda x: onp.linalg.norm(x - origin))
@@ -133,7 +133,7 @@ def _(_):
         )
 
         paint_button_handle.disabled = False
-        server.remove_scene_click_callback(scene_box_cb)
+        server.remove_scene_pointer_callback(scene_box_cb)
 
 
 # Button to clear spheres

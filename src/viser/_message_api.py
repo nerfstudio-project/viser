@@ -1307,7 +1307,7 @@ class MessageApi(abc.ABC):
 
         return decorator
 
-    def remove_scene_click_callback(
+    def remove_scene_pointer_callback(
         self,
         func: Callable[[ScenePointerEvent], None],
     ) -> None:
