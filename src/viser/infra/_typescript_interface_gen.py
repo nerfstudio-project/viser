@@ -1,9 +1,17 @@
 import dataclasses
 from collections import defaultdict
-from typing import Any, ClassVar, Type, Union, cast, get_type_hints
+from typing import Any, Type, Union, cast
 
 import numpy as onp
-from typing_extensions import Literal, NotRequired, get_args, get_origin, is_typeddict
+from typing_extensions import (
+    Annotated,
+    Literal,
+    NotRequired,
+    get_args,
+    get_origin,
+    get_type_hints,
+    is_typeddict,
+)
 
 try:
     from typing import Literal as LiteralAlt
@@ -29,6 +37,17 @@ _raw_type_mapping = {
 def _get_ts_type(typ: Type[Any]) -> str:
     origin_typ = get_origin(typ)
 
+    # Look for TypeScriptAnnotationOverride in the annotations.
+    if origin_typ is Annotated:
+        args = get_args(typ)
+        for arg in args[1:]:
+            if isinstance(arg, TypeScriptAnnotationOverride):
+                return arg.annotation
+
+        # If no override is found, just use the unwrapped type.
+        origin_typ = args[0]
+
+    # Automatic Python => TypeScript conversion.
     if origin_typ is tuple:
         args = get_args(typ)
         if len(args) == 2 and args[1] == ...:
@@ -60,6 +79,10 @@ def _get_ts_type(typ: Type[Any]) -> str:
     elif origin_typ is list:
         args = get_args(typ)
         return _get_ts_type(args[0]) + "[]"
+    elif origin_typ is dict:
+        args = get_args(typ)
+        assert len(args) == 2
+        return "{ [key: " + _get_ts_type(args[0]) + "]: " + _get_ts_type(args[1]) + " }"
     elif is_typeddict(typ):
         hints = get_type_hints(typ)
         optional_keys = getattr(typ, "__optional_keys__", [])
@@ -82,6 +105,14 @@ def _get_ts_type(typ: Type[Any]) -> str:
         return _raw_type_mapping[typ]
 
 
+@dataclasses.dataclass(frozen=True)
+class TypeScriptAnnotationOverride:
+    """Use with `typing.Annotated[]` to override the automatically-generated
+    TypeScript annotation corresponding to a dataclass field."""
+
+    annotation: str
+
+
 def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
     """Generate TypeScript definitions for all subclasses of a base message class."""
     out_lines = []
@@ -102,19 +133,11 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
         for tag in getattr(cls, "_tags", []):
             tag_map[tag].append(cls.__name__)
 
-        get_ts_type = getattr(cls, "_get_ts_type", None)
-        if get_ts_type is not None:
-            assert callable(get_ts_type)
-            out_lines.append(get_ts_type())
-            continue
-
         out_lines.append(f"export interface {cls.__name__} " + "{")
         out_lines.append(f'  type: "{cls.__name__}";')
         field_names = set([f.name for f in dataclasses.fields(cls)])  # type: ignore
-        for name, typ in get_type_hints(cls).items():
-            if typ == ClassVar[str]:
-                typ = f'"{getattr(cls, name)}"'
-            elif name in field_names:
+        for name, typ in get_type_hints(cls, include_extras=True).items():
+            if name in field_names:
                 typ = _get_ts_type(typ)
             else:
                 continue

@@ -554,6 +554,7 @@ class MessageApi(abc.ABC):
         show_axes: bool = True,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
+        origin_radius: float | None = None,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -572,9 +573,10 @@ class MessageApi(abc.ABC):
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
-            show_axes: Boolean to indicate whether to show the axes.
+            show_axes: Boolean to indicate whether to show the frame as a set of axes + origin sphere.
             axes_length: Length of each axis.
             axes_radius: Radius of each axis.
+            origin_radius: Radius of the origin sphere. If not set, defaults to `2 * axes_radius`.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -582,12 +584,15 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        if origin_radius is None:
+            origin_radius = axes_radius * 2
         self._queue(
             _messages.FrameMessage(
                 name=name,
                 show_axes=show_axes,
                 axes_length=axes_length,
                 axes_radius=axes_radius,
+                origin_radius=origin_radius,
             )
         )
         return FrameHandle._make(self, name, wxyz, position, visible)
@@ -665,11 +670,9 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> SceneNodeHandle:
-        """Add a grid to the scene.
+        """Add a 2D grid to the scene.
 
-        This method creates a grid which can be used as a reference for scaling and
-        positioning objects in the scene. It's particularly useful for providing a sense
-        of scale and orientation.
+        This can be useful as a size, orientation, or ground plane reference.
 
         Args:
             name: Name of the grid.

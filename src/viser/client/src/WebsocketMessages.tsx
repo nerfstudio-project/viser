@@ -73,6 +73,7 @@ export interface FrameMessage {
   show_axes: boolean;
   axes_length: number;
   axes_radius: number;
+  origin_radius: number;
 }
 /** Batched axes message.
  * 
@@ -609,8 +610,7 @@ export interface GuiRemoveMessage {
 export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
   id: string;
-  prop_name: string;
-  prop_value: any;
+  updates: Partial<GuiAddComponentMessage>;
 }
 /** Message from server->client to configure parts of the GUI.
  *
