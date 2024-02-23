@@ -121,7 +121,7 @@ def _(_):
         # Update the mesh color based on whether the vertices are inside the box
         mesh.visual.vertex_colors = onp.where(
             mask, (1.0, 0.0, 0.0, 1.0), (0.9, 0.9, 0.9, 1.0)
-        )
+        )  # type: ignore
         mesh_handle = server.add_mesh_trimesh(
             name="/mesh",
             mesh=mesh,
@@ -143,7 +143,7 @@ def _(_):
     for handle in hit_pos_handles:
         handle.remove()
     hit_pos_handles.clear()
-    mesh.visual.vertex_colors = (0.9, 0.9, 0.9, 1.0)
+    mesh.visual.vertex_colors = (0.9, 0.9, 0.9, 1.0)  # type: ignore
     mesh_handle = server.add_mesh_trimesh(
         name="/mesh",
         mesh=mesh,
