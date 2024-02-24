@@ -129,7 +129,8 @@ export const PointCloud = React.forwardRef<
             Math.PI) /
             2.0,
         )) *
-      getThreeState().gl.getSize(rendererSize).height;
+      getThreeState().gl.getSize(rendererSize).height *
+      getThreeState().gl.getPixelRatio();
   });
   return <points ref={ref} geometry={geometry} material={material} />;
 });
