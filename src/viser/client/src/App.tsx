@@ -42,7 +42,7 @@ import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
-import { useDisclosure, useViewportSize } from "@mantine/hooks";
+import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { normalizeClick, isClickValid } from "./ClickUtils";
 
@@ -386,12 +386,21 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
 /* HTML Canvas, for drawing 2D. */
 function Viewer2DCanvas() {
   const viewer = React.useContext(ViewerContext)!;
-  const { height, width } = useViewportSize();
   useEffect(() => {
-    const canvas = viewer.canvas2dRef.current!;
-    canvas.width = width;
-    canvas.height = height;
-  }, [height, width]);
+    // Create a resize observer to resize the CSS canvas when the window is resized.
+    const resizeObserver = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      canvas.width = width;
+      canvas.height = height;
+    });
+
+    // Observe the canvas.
+    const canvas = viewer.canvas2dRef.current!
+    resizeObserver.observe(canvas);
+
+    // Cleanup
+    return () => resizeObserver.disconnect();
+  });
   return (
     <canvas
       ref={viewer.canvas2dRef}
