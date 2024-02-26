@@ -88,7 +88,6 @@ export function SynchronizedCameraControls() {
 
     T_world_camera.decompose(t_world_camera, R_world_camera, scale);
 
-    console.log("foo");
     sendCameraThrottled({
       type: "ViewerCameraMessage",
       wxyz: [
