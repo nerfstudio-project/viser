@@ -114,17 +114,15 @@ export function SynchronizedCameraControls() {
   }, [connected, sendCamera]);
 
   // Send camera for 3D viewport changes.
+  const canvas = viewer.canvasRef.current!;  // R3F canvas.
   React.useEffect(() => {
     // Create a resize observer to resize the CSS canvas when the window is resized.
     const resizeObserver = new ResizeObserver(() => { sendCamera() });
-
-    // Observe the r3f viewer canvas.
-    const canvas = viewer.canvasRef.current!;
     resizeObserver.observe(canvas);
 
     // Cleanup.
     return () => resizeObserver.disconnect();
-  }, [camera]);
+  }, [canvas]);
 
   // Keyboard controls.
   React.useEffect(() => {
