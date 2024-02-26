@@ -118,11 +118,11 @@ export function SynchronizedCameraControls() {
     // Create a resize observer to resize the CSS canvas when the window is resized.
     const resizeObserver = new ResizeObserver(() => { sendCamera() });
 
-    // Observe the canvas.
-    const canvas = viewer.canvasRef.current!  // r3f viewer canvas
+    // Observe the r3f viewer canvas.
+    const canvas = viewer.canvasRef.current!;
     resizeObserver.observe(canvas);
 
-    // Cleanup
+    // Cleanup.
     return () => resizeObserver.disconnect();
   }, [camera]);
 
