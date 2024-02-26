@@ -88,6 +88,7 @@ export function SynchronizedCameraControls() {
 
     T_world_camera.decompose(t_world_camera, R_world_camera, scale);
 
+    console.log("foo");
     sendCameraThrottled({
       type: "ViewerCameraMessage",
       wxyz: [
@@ -113,11 +114,17 @@ export function SynchronizedCameraControls() {
     setTimeout(() => sendCamera(), 50);
   }, [connected, sendCamera]);
 
+  // Send camera for 3D viewport changes.
   React.useEffect(() => {
-    window.addEventListener("resize", sendCamera);
-    return () => {
-      window.removeEventListener("resize", sendCamera);
-    };
+    // Create a resize observer to resize the CSS canvas when the window is resized.
+    const resizeObserver = new ResizeObserver(() => { sendCamera() });
+
+    // Observe the canvas.
+    const canvas = viewer.canvasRef.current!  // r3f viewer canvas
+    resizeObserver.observe(canvas);
+
+    // Cleanup
+    return () => resizeObserver.disconnect();
   }, [camera]);
 
   // Keyboard controls.
