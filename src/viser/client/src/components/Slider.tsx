@@ -50,13 +50,13 @@ export default function SliderComponent({
             ...(marks === null
               ? /*  Shift the mark labels so they don't spill too far out the left/right when we only have min and max marks. */
                 {
-                  ":first-child": {
-                    "div:nth-child(2)": {
+                  ":first-of-type": {
+                    "div:nth-of-type(2)": {
                       transform: "translate(-0.2rem, 0.03rem)",
                     },
                   },
-                  ":last-child": {
-                    "div:nth-child(2)": {
+                  ":last-of-type": {
+                    "div:nth-of-type(2)": {
                       transform: "translate(-90%, 0.03rem)",
                     },
                   },

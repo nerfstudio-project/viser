@@ -333,8 +333,18 @@ class GuiApi(abc.ABC):
             _image_root=image_root,
             _content=None,
         )
+        self._get_api()._queue(
+            _messages.GuiAddMarkdownMessage(
+                order=handle._order,
+                id=handle._id,
+                markdown="",
+                container_id=handle._container_id,
+                visible=visible,
+            )
+        )
 
-        # Assigning content will send a GuiAddMarkdownMessage.
+        # Logic for processing markdown, handling images, etc is all in the
+        # `.content` setter, which should send a GuiUpdateMessage.
         handle.content = content
         return handle
 

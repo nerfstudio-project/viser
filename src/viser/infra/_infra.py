@@ -365,6 +365,7 @@ class Server(MessageHandler):
                         serve,
                         host,
                         port,
+                        compression=None,
                         process_request=(
                             viser_http_server if http_server_root is not None else None
                         ),
