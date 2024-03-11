@@ -270,6 +270,16 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         intensity={0.2}
         position={[0, -1, 0]}
       />
+      <directionalLight
+        color={0xffffff}
+        intensity={0.3}
+        position={[0, 0.1, 1]}
+      />
+      <directionalLight
+        color={0xffffff}
+        intensity={0.3}
+        position={[0, 0.1, -1]}
+      />
     </Canvas>
   );
 }

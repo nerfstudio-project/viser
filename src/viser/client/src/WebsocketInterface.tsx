@@ -315,6 +315,7 @@ function useMessageHandler() {
           opacity: message.opacity ?? 1.0,
           // Flat shading only makes sense for non-wireframe materials.
           flatShading: message.flat_shading && !message.wireframe,
+          roughness: 0.8,
           side: {
             front: THREE.FrontSide,
             back: THREE.BackSide,
