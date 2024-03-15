@@ -21,7 +21,6 @@ NeRFs), or images to render as 3D textures.
 
         import imageio.v3 as iio
         import numpy as onp
-
         import viser
 
 

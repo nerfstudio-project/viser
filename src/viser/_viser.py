@@ -259,7 +259,7 @@ class ClientHandle(MessageApi, GuiApi):
     _state: _ClientHandleState
 
     def __post_init__(self):
-        super().__init__(self._state.connection)
+        super().__init__(self._state.connection, self._state.server._thread_executor)
 
     @override
     def _get_api(self) -> MessageApi:
@@ -360,7 +360,7 @@ class ViserServer(MessageApi, GuiApi):
             client_api_version=1,
         )
         self._server = server
-        super().__init__(server)
+        super().__init__(server, server._thread_executor)
 
         _client_autobuild.ensure_client_is_built()
 
