@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 import re
-import threading
 import time
 import urllib.parse
 import uuid
@@ -53,8 +52,7 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None:
-        ...
+    def remove(self) -> None: ...
 
 
 @dataclasses.dataclass

@@ -341,8 +341,7 @@ class ViserServer(MessageApi, GuiApi):
     # Hide deprecated arguments from docstring and type checkers.
     def __init__(
         self, host: str = "0.0.0.0", port: int = 8080, label: Optional[str] = None
-    ):
-        ...
+    ): ...
 
     def _actual_init(
         self,

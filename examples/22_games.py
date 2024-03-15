@@ -7,7 +7,6 @@
 
 Some two-player games implemented using scene click events."""
 
-
 import time
 from typing import Literal
 
