@@ -220,7 +220,7 @@ See here for download instructions:
                     gui_joints.append(gui_joint)
 
                     def set_callback_in_closure(i: int) -> None:
-                        @gui_joints[i].on_update
+                        @gui_joint.on_update
                         def _(_):
                             transform_controls[i].wxyz = tf.SO3.exp(
                                 np.array(gui_joints[i].value)
