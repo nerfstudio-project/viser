@@ -220,7 +220,7 @@ See here for download instructions:
                     gui_joints.append(gui_joint)
 
                     def set_callback_in_closure(i: int) -> None:
-                        @gui_joints[i].on_update
+                        @gui_joint.on_update
                         def _(_):
                             transform_controls[i].wxyz = tf.SO3.exp(
                                 np.array(gui_joints[i].value)
@@ -250,7 +250,7 @@ See here for download instructions:
                 transform_controls.append(controls)
 
                 def set_callback_in_closure(i: int) -> None:
-                    @transform_controls[i].on_update
+                    @controls.on_update
                     def _(_) -> None:
                         axisangle = tf.SO3(transform_controls[i].wxyz).log()
                         gui_joints[i].value = (axisangle[0], axisangle[1], axisangle[2])
