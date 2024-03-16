@@ -201,9 +201,12 @@ export function SceneNodeThreeObject(props: {
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
   useFrame(() => {
+    const attrs = viewer.nodeAttributesFromName.current[props.name];
     if (unmountWhenInvisible) {
       const displayed = isDisplayed();
       if (displayed && unmount) {
+        // Need to re-set attributes after remounting, eg for transform controls.
+        if (attrs !== undefined) attrs.poseUpdateState = "needsUpdate";
         setUnmount(false);
       }
       if (!displayed && !unmount) {
@@ -212,8 +215,6 @@ export function SceneNodeThreeObject(props: {
     }
 
     if (obj === null) return;
-
-    const attrs = viewer.nodeAttributesFromName.current[props.name];
     if (attrs === undefined) return;
 
     const visibility =

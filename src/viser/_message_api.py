@@ -17,6 +17,7 @@ import queue
 import threading
 import time
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -147,7 +148,9 @@ class MessageApi(abc.ABC):
 
     _locked_thread_id: int  # Appeasing mypy 1.5.1, not sure why this is needed.
 
-    def __init__(self, handler: infra.MessageHandler) -> None:
+    def __init__(
+        self, handler: infra.MessageHandler, thread_executor: ThreadPoolExecutor
+    ) -> None:
         self._message_handler = handler
 
         super().__init__()
@@ -177,6 +180,7 @@ class MessageApi(abc.ABC):
         self._atomic_lock = threading.Lock()
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
+        self._thread_executor = thread_executor
 
     def set_gui_panel_label(self, label: Optional[str]) -> None:
         """Set the main label that appears in the GUI panel.
@@ -1181,7 +1185,7 @@ class MessageApi(abc.ABC):
                 with self._atomic_lock:
                     self._queue_unsafe(self._queued_messages.get())
 
-            threading.Thread(target=try_again).start()
+            self._thread_executor.submit(try_again)
 
     @abc.abstractmethod
     def _queue_unsafe(self, message: _messages.Message) -> None:
@@ -1216,9 +1220,11 @@ class MessageApi(abc.ABC):
             return
 
         # Update state.
+        wxyz = onp.array(message.wxyz)
+        position = onp.array(message.position)
         with self.atomic():
-            handle._impl.wxyz = onp.array(message.wxyz)
-            handle._impl.position = onp.array(message.position)
+            handle._impl.wxyz = wxyz
+            handle._impl.position = position
             handle._impl_aux.last_updated = time.time()
 
         # Trigger callbacks.

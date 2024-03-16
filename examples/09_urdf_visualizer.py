@@ -6,6 +6,7 @@ Examples:
 - https://github.com/OrebroUniversity/yumi/blob/master/yumi_description/urdf/yumi.urdf
 - https://github.com/ankurhanda/robot-assets
 """
+
 from __future__ import annotations
 
 import time
