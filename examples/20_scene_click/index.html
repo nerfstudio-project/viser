@@ -207,7 +207,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../05_camera_commands/">Camera commands</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../07_record3d_visualizer/">Record3D visualizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../08_smplx_visualizer/">SMPL-X visualizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../08_smpl_visualizer/">Visualizer for SMPL human body models. Requires a .npz model file.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../09_urdf_visualizer/">URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../11_colmap_visualizer/">COLMAP visualizer</a></li>
@@ -268,74 +268,73 @@ used to interact with the scene (e.g., ray-mesh intersections).</p>
 <span class="linenos"> 5</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="linenos"> 6</span><span class="kn">import</span> <span class="nn">trimesh.creation</span>
 <span class="linenos"> 7</span><span class="kn">import</span> <span class="nn">trimesh.ray</span>
-<span class="linenos"> 8</span>
-<span class="linenos"> 9</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos">10</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="linenos">11</span>
-<span class="linenos">12</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">13</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos">14</span>
-<span class="linenos">15</span>    <span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/dragon.obj&quot;</span><span class="p">)</span>
-<span class="linenos">16</span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">)</span>
-<span class="linenos">17</span>    <span class="n">mesh</span><span class="o">.</span><span class="n">apply_scale</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
-<span class="linenos">18</span>
-<span class="linenos">19</span>    <span class="n">mesh_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_mesh_trimesh</span><span class="p">(</span>
-<span class="linenos">20</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/mesh&quot;</span><span class="p">,</span>
-<span class="linenos">21</span>        <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
-<span class="linenos">22</span>        <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_x_radians</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
-<span class="linenos">23</span>        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
-<span class="linenos">24</span>    <span class="p">)</span>
-<span class="linenos">25</span>
-<span class="linenos">26</span>    <span class="n">hit_pos_handles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">GlbHandle</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos">27</span>
-<span class="linenos">28</span>    <span class="c1"># Button to add spheres; when clicked, we add a scene pointer event listener.</span>
-<span class="linenos">29</span>    <span class="n">add_button_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Add sphere&quot;</span><span class="p">)</span>
-<span class="linenos">30</span>
-<span class="linenos">31</span>    <span class="nd">@add_button_handle</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">32</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-<span class="linenos">33</span>        <span class="n">add_button_handle</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="linenos">34</span>
-<span class="linenos">35</span>        <span class="nd">@server</span><span class="o">.</span><span class="n">on_scene_click</span>
-<span class="linenos">36</span>        <span class="k">def</span> <span class="nf">scene_click_cb</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ScenePointerEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos">37</span>            <span class="c1"># Check for intersection with the mesh, using trimesh&#39;s ray-mesh intersection.</span>
-<span class="linenos">38</span>            <span class="c1"># Note that mesh is in the mesh frame, so we need to transform the ray.</span>
-<span class="linenos">39</span>            <span class="n">R_world_mesh</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">mesh_handle</span><span class="o">.</span><span class="n">wxyz</span><span class="p">)</span>
-<span class="linenos">40</span>            <span class="n">R_mesh_world</span> <span class="o">=</span> <span class="n">R_world_mesh</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
-<span class="linenos">41</span>            <span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="n">R_mesh_world</span> <span class="o">@</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">ray_origin</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="linenos">42</span>            <span class="n">direction</span> <span class="o">=</span> <span class="p">(</span><span class="n">R_mesh_world</span> <span class="o">@</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">ray_direction</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="linenos">43</span>            <span class="n">intersector</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">ray</span><span class="o">.</span><span class="n">ray_triangle</span><span class="o">.</span><span class="n">RayMeshIntersector</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
-<span class="linenos">44</span>            <span class="n">hit_pos</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">intersector</span><span class="o">.</span><span class="n">intersects_location</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
-<span class="linenos">45</span>
-<span class="linenos">46</span>            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hit_pos</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="linenos">47</span>                <span class="k">return</span>
-<span class="linenos">48</span>
-<span class="linenos">49</span>            <span class="c1"># Successful click =&gt; remove callback.</span>
-<span class="linenos">50</span>            <span class="n">add_button_handle</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="linenos">51</span>            <span class="n">server</span><span class="o">.</span><span class="n">remove_scene_click_callback</span><span class="p">(</span><span class="n">scene_click_cb</span><span class="p">)</span>
-<span class="linenos">52</span>
-<span class="linenos">53</span>            <span class="c1"># Get the first hit position (based on distance from the ray origin).</span>
-<span class="linenos">54</span>            <span class="n">hit_pos</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">hit_pos</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">onp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">origin</span><span class="p">))</span>
-<span class="linenos">55</span>
-<span class="linenos">56</span>            <span class="c1"># Create a sphere at the hit location.</span>
-<span class="linenos">57</span>            <span class="n">hit_pos_mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">creation</span><span class="o">.</span><span class="n">icosphere</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
-<span class="linenos">58</span>            <span class="n">hit_pos_mesh</span><span class="o">.</span><span class="n">vertices</span> <span class="o">+=</span> <span class="n">R_world_mesh</span> <span class="o">@</span> <span class="n">hit_pos</span>
-<span class="linenos">59</span>            <span class="n">hit_pos_mesh</span><span class="o">.</span><span class="n">visual</span><span class="o">.</span><span class="n">vertex_colors</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-<span class="linenos">60</span>            <span class="n">hit_pos_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_mesh_trimesh</span><span class="p">(</span>
-<span class="linenos">61</span>                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/hit_pos_</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">hit_pos_handles</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">hit_pos_mesh</span>
-<span class="linenos">62</span>            <span class="p">)</span>
-<span class="linenos">63</span>            <span class="n">hit_pos_handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hit_pos_handle</span><span class="p">)</span>
-<span class="linenos">64</span>
-<span class="linenos">65</span>    <span class="c1"># Button to clear spheres</span>
-<span class="linenos">66</span>    <span class="n">clear_button_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Clear spheres&quot;</span><span class="p">)</span>
-<span class="linenos">67</span>
-<span class="linenos">68</span>    <span class="nd">@clear_button_handle</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">69</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-<span class="linenos">70</span>        <span class="k">for</span> <span class="n">handle</span> <span class="ow">in</span> <span class="n">hit_pos_handles</span><span class="p">:</span>
-<span class="linenos">71</span>            <span class="n">handle</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-<span class="linenos">72</span>        <span class="n">hit_pos_handles</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-<span class="linenos">73</span>
-<span class="linenos">74</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">75</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos"> 8</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 9</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">12</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span>    <span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/dragon.obj&quot;</span><span class="p">)</span>
+<span class="linenos">15</span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">)</span>
+<span class="linenos">16</span>    <span class="n">mesh</span><span class="o">.</span><span class="n">apply_scale</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span>    <span class="n">mesh_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_mesh_trimesh</span><span class="p">(</span>
+<span class="linenos">19</span>        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/mesh&quot;</span><span class="p">,</span>
+<span class="linenos">20</span>        <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
+<span class="linenos">21</span>        <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_x_radians</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
+<span class="linenos">22</span>        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+<span class="linenos">23</span>    <span class="p">)</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span>    <span class="n">hit_pos_handles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">GlbHandle</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">26</span>
+<span class="linenos">27</span>    <span class="c1"># Button to add spheres; when clicked, we add a scene pointer event listener.</span>
+<span class="linenos">28</span>    <span class="n">add_button_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Add sphere&quot;</span><span class="p">)</span>
+<span class="linenos">29</span>
+<span class="linenos">30</span>    <span class="nd">@add_button_handle</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos">31</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">32</span>        <span class="n">add_button_handle</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos">33</span>
+<span class="linenos">34</span>        <span class="nd">@server</span><span class="o">.</span><span class="n">on_scene_click</span>
+<span class="linenos">35</span>        <span class="k">def</span> <span class="nf">scene_click_cb</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ScenePointerEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">36</span>            <span class="c1"># Check for intersection with the mesh, using trimesh&#39;s ray-mesh intersection.</span>
+<span class="linenos">37</span>            <span class="c1"># Note that mesh is in the mesh frame, so we need to transform the ray.</span>
+<span class="linenos">38</span>            <span class="n">R_world_mesh</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">mesh_handle</span><span class="o">.</span><span class="n">wxyz</span><span class="p">)</span>
+<span class="linenos">39</span>            <span class="n">R_mesh_world</span> <span class="o">=</span> <span class="n">R_world_mesh</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
+<span class="linenos">40</span>            <span class="n">origin</span> <span class="o">=</span> <span class="p">(</span><span class="n">R_mesh_world</span> <span class="o">@</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">ray_origin</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="linenos">41</span>            <span class="n">direction</span> <span class="o">=</span> <span class="p">(</span><span class="n">R_mesh_world</span> <span class="o">@</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">ray_direction</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="linenos">42</span>            <span class="n">intersector</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">ray</span><span class="o">.</span><span class="n">ray_triangle</span><span class="o">.</span><span class="n">RayMeshIntersector</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+<span class="linenos">43</span>            <span class="n">hit_pos</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">intersector</span><span class="o">.</span><span class="n">intersects_location</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+<span class="linenos">44</span>
+<span class="linenos">45</span>            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hit_pos</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<span class="linenos">46</span>                <span class="k">return</span>
+<span class="linenos">47</span>
+<span class="linenos">48</span>            <span class="c1"># Successful click =&gt; remove callback.</span>
+<span class="linenos">49</span>            <span class="n">add_button_handle</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos">50</span>            <span class="n">server</span><span class="o">.</span><span class="n">remove_scene_click_callback</span><span class="p">(</span><span class="n">scene_click_cb</span><span class="p">)</span>
+<span class="linenos">51</span>
+<span class="linenos">52</span>            <span class="c1"># Get the first hit position (based on distance from the ray origin).</span>
+<span class="linenos">53</span>            <span class="n">hit_pos</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">hit_pos</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">onp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">origin</span><span class="p">))</span>
+<span class="linenos">54</span>
+<span class="linenos">55</span>            <span class="c1"># Create a sphere at the hit location.</span>
+<span class="linenos">56</span>            <span class="n">hit_pos_mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">creation</span><span class="o">.</span><span class="n">icosphere</span><span class="p">(</span><span class="n">radius</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="linenos">57</span>            <span class="n">hit_pos_mesh</span><span class="o">.</span><span class="n">vertices</span> <span class="o">+=</span> <span class="n">R_world_mesh</span> <span class="o">@</span> <span class="n">hit_pos</span>
+<span class="linenos">58</span>            <span class="n">hit_pos_mesh</span><span class="o">.</span><span class="n">visual</span><span class="o">.</span><span class="n">vertex_colors</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="linenos">59</span>            <span class="n">hit_pos_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_mesh_trimesh</span><span class="p">(</span>
+<span class="linenos">60</span>                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/hit_pos_</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">hit_pos_handles</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">hit_pos_mesh</span>
+<span class="linenos">61</span>            <span class="p">)</span>
+<span class="linenos">62</span>            <span class="n">hit_pos_handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hit_pos_handle</span><span class="p">)</span>
+<span class="linenos">63</span>
+<span class="linenos">64</span>    <span class="c1"># Button to clear spheres</span>
+<span class="linenos">65</span>    <span class="n">clear_button_handle</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Clear spheres&quot;</span><span class="p">)</span>
+<span class="linenos">66</span>
+<span class="linenos">67</span>    <span class="nd">@clear_button_handle</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos">68</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">69</span>        <span class="k">for</span> <span class="n">handle</span> <span class="ow">in</span> <span class="n">hit_pos_handles</span><span class="p">:</span>
+<span class="linenos">70</span>            <span class="n">handle</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<span class="linenos">71</span>        <span class="n">hit_pos_handles</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="linenos">72</span>
+<span class="linenos">73</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">74</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

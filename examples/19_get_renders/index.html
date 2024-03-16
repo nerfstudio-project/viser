@@ -207,7 +207,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../05_camera_commands/">Camera commands</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../07_record3d_visualizer/">Record3D visualizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../08_smplx_visualizer/">SMPL-X visualizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../08_smpl_visualizer/">Visualizer for SMPL human body models. Requires a .npz model file.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../09_urdf_visualizer/">URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../11_colmap_visualizer/">COLMAP visualizer</a></li>
@@ -263,47 +263,46 @@
 <span class="linenos"> 2</span>
 <span class="linenos"> 3</span><span class="kn">import</span> <span class="nn">imageio.v3</span> <span class="k">as</span> <span class="nn">iio</span>
 <span class="linenos"> 4</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
-<span class="linenos"> 5</span>
-<span class="linenos"> 6</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 5</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 6</span>
 <span class="linenos"> 7</span>
-<span class="linenos"> 8</span>
-<span class="linenos"> 9</span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-<span class="linenos">10</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos">11</span>
-<span class="linenos">12</span>    <span class="n">button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Render a GIF&quot;</span><span class="p">)</span>
-<span class="linenos">13</span>
-<span class="linenos">14</span>    <span class="nd">@button</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">15</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos">16</span>        <span class="n">client</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">client</span>
-<span class="linenos">17</span>        <span class="k">assert</span> <span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-<span class="linenos">18</span>
-<span class="linenos">19</span>        <span class="n">client</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
-<span class="linenos">20</span>
-<span class="linenos">21</span>        <span class="n">images</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos">22</span>
-<span class="linenos">23</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
-<span class="linenos">24</span>            <span class="n">positions</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="mf">3.0</span>
-<span class="linenos">25</span>            <span class="n">client</span><span class="o">.</span><span class="n">add_spline_catmull_rom</span><span class="p">(</span>
-<span class="linenos">26</span>                <span class="sa">f</span><span class="s2">&quot;/catmull_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-<span class="linenos">27</span>                <span class="n">positions</span><span class="p">,</span>
-<span class="linenos">28</span>                <span class="n">tension</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-<span class="linenos">29</span>                <span class="n">line_width</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
-<span class="linenos">30</span>                <span class="n">color</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
-<span class="linenos">31</span>            <span class="p">)</span>
-<span class="linenos">32</span>            <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">get_render</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="mi">720</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1280</span><span class="p">))</span>
-<span class="linenos">33</span>
-<span class="linenos">34</span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Generating and sending GIF...&quot;</span><span class="p">)</span>
-<span class="linenos">35</span>        <span class="n">client</span><span class="o">.</span><span class="n">send_file_download</span><span class="p">(</span>
-<span class="linenos">36</span>            <span class="s2">&quot;image.gif&quot;</span><span class="p">,</span> <span class="n">iio</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="s2">&quot;&lt;bytes&gt;&quot;</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.gif&quot;</span><span class="p">)</span>
-<span class="linenos">37</span>        <span class="p">)</span>
-<span class="linenos">38</span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done!&quot;</span><span class="p">)</span>
-<span class="linenos">39</span>
-<span class="linenos">40</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">41</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos"> 8</span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<span class="linenos"> 9</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span>    <span class="n">button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Render a GIF&quot;</span><span class="p">)</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span>    <span class="nd">@button</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos">14</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">15</span>        <span class="n">client</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">client</span>
+<span class="linenos">16</span>        <span class="k">assert</span> <span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span>        <span class="n">client</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
+<span class="linenos">19</span>
+<span class="linenos">20</span>        <span class="n">images</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+<span class="linenos">23</span>            <span class="n">positions</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="mf">3.0</span>
+<span class="linenos">24</span>            <span class="n">client</span><span class="o">.</span><span class="n">add_spline_catmull_rom</span><span class="p">(</span>
+<span class="linenos">25</span>                <span class="sa">f</span><span class="s2">&quot;/catmull_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">26</span>                <span class="n">positions</span><span class="p">,</span>
+<span class="linenos">27</span>                <span class="n">tension</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="linenos">28</span>                <span class="n">line_width</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+<span class="linenos">29</span>                <span class="n">color</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+<span class="linenos">30</span>            <span class="p">)</span>
+<span class="linenos">31</span>            <span class="n">images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">get_render</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="mi">720</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">1280</span><span class="p">))</span>
+<span class="linenos">32</span>
+<span class="linenos">33</span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Generating and sending GIF...&quot;</span><span class="p">)</span>
+<span class="linenos">34</span>        <span class="n">client</span><span class="o">.</span><span class="n">send_file_download</span><span class="p">(</span>
+<span class="linenos">35</span>            <span class="s2">&quot;image.gif&quot;</span><span class="p">,</span> <span class="n">iio</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="s2">&quot;&lt;bytes&gt;&quot;</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.gif&quot;</span><span class="p">)</span>
+<span class="linenos">36</span>        <span class="p">)</span>
+<span class="linenos">37</span>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done!&quot;</span><span class="p">)</span>
+<span class="linenos">38</span>
+<span class="linenos">39</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">40</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos">41</span>
 <span class="linenos">42</span>
-<span class="linenos">43</span>
-<span class="linenos">44</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">45</span>    <span class="n">main</span><span class="p">()</span>
+<span class="linenos">43</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">44</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>

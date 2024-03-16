@@ -206,7 +206,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/05_camera_commands/">Camera commands</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/07_record3d_visualizer/">Record3D visualizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/08_smplx_visualizer/">SMPL-X visualizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/08_smpl_visualizer/">Visualizer for SMPL human body models. Requires a .npz model file.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/09_urdf_visualizer/">URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/11_colmap_visualizer/">COLMAP visualizer</a></li>
@@ -527,7 +527,7 @@
     <span class="n">_state</span><span class="p">:</span> <span class="n">_ClientHandleState</span>
 
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">_thread_executor</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span> <span class="nf">_get_api</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MessageApi</span><span class="p">:</span>
@@ -618,8 +618,7 @@
     <span class="c1"># Hide deprecated arguments from docstring and type checkers.</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">):</span>
-        <span class="o">...</span>
+    <span class="p">):</span> <span class="o">...</span>
 
     <span class="k">def</span> <span class="nf">_actual_init</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -637,7 +636,7 @@
             <span class="n">client_api_version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_server</span> <span class="o">=</span> <span class="n">server</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">server</span><span class="o">.</span><span class="n">_thread_executor</span><span class="p">)</span>
 
         <span class="n">_client_autobuild</span><span class="o">.</span><span class="n">ensure_client_is_built</span><span class="p">()</span>
 

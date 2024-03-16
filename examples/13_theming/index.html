@@ -207,7 +207,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../05_camera_commands/">Camera commands</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../07_record3d_visualizer/">Record3D visualizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../08_smplx_visualizer/">SMPL-X visualizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../08_smpl_visualizer/">Visualizer for SMPL human body models. Requires a .npz model file.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../09_urdf_visualizer/">URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../11_colmap_visualizer/">COLMAP visualizer</a></li>
@@ -266,7 +266,7 @@
 <span class="linenos"> 5</span>
 <span class="linenos"> 6</span>
 <span class="linenos"> 7</span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-<span class="linenos"> 8</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos"> 8</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Viser Theming&quot;</span><span class="p">)</span>
 <span class="linenos"> 9</span>
 <span class="linenos">10</span>    <span class="n">buttons</span> <span class="o">=</span> <span class="p">(</span>
 <span class="linenos">11</span>        <span class="n">TitlebarButton</span><span class="p">(</span>

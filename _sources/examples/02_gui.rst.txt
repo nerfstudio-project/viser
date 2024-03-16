@@ -16,7 +16,6 @@ Examples of basic GUI elements that we can create, read from, and write to.
         import time
 
         import numpy as onp
-
         import viser
 
 
@@ -69,6 +68,21 @@ Examples of basic GUI elements that we can create, read from, and write to.
                         "Color",
                         initial_value=(255, 255, 0),
                     )
+                    gui_multi_slider = server.add_gui_multi_slider(
+                        "Multi slider",
+                        min=0,
+                        max=100,
+                        step=1,
+                        initial_value=(0, 30, 100),
+                    )
+                    gui_slider_positions = server.add_gui_slider(
+                        "# sliders",
+                        min=0,
+                        max=10,
+                        step=1,
+                        initial_value=3,
+                        marks=((0, "0"), (5, "5"), (7, "7"), 10),
+                    )
 
             # Pre-generate a point cloud to send.
             point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(5000, 3))
@@ -92,12 +106,19 @@ Examples of basic GUI elements that we can create, read from, and write to.
                         * color_coeffs[:, None]
                     ).astype(onp.uint8),
                     position=gui_vector2.value + (0,),
+                    point_shape="circle",
                 )
 
                 # We can use `.visible` and `.disabled` to toggle GUI elements.
                 gui_text.visible = not gui_checkbox_hide.value
                 gui_button.visible = not gui_checkbox_hide.value
                 gui_rgb.disabled = gui_checkbox_disable.value
+
+                # Update the number of handles in the multi-slider.
+                if gui_slider_positions.value != len(gui_multi_slider.value):
+                    gui_multi_slider.value = onp.linspace(
+                        0, 100, gui_slider_positions.value, dtype=onp.int64
+                    )
 
                 counter += 1
                 time.sleep(0.01)

@@ -12,7 +12,7 @@
         gtag('js', new Date());
         gtag('config', 'G-RRGY51J5ZH');
     </script>
-    <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="RealSense visualizer" href="../10_realsense/" /><link rel="prev" title="SMPL-X visualizer" href="../08_smplx_visualizer/" />
+    <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="RealSense visualizer" href="../10_realsense/" /><link rel="prev" title="Visualizer for SMPL human body models. Requires a .npz model file." href="../08_smpl_visualizer/" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>URDF visualizer - viser</title>
@@ -207,7 +207,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../05_camera_commands/">Camera commands</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../07_record3d_visualizer/">Record3D visualizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../08_smplx_visualizer/">SMPL-X visualizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../08_smpl_visualizer/">Visualizer for SMPL human body models. Requires a .npz model file.</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../11_colmap_visualizer/">COLMAP visualizer</a></li>
@@ -272,57 +272,56 @@
 <span class="linenos"> 6</span>
 <span class="linenos"> 7</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="linenos"> 8</span><span class="kn">import</span> <span class="nn">tyro</span>
-<span class="linenos"> 9</span>
-<span class="linenos">10</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos">11</span><span class="kn">from</span> <span class="nn">viser.extras</span> <span class="kn">import</span> <span class="n">ViserUrdf</span>
+<span class="linenos"> 9</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos">10</span><span class="kn">from</span> <span class="nn">viser.extras</span> <span class="kn">import</span> <span class="n">ViserUrdf</span>
+<span class="linenos">11</span>
 <span class="linenos">12</span>
-<span class="linenos">13</span>
-<span class="linenos">14</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">urdf_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos">15</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos">16</span>
-<span class="linenos">17</span>    <span class="c1"># Create a helper for adding URDFs to Viser. This just adds meshes to the scene,</span>
-<span class="linenos">18</span>    <span class="c1"># helps us set the joint angles, etc.</span>
-<span class="linenos">19</span>    <span class="n">urdf</span> <span class="o">=</span> <span class="n">ViserUrdf</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">urdf_path</span><span class="p">)</span>
-<span class="linenos">20</span>
-<span class="linenos">21</span>    <span class="c1"># Create joint angle sliders.</span>
-<span class="linenos">22</span>    <span class="n">gui_joints</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos">23</span>    <span class="n">initial_angles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos">24</span>    <span class="k">for</span> <span class="n">joint_name</span><span class="p">,</span> <span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span> <span class="ow">in</span> <span class="n">urdf</span><span class="o">.</span><span class="n">get_actuated_joint_limits</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<span class="linenos">25</span>        <span class="n">lower</span> <span class="o">=</span> <span class="n">lower</span> <span class="k">if</span> <span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="o">-</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span>
-<span class="linenos">26</span>        <span class="n">upper</span> <span class="o">=</span> <span class="n">upper</span> <span class="k">if</span> <span class="n">upper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">onp</span><span class="o">.</span><span class="n">pi</span>
-<span class="linenos">27</span>
-<span class="linenos">28</span>        <span class="n">initial_angle</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">lower</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">upper</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">lower</span> <span class="o">+</span> <span class="n">upper</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
-<span class="linenos">29</span>        <span class="n">slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
-<span class="linenos">30</span>            <span class="n">label</span><span class="o">=</span><span class="n">joint_name</span><span class="p">,</span>
-<span class="linenos">31</span>            <span class="nb">min</span><span class="o">=</span><span class="n">lower</span><span class="p">,</span>
-<span class="linenos">32</span>            <span class="nb">max</span><span class="o">=</span><span class="n">upper</span><span class="p">,</span>
-<span class="linenos">33</span>            <span class="n">step</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
-<span class="linenos">34</span>            <span class="n">initial_value</span><span class="o">=</span><span class="n">initial_angle</span><span class="p">,</span>
-<span class="linenos">35</span>        <span class="p">)</span>
-<span class="linenos">36</span>        <span class="n">slider</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span>  <span class="c1"># When sliders move, we update the URDF configuration.</span>
-<span class="linenos">37</span>            <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">urdf</span><span class="o">.</span><span class="n">update_cfg</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gui</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">gui</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">]))</span>
-<span class="linenos">38</span>        <span class="p">)</span>
-<span class="linenos">39</span>
-<span class="linenos">40</span>        <span class="n">gui_joints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">slider</span><span class="p">)</span>
-<span class="linenos">41</span>        <span class="n">initial_angles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">initial_angle</span><span class="p">)</span>
-<span class="linenos">42</span>
-<span class="linenos">43</span>    <span class="c1"># Create joint reset button.</span>
-<span class="linenos">44</span>    <span class="n">reset_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Reset&quot;</span><span class="p">)</span>
-<span class="linenos">45</span>
-<span class="linenos">46</span>    <span class="nd">@reset_button</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">47</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-<span class="linenos">48</span>        <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">initial_angle</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gui_joints</span><span class="p">,</span> <span class="n">initial_angles</span><span class="p">):</span>
-<span class="linenos">49</span>            <span class="n">g</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">initial_angle</span>
-<span class="linenos">50</span>
-<span class="linenos">51</span>    <span class="c1"># Apply initial joint angles.</span>
-<span class="linenos">52</span>    <span class="n">urdf</span><span class="o">.</span><span class="n">update_cfg</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gui</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">gui</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">]))</span>
-<span class="linenos">53</span>
-<span class="linenos">54</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">55</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos">13</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">urdf_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">14</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span>    <span class="c1"># Create a helper for adding URDFs to Viser. This just adds meshes to the scene,</span>
+<span class="linenos">17</span>    <span class="c1"># helps us set the joint angles, etc.</span>
+<span class="linenos">18</span>    <span class="n">urdf</span> <span class="o">=</span> <span class="n">ViserUrdf</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">urdf_path</span><span class="p">)</span>
+<span class="linenos">19</span>
+<span class="linenos">20</span>    <span class="c1"># Create joint angle sliders.</span>
+<span class="linenos">21</span>    <span class="n">gui_joints</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">22</span>    <span class="n">initial_angles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">23</span>    <span class="k">for</span> <span class="n">joint_name</span><span class="p">,</span> <span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span> <span class="ow">in</span> <span class="n">urdf</span><span class="o">.</span><span class="n">get_actuated_joint_limits</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="linenos">24</span>        <span class="n">lower</span> <span class="o">=</span> <span class="n">lower</span> <span class="k">if</span> <span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="o">-</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span>
+<span class="linenos">25</span>        <span class="n">upper</span> <span class="o">=</span> <span class="n">upper</span> <span class="k">if</span> <span class="n">upper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">onp</span><span class="o">.</span><span class="n">pi</span>
+<span class="linenos">26</span>
+<span class="linenos">27</span>        <span class="n">initial_angle</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">lower</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">upper</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">lower</span> <span class="o">+</span> <span class="n">upper</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+<span class="linenos">28</span>        <span class="n">slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
+<span class="linenos">29</span>            <span class="n">label</span><span class="o">=</span><span class="n">joint_name</span><span class="p">,</span>
+<span class="linenos">30</span>            <span class="nb">min</span><span class="o">=</span><span class="n">lower</span><span class="p">,</span>
+<span class="linenos">31</span>            <span class="nb">max</span><span class="o">=</span><span class="n">upper</span><span class="p">,</span>
+<span class="linenos">32</span>            <span class="n">step</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+<span class="linenos">33</span>            <span class="n">initial_value</span><span class="o">=</span><span class="n">initial_angle</span><span class="p">,</span>
+<span class="linenos">34</span>        <span class="p">)</span>
+<span class="linenos">35</span>        <span class="n">slider</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span>  <span class="c1"># When sliders move, we update the URDF configuration.</span>
+<span class="linenos">36</span>            <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">urdf</span><span class="o">.</span><span class="n">update_cfg</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gui</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">gui</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">]))</span>
+<span class="linenos">37</span>        <span class="p">)</span>
+<span class="linenos">38</span>
+<span class="linenos">39</span>        <span class="n">gui_joints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">slider</span><span class="p">)</span>
+<span class="linenos">40</span>        <span class="n">initial_angles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">initial_angle</span><span class="p">)</span>
+<span class="linenos">41</span>
+<span class="linenos">42</span>    <span class="c1"># Create joint reset button.</span>
+<span class="linenos">43</span>    <span class="n">reset_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Reset&quot;</span><span class="p">)</span>
+<span class="linenos">44</span>
+<span class="linenos">45</span>    <span class="nd">@reset_button</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos">46</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">47</span>        <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">initial_angle</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gui_joints</span><span class="p">,</span> <span class="n">initial_angles</span><span class="p">):</span>
+<span class="linenos">48</span>            <span class="n">g</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">initial_angle</span>
+<span class="linenos">49</span>
+<span class="linenos">50</span>    <span class="c1"># Apply initial joint angles.</span>
+<span class="linenos">51</span>    <span class="n">urdf</span><span class="o">.</span><span class="n">update_cfg</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gui</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">gui</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">]))</span>
+<span class="linenos">52</span>
+<span class="linenos">53</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">54</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos">55</span>
 <span class="linenos">56</span>
-<span class="linenos">57</span>
-<span class="linenos">58</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">59</span>    <span class="n">tyro</span><span class="o">.</span><span class="n">cli</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+<span class="linenos">57</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">58</span>    <span class="n">tyro</span><span class="o">.</span><span class="n">cli</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -341,14 +340,14 @@
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../08_smplx_visualizer/">
+          <a class="prev-page" href="../08_smpl_visualizer/">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">SMPL-X visualizer</div>
+                <div class="title">Visualizer for SMPL human body models. Requires a .npz model file.</div>
                 
               </div>
             </a>

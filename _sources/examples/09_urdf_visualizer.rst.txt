@@ -27,7 +27,6 @@ Examples:
 
         import numpy as onp
         import tyro
-
         import viser
         from viser.extras import ViserUrdf
 
