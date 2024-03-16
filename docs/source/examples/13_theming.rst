@@ -20,7 +20,7 @@ Viser includes support for light theming.
 
 
         def main():
-            server = viser.ViserServer()
+            server = viser.ViserServer(label="Viser Theming")
 
             buttons = (
                 TitlebarButton(

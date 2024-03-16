@@ -19,7 +19,6 @@ performed on them.
         from typing import Optional
 
         import numpy as onp
-
         import viser
         import viser.transforms as tf
 
