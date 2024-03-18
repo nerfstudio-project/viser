@@ -44,7 +44,7 @@ import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
-import { normalizeClick, isClickValid } from "./ClickUtils";
+import { clickToNDC, clickToOpenCV, isClickValid } from "./ClickUtils";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -243,7 +243,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         if (!(click_info.enabled_click || click_info.enabled_box)) return;
 
         // Check if click is valid.
-        const mouseVector = normalizeClick(viewer, e);
+        const mouseVector = clickToNDC(viewer, e);
         if (!isClickValid(mouseVector)) return;
 
         // Only allow one drag event at a time.
@@ -266,7 +266,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         if (!(click_info.enabled_click || click_info.enabled_box) || !click_info.listening) return;
 
         // Check if click is valid.
-        const mouseVector = normalizeClick(viewer, e);
+        const mouseVector = clickToNDC(viewer, e);
         if (!isClickValid(mouseVector)) return;
 
         // Check if mouse position has changed sufficiently from last position.
@@ -315,16 +315,21 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         // The message will return origin/direction lists of length 1.
         if (click_info.screenEventList!.length == 1 && click_info.enabled_click) {
           const raycaster = new THREE.Raycaster();
-          const mouseVector = normalizeClick(viewer, e);
+
+          // Raycaster expects NDC coordinates, so we convert the click event to NDC.
+          const mouseVector = clickToNDC(viewer, e);
           raycaster.setFromCamera(mouseVector, viewer.cameraRef.current!);
           const ray = rayToViserCoords(viewer, raycaster.ray);
+
+          // Send OpenCV image coordinates to the server (normalized).
+          const mouseVectorOpenCV = clickToOpenCV(viewer, e);
 
           sendClickThrottled({
             type: "ScenePointerMessage",
             event_type: "click",
             ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
             ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
-            screen_pos: [[mouseVector.x, mouseVector.y]]
+            screen_pos: [[mouseVectorOpenCV.x, mouseVectorOpenCV.y]]
           });
         }
 
@@ -334,8 +339,9 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const firstScreenEvent = screenEventList[0];
         const lastScreenEvent = screenEventList![screenEventList.length-1];
 
-        const firstMouseVector = normalizeClick(viewer, firstScreenEvent);
-        const lastMouseVector = normalizeClick(viewer, lastScreenEvent);
+        // Again, click should be in openCV image coordinates (normalized).
+        const firstMouseVector = clickToOpenCV(viewer, firstScreenEvent);
+        const lastMouseVector = clickToOpenCV(viewer, lastScreenEvent);
 
         const x_min = Math.min(firstMouseVector.x, lastMouseVector.x);
         const x_max = Math.max(firstMouseVector.x, lastMouseVector.x);

@@ -102,19 +102,14 @@ def _(_):
         ).T[:, :3]
 
         # Get the camera intrinsics, and project the vertices onto the image plane.
-        # Initially, the screen coordinate system is:
-        # (-x, -y) --> (+x, +y)
-        #    |            |
-        #    v            v
-        # (-x, +y) --> (+x, +y)
-        # ... doesn't match the NDC coordinates! This is in OpenCV's coordinate system.
         fov, aspect = camera.fov, camera.aspect
         vertices_proj = vertices[:, :2] / vertices[:, 2].reshape(-1, 1)
         vertices_proj /= onp.tan(fov / 2)
         vertices_proj[:, 0] /= aspect
 
-        # Flip the y-axis to match the NDC coordinates.
-        vertices_proj[:, 1] = -vertices_proj[:, 1]
+        # Move the origin to the upper-left corner, and scale to [0, 1].
+        # ... make sure to match the OpenCV's image coordinates!
+        vertices_proj = (1 + vertices_proj) / 2
 
         # Select the vertices that lie inside the 2D selected box, once projected.
         mask = (

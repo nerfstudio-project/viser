@@ -45,9 +45,9 @@ class ScenePointerEvent:
     ray_direction: Optional[Tuple[float, float, float]]
     """Direction of 3D ray corresponding to this click, in world coordinates."""
     screen_pos: List[Tuple[float, float]]
-    """Screen position of the click on the screen (NDC coordinates, -1 to 1).
-    (-1, -1) is the bottom-left corner, (1, 1) is the top-right corner.
-    For a box selection, this includes the top-left and bottom-right corners of the box."""
+    """Screen position of the click on the screen (OpenCV image coordinates, 0 to 1).
+    (0, 0) is the upper-left corner, (1, 1) is the bottom-right corner.
+    For a box selection, this includes the min- and max- corners of the box."""
 
     @property
     def event(self):
