@@ -28,6 +28,7 @@ def _(client: viser.ClientHandle) -> None:
     client.camera.wxyz = onp.array([0.0, 0.0, 0.0, 1.0])
 
 
+mesh: trimesh.Trimesh
 mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
 assert isinstance(mesh, trimesh.Trimesh)
 mesh.apply_scale(0.05)
@@ -87,7 +88,6 @@ def _(_):
     @server.on_scene_pointer(event_type="box")
     def scene_box_cb(message: viser.ScenePointerEvent) -> None:
         global mesh_handle
-        mesh: trimesh.Trimesh
         camera = message.client.camera
 
         # Put the mesh in the camera frame.
