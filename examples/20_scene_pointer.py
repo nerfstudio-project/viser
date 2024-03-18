@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import List
 
 import numpy as onp
+import trimesh
 import trimesh.creation
 import trimesh.ray
 import viser
