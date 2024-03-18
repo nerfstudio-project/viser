@@ -87,6 +87,7 @@ def _(_):
     @server.on_scene_pointer(event_type="box")
     def scene_box_cb(message: viser.ScenePointerEvent) -> None:
         global mesh_handle
+        mesh: trimesh.Trimesh
         camera = message.client.camera
 
         # Put the mesh in the camera frame.
