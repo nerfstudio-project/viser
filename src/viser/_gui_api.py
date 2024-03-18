@@ -333,8 +333,18 @@ class GuiApi(abc.ABC):
             _image_root=image_root,
             _content=None,
         )
+        self._get_api()._queue(
+            _messages.GuiAddMarkdownMessage(
+                order=handle._order,
+                id=handle._id,
+                markdown="",
+                container_id=handle._container_id,
+                visible=visible,
+            )
+        )
 
-        # Assigning content will send a GuiAddMarkdownMessage.
+        # Logic for processing markdown, handling images, etc is all in the
+        # `.content` setter, which should send a GuiUpdateMessage.
         handle.content = content
         return handle
 
@@ -417,8 +427,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]:
-        ...
+    ) -> GuiButtonGroupHandle[TLiteralString]: ...
 
     @overload
     def add_gui_button_group(
@@ -429,8 +438,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TString]:
-        ...
+    ) -> GuiButtonGroupHandle[TString]: ...
 
     def add_gui_button_group(
         self,
@@ -758,8 +766,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TLiteralString]:
-        ...
+    ) -> GuiDropdownHandle[TLiteralString]: ...
 
     @overload
     def add_gui_dropdown(
@@ -771,8 +778,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TString]:
-        ...
+    ) -> GuiDropdownHandle[TString]: ...
 
     def add_gui_dropdown(
         self,

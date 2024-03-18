@@ -310,7 +310,7 @@ function useMessageHandler() {
           return texture;
         };
         const standardArgs = {
-          color: message.color || undefined,
+          color: message.color ?? undefined,
           vertexColors: message.vertex_colors !== null,
           wireframe: message.wireframe,
           transparent: message.opacity !== null,
@@ -428,45 +428,52 @@ function useMessageHandler() {
           50,
         );
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => (
-            <group onClick={(e) => e.stopPropagation()}>
-              <PivotControls
-                ref={ref}
-                scale={message.scale}
-                lineWidth={message.line_width}
-                fixed={message.fixed}
-                autoTransform={message.auto_transform}
-                activeAxes={message.active_axes}
-                disableAxes={message.disable_axes}
-                disableSliders={message.disable_sliders}
-                disableRotations={message.disable_rotations}
-                translationLimits={message.translation_limits}
-                rotationLimits={message.rotation_limits}
-                depthTest={message.depth_test}
-                opacity={message.opacity}
-                onDrag={(l) => {
-                  const attrs = viewer.nodeAttributesFromName.current;
-                  if (attrs[message.name] === undefined) {
-                    attrs[message.name] = {};
-                  }
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => (
+              <group onClick={(e) => e.stopPropagation()}>
+                <PivotControls
+                  ref={ref}
+                  scale={message.scale}
+                  lineWidth={message.line_width}
+                  fixed={message.fixed}
+                  autoTransform={message.auto_transform}
+                  activeAxes={message.active_axes}
+                  disableAxes={message.disable_axes}
+                  disableSliders={message.disable_sliders}
+                  disableRotations={message.disable_rotations}
+                  translationLimits={message.translation_limits}
+                  rotationLimits={message.rotation_limits}
+                  depthTest={message.depth_test}
+                  opacity={message.opacity}
+                  onDrag={(l) => {
+                    const attrs = viewer.nodeAttributesFromName.current;
+                    if (attrs[message.name] === undefined) {
+                      attrs[message.name] = {};
+                    }
 
-                  const wxyz = new THREE.Quaternion();
-                  wxyz.setFromRotationMatrix(l);
-                  const position = new THREE.Vector3().setFromMatrixPosition(l);
+                    const wxyz = new THREE.Quaternion();
+                    wxyz.setFromRotationMatrix(l);
+                    const position = new THREE.Vector3().setFromMatrixPosition(
+                      l,
+                    );
 
-                  const nodeAttributes = attrs[message.name]!;
-                  nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                  nodeAttributes.position = position.toArray();
-                  sendDragMessage({
-                    type: "TransformControlsUpdateMessage",
-                    name: name,
-                    wxyz: nodeAttributes.wxyz,
-                    position: nodeAttributes.position,
-                  });
-                }}
-              />
-            </group>
-          )),
+                    const nodeAttributes = attrs[message.name]!;
+                    nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+                    nodeAttributes.position = position.toArray();
+                    sendDragMessage({
+                      type: "TransformControlsUpdateMessage",
+                      name: name,
+                      wxyz: nodeAttributes.wxyz,
+                      position: nodeAttributes.position,
+                    });
+                  }}
+                />
+              </group>
+            ),
+            undefined,
+            true, // unmountWhenInvisible
+          ),
         );
         return;
       }

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Runs formatting, linting, and type checking tests."""
+
 import subprocess
 import sys
 

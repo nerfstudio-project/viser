@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 import re
-import threading
 import time
 import urllib.parse
 import uuid
@@ -53,8 +52,7 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None:
-        ...
+    def remove(self) -> None: ...
 
 
 @dataclasses.dataclass
@@ -142,15 +140,15 @@ class _GuiInputHandle(Generic[T]):
         for cb in self._impl.update_cb:
             # Pushing callbacks into separate threads helps prevent deadlocks when we
             # have a lock in a callback. TODO: revisit other callbacks.
-            threading.Thread(
-                target=lambda: cb(
+            self._impl.gui_api._get_api()._thread_executor.submit(
+                lambda: cb(
                     GuiEvent(
                         client_id=None,
                         client=None,
                         target=self,
                     )
                 )
-            ).start()
+            )
 
     @property
     def update_timestamp(self) -> float:
