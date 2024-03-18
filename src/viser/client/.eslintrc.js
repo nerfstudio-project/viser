@@ -26,6 +26,7 @@ module.exports = {
   rules: {
     // https://github.com/jsx-eslint/eslint-plugin-react/issues/3423
     "react/no-unknown-property": "off",
+    "no-constant-condition": "off",
     // Suppress errors for missing 'import React' in files.
     "react/react-in-jsx-scope": "off",
     "@typescript-eslint/ban-ts-comment": "off",

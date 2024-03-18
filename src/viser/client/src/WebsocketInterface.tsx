@@ -33,21 +33,27 @@ import {
 import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
+import GaussianSplats from "./Splatting/GaussianSplats";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
+function linearColorArrayFromSrgbColorArray(colors: ArrayBuffer) {
+  return new Float32Array(new Uint8Array(colors)).map((value) => {
+    value = value / 255.0;
+    if (value <= 0.04045) {
+      return value / 12.92;
+    } else {
+      return Math.pow((value + 0.055) / 1.055, 2.4);
+    }
+  });
+}
+
+/** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
-    new Float32Array(new Uint8Array(colors)).map((value) => {
-      value = value / 255.0;
-      if (value <= 0.04045) {
-        return value / 12.92;
-      } else {
-        return Math.pow((value + 0.055) / 1.055, 2.4);
-      }
-    }),
+    linearColorArrayFromSrgbColorArray(colors),
     3,
   );
 }
@@ -222,16 +228,20 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
+                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                      : message.plane == "yx"
+                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                        : message.plane == "yz"
+                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                          : message.plane == "zx"
+                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                            : message.plane == "zy"
+                              ? new THREE.Euler(
+                                  -Math.PI / 2.0,
+                                  0.0,
+                                  -Math.PI / 2.0,
+                                )
+                              : undefined
                 }
               />
             </group>
@@ -318,16 +328,16 @@ function useMessageHandler() {
           message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(3),
-                ...standardArgs,
-              })
-            : message.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.material);
+              ? new THREE.MeshToonMaterial({
+                  gradientMap: generateGradientMap(3),
+                  ...standardArgs,
+                })
+              : message.material == "toon5"
+                ? new THREE.MeshToonMaterial({
+                    gradientMap: generateGradientMap(5),
+                    ...standardArgs,
+                  })
+                : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -818,6 +828,42 @@ function useMessageHandler() {
                     segments={(message.segments ?? undefined) as undefined}
                   ></CubicBezierLine>
                 ))}
+              </group>
+            );
+          }),
+        );
+        return;
+      }
+      case "GaussianSplatsMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => {
+            return (
+              <group ref={ref}>
+                <GaussianSplats
+                  buffers={{
+                    centers: new Float32Array(
+                      message.centers.buffer.slice(
+                        message.centers.byteOffset,
+                        message.centers.byteOffset + message.centers.byteLength,
+                      ),
+                    ),
+                    rgbs: new Float32Array(message.rgbs).map(
+                      (val) => val / 255.0,
+                    ),
+                    // Color need to be in linear space if we enable <EffectComposer />.
+                    // rgbs: linearColorArrayFromSrgbColorArray(message.rgbs),
+                    opacities: new Float32Array(message.opacities).map(
+                      (val) => val / 255.0,
+                    ),
+                    covariancesTriu: new Float32Array(
+                      message.covariances_triu.buffer.slice(
+                        message.covariances_triu.byteOffset,
+                        message.covariances_triu.byteOffset +
+                          message.covariances_triu.byteLength,
+                      ),
+                    ),
+                  }}
+                />
               </group>
             );
           }),

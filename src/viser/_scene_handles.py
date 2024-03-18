@@ -206,6 +206,11 @@ class MeshHandle(_ClickableSceneNodeHandle):
 
 
 @dataclasses.dataclass
+class GaussianSplatHandle(_ClickableSceneNodeHandle):
+    """Handle for Gaussian splatting objects."""
+
+
+@dataclasses.dataclass
 class GlbHandle(_ClickableSceneNodeHandle):
     """Handle for GLB objects."""
 
