@@ -261,9 +261,8 @@
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="kn">import</span> <span class="nn">trimesh</span>
-<span class="kn">import</span> <span class="nn">yourdfpy</span>
-
 <span class="kn">import</span> <span class="nn">viser</span>
+<span class="kn">import</span> <span class="nn">yourdfpy</span>
 
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
 
@@ -318,23 +317,23 @@
             <span class="p">)</span>
             <span class="n">name</span> <span class="o">=</span> <span class="n">_viser_name_from_frame</span><span class="p">(</span><span class="n">urdf</span><span class="p">,</span> <span class="n">link_name</span><span class="p">,</span> <span class="n">root_node_name</span><span class="p">)</span>
 
-            <span class="c1"># Scale the mesh. (this will mutate it)</span>
+            <span class="c1"># Scale + transform the mesh. (these will mutate it!)</span>
+            <span class="c1">#</span>
+            <span class="c1"># It&#39;s important that we use apply_transform() instead of unpacking</span>
+            <span class="c1"># the rotation/translation terms, since the scene graph transform</span>
+            <span class="c1"># can also contain scale and reflection terms.</span>
+            <span class="n">mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="n">mesh</span><span class="o">.</span><span class="n">apply_scale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">)</span>
+            <span class="n">mesh</span><span class="o">.</span><span class="n">apply_transform</span><span class="p">(</span><span class="n">T_parent_child</span><span class="p">)</span>
+
             <span class="k">if</span> <span class="n">mesh_color_override</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">target</span><span class="o">.</span><span class="n">add_mesh_trimesh</span><span class="p">(</span>
-                    <span class="n">name</span><span class="p">,</span>
-                    <span class="n">mesh</span><span class="p">,</span>
-                    <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">T_parent_child</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
-                    <span class="n">position</span><span class="o">=</span><span class="n">T_parent_child</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
-                <span class="p">)</span>
+                <span class="n">target</span><span class="o">.</span><span class="n">add_mesh_trimesh</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">target</span><span class="o">.</span><span class="n">add_mesh_simple</span><span class="p">(</span>
                     <span class="n">name</span><span class="p">,</span>
                     <span class="n">mesh</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span>
                     <span class="n">mesh</span><span class="o">.</span><span class="n">faces</span><span class="p">,</span>
                     <span class="n">color</span><span class="o">=</span><span class="n">mesh_color_override</span><span class="p">,</span>
-                    <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">T_parent_child</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
-                    <span class="n">position</span><span class="o">=</span><span class="n">T_parent_child</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
                 <span class="p">)</span>
 
 <div class="viewcode-block" id="ViserUrdf.update_cfg">
@@ -364,8 +363,10 @@
         <span class="p">):</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">joint_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">joint</span><span class="p">,</span> <span class="n">yourdfpy</span><span class="o">.</span><span class="n">Joint</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="n">joint</span><span class="o">.</span><span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="n">out</span><span class="p">[</span><span class="n">joint_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">joint</span><span class="o">.</span><span class="n">limit</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">joint</span><span class="o">.</span><span class="n">limit</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">joint</span><span class="o">.</span><span class="n">limit</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">joint_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">onp</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out</span><span class="p">[</span><span class="n">joint_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">joint</span><span class="o">.</span><span class="n">limit</span><span class="o">.</span><span class="n">lower</span><span class="p">,</span> <span class="n">joint</span><span class="o">.</span><span class="n">limit</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">out</span></div>
 
 
@@ -407,7 +408,9 @@
     <span class="k">while</span> <span class="n">frame_name</span> <span class="o">!=</span> <span class="n">urdf</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">base_frame</span><span class="p">:</span>
         <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frame_name</span><span class="p">)</span>
         <span class="n">frame_name</span> <span class="o">=</span> <span class="n">urdf</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">parents</span><span class="p">[</span><span class="n">frame_name</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">root_node_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">frames</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">root_node_name</span> <span class="o">!=</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
+        <span class="n">frames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">root_node_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">frames</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
         </article>
       </div>
