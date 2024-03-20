@@ -383,7 +383,7 @@ async def _message_producer(
     """Infinite loop to broadcast windows of messages from a buffer."""
     window_generator = buffer.window_generator(client_id)
     while not buffer.done:
-        outgoing = await anext(window_generator)
+        outgoing = await window_generator.__anext__()
         if client_api_version == 1:
             serialized = msgpack.packb(
                 tuple(message.as_serializable_dict() for message in outgoing)
