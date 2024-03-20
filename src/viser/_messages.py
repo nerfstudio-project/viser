@@ -79,7 +79,7 @@ class ViewerCameraMessage(Message):
 
 
 # The list of scene pointer events supported by the viser frontend.
-SCENEPOINTER_EVENT_TYPE = Literal["click", "box"]
+ScenePointerEventType = Literal["click", "box"]
 
 
 @dataclasses.dataclass
@@ -90,7 +90,7 @@ class ScenePointerMessage(Message):
     """
 
     # Later we can add `double_click`, `move`, `down`, `up`, etc.
-    event_type: SCENEPOINTER_EVENT_TYPE
+    event_type: ScenePointerEventType
     ray_origin: Optional[Tuple[float, float, float]]
     ray_direction: Optional[Tuple[float, float, float]]
     screen_pos: List[Tuple[float, float]]
@@ -101,7 +101,7 @@ class ScenePointerEnableMessage(Message):
     """Message to enable/disable scene click events."""
 
     enable: bool
-    event_type: SCENEPOINTER_EVENT_TYPE
+    event_type: ScenePointerEventType
 
 
 @dataclasses.dataclass

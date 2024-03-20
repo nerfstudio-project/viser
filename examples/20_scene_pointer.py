@@ -28,8 +28,7 @@ def _(client: viser.ClientHandle) -> None:
     client.camera.wxyz = onp.array([0.0, 0.0, 0.0, 1.0])
 
 
-mesh: trimesh.Trimesh
-mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))  # type: ignore
+mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
 assert isinstance(mesh, trimesh.Trimesh)
 mesh.apply_scale(0.05)
 

@@ -17,15 +17,15 @@ export interface ViewerCameraMessage {
 /** Message for a raycast-like pointer in the scene.
  * origin is the viewing camera position, in world coordinates.
  * direction is the vector if a ray is projected from the camera through the clicked pixel,
- * 
+ *
  *
  * (automatically generated)
  */
 export interface ScenePointerMessage {
   type: "ScenePointerMessage";
-  event_type: 'click' | 'box';
-  ray_origin: ([number, number, number] | null);
-  ray_direction: ([number, number, number] | null);
+  event_type: "click" | "box";
+  ray_origin: [number, number, number] | null;
+  ray_direction: [number, number, number] | null;
   screen_pos: [number, number][];
 }
 /** Message to enable/disable scene click events.
@@ -35,10 +35,10 @@ export interface ScenePointerMessage {
 export interface ScenePointerEnableMessage {
   type: "ScenePointerEnableMessage";
   enable: boolean;
-  event_type: 'click' | 'box';
+  event_type: "click" | "box";
 }
 /** Variant of CameraMessage used for visualizing camera frustums.
- * 
+ *
  * OpenCV convention, +Z forward.
  *
  * (automatically generated)
@@ -50,8 +50,8 @@ export interface CameraFrustumMessage {
   aspect: number;
   scale: number;
   color: number;
-  image_media_type: ('image/jpeg' | 'image/png' | null);
-  image_base64_data: (string | null);
+  image_media_type: "image/jpeg" | "image/png" | null;
+  image_base64_data: string | null;
 }
 /** GlTF Message
  *
@@ -76,7 +76,7 @@ export interface FrameMessage {
   origin_radius: number;
 }
 /** Batched axes message.
- * 
+ *
  * Positions and orientations should follow a `T_parent_local` convention, which
  * corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`.
  *
@@ -101,7 +101,7 @@ export interface GridMessage {
   height: number;
   width_segments: number;
   height_segments: number;
-  plane: 'xz' | 'xy' | 'yx' | 'yz' | 'zx' | 'zy';
+  plane: "xz" | "xy" | "yx" | "yz" | "zx" | "zy";
   cell_color: number;
   cell_thickness: number;
   cell_size: number;
@@ -129,9 +129,9 @@ export interface Gui3DMessage {
   container_id: string;
 }
 /** Point cloud message.
- * 
+ *
  * Positions are internally canonicalized to float32, colors to uint8.
- * 
+ *
  * Float color inputs should be in the range [0,1], int color inputs should be in the
  * range [0,255].
  *
@@ -146,7 +146,7 @@ export interface PointCloudMessage {
   point_ball_norm: number;
 }
 /** Mesh message.
- * 
+ *
  * Vertices are internally canonicalized to float32, faces to uint32.
  *
  * (automatically generated)
@@ -156,13 +156,13 @@ export interface MeshMessage {
   name: string;
   vertices: Uint8Array;
   faces: Uint8Array;
-  color: (number | null);
-  vertex_colors: (Uint8Array | null);
+  color: number | null;
+  vertex_colors: Uint8Array | null;
   wireframe: boolean;
-  opacity: (number | null);
+  opacity: number | null;
   flat_shading: boolean;
-  side: 'front' | 'back' | 'double';
-  material: 'standard' | 'toon3' | 'toon5';
+  side: "front" | "back" | "double";
+  material: "standard" | "toon3" | "toon5";
 }
 /** Message for transform gizmos.
  *
@@ -217,7 +217,7 @@ export interface SetCameraFovMessage {
   fov: number;
 }
 /** Server -> client message to set a scene node's orientation.
- * 
+ *
  * As with all other messages, transforms take the `T_parent_local` convention.
  *
  * (automatically generated)
@@ -228,7 +228,7 @@ export interface SetOrientationMessage {
   wxyz: [number, number, number, number];
 }
 /** Server -> client message to set a scene node's position.
- * 
+ *
  * As with all other messages, transforms take the `T_parent_local` convention.
  *
  * (automatically generated)
@@ -239,7 +239,7 @@ export interface SetPositionMessage {
   position: [number, number, number];
 }
 /** Client -> server message when a transform control is updated.
- * 
+ *
  * As with all other messages, transforms take the `T_parent_local` convention.
  *
  * (automatically generated)
@@ -256,9 +256,9 @@ export interface TransformControlsUpdateMessage {
  */
 export interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
-  media_type: 'image/jpeg' | 'image/png';
+  media_type: "image/jpeg" | "image/png";
   base64_rgb: string;
-  base64_depth: (string | null);
+  base64_depth: string | null;
 }
 /** Message for rendering 2D images.
  *
@@ -267,7 +267,7 @@ export interface BackgroundImageMessage {
 export interface ImageMessage {
   type: "ImageMessage";
   name: string;
-  media_type: 'image/jpeg' | 'image/png';
+  media_type: "image/jpeg" | "image/png";
   base64_data: string;
   render_width: number;
   render_height: number;
@@ -364,7 +364,7 @@ export interface _GuiAddInputBase {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: any;
   visible: boolean;
   disabled: boolean;
@@ -379,12 +379,27 @@ export interface GuiAddButtonMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: boolean;
   visible: boolean;
   disabled: boolean;
-  color: ('dark' | 'gray' | 'red' | 'pink' | 'grape' | 'violet' | 'indigo' | 'blue' | 'cyan' | 'green' | 'lime' | 'yellow' | 'orange' | 'teal' | null);
-  icon_base64: (string | null);
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
+  icon_base64: string | null;
 }
 /** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'float', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
  *
@@ -396,15 +411,15 @@ export interface GuiAddSliderMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: number;
   visible: boolean;
   disabled: boolean;
   min: number;
   max: number;
-  step: (number | null);
+  step: number | null;
   precision: number;
-  marks: ({'value': number, 'label'?: string}[] | null);
+  marks: { value: number; label?: string }[] | null;
 }
 /** GuiAddMultiSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
  *
@@ -416,17 +431,17 @@ export interface GuiAddMultiSliderMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: any;
   visible: boolean;
   disabled: boolean;
   min: number;
   max: number;
-  step: (number | null);
-  min_range: (number | null);
+  step: number | null;
+  min_range: number | null;
   precision: number;
   fixed_endpoints: boolean;
-  marks: ({'value': number, 'label'?: string}[] | null);
+  marks: { value: number; label?: string }[] | null;
 }
 /** GuiAddNumberMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'float', visible: 'bool', disabled: 'bool', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
  *
@@ -438,14 +453,14 @@ export interface GuiAddNumberMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: number;
   visible: boolean;
   disabled: boolean;
   precision: number;
   step: number;
-  min: (number | null);
-  max: (number | null);
+  min: number | null;
+  max: number | null;
 }
 /** GuiAddRgbMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Tuple[int, int, int]', visible: 'bool', disabled: 'bool')
  *
@@ -457,7 +472,7 @@ export interface GuiAddRgbMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: [number, number, number];
   visible: boolean;
   disabled: boolean;
@@ -472,7 +487,7 @@ export interface GuiAddRgbaMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: [number, number, number, number];
   visible: boolean;
   disabled: boolean;
@@ -487,7 +502,7 @@ export interface GuiAddCheckboxMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: boolean;
   visible: boolean;
   disabled: boolean;
@@ -502,12 +517,12 @@ export interface GuiAddVector2Message {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: [number, number];
   visible: boolean;
   disabled: boolean;
-  min: ([number, number] | null);
-  max: ([number, number] | null);
+  min: [number, number] | null;
+  max: [number, number] | null;
   step: number;
   precision: number;
 }
@@ -521,12 +536,12 @@ export interface GuiAddVector3Message {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: [number, number, number];
   visible: boolean;
   disabled: boolean;
-  min: ([number, number, number] | null);
-  max: ([number, number, number] | null);
+  min: [number, number, number] | null;
+  max: [number, number, number] | null;
   step: number;
   precision: number;
 }
@@ -540,7 +555,7 @@ export interface GuiAddTextMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: string;
   visible: boolean;
   disabled: boolean;
@@ -555,7 +570,7 @@ export interface GuiAddDropdownMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: string;
   visible: boolean;
   disabled: boolean;
@@ -571,7 +586,7 @@ export interface GuiAddButtonGroupMessage {
   id: string;
   label: string;
   container_id: string;
-  hint: (string | null);
+  hint: string | null;
   value: string;
   visible: boolean;
   disabled: boolean;
@@ -618,13 +633,40 @@ export interface GuiUpdateMessage {
  */
 export interface ThemeConfigurationMessage {
   type: "ThemeConfigurationMessage";
-  titlebar_content: ({'buttons': ({'text': (string | null), 'icon': ('GitHub' | 'Description' | 'Keyboard' | null), 'href': (string | null)}[] | null), 'image': ({'image_url_light': string, 'image_url_dark': (string | null), 'image_alt': string, 'href': (string | null)} | null)} | null);
-  control_layout: 'floating' | 'collapsible' | 'fixed';
-  control_width: 'small' | 'medium' | 'large';
+  titlebar_content: {
+    buttons:
+      | {
+          text: string | null;
+          icon: "GitHub" | "Description" | "Keyboard" | null;
+          href: string | null;
+        }[]
+      | null;
+    image: {
+      image_url_light: string;
+      image_url_dark: string | null;
+      image_alt: string;
+      href: string | null;
+    } | null;
+  } | null;
+  control_layout: "floating" | "collapsible" | "fixed";
+  control_width: "small" | "medium" | "large";
   show_logo: boolean;
   show_share_button: boolean;
   dark_mode: boolean;
-  colors: ([string, string, string, string, string, string, string, string, string, string] | null);
+  colors:
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+      ]
+    | null;
 }
 /** Message from server->client carrying Catmull-Rom spline information.
  *
@@ -634,12 +676,12 @@ export interface CatmullRomSplineMessage {
   type: "CatmullRomSplineMessage";
   name: string;
   positions: [number, number, number][];
-  curve_type: 'centripetal' | 'chordal' | 'catmullrom';
+  curve_type: "centripetal" | "chordal" | "catmullrom";
   tension: number;
   closed: boolean;
   line_width: number;
   color: number;
-  segments: (number | null);
+  segments: number | null;
 }
 /** Message from server->client carrying Cubic Bezier spline information.
  *
@@ -652,7 +694,7 @@ export interface CubicBezierSplineMessage {
   control_points: [number, number, number][];
   line_width: number;
   color: number;
-  segments: (number | null);
+  segments: number | null;
 }
 /** Message from server->client requesting a render of the current viewport.
  *
@@ -660,7 +702,7 @@ export interface CubicBezierSplineMessage {
  */
 export interface GetRenderRequestMessage {
   type: "GetRenderRequestMessage";
-  format: 'image/jpeg' | 'image/png';
+  format: "image/jpeg" | "image/png";
   height: number;
   width: number;
   quality: number;
@@ -708,7 +750,7 @@ export interface ShareUrlRequest {
  */
 export interface ShareUrlUpdated {
   type: "ShareUrlUpdated";
-  share_url: (string | null);
+  share_url: string | null;
 }
 /** Message from client->server to disconnect from the share URL server.
  *
@@ -723,10 +765,10 @@ export interface ShareUrlDisconnect {
  */
 export interface SetGuiPanelLabelMessage {
   type: "SetGuiPanelLabelMessage";
-  label: (string | null);
+  label: string | null;
 }
 
-export type Message = 
+export type Message =
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage
@@ -785,7 +827,7 @@ export type Message =
   | ShareUrlUpdated
   | ShareUrlDisconnect
   | SetGuiPanelLabelMessage;
-export type GuiAddComponentMessage = 
+export type GuiAddComponentMessage =
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
   | GuiAddTabGroupMessage

@@ -80,12 +80,12 @@ export type ViewerContextContents = {
   getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
   // Track click drag events.
   sceneClickInfo: React.MutableRefObject<{
-    enabled_click: boolean;  // Enable click events.
-    enabled_box: boolean;  // Enable box events.
-    screenEventList: React.PointerEvent<HTMLDivElement>[];  //  List of mouse positions
-    listening: boolean;  // Only allow one drag event at a time.
+    enabled_click: boolean; // Enable click events.
+    enabled_box: boolean; // Enable box events.
+    screenEventList: React.PointerEvent<HTMLDivElement>[]; //  List of mouse positions
+    listening: boolean; // Only allow one drag event at a time.
   }>;
-  // 2D canvas for drawing -- can be used to give feedback on cursor movement, or more. 
+  // 2D canvas for drawing -- can be used to give feedback on cursor movement, or more.
   canvas2dRef: React.MutableRefObject<HTMLCanvasElement | null>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
@@ -263,7 +263,11 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const click_info = viewer.sceneClickInfo.current!;
 
         // Only handle if click events are enabled, and if pointer is down (i.e., dragging).
-        if (!(click_info.enabled_click || click_info.enabled_box) || !click_info.listening) return;
+        if (
+          !(click_info.enabled_click || click_info.enabled_box) ||
+          !click_info.listening
+        )
+          return;
 
         // Check if click is valid.
         const mouseVector = clickToNDC(viewer, e);
@@ -273,10 +277,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         // Uses 3px as a threshood, similar to drag detection in `SceneNodeClickMessage` from `SceneTree.tsx`.
         const screenEventList = viewer.sceneClickInfo.current!.screenEventList;
         const firstScreenEvent = screenEventList[0];
-        const lastScreenEvent = screenEventList![screenEventList.length-1]
+        const lastScreenEvent = screenEventList![screenEventList.length - 1];
         if (
-          (Math.abs(e.nativeEvent.offsetX - lastScreenEvent.nativeEvent.offsetX) <= 3) &&
-          (Math.abs(e.nativeEvent.offsetY - lastScreenEvent.nativeEvent.offsetY) <= 3)
+          Math.abs(
+            e.nativeEvent.offsetX - lastScreenEvent.nativeEvent.offsetX,
+          ) <= 3 &&
+          Math.abs(
+            e.nativeEvent.offsetY - lastScreenEvent.nativeEvent.offsetY,
+          ) <= 3
         )
           return;
 
@@ -295,8 +303,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
             firstScreenEvent.nativeEvent.offsetX,
             firstScreenEvent.nativeEvent.offsetY,
             e.nativeEvent.offsetX - firstScreenEvent.nativeEvent.offsetX,
-            e.nativeEvent.offsetY - firstScreenEvent.nativeEvent.offsetY
-            );
+            e.nativeEvent.offsetY - firstScreenEvent.nativeEvent.offsetY,
+          );
           ctx.globalAlpha = 1.0;
           ctx.stroke();
         }
@@ -313,7 +321,10 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
 
         // If there's only one pointer, send a click message.
         // The message will return origin/direction lists of length 1.
-        if (click_info.screenEventList!.length == 1 && click_info.enabled_click) {
+        if (
+          click_info.screenEventList!.length == 1 &&
+          click_info.enabled_click
+        ) {
           const raycaster = new THREE.Raycaster();
 
           // Raycaster expects NDC coordinates, so we convert the click event to NDC.
@@ -329,7 +340,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
             event_type: "click",
             ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
             ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
-            screen_pos: [[mouseVectorOpenCV.x, mouseVectorOpenCV.y]]
+            screen_pos: [[mouseVectorOpenCV.x, mouseVectorOpenCV.y]],
           });
         }
 
@@ -337,7 +348,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         // Use the first and last mouse positions to create a box.
         const screenEventList = viewer.sceneClickInfo.current!.screenEventList;
         const firstScreenEvent = screenEventList[0];
-        const lastScreenEvent = screenEventList![screenEventList.length-1];
+        const lastScreenEvent = screenEventList![screenEventList.length - 1];
 
         // Again, click should be in openCV image coordinates (normalized).
         const firstMouseVector = clickToOpenCV(viewer, firstScreenEvent);
@@ -347,12 +358,12 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const x_max = Math.max(firstMouseVector.x, lastMouseVector.x);
         const y_min = Math.min(firstMouseVector.y, lastMouseVector.y);
         const y_max = Math.max(firstMouseVector.y, lastMouseVector.y);
-        
+
         // Send the upper-left and lower-right corners of the box.
         const screenBoxList: [number, number][] = [
           [x_min, y_min],
           [x_max, y_max],
-        ]
+        ];
 
         if (click_info.enabled_box) {
           sendClickThrottled({
@@ -360,7 +371,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
             event_type: "box",
             ray_origin: null,
             ray_direction: null,
-            screen_pos: screenBoxList
+            screen_pos: screenBoxList,
           });
         }
 
@@ -401,7 +412,7 @@ function Viewer2DCanvas() {
     });
 
     // Observe the canvas.
-    const canvas = viewer.canvas2dRef.current!
+    const canvas = viewer.canvas2dRef.current!;
     resizeObserver.observe(canvas);
 
     // Cleanup
@@ -410,17 +421,15 @@ function Viewer2DCanvas() {
   return (
     <canvas
       ref={viewer.canvas2dRef}
-      style={
-        {
-          position: "absolute",
-          zIndex: 1,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-        }
-      }
+      style={{
+        position: "absolute",
+        zIndex: 1,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+      }}
     />
-  )
+  );
 }
 
 /* Background image with support for depth compositing. */
