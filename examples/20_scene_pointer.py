@@ -8,7 +8,7 @@ To get the demo data, see `./assets/download_dragon_mesh.sh`.
 
 import time
 from pathlib import Path
-from typing import List
+from typing import List, cast
 
 import numpy as onp
 import trimesh
@@ -28,8 +28,9 @@ def _(client: viser.ClientHandle) -> None:
     client.camera.wxyz = onp.array([0.0, 0.0, 0.0, 1.0])
 
 
-mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
-assert isinstance(mesh, trimesh.Trimesh)
+mesh = cast(
+    trimesh.Trimesh, trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
+)
 mesh.apply_scale(0.05)
 
 mesh_handle = server.add_mesh_trimesh(
