@@ -198,15 +198,28 @@ export function SceneNodeThreeObject(props: {
     return visible;
   }
 
+  // Pose needs to be updated whenever component is remounted.
+  React.useEffect(() => {
+    const attrs = viewer.nodeAttributesFromName.current[props.name];
+    if (attrs !== undefined) attrs.poseUpdateState = "needsUpdate";
+  });
+
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
   useFrame(() => {
     const attrs = viewer.nodeAttributesFromName.current[props.name];
+
+    // Unmount when invisible.
+    // Examples: <Html /> components, PivotControls.
+    //
+    // This is a workaround for situations where just setting `visible` doesn't
+    // work (like <Html />), or to prevent invisible elements from being
+    // interacted with (<PivotControls />).
+    //
+    // https://github.com/pmndrs/drei/issues/1323
     if (unmountWhenInvisible) {
       const displayed = isDisplayed();
       if (displayed && unmount) {
-        // Need to re-set attributes after remounting, eg for transform controls.
-        if (attrs !== undefined) attrs.poseUpdateState = "needsUpdate";
         setUnmount(false);
       }
       if (!displayed && !unmount) {
