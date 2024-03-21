@@ -303,6 +303,8 @@
 
 <span class="k">def</span> <span class="nf">_prepare_for_serialization</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">annotation</span><span class="p">:</span> <span class="n">Type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepare any special types for serialization.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">annotation</span> <span class="ow">is</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">annotation</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
     <span class="c1"># Coerce some scalar types: if we&#39;ve annotated as float / int but we get an</span>
     <span class="c1"># onp.float32 / onp.int64, for example, we should cast automatically.</span>
