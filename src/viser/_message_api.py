@@ -1311,9 +1311,7 @@ class MessageApi(abc.ABC):
             self._scene_pointer_event_type = event_type
 
             self._queue(
-                _messages.ScenePointerEnableMessage(
-                    enable=True, event_type=event_type
-                )
+                _messages.ScenePointerEnableMessage(enable=True, event_type=event_type)
             )
             return func
 
@@ -1323,7 +1321,7 @@ class MessageApi(abc.ABC):
         self,
         func: Callable[[], None],
     ) -> Callable[[], None]:
-        """Add a callback to run automatically when the callback for the 
+        """Add a callback to run automatically when the callback for the
         currently registered scene pointer finishes (e.g., GUI state cleanup)."""
         self._scene_pointer_done_cb = func
         return func
@@ -1337,9 +1335,7 @@ class MessageApi(abc.ABC):
         event_type = self._scene_pointer_event_type
         assert event_type is not None
         self._queue(
-            _messages.ScenePointerEnableMessage(
-                enable=False, event_type=event_type
-            )
+            _messages.ScenePointerEnableMessage(enable=False, event_type=event_type)
         )
         self.flush()
 

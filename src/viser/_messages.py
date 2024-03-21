@@ -106,11 +106,7 @@ class ScenePointerEnableMessage(Message):
     @override
     def redundancy_key(self) -> str:
         return (
-            type(self).__name__
-            + "-"
-            + self.event_type
-            + "-"
-            + str(self.enable).lower()
+            type(self).__name__ + "-" + self.event_type + "-" + str(self.enable).lower()
         )
 
 
