@@ -77,7 +77,9 @@ def main() -> None:
                 initial_value=3,
                 marks=((0, "0"), (5, "5"), (7, "7"), 10),
             )
-            gui_upload_button = server.add_gui_upload_button("Upload")
+            gui_upload_button = server.add_gui_upload_button(
+                "Upload", icon=viser.Icon.UPLOAD
+            )
 
     @gui_upload_button.on_upload
     def _(_) -> None:
