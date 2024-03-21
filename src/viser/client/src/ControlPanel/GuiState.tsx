@@ -26,6 +26,14 @@ interface GuiState {
   modals: Messages.GuiModalMessage[];
   guiOrderFromId: { [id: string]: number };
   guiConfigFromId: { [id: string]: GuiConfig };
+  uploadsInProgress: {
+    [id: string]: {
+      notificationId: string;
+      uploadedBytes: number;
+      totalBytes: number;
+      filename: string;
+    };
+  };
 }
 
 interface GuiActions {
@@ -37,6 +45,12 @@ interface GuiActions {
   updateGuiProps: (id: string, updates: { [key: string]: any }) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
+  updateUploadState: (
+    state: (
+      | { uploadedBytes: number; totalBytes: number }
+      | GuiState["uploadsInProgress"][string]
+    ) & { componentId: string },
+  ) => void;
 }
 
 const cleanGuiState: GuiState = {
@@ -59,6 +73,7 @@ const cleanGuiState: GuiState = {
   modals: [],
   guiOrderFromId: {},
   guiConfigFromId: {},
+  uploadsInProgress: {},
 };
 
 export function computeRelativeLuminance(color: string) {
@@ -120,6 +135,14 @@ export function useGuiState(initialServer: string) {
             state.guiIdSetFromContainerId = {};
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
+          }),
+        updateUploadState: (state) =>
+          set((globalState) => {
+            const { componentId, ...rest } = state;
+            globalState.uploadsInProgress[componentId] = {
+              ...globalState.uploadsInProgress[componentId],
+              ...rest,
+            };
           }),
         updateGuiProps: (id, updates) => {
           set((state) => {
