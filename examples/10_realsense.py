@@ -3,6 +3,7 @@
 Connect to a RealSense camera, then visualize RGB-D readings as a point clouds. Requires
 pyrealsense2.
 """
+
 import contextlib
 from typing import Tuple
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.23"
+version = "0.1.25"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -21,7 +21,7 @@ classifiers = [
 dependencies = [
     "websockets>=10.4",
     "numpy>=1.0.0",
-    "msgpack>=1.0.0",
+    "msgpack>=1.0.7",
     "imageio>=2.0.0",
     "pyliblzfse>=0.4.1",
     "scikit-image>=0.18.0",
@@ -40,7 +40,7 @@ dependencies = [
 dev = [
     "pyright>=1.1.308",
     "mypy>=1.4.1",
-    "ruff==0.1.13",
+    "ruff==0.3.3",
     "pre-commit==3.3.2",
 ]
 examples = [

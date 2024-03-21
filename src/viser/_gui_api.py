@@ -127,6 +127,10 @@ def get_type_hints_cached(cls: Type[Any]) -> Dict[str, Any]:
 def cast_value(tp, value):
     """Cast a value to a type, or raise a TypeError if it cannot be cast."""
     origin = get_origin(tp)
+
+    if (origin is tuple or tp is tuple) and isinstance(value, list):
+        return cast_value(tp, tuple(value))
+
     if origin is Literal:
         for val in get_args(tp):
             try:
@@ -204,23 +208,33 @@ class GuiApi(abc.ABC):
         handle = self._gui_handle_from_id.get(message.id, None)
         if handle is None:
             return
-
         handle_state = handle._impl
 
-        # Do some type casting. This is necessary when we expect floats but the
-        # Javascript side gives us integers.
-        value = cast_value(handle_state.typ, message.value)
+        has_changed = False
+        updates_cast = {}
+        for prop_name, prop_value in message.updates.items():
+            assert hasattr(handle_state, prop_name)
+            current_value = getattr(handle_state, prop_name)
+
+            # Do some type casting. This is brittle, but necessary when we
+            # expect floats but the Javascript side gives us integers.
+            if prop_name == "value":
+                prop_value = cast_value(handle_state.typ, prop_value)
+
+            # Update handle property.
+            if current_value != prop_value:
+                has_changed = True
+                setattr(handle_state, prop_name, prop_value)
+
+            # Save value, which might have been cast.
+            updates_cast[prop_name] = prop_value
 
         # Only call update when value has actually changed.
-        if not handle_state.is_button and value == handle_state.value:
+        if not handle_state.is_button and not has_changed:
             return
 
-        # Update state.
-        with self._get_api()._atomic_lock:
-            handle_state.value = value
-            handle_state.update_timestamp = time.time()
-
-        # Trigger callbacks.
+        # GUI element has been updated!
+        handle_state.update_timestamp = time.time()
         for cb in handle_state.update_cb:
             from ._viser import ClientHandle, ViserServer
 
@@ -234,8 +248,9 @@ class GuiApi(abc.ABC):
                 assert False
 
             cb(GuiEvent(client, client_id, handle))
+
         if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, value)
+            handle_state.sync_cb(client_id, updates_cast)
 
     def _handle_file_transfer_start(
         self, client_id: ClientId, message: _messages.FileTransferStart
@@ -313,8 +328,6 @@ class GuiApi(abc.ABC):
                 assert False
 
             cb(GuiEvent(client, client_id, handle))
-        if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, value)
 
     def _get_container_id(self) -> str:
         """Get container ID associated with the current thread."""
@@ -344,6 +357,7 @@ class GuiApi(abc.ABC):
         label: str,
         order: Optional[float] = None,
         expand_by_default: bool = True,
+        visible: bool = True,
     ) -> GuiFolderHandle:
         """Add a folder, and return a handle that can be used to populate it.
 
@@ -352,6 +366,7 @@ class GuiApi(abc.ABC):
             order: Optional ordering, smallest values will be displayed first.
             expand_by_default: Open the folder by default. Set to False to collapse it by
                 default.
+            visible: Whether the component is visible.
 
         Returns:
             A handle that can be used as a context to populate the folder.
@@ -365,6 +380,7 @@ class GuiApi(abc.ABC):
                 label=label,
                 container_id=self._get_container_id(),
                 expand_by_default=expand_by_default,
+                visible=visible,
             )
         )
         return GuiFolderHandle(
@@ -406,24 +422,37 @@ class GuiApi(abc.ABC):
     def add_gui_tab_group(
         self,
         order: Optional[float] = None,
+        visible: bool = True,
     ) -> GuiTabGroupHandle:
         """Add a tab group.
 
         Args:
             order: Optional ordering, smallest values will be displayed first.
+            visible: Whether the component is visible.
 
         Returns:
             A handle that can be used as a context to populate the tab group.
         """
         tab_group_id = _make_unique_id()
         order = _apply_default_order(order)
+
+        self._get_api()._queue(
+            _messages.GuiAddTabGroupMessage(
+                order=order,
+                id=tab_group_id,
+                container_id=self._get_container_id(),
+                tab_labels=(),
+                visible=visible,
+                tab_icons_base64=(),
+                tab_container_ids=(),
+            )
+        )
         return GuiTabGroupHandle(
             _tab_group_id=tab_group_id,
             _labels=[],
             _icons_base64=[],
             _tabs=[],
             _gui_api=self,
-            _container_id=self._get_container_id(),
             _order=order,
         )
 
@@ -432,6 +461,7 @@ class GuiApi(abc.ABC):
         content: str,
         image_root: Optional[Path] = None,
         order: Optional[float] = None,
+        visible: bool = True,
     ) -> GuiMarkdownHandle:
         """Add markdown to the GUI.
 
@@ -439,6 +469,7 @@ class GuiApi(abc.ABC):
             content: Markdown content to display.
             image_root: Optional root directory to resolve relative image paths.
             order: Optional ordering, smallest values will be displayed first.
+            visible: Whether the component is visible.
 
         Returns:
             A handle that can be used to interact with the GUI element.
@@ -446,14 +477,24 @@ class GuiApi(abc.ABC):
         handle = GuiMarkdownHandle(
             _gui_api=self,
             _id=_make_unique_id(),
-            _visible=True,
+            _visible=visible,
             _container_id=self._get_container_id(),
             _order=_apply_default_order(order),
             _image_root=image_root,
             _content=None,
         )
+        self._get_api()._queue(
+            _messages.GuiAddMarkdownMessage(
+                order=handle._order,
+                id=handle._id,
+                markdown="",
+                container_id=handle._container_id,
+                visible=visible,
+            )
+        )
 
-        # Assigning content will send a GuiAddMarkdownMessage.
+        # Logic for processing markdown, handling images, etc is all in the
+        # `.content` setter, which should send a GuiUpdateMessage.
         handle.content = content
         return handle
 
@@ -505,19 +546,19 @@ class GuiApi(abc.ABC):
         order = _apply_default_order(order)
         return GuiButtonHandle(
             self._create_gui_input(
-                initial_value=False,
+                value=False,
                 message=_messages.GuiAddButtonMessage(
                     order=order,
                     id=id,
                     label=label,
                     container_id=self._get_container_id(),
                     hint=hint,
-                    initial_value=False,
+                    value=False,
                     color=color,
                     icon_base64=None if icon is None else base64_from_icon(icon),
+                    disabled=disabled,
+                    visible=visible,
                 ),
-                disabled=disabled,
-                visible=visible,
                 is_button=True,
             )._impl
         )
@@ -570,23 +611,22 @@ class GuiApi(abc.ABC):
         # Re-wrap the GUI handle with a button interface.
         id = _make_unique_id()
         order = _apply_default_order(order)
-        initial_value = UploadedFile("", b"")
         return GuiUploadButtonHandle(
             self._create_gui_input(
-                initial_value=initial_value,
+                value=UploadedFile("", b""),
                 message=_messages.GuiAddUploadButtonMessage(
+                    value=None,
+                    disabled=disabled,
+                    visible=visible,
                     order=order,
                     id=id,
                     label=label,
                     container_id=self._get_container_id(),
                     hint=hint,
-                    initial_value=initial_value,
                     color=color,
                     mime_type=mime_type,
                     icon_base64=None if icon is None else base64_from_icon(icon),
                 ),
-                disabled=disabled,
-                visible=visible,
                 is_button=True,
             )._impl
         )
@@ -642,23 +682,23 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        initial_value = options[0]
+        value = options[0]
         id = _make_unique_id()
         order = _apply_default_order(order)
         return GuiButtonGroupHandle(
             self._create_gui_input(
-                initial_value,
+                value,
                 message=_messages.GuiAddButtonGroupMessage(
                     order=order,
                     id=id,
                     label=label,
                     container_id=self._get_container_id(),
                     hint=hint,
-                    initial_value=initial_value,
+                    value=value,
                     options=tuple(options),
+                    disabled=disabled,
+                    visible=visible,
                 ),
-                disabled=disabled,
-                visible=visible,
             )._impl,
         )
 
@@ -684,21 +724,22 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        assert isinstance(initial_value, bool)
+        value = initial_value
+        assert isinstance(value, bool)
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
-            initial_value,
+            value,
             message=_messages.GuiAddCheckboxMessage(
                 order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
                 hint=hint,
-                initial_value=initial_value,
+                value=value,
+                disabled=disabled,
+                visible=visible,
             ),
-            disabled=disabled,
-            visible=visible,
         )
 
     def add_gui_text(
@@ -723,21 +764,22 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        assert isinstance(initial_value, str)
+        value = initial_value
+        assert isinstance(value, str)
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
-            initial_value,
+            value,
             message=_messages.GuiAddTextMessage(
                 order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
                 hint=hint,
-                initial_value=initial_value,
+                value=value,
+                disabled=disabled,
+                visible=visible,
             ),
-            disabled=disabled,
-            visible=visible,
         )
 
     def add_gui_number(
@@ -769,8 +811,9 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
+        value = initial_value
 
-        assert isinstance(initial_value, (int, float))
+        assert isinstance(value, (int, float))
 
         if step is None:
             # It's ok that `step` is always a float, even if the value is an integer,
@@ -778,7 +821,7 @@ class GuiApi(abc.ABC):
             step = float(  # type: ignore
                 onp.min(
                     [
-                        _compute_step(initial_value),
+                        _compute_step(value),
                         _compute_step(min),
                         _compute_step(max),
                     ]
@@ -790,21 +833,21 @@ class GuiApi(abc.ABC):
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
-            initial_value=initial_value,
+            value,
             message=_messages.GuiAddNumberMessage(
                 order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
                 hint=hint,
-                initial_value=initial_value,
+                value=value,
                 min=min,
                 max=max,
                 precision=_compute_precision_digits(step),
                 step=step,
+                disabled=disabled,
+                visible=visible,
             ),
-            disabled=disabled,
-            visible=visible,
             is_button=False,
         )
 
@@ -836,7 +879,8 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        initial_value = cast_vector(initial_value, 2)
+        value = initial_value
+        value = cast_vector(value, 2)
         min = cast_vector(min, 2) if min is not None else None
         max = cast_vector(max, 2) if max is not None else None
         id = _make_unique_id()
@@ -844,7 +888,7 @@ class GuiApi(abc.ABC):
 
         if step is None:
             possible_steps: List[float] = []
-            possible_steps.extend([_compute_step(x) for x in initial_value])
+            possible_steps.extend([_compute_step(x) for x in value])
             if min is not None:
                 possible_steps.extend([_compute_step(x) for x in min])
             if max is not None:
@@ -852,21 +896,21 @@ class GuiApi(abc.ABC):
             step = float(onp.min(possible_steps))
 
         return self._create_gui_input(
-            initial_value,
+            value,
             message=_messages.GuiAddVector2Message(
                 order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
                 hint=hint,
-                initial_value=initial_value,
+                value=value,
                 min=min,
                 max=max,
                 step=step,
                 precision=_compute_precision_digits(step),
+                disabled=disabled,
+                visible=visible,
             ),
-            disabled=disabled,
-            visible=visible,
         )
 
     def add_gui_vector3(
@@ -897,7 +941,8 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        initial_value = cast_vector(initial_value, 2)
+        value = initial_value
+        value = cast_vector(value, 2)
         min = cast_vector(min, 3) if min is not None else None
         max = cast_vector(max, 3) if max is not None else None
         id = _make_unique_id()
@@ -905,7 +950,7 @@ class GuiApi(abc.ABC):
 
         if step is None:
             possible_steps: List[float] = []
-            possible_steps.extend([_compute_step(x) for x in initial_value])
+            possible_steps.extend([_compute_step(x) for x in value])
             if min is not None:
                 possible_steps.extend([_compute_step(x) for x in min])
             if max is not None:
@@ -913,21 +958,21 @@ class GuiApi(abc.ABC):
             step = float(onp.min(possible_steps))
 
         return self._create_gui_input(
-            initial_value,
+            value,
             message=_messages.GuiAddVector3Message(
                 order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
                 hint=hint,
-                initial_value=initial_value,
+                value=value,
                 min=min,
                 max=max,
                 step=step,
                 precision=_compute_precision_digits(step),
+                disabled=disabled,
+                visible=visible,
             ),
-            disabled=disabled,
-            visible=visible,
         )
 
     # See add_gui_dropdown for notes on overloads.
@@ -981,24 +1026,25 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        if initial_value is None:
-            initial_value = options[0]
+        value = initial_value
+        if value is None:
+            value = options[0]
         id = _make_unique_id()
         order = _apply_default_order(order)
         return GuiDropdownHandle(
             self._create_gui_input(
-                initial_value,
+                value,
                 message=_messages.GuiAddDropdownMessage(
                     order=order,
                     id=id,
                     label=label,
                     container_id=self._get_container_id(),
                     hint=hint,
-                    initial_value=initial_value,
+                    value=value,
                     options=tuple(options),
+                    disabled=disabled,
+                    visible=visible,
                 ),
-                disabled=disabled,
-                visible=visible,
             )._impl,
             _impl_options=tuple(options),
         )
@@ -1035,29 +1081,30 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
+        value: IntOrFloat = initial_value
         assert max >= min
         if step > max - min:
             step = max - min
-        assert max >= initial_value >= min
+        assert max >= value >= min
 
         # GUI callbacks cast incoming values to match the type of the initial value. If
         # the min, max, or step is a float, we should cast to a float.
         #
         # This should also match what the IntOrFloat TypeVar resolves to.
-        if type(initial_value) is int and (
+        if type(value) is int and (
             type(min) is float or type(max) is float or type(step) is float
         ):
-            initial_value = float(initial_value)  # type: ignore
+            value = float(value)  # type: ignore
 
         # TODO: as of 6/5/2023, this assert will break something in nerfstudio. (at
         # least LERF)
         #
-        # assert type(min) == type(max) == type(step) == type(initial_value)
+        # assert type(min) == type(max) == type(step) == type(value)
 
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
-            initial_value=initial_value,
+            value,
             message=_messages.GuiAddSliderMessage(
                 order=order,
                 id=id,
@@ -1067,8 +1114,10 @@ class GuiApi(abc.ABC):
                 min=min,
                 max=max,
                 step=step,
-                initial_value=initial_value,
+                value=value,
                 precision=_compute_precision_digits(step),
+                visible=visible,
+                disabled=disabled,
                 marks=tuple(
                     {"value": float(x[0]), "label": x[1]}
                     if isinstance(x, tuple)
@@ -1078,8 +1127,6 @@ class GuiApi(abc.ABC):
                 if marks is not None
                 else None,
             ),
-            disabled=disabled,
-            visible=visible,
             is_button=False,
         )
 
@@ -1139,7 +1186,7 @@ class GuiApi(abc.ABC):
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
-            initial_value=initial_value,
+            value=initial_value,
             message=_messages.GuiAddMultiSliderMessage(
                 order=order,
                 id=id,
@@ -1150,7 +1197,9 @@ class GuiApi(abc.ABC):
                 min_range=min_range,
                 max=max,
                 step=step,
-                initial_value=initial_value,
+                value=initial_value,
+                visible=visible,
+                disabled=disabled,
                 fixed_endpoints=fixed_endpoints,
                 precision=_compute_precision_digits(step),
                 marks=tuple(
@@ -1162,8 +1211,6 @@ class GuiApi(abc.ABC):
                 if marks is not None
                 else None,
             ),
-            disabled=disabled,
-            visible=visible,
             is_button=False,
         )
 
@@ -1190,20 +1237,21 @@ class GuiApi(abc.ABC):
             A handle that can be used to interact with the GUI element.
         """
 
+        value = initial_value
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
-            initial_value,
+            value,
             message=_messages.GuiAddRgbMessage(
                 order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
                 hint=hint,
-                initial_value=initial_value,
+                value=value,
+                disabled=disabled,
+                visible=visible,
             ),
-            disabled=disabled,
-            visible=visible,
         )
 
     def add_gui_rgba(
@@ -1228,28 +1276,27 @@ class GuiApi(abc.ABC):
         Returns:
             A handle that can be used to interact with the GUI element.
         """
+        value = initial_value
         id = _make_unique_id()
         order = _apply_default_order(order)
         return self._create_gui_input(
-            initial_value,
+            value,
             message=_messages.GuiAddRgbaMessage(
                 order=order,
                 id=id,
                 label=label,
                 container_id=self._get_container_id(),
                 hint=hint,
-                initial_value=initial_value,
+                value=value,
+                disabled=disabled,
+                visible=visible,
             ),
-            disabled=disabled,
-            visible=visible,
         )
 
     def _create_gui_input(
         self,
-        initial_value: T,
+        value: T,
         message: _messages._GuiAddInputBase,
-        disabled: bool,
-        visible: bool,
         is_button: bool = False,
     ) -> GuiInputHandle[T]:
         """Private helper for adding a simple GUI element."""
@@ -1260,19 +1307,19 @@ class GuiApi(abc.ABC):
         # Construct handle.
         handle_state = _GuiHandleState(
             label=message.label,
-            typ=type(initial_value),
+            message_type=type(message),
+            typ=type(value),
             gui_api=self,
-            value=initial_value,
+            value=value,
             update_timestamp=time.time(),
             container_id=self._get_container_id(),
             update_cb=[],
             is_button=is_button,
             sync_cb=None,
-            disabled=False,
-            visible=True,
+            disabled=message.disabled,
+            visible=message.visible,
             id=message.id,
             order=message.order,
-            initial_value=initial_value,
             hint=message.hint,
         )
 
@@ -1280,19 +1327,15 @@ class GuiApi(abc.ABC):
         # This will be a no-op for client handles.
         if not is_button:
 
-            def sync_other_clients(client_id: ClientId, value: Any) -> None:
-                message = _messages.GuiSetValueMessage(id=handle_state.id, value=value)
+            def sync_other_clients(
+                client_id: ClientId, updates: Dict[str, Any]
+            ) -> None:
+                message = _messages.GuiUpdateMessage(handle_state.id, updates)
                 message.excluded_self_client = client_id
                 self._get_api()._queue(message)
 
             handle_state.sync_cb = sync_other_clients
 
         handle = GuiInputHandle(handle_state)
-
-        # Set the disabled/visible fields. These will queue messages under-the-hood.
-        if disabled:
-            handle.disabled = disabled
-        if not visible:
-            handle.visible = visible
 
         return handle

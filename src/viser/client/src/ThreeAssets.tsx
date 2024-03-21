@@ -89,7 +89,7 @@ export const PointCloud = React.forwardRef<
     colors: Float32Array;
   }
 >(function PointCloud(props, ref) {
-  const { gl, camera } = useThree();
+  const getThreeState = useThree((state) => state.get);
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute(
@@ -125,9 +125,12 @@ export const PointCloud = React.forwardRef<
     material.uniforms.scale.value =
       (props.pointSize /
         Math.tan(
-          (((camera as THREE.PerspectiveCamera).fov / 180.0) * Math.PI) / 2.0,
+          (((getThreeState().camera as THREE.PerspectiveCamera).fov / 180.0) *
+            Math.PI) /
+            2.0,
         )) *
-      gl.getSize(rendererSize).height;
+      getThreeState().gl.getSize(rendererSize).height *
+      getThreeState().gl.getPixelRatio();
   });
   return <points ref={ref} geometry={geometry} material={material} />;
 });
@@ -244,50 +247,45 @@ export const CoordinateFrame = React.forwardRef<
     showAxes?: boolean;
     axesLength?: number;
     axesRadius?: number;
+    originRadius?: number;
   }
 >(function CoordinateFrame(
   {
-    showAxes: show_axes = true,
-    axesLength: axes_length = 0.5,
-    axesRadius: axes_radius = 0.0125,
+    showAxes = true,
+    axesLength = 0.5,
+    axesRadius = 0.0125,
+    originRadius = undefined,
   },
   ref,
 ) {
+  originRadius = originRadius ?? axesRadius * 2;
   return (
     <group ref={ref}>
-      {show_axes && (
+      {showAxes && (
         <>
           <mesh
             geometry={originGeom}
             material={originMaterial}
-            scale={
-              new THREE.Vector3(
-                axes_radius * 2.5,
-                axes_radius * 2.5,
-                axes_radius * 2.5,
-              )
-            }
+            scale={new THREE.Vector3(originRadius, originRadius, originRadius)}
           >
             <OutlinesIfHovered />
           </mesh>
           <Instances limit={3}>
             <meshBasicMaterial />
-            <cylinderGeometry
-              args={[axes_radius, axes_radius, axes_length, 16]}
-            />
+            <cylinderGeometry args={[axesRadius, axesRadius, axesLength, 16]} />
             <Instance
               rotation={new THREE.Euler(0.0, 0.0, (3.0 * Math.PI) / 2.0)}
-              position={[0.5 * axes_length, 0.0, 0.0]}
+              position={[0.5 * axesLength, 0.0, 0.0]}
               color={0xcc0000}
             >
               <OutlinesIfHovered />
             </Instance>
-            <Instance position={[0.0, 0.5 * axes_length, 0.0]} color={0x00cc00}>
+            <Instance position={[0.0, 0.5 * axesLength, 0.0]} color={0x00cc00}>
               <OutlinesIfHovered />
             </Instance>
             <Instance
               rotation={new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)}
-              position={[0.0, 0.0, 0.5 * axes_length]}
+              position={[0.0, 0.0, 0.5 * axesLength]}
               color={0x0000cc}
             >
               <OutlinesIfHovered />

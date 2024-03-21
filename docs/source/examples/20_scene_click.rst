@@ -23,7 +23,6 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
         import numpy as onp
         import trimesh.creation
         import trimesh.ray
-
         import viser
         import viser.transforms as tf
 

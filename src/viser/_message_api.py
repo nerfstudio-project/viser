@@ -17,6 +17,7 @@ import queue
 import threading
 import time
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -147,7 +148,9 @@ class MessageApi(abc.ABC):
 
     _locked_thread_id: int  # Appeasing mypy 1.5.1, not sure why this is needed.
 
-    def __init__(self, handler: infra.MessageHandler) -> None:
+    def __init__(
+        self, handler: infra.MessageHandler, thread_executor: ThreadPoolExecutor
+    ) -> None:
         self._message_handler = handler
 
         super().__init__()
@@ -177,6 +180,7 @@ class MessageApi(abc.ABC):
         self._atomic_lock = threading.Lock()
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
+        self._thread_executor = thread_executor
 
     def set_gui_panel_label(self, label: Optional[str]) -> None:
         """Set the main label that appears in the GUI panel.
@@ -550,6 +554,7 @@ class MessageApi(abc.ABC):
         show_axes: bool = True,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
+        origin_radius: float | None = None,
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -568,9 +573,10 @@ class MessageApi(abc.ABC):
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
-            show_axes: Boolean to indicate whether to show the axes.
+            show_axes: Boolean to indicate whether to show the frame as a set of axes + origin sphere.
             axes_length: Length of each axis.
             axes_radius: Radius of each axis.
+            origin_radius: Radius of the origin sphere. If not set, defaults to `2 * axes_radius`.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -578,12 +584,15 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
+        if origin_radius is None:
+            origin_radius = axes_radius * 2
         self._queue(
             _messages.FrameMessage(
                 name=name,
                 show_axes=show_axes,
                 axes_length=axes_length,
                 axes_radius=axes_radius,
+                origin_radius=origin_radius,
             )
         )
         return FrameHandle._make(self, name, wxyz, position, visible)
@@ -661,11 +670,9 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> SceneNodeHandle:
-        """Add a grid to the scene.
+        """Add a 2D grid to the scene.
 
-        This method creates a grid which can be used as a reference for scaling and
-        positioning objects in the scene. It's particularly useful for providing a sense
-        of scale and orientation.
+        This can be useful as a size, orientation, or ground plane reference.
 
         Args:
             name: Name of the grid.
@@ -1178,7 +1185,7 @@ class MessageApi(abc.ABC):
                 with self._atomic_lock:
                     self._queue_unsafe(self._queued_messages.get())
 
-            threading.Thread(target=try_again).start()
+            self._thread_executor.submit(try_again)
 
     @abc.abstractmethod
     def _queue_unsafe(self, message: _messages.Message) -> None:
@@ -1213,9 +1220,11 @@ class MessageApi(abc.ABC):
             return
 
         # Update state.
+        wxyz = onp.array(message.wxyz)
+        position = onp.array(message.position)
         with self.atomic():
-            handle._impl.wxyz = onp.array(message.wxyz)
-            handle._impl.position = onp.array(message.position)
+            handle._impl.wxyz = wxyz
+            handle._impl.position = position
             handle._impl_aux.last_updated = time.time()
 
         # Trigger callbacks.
@@ -1380,27 +1389,45 @@ class MessageApi(abc.ABC):
         ]
 
         uuid = _make_unique_id()
-        self._queue(
-            _messages.FileTransferStart(
-                source_component_id=None,
-                transfer_uuid=uuid,
-                filename=filename,
-                mime_type=mime_type,
-                part_count=len(parts),
-                size_bytes=len(content),
-            )
-        )
 
-        for i, part in enumerate(parts):
-            self._queue(
-                _messages.FileTransferPart(
-                    None,
+        from ._viser import ClientHandle, ViserServer
+
+        # If called on the server handle, send the file to each client.
+        # If called on the client handle, send the file to just that client.
+        #
+        # We avoid calling ViserServer._queue() here because it will create a
+        # "persistent" message, which is saved and sent to all new clients in
+        # the future. While this makes sense for things like GUI components or
+        # 3D assets, this produces unintuitive behavior for file downloads.
+        if isinstance(self, ViserServer):
+            clients = list(self.get_clients().values())
+        elif isinstance(self, ClientHandle):
+            clients = [self]
+        else:
+            assert False
+
+        for client in clients:
+            client._queue(
+                _messages.FileTransferStart(
+                    source_component_id=None,
                     transfer_uuid=uuid,
-                    part=i,
-                    content=part,
+                    filename=filename,
+                    mime_type=mime_type,
+                    part_count=len(parts),
+                    size_bytes=len(content),
                 )
             )
-            self.flush()
+
+            for i, part in enumerate(parts):
+                client._queue(
+                    _messages.FileTransferPart(
+                        None,
+                        transfer_uuid=uuid,
+                        part=i,
+                        content=part,
+                    )
+                )
+                client.flush()
 
     @abc.abstractmethod
     def flush(self) -> None:

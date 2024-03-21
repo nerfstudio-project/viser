@@ -67,9 +67,7 @@ function useMessageHandler() {
   const addModal = viewer.useGui((state) => state.addModal);
   const removeModal = viewer.useGui((state) => state.removeModal);
   const removeGui = viewer.useGui((state) => state.removeGui);
-  const setGuiValue = viewer.useGui((state) => state.setGuiValue);
-  const setGuiVisible = viewer.useGui((state) => state.setGuiVisible);
-  const setGuiDisabled = viewer.useGui((state) => state.setGuiDisabled);
+  const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
 
@@ -150,6 +148,7 @@ function useMessageHandler() {
               showAxes={message.show_axes}
               axesLength={message.axes_length}
               axesRadius={message.axes_radius}
+              originRadius={message.origin_radius}
             />
           )),
         );
@@ -300,7 +299,7 @@ function useMessageHandler() {
           return texture;
         };
         const standardArgs = {
-          color: message.color || undefined,
+          color: message.color ?? undefined,
           vertexColors: message.vertex_colors !== null,
           wireframe: message.wireframe,
           transparent: message.opacity !== null,
@@ -418,45 +417,52 @@ function useMessageHandler() {
           50,
         );
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => (
-            <group onClick={(e) => e.stopPropagation()}>
-              <PivotControls
-                ref={ref}
-                scale={message.scale}
-                lineWidth={message.line_width}
-                fixed={message.fixed}
-                autoTransform={message.auto_transform}
-                activeAxes={message.active_axes}
-                disableAxes={message.disable_axes}
-                disableSliders={message.disable_sliders}
-                disableRotations={message.disable_rotations}
-                translationLimits={message.translation_limits}
-                rotationLimits={message.rotation_limits}
-                depthTest={message.depth_test}
-                opacity={message.opacity}
-                onDrag={(l) => {
-                  const attrs = viewer.nodeAttributesFromName.current;
-                  if (attrs[message.name] === undefined) {
-                    attrs[message.name] = {};
-                  }
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => (
+              <group onClick={(e) => e.stopPropagation()}>
+                <PivotControls
+                  ref={ref}
+                  scale={message.scale}
+                  lineWidth={message.line_width}
+                  fixed={message.fixed}
+                  autoTransform={message.auto_transform}
+                  activeAxes={message.active_axes}
+                  disableAxes={message.disable_axes}
+                  disableSliders={message.disable_sliders}
+                  disableRotations={message.disable_rotations}
+                  translationLimits={message.translation_limits}
+                  rotationLimits={message.rotation_limits}
+                  depthTest={message.depth_test}
+                  opacity={message.opacity}
+                  onDrag={(l) => {
+                    const attrs = viewer.nodeAttributesFromName.current;
+                    if (attrs[message.name] === undefined) {
+                      attrs[message.name] = {};
+                    }
 
-                  const wxyz = new THREE.Quaternion();
-                  wxyz.setFromRotationMatrix(l);
-                  const position = new THREE.Vector3().setFromMatrixPosition(l);
+                    const wxyz = new THREE.Quaternion();
+                    wxyz.setFromRotationMatrix(l);
+                    const position = new THREE.Vector3().setFromMatrixPosition(
+                      l,
+                    );
 
-                  const nodeAttributes = attrs[message.name]!;
-                  nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                  nodeAttributes.position = position.toArray();
-                  sendDragMessage({
-                    type: "TransformControlsUpdateMessage",
-                    name: name,
-                    wxyz: nodeAttributes.wxyz,
-                    position: nodeAttributes.position,
-                  });
-                }}
-              />
-            </group>
-          )),
+                    const nodeAttributes = attrs[message.name]!;
+                    nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+                    nodeAttributes.position = position.toArray();
+                    sendDragMessage({
+                      type: "TransformControlsUpdateMessage",
+                      name: name,
+                      wxyz: nodeAttributes.wxyz,
+                      position: nodeAttributes.position,
+                    });
+                  }}
+                />
+              </group>
+            ),
+            undefined,
+            true, // unmountWhenInvisible
+          ),
         );
         return;
       }
@@ -667,10 +673,11 @@ function useMessageHandler() {
                           evt.stopPropagation();
                         }}
                       >
-                        <GeneratedGuiContainer
-                          containerId={message.container_id}
-                          viewer={viewer}
-                        />
+                        <ViewerContext.Provider value={viewer}>
+                          <GeneratedGuiContainer
+                            containerId={message.container_id}
+                          />
+                        </ViewerContext.Provider>
                       </Paper>
                     </MantineProvider>
                   </Html>
@@ -748,19 +755,9 @@ function useMessageHandler() {
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
         return;
       }
-      // Set the value of a GUI input.
-      case "GuiSetValueMessage": {
-        setGuiValue(message.id, message.value);
-        return;
-      }
-      // Set the hidden state of a GUI input.
-      case "GuiSetVisibleMessage": {
-        setGuiVisible(message.id, message.visible);
-        return;
-      }
-      // Set the disabled state of a GUI input.
-      case "GuiSetDisabledMessage": {
-        setGuiDisabled(message.id, message.disabled);
+      // Update props of a GUI component
+      case "GuiUpdateMessage": {
+        updateGuiProps(message.id, message.updates);
         return;
       }
       // Remove a GUI input.
