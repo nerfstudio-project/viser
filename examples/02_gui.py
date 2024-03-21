@@ -81,7 +81,9 @@ def main() -> None:
 
     @gui_upload_button.on_upload
     def _(_) -> None:
-        print(gui_upload_button.value.name)
+        """Callback for when a file is uploaded."""
+        file = gui_upload_button.value
+        print(file.name, len(file.content), "bytes")
 
     # Pre-generate a point cloud to send.
     point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(5000, 3))
