@@ -103,6 +103,16 @@ class ScenePointerEnableMessage(Message):
     enable: bool
     event_type: ScenePointerEventType
 
+    @override
+    def redundancy_key(self) -> str:
+        return (
+            type(self).__name__
+            + "-"
+            + self.event_type
+            + "-"
+            + str(self.enable).lower()
+        )
+
 
 @dataclasses.dataclass
 class CameraFrustumMessage(Message):

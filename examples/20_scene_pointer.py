@@ -51,7 +51,7 @@ def _(_):
     click_button_handle.disabled = True
 
     @server.on_scene_pointer(event_type="click")
-    def scene_click_cb(message: viser.ScenePointerEvent) -> None:
+    def _(message: viser.ScenePointerEvent) -> None:
         # Check for intersection with the mesh, using trimesh's ray-mesh intersection.
         # Note that mesh is in the mesh frame, so we need to transform the ray.
         R_world_mesh = tf.SO3(mesh_handle.wxyz)
@@ -63,10 +63,6 @@ def _(_):
 
         if len(hit_pos) == 0:
             return
-
-        # Successful click => remove callback.
-        click_button_handle.disabled = False
-        server.remove_scene_pointer_callback(scene_click_cb)
 
         # Get the first hit position (based on distance from the ray origin).
         hit_pos = min(hit_pos, key=lambda x: onp.linalg.norm(x - origin))
@@ -80,13 +76,18 @@ def _(_):
         )
         hit_pos_handles.append(hit_pos_handle)
 
+    @server.on_scene_pointer_done
+    def _():
+        click_button_handle.disabled = False
+        server.remove_scene_pointer_callback()
+
 
 @paint_button_handle.on_click
 def _(_):
     paint_button_handle.disabled = True
 
     @server.on_scene_pointer(event_type="rect-select")
-    def scene_box_cb(message: viser.ScenePointerEvent) -> None:
+    def _(message: viser.ScenePointerEvent) -> None:
         global mesh_handle
         camera = message.client.camera
 
@@ -129,8 +130,10 @@ def _(_):
             position=(0.0, 0.0, 0.0),
         )
 
+    @server.on_scene_pointer_done
+    def _():
         paint_button_handle.disabled = False
-        server.remove_scene_pointer_callback(scene_box_cb)
+        server.remove_scene_pointer_callback()
 
 
 # Button to clear spheres
