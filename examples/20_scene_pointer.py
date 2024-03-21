@@ -85,7 +85,7 @@ def _(_):
 def _(_):
     paint_button_handle.disabled = True
 
-    @server.on_scene_pointer(event_type="box")
+    @server.on_scene_pointer(event_type="rect-select")
     def scene_box_cb(message: viser.ScenePointerEvent) -> None:
         global mesh_handle
         camera = message.client.camera

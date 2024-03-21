@@ -368,7 +368,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         if (click_info.enabled_box) {
           sendClickThrottled({
             type: "ScenePointerMessage",
-            event_type: "box",
+            event_type: "rect-select",
             ray_origin: null,
             ray_direction: null,
             screen_pos: screenBoxList,

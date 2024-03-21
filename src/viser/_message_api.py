@@ -1283,7 +1283,7 @@ class MessageApi(abc.ABC):
         return self.on_scene_pointer(event_type="click")(func)
 
     def on_scene_pointer(
-        self, event_type: Literal["click", "box"]
+        self, event_type: Literal["click", "rect-select"]
     ) -> Callable[
         [Callable[[ScenePointerEvent], None]], Callable[[ScenePointerEvent], None]
     ]:

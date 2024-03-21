@@ -133,7 +133,7 @@ function useMessageHandler() {
           case "click":
             viewer.sceneClickInfo.current!.enabled_click = message.enable;
             break;
-          case "box":
+          case "rect-select":
             viewer.sceneClickInfo.current!.enabled_box = message.enable;
             break;
           default:
