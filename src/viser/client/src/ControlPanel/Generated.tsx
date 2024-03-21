@@ -128,4 +128,3 @@ function GeneratedInput(props: { guiId: string }) {
 function assertNeverType(x: never): never {
   throw new Error("Unexpected object: " + (x as any).type);
 }
-
