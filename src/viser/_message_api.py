@@ -23,7 +23,6 @@ from typing import (
     Callable,
     Dict,
     Generator,
-    List,
     Optional,
     Tuple,
     TypeVar,
@@ -162,7 +161,7 @@ class MessageApi(abc.ABC):
         self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
 
         self._scene_pointer_cb: Optional[Callable[[ScenePointerEvent], None]] = None
-        self._scene_pointer_done_cb: Callable[[None], None] = lambda: None
+        self._scene_pointer_done_cb: Callable[[], None] = lambda: None
         self._scene_pointer_event_type: Optional[_messages.ScenePointerEventType] = None
 
         handler.register_handler(
@@ -1322,8 +1321,8 @@ class MessageApi(abc.ABC):
 
     def on_scene_pointer_done(
         self,
-        func: Callable[[None], None],
-    ) -> Callable[[None], None]:
+        func: Callable[[], None],
+    ) -> Callable[[], None]:
         """Add a callback to run automatically when the callback for the 
         currently registered scene pointer finishes (e.g., GUI state cleanup)."""
         self._scene_pointer_done_cb = func
@@ -1336,6 +1335,7 @@ class MessageApi(abc.ABC):
 
         # Notify client that the listener has been removed.
         event_type = self._scene_pointer_event_type
+        assert event_type is not None
         self._queue(
             _messages.ScenePointerEnableMessage(
                 enable=False, event_type=event_type
