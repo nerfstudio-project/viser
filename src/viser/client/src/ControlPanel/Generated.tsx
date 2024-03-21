@@ -19,6 +19,7 @@ import MarkdownComponent from "../components/Markdown";
 import TabGroupComponent from "../components/TabGroup";
 import FolderComponent from "../components/Folder";
 import MultiSliderComponent from "../components/MultiSlider";
+import UploadButtonComponent from "../components/UploadButton";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -91,6 +92,8 @@ function GeneratedInput(props: { guiId: string }) {
       return <MarkdownComponent {...conf} />;
     case "GuiAddButtonMessage":
       return <ButtonComponent {...conf} />;
+    case "GuiAddUploadButtonMessage":
+      return <UploadButtonComponent {...conf} />;
     case "GuiAddSliderMessage":
       return <SliderComponent {...conf} />;
     case "GuiAddMultiSliderMessage":

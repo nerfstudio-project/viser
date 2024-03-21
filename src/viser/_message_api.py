@@ -1408,16 +1408,25 @@ class MessageApi(abc.ABC):
 
         for client in clients:
             client._queue(
-                _messages.FileDownloadStart(
-                    download_uuid=uuid,
+                _messages.FileTransferStart(
+                    source_component_id=None,
+                    transfer_uuid=uuid,
                     filename=filename,
                     mime_type=mime_type,
                     part_count=len(parts),
                     size_bytes=len(content),
                 )
             )
+
             for i, part in enumerate(parts):
-                client._queue(_messages.FileDownloadPart(uuid, part=i, content=part))
+                client._queue(
+                    _messages.FileTransferPart(
+                        None,
+                        transfer_uuid=uuid,
+                        part=i,
+                        content=part,
+                    )
+                )
                 client.flush()
 
     @abc.abstractmethod
