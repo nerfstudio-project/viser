@@ -86,13 +86,6 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     if isinstance(value, onp.ndarray):
         return value.data if value.data.c_contiguous else value.copy().data
 
-    if dataclasses.is_dataclass(annotation):
-        types = get_type_hints_cached(annotation)
-        value = {
-            k: _prepare_for_serialization(v, types[k])
-            for k, v in dataclasses.asdict(value).items()
-        }
-
     return value
 
 
