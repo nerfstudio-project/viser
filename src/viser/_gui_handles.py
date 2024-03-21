@@ -52,7 +52,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -265,12 +266,13 @@ class UploadedFile:
 
 @dataclasses.dataclass
 class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
-    """Handle for a button input in our visualizer.
+    """Handle for an upload file button in our visualizer.
 
-    Lets us detect clicks."""
+    The `.value` attribute will be updated with the contents of uploaded files.
+    """
 
     def on_upload(
-        self: TGuiHandle, func: Callable[[GuiEvent[UploadedFile]], None]
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
     ) -> Callable[[GuiEvent[TGuiHandle]], None]:
         """Attach a function to call when a button is pressed. Happens in a thread."""
         self._impl.update_cb.append(func)
