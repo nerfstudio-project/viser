@@ -1,13 +1,9 @@
 import { ViewerContext } from "../App";
 import { makeThrottledMessageSender } from "../WebsocketFunctions";
-import { Progress } from "@mantine/core";
 import { GuiComponentContext } from "./GuiComponentContext";
 
 import { Box } from "@mantine/core";
 import React from "react";
-import { IconCheck } from "@tabler/icons-react";
-import { notifications } from "@mantine/notifications";
-import { pack } from "msgpackr";
 import ButtonComponent from "../components/Button";
 import SliderComponent from "../components/Slider";
 import NumberInputComponent from "../components/NumberInput";

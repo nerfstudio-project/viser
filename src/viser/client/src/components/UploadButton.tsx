@@ -1,12 +1,10 @@
 import { GuiAddUploadButtonMessage } from "../WebsocketMessages";
 import { computeRelativeLuminance } from "../ControlPanel/GuiState";
-import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { v4 as uuid } from "uuid";
 import { Box, Image, Progress, useMantineTheme } from "@mantine/core";
 
 import { Button } from "@mantine/core";
 import React, { useContext } from "react";
-import { makeThrottledMessageSender } from "../WebsocketFunctions";
 import { ViewerContext, ViewerContextContents } from "../App";
 import { pack } from "msgpackr";
 import { IconCheck } from "@tabler/icons-react";
