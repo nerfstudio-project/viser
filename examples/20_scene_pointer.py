@@ -33,6 +33,7 @@ mesh_handle = server.add_mesh_trimesh(
 
 hit_pos_handles: List[viser.GlbHandle] = []
 
+
 # Buttons + callbacks will operate on a per-client basis, but will modify the global scene! :)
 @server.on_client_connect
 def _(client: viser.ClientHandle) -> None:
@@ -42,6 +43,7 @@ def _(client: viser.ClientHandle) -> None:
 
     # Tests "click" scenepointerevent.
     click_button_handle = client.add_gui_button("Add sphere", icon=viser.Icon.POINTER)
+
     @click_button_handle.on_click
     def _(_):
         click_button_handle.disabled = True
@@ -77,9 +79,9 @@ def _(client: viser.ClientHandle) -> None:
             click_button_handle.disabled = False
             client.remove_scene_pointer_callback()
 
-
     # Tests "rect-select" scenepointerevent.
     paint_button_handle = client.add_gui_button("Paint mesh", icon=viser.Icon.PAINT)
+
     @paint_button_handle.on_click
     def _(_):
         paint_button_handle.disabled = True
@@ -133,9 +135,9 @@ def _(client: viser.ClientHandle) -> None:
             paint_button_handle.disabled = False
             client.remove_scene_pointer_callback()
 
-
     # Button to clear spheres.
     clear_button_handle = client.add_gui_button("Clear scene", icon=viser.Icon.X)
+
     @clear_button_handle.on_click
     def _(_):
         """Reset the mesh color and remove all click-generated spheres."""

@@ -1303,7 +1303,9 @@ class MessageApi(abc.ABC):
                 return
 
             # Raise a warning if the callback is being removed.
-            warnings.warn("Overriding ScenePointerEvent callback, because a callback already exists.")
+            warnings.warn(
+                "Overriding ScenePointerEvent callback, because a callback already exists."
+            )
 
             # Run cleanup callback.
             msg_api._scene_pointer_done_cb()
@@ -1349,7 +1351,9 @@ class MessageApi(abc.ABC):
         currently registered scene pointer finishes (e.g., GUI state cleanup)."""
 
         if self._scene_pointer_cb is None:
-            warnings.warn("This cleanup callback corresponds to no scene pointer event, ignoring.")
+            warnings.warn(
+                "This cleanup callback corresponds to no scene pointer event, ignoring."
+            )
             return lambda: None
 
         self._scene_pointer_done_cb = func
@@ -1361,7 +1365,9 @@ class MessageApi(abc.ABC):
         """Remove the currently attached scene pointer event."""
 
         if self._scene_pointer_cb is None:
-            warnings.warn("No scene pointer callback exists for this server/client, ignoring.")
+            warnings.warn(
+                "No scene pointer callback exists for this server/client, ignoring."
+            )
             return
 
         # Notify client that the listener has been removed.
