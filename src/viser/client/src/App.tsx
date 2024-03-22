@@ -344,28 +344,32 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           });
         }
 
-        // If the ScenePointerEvent had mouse drag movement, we will send a "box" message:
-        // Use the first and last mouse positions to create a box.
-        const screenEventList = viewer.sceneClickInfo.current!.screenEventList;
-        const firstScreenEvent = screenEventList[0];
-        const lastScreenEvent = screenEventList![screenEventList.length - 1];
+        else if (
+          click_info.screenEventList!.length > 1 &&
+          click_info.enabled_box
+          ) {
 
-        // Again, click should be in openCV image coordinates (normalized).
-        const firstMouseVector = clickToOpenCV(viewer, firstScreenEvent);
-        const lastMouseVector = clickToOpenCV(viewer, lastScreenEvent);
+          // If the ScenePointerEvent had mouse drag movement, we will send a "box" message:
+          // Use the first and last mouse positions to create a box.
+          const screenEventList = viewer.sceneClickInfo.current!.screenEventList;
+          const firstScreenEvent = screenEventList[0];
+          const lastScreenEvent = screenEventList![screenEventList.length - 1];
 
-        const x_min = Math.min(firstMouseVector.x, lastMouseVector.x);
-        const x_max = Math.max(firstMouseVector.x, lastMouseVector.x);
-        const y_min = Math.min(firstMouseVector.y, lastMouseVector.y);
-        const y_max = Math.max(firstMouseVector.y, lastMouseVector.y);
+          // Again, click should be in openCV image coordinates (normalized).
+          const firstMouseVector = clickToOpenCV(viewer, firstScreenEvent);
+          const lastMouseVector = clickToOpenCV(viewer, lastScreenEvent);
 
-        // Send the upper-left and lower-right corners of the box.
-        const screenBoxList: [number, number][] = [
-          [x_min, y_min],
-          [x_max, y_max],
-        ];
+          const x_min = Math.min(firstMouseVector.x, lastMouseVector.x);
+          const x_max = Math.max(firstMouseVector.x, lastMouseVector.x);
+          const y_min = Math.min(firstMouseVector.y, lastMouseVector.y);
+          const y_max = Math.max(firstMouseVector.y, lastMouseVector.y);
 
-        if (click_info.enabled_box) {
+          // Send the upper-left and lower-right corners of the box.
+          const screenBoxList: [number, number][] = [
+            [x_min, y_min],
+            [x_max, y_max],
+          ];
+
           sendClickThrottled({
             type: "ScenePointerMessage",
             event_type: "rect-select",
