@@ -70,7 +70,7 @@ function GuiContainer({ containerId }: { containerId: string }) {
   }));
   guiIdOrderPairArray = guiIdOrderPairArray.sort((a, b) => a.order - b.order);
   const out = (
-    <Box pt="xs" pb="xs">
+    <Box pt="xs">
       {guiIdOrderPairArray.map((pair) => (
         <GeneratedInput key={pair.id} guiId={pair.id} />
       ))}
