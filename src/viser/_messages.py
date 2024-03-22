@@ -475,6 +475,31 @@ class GuiAddButtonMessage(_GuiAddInputBase):
 
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
+class GuiAddUploadButtonMessage(_GuiAddInputBase):
+    color: Optional[
+        Literal[
+            "dark",
+            "gray",
+            "red",
+            "pink",
+            "grape",
+            "violet",
+            "indigo",
+            "blue",
+            "cyan",
+            "green",
+            "lime",
+            "yellow",
+            "orange",
+            "teal",
+        ]
+    ]
+    icon_base64: Optional[str]
+    mime_type: str
+
+
+@tag_class("GuiAddComponentMessage")
+@dataclasses.dataclass
 class GuiAddSliderMessage(_GuiAddInputBase):
     min: float
     max: float
@@ -650,10 +675,12 @@ class GetRenderResponseMessage(Message):
 
 
 @dataclasses.dataclass
-class FileDownloadStart(Message):
+class FileTransferStart(Message):
     """Signal that a file is about to be sent."""
 
-    download_uuid: str
+    source_component_id: Optional[str]
+    """Origin GUI component, used for client->server file uploads."""
+    transfer_uuid: str
     filename: str
     mime_type: str
     part_count: int
@@ -661,20 +688,42 @@ class FileDownloadStart(Message):
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + self.download_uuid
+        return type(self).__name__ + "-" + self.transfer_uuid
 
 
 @dataclasses.dataclass
-class FileDownloadPart(Message):
-    """Send a file for clients to download."""
+class FileTransferPart(Message):
+    """Send a file for clients to download or upload files from client."""
 
-    download_uuid: str
+    # TODO: it would make sense to rename all "id" instances to "uuid" for GUI component ids.
+    source_component_id: Optional[str]
+    transfer_uuid: str
     part: int
     content: bytes
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + self.download_uuid + "-" + str(self.part)
+        return type(self).__name__ + "-" + self.transfer_uuid + "-" + str(self.part)
+
+
+@dataclasses.dataclass
+class FileTransferPartAck(Message):
+    """Send a file for clients to download or upload files from client."""
+
+    source_component_id: Optional[str]
+    transfer_uuid: str
+    transferred_bytes: int
+    total_bytes: int
+
+    @override
+    def redundancy_key(self) -> str:
+        return (
+            type(self).__name__
+            + "-"
+            + self.transfer_uuid
+            + "-"
+            + str(self.transferred_bytes)
+        )
 
 
 @dataclasses.dataclass

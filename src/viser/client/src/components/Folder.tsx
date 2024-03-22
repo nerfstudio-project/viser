@@ -24,6 +24,7 @@ export default function FolderComponent({
     <Paper
       withBorder
       pt="0.0625em"
+      mb="xs"
       mx="xs"
       mt="xs"
       sx={{

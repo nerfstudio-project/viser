@@ -69,7 +69,7 @@ disable_error_code="var-annotated"  # Common source of mypy + numpy false positi
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
 
 [tool.ruff]
-select = [
+lint.select = [
     "E",  # pycodestyle errors.
     "F",  # Pyflakes rules.
     "PLC",  # Pylint convention warnings.
@@ -78,7 +78,7 @@ select = [
     "PLW",  # Pylint warnings.
     "I", # Import sorting.
 ]
-ignore = [
+lint.ignore = [
     "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "E721",  # Do not compare types, use `isinstance()`.
