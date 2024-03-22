@@ -105,4 +105,4 @@ and
 
 https://github.com/nerfstudio-project/viser/assets/6992947/78ba0e09-612d-4678-abf3-beaeeffddb01
 
-Source: `./example/08_smplx_visualizer.py`
+Source: `./example/08_smpl_visualizer.py`
