@@ -30,39 +30,37 @@ class AsyncMessageBuffer:
     def push(self, message: Message) -> None:
         """Push a new message to our buffer, and remove old redundant ones."""
 
-        @self.event_loop.call_soon_threadsafe
-        def _() -> None:
-            assert isinstance(message, Message)
+        assert isinstance(message, Message)
 
-            # Add message to buffer.
-            new_message_id = self.message_counter
-            self.message_from_id[new_message_id] = message
-            self.message_counter += 1
+        # Add message to buffer.
+        new_message_id = self.message_counter
+        self.message_from_id[new_message_id] = message
+        self.message_counter += 1
 
-            # If an existing message with the same key already exists in our buffer, we
-            # don't need the old one anymore. :-)
-            redundancy_key = message.redundancy_key()
-            if (
-                redundancy_key is not None
-                and redundancy_key in self.id_from_redundancy_key
-            ):
-                old_message_id = self.id_from_redundancy_key.pop(redundancy_key)
-                self.message_from_id.pop(old_message_id)
-            self.id_from_redundancy_key[redundancy_key] = new_message_id
+        # If an existing message with the same key already exists in our buffer, we
+        # don't need the old one anymore. :-)
+        redundancy_key = message.redundancy_key()
+        if redundancy_key is not None and redundancy_key in self.id_from_redundancy_key:
+            old_message_id = self.id_from_redundancy_key.pop(redundancy_key)
+            self.message_from_id.pop(old_message_id)
+        self.id_from_redundancy_key[redundancy_key] = new_message_id
 
-            # Pulse message event to notify consumers that a new message is available.
-            self.message_event.set()
-            self.message_event.clear()
+        # Pulse message event to notify consumers that a new message is available.
+        self.event_loop.call_soon_threadsafe(self.message_event.set)
 
     def flush(self) -> None:
         """Flush the message buffer; signals to yield a message window immediately."""
         self.event_loop.call_soon_threadsafe(self.flush_event.set)
-        self.event_loop.call_soon_threadsafe(self.flush_event.clear)
 
     def set_done(self) -> None:
         """Set the done flag. Kills the generator."""
         self.done = True
-        self.flush()
+
+        # Pulse message event to make sure we aren't waiting for a new message.
+        self.event_loop.call_soon_threadsafe(self.message_event.set)
+
+        # Pulse flush event to skip any windowing delay.
+        self.event_loop.call_soon_threadsafe(self.flush_event.set)
 
     async def window_generator(
         self, client_id: int
@@ -87,6 +85,10 @@ class AsyncMessageBuffer:
                 # connections, we persist messages so they can be sent to new
                 # clients.
                 if not self.persistent_messages and message is not None:
+                    assert (
+                        self.id_from_redundancy_key.pop(message.redundancy_key())
+                        == last_sent_id
+                    )
                     self.message_from_id.pop(last_sent_id)
 
                 if message is not None and message.excluded_self_client != client_id:
@@ -98,6 +100,7 @@ class AsyncMessageBuffer:
             else:
                 # Wait for a new message to come in.
                 await self.message_event.wait()
+                self.message_event.clear()
 
             # Add a delay if either (a) we failed to yield or (b) there's currently no messages to send.
             most_recent_message_id = self.message_counter - 1
@@ -106,5 +109,6 @@ class AsyncMessageBuffer:
                     [flush_wait], timeout=self.window_duration_sec
                 )
                 del pending
-                if flush_wait in done:
+                if flush_wait in done and not self.done:
+                    self.flush_event.clear()
                     flush_wait = asyncio.create_task(self.flush_event.wait())

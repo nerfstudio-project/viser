@@ -76,9 +76,7 @@ function useMessageHandler() {
   function addSceneNodeMakeParents(node: SceneNode<any>) {
     // Make sure scene node is in attributes.
     const attrs = viewer.nodeAttributesFromName.current;
-    if (!(node.name in attrs)) {
-      attrs[node.name] = {};
-    }
+    attrs[node.name] = {};
 
     // Don't update the pose of the object until we've made a new one!
     attrs[node.name]!.poseUpdateState = "waitForMakeObject";
@@ -733,6 +731,8 @@ function useMessageHandler() {
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
+        const attrs = viewer.nodeAttributesFromName.current;
+        delete attrs[message.name];
         return;
       }
       // Set the clickability of a particular scene node.
