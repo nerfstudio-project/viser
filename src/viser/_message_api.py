@@ -1295,14 +1295,38 @@ class MessageApi(abc.ABC):
         # Ensure the event type is valid.
         assert event_type in get_args(_messages.ScenePointerEventType)
 
-        # Check if another scene pointer event was previously registered.
-        # If so, we need to clear the previous event and register the new one.
-        if self._scene_pointer_cb is not None:
-            self._scene_pointer_done_cb()
+        from ._viser import ClientHandle, ViserServer
+
+        def cleanup_previous_event(msg_api: MessageApi):
+            # If the server or client does not have a scene pointer callback, return.
+            if msg_api._scene_pointer_cb is None:
+                return
+
+            # Raise a warning if the callback is being removed.
+            warnings.warn("Overriding ScenePointerEvent callback, because a callback already exists.")
+
+            # Run cleanup callback.
+            msg_api._scene_pointer_done_cb()
 
             # If the event cleanup function does not remove the callback, we do it here.
-            if self._scene_pointer_cb is not None:
-                self.remove_scene_pointer_callback()
+            if msg_api._scene_pointer_cb is not None:
+                msg_api.remove_scene_pointer_callback()
+
+        # Check if another scene pointer event was previously registered.
+        # If so, we need to clear the previous event and register the new one.
+        cleanup_previous_event(self)
+
+        # If called on the server handle, remove all clients' callbacks.
+        if isinstance(self, ViserServer):
+            clients = list(self.get_clients().values())
+            for client in clients:
+                cleanup_previous_event(client)
+
+        # If called on the client handle, and server handle has a callback, remove the server's callback.
+        # (If the server has a callback, none of the clients should have callbacks.)
+        elif isinstance(self, ClientHandle):
+            server = self._state.viser_server
+            cleanup_previous_event(server)
 
         def decorator(
             func: Callable[[ScenePointerEvent], None],
@@ -1323,6 +1347,11 @@ class MessageApi(abc.ABC):
     ) -> Callable[[], None]:
         """Add a callback to run automatically when the callback for the
         currently registered scene pointer finishes (e.g., GUI state cleanup)."""
+
+        if self._scene_pointer_cb is None:
+            warnings.warn("This cleanup callback corresponds to no scene pointer event, ignoring.")
+            return lambda: None
+
         self._scene_pointer_done_cb = func
         return func
 
@@ -1330,6 +1359,10 @@ class MessageApi(abc.ABC):
         self,
     ) -> None:
         """Remove the currently attached scene pointer event."""
+
+        if self._scene_pointer_cb is None:
+            warnings.warn("No scene pointer callback exists for this server/client, ignoring.")
+            return
 
         # Notify client that the listener has been removed.
         event_type = self._scene_pointer_event_type
