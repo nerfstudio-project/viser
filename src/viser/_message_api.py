@@ -1314,25 +1314,25 @@ class MessageApi(abc.ABC):
             if msg_api._scene_pointer_cb is not None:
                 msg_api.remove_scene_pointer_callback()
 
-        # Check if another scene pointer event was previously registered.
-        # If so, we need to clear the previous event and register the new one.
-        cleanup_previous_event(self)
-
-        # If called on the server handle, remove all clients' callbacks.
-        if isinstance(self, ViserServer):
-            clients = list(self.get_clients().values())
-            for client in clients:
-                cleanup_previous_event(client)
-
-        # If called on the client handle, and server handle has a callback, remove the server's callback.
-        # (If the server has a callback, none of the clients should have callbacks.)
-        elif isinstance(self, ClientHandle):
-            server = self._state.viser_server
-            cleanup_previous_event(server)
-
         def decorator(
             func: Callable[[ScenePointerEvent], None],
         ) -> Callable[[ScenePointerEvent], None]:
+            # Check if another scene pointer event was previously registered.
+            # If so, we need to clear the previous event and register the new one.
+            cleanup_previous_event(self)
+
+            # If called on the server handle, remove all clients' callbacks.
+            if isinstance(self, ViserServer):
+                clients = list(self.get_clients().values())
+                for client in clients:
+                    cleanup_previous_event(client)
+
+            # If called on the client handle, and server handle has a callback, remove the server's callback.
+            # (If the server has a callback, none of the clients should have callbacks.)
+            elif isinstance(self, ClientHandle):
+                server = self._state.viser_server
+                cleanup_previous_event(server)
+
             self._scene_pointer_cb = func
             self._scene_pointer_event_type = event_type
 
