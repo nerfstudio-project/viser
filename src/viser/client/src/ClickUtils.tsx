@@ -12,10 +12,15 @@ export function clickToNDC(
 ): THREE.Vector2 {
   const mouseVector = new THREE.Vector2();
   mouseVector.x =
-    2 * (event.nativeEvent.offsetX / viewer.canvasRef.current!.clientWidth) - 1;
+    2 *
+      ((event.nativeEvent.offsetX + 0.5) /
+        viewer.canvasRef.current!.clientWidth) -
+    1;
   mouseVector.y =
     1 -
-    2 * (event.nativeEvent.offsetY / viewer.canvasRef.current!.clientHeight);
+    2 *
+      ((event.nativeEvent.offsetY + 0.5) /
+        viewer.canvasRef.current!.clientHeight);
   return mouseVector;
 }
 
@@ -30,9 +35,9 @@ export function clickToOpenCV(
 ): THREE.Vector2 {
   const mouseVector = new THREE.Vector2();
   mouseVector.x =
-    event.nativeEvent.offsetX / viewer.canvasRef.current!.clientWidth;
+    (event.nativeEvent.offsetX + 0.5) / viewer.canvasRef.current!.clientWidth;
   mouseVector.y =
-    event.nativeEvent.offsetY / viewer.canvasRef.current!.clientHeight;
+    (event.nativeEvent.offsetY + 0.5) / viewer.canvasRef.current!.clientHeight;
   return mouseVector;
 }
 

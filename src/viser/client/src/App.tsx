@@ -79,9 +79,8 @@ export type ViewerContextContents = {
   >;
   getRenderRequest: React.MutableRefObject<null | GetRenderRequestMessage>;
   // Track click drag events.
-  sceneClickInfo: React.MutableRefObject<{
-    enabled_click: boolean; // Enable click events.
-    enabled_box: boolean; // Enable box events.
+  scenePointerInfo: React.MutableRefObject<{
+    enabled: false | "click" | "rect-select"; // Enable box events.
     screenEventList: React.PointerEvent<HTMLDivElement>[]; //  List of mouse positions
     listening: boolean; // Only allow one drag event at a time.
   }>;
@@ -138,9 +137,8 @@ function ViewerRoot() {
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
-    sceneClickInfo: React.useRef({
-      enabled_click: false,
-      enabled_box: false,
+    scenePointerInfo: React.useRef({
+      enabled: false,
       screenEventList: [],
       listening: false,
     }),
@@ -223,6 +221,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     viewer.websocketRef,
     20,
   );
+  const theme = useMantineTheme();
   return (
     <Canvas
       camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
@@ -237,37 +236,33 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       ref={viewer.canvasRef}
       // Handle scene click events (onPointerDown, onPointerMove, onPointerUp)
       onPointerDown={(e) => {
-        const click_info = viewer.sceneClickInfo.current!;
+        const pointer_info = viewer.scenePointerInfo.current!;
 
-        // Only handle click events if enabled.
-        if (!(click_info.enabled_click || click_info.enabled_box)) return;
+        // Only handle pointer events if enabled.
+        if (pointer_info.enabled === false) return;
 
         // Check if click is valid.
         const mouseVector = clickToNDC(viewer, e);
         if (!isClickValid(mouseVector)) return;
 
         // Only allow one drag event at a time.
-        if (click_info.listening) return;
-        click_info.listening = true;
+        if (pointer_info.listening) return;
+        pointer_info.listening = true;
 
         // Disable camera controls -- we don't want the camera to move while we're click-dragging.
         viewer.cameraControlRef.current!.enabled = false;
 
         // Keep track of the first click position.
-        click_info.screenEventList = [e];
+        pointer_info.screenEventList = [e];
 
         const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       }}
       onPointerMove={(e) => {
-        const click_info = viewer.sceneClickInfo.current!;
+        const click_info = viewer.scenePointerInfo.current!;
 
         // Only handle if click events are enabled, and if pointer is down (i.e., dragging).
-        if (
-          !(click_info.enabled_click || click_info.enabled_box) ||
-          !click_info.listening
-        )
-          return;
+        if (click_info.enabled === false || !click_info.listening) return;
 
         // Check if click is valid.
         const mouseVector = clickToNDC(viewer, e);
@@ -275,7 +270,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
 
         // Check if mouse position has changed sufficiently from last position.
         // Uses 3px as a threshood, similar to drag detection in `SceneNodeClickMessage` from `SceneTree.tsx`.
-        const screenEventList = viewer.sceneClickInfo.current!.screenEventList;
+        const screenEventList =
+          viewer.scenePointerInfo.current!.screenEventList;
         const firstScreenEvent = screenEventList[0];
         const lastScreenEvent = screenEventList![screenEventList.length - 1];
         if (
@@ -292,11 +288,11 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         screenEventList.push(e);
 
         // If we're listening for scene box events, draw the box on the 2D canvas for user feedback.
-        if (click_info.enabled_box) {
+        if (click_info.enabled === "rect-select") {
           const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
           ctx.beginPath();
-          ctx.fillStyle = "blue";
+          ctx.fillStyle = theme.fn.primaryColor();
           ctx.strokeStyle = "blue";
           ctx.globalAlpha = 0.2;
           ctx.fillRect(
@@ -310,11 +306,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         }
       }}
       onPointerUp={(e) => {
-        const click_info = viewer.sceneClickInfo.current!;
+        const click_info = viewer.scenePointerInfo.current!;
+
+        // Re-enable camera controls! Was disabled in `onPointerDown`, to allow
+        // for mouse drag w/o camera movement.
+        viewer.cameraControlRef.current!.enabled = true;
 
         // Only handle if click events are enabled, and if pointer was down (i.e., dragging).
-        if (!(click_info.enabled_click || click_info.enabled_box)) return;
-        if (!click_info.listening) return;
+        if (click_info.enabled === false || !click_info.listening) return;
 
         const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -322,8 +321,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         // If there's only one pointer, send a click message.
         // The message will return origin/direction lists of length 1.
         if (
-          click_info.screenEventList!.length == 1 &&
-          click_info.enabled_click
+          click_info.enabled === "click" &&
+          click_info.screenEventList!.length == 1
         ) {
           const raycaster = new THREE.Raycaster();
 
@@ -342,16 +341,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
             ray_direction: [ray.direction.x, ray.direction.y, ray.direction.z],
             screen_pos: [[mouseVectorOpenCV.x, mouseVectorOpenCV.y]],
           });
-        }
-
-        else if (
-          click_info.screenEventList!.length > 1 &&
-          click_info.enabled_box
-          ) {
-
+        } else if (
+          click_info.enabled === "rect-select" &&
+          click_info.screenEventList!.length > 1
+        ) {
           // If the ScenePointerEvent had mouse drag movement, we will send a "box" message:
           // Use the first and last mouse positions to create a box.
-          const screenEventList = viewer.sceneClickInfo.current!.screenEventList;
+          const screenEventList =
+            viewer.scenePointerInfo.current!.screenEventList;
           const firstScreenEvent = screenEventList[0];
           const lastScreenEvent = screenEventList![screenEventList.length - 1];
 
@@ -378,9 +375,6 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
             screen_pos: screenBoxList,
           });
         }
-
-        // Re-enable camera controls! Was disabled in `onPointerDown`, to allow for mouse drag w/o camera movement.
-        viewer.cameraControlRef.current!.enabled = true;
 
         // Release drag lock.
         click_info.listening = false;

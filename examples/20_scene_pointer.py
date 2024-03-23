@@ -18,6 +18,7 @@ import viser
 import viser.transforms as tf
 
 server = viser.ViserServer()
+server.configure_theme(brand_color=(130, 0, 150))
 server.set_up_direction("+y")
 
 mesh = cast(
@@ -49,13 +50,13 @@ def _(client: viser.ClientHandle) -> None:
         click_button_handle.disabled = True
 
         @client.on_scene_pointer(event_type="click")
-        def _(message: viser.ScenePointerEvent) -> None:
+        def _(event: viser.ScenePointerEvent) -> None:
             # Check for intersection with the mesh, using trimesh's ray-mesh intersection.
             # Note that mesh is in the mesh frame, so we need to transform the ray.
             R_world_mesh = tf.SO3(mesh_handle.wxyz)
             R_mesh_world = R_world_mesh.inverse()
-            origin = (R_mesh_world @ onp.array(message.ray_origin)).reshape(1, 3)
-            direction = (R_mesh_world @ onp.array(message.ray_direction)).reshape(1, 3)
+            origin = (R_mesh_world @ onp.array(event.ray_origin)).reshape(1, 3)
+            direction = (R_mesh_world @ onp.array(event.ray_direction)).reshape(1, 3)
             intersector = trimesh.ray.ray_triangle.RayMeshIntersector(mesh)
             hit_pos, _, _ = intersector.intersects_location(origin, direction)
 
@@ -68,7 +69,7 @@ def _(client: viser.ClientHandle) -> None:
             # Create a sphere at the hit location.
             hit_pos_mesh = trimesh.creation.icosphere(radius=0.1)
             hit_pos_mesh.vertices += R_world_mesh @ hit_pos
-            hit_pos_mesh.visual.vertex_colors = (1.0, 0.0, 0.0, 1.0)  # type: ignore
+            hit_pos_mesh.visual.vertex_colors = (0.5, 0.0, 0.7, 1.0)  # type: ignore
             hit_pos_handle = server.add_mesh_trimesh(
                 name=f"/hit_pos_{len(hit_pos_handles)}", mesh=hit_pos_mesh
             )
@@ -122,7 +123,7 @@ def _(client: viser.ClientHandle) -> None:
 
             # Update the mesh color based on whether the vertices are inside the box
             mesh.visual.vertex_colors = onp.where(  # type: ignore
-                mask, (1.0, 0.0, 0.0, 1.0), (0.9, 0.9, 0.9, 1.0)
+                mask, (0.5, 0.0, 0.7, 1.0), (0.9, 0.9, 0.9, 1.0)
             )
             mesh_handle = server.add_mesh_trimesh(
                 name="/mesh",
