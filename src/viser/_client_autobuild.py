@@ -60,15 +60,20 @@ def ensure_client_is_built() -> None:
         node_exec_dir = _install_sandboxed_node()
         npx_path = node_exec_dir / "npx"
 
-        
+        import os
+        subprocess_env = os.environ.copy()
+        subprocess_env["NODE_VIRTUAL_ENV"] = str(node_exec_dir.parent)
+        subprocess_env["PATH"] = str(node_exec_dir) + ";" + subprocess_env["PATH"] 
         subprocess.run(
-            args=(
-                "bash -c '"
-                f"source {node_exec_dir / 'activate'};"
-                f"{npx_path} yarn install;"
-                f"{npx_path} yarn run build;"
-                "'"
-            ),
+            args=f"{npx_path} --yes yarn install",
+            env=subprocess_env,
+            cwd=client_dir,
+            shell=True,
+            check=False,
+        )
+        subprocess.run(
+            args=f"{npx_path} --yes yarn run build",
+            env=subprocess_env,
             cwd=client_dir,
             shell=True,
             check=False,
@@ -91,11 +96,6 @@ def _install_sandboxed_node() -> Path:
 
     subprocess.run(
         [sys.executable, "-m", "nodeenv", "--node=20.4.0", env_dir], check=False
-    )
-    subprocess.run(
-        args=[node_exec_dir / "npm", "install", "yarn"],
-        input="y\n".encode(),
-        check=False,
     )
     assert (node_exec_dir / "npx").exists()
     return node_exec_dir

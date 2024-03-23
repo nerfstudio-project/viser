@@ -23,7 +23,7 @@ dependencies = [
     "numpy>=1.0.0",
     "msgpack>=1.0.7",
     "imageio>=2.0.0",
-    "pyliblzfse>=0.4.1",
+    "pyliblzfse>=0.4.1; platform_system!='Windows'",
     "scikit-image>=0.18.0",
     "scipy>=1.7.3",
     "tqdm>=4.0.0",
