@@ -23,17 +23,19 @@ export interface ViewerCameraMessage {
  */
 export interface ScenePointerMessage {
   type: "ScenePointerMessage";
-  event_type: "click";
-  ray_origin: [number, number, number];
-  ray_direction: [number, number, number];
+  event_type: "click" | "rect-select";
+  ray_origin: [number, number, number] | null;
+  ray_direction: [number, number, number] | null;
+  screen_pos: [number, number][];
 }
 /** Message to enable/disable scene click events.
  *
  * (automatically generated)
  */
-export interface SceneClickEnableMessage {
-  type: "SceneClickEnableMessage";
+export interface ScenePointerEnableMessage {
+  type: "ScenePointerEnableMessage";
   enable: boolean;
+  event_type: "click" | "rect-select";
 }
 /** Variant of CameraMessage used for visualizing camera frustums.
  *
@@ -71,6 +73,7 @@ export interface FrameMessage {
   show_axes: boolean;
   axes_length: number;
   axes_radius: number;
+  origin_radius: number;
 }
 /** Batched axes message.
  *
@@ -398,6 +401,39 @@ export interface GuiAddButtonMessage {
     | null;
   icon_base64: string | null;
 }
+/** GuiAddUploadButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_base64: 'Optional[str]', mime_type: 'str')
+ *
+ * (automatically generated)
+ */
+export interface GuiAddUploadButtonMessage {
+  type: "GuiAddUploadButtonMessage";
+  order: number;
+  id: string;
+  label: string;
+  container_id: string;
+  hint: string | null;
+  value: any;
+  visible: boolean;
+  disabled: boolean;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
+  icon_base64: string | null;
+  mime_type: string;
+}
 /** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'float', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
  *
  * (automatically generated)
@@ -622,8 +658,7 @@ export interface GuiRemoveMessage {
 export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
   id: string;
-  prop_name: string;
-  prop_value: any;
+  updates: Partial<GuiAddComponentMessage>;
 }
 /** Message from server->client to configure parts of the GUI.
  *
@@ -717,23 +752,36 @@ export interface GetRenderResponseMessage {
  *
  * (automatically generated)
  */
-export interface FileDownloadStart {
-  type: "FileDownloadStart";
-  download_uuid: string;
+export interface FileTransferStart {
+  type: "FileTransferStart";
+  source_component_id: string | null;
+  transfer_uuid: string;
   filename: string;
   mime_type: string;
   part_count: number;
   size_bytes: number;
 }
-/** Send a file for clients to download.
+/** Send a file for clients to download or upload files from client.
  *
  * (automatically generated)
  */
-export interface FileDownloadPart {
-  type: "FileDownloadPart";
-  download_uuid: string;
+export interface FileTransferPart {
+  type: "FileTransferPart";
+  source_component_id: string | null;
+  transfer_uuid: string;
   part: number;
   content: Uint8Array;
+}
+/** Send a file for clients to download or upload files from client.
+ *
+ * (automatically generated)
+ */
+export interface FileTransferPartAck {
+  type: "FileTransferPartAck";
+  source_component_id: string | null;
+  transfer_uuid: string;
+  transferred_bytes: number;
+  total_bytes: number;
 }
 /** Message from client->server to connect to the share URL server.
  *
@@ -769,7 +817,7 @@ export interface SetGuiPanelLabelMessage {
 export type Message =
   | ViewerCameraMessage
   | ScenePointerMessage
-  | SceneClickEnableMessage
+  | ScenePointerEnableMessage
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
@@ -799,6 +847,7 @@ export type Message =
   | GuiAddTabGroupMessage
   | _GuiAddInputBase
   | GuiAddButtonMessage
+  | GuiAddUploadButtonMessage
   | GuiAddSliderMessage
   | GuiAddMultiSliderMessage
   | GuiAddNumberMessage
@@ -819,8 +868,9 @@ export type Message =
   | CubicBezierSplineMessage
   | GetRenderRequestMessage
   | GetRenderResponseMessage
-  | FileDownloadStart
-  | FileDownloadPart
+  | FileTransferStart
+  | FileTransferPart
+  | FileTransferPartAck
   | ShareUrlRequest
   | ShareUrlUpdated
   | ShareUrlDisconnect
@@ -830,6 +880,7 @@ export type GuiAddComponentMessage =
   | GuiAddMarkdownMessage
   | GuiAddTabGroupMessage
   | GuiAddButtonMessage
+  | GuiAddUploadButtonMessage
   | GuiAddSliderMessage
   | GuiAddMultiSliderMessage
   | GuiAddNumberMessage

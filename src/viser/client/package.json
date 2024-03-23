@@ -32,6 +32,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-error-boundary": "^4.0.10",
+    "react-qr-code": "^2.0.12",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.10.0",
     "redux": "^4.2.1",
@@ -70,6 +71,7 @@
   "devDependencies": {
     "@redux-devtools/core": "^3.13.1",
     "@types/msgpack": "0.0.31",
+    "@types/uuid": "^9.0.8",
     "@types/wicg-file-system-access": "^2020.9.6",
     "@typescript-eslint/eslint-plugin": "^5.60.1",
     "@typescript-eslint/parser": "^5.60.1",

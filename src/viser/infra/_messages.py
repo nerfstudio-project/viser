@@ -46,6 +46,8 @@ def _prepare_for_deserialization(value: Any, annotation: Type) -> Any:
 
 def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     """Prepare any special types for serialization."""
+    if annotation is Any:
+        annotation = type(value)
 
     # Coerce some scalar types: if we've annotated as float / int but we get an
     # onp.float32 / onp.int64, for example, we should cast automatically.

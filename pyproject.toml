@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.23"
+version = "0.1.26"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -21,7 +21,7 @@ classifiers = [
 dependencies = [
     "websockets>=10.4",
     "numpy>=1.0.0",
-    "msgpack>=1.0.0",
+    "msgpack>=1.0.7",
     "imageio>=2.0.0",
     "pyliblzfse>=0.4.1",
     "scikit-image>=0.18.0",
@@ -40,11 +40,10 @@ dependencies = [
 dev = [
     "pyright>=1.1.308",
     "mypy>=1.4.1",
-    "ruff==0.1.13",
+    "ruff==0.3.3",
     "pre-commit==3.3.2",
 ]
 examples = [
-    "smplx>=0.1.28",
     "torch>=1.13.1",
     "matplotlib>=3.7.1",
 ]
@@ -69,7 +68,7 @@ disable_error_code="var-annotated"  # Common source of mypy + numpy false positi
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
 
 [tool.ruff]
-select = [
+lint.select = [
     "E",  # pycodestyle errors.
     "F",  # Pyflakes rules.
     "PLC",  # Pylint convention warnings.
@@ -78,7 +77,7 @@ select = [
     "PLW",  # Pylint warnings.
     "I", # Import sorting.
 ]
-ignore = [
+lint.ignore = [
     "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "E721",  # Do not compare types, use `isinstance()`.

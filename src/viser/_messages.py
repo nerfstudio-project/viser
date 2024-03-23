@@ -4,11 +4,22 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Callable, ClassVar, Optional, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Literal, NotRequired, TypedDict, override
+from typing_extensions import Annotated, Literal, NotRequired, TypedDict, override
 
 from . import infra, theme
 
@@ -67,6 +78,10 @@ class ViewerCameraMessage(Message):
     up_direction: Tuple[float, float, float]
 
 
+# The list of scene pointer events supported by the viser frontend.
+ScenePointerEventType = Literal["click", "rect-select"]
+
+
 @dataclasses.dataclass
 class ScenePointerMessage(Message):
     """Message for a raycast-like pointer in the scene.
@@ -75,16 +90,24 @@ class ScenePointerMessage(Message):
     """
 
     # Later we can add `double_click`, `move`, `down`, `up`, etc.
-    event_type: Literal["click"]
-    ray_origin: Tuple[float, float, float]
-    ray_direction: Tuple[float, float, float]
+    event_type: ScenePointerEventType
+    ray_origin: Optional[Tuple[float, float, float]]
+    ray_direction: Optional[Tuple[float, float, float]]
+    screen_pos: List[Tuple[float, float]]
 
 
 @dataclasses.dataclass
-class SceneClickEnableMessage(Message):
+class ScenePointerEnableMessage(Message):
     """Message to enable/disable scene click events."""
 
     enable: bool
+    event_type: ScenePointerEventType
+
+    @override
+    def redundancy_key(self) -> str:
+        return (
+            type(self).__name__ + "-" + self.event_type + "-" + str(self.enable).lower()
+        )
 
 
 @dataclasses.dataclass
@@ -116,9 +139,10 @@ class FrameMessage(Message):
     """Coordinate frame message."""
 
     name: str
-    show_axes: bool = True
-    axes_length: float = 0.5
-    axes_radius: float = 0.025
+    show_axes: bool
+    axes_length: float
+    axes_radius: float
+    origin_radius: float
 
 
 @dataclasses.dataclass
@@ -451,6 +475,31 @@ class GuiAddButtonMessage(_GuiAddInputBase):
 
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
+class GuiAddUploadButtonMessage(_GuiAddInputBase):
+    color: Optional[
+        Literal[
+            "dark",
+            "gray",
+            "red",
+            "pink",
+            "grape",
+            "violet",
+            "indigo",
+            "blue",
+            "cyan",
+            "green",
+            "lime",
+            "yellow",
+            "orange",
+            "teal",
+        ]
+    ]
+    icon_base64: Optional[str]
+    mime_type: str
+
+
+@tag_class("GuiAddComponentMessage")
+@dataclasses.dataclass
 class GuiAddSliderMessage(_GuiAddInputBase):
     min: float
     max: float
@@ -552,12 +601,21 @@ class GuiUpdateMessage(Message):
     """Sent client<->server when any property of a GUI component is changed."""
 
     id: str
-    prop_name: str
-    prop_value: Any
+    updates: Annotated[
+        Dict[str, Any],
+        infra.TypeScriptAnnotationOverride("Partial<GuiAddComponentMessage>"),
+    ]
+    """Mapping from property name to new value."""
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + self.id + "-" + self.prop_name
+        return (
+            type(self).__name__
+            + "-"
+            + self.id
+            + "-"
+            + ",".join(list(self.updates.keys()))
+        )
 
 
 @dataclasses.dataclass
@@ -617,10 +675,12 @@ class GetRenderResponseMessage(Message):
 
 
 @dataclasses.dataclass
-class FileDownloadStart(Message):
+class FileTransferStart(Message):
     """Signal that a file is about to be sent."""
 
-    download_uuid: str
+    source_component_id: Optional[str]
+    """Origin GUI component, used for client->server file uploads."""
+    transfer_uuid: str
     filename: str
     mime_type: str
     part_count: int
@@ -628,20 +688,42 @@ class FileDownloadStart(Message):
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + self.download_uuid
+        return type(self).__name__ + "-" + self.transfer_uuid
 
 
 @dataclasses.dataclass
-class FileDownloadPart(Message):
-    """Send a file for clients to download."""
+class FileTransferPart(Message):
+    """Send a file for clients to download or upload files from client."""
 
-    download_uuid: str
+    # TODO: it would make sense to rename all "id" instances to "uuid" for GUI component ids.
+    source_component_id: Optional[str]
+    transfer_uuid: str
     part: int
     content: bytes
 
     @override
     def redundancy_key(self) -> str:
-        return type(self).__name__ + "-" + self.download_uuid + "-" + str(self.part)
+        return type(self).__name__ + "-" + self.transfer_uuid + "-" + str(self.part)
+
+
+@dataclasses.dataclass
+class FileTransferPartAck(Message):
+    """Send a file for clients to download or upload files from client."""
+
+    source_component_id: Optional[str]
+    transfer_uuid: str
+    transferred_bytes: int
+    total_bytes: int
+
+    @override
+    def redundancy_key(self) -> str:
+        return (
+            type(self).__name__
+            + "-"
+            + self.transfer_uuid
+            + "-"
+            + str(self.transferred_bytes)
+        )
 
 
 @dataclasses.dataclass

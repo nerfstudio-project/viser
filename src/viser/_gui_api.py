@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import abc
 import dataclasses
+import functools
 import threading
 import time
 import warnings
@@ -18,12 +19,21 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
+    Type,
     TypeVar,
+    Union,
     overload,
 )
 
 import numpy as onp
-from typing_extensions import Literal, LiteralString
+from typing_extensions import (
+    Literal,
+    LiteralString,
+    TypedDict,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from . import _messages
 from ._gui_handles import (
@@ -37,7 +47,9 @@ from ._gui_handles import (
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiTabGroupHandle,
+    GuiUploadButtonHandle,
     SupportsRemoveProtocol,
+    UploadedFile,
     _GuiHandleState,
     _GuiInputHandle,
     _make_unique_id,
@@ -45,6 +57,7 @@ from ._gui_handles import (
 from ._icons import base64_from_icon
 from ._icons_enum import IconName
 from ._message_api import MessageApi, cast_vector
+from ._messages import FileTransferPartAck
 
 if TYPE_CHECKING:
     from .infra import ClientId
@@ -106,6 +119,64 @@ def _apply_default_order(order: Optional[float]) -> float:
     return _global_order_counter
 
 
+@functools.lru_cache(maxsize=None)
+def get_type_hints_cached(cls: Type[Any]) -> Dict[str, Any]:
+    return get_type_hints(cls)  # type: ignore
+
+
+def cast_value(tp, value):
+    """Cast a value to a type, or raise a TypeError if it cannot be cast."""
+    origin = get_origin(tp)
+
+    if (origin is tuple or tp is tuple) and isinstance(value, list):
+        return cast_value(tp, tuple(value))
+
+    if origin is Literal:
+        for val in get_args(tp):
+            try:
+                value_casted = cast_value(type(val), value)
+                if val == value_casted:
+                    return value_casted
+            except ValueError:
+                pass
+            except TypeError:
+                pass
+        raise TypeError(f"Value {value} is not in {get_args(tp)}")
+
+    if origin is Union:
+        for t in get_args(tp):
+            try:
+                return cast_value(t, value)
+            except ValueError:
+                pass
+            except TypeError:
+                pass
+        raise TypeError(f"Value {value} is not in {tp}")
+
+    if tp in {int, float, bool, str}:
+        return tp(value)
+
+    if dataclasses.is_dataclass(tp):
+        return tp(
+            **{k: cast_value(v, value[k]) for k, v in get_type_hints_cached(tp).items()}
+        )
+
+    if isinstance(value, tp):
+        return value
+
+    raise TypeError(f"Cannot cast value {value} to type {tp}")
+
+
+class FileUploadState(TypedDict):
+    filename: str
+    mime_type: str
+    part_count: int
+    parts: Dict[int, bytes]
+    total_bytes: int
+    transferred_bytes: int
+    lock: threading.Lock
+
+
 class GuiApi(abc.ABC):
     _target_container_from_thread_id: Dict[int, str] = {}
     """ID of container to put GUI elements into."""
@@ -117,8 +188,17 @@ class GuiApi(abc.ABC):
         self._container_handle_from_id: Dict[str, GuiContainerProtocol] = {
             "root": _RootGuiContainer({})
         }
+        self._current_file_upload_states: Dict[str, FileUploadState] = {}
+
         self._get_api()._message_handler.register_handler(
             _messages.GuiUpdateMessage, self._handle_gui_updates
+        )
+        self._get_api()._message_handler.register_handler(
+            _messages.FileTransferStart, self._handle_file_transfer_start
+        )
+        self._get_api()._message_handler.register_handler(
+            _messages.FileTransferPart,
+            self._handle_file_transfer_part,
         )
 
     def _handle_gui_updates(
@@ -128,37 +208,33 @@ class GuiApi(abc.ABC):
         handle = self._gui_handle_from_id.get(message.id, None)
         if handle is None:
             return
-
-        prop_name = message.prop_name
-        prop_value = message.prop_value
-        del message
-
         handle_state = handle._impl
-        assert hasattr(handle_state, prop_name)
-        current_value = getattr(handle_state, prop_name)
 
-        has_changed = current_value != prop_value
+        has_changed = False
+        updates_cast = {}
+        for prop_name, prop_value in message.updates.items():
+            assert hasattr(handle_state, prop_name)
+            current_value = getattr(handle_state, prop_name)
 
-        if prop_name == "value":
-            # Do some type casting. This is necessary when we expect floats but the
-            # Javascript side gives us integers.
-            if handle_state.typ is tuple:
-                assert len(prop_value) == len(handle_state.value)
-                prop_value = tuple(
-                    type(handle_state.value[i])(prop_value[i])
-                    for i in range(len(prop_value))
-                )
-            else:
-                prop_value = handle_state.typ(prop_value)
+            # Do some type casting. This is brittle, but necessary when we
+            # expect floats but the Javascript side gives us integers.
+            if prop_name == "value":
+                prop_value = cast_value(handle_state.typ, prop_value)
+
+            # Update handle property.
+            if current_value != prop_value:
+                has_changed = True
+                setattr(handle_state, prop_name, prop_value)
+
+            # Save value, which might have been cast.
+            updates_cast[prop_name] = prop_value
 
         # Only call update when value has actually changed.
         if not handle_state.is_button and not has_changed:
             return
 
-        # Update state.
-        setattr(handle_state, prop_name, prop_value)
-
-        # Trigger callbacks.
+        # GUI element has been updated!
+        handle_state.update_timestamp = time.time()
         for cb in handle_state.update_cb:
             from ._viser import ClientHandle, ViserServer
 
@@ -174,7 +250,84 @@ class GuiApi(abc.ABC):
             cb(GuiEvent(client, client_id, handle))
 
         if handle_state.sync_cb is not None:
-            handle_state.sync_cb(client_id, prop_name, prop_value)
+            handle_state.sync_cb(client_id, updates_cast)
+
+    def _handle_file_transfer_start(
+        self, client_id: ClientId, message: _messages.FileTransferStart
+    ) -> None:
+        if message.source_component_id not in self._gui_handle_from_id:
+            return
+        self._current_file_upload_states[message.transfer_uuid] = {
+            "filename": message.filename,
+            "mime_type": message.mime_type,
+            "part_count": message.part_count,
+            "parts": {},
+            "total_bytes": message.size_bytes,
+            "transferred_bytes": 0,
+            "lock": threading.Lock(),
+        }
+
+    def _handle_file_transfer_part(
+        self, client_id: ClientId, message: _messages.FileTransferPart
+    ) -> None:
+        if message.transfer_uuid not in self._current_file_upload_states:
+            return
+        assert message.source_component_id in self._gui_handle_from_id
+
+        state = self._current_file_upload_states[message.transfer_uuid]
+        state["parts"][message.part] = message.content
+        total_bytes = state["total_bytes"]
+
+        with state["lock"]:
+            state["transferred_bytes"] += len(message.content)
+
+            # Send ack to the server.
+            self._get_api()._queue(
+                FileTransferPartAck(
+                    source_component_id=message.source_component_id,
+                    transfer_uuid=message.transfer_uuid,
+                    transferred_bytes=state["transferred_bytes"],
+                    total_bytes=total_bytes,
+                )
+            )
+
+            if state["transferred_bytes"] < total_bytes:
+                return
+
+        # Finish the upload.
+        assert state["transferred_bytes"] == total_bytes
+        state = self._current_file_upload_states.pop(message.transfer_uuid)
+
+        handle = self._gui_handle_from_id.get(message.source_component_id, None)
+        if handle is None:
+            return
+
+        handle_state = handle._impl
+
+        value = UploadedFile(
+            name=state["filename"],
+            content=b"".join(state["parts"][i] for i in range(state["part_count"])),
+        )
+
+        # Update state.
+        with self._get_api()._atomic_lock:
+            handle_state.value = value
+            handle_state.update_timestamp = time.time()
+
+        # Trigger callbacks.
+        for cb in handle_state.update_cb:
+            from ._viser import ClientHandle, ViserServer
+
+            # Get the handle of the client that triggered this event.
+            api = self._get_api()
+            if isinstance(api, ClientHandle):
+                client = api
+            elif isinstance(api, ViserServer):
+                client = api.get_clients()[client_id]
+            else:
+                assert False
+
+            cb(GuiEvent(client, client_id, handle))
 
     def _get_container_id(self) -> str:
         """Get container ID associated with the current thread."""
@@ -330,8 +483,18 @@ class GuiApi(abc.ABC):
             _image_root=image_root,
             _content=None,
         )
+        self._get_api()._queue(
+            _messages.GuiAddMarkdownMessage(
+                order=handle._order,
+                id=handle._id,
+                markdown="",
+                container_id=handle._container_id,
+                visible=visible,
+            )
+        )
 
-        # Assigning content will send a GuiAddMarkdownMessage.
+        # Logic for processing markdown, handling images, etc is all in the
+        # `.content` setter, which should send a GuiUpdateMessage.
         handle.content = content
         return handle
 
@@ -400,6 +563,74 @@ class GuiApi(abc.ABC):
             )._impl
         )
 
+    def add_gui_upload_button(
+        self,
+        label: str,
+        disabled: bool = False,
+        visible: bool = True,
+        hint: Optional[str] = None,
+        color: Optional[
+            Literal[
+                "dark",
+                "gray",
+                "red",
+                "pink",
+                "grape",
+                "violet",
+                "indigo",
+                "blue",
+                "cyan",
+                "green",
+                "lime",
+                "yellow",
+                "orange",
+                "teal",
+            ]
+        ] = None,
+        icon: Optional[IconName] = None,
+        mime_type: str = "*/*",
+        order: Optional[float] = None,
+    ) -> GuiUploadButtonHandle:
+        """Add a button to the GUI. The value of this input is set to `True` every time
+        it is clicked; to detect clicks, we can manually set it back to `False`.
+
+        Args:
+            label: Label to display on the button.
+            visible: Whether the button is visible.
+            disabled: Whether the button is disabled.
+            hint: Optional hint to display on hover.
+            color: Optional color to use for the button.
+            icon: Optional icon to display on the button.
+            mime_type: Optional MIME type to filter the files that can be uploaded.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+
+        # Re-wrap the GUI handle with a button interface.
+        id = _make_unique_id()
+        order = _apply_default_order(order)
+        return GuiUploadButtonHandle(
+            self._create_gui_input(
+                value=UploadedFile("", b""),
+                message=_messages.GuiAddUploadButtonMessage(
+                    value=None,
+                    disabled=disabled,
+                    visible=visible,
+                    order=order,
+                    id=id,
+                    label=label,
+                    container_id=self._get_container_id(),
+                    hint=hint,
+                    color=color,
+                    mime_type=mime_type,
+                    icon_base64=None if icon is None else base64_from_icon(icon),
+                ),
+                is_button=True,
+            )._impl
+        )
+
     # The TLiteralString overload tells pyright to resolve the value type to a Literal
     # whenever possible.
     #
@@ -414,8 +645,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]:
-        ...
+    ) -> GuiButtonGroupHandle[TLiteralString]: ...
 
     @overload
     def add_gui_button_group(
@@ -426,8 +656,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TString]:
-        ...
+    ) -> GuiButtonGroupHandle[TString]: ...
 
     def add_gui_button_group(
         self,
@@ -755,8 +984,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TLiteralString]:
-        ...
+    ) -> GuiDropdownHandle[TLiteralString]: ...
 
     @overload
     def add_gui_dropdown(
@@ -768,8 +996,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TString]:
-        ...
+    ) -> GuiDropdownHandle[TString]: ...
 
     def add_gui_dropdown(
         self,
@@ -1080,7 +1307,6 @@ class GuiApi(abc.ABC):
             typ=type(value),
             gui_api=self,
             value=value,
-            initial_value=value,
             update_timestamp=time.time(),
             container_id=self._get_container_id(),
             update_cb=[],
@@ -1098,11 +1324,9 @@ class GuiApi(abc.ABC):
         if not is_button:
 
             def sync_other_clients(
-                client_id: ClientId, prop_name: str, prop_value: Any
+                client_id: ClientId, updates: Dict[str, Any]
             ) -> None:
-                message = _messages.GuiUpdateMessage(
-                    handle_state.id, prop_name, prop_value
-                )
+                message = _messages.GuiUpdateMessage(handle_state.id, updates)
                 message.excluded_self_client = client_id
                 self._get_api()._queue(message)
 

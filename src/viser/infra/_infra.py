@@ -10,18 +10,14 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import (
     Any,
-    Awaitable,
     Callable,
-    Coroutine,
     Dict,
     List,
     NewType,
     Optional,
-    Sequence,
     Tuple,
     Type,
     TypeVar,
-    Union,
 )
 
 import msgpack
@@ -33,21 +29,15 @@ import websockets.server
 from typing_extensions import Literal, assert_never
 from websockets.legacy.server import WebSocketServerProtocol
 
-from ._async_message_buffer import (
-    DONE_SENTINEL,
-    FLUSH_SENTINEL,
-    AsyncMessageBuffer,
-    DoneSentinel,
-    FlushSentinel,
-    MessageWindow,
-)
+from ._async_message_buffer import AsyncMessageBuffer
 from ._messages import Message
 
 
 @dataclasses.dataclass
 class _ClientHandleState:
     # Internal state for ClientConnection objects.
-    message_buffer: asyncio.Queue
+    # message_buffer: asyncio.Queue
+    message_buffer: AsyncMessageBuffer
     event_loop: AbstractEventLoop
 
 
@@ -108,9 +98,7 @@ class ClientConnection(MessageHandler):
 
     def send(self, message: Message) -> None:
         """Send a message to a specific client."""
-        self._state.event_loop.call_soon_threadsafe(
-            self._state.message_buffer.put_nowait, message
-        )
+        self._state.message_buffer.push(message)
 
 
 class Server(MessageHandler):
@@ -202,12 +190,13 @@ class Server(MessageHandler):
     def flush(self) -> None:
         """Flush the outgoing message buffer for broadcasted messages. Any buffered
         messages will immediately be sent. (by default they are windowed)"""
-        self._broadcast_buffer.push(FLUSH_SENTINEL)
+        # TODO: we should add a flush event.
+        self._broadcast_buffer.flush()
 
     def flush_client(self, client_id: int) -> None:
         """Flush the outgoing message buffer for a particular client. Any buffered
         messages will immediately be sent. (by default they are windowed)"""
-        self._client_state_from_id[client_id].message_buffer.put_nowait(FLUSH_SENTINEL)
+        self._client_state_from_id[client_id].message_buffer.flush()
 
     def _background_worker(self, ready_sem: threading.Semaphore) -> None:
         host = self._host
@@ -219,7 +208,9 @@ class Server(MessageHandler):
         event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(event_loop)
         self._event_loop = event_loop
-        self._broadcast_buffer = AsyncMessageBuffer(event_loop)
+        self._broadcast_buffer = AsyncMessageBuffer(
+            event_loop, persistent_messages=True
+        )
 
         count_lock = asyncio.Lock()
         connection_count = 0
@@ -245,8 +236,8 @@ class Server(MessageHandler):
                 )
 
             client_state = _ClientHandleState(
-                message_buffer=asyncio.Queue(),
-                event_loop=event_loop,
+                AsyncMessageBuffer(event_loop, persistent_messages=False),
+                event_loop,
             )
             client_connection = ClientConnection(client_id, client_state)
             self._client_state_from_id[client_id] = client_state
@@ -273,18 +264,19 @@ class Server(MessageHandler):
                 # For each client: infinite loop over producers (which send messages)
                 # and consumers (which receive messages).
                 await asyncio.gather(
-                    _client_producer(
+                    _message_producer(
                         websocket,
+                        client_state.message_buffer,
                         client_id,
-                        client_state.message_buffer.get,
                         self._client_api_version,
                     ),
-                    _broadcast_producer(
+                    _message_producer(
                         websocket,
-                        self._broadcast_buffer.window_generator(client_id).__anext__,
+                        self._broadcast_buffer,
+                        client_id,
                         self._client_api_version,
                     ),
-                    _consumer(websocket, handle_incoming, message_class),
+                    _message_consumer(websocket, handle_incoming, message_class),
                 )
             except (
                 websockets.exceptions.ConnectionClosedOK,
@@ -296,7 +288,7 @@ class Server(MessageHandler):
                 # This is partially cosmetic: it allows us to safely finish pending
                 # queue get() tasks, which suppresses a "Task was destroyed but it is
                 # pending" error.
-                await client_state.message_buffer.put(DONE_SENTINEL)
+                client_state.message_buffer.set_done()
 
                 # Disconnection callbacks.
                 for cb in self._client_disconnect_cb:
@@ -365,6 +357,7 @@ class Server(MessageHandler):
                         serve,
                         host,
                         port,
+                        compression=None,
                         process_request=(
                             viser_http_server if http_server_root is not None else None
                         ),
@@ -381,49 +374,16 @@ class Server(MessageHandler):
         rich.print("[bold](viser)[/bold] Server stopped")
 
 
-async def _client_producer(
+async def _message_producer(
     websocket: WebSocketServerProtocol,
-    client_id: ClientId,
-    get_next: Callable[
-        [], Coroutine[None, None, Union[Message, FlushSentinel, DoneSentinel]]
-    ],
-    client_api_version: Literal[0, 1],
-) -> None:
-    """Infinite loop to send messages from a buffer to a single client."""
-
-    window = MessageWindow(client_id=client_id)
-    message_task = asyncio.create_task(get_next())
-
-    while not window.done:
-        if await window.wait_and_append_to_window(message_task) and not window.done:
-            message_task = asyncio.create_task(get_next())
-        outgoing = window.get_window_to_send()
-        if outgoing is not None:
-            if client_api_version == 1:
-                serialized = msgpack.packb(
-                    tuple(message.as_serializable_dict() for message in outgoing)
-                )
-                assert isinstance(serialized, bytes)
-                await websocket.send(serialized)
-            elif client_api_version == 0:
-                # Clients built for the original viser API didn't do any windowing of
-                # messages.
-                for msg in outgoing:
-                    serialized = msgpack.packb(msg.as_serializable_dict())
-                    assert isinstance(serialized, bytes)
-                    await websocket.send(serialized)
-            else:
-                assert_never(client_api_version)
-
-
-async def _broadcast_producer(
-    websocket: WebSocketServerProtocol,
-    get_next_window: Callable[[], Awaitable[Sequence[Message]]],
+    buffer: AsyncMessageBuffer,
+    client_id: int,
     client_api_version: Literal[0, 1],
 ) -> None:
     """Infinite loop to broadcast windows of messages from a buffer."""
-    while True:
-        outgoing = await get_next_window()
+    window_generator = buffer.window_generator(client_id)
+    while not buffer.done:
+        outgoing = await window_generator.__anext__()
         if client_api_version == 1:
             serialized = msgpack.packb(
                 tuple(message.as_serializable_dict() for message in outgoing)
@@ -439,7 +399,7 @@ async def _broadcast_producer(
             assert_never(client_api_version)
 
 
-async def _consumer(
+async def _message_consumer(
     websocket: WebSocketServerProtocol,
     handle_message: Callable[[Message], None],
     message_class: Type[Message],

@@ -26,6 +26,14 @@ interface GuiState {
   modals: Messages.GuiModalMessage[];
   guiOrderFromId: { [id: string]: number };
   guiConfigFromId: { [id: string]: GuiConfig };
+  uploadsInProgress: {
+    [id: string]: {
+      notificationId: string;
+      uploadedBytes: number;
+      totalBytes: number;
+      filename: string;
+    };
+  };
 }
 
 interface GuiActions {
@@ -34,9 +42,15 @@ interface GuiActions {
   addGui: (config: GuiConfig) => void;
   addModal: (config: Messages.GuiModalMessage) => void;
   removeModal: (id: string) => void;
-  updateGuiProps: (id: string, prop_name: string, prop_value: any) => void;
+  updateGuiProps: (id: string, updates: { [key: string]: any }) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
+  updateUploadState: (
+    state: (
+      | { uploadedBytes: number; totalBytes: number }
+      | GuiState["uploadsInProgress"][string]
+    ) & { componentId: string },
+  ) => void;
 }
 
 const cleanGuiState: GuiState = {
@@ -59,6 +73,7 @@ const cleanGuiState: GuiState = {
   modals: [],
   guiOrderFromId: {},
   guiConfigFromId: {},
+  uploadsInProgress: {},
 };
 
 export function computeRelativeLuminance(color: string) {
@@ -121,16 +136,33 @@ export function useGuiState(initialServer: string) {
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
           }),
-        updateGuiProps: (id, name, value) => {
+        updateUploadState: (state) =>
+          set((globalState) => {
+            const { componentId, ...rest } = state;
+            globalState.uploadsInProgress[componentId] = {
+              ...globalState.uploadsInProgress[componentId],
+              ...rest,
+            };
+          }),
+        updateGuiProps: (id, updates) => {
           set((state) => {
             const config = state.guiConfigFromId[id];
             if (config === undefined) {
               console.error("Tried to update non-existent component", id);
               return;
             }
+
+            // Double-check that key exists.
+            Object.keys(updates).forEach((key) => {
+              if (!(key in config))
+                console.error(
+                  `Tried to update nonexistent property '${key}' of GUI element ${id}!`,
+                );
+            });
+
             state.guiConfigFromId[id] = {
               ...config,
-              [name]: value,
+              ...updates,
             } as GuiConfig;
           });
         },

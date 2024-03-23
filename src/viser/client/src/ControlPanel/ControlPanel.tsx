@@ -1,7 +1,8 @@
-import { useDisclosure, useMediaQuery } from "@mantine/hooks";
+import { useDisclosure, useMediaQuery, useToggle } from "@mantine/hooks";
 import GeneratedGuiContainer from "./Generated";
 import { ViewerContext } from "../App";
 
+import QRCode from "react-qr-code";
 import ServerControls from "./ServerControls";
 import {
   ActionIcon,
@@ -28,6 +29,8 @@ import {
   IconCopy,
   IconCheck,
   IconPlugConnectedX,
+  IconQrcode,
+  IconQrcodeOff,
 } from "@tabler/icons-react";
 import React from "react";
 import BottomPanel from "./BottomPanel";
@@ -195,6 +198,8 @@ function ShareButton() {
   const [shareModalOpened, { open: openShareModal, close: closeShareModal }] =
     useDisclosure(false);
 
+  const [showQrCode, { toggle: toggleShowQrcode }] = useDisclosure();
+
   // Turn off loader when share URL is set.
   React.useEffect(() => {
     if (shareUrl !== null) {
@@ -208,6 +213,7 @@ function ShareButton() {
   if (viewer.useGui((state) => state.theme).show_share_button === false)
     return null;
 
+  const theme = useMantineTheme();
   return (
     <>
       <Tooltip
@@ -273,13 +279,14 @@ function ShareButton() {
           </>
         ) : (
           <>
-            <Text>Share URL is connected:</Text>
-            <Stack my="md">
+            <Text>Share URL is connected.</Text>
+            <Stack spacing="xs" my="md">
               <TextInput value={shareUrl} />
               <Flex justify="space-between" columnGap="0.5em" align="center">
                 <CopyButton value={shareUrl}>
                   {({ copied, copy }) => (
                     <Button
+                      sx={{ width: "50%" }}
                       leftIcon={
                         copied ? (
                           <IconCheck height="1.375em" width="1.375em" />
@@ -289,12 +296,18 @@ function ShareButton() {
                       }
                       onClick={copy}
                       variant={copied ? "outline" : "filled"}
-                      style={{ flexGrow: "1" }}
                     >
-                      {copied ? "Copied!" : "Copy Share URL"}
+                      {copied ? "Copied!" : "Copy URL"}
                     </Button>
                   )}
                 </CopyButton>
+                <Button
+                  sx={{ flexGrow: 1 }}
+                  leftIcon={showQrCode ? <IconQrcodeOff /> : <IconQrcode />}
+                  onClick={toggleShowQrcode}
+                >
+                  QR Code
+                </Button>
                 <Tooltip zIndex={100} label="Disconnect" withinPortal>
                   <Button
                     color="red"
@@ -309,6 +322,19 @@ function ShareButton() {
                   </Button>
                 </Tooltip>
               </Flex>
+              <Collapse in={showQrCode}>
+                <QRCode
+                  value={shareUrl}
+                  fgColor={theme.colorScheme === "dark" ? "#ffffff" : "#000000"}
+                  bgColor="rgba(0,0,0,0)"
+                  level="M"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    margin: "1em auto 0 auto",
+                  }}
+                />
+              </Collapse>
             </Stack>
           </>
         )}
