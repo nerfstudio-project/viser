@@ -187,8 +187,7 @@ function ViewerContents() {
           smallerThan={"xs"}
           styles={{
             right: 0,
-            bottom:
-              "4.5em" /* 4em to account for BottomPanel minimum height. */,
+            bottom: "3.5em" /* account for BottomPanel minimum height. */,
           }}
         >
           <Box
