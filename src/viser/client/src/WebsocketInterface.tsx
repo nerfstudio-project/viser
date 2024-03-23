@@ -127,8 +127,11 @@ function useMessageHandler() {
         return;
       }
       // Enable/disable whether scene pointer events are sent.
-      case "SceneClickEnableMessage": {
-        viewer.sceneClickEnable.current = message.enable;
+      case "ScenePointerEnableMessage": {
+        // Update scene click enable state.
+        viewer.scenePointerInfo.current!.enabled = message.enable
+          ? message.event_type
+          : false;
 
         // Update cursor to indicate whether the scene can be clicked.
         viewer.canvasRef.current!.style.cursor = message.enable
@@ -663,10 +666,11 @@ function useMessageHandler() {
                         sx={{
                           width: "18em",
                           fontSize: "0.875em",
-                          marginLeft: "1em",
-                          marginTop: "1em",
+                          marginLeft: "0.5em",
+                          marginTop: "0.5em",
                         }}
-                        shadow="md"
+                        shadow="0 0 0.8em 0 rgba(0,0,0,0.1)"
+                        pb="0.25em"
                         onPointerDown={(evt) => {
                           evt.stopPropagation();
                         }}
@@ -1078,8 +1082,8 @@ export function WebsocketMessageProducer() {
         console.log(`Disconnected! ${server} code=${event.code}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
-        viewer.sceneClickEnable.current = false;
-        viewer.useGui.setState({ shareUrl: null, websocketConnected: false });
+        viewer.scenePointerInfo.current!.enabled = false;
+        viewer.useGui.setState({ websocketConnected: false });
         resetGui();
 
         // Try to reconnect.

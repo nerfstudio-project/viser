@@ -4,7 +4,18 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Any, Callable, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import numpy as onp
 import numpy.typing as onpt
@@ -67,6 +78,10 @@ class ViewerCameraMessage(Message):
     up_direction: Tuple[float, float, float]
 
 
+# The list of scene pointer events supported by the viser frontend.
+ScenePointerEventType = Literal["click", "rect-select"]
+
+
 @dataclasses.dataclass
 class ScenePointerMessage(Message):
     """Message for a raycast-like pointer in the scene.
@@ -75,16 +90,24 @@ class ScenePointerMessage(Message):
     """
 
     # Later we can add `double_click`, `move`, `down`, `up`, etc.
-    event_type: Literal["click"]
-    ray_origin: Tuple[float, float, float]
-    ray_direction: Tuple[float, float, float]
+    event_type: ScenePointerEventType
+    ray_origin: Optional[Tuple[float, float, float]]
+    ray_direction: Optional[Tuple[float, float, float]]
+    screen_pos: List[Tuple[float, float]]
 
 
 @dataclasses.dataclass
-class SceneClickEnableMessage(Message):
+class ScenePointerEnableMessage(Message):
     """Message to enable/disable scene click events."""
 
     enable: bool
+    event_type: ScenePointerEventType
+
+    @override
+    def redundancy_key(self) -> str:
+        return (
+            type(self).__name__ + "-" + self.event_type + "-" + str(self.enable).lower()
+        )
 
 
 @dataclasses.dataclass

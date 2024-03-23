@@ -54,6 +54,10 @@ def _get_ts_type(typ: Type[Any]) -> str:
             return _get_ts_type(args[0]) + "[]"
         else:
             return "[" + ", ".join(map(_get_ts_type, args)) + "]"
+    elif origin_typ is list:
+        args = get_args(typ)
+        assert len(args) == 1
+        return _get_ts_type(args[0]) + "[]"
     elif origin_typ in (Literal, LiteralAlt):
         return " | ".join(
             map(

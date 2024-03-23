@@ -23,12 +23,12 @@ from typing import (
     Callable,
     Dict,
     Generator,
-    List,
     Optional,
     Tuple,
     TypeVar,
     Union,
     cast,
+    get_args,
 )
 
 import imageio.v3 as iio
@@ -160,9 +160,9 @@ class MessageApi(abc.ABC):
         ] = {}
         self._handle_from_node_name: Dict[str, SceneNodeHandle] = {}
 
-        # Callbacks for scene pointer events -- by default don't enable them.
-        self._scene_pointer_cb: List[Callable[[ScenePointerEvent], None]] = []
-        self._scene_pointer_enabled = False
+        self._scene_pointer_cb: Optional[Callable[[ScenePointerEvent], None]] = None
+        self._scene_pointer_done_cb: Callable[[], None] = lambda: None
+        self._scene_pointer_event_type: Optional[_messages.ScenePointerEventType] = None
 
         handler.register_handler(
             _messages.TransformControlsUpdateMessage,
@@ -1255,70 +1255,133 @@ class MessageApi(abc.ABC):
         self, client_id: ClientId, message: _messages.ScenePointerMessage
     ):
         """Callback for handling click messages."""
-        for cb in self._scene_pointer_cb:
-            event = ScenePointerEvent(
-                client=self._get_client_handle(client_id),
-                client_id=client_id,
-                event=message.event_type,
-                ray_origin=message.ray_origin,
-                ray_direction=message.ray_direction,
-            )
-            cb(event)
+        event = ScenePointerEvent(
+            client=self._get_client_handle(client_id),
+            client_id=client_id,
+            event_type=message.event_type,
+            ray_origin=message.ray_origin,
+            ray_direction=message.ray_direction,
+            screen_pos=message.screen_pos,
+        )
+        # Call the callback if it exists, and the after-run callback.
+        if self._scene_pointer_cb is None:
+            return
+        self._scene_pointer_cb(event)
+        self._scene_pointer_done_cb()
 
     def on_scene_click(
         self,
         func: Callable[[ScenePointerEvent], None],
     ) -> Callable[[ScenePointerEvent], None]:
-        """Add a callback for scene pointer events.
+        """Deprecated. Use `on_scene_pointer` instead.
+
+        Registers a callback for scene click events. (event_type == "click")
 
         Args:
             func: The callback function to add.
         """
-        self._scene_pointer_cb.append(func)
+        return self.on_scene_pointer(event_type="click")(func)
 
-        # If this is the first callback.
-        if len(self._scene_pointer_cb) == 1:
-            self._queue(_messages.SceneClickEnableMessage(enable=True))
-        return func
-
-    def remove_scene_click_callback(
-        self,
-        func: Callable[[ScenePointerEvent], None],
-    ) -> None:
-        """Check for the function handle in the list of callbacks and remove it.
+    def on_scene_pointer(
+        self, event_type: Literal["click", "rect-select"]
+    ) -> Callable[
+        [Callable[[ScenePointerEvent], None]], Callable[[ScenePointerEvent], None]
+    ]:
+        """Add a callback for scene pointer events.
 
         Args:
-            func: The callback function to remove.
+            event_type: event to listen to.
         """
-        if func in self._scene_pointer_cb:
-            self._scene_pointer_cb.remove(func)
+        # Ensure the event type is valid.
+        assert event_type in get_args(_messages.ScenePointerEventType)
+
+        from ._viser import ClientHandle, ViserServer
+
+        def cleanup_previous_event(msg_api: MessageApi):
+            # If the server or client does not have a scene pointer callback, return.
+            if msg_api._scene_pointer_cb is None:
+                return
+
+            # Raise a warning if the callback is being removed.
+            warnings.warn(
+                "Overriding ScenePointerEvent callback, because a callback already exists."
+            )
+
+            # Run cleanup callback.
+            msg_api._scene_pointer_done_cb()
+
+            # If the event cleanup function does not remove the callback, we do it here.
+            if msg_api._scene_pointer_cb is not None:
+                msg_api.remove_scene_pointer_callback()
+
+        def decorator(
+            func: Callable[[ScenePointerEvent], None],
+        ) -> Callable[[ScenePointerEvent], None]:
+            # Check if another scene pointer event was previously registered.
+            # If so, we need to clear the previous event and register the new one.
+            cleanup_previous_event(self)
+
+            # If called on the server handle, remove all clients' callbacks.
+            if isinstance(self, ViserServer):
+                clients = list(self.get_clients().values())
+                for client in clients:
+                    cleanup_previous_event(client)
+
+            # If called on the client handle, and server handle has a callback, remove the server's callback.
+            # (If the server has a callback, none of the clients should have callbacks.)
+            elif isinstance(self, ClientHandle):
+                server = self._state.viser_server
+                cleanup_previous_event(server)
+
+            self._scene_pointer_cb = func
+            self._scene_pointer_event_type = event_type
+
+            self._queue(
+                _messages.ScenePointerEnableMessage(enable=True, event_type=event_type)
+            )
+            return func
+
+        return decorator
+
+    def on_scene_pointer_done(
+        self,
+        func: Callable[[], None],
+    ) -> Callable[[], None]:
+        """Add a callback to run automatically when the callback for the
+        currently registered scene pointer finishes (e.g., GUI state cleanup)."""
+
+        if self._scene_pointer_cb is None:
+            warnings.warn(
+                "This cleanup callback corresponds to no scene pointer event, ignoring."
+            )
+            return lambda: None
+
+        self._scene_pointer_done_cb = func
+        return func
+
+    def remove_scene_pointer_callback(
+        self,
+    ) -> None:
+        """Remove the currently attached scene pointer event."""
+
+        if self._scene_pointer_cb is None:
+            warnings.warn(
+                "No scene pointer callback exists for this server/client, ignoring."
+            )
+            return
 
         # Notify client that the listener has been removed.
-        if len(self._scene_pointer_cb) == 0:
-            from ._viser import ViserServer
+        event_type = self._scene_pointer_event_type
+        assert event_type is not None
+        self._queue(
+            _messages.ScenePointerEnableMessage(enable=False, event_type=event_type)
+        )
+        self.flush()
 
-            if isinstance(self, ViserServer):
-                # Turn off server-level scene click events.
-                self._queue(_messages.SceneClickEnableMessage(enable=False))
-                self.flush()
-
-                # Catch an unlikely edge case: we need to re-enable click events for
-                # clients that still have callbacks.
-                clients = self.get_clients()
-                if len(clients) > 0:
-                    for client in clients.values():
-                        if len(client._scene_pointer_cb) > 0:
-                            client._queue(
-                                _messages.SceneClickEnableMessage(enable=True)
-                            )
-
-            else:
-                assert isinstance(self, ClientHandle)
-
-                # Turn off scene click events for clients, but only if there's no
-                # server-level scene click events.
-                if len(self._state.viser_server._scene_pointer_cb) == 0:
-                    self._queue(_messages.SceneClickEnableMessage(enable=False))
+        # Reset the callback and event type, on the python side.
+        self._scene_pointer_cb = None
+        self._scene_pointer_done_cb = lambda: None
+        self._scene_pointer_event_type = None
 
     def add_3d_gui_container(
         self,
