@@ -23,17 +23,19 @@ export interface ViewerCameraMessage {
  */
 export interface ScenePointerMessage {
   type: "ScenePointerMessage";
-  event_type: "click";
-  ray_origin: [number, number, number];
-  ray_direction: [number, number, number];
+  event_type: "click" | "rect-select";
+  ray_origin: [number, number, number] | null;
+  ray_direction: [number, number, number] | null;
+  screen_pos: [number, number][];
 }
 /** Message to enable/disable scene click events.
  *
  * (automatically generated)
  */
-export interface SceneClickEnableMessage {
-  type: "SceneClickEnableMessage";
+export interface ScenePointerEnableMessage {
+  type: "ScenePointerEnableMessage";
   enable: boolean;
+  event_type: "click" | "rect-select";
 }
 /** Variant of CameraMessage used for visualizing camera frustums.
  *
@@ -815,7 +817,7 @@ export interface SetGuiPanelLabelMessage {
 export type Message =
   | ViewerCameraMessage
   | ScenePointerMessage
-  | SceneClickEnableMessage
+  | ScenePointerEnableMessage
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
