@@ -1,4 +1,4 @@
-import { useDisclosure, useMediaQuery, useToggle } from "@mantine/hooks";
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import GeneratedGuiContainer from "./Generated";
 import { ViewerContext } from "../App";
 
