@@ -666,10 +666,11 @@ function useMessageHandler() {
                         sx={{
                           width: "18em",
                           fontSize: "0.875em",
-                          marginLeft: "1em",
-                          marginTop: "1em",
+                          marginLeft: "0.5em",
+                          marginTop: "0.5em",
                         }}
-                        shadow="md"
+                        shadow="0 0 0.8em 0 rgba(0,0,0,0.1)"
+                        pb="0.25em"
                         onPointerDown={(evt) => {
                           evt.stopPropagation();
                         }}
