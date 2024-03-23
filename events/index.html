@@ -219,7 +219,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/19_get_renders/">Get Renders</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/20_scene_click/">Scene pointer events.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/20_scene_pointer/">Scene pointer events.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/21_set_up_direction/">Set Up Direction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/22_games/">Games</a></li>
 </ul>
@@ -277,21 +277,35 @@ when events like clicks or GUI updates are triggered.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="viser.ScenePointerEvent.event">
-<span class="sig-name descname"><span class="pre">event</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'click'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ScenePointerEvent.event" title="Link to this definition">#</a></dt>
-<dd><p>Type of event that was triggered. Currently we only support clicks.</p>
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.event_type">
+<span class="sig-name descname"><span class="pre">event_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">_messages.ScenePointerEventType</span></em><a class="headerlink" href="#viser.ScenePointerEvent.event_type" title="Link to this definition">#</a></dt>
+<dd><p>Type of event that was triggered. Currently we only support clicks and box selections.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ScenePointerEvent.ray_origin">
-<span class="sig-name descname"><span class="pre">ray_origin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_origin" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ray_origin</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_origin" title="Link to this definition">#</a></dt>
 <dd><p>Origin of 3D ray corresponding to this click, in world coordinates.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="viser.ScenePointerEvent.ray_direction">
-<span class="sig-name descname"><span class="pre">ray_direction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_direction" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">ray_direction</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#viser.ScenePointerEvent.ray_direction" title="Link to this definition">#</a></dt>
 <dd><p>Direction of 3D ray corresponding to this click, in world coordinates.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.screen_pos">
+<span class="sig-name descname"><span class="pre">screen_pos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.ScenePointerEvent.screen_pos" title="Link to this definition">#</a></dt>
+<dd><p>Screen position of the click on the screen (OpenCV image coordinates, 0 to 1).
+(0, 0) is the upper-left corner, (1, 1) is the bottom-right corner.
+For a box selection, this includes the min- and max- corners of the box.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.ScenePointerEvent.event">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">event</span></span><a class="headerlink" href="#viser.ScenePointerEvent.event" title="Link to this definition">#</a></dt>
+<dd><p>Deprecated. Use <code class="docutils literal notranslate"><span class="pre">event_type</span></code> instead.</p>
 </dd></dl>
 
 </dd></dl>
@@ -431,9 +445,11 @@ when events like clicks or GUI updates are triggered.</p>
 <li><a class="reference internal" href="#viser.ScenePointerEvent"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent</span></code></a><ul>
 <li><a class="reference internal" href="#viser.ScenePointerEvent.client"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.client</span></code></a></li>
 <li><a class="reference internal" href="#viser.ScenePointerEvent.client_id"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.client_id</span></code></a></li>
-<li><a class="reference internal" href="#viser.ScenePointerEvent.event"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.event</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.event_type"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.event_type</span></code></a></li>
 <li><a class="reference internal" href="#viser.ScenePointerEvent.ray_origin"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.ray_origin</span></code></a></li>
 <li><a class="reference internal" href="#viser.ScenePointerEvent.ray_direction"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.ray_direction</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.screen_pos"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.screen_pos</span></code></a></li>
+<li><a class="reference internal" href="#viser.ScenePointerEvent.event"><code class="docutils literal notranslate"><span class="pre">ScenePointerEvent.event</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.SceneNodePointerEvent"><code class="docutils literal notranslate"><span class="pre">SceneNodePointerEvent</span></code></a><ul>

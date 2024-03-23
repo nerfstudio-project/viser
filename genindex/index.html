@@ -217,7 +217,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/19_get_renders/">Get Renders</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/20_scene_click/">Scene pointer events.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/20_scene_pointer/">Scene pointer events.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/21_set_up_direction/">Set Up Direction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/22_games/">Games</a></li>
 </ul>
@@ -4623,13 +4623,15 @@
         <li><a href="../events/#viser.SceneNodePointerEvent.event">event (viser.SceneNodePointerEvent attribute)</a>
 
         <ul>
-          <li><a href="../events/#viser.ScenePointerEvent.event">(viser.ScenePointerEvent attribute)</a>
+          <li><a href="../events/#viser.ScenePointerEvent.event">(viser.ScenePointerEvent property)</a>
 </li>
         </ul></li>
-        <li><a href="../icons/#viser.Icon.EXCHANGE">EXCHANGE (viser.Icon attribute)</a>
+        <li><a href="../events/#viser.ScenePointerEvent.event_type">event_type (viser.ScenePointerEvent attribute)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.EXCHANGE">EXCHANGE (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.EXCHANGE_OFF">EXCHANGE_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.EXCLAMATION_CIRCLE">EXCLAMATION_CIRCLE (viser.Icon attribute)</a>
@@ -7163,12 +7165,24 @@
           <li><a href="../server/#viser.ViserServer.on_client_disconnect">(viser.ViserServer method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../client_handles/#viser.ClientHandle.on_scene_click">on_scene_click() (viser.ClientHandle method)</a>
 
         <ul>
           <li><a href="../server/#viser.ViserServer.on_scene_click">(viser.ViserServer method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../client_handles/#viser.ClientHandle.on_scene_pointer">on_scene_pointer() (viser.ClientHandle method)</a>
+
+        <ul>
+          <li><a href="../server/#viser.ViserServer.on_scene_pointer">(viser.ViserServer method)</a>
+</li>
+        </ul></li>
+        <li><a href="../client_handles/#viser.ClientHandle.on_scene_pointer_done">on_scene_pointer_done() (viser.ClientHandle method)</a>
+
+        <ul>
+          <li><a href="../server/#viser.ViserServer.on_scene_pointer_done">(viser.ViserServer method)</a>
 </li>
         </ul></li>
         <li><a href="../client_handles/#viser.CameraHandle.on_update">on_update() (viser.CameraHandle method)</a>
@@ -7939,10 +7953,10 @@
           <li><a href="../scene_handles/#viser.TransformControlsHandle.remove">(viser.TransformControlsHandle method)</a>
 </li>
         </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.remove_scene_click_callback">remove_scene_click_callback() (viser.ClientHandle method)</a>
+        <li><a href="../client_handles/#viser.ClientHandle.remove_scene_pointer_callback">remove_scene_pointer_callback() (viser.ClientHandle method)</a>
 
         <ul>
-          <li><a href="../server/#viser.ViserServer.remove_scene_click_callback">(viser.ViserServer method)</a>
+          <li><a href="../server/#viser.ViserServer.remove_scene_pointer_callback">(viser.ViserServer method)</a>
 </li>
         </ul></li>
         <li><a href="../icons/#viser.Icon.REPEAT">REPEAT (viser.Icon attribute)</a>
@@ -8198,6 +8212,8 @@
         <li><a href="../icons/#viser.Icon.SCOOTER_ELECTRIC">SCOOTER_ELECTRIC (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SCOREBOARD">SCOREBOARD (viser.Icon attribute)</a>
+</li>
+        <li><a href="../events/#viser.ScenePointerEvent.screen_pos">screen_pos (viser.ScenePointerEvent attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SCREEN_SHARE">SCREEN_SHARE (viser.Icon attribute)</a>
 </li>
@@ -8639,10 +8655,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.SPORT_BILLARD">SPORT_BILLARD (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.SPRAY">SPRAY (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.SPRAY">SPRAY (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.SPY">SPY (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SPY_OFF">SPY_OFF (viser.Icon attribute)</a>

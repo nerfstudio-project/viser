@@ -218,7 +218,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/19_get_renders/">Get Renders</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../examples/20_scene_click/">Scene pointer events.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/20_scene_pointer/">Scene pointer events.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/21_set_up_direction/">Set Up Direction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/22_games/">Games</a></li>
 </ul>
@@ -311,6 +311,10 @@
             <span class="k">return</span> <span class="n">_get_ts_type</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;[]&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;[&quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_get_ts_type</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;]&quot;</span>
+    <span class="k">elif</span> <span class="n">origin_typ</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">_get_ts_type</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;[]&quot;</span>
     <span class="k">elif</span> <span class="n">origin_typ</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Literal</span><span class="p">,</span> <span class="n">LiteralAlt</span><span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot; | &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="nb">map</span><span class="p">(</span>

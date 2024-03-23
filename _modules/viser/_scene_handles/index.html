@@ -218,7 +218,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/17_background_composite/">Depth compositing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/18_splines/">Splines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/19_get_renders/">Get Renders</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/20_scene_click/">Scene pointer events.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/20_scene_pointer/">Scene pointer events.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/21_set_up_direction/">Set Up Direction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/22_games/">Games</a></li>
 </ul>
@@ -297,12 +297,21 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Client that triggered this event.&quot;&quot;&quot;</span>
     <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ID of client that triggered this event.&quot;&quot;&quot;</span>
-    <span class="n">event</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of event that was triggered. Currently we only support clicks.&quot;&quot;&quot;</span>
-    <span class="n">ray_origin</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+    <span class="n">event_type</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">ScenePointerEventType</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Type of event that was triggered. Currently we only support clicks and box selections.&quot;&quot;&quot;</span>
+    <span class="n">ray_origin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Origin of 3D ray corresponding to this click, in world coordinates.&quot;&quot;&quot;</span>
-    <span class="n">ray_direction</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Direction of 3D ray corresponding to this click, in world coordinates.&quot;&quot;&quot;</span></div>
+    <span class="n">ray_direction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Direction of 3D ray corresponding to this click, in world coordinates.&quot;&quot;&quot;</span>
+    <span class="n">screen_pos</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Screen position of the click on the screen (OpenCV image coordinates, 0 to 1).</span>
+<span class="sd">    (0, 0) is the upper-left corner, (1, 1) is the bottom-right corner.</span>
+<span class="sd">    For a box selection, this includes the min- and max- corners of the box.&quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated. Use `event_type` instead.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_type</span></div>
 
 
 
