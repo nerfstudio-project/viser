@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.25"
+version = "0.1.26"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -44,7 +44,6 @@ dev = [
     "pre-commit==3.3.2",
 ]
 examples = [
-    "smplx>=0.1.28",
     "torch>=1.13.1",
     "matplotlib>=3.7.1",
 ]
