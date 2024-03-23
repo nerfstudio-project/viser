@@ -57,10 +57,11 @@ BottomPanel.Handle = function BottomPanelHandle({
     <Box
       color="red"
       sx={(theme) => ({
-        backgroundColor:
+        borderBottom: panelContext.expanded ? "1px solid" : undefined,
+        borderColor:
           theme.colorScheme == "dark"
-            ? theme.colors.dark[5]
-            : theme.colors.gray[1],
+            ? theme.colors.dark[4]
+            : theme.colors.gray[3],
         cursor: "pointer",
         position: "relative",
         fontWeight: 400,

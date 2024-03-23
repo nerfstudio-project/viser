@@ -63,14 +63,30 @@ export default function SidebarPanel({
     >
       {collapsedView}
       {/* Using an <Aside /> below will break Mantine color inputs. */}
+      {/* We create two <Paper /> elements. The first is only used for a drop
+      shadow. Note the z-index difference, which is used to put the shadow
+      behind the titlebar but the content in front of it. (and thus also in
+      front of the titlebar's shadow) */}
       <Paper
         shadow="0 0 1em 0 rgba(0,0,0,0.1)"
+        sx={{
+          width: collapsed ? 0 : width,
+          height: "100%",
+          right: 0,
+          boxSizing: "content-box",
+          transition: "width 0.5s 0s",
+          zIndex: 8,
+          position: "absolute",
+        }}
+      ></Paper>
+      <Paper
         component={ScrollArea}
+        radius={0}
         sx={{
           width: collapsed ? 0 : width,
           boxSizing: "content-box",
           transition: "width 0.5s 0s",
-          zIndex: 10,
+          zIndex: 20,
         }}
       >
         <Box
