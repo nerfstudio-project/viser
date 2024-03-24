@@ -68,6 +68,7 @@ def main() -> None:
                 max=100,
                 step=1,
                 initial_value=(0, 30, 100),
+                marks=((0, "0"), (50, "5"), (70, "7"), 99),
             )
             gui_slider_positions = server.add_gui_slider(
                 "# sliders",

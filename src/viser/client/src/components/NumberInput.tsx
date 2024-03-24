@@ -21,7 +21,7 @@ export default function NumberInputComponent({
       <NumberInput
         id={id}
         value={value}
-        precision={precision}
+        // precision={precision}
         min={min ?? undefined}
         max={max ?? undefined}
         step={step}

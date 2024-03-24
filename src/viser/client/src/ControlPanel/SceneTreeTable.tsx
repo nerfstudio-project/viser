@@ -77,7 +77,7 @@ export default function SceneTreeTable(props: { compact: boolean }) {
               evt.stopPropagation();
               setOverrideVisibility(childName, !isVisible);
             }}
-            sx={{ opacity: isVisibleEffective ? "1.0" : "0.5" }}
+            style={{ opacity: isVisibleEffective ? "1.0" : "0.5" }}
           >
             <VisibleIcon />
           </ActionIcon>
@@ -187,14 +187,14 @@ export default function SceneTreeTable(props: { compact: boolean }) {
         mantineExpandAllButtonProps={{
           size: "sm",
         }}
-        mantineExpandButtonProps={{ size: "sm", sx: { width: "0 !important" } }}
+        mantineExpandButtonProps={{ size: "sm", style: { width: "0 !important" } }}
         mantineSelectAllCheckboxProps={{ size: "sm" }}
         mantineSelectCheckboxProps={{ size: "sm" }}
         mantineTableProps={{
           verticalSpacing: 2,
         }}
         mantinePaperProps={{ shadow: undefined }}
-        mantineTableContainerProps={{ sx: { maxHeight: "30em" } }}
+        mantineTableContainerProps={{ style: { maxHeight: "30em" } }}
         mantinePaginationProps={{
           showRowsPerPage: false,
         }}

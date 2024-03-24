@@ -23,19 +23,19 @@ import {
   FileTransferStart,
   Message,
 } from "./WebsocketMessages";
-import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import {
   isTexture,
   makeThrottledMessageSender,
   sendWebsocketMessage,
 } from "./WebsocketFunctions";
-import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
+import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
+import { theme } from "./AppTheme";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -94,7 +94,6 @@ function useMessageHandler() {
     addSceneNode(node);
   }
 
-  const mantineTheme = useViserMantineTheme();
   const fileDownloadHandler = useFileDownloadHandler();
 
   // Return message handler.
@@ -224,16 +223,20 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
+                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                      : message.plane == "yx"
+                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                        : message.plane == "yz"
+                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                          : message.plane == "zx"
+                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                            : message.plane == "zy"
+                              ? new THREE.Euler(
+                                  -Math.PI / 2.0,
+                                  0.0,
+                                  -Math.PI / 2.0,
+                                )
+                              : undefined
                 }
               />
             </group>
@@ -320,16 +323,16 @@ function useMessageHandler() {
           message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(3),
-                ...standardArgs,
-              })
-            : message.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.material);
+              ? new THREE.MeshToonMaterial({
+                  gradientMap: generateGradientMap(3),
+                  ...standardArgs,
+                })
+              : message.material == "toon5"
+                ? new THREE.MeshToonMaterial({
+                    gradientMap: generateGradientMap(5),
+                    ...standardArgs,
+                  })
+                : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -598,26 +601,26 @@ function useMessageHandler() {
       }
       // Add a 2D label.
       case "LabelMessage": {
-        const Label = styled.span`
-          background-color: rgba(255, 255, 255, 0.85);
-          padding: 0.2em;
-          border-radius: 0.2em;
-          border: 1px solid #777;
-          color: #333;
-
-          &:before {
-            content: "";
-            position: absolute;
-            top: -1em;
-            left: 1em;
-            width: 0;
-            height: 0;
-            border-left: 1px solid #777;
-            box-sizing: border-box;
-            height: 0.8em;
-            box-shadow: 0 0 1em 0.1em rgba(255, 255, 255, 1);
-          }
-        `;
+        // const Label = styled.span`
+        //   background-color: rgba(255, 255, 255, 0.85);
+        //   padding: 0.2em;
+        //   border-radius: 0.2em;
+        //   border: 1px solid #777;
+        //   color: #333;
+        //
+        //   &:before {
+        //     content: "";
+        //     position: absolute;
+        //     top: -1em;
+        //     left: 1em;
+        //     width: 0;
+        //     height: 0;
+        //     border-left: 1px solid #777;
+        //     box-sizing: border-box;
+        //     height: 0.8em;
+        //     box-shadow: 0 0 1em 0.1em rgba(255, 255, 255, 1);
+        //   }
+        // `;
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
             message.name,
@@ -633,7 +636,7 @@ function useMessageHandler() {
                         transform: "translateX(-1em) translateY(1em)",
                       }}
                     >
-                      <Label>{message.text}</Label>
+                      <span>{message.text}</span>
                     </div>
                   </Html>
                 </group>
@@ -657,13 +660,9 @@ function useMessageHandler() {
               return (
                 <group ref={ref} position={new THREE.Vector3(1e8, 1e8, 1e8)}>
                   <Html prepend={false}>
-                    <MantineProvider
-                      withGlobalStyles
-                      withNormalizeCSS
-                      theme={mantineTheme}
-                    >
+                    <MantineProvider theme={theme}>
                       <Paper
-                        sx={{
+                        style={{
                           width: "18em",
                           fontSize: "0.875em",
                           marginLeft: "0.5em",

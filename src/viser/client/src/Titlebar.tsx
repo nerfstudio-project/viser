@@ -5,10 +5,11 @@ import {
   Button,
   Container,
   Group,
-  Header,
   Paper,
   MantineTheme,
   useMantineTheme,
+  Box,
+  useMantineColorScheme,
 } from "@mantine/core";
 import {
   IconBrandGithub,
@@ -59,16 +60,10 @@ export function TitlebarButton(
       component="a"
       variant="default"
       href={props.href || undefined}
-      compact
       target="_blank"
-      leftIcon={Icon === null ? null : <Icon size="1em" />}
+      leftSection={Icon === null ? null : <Icon size="1em" />}
       ml="sm"
       color="gray"
-      sx={(theme) => ({
-        [theme.fn.smallerThan("xs")]: {
-          display: "none",
-        },
-      })}
     >
       {props.text}
     </Button>
@@ -86,7 +81,7 @@ export function MobileTitlebarButton(
       variant="default"
       href={props.href || undefined}
       target="_blank"
-      leftIcon={Icon === null ? null : <Icon size="1.5em" />}
+      leftSection={Icon === null ? null : <Icon size="1.5em" />}
       ml="sm"
       color="gray"
     >
@@ -100,7 +95,10 @@ export function TitlebarImage(
   theme: MantineTheme,
 ) {
   let imageSource: string;
-  if (props.image_url_dark == null || theme.colorScheme == "light") {
+  if (
+    props.image_url_dark == null ||
+    useMantineColorScheme().colorScheme === "light"
+  ) {
     imageSource = props.image_url_light;
   } else {
     imageSource = props.image_url_dark;
@@ -137,9 +135,9 @@ export function Titlebar() {
   const imageData = content.image;
 
   return (
-    <Header
-      height="3.2em"
-      sx={{
+    <Box
+      style={{
+        height: "3.2em",
         margin: 0,
         border: "0",
         zIndex: 10,
@@ -148,20 +146,20 @@ export function Titlebar() {
       <Paper
         p="xs"
         shadow="0 0 0.8em 0 rgba(0,0,0,0.1)"
-        sx={{ height: "100%" }}
+        style={{ height: "100%" }}
       >
         <Container
           fluid
-          sx={() => ({
+          style={() => ({
             display: "flex",
             alignItems: "center",
           })}
         >
-          <Group sx={() => ({ marginRight: "auto" })}>
+          <Group style={() => ({ marginRight: "auto" })}>
             {imageData !== null ? TitlebarImage(imageData, theme) : null}
           </Group>
           <Group
-            sx={() => ({
+            style={() => ({
               flexWrap: "nowrap",
               overflowX: "scroll",
               msOverflowStyle: "none",
@@ -180,18 +178,18 @@ export function Titlebar() {
             opened={burgerOpen}
             onClick={burgerHandlers.toggle}
             title={!burgerOpen ? "Open navigation" : "Close navigation"}
-            sx={(theme) => ({
-              [theme.fn.largerThan("xs")]: {
-                display: "none",
-              },
-            })}
+            // style={(theme) => ({
+            //   [theme.fn.largerThan("xs")]: {
+            //     display: "none",
+            //   },
+            // })}
           ></Burger>
         </Container>
         <Paper
-          sx={(theme) => ({
-            [theme.fn.largerThan("xs")]: {
-              display: "none",
-            },
+          style={(theme) => ({
+            // [theme.fn.largerThan("xs")]: {
+            //   display: "none",
+            // },
             display: "flex",
             flexDirection: "column",
             position: "relative",
@@ -210,6 +208,6 @@ export function Titlebar() {
           ))}
         </Paper>
       </Paper>
-    </Header>
+    </Box>
   );
 }

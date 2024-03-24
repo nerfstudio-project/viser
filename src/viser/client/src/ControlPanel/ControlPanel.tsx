@@ -19,6 +19,7 @@ import {
   TextInput,
   Tooltip,
   Transition,
+  useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import {
@@ -62,14 +63,14 @@ export default function ControlPanel(props: {
     controlWidthString == "small"
       ? "16em"
       : controlWidthString == "medium"
-      ? "20em"
-      : controlWidthString == "large"
-      ? "24em"
-      : null
+        ? "20em"
+        : controlWidthString == "large"
+          ? "24em"
+          : null
   )!;
 
   const generatedServerToggleButton = (
-    <Box sx={{ display: showGenerated ? undefined : "none" }}>
+    <Box style={{ display: showGenerated ? undefined : "none" }}>
       <ActionIcon
         onClick={(evt) => {
           evt.stopPropagation();
@@ -174,13 +175,13 @@ function ConnectionStatus() {
         {(styles) => (
           <Loader
             size="xs"
-            variant="bars"
+            type="dots"
             color="red"
             style={{ position: "absolute", ...styles }}
           />
         )}
       </Transition>
-      <Box px="xs" sx={{ flexGrow: 1 }} lts={"-0.5px"} pt="0.1em">
+      <Box px="xs" style={{ flexGrow: 1 }} lts={"-0.5px"} pt="0.1em">
         {label !== "" ? label : connected ? "Connected" : "Connecting..."}
       </Box>
     </>
@@ -213,7 +214,7 @@ function ShareButton() {
   if (viewer.useGui((state) => state.theme).show_share_button === false)
     return null;
 
-  const theme = useMantineTheme();
+  const colorScheme = useMantineColorScheme().colorScheme;
   return (
     <>
       <Tooltip
@@ -280,14 +281,14 @@ function ShareButton() {
         ) : (
           <>
             <Text>Share URL is connected.</Text>
-            <Stack spacing="xs" my="md">
+            <Stack gap="xs" my="md">
               <TextInput value={shareUrl} />
               <Flex justify="space-between" columnGap="0.5em" align="center">
                 <CopyButton value={shareUrl}>
                   {({ copied, copy }) => (
                     <Button
-                      sx={{ width: "50%" }}
-                      leftIcon={
+                      style={{ width: "50%" }}
+                      leftSection={
                         copied ? (
                           <IconCheck height="1.375em" width="1.375em" />
                         ) : (
@@ -302,8 +303,8 @@ function ShareButton() {
                   )}
                 </CopyButton>
                 <Button
-                  sx={{ flexGrow: 1 }}
-                  leftIcon={showQrCode ? <IconQrcodeOff /> : <IconQrcode />}
+                  style={{ flexGrow: 1 }}
+                  leftSection={showQrCode ? <IconQrcodeOff /> : <IconQrcode />}
                   onClick={toggleShowQrcode}
                 >
                   QR Code
@@ -325,7 +326,7 @@ function ShareButton() {
               <Collapse in={showQrCode}>
                 <QRCode
                   value={shareUrl}
-                  fgColor={theme.colorScheme === "dark" ? "#ffffff" : "#000000"}
+                  fgColor={colorScheme === "dark" ? "#ffffff" : "#000000"}
                   bgColor="rgba(0,0,0,0)"
                   level="M"
                   style={{

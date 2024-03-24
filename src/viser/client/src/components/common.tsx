@@ -61,7 +61,7 @@ function LabeledInput(props: {
         // The per-layer offset here is just eyeballed.
         w={`${7.25 - props.folderDepth * 0.6375}em`}
         pr="xs"
-        sx={{ flexShrink: 0, position: "relative" }}
+        style={{ flexShrink: 0, position: "relative" }}
       >
         <Text
           c="dimmed"
@@ -70,7 +70,7 @@ function LabeledInput(props: {
           lh="1.375em"
           lts="-0.75px"
           unselectable="off"
-          sx={{
+          style={{
             width: "100%",
             boxSizing: "content-box",
           }}
@@ -78,7 +78,7 @@ function LabeledInput(props: {
           <label htmlFor={props.id}>{props.label}</label>
         </Text>
       </Box>
-      <Box sx={{ flexGrow: 1 }}>{props.input}</Box>
+      <Box style={{ flexGrow: 1 }}>{props.input}</Box>
     </Flex>
   );
 }
@@ -117,7 +117,7 @@ export function VectorInput(
           value={props.value[i]}
           onChange={(v) => {
             const updated = [...props.value];
-            updated[i] = v === "" ? 0.0 : v;
+            updated[i] = v === "" ? 0.0 : Number(v);
             props.onChange(updated);
           }}
           size="xs"
@@ -127,15 +127,19 @@ export function VectorInput(
               paddingLeft: "0.5em",
               paddingRight: "1.75em",
               textAlign: "right",
+              height: "1.875em",
               minHeight: "1.875em",
+            },
+            controls: {
               height: "1.875em",
             },
-            rightSection: { width: "1.2em" },
             control: {
-              width: "1.1em",
+              width: "1.2em",
+              height: "0.2em",
             },
           }}
-          precision={props.precision}
+          rightSectionWidth="1em"
+          // precision={props.precision}
           step={props.step}
           min={props.min === null ? undefined : props.min[i]}
           max={props.max === null ? undefined : props.max[i]}

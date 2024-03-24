@@ -25,11 +25,10 @@ export default function RgbComponent({
         format="hex"
         // zIndex of dropdown should be >modal zIndex.
         // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
-        dropdownZIndex={1000}
-        withinPortal
+        popoverProps={{zIndex: 1000}}
         styles={{
           input: { height: "1.625rem", minHeight: "1.625rem" },
-          icon: { transform: "scale(0.8)" },
+          // icon: { transform: "scale(0.8)" },
         }}
       />
     </ViserInputComponent>

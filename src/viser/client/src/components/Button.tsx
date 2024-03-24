@@ -19,7 +19,7 @@ export default function ButtonComponent({
   if (!(visible ?? true)) return <></>;
 
   const inputColor =
-    computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
+    computeRelativeLuminance(theme.primaryColor) > 50.0
       ? theme.colors.gray[9]
       : theme.white;
   return (
@@ -39,23 +39,20 @@ export default function ButtonComponent({
         styles={{ inner: { color: inputColor + " !important" } }}
         disabled={disabled ?? false}
         size="sm"
-        leftIcon={
+        leftSection={
           icon_base64 === null ? undefined : (
             <Image
-              /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-              height="1em"
-              width="1em"
-              opacity={disabled ? 0.3 : 1.0}
+              style={{
+                height: "1em",
+                width: "1em",
+                opacity: disabled ? 0.3 : 1.0,
+                // Make the color white.
+                filter:
+                  inputColor === theme.white && !disabled
+                    ? "invert(1)"
+                    : undefined,
+              }}
               mr="-0.125em"
-              sx={
-                inputColor === theme.white
-                  ? {
-                      // Make the color white.
-                      filter: !disabled ? "invert(1)" : undefined,
-                    }
-                  : // Icon will be black by default.
-                    undefined
-              }
               src={"data:image/svg+xml;base64," + icon_base64}
             />
           )

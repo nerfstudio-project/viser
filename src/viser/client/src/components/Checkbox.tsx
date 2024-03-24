@@ -17,7 +17,7 @@ export default function CheckboxComponent({
   if (!visible) return <></>;
   const theme = useMantineTheme();
   const inputColor =
-    computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
+    computeRelativeLuminance(theme.primaryColor) > 50.0
       ? theme.colors.gray[9]
       : theme.white;
   let input = (
@@ -50,7 +50,7 @@ export default function CheckboxComponent({
         openDelay={500}
         withinPortal
       >
-        <Box sx={{ display: "inline-block" }}>{input}</Box>
+        <Box style={{ display: "inline-block" }}>{input}</Box>
       </Tooltip>
     );
   }
