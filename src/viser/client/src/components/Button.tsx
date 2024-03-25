@@ -1,7 +1,12 @@
 import { GuiAddButtonMessage } from "../WebsocketMessages";
-import { computeRelativeLuminance } from "../ControlPanel/GuiState";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
-import { Box, Image, useMantineTheme } from "@mantine/core";
+import {
+  Box,
+  Image,
+  getAutoContrastValue,
+  getContrastColor,
+  useMantineTheme,
+} from "@mantine/core";
 
 import { Button } from "@mantine/core";
 import React from "react";
@@ -18,10 +23,6 @@ export default function ButtonComponent({
   const { color, icon_base64 } = otherProps;
   if (!(visible ?? true)) return <></>;
 
-  const inputColor =
-    computeRelativeLuminance(theme.primaryColor) > 50.0
-      ? theme.colors.gray[9]
-      : theme.white;
   return (
     <Box mx="xs" mb="0.5em">
       <Button
@@ -36,7 +37,6 @@ export default function ButtonComponent({
           })
         }
         style={{ height: "2.125em" }}
-        styles={{ inner: { color: inputColor + " !important" } }}
         disabled={disabled ?? false}
         size="sm"
         leftSection={
@@ -47,8 +47,10 @@ export default function ButtonComponent({
                 width: "1em",
                 opacity: disabled ? 0.3 : 1.0,
                 // Make the color white.
+                // Likely there's a better approach for this!
                 filter:
-                  inputColor === theme.white && !disabled
+                  getContrastColor({ color: color, theme: theme }) ===
+                  "var(--mantine-color-white)"
                     ? "invert(1)"
                     : undefined,
               }}

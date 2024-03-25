@@ -1,7 +1,12 @@
 import { GuiAddUploadButtonMessage } from "../WebsocketMessages";
-import { computeRelativeLuminance } from "../ControlPanel/GuiState";
 import { v4 as uuid } from "uuid";
-import { Box, Image, Progress, useMantineTheme } from "@mantine/core";
+import {
+  Box,
+  Image,
+  Progress,
+  getContrastColor,
+  useMantineTheme,
+} from "@mantine/core";
 
 import { Button } from "@mantine/core";
 import React, { useContext } from "react";
@@ -20,10 +25,6 @@ export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
   });
   const theme = useMantineTheme();
 
-  const inputColor =
-    computeRelativeLuminance(theme.primaryColor) > 50.0
-      ? theme.colors.gray[9]
-      : theme.white;
   const disabled = conf.disabled || isUploading;
   return (
     <Box mx="xs" mb="0.5em">
@@ -50,7 +51,6 @@ export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
           fileUploadRef.current.click();
         }}
         style={{ height: "2.125em" }}
-        styles={{ inner: { color: inputColor + " !important" } }}
         disabled={disabled}
         size="sm"
         leftSection={
@@ -61,8 +61,10 @@ export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
                 width: "1em",
                 opacity: disabled ? 0.3 : 1.0,
                 // Make the color white.
+                // Likely there's a better approach for this!
                 filter:
-                  inputColor === theme.white && !disabled
+                  getContrastColor({ color: conf.color, theme: theme }) ===
+                  "var(--mantine-color-white)"
                     ? "invert(1)"
                     : undefined,
               }}

@@ -1,6 +1,6 @@
 // @refresh reset
 import "@mantine/core/styles.css";
-import '@mantine/notifications/styles.css';
+import "@mantine/notifications/styles.css";
 
 import { Notifications, notifications } from "@mantine/notifications";
 
@@ -20,6 +20,7 @@ import {
   Image,
   MantineProvider,
   Modal,
+  createTheme,
   useMantineTheme,
 } from "@mantine/core";
 import React, { useEffect } from "react";
@@ -154,9 +155,18 @@ function ViewerRoot() {
 
 function ViewerContents() {
   const viewer = React.useContext(ViewerContext)!;
+  const colors = viewer.useGui((state) => state.theme.colors);
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
+  console.log(colors);
   return (
-    <MantineProvider theme={theme}>
+    <MantineProvider
+      theme={createTheme({
+        ...theme,
+        ...(colors === null
+          ? {}
+          : { colors: { custom: colors }, primaryColor: "custom" }),
+      })}
+    >
       <Notifications
         position="top-left"
         containerWidth="20em"

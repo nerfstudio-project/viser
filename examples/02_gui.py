@@ -117,6 +117,8 @@ def main() -> None:
         gui_text.visible = not gui_checkbox_hide.value
         gui_button.visible = not gui_checkbox_hide.value
         gui_rgb.disabled = gui_checkbox_disable.value
+        gui_button.disabled = gui_checkbox_disable.value
+        gui_upload_button.disabled = gui_checkbox_disable.value
 
         # Update the number of handles in the multi-slider.
         if gui_slider_positions.value != len(gui_multi_slider.value):

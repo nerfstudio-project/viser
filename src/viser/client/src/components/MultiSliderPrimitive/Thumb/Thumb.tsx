@@ -9,6 +9,7 @@ export interface ThumbProps {
   value: number;
   position: number;
   dragging: boolean;
+  draggingThisThumb: boolean;
   label: React.ReactNode;
   onKeyDownCapture?: (event: React.KeyboardEvent<HTMLDivElement>) => void;
   onMouseDown?: (
@@ -36,6 +37,7 @@ export const Thumb = forwardRef<HTMLDivElement, ThumbProps>(
       position,
       label,
       dragging,
+      draggingThisThumb,
       onMouseDown,
       onKeyDownCapture,
       labelTransitionProps,
@@ -67,7 +69,13 @@ export const Thumb = forwardRef<HTMLDivElement, ThumbProps>(
         aria-valuenow={value}
         ref={ref}
         __vars={{ "--slider-thumb-offset": `${position}%` }}
-        {...getStyles("thumb", { focusable: true })}
+        {...getStyles("thumb", {
+          focusable: true,
+          style: {
+            /* Put active thumb + its label in front of others. */
+            ...(draggingThisThumb ? { zIndex: 1000 } : {}),
+          },
+        })}
         mod={{ dragging, disabled }}
         onFocus={() => {
           setFocused(true);
@@ -90,7 +98,13 @@ export const Thumb = forwardRef<HTMLDivElement, ThumbProps>(
           {...labelTransitionProps}
         >
           {(transitionStyles) => (
-            <div {...getStyles("label", { style: transitionStyles })}>
+            <div
+              {...getStyles("label", {
+                style: {
+                  ...transitionStyles,
+                },
+              })}
+            >
               {label}
             </div>
           )}

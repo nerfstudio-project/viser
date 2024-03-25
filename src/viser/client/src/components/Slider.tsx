@@ -56,8 +56,8 @@ export default function SliderComponent({
               : theme.primaryColor,
           },
         })}
-        pt="0.2em"
-        pb="0.4em"
+        pt="0.3em"
+        pb="0.2em"
         showLabelOnHover={false}
         min={min}
         max={max}

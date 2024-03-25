@@ -213,6 +213,8 @@ export const MultiSlider = factory<SliderFactory>((_props, ref) => {
   );
   const precision = _precision ?? getPrecision(step!);
 
+  valueRef.current = _value;
+
   const setRangedValue = (
     val: number,
     thumbIndex: number,
@@ -439,6 +441,7 @@ export const MultiSlider = factory<SliderFactory>((_props, ref) => {
               value={scale!(value)}
               position={positions[index]}
               dragging={active}
+              draggingThisThumb={active && thumbIndex.current === index}
               label={typeof label === "function" ? label(scale!(value)) : label}
               ref={(node) => {
                 thumbs.current[index] = node;

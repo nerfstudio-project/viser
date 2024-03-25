@@ -13,6 +13,7 @@ import {themeToVars} from "@mantine/vanilla-extract";
 
 export const theme = createTheme({
   fontFamily: "Inter",
+  autoContrast: true,
   components: {
     Checkbox: Checkbox.extend({
       defaultProps: {
