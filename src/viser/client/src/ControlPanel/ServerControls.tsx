@@ -1,5 +1,13 @@
 import { ViewerContext } from "../App";
-import { Button, Divider, Stack, Switch, Text, TextInput } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Divider,
+  Stack,
+  Switch,
+  Text,
+  TextInput,
+} from "@mantine/core";
 import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
 import { Stats } from "@react-three/drei";
 import React from "react";
@@ -130,8 +138,12 @@ export default function ServerControls() {
           size="sm"
         />
         <Divider mt="xs" />
-        <Text fw={500}>Scene tree</Text>
-        <MemoizedTable compact={true} />
+        <Box>
+          <Text mb="0.2em" fw={500}>
+            Scene tree
+          </Text>
+          <MemoizedTable />
+        </Box>
       </Stack>
     </>
   );

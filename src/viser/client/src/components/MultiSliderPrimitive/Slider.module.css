@@ -127,7 +127,7 @@
   }
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     bottom: 0;
@@ -206,7 +206,10 @@
 }
 
 .markLabel {
-  transform: translate(calc(-50% + var(--slider-size) / 2), calc(var(--mantine-spacing-xs) / 2));
+  transform: translate(
+    calc(-50% + var(--slider-size) / 2),
+    calc(var(--mantine-spacing-xs) / 2)
+  );
   font-size: var(--mantine-font-size-sm);
   white-space: nowrap;
   cursor: pointer;

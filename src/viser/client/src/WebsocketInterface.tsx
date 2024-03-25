@@ -32,7 +32,12 @@ import {
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { MantineProvider, Paper, Progress, useMantineColorScheme } from "@mantine/core";
+import {
+  MantineProvider,
+  Paper,
+  Progress,
+  useMantineColorScheme,
+} from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { theme } from "./AppTheme";
@@ -77,7 +82,9 @@ function useMessageHandler() {
   function addSceneNodeMakeParents(node: SceneNode<any>) {
     // Make sure scene node is in attributes.
     const attrs = viewer.nodeAttributesFromName.current;
-    attrs[node.name] = {};
+    attrs[node.name] = {
+      overrideVisibility: attrs[node.name]?.overrideVisibility,
+    };
 
     // Don't update the pose of the object until we've made a new one!
     attrs[node.name]!.poseUpdateState = "waitForMakeObject";
@@ -225,20 +232,16 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                      : message.plane == "yx"
-                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                        : message.plane == "yz"
-                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                          : message.plane == "zx"
-                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                            : message.plane == "zy"
-                              ? new THREE.Euler(
-                                  -Math.PI / 2.0,
-                                  0.0,
-                                  -Math.PI / 2.0,
-                                )
-                              : undefined
+                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                    : message.plane == "yx"
+                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                    : message.plane == "yz"
+                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                    : message.plane == "zx"
+                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                    : message.plane == "zy"
+                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
+                    : undefined
                 }
               />
             </group>
@@ -325,16 +328,16 @@ function useMessageHandler() {
           message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-              ? new THREE.MeshToonMaterial({
-                  gradientMap: generateGradientMap(3),
-                  ...standardArgs,
-                })
-              : message.material == "toon5"
-                ? new THREE.MeshToonMaterial({
-                    gradientMap: generateGradientMap(5),
-                    ...standardArgs,
-                  })
-                : assertUnreachable(message.material);
+            ? new THREE.MeshToonMaterial({
+                gradientMap: generateGradientMap(3),
+                ...standardArgs,
+              })
+            : message.material == "toon5"
+            ? new THREE.MeshToonMaterial({
+                gradientMap: generateGradientMap(5),
+                ...standardArgs,
+              })
+            : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(

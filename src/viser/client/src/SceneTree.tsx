@@ -108,17 +108,16 @@ function SceneNodeLabel(props: { name: string }) {
   );
   return labelVisible ? (
     <Html>
-      <Text
+      <span
         style={{
           backgroundColor: "rgba(240, 240, 240, 0.9)",
           borderRadius: "0.2rem",
           userSelect: "none",
+          padding: "0.1em 0.2em",
         }}
-        px="xs"
-        py="0.1rem"
       >
         {props.name}
-      </Text>
+      </span>
     </Html>
   ) : null;
 }

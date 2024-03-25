@@ -1,8 +1,8 @@
-import React from 'react';
-import { Box } from '@mantine/core';
-import { useSliderContext } from '../Slider.context';
-import { getPosition } from '../utils/get-position/get-position';
-import { isMarkFilled } from './is-mark-filled';
+import React from "react";
+import { Box } from "@mantine/core";
+import { useSliderContext } from "../Slider.context";
+import { getPosition } from "../utils/get-position/get-position";
+import { isMarkFilled } from "./is-mark-filled";
 
 export interface MarksProps {
   marks: { value: number; label?: React.ReactNode }[] | undefined;
@@ -14,7 +14,15 @@ export interface MarksProps {
   inverted: boolean | undefined;
 }
 
-export function Marks({ marks, min, max, disabled, value, offset, inverted }: MarksProps) {
+export function Marks({
+  marks,
+  min,
+  max,
+  disabled,
+  value,
+  offset,
+  inverted,
+}: MarksProps) {
   const { getStyles } = useSliderContext();
 
   if (!marks) {
@@ -23,19 +31,24 @@ export function Marks({ marks, min, max, disabled, value, offset, inverted }: Ma
 
   const items = marks.map((mark, index) => (
     <Box
-      {...getStyles('markWrapper')}
-      __vars={{ '--mark-offset': `${getPosition({ value: mark.value, min, max })}%` }}
+      {...getStyles("markWrapper")}
+      __vars={{
+        "--mark-offset": `${getPosition({ value: mark.value, min, max })}%`,
+      }}
       key={index}
     >
       <Box
-        {...getStyles('mark')}
-        mod={{ filled: isMarkFilled({ mark, value, offset, inverted }), disabled }}
+        {...getStyles("mark")}
+        mod={{
+          filled: isMarkFilled({ mark, value, offset, inverted }),
+          disabled,
+        }}
       />
-      {mark.label && <div {...getStyles('markLabel')}>{mark.label}</div>}
+      {mark.label && <div {...getStyles("markLabel")}>{mark.label}</div>}
     </Box>
   ));
 
   return <div>{items}</div>;
 }
 
-Marks.displayName = '@mantine/core/SliderMarks';
+Marks.displayName = "@mantine/core/SliderMarks";

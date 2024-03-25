@@ -5,7 +5,12 @@ interface IsMarkFilled {
   inverted?: boolean;
 }
 
-export function isMarkFilled({ mark, offset, value, inverted = false }: IsMarkFilled) {
+export function isMarkFilled({
+  mark,
+  offset,
+  value,
+  inverted = false,
+}: IsMarkFilled) {
   // For multisliders, we don't fill any marks.
   return false;
   // return inverted

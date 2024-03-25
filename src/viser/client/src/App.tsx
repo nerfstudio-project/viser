@@ -21,6 +21,7 @@ import {
   MantineProvider,
   Modal,
   createTheme,
+  useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import React, { useEffect } from "react";
@@ -155,9 +156,9 @@ function ViewerRoot() {
 
 function ViewerContents() {
   const viewer = React.useContext(ViewerContext)!;
+  const dark_mode = viewer.useGui((state) => state.theme.dark_mode);
   const colors = viewer.useGui((state) => state.theme.colors);
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
-  console.log(colors);
   return (
     <MantineProvider
       theme={createTheme({
@@ -181,7 +182,6 @@ function ViewerContents() {
       <Box
         style={{
           width: "100%",
-          height: "1px",
           position: "relative",
           flexGrow: 1,
           display: "flex",
@@ -189,12 +189,12 @@ function ViewerContents() {
         }}
       >
         <Box
-          style={{
-            backgroundColor: "#fff",
+          style={(theme) => ({
+            backgroundColor: dark_mode ? theme.colors.dark[9] : "#fff",
             flexGrow: 1,
             width: "10em",
             position: "relative",
-          }}
+          })}
         >
           <Viewer2DCanvas />
           <ViewerCanvas>
@@ -217,6 +217,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     20,
   );
   const theme = useMantineTheme();
+
+  // Overwrite the Mantine color scheme, which is persisted in local storage.
+  // This doesn't really belong to the canvas, it just needs to be run
+  // somewhere within the Mantine + viewer contexts.
+  useMantineColorScheme().setColorScheme(
+    viewer.useGui((state) => state.theme.dark_mode) ? "dark" : "light",
+  );
+
   return (
     <Canvas
       camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}

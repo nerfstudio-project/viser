@@ -1,6 +1,12 @@
 // @refresh reset
 
-import { Box, Collapse, Paper, ScrollArea, useMantineColorScheme } from "@mantine/core";
+import {
+  Box,
+  Collapse,
+  Paper,
+  ScrollArea,
+  useMantineColorScheme,
+} from "@mantine/core";
 import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 import { useDisclosure } from "@mantine/hooks";

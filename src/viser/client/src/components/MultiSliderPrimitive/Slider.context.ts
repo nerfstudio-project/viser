@@ -1,18 +1,22 @@
-import { createSafeContext, GetStylesApi } from '@mantine/core';
+import { createSafeContext, GetStylesApi } from "@mantine/core";
 
 export type SliderStylesNames =
-  | 'root'
-  | 'label'
-  | 'thumb'
-  | 'trackContainer'
-  | 'track'
-  | 'bar'
-  | 'markWrapper'
-  | 'mark'
-  | 'markLabel';
+  | "root"
+  | "label"
+  | "thumb"
+  | "trackContainer"
+  | "track"
+  | "bar"
+  | "markWrapper"
+  | "mark"
+  | "markLabel";
 
 export type SliderCssVariables = {
-  root: '--slider-size' | '--slider-color' | '--slider-thumb-size' | '--slider-radius';
+  root:
+    | "--slider-size"
+    | "--slider-color"
+    | "--slider-thumb-size"
+    | "--slider-radius";
 };
 
 interface SliderContextValue {
@@ -25,6 +29,5 @@ interface SliderContextValue {
   }>;
 }
 
-export const [SliderProvider, useSliderContext] = createSafeContext<SliderContextValue>(
-  'SliderProvider was not found in tree'
-);
+export const [SliderProvider, useSliderContext] =
+  createSafeContext<SliderContextValue>("SliderProvider was not found in tree");

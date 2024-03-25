@@ -70,26 +70,28 @@ export default function ControlPanel(props: {
   )!;
 
   const generatedServerToggleButton = (
-    <Box style={{ display: showGenerated ? undefined : "none" }}>
-      <ActionIcon
-        onClick={(evt) => {
-          evt.stopPropagation();
-          toggle();
-        }}
+    <ActionIcon
+      onClick={(evt) => {
+        evt.stopPropagation();
+        toggle();
+      }}
+      style={{
+        display: showGenerated ? undefined : "none",
+        transform: "translateY(0.05em)",
+      }}
+    >
+      <Tooltip
+        zIndex={100}
+        label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
+        withinPortal
       >
-        <Tooltip
-          zIndex={100}
-          label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
-          withinPortal
-        >
-          {showSettings ? (
-            <IconArrowBack stroke={1.625} />
-          ) : (
-            <IconAdjustments stroke={1.625} />
-          )}
-        </Tooltip>
-      </ActionIcon>
-    </Box>
+        {showSettings ? (
+          <IconArrowBack stroke={1.625} />
+        ) : (
+          <IconAdjustments stroke={1.625} />
+        )}
+      </Tooltip>
+    </ActionIcon>
   );
 
   const panelContents = (
@@ -222,17 +224,18 @@ function ShareButton() {
         label={connected ? "Share" : "Share (needs connection)"}
         withinPortal
       >
-        <div>
-          <ActionIcon
-            onClick={(evt) => {
-              evt.stopPropagation();
-              openShareModal();
-            }}
-            disabled={!connected}
-          >
-            <IconShare stroke={2} height="1.125em" width="1.125em" />
-          </ActionIcon>
-        </div>
+        <ActionIcon
+          onClick={(evt) => {
+            evt.stopPropagation();
+            openShareModal();
+          }}
+          style={{
+            transform: "translateY(0.05em)",
+          }}
+          disabled={!connected}
+        >
+          <IconShare stroke={2} height="1.125em" width="1.125em" />
+        </ActionIcon>
       </Tooltip>
       <Modal
         title="Share"
@@ -257,7 +260,7 @@ function ShareButton() {
               /> */}
             {doingSomething ? (
               <Stack mb="xl">
-                <Loader size="xl" mx="auto" />
+                <Loader size="xl" mx="auto" type="dots" />
               </Stack>
             ) : (
               <Stack mb="md">

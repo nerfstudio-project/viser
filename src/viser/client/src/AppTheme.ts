@@ -9,7 +9,7 @@ import {
   Button,
   createTheme,
 } from "@mantine/core";
-import {themeToVars} from "@mantine/vanilla-extract";
+import { themeToVars } from "@mantine/vanilla-extract";
 
 export const theme = createTheme({
   fontFamily: "Inter",
