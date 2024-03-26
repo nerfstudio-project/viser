@@ -1,9 +1,8 @@
 import * as React from "react";
 import { ViserInputComponent } from "./common";
-import { computeRelativeLuminance } from "../ControlPanel/GuiState";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { GuiAddCheckboxMessage } from "../WebsocketMessages";
-import { Box, Checkbox, Tooltip, useMantineTheme } from "@mantine/core";
+import { Box, Checkbox, Tooltip } from "@mantine/core";
 
 export default function CheckboxComponent({
   id,
@@ -15,11 +14,6 @@ export default function CheckboxComponent({
 }: GuiAddCheckboxMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
-  const theme = useMantineTheme();
-  const inputColor =
-    computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
-      ? theme.colors.gray[9]
-      : theme.white;
   let input = (
     <Checkbox
       id={id}
@@ -29,11 +23,6 @@ export default function CheckboxComponent({
         setValue(id, value.target.checked);
       }}
       disabled={disabled}
-      styles={{
-        icon: {
-          color: inputColor + " !important",
-        },
-      }}
     />
   );
   if (hint !== null && hint !== undefined) {
@@ -50,7 +39,7 @@ export default function CheckboxComponent({
         openDelay={500}
         withinPortal
       >
-        <Box sx={{ display: "inline-block" }}>{input}</Box>
+        <Box style={{ display: "inline-block" }}>{input}</Box>
       </Tooltip>
     );
   }

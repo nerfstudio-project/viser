@@ -1,4 +1,7 @@
 // @refresh reset
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+
 import { Notifications } from "@mantine/notifications";
 
 import {
@@ -16,8 +19,9 @@ import {
   Box,
   Image,
   MantineProvider,
-  MediaQuery,
   Modal,
+  createTheme,
+  useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import React, { useEffect } from "react";
@@ -26,11 +30,7 @@ import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 import "./index.css";
 
 import ControlPanel from "./ControlPanel/ControlPanel";
-import {
-  UseGui,
-  useGuiState,
-  useViserMantineTheme,
-} from "./ControlPanel/GuiState";
+import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 import {
   WebsocketMessageProducer,
@@ -42,9 +42,10 @@ import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
-import { useDisclosure } from "@mantine/hooks";
+import { useColorScheme, useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { clickToNDC, clickToOpenCV, isClickValid } from "./ClickUtils";
+import { theme } from "./AppTheme";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -155,12 +156,17 @@ function ViewerRoot() {
 
 function ViewerContents() {
   const viewer = React.useContext(ViewerContext)!;
+  const dark_mode = viewer.useGui((state) => state.theme.dark_mode);
+  const colors = viewer.useGui((state) => state.theme.colors);
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
   return (
     <MantineProvider
-      withGlobalStyles
-      withNormalizeCSS
-      theme={useViserMantineTheme()}
+      theme={createTheme({
+        ...theme,
+        ...(colors === null
+          ? {}
+          : { colors: { custom: colors }, primaryColor: "custom" }),
+      })}
     >
       <Notifications
         position="top-left"
@@ -174,40 +180,31 @@ function ViewerContents() {
       <Titlebar />
       <ViserModal />
       <Box
-        sx={{
+        style={{
           width: "100%",
-          height: "1px",
+          height: "100%",
           position: "relative",
           flexGrow: 1,
           display: "flex",
           flexDirection: "row",
         }}
       >
-        <MediaQuery
-          smallerThan={"xs"}
-          styles={{
-            right: 0,
-            bottom: "3.5em" /* account for BottomPanel minimum height. */,
-          }}
+        <Box
+          style={(theme) => ({
+            backgroundColor: dark_mode ? theme.colors.dark[9] : "#fff",
+            flexGrow: 1,
+            width: "10em",
+            position: "relative",
+          })}
         >
-          <Box
-            sx={(theme) => ({
-              backgroundColor:
-                theme.colorScheme === "light" ? "#fff" : theme.colors.dark[9],
-              flexGrow: 1,
-              width: "10em",
-              position: "relative",
-            })}
-          >
-            <Viewer2DCanvas />
-            <ViewerCanvas>
-              <FrameSynchronizedMessageHandler />
-            </ViewerCanvas>
-            {viewer.useGui((state) => state.theme.show_logo) ? (
-              <ViserLogo />
-            ) : null}
-          </Box>
-        </MediaQuery>
+          <Viewer2DCanvas />
+          <ViewerCanvas>
+            <FrameSynchronizedMessageHandler />
+          </ViewerCanvas>
+          {viewer.useGui((state) => state.theme.show_logo) ? (
+            <ViserLogo />
+          ) : null}
+        </Box>
         <ControlPanel control_layout={control_layout} />
       </Box>
     </MantineProvider>
@@ -221,6 +218,18 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     20,
   );
   const theme = useMantineTheme();
+
+  // Overwrite the Mantine color scheme, which is persisted in local storage.
+  // This doesn't really belong to the canvas, it just needs to be run
+  // somewhere within the Mantine + viewer contexts.
+  const mantineColorScheme = useMantineColorScheme();
+  const colorScheme = viewer.useGui((state) => state.theme.dark_mode)
+    ? "dark"
+    : "light";
+  useEffect(() => {
+    mantineColorScheme.setColorScheme(colorScheme);
+  });
+
   return (
     <Canvas
       camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
@@ -291,7 +300,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           const ctx = viewer.canvas2dRef.current!.getContext("2d")!;
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
           ctx.beginPath();
-          ctx.fillStyle = theme.fn.primaryColor();
+          ctx.fillStyle = theme.primaryColor;
           ctx.strokeStyle = "blue";
           ctx.globalAlpha = 0.2;
           ctx.fillRect(
@@ -551,8 +560,8 @@ function SceneContextSetter() {
 
 export function Root() {
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         width: "100%",
         height: "100%",
         position: "relative",
@@ -561,7 +570,7 @@ export function Root() {
       }}
     >
       <ViewerRoot />
-    </Box>
+    </div>
   );
 }
 
@@ -572,7 +581,7 @@ function ViserLogo() {
   return (
     <>
       <Box
-        sx={{
+        style={{
           position: "absolute",
           bottom: "1em",
           left: "1em",
@@ -582,7 +591,7 @@ function ViserLogo() {
         onClick={openAbout}
         title="About Viser"
       >
-        <Image src="/logo.svg" width="2.5em" height="auto" />
+        <Image src="/logo.svg" style={{ width: "2.5em", height: "auto" }} />
       </Box>
       <Modal
         opened={aboutModalOpened}
@@ -594,7 +603,7 @@ function ViserLogo() {
         <Box>
           <Image
             src={
-              useMantineTheme().colorScheme === "dark"
+              useColorScheme() === "dark"
                 ? "viser_banner_dark.svg"
                 : "viser_banner.svg"
             }
@@ -608,7 +617,7 @@ function ViserLogo() {
               href="https://github.com/nerfstudio-project/"
               target="_blank"
               fw="600"
-              sx={{ "&:focus": { outline: "none" } }}
+              style={{ "&:focus": { outline: "none" } }}
             >
               Nerfstudio
             </Anchor>
@@ -617,7 +626,7 @@ function ViserLogo() {
               href="https://github.com/nerfstudio-project/viser"
               target="_blank"
               fw="600"
-              sx={{ "&:focus": { outline: "none" } }}
+              style={{ "&:focus": { outline: "none" } }}
             >
               GitHub
             </Anchor>
@@ -626,7 +635,7 @@ function ViserLogo() {
               href="https://viser.studio"
               target="_blank"
               fw="600"
-              sx={{ "&:focus": { outline: "none" } }}
+              style={{ "&:focus": { outline: "none" } }}
             >
               Documentation
             </Anchor>
