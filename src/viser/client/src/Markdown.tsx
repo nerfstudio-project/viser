@@ -20,23 +20,19 @@ import {
 } from "@mantine/core";
 import { visit } from "unist-util-visit";
 import { Transformer } from "unified";
-import { Element, Root } from "hast";
+import { Root } from "hast";
 
 // Custom Rehype to clean up code blocks (Mantine makes these annoying to style)
 // Adds "block" to any code non-inline code block, which gets directly passed into
 // the Mantine Code component.
 function rehypeCodeblock(): void | Transformer<Root, Root> {
   return (tree) => {
-    visit(
-      tree,
-      "element",
-      (node: Element, i: number | null, parent: Root | Element | null) => {
-        if (node.tagName !== "code") return;
-        if (parent && parent.type === "element" && parent.tagName === "pre") {
-          node.properties = { block: true, ...node.properties };
-        }
-      },
-    );
+    visit(tree, "element", (node, _i, parent) => {
+      if (node.tagName !== "code") return;
+      if (parent && parent.type === "element" && parent.tagName === "pre") {
+        node.properties = { block: true, ...node.properties };
+      }
+    });
   };
 }
 

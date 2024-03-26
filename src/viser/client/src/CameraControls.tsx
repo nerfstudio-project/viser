@@ -128,27 +128,14 @@ export function SynchronizedCameraControls() {
 
   // Keyboard controls.
   React.useEffect(() => {
-    const KEYCODE = {
-      W: 87,
-      A: 65,
-      S: 83,
-      D: 68,
-      ARROW_LEFT: 37,
-      ARROW_UP: 38,
-      ARROW_RIGHT: 39,
-      ARROW_DOWN: 40,
-      SPACE: " ",
-      Q: 81,
-      E: 69,
-    };
     const cameraControls = viewer.cameraControlRef.current!;
 
-    const wKey = new holdEvent.KeyboardKeyHold(KEYCODE.W, 20);
-    const aKey = new holdEvent.KeyboardKeyHold(KEYCODE.A, 20);
-    const sKey = new holdEvent.KeyboardKeyHold(KEYCODE.S, 20);
-    const dKey = new holdEvent.KeyboardKeyHold(KEYCODE.D, 20);
-    const qKey = new holdEvent.KeyboardKeyHold(KEYCODE.Q, 20);
-    const eKey = new holdEvent.KeyboardKeyHold(KEYCODE.E, 20);
+    const wKey = new holdEvent.KeyboardKeyHold("KeyW", 20);
+    const aKey = new holdEvent.KeyboardKeyHold("KeyA", 20);
+    const sKey = new holdEvent.KeyboardKeyHold("KeyS", 20);
+    const dKey = new holdEvent.KeyboardKeyHold("KeyD", 20);
+    const qKey = new holdEvent.KeyboardKeyHold("KeyQ", 20);
+    const eKey = new holdEvent.KeyboardKeyHold("KeyE", 20);
 
     // TODO: these event listeners are currently never removed, even if this
     // component gets unmounted.
@@ -171,10 +158,10 @@ export function SynchronizedCameraControls() {
       cameraControls.elevate(0.002 * event?.deltaTime, true);
     });
 
-    const leftKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_LEFT, 20);
-    const rightKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_RIGHT, 20);
-    const upKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_UP, 20);
-    const downKey = new holdEvent.KeyboardKeyHold(KEYCODE.ARROW_DOWN, 20);
+    const leftKey = new holdEvent.KeyboardKeyHold("ArrowLeft", 20);
+    const rightKey = new holdEvent.KeyboardKeyHold("ArrowRight", 20);
+    const upKey = new holdEvent.KeyboardKeyHold("ArrowUp", 20);
+    const downKey = new holdEvent.KeyboardKeyHold("ArrowDown", 20);
     leftKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
