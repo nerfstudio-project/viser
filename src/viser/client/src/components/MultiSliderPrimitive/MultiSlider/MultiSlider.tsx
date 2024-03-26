@@ -28,7 +28,6 @@ import { SliderRoot } from "../SliderRoot/SliderRoot";
 import { Thumb } from "../Thumb/Thumb";
 import { Track } from "../Track/Track";
 import { getChangeValue } from "../utils/get-change-value/get-change-value";
-import { getFloatingValue } from "../utils/get-floating-value/get-gloating-value";
 import { getPosition } from "../utils/get-position/get-position";
 import { getPrecision } from "../utils/get-precision/get-precision";
 import classes from "../Slider.module.css";
@@ -57,6 +56,9 @@ export interface SliderProps
 
   /** Number of significant digits after the decimal point */
   precision?: number;
+
+  fixedEndpoints: boolean;
+  minRange?: number;
 
   /** Controlled component value */
   value?: number[];
@@ -122,6 +124,7 @@ const defaultProps: Partial<SliderProps> = {
   min: 0,
   max: 100,
   step: 1,
+  fixedEndpoints: true,
   marks: [],
   label: (f) => f,
   labelTransitionProps: { transition: "fade", duration: 0 },
@@ -158,6 +161,8 @@ export const MultiSlider = factory<SliderFactory>((_props, ref) => {
     min,
     max,
     step,
+    fixedEndpoints,
+    minRange,
     precision: _precision,
     defaultValue,
     name,
@@ -175,7 +180,7 @@ export const MultiSlider = factory<SliderFactory>((_props, ref) => {
     className,
     style,
     vars,
-    hiddenInputProps,
+    // hiddenInputProps,
     ...others
   } = props;
 
@@ -223,7 +228,7 @@ export const MultiSlider = factory<SliderFactory>((_props, ref) => {
     const clone: number[] = [...valueRef.current];
     clone[thumbIndex] = val;
 
-    const _minRange = step!;
+    const _minRange = minRange || step!;
     if (thumbIndex < clone.length - 1) {
       if (val > clone[thumbIndex + 1] - (_minRange - 0.000000001)) {
         clone[thumbIndex] = Math.max(min!, clone[thumbIndex + 1] - _minRange);
@@ -240,7 +245,7 @@ export const MultiSlider = factory<SliderFactory>((_props, ref) => {
       }
     }
 
-    const fixedEndpoints = false;
+    // const fixedEndpoints = false;
     if (
       fixedEndpoints &&
       (thumbIndex === 0 || thumbIndex == clone.length - 1)

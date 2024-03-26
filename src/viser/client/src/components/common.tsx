@@ -139,7 +139,7 @@ export function VectorInput(
             },
           }}
           rightSectionWidth="1em"
-          // precision={props.precision}
+          decimalScale={props.precision}
           step={props.step}
           min={props.min === null ? undefined : props.min[i]}
           max={props.max === null ? undefined : props.max[i]}

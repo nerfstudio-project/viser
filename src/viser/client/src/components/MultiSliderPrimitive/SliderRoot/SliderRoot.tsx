@@ -20,18 +20,7 @@ export interface SliderRootProps extends BoxProps, ElementProps<"div"> {
 }
 
 export const SliderRoot = forwardRef<HTMLDivElement, SliderRootProps>(
-  (
-    {
-      size,
-      disabled,
-      variant,
-      color,
-      thumbSize,
-      radius,
-      ...others
-    }: SliderRootProps,
-    ref,
-  ) => {
+  ({ size, variant, ...others }: SliderRootProps, ref) => {
     const { getStyles } = useSliderContext();
 
     return (

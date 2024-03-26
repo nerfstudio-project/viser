@@ -21,7 +21,8 @@ export default function NumberInputComponent({
       <NumberInput
         id={id}
         value={value}
-        // precision={precision}
+        // This was renamed in Mantine v7.
+        decimalScale={precision}
         min={min ?? undefined}
         max={max ?? undefined}
         step={step}

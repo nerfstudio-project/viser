@@ -7,7 +7,6 @@ import { ViewerContext } from "./App";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
 import { immerable } from "immer";
-import { Text } from "@mantine/core";
 import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";

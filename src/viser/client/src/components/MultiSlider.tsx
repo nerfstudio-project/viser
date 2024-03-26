@@ -57,6 +57,9 @@ export default function MultiSliderComponent({
         min={min}
         max={max}
         step={step ?? undefined}
+        fixedEndpoints={fixed_endpoints}
+        precision={precision}
+        minRange={min_range ?? undefined}
         marks={
           marks === null
             ? [

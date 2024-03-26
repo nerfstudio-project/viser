@@ -2,7 +2,7 @@ import * as React from "react";
 import { ViserInputComponent } from "./common";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { GuiAddCheckboxMessage } from "../WebsocketMessages";
-import { Box, Checkbox, Tooltip, useMantineTheme } from "@mantine/core";
+import { Box, Checkbox, Tooltip } from "@mantine/core";
 
 export default function CheckboxComponent({
   id,
@@ -14,7 +14,6 @@ export default function CheckboxComponent({
 }: GuiAddCheckboxMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
-  const theme = useMantineTheme();
   let input = (
     <Checkbox
       id={id}

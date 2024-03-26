@@ -18,9 +18,7 @@ export interface TrackProps {
 }
 
 export function Track({
-  filled,
   children,
-  offset,
   disabled,
   marksOffset,
   inverted,

@@ -25,7 +25,7 @@ import imageio.v3 as iio
 import numpy as onp
 from typing_extensions import Protocol
 
-from ._icons import base64_from_icon
+from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._message_api import _encode_image_base64
 from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
@@ -347,7 +347,7 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
 class GuiTabGroupHandle:
     _tab_group_id: str
     _labels: List[str]
-    _icons_base64: List[Optional[str]]
+    _icons_html: List[Optional[str]]
     _tabs: List[GuiTabHandle]
     _gui_api: GuiApi
     _order: float
@@ -366,7 +366,7 @@ class GuiTabGroupHandle:
         out = GuiTabHandle(_parent=self, _id=id)
 
         self._labels.append(label)
-        self._icons_base64.append(None if icon is None else base64_from_icon(icon))
+        self._icons_html.append(None if icon is None else svg_from_icon(icon))
         self._tabs.append(out)
 
         self._sync_with_client()
@@ -385,7 +385,7 @@ class GuiTabGroupHandle:
                 self._tab_group_id,
                 {
                     "tab_labels": tuple(self._labels),
-                    "tab_icons_base64": tuple(self._icons_base64),
+                    "tab_icons_html": tuple(self._icons_html),
                     "tab_container_ids": tuple(tab._id for tab in self._tabs),
                 },
             )
@@ -509,7 +509,7 @@ class GuiTabHandle:
         self._parent._gui_api._container_handle_from_id.pop(self._id)
 
         self._parent._labels.pop(container_index)
-        self._parent._icons_base64.pop(container_index)
+        self._parent._icons_html.pop(container_index)
         self._parent._tabs.pop(container_index)
         self._parent._sync_with_client()
 

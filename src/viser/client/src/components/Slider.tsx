@@ -46,7 +46,7 @@ export default function SliderComponent({
             textAlign: "center",
           },
           mark: {
-            transform: "scale(1.85)",
+            transform: "scale(1.95)",
           },
           markFilled: {
             background: disabled

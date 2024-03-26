@@ -2,7 +2,6 @@ import React from "react";
 import { Box } from "@mantine/core";
 import { useSliderContext } from "../Slider.context";
 import { getPosition } from "../utils/get-position/get-position";
-import { isMarkFilled } from "./is-mark-filled";
 
 export interface MarksProps {
   marks: { value: number; label?: React.ReactNode }[] | undefined;
@@ -19,9 +18,9 @@ export function Marks({
   min,
   max,
   disabled,
-  value,
-  offset,
-  inverted,
+  value, // eslint-disable-line
+  offset, // eslint-disable-line
+  inverted, // eslint-disable-line
 }: MarksProps) {
   const { getStyles } = useSliderContext();
 
@@ -40,7 +39,7 @@ export function Marks({
       <Box
         {...getStyles("mark")}
         mod={{
-          filled: isMarkFilled({ mark, value, offset, inverted }),
+          filled: false,
           disabled,
         }}
       />

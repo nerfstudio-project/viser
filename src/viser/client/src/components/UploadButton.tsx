@@ -1,12 +1,6 @@
 import { GuiAddUploadButtonMessage } from "../WebsocketMessages";
 import { v4 as uuid } from "uuid";
-import {
-  Box,
-  Image,
-  Progress,
-  getContrastColor,
-  useMantineTheme,
-} from "@mantine/core";
+import { Box, Progress } from "@mantine/core";
 
 import { Button } from "@mantine/core";
 import React, { useContext } from "react";
@@ -14,6 +8,7 @@ import { ViewerContext, ViewerContextContents } from "../App";
 import { pack } from "msgpackr";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
+import { htmlIconWrapper } from "./ComponentStyles.css";
 
 export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
   // Handle GUI input types.
@@ -23,7 +18,6 @@ export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
     viewer,
     componentId: conf.id,
   });
-  const theme = useMantineTheme();
 
   const disabled = conf.disabled || isUploading;
   return (
@@ -54,22 +48,10 @@ export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
         disabled={disabled}
         size="sm"
         leftSection={
-          conf.icon_base64 === null ? undefined : (
-            <Image
-              style={{
-                height: "1em",
-                width: "1em",
-                opacity: disabled ? 0.3 : 1.0,
-                // Make the color white.
-                // Likely there's a better approach for this!
-                filter:
-                  getContrastColor({ color: conf.color, theme: theme }) ===
-                  "var(--mantine-color-white)"
-                    ? "invert(1)"
-                    : undefined,
-              }}
-              mr="-0.125em"
-              src={"data:image/svg+xml;base64," + conf.icon_base64}
+          conf.icon_html === null ? undefined : (
+            <div
+              className={htmlIconWrapper}
+              dangerouslySetInnerHTML={{ __html: conf.icon_html }}
             />
           )
         }

@@ -2,7 +2,7 @@
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
-import { Notifications, notifications } from "@mantine/notifications";
+import { Notifications } from "@mantine/notifications";
 
 import {
   AdaptiveDpr,
@@ -182,6 +182,7 @@ function ViewerContents() {
       <Box
         style={{
           width: "100%",
+          height: "100%",
           position: "relative",
           flexGrow: 1,
           display: "flex",
@@ -221,9 +222,13 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   // Overwrite the Mantine color scheme, which is persisted in local storage.
   // This doesn't really belong to the canvas, it just needs to be run
   // somewhere within the Mantine + viewer contexts.
-  useMantineColorScheme().setColorScheme(
-    viewer.useGui((state) => state.theme.dark_mode) ? "dark" : "light",
-  );
+  const mantineColorScheme = useMantineColorScheme();
+  const colorScheme = viewer.useGui((state) => state.theme.dark_mode)
+    ? "dark"
+    : "light";
+  useEffect(() => {
+    mantineColorScheme.setColorScheme(colorScheme);
+  });
 
   return (
     <Canvas

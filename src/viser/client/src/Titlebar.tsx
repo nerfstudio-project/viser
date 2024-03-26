@@ -6,8 +6,6 @@ import {
   Container,
   Group,
   Paper,
-  MantineTheme,
-  useMantineTheme,
   Box,
   useMantineColorScheme,
   Portal,
