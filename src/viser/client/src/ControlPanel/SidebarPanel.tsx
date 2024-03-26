@@ -1,6 +1,13 @@
 // @refresh reset
 
-import { ActionIcon, Box, Paper, ScrollArea, Tooltip } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Paper,
+  ScrollArea,
+  Tooltip,
+  useMantineColorScheme,
+} from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
@@ -24,7 +31,7 @@ export default function SidebarPanel({
 
   const collapsedView = (
     <Box
-      sx={(theme) => ({
+      style={(theme) => ({
         /* Animate in when collapsed. */
         position: "absolute",
         top: "0em",
@@ -35,7 +42,7 @@ export default function SidebarPanel({
         /* Visuals. */
         borderBottomLeftRadius: "0.5em",
         backgroundColor:
-          theme.colorScheme == "dark"
+          useMantineColorScheme().colorScheme == "dark"
             ? theme.colors.dark[5]
             : theme.colors.gray[2],
         padding: "0.5em",
@@ -69,7 +76,7 @@ export default function SidebarPanel({
       front of the titlebar's shadow) */}
       <Paper
         shadow="0 0 1em 0 rgba(0,0,0,0.1)"
-        sx={{
+        style={{
           width: collapsed ? 0 : width,
           height: "100%",
           right: 0,
@@ -82,7 +89,7 @@ export default function SidebarPanel({
       <Paper
         component={ScrollArea}
         radius={0}
-        sx={{
+        style={{
           width: collapsed ? 0 : width,
           boxSizing: "content-box",
           transition: "width 0.5s 0s",
@@ -126,10 +133,10 @@ SidebarPanel.Handle = function SidebarPanelHandle({
   return (
     <Box
       p="xs"
-      sx={(theme) => ({
+      style={(theme) => ({
         borderBottom: "1px solid",
         borderColor:
-          theme.colorScheme == "dark"
+          useMantineColorScheme().colorScheme == "dark"
             ? theme.colors.dark[4]
             : theme.colors.gray[3],
         lineHeight: "1.5em",

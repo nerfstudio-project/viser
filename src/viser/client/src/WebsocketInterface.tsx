@@ -23,19 +23,24 @@ import {
   FileTransferStart,
   Message,
 } from "./WebsocketMessages";
-import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import {
   isTexture,
   makeThrottledMessageSender,
   sendWebsocketMessage,
 } from "./WebsocketFunctions";
-import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
+import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { MantineProvider, Paper, Progress } from "@mantine/core";
+import {
+  MantineProvider,
+  Paper,
+  Progress,
+  useMantineColorScheme,
+} from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
+import { theme } from "./AppTheme";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -70,13 +75,16 @@ function useMessageHandler() {
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
+  const colorScheme = useMantineColorScheme();
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(node: SceneNode<any>) {
     // Make sure scene node is in attributes.
     const attrs = viewer.nodeAttributesFromName.current;
-    attrs[node.name] = {};
+    attrs[node.name] = {
+      overrideVisibility: attrs[node.name]?.overrideVisibility,
+    };
 
     // Don't update the pose of the object until we've made a new one!
     attrs[node.name]!.poseUpdateState = "waitForMakeObject";
@@ -94,7 +102,6 @@ function useMessageHandler() {
     addSceneNode(node);
   }
 
-  const mantineTheme = useViserMantineTheme();
   const fileDownloadHandler = useFileDownloadHandler();
 
   // Return message handler.
@@ -124,6 +131,7 @@ function useMessageHandler() {
       // Configure the theme.
       case "ThemeConfigurationMessage": {
         setTheme(message);
+        colorScheme.setColorScheme(message.dark_mode ? "dark" : "light");
         return;
       }
       // Enable/disable whether scene pointer events are sent.
@@ -432,6 +440,7 @@ function useMessageHandler() {
                   disableAxes={message.disable_axes}
                   disableSliders={message.disable_sliders}
                   disableRotations={message.disable_rotations}
+                  disableScaling={true}
                   translationLimits={message.translation_limits}
                   rotationLimits={message.rotation_limits}
                   depthTest={message.depth_test}
@@ -598,26 +607,6 @@ function useMessageHandler() {
       }
       // Add a 2D label.
       case "LabelMessage": {
-        const Label = styled.span`
-          background-color: rgba(255, 255, 255, 0.85);
-          padding: 0.2em;
-          border-radius: 0.2em;
-          border: 1px solid #777;
-          color: #333;
-
-          &:before {
-            content: "";
-            position: absolute;
-            top: -1em;
-            left: 1em;
-            width: 0;
-            height: 0;
-            border-left: 1px solid #777;
-            box-sizing: border-box;
-            height: 0.8em;
-            box-shadow: 0 0 1em 0.1em rgba(255, 255, 255, 1);
-          }
-        `;
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
             message.name,
@@ -630,10 +619,20 @@ function useMessageHandler() {
                       style={{
                         width: "10em",
                         fontSize: "0.8em",
-                        transform: "translateX(-1em) translateY(1em)",
+                        transform: "translateX(0.1em) translateY(0.5em)",
                       }}
                     >
-                      <Label>{message.text}</Label>
+                      <span
+                        style={{
+                          background: "#fff",
+                          border: "1px solid #777",
+                          borderRadius: "0.2em",
+                          color: "#333",
+                          padding: "0.2em",
+                        }}
+                      >
+                        {message.text}
+                      </span>
                     </div>
                   </Html>
                 </group>
@@ -657,13 +656,9 @@ function useMessageHandler() {
               return (
                 <group ref={ref} position={new THREE.Vector3(1e8, 1e8, 1e8)}>
                   <Html prepend={false}>
-                    <MantineProvider
-                      withGlobalStyles
-                      withNormalizeCSS
-                      theme={mantineTheme}
-                    >
+                    <MantineProvider theme={theme}>
                       <Paper
-                        sx={{
+                        style={{
                           width: "18em",
                           fontSize: "0.875em",
                           marginLeft: "0.5em",

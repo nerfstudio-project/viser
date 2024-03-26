@@ -5,6 +5,7 @@ import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { Box, Collapse, Paper } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViewerContext } from "../App";
+import { folderLabel, folderToggleIcon, folderWrapper } from "./Folder.css";
 
 export default function FolderComponent({
   id,
@@ -21,42 +22,18 @@ export default function FolderComponent({
   const ToggleIcon = opened ? IconChevronUp : IconChevronDown;
   if (!visible) return <></>;
   return (
-    <Paper
-      withBorder
-      pt="0.0625em"
-      mb="xs"
-      mx="xs"
-      mt="xs"
-      sx={{
-        position: "relative",
-        ":not(:last-child)": { marginBottom: "1em" },
-      }}
-    >
+    <Paper withBorder className={folderWrapper}>
       <Paper
-        sx={{
-          fontSize: "0.875em",
-          position: "absolute",
-          padding: "0 0.375em 0 0.375em",
-          top: 0,
-          left: "0.375em",
-          transform: "translateY(-50%)",
+        className={folderLabel}
+        style={{
           cursor: isEmpty ? undefined : "pointer",
-          userSelect: "none",
-          fontWeight: 500,
         }}
         onClick={toggle}
       >
         {label}
         <ToggleIcon
+          className={folderToggleIcon}
           style={{
-            width: "0.9em",
-            height: "0.9em",
-            strokeWidth: 3,
-            top: "0.1em",
-            position: "relative",
-            marginLeft: "0.25em",
-            marginRight: "-0.1em",
-            opacity: 0.5,
             display: isEmpty ? "none" : undefined,
           }}
         />

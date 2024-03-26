@@ -54,7 +54,7 @@ from ._gui_handles import (
     _GuiInputHandle,
     _make_unique_id,
 )
-from ._icons import base64_from_icon
+from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._message_api import MessageApi, cast_vector
 from ._messages import FileTransferPartAck
@@ -443,14 +443,14 @@ class GuiApi(abc.ABC):
                 container_id=self._get_container_id(),
                 tab_labels=(),
                 visible=visible,
-                tab_icons_base64=(),
+                tab_icons_html=(),
                 tab_container_ids=(),
             )
         )
         return GuiTabGroupHandle(
             _tab_group_id=tab_group_id,
             _labels=[],
-            _icons_base64=[],
+            _icons_html=[],
             _tabs=[],
             _gui_api=self,
             _order=order,
@@ -555,7 +555,7 @@ class GuiApi(abc.ABC):
                     hint=hint,
                     value=False,
                     color=color,
-                    icon_base64=None if icon is None else base64_from_icon(icon),
+                    icon_html=None if icon is None else svg_from_icon(icon),
                     disabled=disabled,
                     visible=visible,
                 ),
@@ -625,7 +625,7 @@ class GuiApi(abc.ABC):
                     hint=hint,
                     color=color,
                     mime_type=mime_type,
-                    icon_base64=None if icon is None else base64_from_icon(icon),
+                    icon_html=None if icon is None else svg_from_icon(icon),
                 ),
                 is_button=True,
             )._impl

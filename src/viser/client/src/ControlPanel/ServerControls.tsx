@@ -1,5 +1,13 @@
 import { ViewerContext } from "../App";
-import { Button, Divider, Stack, Switch, Text, TextInput } from "@mantine/core";
+import {
+  Box,
+  Button,
+  Divider,
+  Stack,
+  Switch,
+  Text,
+  TextInput,
+} from "@mantine/core";
 import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
 import { Stats } from "@react-three/drei";
 import React from "react";
@@ -19,7 +27,7 @@ export default function ServerControls() {
   return (
     <>
       {showStats ? <Stats className="stats-panel" /> : null}
-      <Stack spacing="xs">
+      <Stack gap="xs">
         <TextInput
           label="Server"
           defaultValue={viewer.useGui((state) => state.server)}
@@ -106,7 +114,7 @@ export default function ServerControls() {
             }
           }}
           fullWidth
-          leftIcon={<IconPhoto size="1rem" />}
+          leftSection={<IconPhoto size="1rem" />}
           style={{ height: "1.875rem" }}
         >
           Export Canvas
@@ -116,7 +124,7 @@ export default function ServerControls() {
             viewer.resetCameraViewRef.current!();
           }}
           fullWidth
-          leftIcon={<IconHomeMove size="1rem" />}
+          leftSection={<IconHomeMove size="1rem" />}
           style={{ height: "1.875rem" }}
         >
           Reset View
@@ -130,8 +138,12 @@ export default function ServerControls() {
           size="sm"
         />
         <Divider mt="xs" />
-        <Text fw={500}>Scene tree</Text>
-        <MemoizedTable compact={true} />
+        <Box>
+          <Text mb="0.2em" fw={500}>
+            Scene tree
+          </Text>
+          <MemoizedTable />
+        </Box>
       </Stack>
     </>
   );

@@ -121,7 +121,7 @@ function MdxCite(
 }
 
 function MdxTable(props: React.ComponentPropsWithoutRef<typeof Table>) {
-  return <Table {...props} highlightOnHover withBorder withColumnBorders />;
+  return <Table {...props} highlightOnHover withColumnBorders />;
 }
 
 function MdxImage(props: React.ComponentPropsWithoutRef<typeof Image>) {

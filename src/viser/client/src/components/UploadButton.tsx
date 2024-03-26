@@ -1,7 +1,6 @@
 import { GuiAddUploadButtonMessage } from "../WebsocketMessages";
-import { computeRelativeLuminance } from "../ControlPanel/GuiState";
 import { v4 as uuid } from "uuid";
-import { Box, Image, Progress, useMantineTheme } from "@mantine/core";
+import { Box, Progress } from "@mantine/core";
 
 import { Button } from "@mantine/core";
 import React, { useContext } from "react";
@@ -9,6 +8,7 @@ import { ViewerContext, ViewerContextContents } from "../App";
 import { pack } from "msgpackr";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
+import { htmlIconWrapper } from "./ComponentStyles.css";
 
 export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
   // Handle GUI input types.
@@ -18,12 +18,7 @@ export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
     viewer,
     componentId: conf.id,
   });
-  const theme = useMantineTheme();
 
-  const inputColor =
-    computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
-      ? theme.colors.gray[9]
-      : theme.white;
   const disabled = conf.disabled || isUploading;
   return (
     <Box mx="xs" mb="0.5em">
@@ -50,27 +45,13 @@ export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
           fileUploadRef.current.click();
         }}
         style={{ height: "2.125em" }}
-        styles={{ inner: { color: inputColor + " !important" } }}
         disabled={disabled}
         size="sm"
-        leftIcon={
-          conf.icon_base64 === null ? undefined : (
-            <Image
-              /*^In Safari, both the icon's height and width need to be set, otherwise the icon is clipped.*/
-              height="1em"
-              width="1em"
-              opacity={disabled ? 0.3 : 1.0}
-              mr="-0.125em"
-              sx={
-                inputColor === theme.white
-                  ? {
-                      // Make the color white.
-                      filter: !disabled ? "invert(1)" : undefined,
-                    }
-                  : // Icon will be black by default.
-                    undefined
-              }
-              src={"data:image/svg+xml;base64," + conf.icon_base64}
+        leftSection={
+          conf.icon_html === null ? undefined : (
+            <div
+              className={htmlIconWrapper}
+              dangerouslySetInnerHTML={{ __html: conf.icon_html }}
             />
           )
         }
@@ -132,9 +113,7 @@ function useFileUpload({
         message: !isDone ? (
           <Progress
             size="sm"
-            // Default transition time is 100ms.
-            // In Mantine v7, the transitionDuration prop can be used.
-            styles={{ bar: { transition: "width 10ms linear" } }}
+            transitionDuration={10}
             value={100 * progressValue}
           />
         ) : (

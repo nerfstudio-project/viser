@@ -415,7 +415,7 @@ class GuiAddTabGroupMessage(Message):
     id: str
     container_id: str
     tab_labels: Tuple[str, ...]
-    tab_icons_base64: Tuple[Union[str, None], ...]
+    tab_icons_html: Tuple[Union[str, None], ...]
     tab_container_ids: Tuple[str, ...]
     visible: bool
 
@@ -470,7 +470,7 @@ class GuiAddButtonMessage(_GuiAddInputBase):
             "teal",
         ]
     ]
-    icon_base64: Optional[str]
+    icon_html: Optional[str]
 
 
 @tag_class("GuiAddComponentMessage")
@@ -494,7 +494,7 @@ class GuiAddUploadButtonMessage(_GuiAddInputBase):
             "teal",
         ]
     ]
-    icon_base64: Optional[str]
+    icon_html: Optional[str]
     mime_type: str
 
 

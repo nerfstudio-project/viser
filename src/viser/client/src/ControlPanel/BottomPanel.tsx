@@ -1,4 +1,4 @@
-import { Box, Collapse, Paper } from "@mantine/core";
+import { Box, Collapse, Paper, useMantineColorScheme } from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 
@@ -27,7 +27,7 @@ export default function BottomPanel({
       <Paper
         radius="0"
         withBorder
-        sx={{
+        style={{
           boxSizing: "border-box",
           width: "100%",
           zIndex: 10,
@@ -56,10 +56,10 @@ BottomPanel.Handle = function BottomPanelHandle({
   return (
     <Box
       color="red"
-      sx={(theme) => ({
+      style={(theme) => ({
         borderBottom: panelContext.expanded ? "1px solid" : undefined,
         borderColor:
-          theme.colorScheme == "dark"
+          useMantineColorScheme().colorScheme == "dark"
             ? theme.colors.dark[4]
             : theme.colors.gray[3],
         cursor: "pointer",
