@@ -98,7 +98,7 @@ def _(client: viser.ClientHandle) -> None:
             R_camera_world = tf.SE3.from_rotation_and_translation(
                 tf.SO3(camera.wxyz), camera.position
             ).inverse()
-            vertices = mesh.vertices
+            vertices = cast(onp.ndarray, mesh.vertices)
             vertices = (R_mesh_world.as_matrix() @ vertices.T).T
             vertices = (
                 R_camera_world.as_matrix()
