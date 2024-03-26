@@ -606,26 +606,6 @@ function useMessageHandler() {
       }
       // Add a 2D label.
       case "LabelMessage": {
-        // const Label = styled.span`
-        //   background-color: rgba(255, 255, 255, 0.85);
-        //   padding: 0.2em;
-        //   border-radius: 0.2em;
-        //   border: 1px solid #777;
-        //   color: #333;
-        //
-        //   &:before {
-        //     content: "";
-        //     position: absolute;
-        //     top: -1em;
-        //     left: 1em;
-        //     width: 0;
-        //     height: 0;
-        //     border-left: 1px solid #777;
-        //     box-sizing: border-box;
-        //     height: 0.8em;
-        //     box-shadow: 0 0 1em 0.1em rgba(255, 255, 255, 1);
-        //   }
-        // `;
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
             message.name,
@@ -638,10 +618,20 @@ function useMessageHandler() {
                       style={{
                         width: "10em",
                         fontSize: "0.8em",
-                        transform: "translateX(-1em) translateY(1em)",
+                        transform: "translateX(0.1em) translateY(0.5em)",
                       }}
                     >
-                      <span>{message.text}</span>
+                      <span
+                        style={{
+                          background: "#fff",
+                          border: "1px solid #777",
+                          borderRadius: "0.2em",
+                          color: "#333",
+                          padding: "0.2em",
+                        }}
+                      >
+                        {message.text}
+                      </span>
                     </div>
                   </Html>
                 </group>
