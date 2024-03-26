@@ -36,7 +36,7 @@ export default function SliderComponent({
         styles={(theme) => ({
           thumb: {
             height: "0.75rem",
-            width: "0.625rem",
+            width: "0.5rem",
           },
           trackContainer: {
             zIndex: 3,
