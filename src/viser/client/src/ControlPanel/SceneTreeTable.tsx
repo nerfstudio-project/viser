@@ -105,7 +105,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
         </Box>
         <Tooltip label="Click to override visibility">
           <VisibleIcon
-            color={theme.colors.gray[isVisibleEffective ? 6 : 3]}
+            color={theme.colors.gray[isVisibleEffective ? 3 : 6]}
             style={{ cursor: "pointer" }}
             onClick={(evt) => {
               evt.stopPropagation();
