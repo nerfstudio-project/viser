@@ -440,6 +440,7 @@ function useMessageHandler() {
                   disableAxes={message.disable_axes}
                   disableSliders={message.disable_sliders}
                   disableRotations={message.disable_rotations}
+                  disableScaling={true}
                   translationLimits={message.translation_limits}
                   rotationLimits={message.rotation_limits}
                   depthTest={message.depth_test}
