@@ -8,6 +8,7 @@ import {
 } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViserInputComponent } from "./common";
+import { sliderDefaultMarks } from "./ComponentStyles.css";
 
 export default function SliderComponent({
   id,
@@ -27,6 +28,7 @@ export default function SliderComponent({
     <Flex justify="space-between">
       <Slider
         id={id}
+        className={marks === null ? sliderDefaultMarks : undefined}
         size="xs"
         thumbSize={0}
         radius="xs"

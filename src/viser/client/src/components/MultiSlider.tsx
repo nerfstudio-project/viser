@@ -4,6 +4,7 @@ import { Box, useMantineColorScheme } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViserInputComponent } from "./common";
 import { MultiSlider } from "./MultiSliderPrimitive";
+import { sliderDefaultMarks } from "./ComponentStyles.css";
 
 export default function MultiSliderComponent({
   id,
@@ -24,6 +25,7 @@ export default function MultiSliderComponent({
     <Box mt="0.2em" mb="0.4em">
       <MultiSlider
         id={id}
+        className={marks === null ? sliderDefaultMarks : undefined}
         size="xs"
         thumbSize={0}
         radius="xs"
