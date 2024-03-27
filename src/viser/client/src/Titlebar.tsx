@@ -114,7 +114,11 @@ export function TitlebarImage(
   if (props.href == null) {
     return image;
   }
-  return <a href={props.href}>{image}</a>;
+  return (
+    <a style={{ display: "block", height: "1.8em" }} href={props.href}>
+      {image}
+    </a>
+  );
 }
 
 export function Titlebar() {
@@ -140,14 +144,11 @@ export function Titlebar() {
         zIndex: 10,
       }}
     >
-      <Paper
-        p="xs"
-        shadow="0 0 0.8em 0 rgba(0,0,0,0.1)"
-        style={{ height: "100%" }}
-      >
+      <Paper shadow="0 0 0.8em 0 rgba(0,0,0,0.1)" style={{ height: "100%" }}>
         <Container
           fluid
           style={() => ({
+            height: "100%",
             display: "flex",
             alignItems: "center",
           })}
@@ -173,7 +174,7 @@ export function Titlebar() {
             opened={burgerOpen}
             onClick={burgerHandlers.toggle}
             title={!burgerOpen ? "Open navigation" : "Close navigation"}
-            display={{ base: "flex", xs: "none" }}
+            display={{ base: "block", xs: "none" }}
           ></Burger>
         </Container>
         <Portal>
