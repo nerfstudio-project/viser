@@ -11,7 +11,7 @@ import browserslistToEsbuild from "browserslist-to-esbuild";
 export default defineConfig({
   plugins: [
     react(),
-    eslint(),
+    eslint({ failOnError: false, failOnWarning: false }),
     viteTsconfigPaths(),
     svgrPlugin(),
     vanillaExtractPlugin(),

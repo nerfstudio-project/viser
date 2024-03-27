@@ -34,7 +34,7 @@ export default function SidebarPanel({
       style={(theme) => ({
         /* Animate in when collapsed. */
         position: "absolute",
-        top: "0em",
+        top: 0,
         right: collapsed ? "0em" : "-3em",
         transitionProperty: "right",
         transitionDuration: "0.5s",
@@ -78,19 +78,19 @@ export default function SidebarPanel({
         shadow="0 0 1em 0 rgba(0,0,0,0.1)"
         style={{
           width: collapsed ? 0 : width,
-          height: "100%",
-          right: 0,
           boxSizing: "content-box",
           transition: "width 0.5s 0s",
           zIndex: 8,
-          position: "absolute",
         }}
       ></Paper>
       <Paper
-        component={ScrollArea}
         radius={0}
         style={{
           width: collapsed ? 0 : width,
+          top: 0,
+          bottom: 0,
+          right: 0,
+          position: "absolute",
           boxSizing: "content-box",
           transition: "width 0.5s 0s",
           zIndex: 20,
@@ -99,7 +99,12 @@ export default function SidebarPanel({
         <Box
           /* Prevent DOM reflow, as well as internals from getting too wide.
            * Needs to match the width of the wrapper element above. */
-          w={width}
+          style={{
+            width: width,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
           {children}
         </Box>
@@ -159,5 +164,5 @@ SidebarPanel.Contents = function SidebarPanelContents({
 }: {
   children: string | React.ReactNode;
 }) {
-  return children;
+  return <ScrollArea style={{ flexGrow: 1 }}>{children}</ScrollArea>;
 };

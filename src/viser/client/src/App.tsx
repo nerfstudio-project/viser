@@ -1,6 +1,7 @@
 // @refresh reset
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "./App.css";
 
 import { Notifications } from "@mantine/notifications";
 
@@ -177,35 +178,46 @@ function ViewerContents() {
           },
         }}
       />
-      <Titlebar />
       <ViserModal />
       <Box
         style={{
           width: "100%",
           height: "100%",
-          position: "relative",
-          flexGrow: 1,
+          // We use flex display for the titlebar layout.
           display: "flex",
-          flexDirection: "row",
+          position: "relative",
+          flexDirection: "column",
         }}
       >
+        <Titlebar />
         <Box
-          style={(theme) => ({
-            backgroundColor: dark_mode ? theme.colors.dark[9] : "#fff",
-            flexGrow: 1,
-            width: "10em",
+          style={{
+            // Put the canvas and control panel side-by-side.
+            width: "100%",
             position: "relative",
-          })}
+            flexGrow: 1,
+            overflow: "hidden",
+            display: "flex",
+          }}
         >
-          <Viewer2DCanvas />
-          <ViewerCanvas>
-            <FrameSynchronizedMessageHandler />
-          </ViewerCanvas>
-          {viewer.useGui((state) => state.theme.show_logo) ? (
-            <ViserLogo />
-          ) : null}
+          <Box
+            style={(theme) => ({
+              backgroundColor: dark_mode ? theme.colors.dark[9] : "#fff",
+              flexGrow: 1,
+              overflow: "hidden",
+              height: "100%",
+            })}
+          >
+            <Viewer2DCanvas />
+            <ViewerCanvas>
+              <FrameSynchronizedMessageHandler />
+            </ViewerCanvas>
+            {viewer.useGui((state) => state.theme.show_logo) ? (
+              <ViserLogo />
+            ) : null}
+          </Box>
+          <ControlPanel control_layout={control_layout} />
         </Box>
-        <ControlPanel control_layout={control_layout} />
       </Box>
     </MantineProvider>
   );
