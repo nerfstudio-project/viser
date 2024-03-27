@@ -162,9 +162,6 @@ export function Titlebar() {
               overflowX: "scroll",
               msOverflowStyle: "none",
               scrollbarWidth: "none",
-              "&::-webkit-scrollbar": {
-                display: "none",
-              },
             })}
           >
             {buttons?.map((btn, index) => (

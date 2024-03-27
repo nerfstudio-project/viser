@@ -252,7 +252,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 
   return (
     <Box
-      style={{
+      style={(theme) => ({
         borderRadius: "0.2em 0.2em 0 0",
         lineHeight: "1.5em",
         cursor: "pointer",
@@ -263,7 +263,13 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         alignItems: "center",
         padding: "0 0.75em",
         height: "2.75em",
-      }}
+        borderBottomWidth: panelContext.expanded ? "1px" : 0,
+        borderBottomStyle: "solid",
+        borderColor:
+          useMantineColorScheme().colorScheme == "dark"
+            ? theme.colors.dark[4]
+            : theme.colors.gray[3],
+      })}
       onClick={() => {
         const state = panelContext.dragInfo.current;
         if (state.dragging) {
@@ -297,13 +303,6 @@ FloatingPanel.Contents = function FloatingPanelContents({
           /* Prevent internals from getting too wide. Needs to match the
            * width of the wrapper element above. */
           w={context.width}
-          style={(theme) => ({
-            borderTop: "1px solid",
-            borderColor:
-              useMantineColorScheme().colorScheme == "dark"
-                ? theme.colors.dark[4]
-                : theme.colors.gray[3],
-          })}
         >
           {children}
         </Box>

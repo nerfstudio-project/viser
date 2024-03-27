@@ -26,8 +26,13 @@ export default function BottomPanel({
     >
       <Paper
         radius="0"
-        withBorder
-        style={{
+        style={(theme) => ({
+          borderTopWidth: "1px",
+          borderTopStyle: "solid",
+          borderColor:
+            useMantineColorScheme().colorScheme == "dark"
+              ? theme.colors.dark[4]
+              : theme.colors.gray[3],
           boxSizing: "border-box",
           width: "100%",
           zIndex: 10,
@@ -39,7 +44,7 @@ export default function BottomPanel({
           minHeight: "3.5em",
           maxHeight: "60%",
           transition: "height 0.3s linear",
-        }}
+        })}
         ref={panelWrapperRef}
       >
         {children}
@@ -57,7 +62,8 @@ BottomPanel.Handle = function BottomPanelHandle({
     <Box
       color="red"
       style={(theme) => ({
-        borderBottom: panelContext.expanded ? "1px solid" : undefined,
+        borderBottomWidth: panelContext.expanded ? "1px" : undefined,
+        borderBottomStyle: "solid",
         borderColor:
           useMantineColorScheme().colorScheme == "dark"
             ? theme.colors.dark[4]
