@@ -72,8 +72,8 @@ html_theme_options = {
             "class": "",
         },
     ],
-    "light_logo": "viser_banner.svg",
-    "dark_logo": "viser_banner_dark.svg",
+    "light_logo": "logo.svg",
+    "dark_logo": "logo.svg",
 }
 
 # Pull documentation types from hints
