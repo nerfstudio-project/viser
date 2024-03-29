@@ -21,6 +21,7 @@ import {
   Image,
   MantineProvider,
   Modal,
+  Tooltip,
   createTheme,
   useMantineColorScheme,
   useMantineTheme,
@@ -43,7 +44,7 @@ import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
 import { makeThrottledMessageSender } from "./WebsocketFunctions";
-import { useColorScheme, useDisclosure } from "@mantine/hooks";
+import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { clickToNDC, clickToOpenCV, isClickValid } from "./ClickUtils";
 import { theme } from "./AppTheme";
@@ -592,19 +593,21 @@ function ViserLogo() {
     useDisclosure(false);
   return (
     <>
-      <Box
-        style={{
-          position: "absolute",
-          bottom: "1em",
-          left: "1em",
-          cursor: "pointer",
-        }}
-        component="a"
-        onClick={openAbout}
-        title="About Viser"
-      >
-        <Image src="/logo.svg" style={{ width: "2.5em", height: "auto" }} />
-      </Box>
+      <Tooltip label="About Viser">
+        <Box
+          style={{
+            position: "absolute",
+            bottom: "1em",
+            left: "1em",
+            cursor: "pointer",
+          }}
+          component="a"
+          onClick={openAbout}
+          title="About Viser"
+        >
+          <Image src="/logo.svg" style={{ width: "2.5em", height: "auto" }} />
+        </Box>
+      </Tooltip>
       <Modal
         opened={aboutModalOpened}
         onClose={closeAbout}
@@ -613,17 +616,7 @@ function ViserLogo() {
         ta="center"
       >
         <Box>
-          <Image
-            src={
-              useColorScheme() === "dark"
-                ? "viser_banner_dark.svg"
-                : "viser_banner.svg"
-            }
-            radius="xs"
-          />
-          <Box mt="1.625em">
-            Viser is a 3D visualization toolkit developed at UC Berkeley.
-          </Box>
+          <p>Viser is a 3D visualization toolkit developed at UC Berkeley.</p>
           <p>
             <Anchor
               href="https://github.com/nerfstudio-project/"

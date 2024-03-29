@@ -2,29 +2,15 @@
 
 |mypy| |nbsp| |pyright| |nbsp| |typescript| |nbsp| |versions|
 
-**viser** is a library for interactive 3D visualization + Python, inspired by
-tools like [Pangolin](https://github.com/stevenlovegrove/Pangolin),
-[rviz](https://wiki.ros.org/rviz/),
-[meshcat](https://github.com/rdeits/meshcat), and
-[Gradio](https://github.com/gradio-app/gradio). It's designed to support
-applications in 3D vision and robotics.
+**viser** is a library for interactive 3D visualization in Python.
 
-As a standalone visualization tool, `viser` features include:
+Features include:
 
-- Python API for visualizing 3D primitives in a web browser.
-- Python-configurable GUI elements: buttons, checkboxes, text inputs, sliders,
-  dropdowns, and more.
-- A [meshcat](https://github.com/rdeits/meshcat) and
-  [tf](http://wiki.ros.org/tf2)-inspired coordinate frame tree.
-
-The `viser.infra` backend can also be used to build custom web applications. It
-supports:
-
-- Websocket / HTTP server management, on a shared port.
-- Asynchronous server/client communication infrastructure.
-- Client state persistence logic.
-- Typed serialization; synchronization between Python dataclass and TypeScript
-  interfaces.
+- API for visualizing 3D primitives
+- GUI building blocks: buttons, checkboxes, text inputs, sliders, etc.
+- Scene interaction tools (clicks, selection, transform gizmos)
+- Programmatic camera control and rendering
+- An entirely web-based client, for easy use over SSH!
 
 ## Running examples
 
