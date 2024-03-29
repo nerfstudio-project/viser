@@ -62,6 +62,7 @@ def _(client: viser.ClientHandle) -> None:
 
             if len(hit_pos) == 0:
                 return
+            client.remove_scene_pointer_callback()
 
             # Get the first hit position (based on distance from the ray origin).
             hit_pos = min(hit_pos, key=lambda x: onp.linalg.norm(x - origin))
@@ -75,10 +76,9 @@ def _(client: viser.ClientHandle) -> None:
             )
             hit_pos_handles.append(hit_pos_handle)
 
-        @client.on_scene_pointer_done
+        @client.on_scene_pointer_removed
         def _():
             click_button_handle.disabled = False
-            client.remove_scene_pointer_callback()
 
     # Tests "rect-select" scenepointerevent.
     paint_button_handle = client.add_gui_button("Paint mesh", icon=viser.Icon.PAINT)
@@ -89,6 +89,8 @@ def _(client: viser.ClientHandle) -> None:
 
         @client.on_scene_pointer(event_type="rect-select")
         def _(message: viser.ScenePointerEvent) -> None:
+            client.remove_scene_pointer_callback()
+
             global mesh_handle
             camera = message.client.camera
 
@@ -131,10 +133,9 @@ def _(client: viser.ClientHandle) -> None:
                 position=(0.0, 0.0, 0.0),
             )
 
-        @client.on_scene_pointer_done
+        @client.on_scene_pointer_removed
         def _():
             paint_button_handle.disabled = False
-            client.remove_scene_pointer_callback()
 
     # Button to clear spheres.
     clear_button_handle = client.add_gui_button("Clear scene", icon=viser.Icon.X)
