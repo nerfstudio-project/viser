@@ -1267,7 +1267,6 @@ class MessageApi(abc.ABC):
         if self._scene_pointer_cb is None:
             return
         self._scene_pointer_cb(event)
-        self._scene_pointer_done_cb()
 
     def on_scene_click(
         self,
@@ -1302,17 +1301,8 @@ class MessageApi(abc.ABC):
             if msg_api._scene_pointer_cb is None:
                 return
 
-            # Raise a warning if the callback is being removed.
-            warnings.warn(
-                "Overriding ScenePointerEvent callback, because a callback already exists."
-            )
-
-            # Run cleanup callback.
-            msg_api._scene_pointer_done_cb()
-
-            # If the event cleanup function does not remove the callback, we do it here.
-            if msg_api._scene_pointer_cb is not None:
-                msg_api.remove_scene_pointer_callback()
+            # Remove callback.
+            msg_api.remove_scene_pointer_callback()
 
         def decorator(
             func: Callable[[ScenePointerEvent], None],
@@ -1343,30 +1333,31 @@ class MessageApi(abc.ABC):
 
         return decorator
 
-    def on_scene_pointer_done(
+    def on_scene_pointer_removed(
         self,
         func: Callable[[], None],
     ) -> Callable[[], None]:
-        """Add a callback to run automatically when the callback for the
-        currently registered scene pointer finishes (e.g., GUI state cleanup)."""
+        """Add a callback to run automatically when the callback for a scene
+        pointer event is removed. This will be triggered exactly once, either
+        manually (via `remove_scene_pointer()`) or automatically (if the scene
+        pointer event is overridden with another call to `on_scene_pointer()`).
 
-        if self._scene_pointer_cb is None:
-            warnings.warn(
-                "This cleanup callback corresponds to no scene pointer event, ignoring."
-            )
-            return lambda: None
-
+        Args:
+            func: Callback for when scene pointer events are removed.
+        """
         self._scene_pointer_done_cb = func
         return func
 
     def remove_scene_pointer_callback(
         self,
     ) -> None:
-        """Remove the currently attached scene pointer event."""
+        """Remove the currently attached scene pointer event. This will trigger
+        any callback attached to `.on_scene_pointer_removed()`."""
 
         if self._scene_pointer_cb is None:
             warnings.warn(
-                "No scene pointer callback exists for this server/client, ignoring."
+                "No scene pointer callback exists for this server/client, ignoring.",
+                stacklevel=2,
             )
             return
 
@@ -1377,6 +1368,9 @@ class MessageApi(abc.ABC):
             _messages.ScenePointerEnableMessage(enable=False, event_type=event_type)
         )
         self.flush()
+
+        # Run cleanup callback.
+        self._scene_pointer_done_cb()
 
         # Reset the callback and event type, on the python side.
         self._scene_pointer_cb = None
