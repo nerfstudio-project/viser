@@ -18,12 +18,12 @@ import { SynchronizedCameraControls } from "./CameraControls";
 import {
   Anchor,
   Box,
+  ColorSchemeScript,
   Image,
   MantineProvider,
   Modal,
   Tooltip,
   createTheme,
-  useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import React, { useEffect } from "react";
@@ -162,65 +162,69 @@ function ViewerContents() {
   const colors = viewer.useGui((state) => state.theme.colors);
   const control_layout = viewer.useGui((state) => state.theme.control_layout);
   return (
-    <MantineProvider
-      theme={createTheme({
-        ...theme,
-        ...(colors === null
-          ? {}
-          : { colors: { custom: colors }, primaryColor: "custom" }),
-      })}
-    >
-      <Notifications
-        position="top-left"
-        containerWidth="20em"
-        styles={{
-          root: {
-            boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1) !important",
-          },
-        }}
-      />
-      <ViserModal />
-      <Box
-        style={{
-          width: "100%",
-          height: "100%",
-          // We use flex display for the titlebar layout.
-          display: "flex",
-          position: "relative",
-          flexDirection: "column",
-        }}
+    <>
+      <ColorSchemeScript forceColorScheme={dark_mode ? "dark" : "light"} />
+      <MantineProvider
+        theme={createTheme({
+          ...theme,
+          ...(colors === null
+            ? {}
+            : { colors: { custom: colors }, primaryColor: "custom" }),
+        })}
+        forceColorScheme={dark_mode ? "dark" : "light"}
       >
-        <Titlebar />
+        <Notifications
+          position="top-left"
+          containerWidth="20em"
+          styles={{
+            root: {
+              boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1) !important",
+            },
+          }}
+        />
+        <ViserModal />
         <Box
           style={{
-            // Put the canvas and control panel side-by-side.
             width: "100%",
-            position: "relative",
-            flexGrow: 1,
-            overflow: "hidden",
+            height: "100%",
+            // We use flex display for the titlebar layout.
             display: "flex",
+            position: "relative",
+            flexDirection: "column",
           }}
         >
+          <Titlebar />
           <Box
-            style={(theme) => ({
-              backgroundColor: dark_mode ? theme.colors.dark[9] : "#fff",
+            style={{
+              // Put the canvas and control panel side-by-side.
+              width: "100%",
+              position: "relative",
               flexGrow: 1,
               overflow: "hidden",
-              height: "100%",
-            })}
+              display: "flex",
+            }}
           >
-            <Viewer2DCanvas />
-            <ViewerCanvas>
-              <FrameSynchronizedMessageHandler />
-            </ViewerCanvas>
-            {viewer.useGui((state) => state.theme.show_logo) ? (
-              <ViserLogo />
-            ) : null}
+            <Box
+              style={(theme) => ({
+                backgroundColor: dark_mode ? theme.colors.dark[9] : "#fff",
+                flexGrow: 1,
+                overflow: "hidden",
+                height: "100%",
+              })}
+            >
+              <Viewer2DCanvas />
+              <ViewerCanvas>
+                <FrameSynchronizedMessageHandler />
+              </ViewerCanvas>
+              {viewer.useGui((state) => state.theme.show_logo) ? (
+                <ViserLogo />
+              ) : null}
+            </Box>
+            <ControlPanel control_layout={control_layout} />
           </Box>
-          <ControlPanel control_layout={control_layout} />
         </Box>
-      </Box>
-    </MantineProvider>
+      </MantineProvider>
+    </>
   );
 }
 
@@ -231,17 +235,6 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     20,
   );
   const theme = useMantineTheme();
-
-  // Overwrite the Mantine color scheme, which is persisted in local storage.
-  // This doesn't really belong to the canvas, it just needs to be run
-  // somewhere within the Mantine + viewer contexts.
-  const mantineColorScheme = useMantineColorScheme();
-  const colorScheme = viewer.useGui((state) => state.theme.dark_mode)
-    ? "dark"
-    : "light";
-  useEffect(() => {
-    mantineColorScheme.setColorScheme(colorScheme);
-  });
 
   return (
     <Canvas

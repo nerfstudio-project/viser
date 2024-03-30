@@ -32,12 +32,7 @@ import {
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import {
-  MantineProvider,
-  Paper,
-  Progress,
-  useMantineColorScheme,
-} from "@mantine/core";
+import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { theme } from "./AppTheme";
@@ -75,7 +70,6 @@ function useMessageHandler() {
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
-  const colorScheme = useMantineColorScheme();
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -131,7 +125,6 @@ function useMessageHandler() {
       // Configure the theme.
       case "ThemeConfigurationMessage": {
         setTheme(message);
-        colorScheme.setColorScheme(message.dark_mode ? "dark" : "light");
         return;
       }
       // Enable/disable whether scene pointer events are sent.
