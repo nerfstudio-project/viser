@@ -1,5 +1,5 @@
 import { ViewerContext } from "../App";
-import { Box, Stack, Tooltip, useMantineTheme } from "@mantine/core";
+import { Box, Stack, Tooltip } from "@mantine/core";
 import {
   IconCaretDown,
   IconCaretRight,
@@ -79,7 +79,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   const isVisibleEffective = isVisible && props.isParentVisible;
   const VisibleIcon = isVisible ? IconEye : IconEyeOff;
 
-  const theme = useMantineTheme();
   return (
     <>
       <Box
@@ -103,10 +102,12 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
             <IconCaretRight className={caretIcon} />
           )}
         </Box>
-        <Tooltip label="Click to override visibility">
+        <Tooltip label="Override visibility">
           <VisibleIcon
-            color={theme.colors.gray[isVisibleEffective ? 3 : 6]}
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              opacity: isVisibleEffective ? 0.85 : 0.25,
+            }}
             onClick={(evt) => {
               evt.stopPropagation();
               setOverrideVisibility(props.nodeName, !isVisible);
