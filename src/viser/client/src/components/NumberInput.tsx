@@ -38,7 +38,7 @@ export default function NumberInputComponent({
           },
           controls: {
             height: "1.625em",
-            width: "1em",
+            width: "0.825em",
           },
         }}
         disabled={disabled}

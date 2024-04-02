@@ -132,7 +132,7 @@ export function VectorInput(
             },
             controls: {
               height: "1.25em",
-              width: "0.75em",
+              width: "0.825em",
             },
           }}
           rightSectionWidth="1em"
