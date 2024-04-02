@@ -30,7 +30,7 @@ import {
   sendWebsocketMessage,
 } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
@@ -71,6 +71,8 @@ function useMessageHandler() {
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
 
+  const scene = useThree((state) => state.scene);
+
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(node: SceneNode<any>) {
@@ -85,10 +87,10 @@ function useMessageHandler() {
 
     // Make sure parents exists.
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
-    const parent_name = node.name.split("/").slice(0, -1).join("/");
-    if (!(parent_name in nodeFromName)) {
+    const parentName = node.name.split("/").slice(0, -1).join("/");
+    if (!(parentName in nodeFromName)) {
       addSceneNodeMakeParents(
-        new SceneNode<THREE.Group>(parent_name, (ref) => (
+        new SceneNode<THREE.Group>(parentName, (ref) => (
           <CoordinateFrame ref={ref} showAxes={false} />
         )),
       );
@@ -363,25 +365,138 @@ function useMessageHandler() {
         );
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Mesh>(
-            message.name,
-            (ref) => {
-              return (
-                <mesh ref={ref} geometry={geometry} material={material}>
-                  <OutlinesIfHovered alwaysMounted />
-                </mesh>
+        const cleanupMesh = () => {
+          // TODO: we can switch to the react-three-fiber <bufferGeometry />,
+          // <meshStandardMaterial />, etc components to avoid manual
+          // disposal.
+          geometry.dispose();
+          material.dispose();
+        };
+        if (message.skin_indices === null)
+          // Normal mesh.
+          addSceneNodeMakeParents(
+            new SceneNode<THREE.Mesh>(
+              message.name,
+              (ref) => {
+                return (
+                  <mesh ref={ref} geometry={geometry} material={material}>
+                    <OutlinesIfHovered alwaysMounted />
+                  </mesh>
+                );
+              },
+              cleanupMesh,
+            ),
+          );
+        else {
+          const getT_world_local: (name: string) => THREE.Matrix4 = (
+            name: string,
+          ) => {
+            const T_current_local = new THREE.Matrix4().identity();
+            const T_parent_current = new THREE.Matrix4().identity();
+            let done = false;
+            while (!done) {
+              const attrs = viewer.nodeAttributesFromName.current[name];
+              let wxyz = attrs?.wxyz;
+              if (wxyz === undefined) wxyz = [1, 0, 0, 0];
+              T_parent_current.makeRotationFromQuaternion(
+                new THREE.Quaternion(wxyz[1], wxyz[2], wxyz[3], wxyz[0]),
               );
-            },
-            () => {
-              // TODO: we can switch to the react-three-fiber <bufferGeometry />,
-              // <meshStandardMaterial />, etc components to avoid manual
-              // disposal.
-              geometry.dispose();
-              material.dispose();
-            },
-          ),
-        );
+              let position = attrs?.position;
+              if (position === undefined) position = [0, 0, 0];
+              T_parent_current.setPosition(
+                new THREE.Vector3(position[0], position[1], position[2]),
+              );
+
+              T_current_local.premultiply(T_parent_current);
+              if (name === "") break;
+              name = name.split("/").slice(0, -1).join("/");
+              console.log(name);
+            }
+            return T_current_local;
+          };
+          // Skinned mesh.
+          const bones: THREE.Bone[] = [];
+          for (let i = 0; i < message.bone_names!.length; i++) {
+            bones.push(new THREE.Bone());
+          }
+          bones.forEach((bone, i) => {
+            scene.add(bone);
+            bone.matrix.copy(getT_world_local(message.bone_names![i]));
+            bone.matrixWorld.copy(getT_world_local(message.bone_names![i]));
+            // We'll manage the bone matrices manually.
+            bone.matrixAutoUpdate = false;
+            bone.matrixWorldAutoUpdate = false;
+          });
+          const skeleton = new THREE.Skeleton(bones);
+
+          geometry.setAttribute(
+            "skinIndex",
+            new THREE.Uint16BufferAttribute(
+              new Uint16Array(
+                message.skin_indices.buffer.slice(
+                  message.skin_indices.byteOffset,
+                  message.skin_indices.byteOffset +
+                    message.skin_indices.byteLength,
+                ),
+              ),
+              4,
+            ),
+          );
+          geometry.setAttribute(
+            "skinWeight",
+            new THREE.Float32BufferAttribute(
+              new Float32Array(
+                message.skin_weights!.buffer.slice(
+                  message.skin_weights!.byteOffset,
+                  message.skin_weights!.byteOffset +
+                    message.skin_weights!.byteLength,
+                ),
+              ),
+              4,
+            ),
+          );
+          addSceneNodeMakeParents(
+            new SceneNode<THREE.SkinnedMesh>(
+              message.name,
+              (ref) => {
+                return (
+                  <skinnedMesh
+                    ref={ref}
+                    geometry={geometry}
+                    material={material}
+                    skeleton={skeleton}
+                  >
+                    <OutlinesIfHovered alwaysMounted />
+                  </skinnedMesh>
+                );
+              },
+              () => {
+                bones.forEach((bone) => {
+                  bone.remove();
+                });
+                skeleton.dispose();
+                cleanupMesh();
+              },
+              false,
+              // everyFrameCallback: update bone transforms.
+              () => {
+                bones.forEach((bone, i) => {
+                  const nodeRef =
+                    viewer.nodeRefFromName.current[message.bone_names![i]];
+                  if (nodeRef !== undefined) {
+                    // Our bone objects are placed in the scene root!
+                    // bone.matrix.copy(nodeRef?.matrixWorld);
+                    // bone.matrixWorld.copy(nodeRef?.matrixWorld);
+                    bone.matrix.copy(getT_world_local(message.bone_names![i]));
+                    bone.matrixWorld.copy(
+                      getT_world_local(message.bone_names![i]),
+                    );
+                  }
+                });
+              },
+            ),
+          );
+        }
         return;
       }
       // Add a camera frustum.

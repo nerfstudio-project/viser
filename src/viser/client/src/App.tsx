@@ -54,6 +54,8 @@ export type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   // Useful references.
+  // TODO: there's really no reason these all need to be their own ref objects.
+  // We could have just one ref to a global mutable struct.
   websocketRef: React.MutableRefObject<WebSocket | null>;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
@@ -74,6 +76,9 @@ export type ViewerContextContents = {
           visibility?: boolean; // Visibility state from the server.
           overrideVisibility?: boolean; // Override from the GUI.
         };
+  }>;
+  nodeRefFromName: React.MutableRefObject<{
+    [name: string]: undefined | THREE.Object3D;
   }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
   // Requested a render.
@@ -137,6 +142,7 @@ function ViewerRoot() {
         })(),
       },
     }),
+    nodeRefFromName: React.useRef({}),
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),

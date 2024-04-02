@@ -224,6 +224,13 @@ class PointCloudMessage(Message):
 
 
 @dataclasses.dataclass
+class MeshBoneMessage(Message):
+    """Message for a bone of a skinned mesh."""
+
+    name: str
+
+
+@dataclasses.dataclass
 class MeshMessage(Message):
     """Mesh message.
 
@@ -246,6 +253,31 @@ class MeshMessage(Message):
         # Check shapes.
         assert self.vertices.shape[-1] == 3
         assert self.faces.shape[-1] == 3
+
+
+@dataclasses.dataclass
+class SkinnedMeshMessage(MeshMessage):
+    """Mesh message.
+
+    Vertices are internally canonicalized to float32, faces to uint32."""
+
+    bone_wxyzs: onpt.NDArray[onp.float32]
+    bone_positions: onpt.NDArray[onp.float32]
+    skin_indices: onpt.NDArray[onp.uint32]
+    skin_weights: onpt.NDArray[onp.float32]
+
+    def __post_init__(self):
+        # Check shapes.
+        assert self.vertices.shape[-1] == 3
+        assert self.faces.shape[-1] == 3
+        assert self.skin_weights is not None
+        assert (
+            self.skin_indices.shape
+            == self.skin_weights.shape
+            == (self.vertices.shape[0], 4)
+        )
+        assert self.bone_wxyzs.shape[-1] == 4
+        assert self.bone_positions.shape[-1] == 3
 
 
 @dataclasses.dataclass

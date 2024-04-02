@@ -145,6 +145,14 @@ export interface PointCloudMessage {
   point_size: number;
   point_ball_norm: number;
 }
+/** Message for a bone of a skinned mesh.
+ *
+ * (automatically generated)
+ */
+export interface MeshBoneMessage {
+  type: "MeshBoneMessage";
+  name: string;
+}
 /** Mesh message.
  *
  * Vertices are internally canonicalized to float32, faces to uint32.
@@ -163,6 +171,9 @@ export interface MeshMessage {
   flat_shading: boolean;
   side: "front" | "back" | "double";
   material: "standard" | "toon3" | "toon5";
+  bone_names: string[] | null;
+  skin_indices: Uint8Array | null;
+  skin_weights: Uint8Array | null;
 }
 /** Message for transform gizmos.
  *
@@ -826,6 +837,7 @@ export type Message =
   | LabelMessage
   | Gui3DMessage
   | PointCloudMessage
+  | MeshBoneMessage
   | MeshMessage
   | TransformControlsMessage
   | SetCameraPositionMessage
