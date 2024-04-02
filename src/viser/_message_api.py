@@ -799,6 +799,92 @@ class MessageApi(abc.ABC):
         """Deprecated alias for `add_mesh_simple()`."""
         return self.add_mesh_simple(*args, **kwargs)
 
+    def add_mesh_skinned(
+        self,
+        name: str,
+        vertices: onp.ndarray,
+        faces: onp.ndarray,
+        bone_wxyzs: Tuple[Tuple[float, float, float, float], ...] | onp.ndarray,
+        bone_positions: Tuple[Tuple[float, float, float], ...] | onp.ndarray,
+        skin_weights: onp.ndarray,
+        color: RgbTupleOrArray = (90, 200, 255),
+        wireframe: bool = False,
+        opacity: Optional[float] = None,
+        material: Literal["standard", "toon3", "toon5"] = "standard",
+        flat_shading: bool = False,
+        side: Literal["front", "back", "double"] = "front",
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> MeshHandle:
+        """Add a mesh to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            vertices: A numpy array of vertex positions. Should have shape (V, 3).
+            faces: A numpy array of faces, where each face is represented by indices of
+                vertices. Should have shape (F,)
+            bone_handles: Tuple of scene node handles. A bone will be attached to each.
+            skin_weights: A numpy array of skin weights. Should have shape (V, B) where B
+                is the number of bones.
+            color: Color of the mesh as an RGB tuple.
+            wireframe: Boolean indicating if the mesh should be rendered as a wireframe.
+            opacity: Opacity of the mesh. None means opaque.
+            material: Material type of the mesh ('standard', 'toon3', 'toon5').
+                This argument is ignored when wireframe=True.
+            flat_shading: Whether to do flat shading. This argument is ignored
+                when wireframe=True.
+            side: Side of the surface to render ('front', 'back', 'double').
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this mesh is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        if wireframe and material != "standard":
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {material=}. Material argument will be ignored.",
+                stacklevel=2,
+            )
+        if wireframe and flat_shading:
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {flat_shading=}. Flat shading argument will be ignored.",
+                stacklevel=2,
+            )
+
+        assert skin_weights.shape == (vertices.shape[0], len(bone_handles))
+
+        # Take the four biggest indices.
+        top4_skin_indices = onp.argsort(skin_weights, axis=-1)[:, -4:]
+        top4_skin_weights = skin_weights[
+            onp.arange(vertices.shape[0])[:, None], top4_skin_indices
+        ]
+        assert (
+            top4_skin_weights.shape == top4_skin_indices.shape == (vertices.shape[0], 4)
+        )
+        self._queue(
+            _messages.MeshMessage(
+                name,
+                vertices.astype(onp.float32),
+                faces.astype(onp.uint32),
+                # (255, 255, 255) => 0xffffff, etc
+                color=_encode_rgb(color),
+                vertex_colors=None,
+                wireframe=wireframe,
+                opacity=opacity,
+                flat_shading=flat_shading,
+                side=side,
+                material=material,
+                bone_wxyzs=bone_wxyzs.astype(onp.float32),
+                bone_positions=bone_positions.astype(onp.float32),
+                skin_indices=top4_skin_indices.astype(onp.uint16),
+                skin_weights=top4_skin_weights.astype(onp.float32),
+            )
+        )
+        return MeshHandle._make(self, name, wxyz, position, visible)
+
     def add_mesh_simple(
         self,
         name: str,
@@ -861,6 +947,9 @@ class MessageApi(abc.ABC):
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
+                bone_names=None,
+                skin_indices=None,
+                skin_weights=None,
             )
         )
         return MeshHandle._make(self, name, wxyz, position, visible)

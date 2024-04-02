@@ -32,7 +32,8 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
      *
      * https://github.com/pmndrs/drei/issues/1323
      */
-    public readonly unmountWhenInvisible?: true,
+    public readonly unmountWhenInvisible?: boolean,
+    public readonly everyFrameCallback?: () => void,
   ) {
     this.children = [];
     this.clickable = false;
@@ -136,17 +137,20 @@ export function SceneNodeThreeObject(props: {
   const unmountWhenInvisible = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.unmountWhenInvisible,
   );
+  const everyFrameCallback = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.everyFrameCallback,
+  );
   const [unmount, setUnmount] = React.useState(false);
   const clickable =
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
     false;
   const [obj, setRef] = React.useState<THREE.Object3D | null>(null);
 
-  const dragInfo = React.useRef({
-    dragging: false,
-    startClientX: 0,
-    startClientY: 0,
-  });
+  // Update global registry of node objects.
+  // This is used for updating bone transforms in skinned meshes.
+  React.useEffect(() => {
+    if (obj !== null) viewer.nodeRefFromName.current[props.name] = obj;
+  }, [obj]);
 
   // Create object + children.
   //
@@ -206,6 +210,7 @@ export function SceneNodeThreeObject(props: {
   // although this shouldn't be a bottleneck.
   useFrame(() => {
     const attrs = viewer.nodeAttributesFromName.current[props.name];
+    everyFrameCallback && everyFrameCallback();
 
     // Unmount when invisible.
     // Examples: <Html /> components, PivotControls.
@@ -252,7 +257,12 @@ export function SceneNodeThreeObject(props: {
   });
 
   // Clean up when done.
-  React.useEffect(() => cleanup);
+  React.useEffect(() => {
+    return () => {
+      cleanup && cleanup();
+      delete viewer.nodeRefFromName.current[props.name];
+    };
+  });
 
   // Clicking logic.
   const sendClicksThrottled = makeThrottledMessageSender(
@@ -263,6 +273,12 @@ export function SceneNodeThreeObject(props: {
   useCursor(hovered);
   const hoveredRef = React.useRef(false);
   if (!clickable && hovered) setHovered(false);
+
+  const dragInfo = React.useRef({
+    dragging: false,
+    startClientX: 0,
+    startClientY: 0,
+  });
 
   if (objNode === undefined || unmount) {
     return <>{children}</>;
@@ -327,7 +343,6 @@ export function SceneNodeThreeObject(props: {
               });
             }}
             onPointerOver={(e) => {
-              console.log("over");
               if (!isDisplayed()) return;
               e.stopPropagation();
               setHovered(true);
