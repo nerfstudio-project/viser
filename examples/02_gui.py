@@ -12,9 +12,11 @@ import time
 import numpy as onp
 import viser
 
+from PIL import Image
+import plotly.express as px
 
 def main() -> None:
-    server = viser.ViserServer()
+    server = viser.ViserServer(port=8008)
 
     # Add some common GUI elements: number inputs, sliders, vectors, checkboxes.
     with server.add_gui_folder("Read-only"):
@@ -91,6 +93,31 @@ def main() -> None:
     # Pre-generate a point cloud to send.
     point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(5000, 3))
     color_coeffs = onp.random.uniform(0.4, 1.0, size=(point_positions.shape[0]))
+
+    with server.add_gui_folder("Plots"):
+        cal_img_path = 'examples/assets/Cal_logo.png'
+        img = Image.open(cal_img_path)
+        fig = px.imshow(img)
+        fig.update_layout(margin=dict(l=20, r=20, t=20, b=20),)
+
+        server.add_gui_plotly(
+            label="Image plot!",
+            figure=fig,
+            aspect_ratio=1.0,
+        )
+
+        x_data = onp.linspace(0, 6*onp.pi, 50)
+        y_data = onp.sin(x_data) * 10
+        x_data, y_data = list(x_data), list(y_data)
+
+        fig = px.line(x=x_data, y=y_data, labels={'x': 'x', 'y': 'sin(x)'})
+        fig.update_layout(margin=dict(l=20, r=20, t=20, b=20),)
+
+        server.add_gui_plotly(
+            label="Line plot!",
+            figure=fig,
+            aspect_ratio=1.0,
+        )
 
     counter = 0
     while True:

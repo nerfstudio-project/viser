@@ -340,6 +340,20 @@ export interface GuiAddMarkdownMessage {
   container_id: string;
   visible: boolean;
 }
+/** GuiAddPlotlyMessage(order: 'float', id: 'str', label: 'str', plotly_json_str: 'str', aspect_ratio: 'float', container_id: 'str', visible: 'bool')
+ *
+ * (automatically generated)
+ */
+export interface GuiAddPlotlyMessage {
+  type: "GuiAddPlotlyMessage";
+  order: number;
+  id: string;
+  label: string;
+  plotly_json_str: string;
+  aspect_ratio: number;
+  container_id: string;
+  visible: boolean;
+}
 /** GuiAddTabGroupMessage(order: 'float', id: 'str', container_id: 'str', tab_labels: 'Tuple[str, ...]', tab_icons_html: 'Tuple[Union[str, None], ...]', tab_container_ids: 'Tuple[str, ...]', visible: 'bool')
  *
  * (automatically generated)
@@ -844,6 +858,7 @@ export type Message =
   | ResetSceneMessage
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
+  | GuiAddPlotlyMessage
   | GuiAddTabGroupMessage
   | _GuiAddInputBase
   | GuiAddButtonMessage
@@ -878,6 +893,7 @@ export type Message =
 export type GuiAddComponentMessage =
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
+  | GuiAddPlotlyMessage
   | GuiAddTabGroupMessage
   | GuiAddButtonMessage
   | GuiAddUploadButtonMessage

@@ -24,6 +24,7 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 from typing_extensions import Protocol
+import plotly.graph_objects as go
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
@@ -581,6 +582,101 @@ class GuiMarkdownHandle:
                 {"markdown": _parse_markdown(content, self._image_root)},
             )
         )
+
+    @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._order
+
+    @property
+    def visible(self) -> bool:
+        """Temporarily show or hide this GUI element from the visualizer. Synchronized
+        automatically when assigned."""
+        return self._visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        if visible == self.visible:
+            return
+
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(self._id, {"visible": visible})
+        )
+        self._visible = visible
+
+    def __post_init__(self) -> None:
+        """We need to register ourself after construction for callbacks to work."""
+        parent = self._gui_api._container_handle_from_id[self._container_id]
+        parent._children[self._id] = self
+
+    def remove(self) -> None:
+        """Permanently remove this markdown from the visualizer."""
+        api = self._gui_api._get_api()
+        api._queue(GuiRemoveMessage(self._id))
+
+
+@dataclasses.dataclass
+class GuiPlotlyHandle:
+    """Use to remove markdown."""
+
+    _gui_api: GuiApi
+    _id: str
+    _visible: bool
+    _container_id: str  # Parent.
+    _order: float
+    _label: Optional[str]
+    _figure: Optional[go.Figure]
+    _aspect_ratio: Optional[float]
+
+    @property
+    def figure(self) -> str:
+        """Current content of this markdown element. Synchronized automatically when assigned."""
+        assert self._figure is not None
+        return self._figure
+
+    @figure.setter
+    def figure(self, figure: go.Figure) -> None:
+        self._figure = figure
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(
+                self._id,
+                {"plotly_json_str": self.plot_to_json()},
+            )
+        )
+
+    @property
+    def label(self) -> str:
+        """Label of the plotly figure."""
+        return self._label
+    
+    @label.setter
+    def name(self, label: str) -> None:
+        self._label = label
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(
+                self._id,
+                {"label": label},
+            )
+        )
+    
+    @property
+    def aspect_ratio(self) -> float:
+        """Aspect ratio of the plotly figure, in the control panel."""
+        return self._aspect_ratio
+    
+    @aspect_ratio.setter
+    def aspect_ratio(self, aspect_ratio: float) -> None:
+        self._aspect_ratio = aspect_ratio
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(
+                self._id,
+                {"aspect_ratio": aspect_ratio},
+            )
+        )
+
+    def plot_to_json(self) -> str:
+        """Convert the plotly figure to an HTML string."""
+        return self._figure.to_json()
 
     @property
     def order(self) -> float:

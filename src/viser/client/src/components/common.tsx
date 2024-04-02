@@ -49,7 +49,7 @@ export function ViserInputComponent({
 }
 
 /** GUI input with a label horizontally placed to the left of it. */
-function LabeledInput(props: {
+export function LabeledInput(props: {
   id: string;
   label: string;
   input: React.ReactNode;

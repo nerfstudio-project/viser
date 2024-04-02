@@ -34,6 +34,7 @@ from typing_extensions import (
     get_origin,
     get_type_hints,
 )
+import plotly.graph_objects as go
 
 from . import _messages
 from ._gui_handles import (
@@ -45,6 +46,7 @@ from ._gui_handles import (
     GuiFolderHandle,
     GuiInputHandle,
     GuiMarkdownHandle,
+    GuiPlotlyHandle,
     GuiModalHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
@@ -496,6 +498,48 @@ class GuiApi(abc.ABC):
         # Logic for processing markdown, handling images, etc is all in the
         # `.content` setter, which should send a GuiUpdateMessage.
         handle.content = content
+        return handle
+
+    def add_gui_plotly(
+        self,
+        label: str,
+        figure: go.Figure,
+        aspect_ratio: float = 1.0,
+        order: Optional[float] = None,
+        visible: bool = True,
+    ) -> GuiMarkdownHandle:
+        """Add a Plotly Plot to the GUI.
+
+        Args:
+            figure: Plotly figure to display.
+            aspect_ratio: Aspect ratio of the plot in the control panel (width / height).
+            order: Optional ordering, smallest values will be displayed first.
+            visible: Whether the component is visible.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        handle = GuiPlotlyHandle(
+            _gui_api=self,
+            _id=_make_unique_id(),
+            _visible=visible,
+            _container_id=self._get_container_id(),
+            _order=_apply_default_order(order),
+            _label=label,
+            _figure=figure,
+            _aspect_ratio=aspect_ratio,
+        )
+        self._get_api()._queue(
+            _messages.GuiAddPlotlyMessage(
+                order=handle._order,
+                id=handle._id,
+                label=handle._label,
+                plotly_json_str=handle.plot_to_json(),
+                aspect_ratio=handle._aspect_ratio,
+                container_id=handle._container_id,
+                visible=visible,
+            )
+        )
         return handle
 
     def add_gui_button(

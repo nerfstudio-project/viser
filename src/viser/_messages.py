@@ -410,6 +410,18 @@ class GuiAddMarkdownMessage(Message):
 
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
+class GuiAddPlotlyMessage(Message):
+    order: float
+    id: str
+    label: str
+    plotly_json_str: str
+    aspect_ratio: float
+    container_id: str
+    visible: bool
+
+
+@tag_class("GuiAddComponentMessage")
+@dataclasses.dataclass
 class GuiAddTabGroupMessage(Message):
     order: float
     id: str
