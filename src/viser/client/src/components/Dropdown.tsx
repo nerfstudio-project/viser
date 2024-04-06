@@ -27,6 +27,7 @@ export default function DropdownComponent({
         searchable
         maxDropdownHeight={400}
         size="xs"
+        rightSectionWidth="1.2em"
         styles={{
           input: {
             padding: "0.5em",

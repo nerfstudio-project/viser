@@ -131,11 +131,8 @@ export function VectorInput(
               minHeight: "1.875em",
             },
             controls: {
-              height: "1.875em",
-            },
-            control: {
-              width: "1.2em",
-              height: "0.2em",
+              height: "1.25em",
+              width: "0.825em",
             },
           }}
           rightSectionWidth="1em"
