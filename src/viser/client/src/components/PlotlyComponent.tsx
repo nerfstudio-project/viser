@@ -3,15 +3,11 @@ import { GuiAddPlotlyMessage } from "../WebsocketMessages";
 import Plotly from "plotly.js";
 import { Flex } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
-import { Modal, Button, Group, Box, Paper, Text} from '@mantine/core';
+import { Modal, Button, Box, Paper, Text } from '@mantine/core';
 
-// import { Component, useEffect } from 'react';
-import { ReactNode, useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useElementSize } from '@mantine/hooks';
 import { IconWindowMinimize, IconWindowMaximize, IconHandOff, IconHandFinger } from '@tabler/icons-react';
-// import { ViewerContext } from "../App";
-// import { React } from "react";
-// import { Flex } from "@mantine/core";
 import { ViserInputComponent } from "./common";
 
 function generatePlotWithAspect(json_str: string, aspect_ratio: number) {
