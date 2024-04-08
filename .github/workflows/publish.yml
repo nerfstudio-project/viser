@@ -19,9 +19,9 @@ jobs:
           python-version: "3.8"
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -e ".[dev]"
-          pip install build twine
+          pip install uv
+          uv pip install --system -e ".[dev]"
+          uv pip install --system build twine
           # Build client files.
           python -c "import viser; viser.ViserServer()"
       - name: Strip unsupported tags in README

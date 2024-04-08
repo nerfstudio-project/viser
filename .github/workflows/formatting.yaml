@@ -18,8 +18,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -e ".[dev,examples]"
+          pip install uv
+          uv pip install --system -e ".[dev,examples]"
       - name: Run Ruff
         run: ruff check docs/ src/ examples/
       - name: Run Ruff format
