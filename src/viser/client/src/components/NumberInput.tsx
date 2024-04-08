@@ -36,6 +36,10 @@ export default function NumberInputComponent({
             minHeight: "1.625rem",
             height: "1.625rem",
           },
+          controls: {
+            height: "1.625em",
+            width: "0.825em",
+          },
         }}
         disabled={disabled}
         stepHoldDelay={500}
