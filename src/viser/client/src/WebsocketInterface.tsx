@@ -127,6 +127,13 @@ function useMessageHandler() {
         setTheme(message);
         return;
       }
+
+      // Setup the plotly.js library using the plotly.min.js code (string).
+      case "SetupPlotlyMessage": {
+        eval(message.source);
+        return;
+      }
+
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.

@@ -192,6 +192,8 @@ class GuiApi(abc.ABC):
         }
         self._current_file_upload_states: Dict[str, FileUploadState] = {}
 
+        self._setup_plotly_js: bool = False  # Set to True when plotly.min.js has been sent to client.
+
         self._get_api()._message_handler.register_handler(
             _messages.GuiUpdateMessage, self._handle_gui_updates
         )
@@ -507,7 +509,7 @@ class GuiApi(abc.ABC):
         aspect_ratio: float = 1.0,
         order: Optional[float] = None,
         visible: bool = True,
-    ) -> GuiMarkdownHandle:
+    ) -> GuiPlotlyHandle:
         """Add a Plotly Plot to the GUI.
 
         Args:
@@ -529,13 +531,42 @@ class GuiApi(abc.ABC):
             _figure=figure,
             _aspect_ratio=aspect_ratio,
         )
+
+        # If plotly.min.js hasn't been sent to the client yet, the client won't be able
+        # to render the plot. Send this large file now! (~3MB)
+        if not self._setup_plotly_js:
+            # Check if plotly is installed.
+            try:
+                import plotly
+            except ImportError:
+                raise ImportError(
+                    "You must have the `plotly` package installed to use the Plotly GUI element."
+                )
+
+            # Check that plotly.min.js exists.
+            plotly_path = Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
+            assert plotly_path.exists(), f"Could not find plotly.min.js at {plotly_path}."
+
+            # Send it over!
+            with open(plotly_path, "r") as f:
+                plotly_js = f.read()
+            self._get_api()._queue(
+                _messages.SetupPlotlyMessage(
+                    source=plotly_js,
+                )
+            )
+
+            # Update the flag so we don't send it again.
+            self._setup_plotly_js = True
+
+        # After plotly.min.js has been sent, we can send the plotly figure.
         self._get_api()._queue(
             _messages.GuiAddPlotlyMessage(
                 order=handle._order,
                 id=handle._id,
-                label=handle._label,
+                label=label,
                 plotly_json_str=handle.plot_to_json(),
-                aspect_ratio=handle._aspect_ratio,
+                aspect_ratio=aspect_ratio,
                 container_id=handle._container_id,
                 visible=visible,
             )

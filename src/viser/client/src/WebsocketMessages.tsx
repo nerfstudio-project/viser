@@ -1,5 +1,14 @@
 // AUTOMATICALLY GENERATED message interfaces, from Python dataclass definitions.
 // This file should not be manually modified.
+/** Message for setting up the Plotly.js package,
+ * via sending the plotly.min.js source code.
+ *
+ * (automatically generated)
+ */
+export interface SetupPlotlyMessage {
+  type: "SetupPlotlyMessage";
+  source: string;
+}
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
  *
@@ -829,6 +838,7 @@ export interface SetGuiPanelLabelMessage {
 }
 
 export type Message =
+  | SetupPlotlyMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage

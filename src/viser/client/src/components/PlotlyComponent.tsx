@@ -1,7 +1,4 @@
-import Plot from "react-plotly.js";
 import { GuiAddPlotlyMessage } from "../WebsocketMessages";
-import Plotly from "plotly.js";
-import { Flex } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
 import { Modal, Button, Box, Paper, Text } from '@mantine/core';
 
@@ -24,12 +21,24 @@ function generatePlotWithAspect(json_str: string, aspect_ratio: number) {
     plot_json.layout.width = width;
     plot_json.layout.height = width * aspect_ratio;
 
+    // Use React hooks to update the plotly object, when the plot data changes.
+    // based on https://github.com/plotly/react-plotly.js/issues/242.
+    const [plotRef, setPlotRef] = useState<HTMLDivElement | null>(null);
+    useEffect(() => {
+        if (plotRef === null) return;
+        // @ts-ignore - Plotly.js is dynamically imported with an eval() call.
+        Plotly.react(
+            plotRef,
+            plot_json.data,
+            plot_json.layout,
+            plot_json.config
+        );
+    }, [plot_json])
+    const plot_div = <div ref={setPlotRef} />
+
     return (
         <Box ref={ref}>
-            <Plot
-                data={plot_json.data}
-                layout={plot_json.layout}
-            />
+            {plot_div}
         </Box>
     );
 }
