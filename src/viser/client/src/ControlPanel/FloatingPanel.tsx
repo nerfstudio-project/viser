@@ -1,6 +1,12 @@
 // @refresh reset
 
-import { Box, Collapse, Paper, ScrollArea } from "@mantine/core";
+import {
+  Box,
+  Collapse,
+  Paper,
+  ScrollArea,
+  useMantineColorScheme,
+} from "@mantine/core";
 import React from "react";
 import { isMouseEvent, isTouchEvent, mouseEvents, touchEvents } from "../Utils";
 import { useDisclosure } from "@mantine/hooks";
@@ -215,7 +221,7 @@ export default function FloatingPanel({
       <Paper
         radius="xs"
         shadow="0.1em 0 1em 0 rgba(0,0,0,0.1)"
-        sx={{
+        style={{
           boxSizing: "border-box",
           width: width,
           zIndex: 10,
@@ -223,7 +229,7 @@ export default function FloatingPanel({
           top: "1em",
           right: "1em",
           margin: 0,
-          "& .expand-icon": {
+          "& .expandIcon": {
             transform: "rotate(0)",
           },
           overflow: "hidden",
@@ -246,7 +252,7 @@ FloatingPanel.Handle = function FloatingPanelHandle({
 
   return (
     <Box
-      sx={{
+      style={(theme) => ({
         borderRadius: "0.2em 0.2em 0 0",
         lineHeight: "1.5em",
         cursor: "pointer",
@@ -257,7 +263,13 @@ FloatingPanel.Handle = function FloatingPanelHandle({
         alignItems: "center",
         padding: "0 0.75em",
         height: "2.75em",
-      }}
+        borderBottomWidth: panelContext.expanded ? "1px" : 0,
+        borderBottomStyle: "solid",
+        borderColor:
+          useMantineColorScheme().colorScheme == "dark"
+            ? theme.colors.dark[4]
+            : theme.colors.gray[3],
+      })}
       onClick={() => {
         const state = panelContext.dragInfo.current;
         if (state.dragging) {
@@ -286,18 +298,11 @@ FloatingPanel.Contents = function FloatingPanelContents({
   const context = React.useContext(FloatingPanelContext)!;
   return (
     <Collapse in={context.expanded}>
-      <ScrollArea.Autosize mah={context.maxHeight} placeholder={null}>
+      <ScrollArea.Autosize mah={context.maxHeight}>
         <Box
           /* Prevent internals from getting too wide. Needs to match the
            * width of the wrapper element above. */
           w={context.width}
-          sx={(theme) => ({
-            borderTop: "1px solid",
-            borderColor:
-              theme.colorScheme == "dark"
-                ? theme.colors.dark[4]
-                : theme.colors.gray[3],
-          })}
         >
           {children}
         </Box>

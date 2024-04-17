@@ -27,6 +27,7 @@ export default function DropdownComponent({
         searchable
         maxDropdownHeight={400}
         size="xs"
+        rightSectionWidth="1.2em"
         styles={{
           input: {
             padding: "0.5em",
@@ -37,8 +38,7 @@ export default function DropdownComponent({
         }}
         // zIndex of dropdown should be >modal zIndex.
         // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.
-        zIndex={1000}
-        withinPortal
+        comboboxProps={{ zIndex: 1000 }}
       />
     </ViserInputComponent>
   );

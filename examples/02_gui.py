@@ -68,6 +68,7 @@ def main() -> None:
                 max=100,
                 step=1,
                 initial_value=(0, 30, 100),
+                marks=((0, "0"), (50, "5"), (70, "7"), 99),
             )
             gui_slider_positions = server.add_gui_slider(
                 "# sliders",
@@ -77,6 +78,15 @@ def main() -> None:
                 initial_value=3,
                 marks=((0, "0"), (5, "5"), (7, "7"), 10),
             )
+            gui_upload_button = server.add_gui_upload_button(
+                "Upload", icon=viser.Icon.UPLOAD
+            )
+
+    @gui_upload_button.on_upload
+    def _(_) -> None:
+        """Callback for when a file is uploaded."""
+        file = gui_upload_button.value
+        print(file.name, len(file.content), "bytes")
 
     # Pre-generate a point cloud to send.
     point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(5000, 3))
@@ -107,6 +117,8 @@ def main() -> None:
         gui_text.visible = not gui_checkbox_hide.value
         gui_button.visible = not gui_checkbox_hide.value
         gui_rgb.disabled = gui_checkbox_disable.value
+        gui_button.disabled = gui_checkbox_disable.value
+        gui_upload_button.disabled = gui_checkbox_disable.value
 
         # Update the number of handles in the multi-slider.
         if gui_slider_positions.value != len(gui_multi_slider.value):

@@ -4,8 +4,6 @@ import { create } from "zustand";
 import { ColorTranslator } from "colortranslator";
 
 import { immer } from "zustand/middleware/immer";
-import { ViewerContext } from "../App";
-import { MantineThemeOverride } from "@mantine/core";
 
 export type GuiConfig = Messages.GuiAddComponentMessage;
 
@@ -26,6 +24,14 @@ interface GuiState {
   modals: Messages.GuiModalMessage[];
   guiOrderFromId: { [id: string]: number };
   guiConfigFromId: { [id: string]: GuiConfig };
+  uploadsInProgress: {
+    [id: string]: {
+      notificationId: string;
+      uploadedBytes: number;
+      totalBytes: number;
+      filename: string;
+    };
+  };
 }
 
 interface GuiActions {
@@ -37,6 +43,12 @@ interface GuiActions {
   updateGuiProps: (id: string, updates: { [key: string]: any }) => void;
   removeGui: (id: string) => void;
   resetGui: () => void;
+  updateUploadState: (
+    state: (
+      | { uploadedBytes: number; totalBytes: number }
+      | GuiState["uploadsInProgress"][string]
+    ) & { componentId: string },
+  ) => void;
 }
 
 const cleanGuiState: GuiState = {
@@ -59,6 +71,7 @@ const cleanGuiState: GuiState = {
   modals: [],
   guiOrderFromId: {},
   guiConfigFromId: {},
+  uploadsInProgress: {},
 };
 
 export function computeRelativeLuminance(color: string) {
@@ -121,6 +134,14 @@ export function useGuiState(initialServer: string) {
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
           }),
+        updateUploadState: (state) =>
+          set((globalState) => {
+            const { componentId, ...rest } = state;
+            globalState.uploadsInProgress[componentId] = {
+              ...globalState.uploadsInProgress[componentId],
+              ...rest,
+            };
+          }),
         updateGuiProps: (id, updates) => {
           set((state) => {
             const config = state.guiConfigFromId[id];
@@ -146,91 +167,6 @@ export function useGuiState(initialServer: string) {
       })),
     ),
   )[0];
-}
-
-export function useViserMantineTheme(): MantineThemeOverride {
-  const viewer = React.useContext(ViewerContext)!;
-  const colors = viewer.useGui((state) => state.theme.colors);
-
-  return {
-    colorScheme: viewer.useGui((state) => state.theme.dark_mode)
-      ? "dark"
-      : "light",
-    primaryColor: colors === null ? undefined : "custom",
-    colors: {
-      default: [
-        "#f3f3fe",
-        "#e4e6ed",
-        "#c8cad3",
-        "#a9adb9",
-        "#9093a4",
-        "#808496",
-        "#767c91",
-        "#656a7e",
-        "#585e72",
-        "#4a5167",
-      ],
-      ...(colors === null
-        ? undefined
-        : {
-            custom: colors,
-          }),
-    },
-    fontFamily: "Inter",
-    components: {
-      Checkbox: {
-        defaultProps: {
-          radius: "xs",
-        },
-      },
-      ColorInput: {
-        defaultProps: {
-          radius: "xs",
-        },
-      },
-      Select: {
-        defaultProps: {
-          radius: "sm",
-        },
-      },
-      TextInput: {
-        defaultProps: {
-          radius: "xs",
-        },
-      },
-      NumberInput: {
-        defaultProps: {
-          radius: "xs",
-        },
-      },
-      Paper: {
-        defaultProps: {
-          radius: "xs",
-        },
-      },
-      ActionIcon: {
-        defaultProps: {
-          radius: "xs",
-        },
-      },
-      Button: {
-        defaultProps: {
-          radius: "xs",
-        },
-        variants: {
-          filled: (theme) => ({
-            root: {
-              fontWeight: 450,
-              color:
-                computeRelativeLuminance(theme.fn.primaryColor()) > 50.0
-                  ? theme.colors.gray[9] + " !important"
-                  : theme.white,
-            },
-          }),
-        },
-      },
-    },
-  };
 }
 
 /** Type corresponding to a zustand-style useGuiState hook. */

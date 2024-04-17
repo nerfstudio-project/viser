@@ -1,38 +1,61 @@
 import { ViewerContext } from "../App";
-import { ActionIcon, Modal, Tooltip } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
+import { Box, Stack, Tooltip } from "@mantine/core";
 import {
   IconCaretDown,
   IconCaretRight,
   IconEye,
-  IconEyeCancel,
   IconEyeOff,
-  IconMaximize,
 } from "@tabler/icons-react";
-import { MantineReactTable } from "mantine-react-table";
-import { MRT_ColumnDef } from "mantine-react-table";
 import React from "react";
-
-interface SceneTreeTableRow {
-  name: string;
-  visible: any; // Annotating this with ReactNode gives an error below, not sure why.
-  subRows: SceneTreeTableRow[];
-}
+import {
+  icon as caretIcon,
+  tableRow,
+  tableWrapper,
+} from "./SceneTreeTable.css";
+import { useDisclosure } from "@mantine/hooks";
 
 /* Table for seeing an overview of the scene tree, toggling visibility, etc. * */
-export default function SceneTreeTable(props: { compact: boolean }) {
+export default function SceneTreeTable() {
   const viewer = React.useContext(ViewerContext)!;
+  const childrenName = viewer.useSceneTree(
+    (state) => state.nodeFromName[""]!.children,
+  );
+  return (
+    <Stack className={tableWrapper} style={{ padding: "0.1em 0" }} gap={0}>
+      {childrenName.map((name) => (
+        <SceneTreeTableRow
+          nodeName={name}
+          key={name}
+          isParentVisible={true}
+          indentCount={0}
+        />
+      ))}
+    </Stack>
+  );
+}
 
-  const nodeFromName = viewer.useSceneTree((state) => state.nodeFromName);
+const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
+  nodeName: string;
+  isParentVisible: boolean;
+  indentCount: number;
+}) {
+  const viewer = React.useContext(ViewerContext)!;
+  const childrenName = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.nodeName]!.children,
+  );
+  const expandable = childrenName.length > 0;
+
+  const [expanded, { toggle: toggleExpanded }] = useDisclosure(false);
+
+  function setOverrideVisibility(name: string, visible: boolean | undefined) {
+    const attr = viewer.nodeAttributesFromName.current;
+    attr[name]!.overrideVisibility = visible;
+    console.log(name, visible);
+    rerenderTable();
+  }
   const setLabelVisibility = viewer.useSceneTree(
     (state) => state.setLabelVisibility,
   );
-  function setOverrideVisibility(name: string, visible: boolean) {
-    const attr = viewer.nodeAttributesFromName.current;
-    if (attr[name] === undefined) attr[name] = {};
-    attr[name]!.overrideVisibility = visible;
-    rerenderTable();
-  }
 
   // For performance, scene node visibility is stored in a ref instead of the
   // zustand state. This means that re-renders for the table need to be
@@ -48,248 +71,75 @@ export default function SceneTreeTable(props: { compact: boolean }) {
     };
   }, []);
 
-  function getSceneTreeSubRows(
-    parentName: string,
-    parentCount: number,
-    isParentVisible: boolean,
-  ): SceneTreeTableRow[] {
-    const node = nodeFromName[parentName];
-    if (node === undefined) return [];
+  const attrs = viewer.nodeAttributesFromName.current[props.nodeName];
+  const isVisible =
+    (attrs?.overrideVisibility === undefined
+      ? attrs?.visibility
+      : attrs.overrideVisibility) ?? true;
+  const isVisibleEffective = isVisible && props.isParentVisible;
+  const VisibleIcon = isVisible ? IconEye : IconEyeOff;
 
-    return node.children.map((childName) => {
-      const attrs = viewer.nodeAttributesFromName.current[childName];
-      const isVisible =
-        (attrs?.overrideVisibility === undefined
-          ? attrs?.visibility
-          : attrs.overrideVisibility) ?? true;
-      const isVisibleEffective = isVisible && isParentVisible;
-
-      const VisibleIcon = isVisible ? IconEye : IconEyeOff;
-      return {
-        name: childName,
-        visible: (
-          <ActionIcon
-            onClick={(evt) => {
-              // Don't propagate click events to the row containing the icon.
-              //
-              // If we don't stop propagation, clicking the visibility icon
-              // will also expand/collapse nodes in the scene tree.
-              evt.stopPropagation();
-              setOverrideVisibility(childName, !isVisible);
-            }}
-            sx={{ opacity: isVisibleEffective ? "1.0" : "0.5" }}
-          >
-            <VisibleIcon />
-          </ActionIcon>
-        ),
-        subRows: getSceneTreeSubRows(
-          childName,
-          parentCount + 1,
-          isVisibleEffective,
-        ),
-      };
-    });
-  }
-  const data = getSceneTreeSubRows("", 0, true);
-  const columns = React.useMemo<MRT_ColumnDef<SceneTreeTableRow>[]>(
-    () => [
-      {
-        accessorKey: "visible", //simple recommended way to define a column
-        header: "",
-        size: 20,
-      },
-      {
-        accessorKey: "name", //simple recommended way to define a column
-        header: "Name",
-        Cell: function (props) {
-          const row = props.row;
-          const cell = props.cell;
-
-          const CaretIcon = row.getIsExpanded()
-            ? IconCaretDown
-            : IconCaretRight;
-          return (
-            <>
-              <CaretIcon
-                style={{
-                  opacity: row.subRows?.length === 0 ? "0.0" : "0.4",
-                  marginLeft: `${(0.75 * row.depth).toString()}em`,
-                }}
-                size="1em"
-              />
-              {(cell.getValue() as string)
-                .split("/")
-                .filter((part) => part.length > 0)
-                .map((part, index, all) => (
-                  // We set userSelect to prevent users from accidentally
-                  // selecting text when dragging over the hide/show icons.
-                  <span key={index} style={{ userSelect: "none" }}>
-                    <span style={{ opacity: "0.4" }}>
-                      {index === all.length - 1 ? "/" : `/${part}`}
-                    </span>
-                    {index === all.length - 1 ? part : ""}
-                  </span>
-                ))}
-            </>
-          );
-        },
-      },
-    ],
-    [],
-  );
-
-  // onPointerOut won't trigger if we close the scene tree with <Esc>. This can
-  // leave scene node labels visible; to fix this, we'll track the currently
-  // shown label and hide it when the table is unmounted.
-  const unmountCallback = React.useRef<() => void>();
-  React.useEffect(() => {
-    return () => {
-      unmountCallback.current !== undefined && unmountCallback.current();
-    };
-  }, []);
-
-  const [sceneTreeOpened, { open: openSceneTree, close: closeSceneTree }] =
-    useDisclosure(false);
   return (
     <>
-      {props.compact && (
-        <Modal
-          padding="0"
-          withCloseButton={false}
-          opened={sceneTreeOpened}
-          onClose={closeSceneTree}
-          size="xl"
-          centered
-          zIndex={100}
+      <Box
+        className={tableRow}
+        style={{
+          cursor: expandable ? "pointer" : undefined,
+          marginLeft: (props.indentCount * 0.75).toString() + "em",
+        }}
+        onClick={expandable ? toggleExpanded : undefined}
+        onMouseOver={() => setLabelVisibility(props.nodeName, true)}
+        onMouseOut={() => setLabelVisibility(props.nodeName, false)}
+      >
+        <Box
+          style={{
+            opacity: expandable ? 1 : 0.3,
+          }}
         >
-          <SceneTreeTable compact={false} />
-        </Modal>
-      )}
-      <MantineReactTable
-        columns={columns}
-        data={data}
-        enableExpanding={true}
-        filterFromLeafRows
-        enableDensityToggle={false}
-        enableRowSelection={!props.compact}
-        enableHiding={false}
-        enableGlobalFilter
-        enableColumnActions={false}
-        enableTopToolbar
-        enableBottomToolbar={false}
-        enableColumnFilters={false}
-        enablePagination={false}
-        initialState={{
-          density: "xs",
-          columnVisibility: { "mrt-row-expand": false },
-          ...(props.compact ? {} : { expanded: true }), // expanded: false is not valid.
-        }}
-        mantineExpandAllButtonProps={{
-          size: "sm",
-        }}
-        mantineExpandButtonProps={{ size: "sm", sx: { width: "0 !important" } }}
-        mantineSelectAllCheckboxProps={{ size: "sm" }}
-        mantineSelectCheckboxProps={{ size: "sm" }}
-        mantineTableProps={{
-          verticalSpacing: 2,
-        }}
-        mantinePaperProps={{ shadow: undefined }}
-        mantineTableContainerProps={{ sx: { maxHeight: "30em" } }}
-        mantinePaginationProps={{
-          showRowsPerPage: false,
-        }}
-        mantineTableBodyRowProps={({ row }) => ({
-          onPointerOver: () => {
-            const name = row.getValue("name") as string;
-            setLabelVisibility(name, true);
-            unmountCallback.current = () => {
-              console.log("close callback");
-              setLabelVisibility(name, false);
-            };
-          },
-          onPointerOut: () => {
-            setLabelVisibility(row.getValue("name"), false);
-            unmountCallback.current = undefined;
-          },
-          ...(row.subRows === undefined || row.subRows.length === 0
-            ? {}
-            : {
-                onClick: () => {
-                  row.toggleExpanded();
-                },
-                sx: {
-                  cursor: "pointer",
-                },
-              }),
-        })}
-        enableFullScreenToggle={false}
-        // Show/hide buttons.
-        renderTopToolbarCustomActions={
-          props.compact
-            ? () => {
-                return (
-                  <ActionIcon onClick={openSceneTree}>
-                    <IconMaximize />
-                  </ActionIcon>
-                );
-              }
-            : ({ table }) => {
-                // For setting disabled, doesn't always give the right behavior:
-                //     table.getIsSomeRowsSelected()
-                //
-                const disabled =
-                  table.getFilteredSelectedRowModel().flatRows.length === 0;
-                return (
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <ActionIcon
-                      color="green"
-                      disabled={disabled}
-                      variant="filled"
-                      onClick={() => {
-                        table.getSelectedRowModel().flatRows.map((row) => {
-                          setOverrideVisibility(row.getValue("name"), true);
-                        });
-                      }}
-                    >
-                      <IconEye />
-                    </ActionIcon>
-                    <ActionIcon
-                      color="gray"
-                      disabled={disabled}
-                      variant="filled"
-                      onClick={() => {
-                        table.getSelectedRowModel().flatRows.map((row) => {
-                          setOverrideVisibility(row.getValue("name"), false);
-                        });
-                      }}
-                    >
-                      <IconEyeOff />
-                    </ActionIcon>
-                    <Tooltip
-                      zIndex={100}
-                      label="Clear visibility overrides"
-                      withinPortal
-                    >
-                      <ActionIcon
-                        variant="filled"
-                        onClick={() => {
-                          Object.values(
-                            viewer.nodeAttributesFromName.current,
-                          ).forEach((attrs) => {
-                            delete attrs!.overrideVisibility;
-                          });
-                        }}
-                      >
-                        <IconEyeCancel />
-                      </ActionIcon>
-                    </Tooltip>
-                  </div>
-                );
-              }
-        }
-        // Row virtualization helps us reduce overhead when we have a lot of rows.
-        enableRowVirtualization
-      />
+          {expanded ? (
+            <IconCaretDown className={caretIcon} />
+          ) : (
+            <IconCaretRight className={caretIcon} />
+          )}
+        </Box>
+        <Tooltip label="Override visibility">
+          <VisibleIcon
+            style={{
+              cursor: "pointer",
+              opacity: isVisibleEffective ? 0.85 : 0.25,
+            }}
+            onClick={(evt) => {
+              evt.stopPropagation();
+              setOverrideVisibility(props.nodeName, !isVisible);
+            }}
+          />
+        </Tooltip>
+        <Box>
+          {props.nodeName
+            .split("/")
+            .filter((part) => part.length > 0)
+            .map((part, index, all) => (
+              // We set userSelect to prevent users from accidentally
+              // selecting text when dragging over the hide/show icons.
+              <span key={index} style={{ userSelect: "none" }}>
+                <span style={{ opacity: "0.3" }}>
+                  {index === all.length - 1 ? "/" : `/${part}`}
+                </span>
+                {index === all.length - 1 ? part : ""}
+              </span>
+            ))}
+        </Box>
+      </Box>
+      {expanded
+        ? childrenName.map((name) => (
+            <SceneTreeTableRow
+              nodeName={name}
+              isParentVisible={isVisibleEffective}
+              key={name}
+              indentCount={props.indentCount + 1}
+            />
+          ))
+        : null}
     </>
   );
-}
+});

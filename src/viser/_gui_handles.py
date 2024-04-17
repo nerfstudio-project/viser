@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import dataclasses
 import re
-import threading
 import time
 import urllib.parse
 import uuid
@@ -26,7 +25,7 @@ import imageio.v3 as iio
 import numpy as onp
 from typing_extensions import Protocol
 
-from ._icons import base64_from_icon
+from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._message_api import _encode_image_base64
 from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
@@ -53,8 +52,7 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None:
-        ...
+    def remove(self) -> None: ...
 
 
 @dataclasses.dataclass
@@ -142,15 +140,15 @@ class _GuiInputHandle(Generic[T]):
         for cb in self._impl.update_cb:
             # Pushing callbacks into separate threads helps prevent deadlocks when we
             # have a lock in a callback. TODO: revisit other callbacks.
-            threading.Thread(
-                target=lambda: cb(
+            self._impl.gui_api._get_api()._thread_executor.submit(
+                lambda: cb(
                     GuiEvent(
                         client_id=None,
                         client=None,
                         target=self,
                     )
                 )
-            ).start()
+            )
 
     @property
     def update_timestamp(self) -> float:
@@ -256,6 +254,31 @@ class GuiButtonHandle(_GuiInputHandle[bool]):
 
 
 @dataclasses.dataclass
+class UploadedFile:
+    """Result of a file upload."""
+
+    name: str
+    """Name of the file."""
+    content: bytes
+    """Contents of the file."""
+
+
+@dataclasses.dataclass
+class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
+    """Handle for an upload file button in our visualizer.
+
+    The `.value` attribute will be updated with the contents of uploaded files.
+    """
+
+    def on_upload(
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
+        """Attach a function to call when a button is pressed. Happens in a thread."""
+        self._impl.update_cb.append(func)
+        return func
+
+
+@dataclasses.dataclass
 class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
     """Handle for a button group input in our visualizer.
 
@@ -324,7 +347,7 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
 class GuiTabGroupHandle:
     _tab_group_id: str
     _labels: List[str]
-    _icons_base64: List[Optional[str]]
+    _icons_html: List[Optional[str]]
     _tabs: List[GuiTabHandle]
     _gui_api: GuiApi
     _order: float
@@ -343,7 +366,7 @@ class GuiTabGroupHandle:
         out = GuiTabHandle(_parent=self, _id=id)
 
         self._labels.append(label)
-        self._icons_base64.append(None if icon is None else base64_from_icon(icon))
+        self._icons_html.append(None if icon is None else svg_from_icon(icon))
         self._tabs.append(out)
 
         self._sync_with_client()
@@ -362,7 +385,7 @@ class GuiTabGroupHandle:
                 self._tab_group_id,
                 {
                     "tab_labels": tuple(self._labels),
-                    "tab_icons_base64": tuple(self._icons_base64),
+                    "tab_icons_html": tuple(self._icons_html),
                     "tab_container_ids": tuple(tab._id for tab in self._tabs),
                 },
             )
@@ -486,7 +509,7 @@ class GuiTabHandle:
         self._parent._gui_api._container_handle_from_id.pop(self._id)
 
         self._parent._labels.pop(container_index)
-        self._parent._icons_base64.pop(container_index)
+        self._parent._icons_html.pop(container_index)
         self._parent._tabs.pop(container_index)
         self._parent._sync_with_client()
 

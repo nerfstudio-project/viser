@@ -59,23 +59,23 @@ class ViserUrdf:
             )
             name = _viser_name_from_frame(urdf, link_name, root_node_name)
 
-            # Scale the mesh. (this will mutate it)
+            # Scale + transform the mesh. (these will mutate it!)
+            #
+            # It's important that we use apply_transform() instead of unpacking
+            # the rotation/translation terms, since the scene graph transform
+            # can also contain scale and reflection terms.
+            mesh = mesh.copy()
             mesh.apply_scale(self._scale)
+            mesh.apply_transform(T_parent_child)
+
             if mesh_color_override is None:
-                target.add_mesh_trimesh(
-                    name,
-                    mesh,
-                    wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
-                    position=T_parent_child[:3, 3] * scale,
-                )
+                target.add_mesh_trimesh(name, mesh)
             else:
                 target.add_mesh_simple(
                     name,
                     mesh.vertices,
                     mesh.faces,
                     color=mesh_color_override,
-                    wxyz=tf.SO3.from_matrix(T_parent_child[:3, :3]).wxyz,
-                    position=T_parent_child[:3, 3] * scale,
                 )
 
     def update_cfg(self, configuration: onp.ndarray) -> None:
@@ -100,8 +100,10 @@ class ViserUrdf:
         ):
             assert isinstance(joint_name, str)
             assert isinstance(joint, yourdfpy.Joint)
-            assert joint.limit is not None
-            out[joint_name] = (joint.limit.lower, joint.limit.upper)
+            if joint.limit is None:
+                out[joint_name] = (-onp.pi, onp.pi)
+            else:
+                out[joint_name] = (joint.limit.lower, joint.limit.upper)
         return out
 
     def get_actuated_joint_names(self) -> Tuple[str, ...]:
@@ -138,4 +140,6 @@ def _viser_name_from_frame(
     while frame_name != urdf.scene.graph.base_frame:
         frames.append(frame_name)
         frame_name = urdf.scene.graph.transforms.parents[frame_name]
-    return root_node_name + "/" + "/".join(frames[::-1])
+    if root_node_name != "/":
+        frames.append(root_node_name)
+    return "/".join(frames[::-1])

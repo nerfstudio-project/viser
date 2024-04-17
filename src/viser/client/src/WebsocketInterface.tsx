@@ -19,24 +19,24 @@ import {
   PointCloud,
 } from "./ThreeAssets";
 import {
-  FileDownloadPart,
-  FileDownloadStart,
+  FileTransferPart,
+  FileTransferStart,
   Message,
 } from "./WebsocketMessages";
-import styled from "@emotion/styled";
 import { Html, PivotControls } from "@react-three/drei";
 import {
   isTexture,
   makeThrottledMessageSender,
   sendWebsocketMessage,
 } from "./WebsocketFunctions";
-import { isGuiConfig, useViserMantineTheme } from "./ControlPanel/GuiState";
+import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import GaussianSplats from "./Splatting/GaussianSplats";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
+import { theme } from "./AppTheme";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function linearColorArrayFromSrgbColorArray(colors: ArrayBuffer) {
@@ -75,15 +75,16 @@ function useMessageHandler() {
   const removeGui = viewer.useGui((state) => state.removeGui);
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
+  const updateUploadState = viewer.useGui((state) => state.updateUploadState);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
   function addSceneNodeMakeParents(node: SceneNode<any>) {
     // Make sure scene node is in attributes.
     const attrs = viewer.nodeAttributesFromName.current;
-    if (!(node.name in attrs)) {
-      attrs[node.name] = {};
-    }
+    attrs[node.name] = {
+      overrideVisibility: attrs[node.name]?.overrideVisibility,
+    };
 
     // Don't update the pose of the object until we've made a new one!
     attrs[node.name]!.poseUpdateState = "waitForMakeObject";
@@ -101,7 +102,6 @@ function useMessageHandler() {
     addSceneNode(node);
   }
 
-  const mantineTheme = useViserMantineTheme();
   const fileDownloadHandler = useFileDownloadHandler();
 
   // Return message handler.
@@ -134,8 +134,11 @@ function useMessageHandler() {
         return;
       }
       // Enable/disable whether scene pointer events are sent.
-      case "SceneClickEnableMessage": {
-        viewer.sceneClickEnable.current = message.enable;
+      case "ScenePointerEnableMessage": {
+        // Update scene click enable state.
+        viewer.scenePointerInfo.current!.enabled = message.enable
+          ? message.event_type
+          : false;
 
         // Update cursor to indicate whether the scene can be clicked.
         viewer.canvasRef.current!.style.cursor = message.enable
@@ -228,20 +231,16 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                      : message.plane == "yx"
-                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                        : message.plane == "yz"
-                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                          : message.plane == "zx"
-                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                            : message.plane == "zy"
-                              ? new THREE.Euler(
-                                  -Math.PI / 2.0,
-                                  0.0,
-                                  -Math.PI / 2.0,
-                                )
-                              : undefined
+                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                    : message.plane == "yx"
+                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                    : message.plane == "yz"
+                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                    : message.plane == "zx"
+                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                    : message.plane == "zy"
+                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
+                    : undefined
                 }
               />
             </group>
@@ -308,7 +307,7 @@ function useMessageHandler() {
           return texture;
         };
         const standardArgs = {
-          color: message.color || undefined,
+          color: message.color ?? undefined,
           vertexColors: message.vertex_colors !== null,
           wireframe: message.wireframe,
           transparent: message.opacity !== null,
@@ -328,16 +327,16 @@ function useMessageHandler() {
           message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-              ? new THREE.MeshToonMaterial({
-                  gradientMap: generateGradientMap(3),
-                  ...standardArgs,
-                })
-              : message.material == "toon5"
-                ? new THREE.MeshToonMaterial({
-                    gradientMap: generateGradientMap(5),
-                    ...standardArgs,
-                  })
-                : assertUnreachable(message.material);
+            ? new THREE.MeshToonMaterial({
+                gradientMap: generateGradientMap(3),
+                ...standardArgs,
+              })
+            : message.material == "toon5"
+            ? new THREE.MeshToonMaterial({
+                gradientMap: generateGradientMap(5),
+                ...standardArgs,
+              })
+            : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -426,45 +425,53 @@ function useMessageHandler() {
           50,
         );
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => (
-            <group onClick={(e) => e.stopPropagation()}>
-              <PivotControls
-                ref={ref}
-                scale={message.scale}
-                lineWidth={message.line_width}
-                fixed={message.fixed}
-                autoTransform={message.auto_transform}
-                activeAxes={message.active_axes}
-                disableAxes={message.disable_axes}
-                disableSliders={message.disable_sliders}
-                disableRotations={message.disable_rotations}
-                translationLimits={message.translation_limits}
-                rotationLimits={message.rotation_limits}
-                depthTest={message.depth_test}
-                opacity={message.opacity}
-                onDrag={(l) => {
-                  const attrs = viewer.nodeAttributesFromName.current;
-                  if (attrs[message.name] === undefined) {
-                    attrs[message.name] = {};
-                  }
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => (
+              <group onClick={(e) => e.stopPropagation()}>
+                <PivotControls
+                  ref={ref}
+                  scale={message.scale}
+                  lineWidth={message.line_width}
+                  fixed={message.fixed}
+                  autoTransform={message.auto_transform}
+                  activeAxes={message.active_axes}
+                  disableAxes={message.disable_axes}
+                  disableSliders={message.disable_sliders}
+                  disableRotations={message.disable_rotations}
+                  disableScaling={true}
+                  translationLimits={message.translation_limits}
+                  rotationLimits={message.rotation_limits}
+                  depthTest={message.depth_test}
+                  opacity={message.opacity}
+                  onDrag={(l) => {
+                    const attrs = viewer.nodeAttributesFromName.current;
+                    if (attrs[message.name] === undefined) {
+                      attrs[message.name] = {};
+                    }
 
-                  const wxyz = new THREE.Quaternion();
-                  wxyz.setFromRotationMatrix(l);
-                  const position = new THREE.Vector3().setFromMatrixPosition(l);
+                    const wxyz = new THREE.Quaternion();
+                    wxyz.setFromRotationMatrix(l);
+                    const position = new THREE.Vector3().setFromMatrixPosition(
+                      l,
+                    );
 
-                  const nodeAttributes = attrs[message.name]!;
-                  nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                  nodeAttributes.position = position.toArray();
-                  sendDragMessage({
-                    type: "TransformControlsUpdateMessage",
-                    name: name,
-                    wxyz: nodeAttributes.wxyz,
-                    position: nodeAttributes.position,
-                  });
-                }}
-              />
-            </group>
-          )),
+                    const nodeAttributes = attrs[message.name]!;
+                    nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+                    nodeAttributes.position = position.toArray();
+                    sendDragMessage({
+                      type: "TransformControlsUpdateMessage",
+                      name: name,
+                      wxyz: nodeAttributes.wxyz,
+                      position: nodeAttributes.position,
+                    });
+                  }}
+                />
+              </group>
+            ),
+            undefined,
+            true, // unmountWhenInvisible
+          ),
         );
         return;
       }
@@ -599,26 +606,6 @@ function useMessageHandler() {
       }
       // Add a 2D label.
       case "LabelMessage": {
-        const Label = styled.span`
-          background-color: rgba(255, 255, 255, 0.85);
-          padding: 0.2em;
-          border-radius: 0.2em;
-          border: 1px solid #777;
-          color: #333;
-
-          &:before {
-            content: "";
-            position: absolute;
-            top: -1em;
-            left: 1em;
-            width: 0;
-            height: 0;
-            border-left: 1px solid #777;
-            box-sizing: border-box;
-            height: 0.8em;
-            box-shadow: 0 0 1em 0.1em rgba(255, 255, 255, 1);
-          }
-        `;
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
             message.name,
@@ -631,10 +618,20 @@ function useMessageHandler() {
                       style={{
                         width: "10em",
                         fontSize: "0.8em",
-                        transform: "translateX(-1em) translateY(1em)",
+                        transform: "translateX(0.1em) translateY(0.5em)",
                       }}
                     >
-                      <Label>{message.text}</Label>
+                      <span
+                        style={{
+                          background: "#fff",
+                          border: "1px solid #777",
+                          borderRadius: "0.2em",
+                          color: "#333",
+                          padding: "0.2em",
+                        }}
+                      >
+                        {message.text}
+                      </span>
                     </div>
                   </Html>
                 </group>
@@ -658,19 +655,16 @@ function useMessageHandler() {
               return (
                 <group ref={ref} position={new THREE.Vector3(1e8, 1e8, 1e8)}>
                   <Html prepend={false}>
-                    <MantineProvider
-                      withGlobalStyles
-                      withNormalizeCSS
-                      theme={mantineTheme}
-                    >
+                    <MantineProvider theme={theme}>
                       <Paper
-                        sx={{
+                        style={{
                           width: "18em",
                           fontSize: "0.875em",
-                          marginLeft: "1em",
-                          marginTop: "1em",
+                          marginLeft: "0.5em",
+                          marginTop: "0.5em",
                         }}
-                        shadow="md"
+                        shadow="0 0 0.8em 0 rgba(0,0,0,0.1)"
+                        pb="0.25em"
                         onPointerDown={(evt) => {
                           evt.stopPropagation();
                         }}
@@ -735,6 +729,8 @@ function useMessageHandler() {
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
+        const attrs = viewer.nodeAttributesFromName.current;
+        delete attrs[message.name];
         return;
       }
       // Set the clickability of a particular scene node.
@@ -863,9 +859,17 @@ function useMessageHandler() {
         );
         return;
       }
-      case "FileDownloadStart":
-      case "FileDownloadPart": {
+      case "FileTransferStart":
+      case "FileTransferPart": {
         fileDownloadHandler(message);
+        return;
+      }
+      case "FileTransferPartAck": {
+        updateUploadState({
+          componentId: message.source_component_id!,
+          uploadedBytes: message.transferred_bytes,
+          totalBytes: message.total_bytes,
+        });
         return;
       }
       default: {
@@ -879,7 +883,7 @@ function useMessageHandler() {
 function useFileDownloadHandler() {
   const downloadStatesRef = React.useRef<{
     [uuid: string]: {
-      metadata: FileDownloadStart;
+      metadata: FileTransferStart;
       notificationId: string;
       parts: Uint8Array[];
       bytesDownloaded: number;
@@ -887,12 +891,12 @@ function useFileDownloadHandler() {
     };
   }>({});
 
-  return (message: FileDownloadStart | FileDownloadPart) => {
-    const notificationId = "download-" + message.download_uuid;
+  return (message: FileTransferStart | FileTransferPart) => {
+    const notificationId = "download-" + message.transfer_uuid;
 
     // Create or update download state.
     switch (message.type) {
-      case "FileDownloadStart": {
+      case "FileTransferStart": {
         let displaySize = message.size_bytes;
         const displayUnits = ["B", "K", "M", "G", "T", "P"];
         let displayUnitIndex = 0;
@@ -903,7 +907,7 @@ function useFileDownloadHandler() {
           displaySize /= 1024;
           displayUnitIndex += 1;
         }
-        downloadStatesRef.current[message.download_uuid] = {
+        downloadStatesRef.current[message.transfer_uuid] = {
           metadata: message,
           notificationId: notificationId,
           parts: [],
@@ -914,8 +918,8 @@ function useFileDownloadHandler() {
         };
         break;
       }
-      case "FileDownloadPart": {
-        const downloadState = downloadStatesRef.current[message.download_uuid];
+      case "FileTransferPart": {
+        const downloadState = downloadStatesRef.current[message.transfer_uuid];
         if (message.part != downloadState.parts.length) {
           console.error(
             "A file download message was dropped; this should never happen!",
@@ -928,7 +932,7 @@ function useFileDownloadHandler() {
     }
 
     // Show notification.
-    const downloadState = downloadStatesRef.current[message.download_uuid];
+    const downloadState = downloadStatesRef.current[message.transfer_uuid];
     const progressValue =
       (100.0 * downloadState.bytesDownloaded) /
       downloadState.metadata.size_bytes;
@@ -960,7 +964,7 @@ function useFileDownloadHandler() {
       link.download = downloadState.metadata.filename;
       link.click();
       link.remove();
-      delete downloadStatesRef.current[message.download_uuid];
+      delete downloadStatesRef.current[message.transfer_uuid];
     }
   };
 }
@@ -1108,8 +1112,8 @@ export function WebsocketMessageProducer() {
         console.log(`Disconnected! ${server} code=${event.code}`);
         clearTimeout(retryTimeout);
         viewer.websocketRef.current = null;
-        viewer.sceneClickEnable.current = false;
-        viewer.useGui.setState({ shareUrl: null, websocketConnected: false });
+        viewer.scenePointerInfo.current!.enabled = false;
+        viewer.useGui.setState({ websocketConnected: false });
         resetGui();
 
         // Try to reconnect.

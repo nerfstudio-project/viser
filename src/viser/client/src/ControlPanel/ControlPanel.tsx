@@ -2,6 +2,7 @@ import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import GeneratedGuiContainer from "./Generated";
 import { ViewerContext } from "../App";
 
+import QRCode from "react-qr-code";
 import ServerControls from "./ServerControls";
 import {
   ActionIcon,
@@ -18,6 +19,7 @@ import {
   TextInput,
   Tooltip,
   Transition,
+  useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import {
@@ -28,6 +30,8 @@ import {
   IconCopy,
   IconCheck,
   IconPlugConnectedX,
+  IconQrcode,
+  IconQrcodeOff,
 } from "@tabler/icons-react";
 import React from "react";
 import BottomPanel from "./BottomPanel";
@@ -66,26 +70,28 @@ export default function ControlPanel(props: {
   )!;
 
   const generatedServerToggleButton = (
-    <Box sx={{ display: showGenerated ? undefined : "none" }}>
-      <ActionIcon
-        onClick={(evt) => {
-          evt.stopPropagation();
-          toggle();
-        }}
+    <ActionIcon
+      onClick={(evt) => {
+        evt.stopPropagation();
+        toggle();
+      }}
+      style={{
+        display: showGenerated ? undefined : "none",
+        transform: "translateY(0.05em)",
+      }}
+    >
+      <Tooltip
+        zIndex={100}
+        label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
+        withinPortal
       >
-        <Tooltip
-          zIndex={100}
-          label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
-          withinPortal
-        >
-          {showSettings ? (
-            <IconArrowBack stroke={1.625} />
-          ) : (
-            <IconAdjustments stroke={1.625} />
-          )}
-        </Tooltip>
-      </ActionIcon>
-    </Box>
+        {showSettings ? (
+          <IconArrowBack stroke={1.625} />
+        ) : (
+          <IconAdjustments stroke={1.625} />
+        )}
+      </Tooltip>
+    </ActionIcon>
   );
 
   const panelContents = (
@@ -171,13 +177,13 @@ function ConnectionStatus() {
         {(styles) => (
           <Loader
             size="xs"
-            variant="bars"
+            type="dots"
             color="red"
             style={{ position: "absolute", ...styles }}
           />
         )}
       </Transition>
-      <Box px="xs" sx={{ flexGrow: 1 }} lts={"-0.5px"} pt="0.1em">
+      <Box px="xs" style={{ flexGrow: 1 }} lts={"-0.5px"} pt="0.1em">
         {label !== "" ? label : connected ? "Connected" : "Connecting..."}
       </Box>
     </>
@@ -195,6 +201,8 @@ function ShareButton() {
   const [shareModalOpened, { open: openShareModal, close: closeShareModal }] =
     useDisclosure(false);
 
+  const [showQrCode, { toggle: toggleShowQrcode }] = useDisclosure();
+
   // Turn off loader when share URL is set.
   React.useEffect(() => {
     if (shareUrl !== null) {
@@ -208,6 +216,7 @@ function ShareButton() {
   if (viewer.useGui((state) => state.theme).show_share_button === false)
     return null;
 
+  const colorScheme = useMantineColorScheme().colorScheme;
   return (
     <>
       <Tooltip
@@ -215,17 +224,18 @@ function ShareButton() {
         label={connected ? "Share" : "Share (needs connection)"}
         withinPortal
       >
-        <div>
-          <ActionIcon
-            onClick={(evt) => {
-              evt.stopPropagation();
-              openShareModal();
-            }}
-            disabled={!connected}
-          >
-            <IconShare stroke={2} height="1.125em" width="1.125em" />
-          </ActionIcon>
-        </div>
+        <ActionIcon
+          onClick={(evt) => {
+            evt.stopPropagation();
+            openShareModal();
+          }}
+          style={{
+            transform: "translateY(0.05em)",
+          }}
+          disabled={!connected}
+        >
+          <IconShare stroke={2} height="1.125em" width="1.125em" />
+        </ActionIcon>
       </Tooltip>
       <Modal
         title="Share"
@@ -250,7 +260,7 @@ function ShareButton() {
               /> */}
             {doingSomething ? (
               <Stack mb="xl">
-                <Loader size="xl" mx="auto" />
+                <Loader size="xl" mx="auto" type="dots" />
               </Stack>
             ) : (
               <Stack mb="md">
@@ -273,14 +283,15 @@ function ShareButton() {
           </>
         ) : (
           <>
-            <Text>Share URL is connected:</Text>
-            <Stack my="md">
+            <Text>Share URL is connected.</Text>
+            <Stack gap="xs" my="md">
               <TextInput value={shareUrl} />
               <Flex justify="space-between" columnGap="0.5em" align="center">
                 <CopyButton value={shareUrl}>
                   {({ copied, copy }) => (
                     <Button
-                      leftIcon={
+                      style={{ width: "50%" }}
+                      leftSection={
                         copied ? (
                           <IconCheck height="1.375em" width="1.375em" />
                         ) : (
@@ -289,12 +300,18 @@ function ShareButton() {
                       }
                       onClick={copy}
                       variant={copied ? "outline" : "filled"}
-                      style={{ flexGrow: "1" }}
                     >
-                      {copied ? "Copied!" : "Copy Share URL"}
+                      {copied ? "Copied!" : "Copy URL"}
                     </Button>
                   )}
                 </CopyButton>
+                <Button
+                  style={{ flexGrow: 1 }}
+                  leftSection={showQrCode ? <IconQrcodeOff /> : <IconQrcode />}
+                  onClick={toggleShowQrcode}
+                >
+                  QR Code
+                </Button>
                 <Tooltip zIndex={100} label="Disconnect" withinPortal>
                   <Button
                     color="red"
@@ -309,6 +326,19 @@ function ShareButton() {
                   </Button>
                 </Tooltip>
               </Flex>
+              <Collapse in={showQrCode}>
+                <QRCode
+                  value={shareUrl}
+                  fgColor={colorScheme === "dark" ? "#ffffff" : "#000000"}
+                  bgColor="rgba(0,0,0,0)"
+                  level="M"
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    margin: "1em auto 0 auto",
+                  }}
+                />
+              </Collapse>
             </Stack>
           </>
         )}

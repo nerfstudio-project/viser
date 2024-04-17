@@ -1,4 +1,5 @@
 import { MutableRefObject } from "react";
+import * as THREE from "three";
 import { Message } from "./WebsocketMessages";
 import { pack } from "msgpackr";
 

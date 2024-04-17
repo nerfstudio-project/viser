@@ -1,6 +1,13 @@
 // @refresh reset
 
-import { ActionIcon, Box, Paper, ScrollArea, Tooltip } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Paper,
+  ScrollArea,
+  Tooltip,
+  useMantineColorScheme,
+} from "@mantine/core";
 import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
@@ -24,10 +31,10 @@ export default function SidebarPanel({
 
   const collapsedView = (
     <Box
-      sx={(theme) => ({
+      style={(theme) => ({
         /* Animate in when collapsed. */
         position: "absolute",
-        top: "0em",
+        top: 0,
         right: collapsed ? "0em" : "-3em",
         transitionProperty: "right",
         transitionDuration: "0.5s",
@@ -35,7 +42,7 @@ export default function SidebarPanel({
         /* Visuals. */
         borderBottomLeftRadius: "0.5em",
         backgroundColor:
-          theme.colorScheme == "dark"
+          useMantineColorScheme().colorScheme == "dark"
             ? theme.colors.dark[5]
             : theme.colors.gray[2],
         padding: "0.5em",
@@ -63,20 +70,41 @@ export default function SidebarPanel({
     >
       {collapsedView}
       {/* Using an <Aside /> below will break Mantine color inputs. */}
+      {/* We create two <Paper /> elements. The first is only used for a drop
+      shadow. Note the z-index difference, which is used to put the shadow
+      behind the titlebar but the content in front of it. (and thus also in
+      front of the titlebar's shadow) */}
       <Paper
         shadow="0 0 1em 0 rgba(0,0,0,0.1)"
-        component={ScrollArea}
-        sx={{
+        style={{
           width: collapsed ? 0 : width,
           boxSizing: "content-box",
           transition: "width 0.5s 0s",
-          zIndex: 10,
+          zIndex: 8,
+        }}
+      ></Paper>
+      <Paper
+        radius={0}
+        style={{
+          width: collapsed ? 0 : width,
+          top: 0,
+          bottom: 0,
+          right: 0,
+          position: "absolute",
+          boxSizing: "content-box",
+          transition: "width 0.5s 0s",
+          zIndex: 20,
         }}
       >
         <Box
           /* Prevent DOM reflow, as well as internals from getting too wide.
            * Needs to match the width of the wrapper element above. */
-          w={width}
+          style={{
+            width: width,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
           {children}
         </Box>
@@ -110,10 +138,10 @@ SidebarPanel.Handle = function SidebarPanelHandle({
   return (
     <Box
       p="xs"
-      sx={(theme) => ({
+      style={(theme) => ({
         borderBottom: "1px solid",
         borderColor:
-          theme.colorScheme == "dark"
+          useMantineColorScheme().colorScheme == "dark"
             ? theme.colors.dark[4]
             : theme.colors.gray[3],
         lineHeight: "1.5em",
@@ -136,5 +164,5 @@ SidebarPanel.Contents = function SidebarPanelContents({
 }: {
   children: string | React.ReactNode;
 }) {
-  return children;
+  return <ScrollArea style={{ flexGrow: 1 }}>{children}</ScrollArea>;
 };
