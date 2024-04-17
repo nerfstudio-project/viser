@@ -6,7 +6,6 @@ from pathlib import Path
 
 import numpy as onp
 import tyro
-
 import viser
 from viser import transforms as tf
 
