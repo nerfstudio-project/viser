@@ -1,9 +1,9 @@
 import React from "react";
 import * as THREE from "three";
 import SplatSortWorker from "./SplatSortWorker?worker";
-import { fragmentShaderSource, vertexShaderSource } from "./Shaders";
 import { useFrame } from "@react-three/fiber";
 import { GaussianBuffersSplitCov } from "./SplatSortWorker";
+import { shaderMaterial } from "@react-three/drei";
 
 export type GaussianBuffers = {
   // (N, 3)
@@ -16,13 +16,104 @@ export type GaussianBuffers = {
   covariancesTriu: Float32Array;
 };
 
+const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
+  {
+    alphaTest: 0,
+    alphaHash: false,
+    viewport: [1920, 1080],
+    focal: 100.0,
+    depthTest: true,
+    depthWrite: false,
+    transparent: true,
+  },
+  `precision mediump float;
+
+  attribute vec3 rgb;
+  attribute float opacity;
+  attribute vec3 center;
+  attribute vec3 covA;
+  attribute vec3 covB;
+
+  uniform vec2 focal;
+  uniform vec2 viewport;
+
+  varying vec3 vRgb;
+  varying float vOpacity;
+  varying vec2 vPosition;
+
+  void main () {
+    // Get center wrt camera. modelViewMatrix is T_cam_world.
+    vec4 c_cam = modelViewMatrix * vec4(center, 1);
+    vec4 pos2d = projectionMatrix * c_cam;
+
+    // Splat covariance.
+    mat3 cov3d = mat3(
+        covA.x, covA.y, covA.z,
+        covA.y, covB.x, covB.y,
+        covA.z, covB.y, covB.z
+    );
+    mat3 J = mat3(
+        // Matrices are column-major.
+        focal.x / c_cam.z, 0., 0.0,
+        0., focal.y / c_cam.z, 0.0,
+        -(focal.x * c_cam.x) / (c_cam.z * c_cam.z), -(focal.y * c_cam.y) / (c_cam.z * c_cam.z), 0.
+    );
+    mat3 A = J * mat3(modelViewMatrix);
+    mat3 cov_proj = A * cov3d * transpose(A);
+    float diag1 = cov_proj[0][0] + 0.3;
+    float offDiag = cov_proj[0][1];
+    float diag2 = cov_proj[1][1] + 0.3;
+
+    // Eigendecomposition. This can mostly be derived from characteristic equation, etc.
+    float mid = 0.5 * (diag1 + diag2);
+    float radius = length(vec2((diag1 - diag2) / 2.0, offDiag));
+    float lambda1 = mid + radius;
+    float lambda2 = max(mid - radius, 0.1);
+    vec2 diagonalVector = normalize(vec2(offDiag, lambda1 - diag1));
+    vec2 v1 = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
+    vec2 v2 = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
+
+    vRgb = rgb;
+    vOpacity = opacity;
+    vPosition = vec2(position.x, position.y);
+
+    gl_Position = vec4(
+        vec2(pos2d) / pos2d.w
+            + position.x * v1 / viewport * 2.0
+            + position.y * v2 / viewport * 2.0, pos2d.z / pos2d.w, 1.);
+  }
+`,
+  `#include <alphatest_pars_fragment>
+  #include <alphahash_pars_fragment>
+
+  precision mediump float;
+
+  varying vec3 vRgb;
+  varying float vOpacity;
+  varying vec2 vPosition;
+
+  uniform vec2 viewport;
+  uniform vec2 focal;
+
+
+  void main () {
+    float A = -dot(vPosition, vPosition);
+    if (A < -4.0) discard;
+    float B = exp(A) * vOpacity;
+    vec4 diffuseColor = vec4(vRgb.rgb, B);
+    #include <alphatest_fragment>
+    #include <alphahash_fragment>
+    gl_FragColor = diffuseColor;
+  }`,
+);
+
 export default function GaussianSplats({
   buffers,
 }: {
   buffers: GaussianBuffers;
 }) {
   const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
-  const [material, setMaterial] = React.useState<THREE.RawShaderMaterial>();
+  const [material, setMaterial] = React.useState<THREE.ShaderMaterial>();
   const setSortedBuffers = React.useRef<
     null | ((sortedBuffers: GaussianBuffersSplitCov) => void)
   >(null);
@@ -73,21 +164,22 @@ export default function GaussianSplats({
     geometry.setAttribute("covB", covBAttribute);
 
     // Populate material with custom shaders.
-    const material = new THREE.RawShaderMaterial({
-      fragmentShader: fragmentShaderSource,
-      vertexShader: vertexShaderSource,
-      uniforms: {
-        viewport: { value: null },
-        focal: { value: null },
-      },
-      depthTest: true,
-      depthWrite: false,
-      transparent: true,
-    });
+    // const material = new GaussianSplatMaterial();
+    // const material = new THREE.RawShaderMaterial({
+    //   fragmentShader: fragmentShaderSource,
+    //   vertexShader: vertexShaderSource,
+    //   uniforms: {
+    //     viewport: { value: null },
+    //     focal: { value: null },
+    //   },
+    //   depthTest: true,
+    //   depthWrite: false,
+    //   transparent: true,
+    // });
 
-    // Update component state.
+    // Update component tate.
     setGeometry(geometry);
-    setMaterial(material);
+    setMaterial(new GaussianSplatMaterial());
     setSortedBuffers.current = (sortedBuffers: GaussianBuffersSplitCov) => {
       centerAttribute.set(sortedBuffers.centers);
       rgbAttribute.set(sortedBuffers.rgbs);
@@ -118,12 +210,20 @@ export default function GaussianSplats({
 
     return () => {
       geometry.dispose();
-      material.dispose();
+      material!.dispose();
       sortWorker.postMessage({ close: true });
     };
   }, [buffers]);
 
+  // Synchronize view projection matrix with sort worker.
+  const meshRef = React.useRef<THREE.Mesh>(null);
+  const prevViewProj = React.useRef<THREE.Matrix4>();
   useFrame((state) => {
+    const mesh = meshRef.current;
+    const sortWorker = splatSortWorkerRef.current;
+    if (mesh === null || sortWorker === null) return;
+
+    // Update uniforms.
     const dpr = state.viewport.dpr;
     const fovY =
       ((state.camera as THREE.PerspectiveCamera).fov * Math.PI) / 180.0;
@@ -137,15 +237,6 @@ export default function GaussianSplats({
       state.size.width * dpr,
       state.size.height * dpr,
     ];
-  });
-
-  // Synchronize view projection matrix with sort worker.
-  const meshRef = React.useRef<THREE.Mesh>(null);
-  const prevViewProj = React.useRef<THREE.Matrix4>();
-  useFrame((state) => {
-    const mesh = meshRef.current;
-    const sortWorker = splatSortWorkerRef.current;
-    if (mesh === null || sortWorker === null) return;
 
     // Compute view projection matrix.
     const viewProj = new THREE.Matrix4()

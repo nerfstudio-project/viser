@@ -21,7 +21,11 @@ export type GaussianBuffersSplitCov = {
   let viewProj: number[] | null = null;
   let sortRunning = false;
   const throttledSort = () => {
-    if (sorter === null || viewProj === null || sortRunning) return;
+    if (sorter === null) {
+      setTimeout(throttledSort, 1);
+      return;
+    }
+    if (viewProj === null || sortRunning) return;
 
     sortRunning = true;
     const lastView = viewProj;
