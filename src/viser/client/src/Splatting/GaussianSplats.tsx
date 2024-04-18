@@ -163,20 +163,6 @@ export default function GaussianSplats({
     geometry.setAttribute("covA", covAAttribute);
     geometry.setAttribute("covB", covBAttribute);
 
-    // Populate material with custom shaders.
-    // const material = new GaussianSplatMaterial();
-    // const material = new THREE.RawShaderMaterial({
-    //   fragmentShader: fragmentShaderSource,
-    //   vertexShader: vertexShaderSource,
-    //   uniforms: {
-    //     viewport: { value: null },
-    //     focal: { value: null },
-    //   },
-    //   depthTest: true,
-    //   depthWrite: false,
-    //   transparent: true,
-    // });
-
     // Update component tate.
     setGeometry(geometry);
     setMaterial(new GaussianSplatMaterial());
@@ -210,7 +196,7 @@ export default function GaussianSplats({
 
     return () => {
       geometry.dispose();
-      material!.dispose();
+      if (material !== undefined) material.dispose();
       sortWorker.postMessage({ close: true });
     };
   }, [buffers]);
