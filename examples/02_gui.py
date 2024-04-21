@@ -10,13 +10,13 @@ Examples of basic GUI elements that we can create, read from, and write to."""
 import time
 
 import numpy as onp
-import viser
-
-from PIL import Image
 import plotly.express as px
+import viser
+from PIL import Image
+
 
 def main() -> None:
-    server = viser.ViserServer(port=8008)
+    server = viser.ViserServer()
 
     # Add some common GUI elements: number inputs, sliders, vectors, checkboxes.
     with server.add_gui_folder("Read-only"):
