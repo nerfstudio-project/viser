@@ -420,7 +420,6 @@ class GuiAddMarkdownMessage(Message):
 class GuiAddPlotlyMessage(Message):
     order: float
     id: str
-    label: str
     plotly_json_str: str
     aspect_ratio: float
     container_id: str

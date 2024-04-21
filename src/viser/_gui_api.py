@@ -504,7 +504,6 @@ class GuiApi(abc.ABC):
 
     def add_gui_plotly(
         self,
-        label: str,
         figure: go.Figure,
         aspect_ratio: float = 1.0,
         order: Optional[float] = None,
@@ -527,7 +526,6 @@ class GuiApi(abc.ABC):
             _visible=visible,
             _container_id=self._get_container_id(),
             _order=_apply_default_order(order),
-            _label=label,
             _figure=figure,
             _aspect_ratio=aspect_ratio,
         )
@@ -564,7 +562,6 @@ class GuiApi(abc.ABC):
             _messages.GuiAddPlotlyMessage(
                 order=handle._order,
                 id=handle._id,
-                label=label,
                 plotly_json_str=handle.plot_to_json(),
                 aspect_ratio=aspect_ratio,
                 container_id=handle._container_id,

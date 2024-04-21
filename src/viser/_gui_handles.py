@@ -624,7 +624,6 @@ class GuiPlotlyHandle:
     _visible: bool
     _container_id: str  # Parent.
     _order: float
-    _label: Optional[str]
     _figure: Optional[go.Figure]
     _aspect_ratio: Optional[float]
 
@@ -644,21 +643,6 @@ class GuiPlotlyHandle:
             )
         )
 
-    @property
-    def label(self) -> str:
-        """Label of the plotly figure."""
-        return self._label
-    
-    @label.setter
-    def name(self, label: str) -> None:
-        self._label = label
-        self._gui_api._get_api()._queue(
-            GuiUpdateMessage(
-                self._id,
-                {"label": label},
-            )
-        )
-    
     @property
     def aspect_ratio(self) -> float:
         """Aspect ratio of the plotly figure, in the control panel."""

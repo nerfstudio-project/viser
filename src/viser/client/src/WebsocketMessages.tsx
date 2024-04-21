@@ -349,7 +349,7 @@ export interface GuiAddMarkdownMessage {
   container_id: string;
   visible: boolean;
 }
-/** GuiAddPlotlyMessage(order: 'float', id: 'str', label: 'str', plotly_json_str: 'str', aspect_ratio: 'float', container_id: 'str', visible: 'bool')
+/** GuiAddPlotlyMessage(order: 'float', id: 'str', plotly_json_str: 'str', aspect_ratio: 'float', container_id: 'str', visible: 'bool')
  *
  * (automatically generated)
  */
@@ -357,7 +357,6 @@ export interface GuiAddPlotlyMessage {
   type: "GuiAddPlotlyMessage";
   order: number;
   id: string;
-  label: string;
   plotly_json_str: string;
   aspect_ratio: number;
   container_id: string;

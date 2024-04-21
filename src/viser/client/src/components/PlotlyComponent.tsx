@@ -49,8 +49,6 @@ function generatePlotWithAspect(json_str: string, aspect_ratio: number, staticPl
 }
 
 export default function PlotlyComponent({
-  id,
-  label,
   visible,
   plotly_json_str,
   aspect_ratio,
