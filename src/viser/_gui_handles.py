@@ -54,7 +54,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -647,7 +648,7 @@ class GuiPlotlyHandle:
     def aspect_ratio(self) -> float:
         """Aspect ratio of the plotly figure, in the control panel."""
         return self._aspect_ratio
-    
+
     @aspect_ratio.setter
     def aspect_ratio(self, aspect_ratio: float) -> None:
         self._aspect_ratio = aspect_ratio

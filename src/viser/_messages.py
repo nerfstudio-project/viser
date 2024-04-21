@@ -69,6 +69,7 @@ def tag_class(tag: str) -> Callable[[T], T]:
 class SetupPlotlyMessage(Message):
     """Message for setting up the Plotly.js package,
     via sending the plotly.min.js source code."""
+
     source: str
 
 

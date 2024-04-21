@@ -193,7 +193,9 @@ class GuiApi(abc.ABC):
         }
         self._current_file_upload_states: Dict[str, FileUploadState] = {}
 
-        self._setup_plotly_js: bool = False  # Set to True when plotly.min.js has been sent to client.
+        self._setup_plotly_js: bool = (
+            False  # Set to True when plotly.min.js has been sent to client.
+        )
 
         self._get_api()._message_handler.register_handler(
             _messages.GuiUpdateMessage, self._handle_gui_updates
@@ -543,8 +545,12 @@ class GuiApi(abc.ABC):
                 )
 
             # Check that plotly.min.js exists.
-            plotly_path = Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
-            assert plotly_path.exists(), f"Could not find plotly.min.js at {plotly_path}."
+            plotly_path = (
+                Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
+            )
+            assert (
+                plotly_path.exists()
+            ), f"Could not find plotly.min.js at {plotly_path}."
 
             # Send it over!
             with open(plotly_path, "r") as f:
@@ -718,7 +724,8 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]: ...
+    ) -> GuiButtonGroupHandle[TLiteralString]:
+        ...
 
     @overload
     def add_gui_button_group(
@@ -729,7 +736,8 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TString]: ...
+    ) -> GuiButtonGroupHandle[TString]:
+        ...
 
     def add_gui_button_group(
         self,
@@ -1057,7 +1065,8 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TLiteralString]: ...
+    ) -> GuiDropdownHandle[TLiteralString]:
+        ...
 
     @overload
     def add_gui_dropdown(
@@ -1069,7 +1078,8 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TString]: ...
+    ) -> GuiDropdownHandle[TString]:
+        ...
 
     def add_gui_dropdown(
         self,
