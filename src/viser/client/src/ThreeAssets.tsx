@@ -67,7 +67,7 @@ const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
   uniform float point_ball_norm;
 
   void main() {
-      if (!isinf(point_ball_norm)) {
+      if (point_ball_norm < 1000.0) {
           float r = pow(
               pow(abs(gl_PointCoord.x - 0.5), point_ball_norm)
               + pow(abs(gl_PointCoord.y - 0.5), point_ball_norm),

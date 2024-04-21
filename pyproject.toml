@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.27"
+version = "0.1.28"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -15,6 +15,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"
 ]
