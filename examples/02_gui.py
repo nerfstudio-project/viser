@@ -101,7 +101,6 @@ def main() -> None:
         fig.update_layout(margin=dict(l=20, r=20, t=20, b=20),)
 
         server.add_gui_plotly(
-            label="Image plot!",
             figure=fig,
             aspect_ratio=1.0,
         )
@@ -114,7 +113,6 @@ def main() -> None:
         fig.update_layout(margin=dict(l=20, r=20, t=20, b=20),)
 
         server.add_gui_plotly(
-            label="Line plot!",
             figure=fig,
             aspect_ratio=1.0,
         )
