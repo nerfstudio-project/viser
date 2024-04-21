@@ -24,7 +24,6 @@ from typing import (
 import imageio.v3 as iio
 import numpy as onp
 from typing_extensions import Protocol
-import plotly.graph_objects as go
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
@@ -33,6 +32,8 @@ from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage,
 from .infra import ClientId
 
 if TYPE_CHECKING:
+    import plotly.graph_objects as go
+
     from ._gui_api import GuiApi
     from ._viser import ClientHandle
 
@@ -624,13 +625,12 @@ class GuiPlotlyHandle:
     _visible: bool
     _container_id: str  # Parent.
     _order: float
-    _figure: Optional[go.Figure]
-    _aspect_ratio: Optional[float]
+    _figure: go.Figure
+    _aspect_ratio: float
 
     @property
-    def figure(self) -> str:
+    def figure(self) -> go.Figure:
         """Current content of this markdown element. Synchronized automatically when assigned."""
-        assert self._figure is not None
         return self._figure
 
     @figure.setter
@@ -660,7 +660,9 @@ class GuiPlotlyHandle:
 
     def plot_to_json(self) -> str:
         """Convert the plotly figure to an HTML string."""
-        return self._figure.to_json()
+        json_str = self._figure.to_json()
+        assert isinstance(json_str, str)
+        return json_str
 
     @property
     def order(self) -> float:

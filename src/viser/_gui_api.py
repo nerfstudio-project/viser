@@ -34,7 +34,6 @@ from typing_extensions import (
     get_origin,
     get_type_hints,
 )
-import plotly.graph_objects as go
 
 from . import _messages
 from ._gui_handles import (
@@ -46,8 +45,8 @@ from ._gui_handles import (
     GuiFolderHandle,
     GuiInputHandle,
     GuiMarkdownHandle,
-    GuiPlotlyHandle,
     GuiModalHandle,
+    GuiPlotlyHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
     SupportsRemoveProtocol,
@@ -62,6 +61,8 @@ from ._message_api import MessageApi, cast_vector
 from ._messages import FileTransferPartAck
 
 if TYPE_CHECKING:
+    import plotly.graph_objects as go
+
     from .infra import ClientId
 
 IntOrFloat = TypeVar("IntOrFloat", int, float)
