@@ -1,98 +1,99 @@
 import { GuiAddPlotlyMessage } from "../WebsocketMessages";
 import { useDisclosure } from '@mantine/hooks';
-import { Modal, Button, Box, Paper, Text } from '@mantine/core';
+import { Modal, Box, Paper, Tooltip } from '@mantine/core';
 
 import { useEffect, useState } from "react";
 import { useElementSize } from '@mantine/hooks';
-import { IconWindowMinimize, IconWindowMaximize, IconHandOff, IconHandFinger } from '@tabler/icons-react';
-import { ViserInputComponent } from "./common";
 
-function generatePlotWithAspect(json_str: string, aspect_ratio: number) {
-    // Parse json string, to construct plotly object.
-    // Note that only the JSON string is kept as state, not the json object.
-    const plot_json = JSON.parse(json_str);
+// When drawing border around the plot, it should be aligned with the folder's.
+import { folderWrapper } from "./Folder.css";
 
-    // This keeps the zoom-in state, etc, see https://plotly.com/javascript/uirevision/. 
-    plot_json.layout.uirevision = "true";
+function generatePlotWithAspect(json_str: string, aspect_ratio: number, staticPlot: boolean) {
+  // Parse json string, to construct plotly object.
+  // Note that only the JSON string is kept as state, not the json object.
+  const plot_json = JSON.parse(json_str);
 
-    // Box size change -> width value change -> plot rerender trigger.
-    // This doesn't actually work for the *first* time a modal is opened...
-    const { ref, width } = useElementSize();
-    plot_json.layout.width = width;
-    plot_json.layout.height = width * aspect_ratio;
+  // This keeps the zoom-in state, etc, see https://plotly.com/javascript/uirevision/.
+  plot_json.layout.uirevision = "true";
 
-    // Use React hooks to update the plotly object, when the plot data changes.
-    // based on https://github.com/plotly/react-plotly.js/issues/242.
-    const [plotRef, setPlotRef] = useState<HTMLDivElement | null>(null);
-    useEffect(() => {
-        if (plotRef === null) return;
-        // @ts-ignore - Plotly.js is dynamically imported with an eval() call.
-        Plotly.react(
-            plotRef,
-            plot_json.data,
-            plot_json.layout,
-            plot_json.config
-        );
-    }, [plot_json])
-    const plot_div = <div ref={setPlotRef} />
+  // Box size change -> width value change -> plot rerender trigger.
+  // This doesn't actually work for the *first* time a modal is opened...
+  const { ref, width } = useElementSize();
+  plot_json.layout.width = width;
+  plot_json.layout.height = width * aspect_ratio;
 
-    return (
-        <Box ref={ref}>
-            {plot_div}
-        </Box>
+  // Make the plot static, if specified.
+  if (plot_json.config === undefined) plot_json.config = {};
+  plot_json.config.staticPlot = staticPlot;
+
+  // Use React hooks to update the plotly object, when the plot data changes.
+  // based on https://github.com/plotly/react-plotly.js/issues/242.
+  const [plotRef, setPlotRef] = useState<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (plotRef === null) return;
+    // @ts-ignore - Plotly.js is dynamically imported with an eval() call.
+    Plotly.react(
+      plotRef,
+      plot_json.data,
+      plot_json.layout,
+      plot_json.config
     );
+  }, [plot_json])
+  const plot_div = <div ref={setPlotRef} />
+
+  return (
+    <Paper ref={ref} className={folderWrapper} withBorder>
+      {plot_div}
+    </Paper>
+  );
 }
 
 export default function PlotlyComponent({
-    id,
-    label,
-    visible,
+  id,
+  label,
+  visible,
+  plotly_json_str,
+  aspect_ratio,
+}: GuiAddPlotlyMessage) {
+  if (!visible) return <></>;
+
+  // Create two plots; one for the control panel, and one for the modal.
+  // They should have different sizes, so we need to generate them separately.
+  const plot_controlpanel = generatePlotWithAspect(
     plotly_json_str,
     aspect_ratio,
-}: GuiAddPlotlyMessage) {
-    if (!visible) return <></>;
+    true
+  );
+  const plot_modal = generatePlotWithAspect(
+    plotly_json_str,
+    aspect_ratio,
+    false  // User can interact with plot in modal.
+  );
 
-    // Create two plots; one for the control panel, and one for the modal.
-    // They should have different sizes, so we need to generate them separately.
-    const plot_controlpanel = generatePlotWithAspect(plotly_json_str, aspect_ratio);
-    const plot_modal = generatePlotWithAspect(plotly_json_str, aspect_ratio);
-
-    // Create a modal with the plot, and a button to open it.
-    const [opened, { open, close }] = useDisclosure(false);
-    const gui_modal = (
-        <Box>
-            <Modal opened={opened} onClose={close} title={`Expanded Plot Visualization`} fullScreen
-                closeButtonProps={{
-                    icon: <IconWindowMinimize stroke={1.625} />
-                }}
-            >
-                <Box p="0.5em">
-                    <Text fw={500} c="dimmed"> {label} </Text>
-                    <Paper p="xs" withBorder radius="md">
-                        {plot_modal}
-                    </Paper>
-                </Box>
-            </Modal>
-            <Button onClick={open} variant="transparent" size="xs" c="dimmed">
-                <IconWindowMaximize stroke={1.625} size={"1.5em"}/>
-            </Button>
+  // Create a modal with the plot, and a button to open it.
+  const [opened, { open, close }] = useDisclosure(false);
+  return (
+    <Box>
+      {/* Draw static plot in the controlpanel, which can be clicked. */}
+      <Tooltip.Floating
+        zIndex={100}
+        label={"Click to expand"}
+      >
+        <Box
+          style={{
+            cursor: "pointer",
+            flexShrink: 0, position: "relative",
+          }}
+          onClick={open}
+        >
+          {plot_controlpanel}
         </Box>
-    );
+      </Tooltip.Floating>
 
-    const gui_controlpanel = (
-        <Box pr="0.5em" pl="0.5em" pb="0.5em">
-            <Paper p="xs" withBorder radius="md">
-                {plot_controlpanel}
-            </Paper>
-        </Box>
-    )
-
-    return (
-        <Box>
-            <ViserInputComponent {...{ id, label }}>
-                {gui_modal}
-            </ViserInputComponent>
-            {gui_controlpanel}
-        </Box>
-    )
+      {/* Modal contents. */}
+      <Modal opened={opened} onClose={close} fullScreen>
+        {plot_modal}
+      </Modal>
+    </Box>
+  )
 }
