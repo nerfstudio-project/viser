@@ -16,7 +16,7 @@ def _is_multiprocess_ok() -> bool:
 
     if hasattr(__main__, "__file__"):
         src = Path(__main__.__file__).read_text()
-        return "__name__" in src and "__main__" in src
+        return "\nif __name__" in src and "__main__" in src
     else:
         return True
 
@@ -61,10 +61,13 @@ class ViserTunnel:
 
     def on_disconnect(self, callback: Callable[[], None]) -> None:
         def call_on_disconnect() -> None:
-            self._disconnect_event.wait()
+            try:
+                self._disconnect_event.wait()
+            except EOFError:
+                return
             callback()
 
-        threading.Thread(target=call_on_disconnect).start()
+        threading.Thread(target=call_on_disconnect, daemon=True).start()
 
     def on_connect(self, callback: Callable[[int], None]) -> None:
         """Establish the tunnel connection.
@@ -75,10 +78,13 @@ class ViserTunnel:
         self._shared_state["status"] = "connecting"
 
         def wait_job() -> None:
-            self._connect_event.wait()
+            try:
+                self._connect_event.wait()
+            except EOFError:
+                return
             callback(self._shared_state["max_conn_count"])
 
-        threading.Thread(target=wait_job).start()
+        threading.Thread(target=wait_job, daemon=True).start()
 
         # Note that this will generally require an __name__ == "__main__" check
         # on the origin script.
@@ -167,6 +173,7 @@ def _connect_job(
                 shared_state,
             )
         )
+        event_loop.close()
     except KeyboardInterrupt:
         event_loop.call_soon_threadsafe(close_event.set)
         tasks = asyncio.all_tasks(event_loop)
