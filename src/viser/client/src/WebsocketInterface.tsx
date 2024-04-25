@@ -682,40 +682,41 @@ function useMessageHandler() {
       }
       // Add an image.
       case "ImageMessage": {
-        // It's important that we load the texture outside of the node
-        // construction callback; this prevents flickering by ensuring that the
-        // texture is ready before the scene tree updates.
-        new TextureLoader().load(
+        // This current implementation may flicker when the image is updated,
+        // because the texture is not necessarily done loading before the
+        // component is mounted. We could fix this by passing an `onLoad`
+        // callback into `TextureLoader`, but this would require work because
+        // `addSceneNodeMakeParents` needs to be called immediately: it
+        // overwrites position/wxyz attributes, and we don't want this to
+        // happen after later messages are received.
+        const texture = new TextureLoader().load(
           `data:${message.media_type};base64,${message.base64_data}`,
-          (texture) => {
-            // TODO: this onLoad callback prevents flickering, but could cause messages to be handled slightly out-of-order.
-            addSceneNodeMakeParents(
-              new SceneNode<THREE.Group>(
-                message.name,
-                (ref) => {
-                  return (
-                    <group ref={ref}>
-                      <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
-                        <OutlinesIfHovered />
-                        <planeGeometry
-                          attach="geometry"
-                          args={[message.render_width, message.render_height]}
-                        />
-                        <meshBasicMaterial
-                          attach="material"
-                          transparent={true}
-                          side={THREE.DoubleSide}
-                          map={texture}
-                          toneMapped={false}
-                        />
-                      </mesh>
-                    </group>
-                  );
-                },
-                () => texture.dispose(),
-              ),
-            );
-          },
+        );
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => {
+              return (
+                <group ref={ref}>
+                  <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
+                    <OutlinesIfHovered />
+                    <planeGeometry
+                      attach="geometry"
+                      args={[message.render_width, message.render_height]}
+                    />
+                    <meshBasicMaterial
+                      attach="material"
+                      transparent={true}
+                      side={THREE.DoubleSide}
+                      map={texture}
+                      toneMapped={false}
+                    />
+                  </mesh>
+                </group>
+              );
+            },
+            () => texture.dispose(),
+          ),
         );
         return;
       }
