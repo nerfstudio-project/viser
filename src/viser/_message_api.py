@@ -817,7 +817,7 @@ class MessageApi(abc.ABC):
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> MeshHandle:
-        """Add a mesh to the scene.
+        """Add a skinned mesh to the scene, which we can deform using a set of bone transformations.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -854,7 +854,7 @@ class MessageApi(abc.ABC):
                 stacklevel=2,
             )
 
-        assert skin_weights.shape == (vertices.shape[0], len(bone_handles))
+        assert skin_weights.shape == (vertices.shape[0], len(bone_wxyzs))
 
         # Take the four biggest indices.
         top4_skin_indices = onp.argsort(skin_weights, axis=-1)[:, -4:]
@@ -864,8 +864,11 @@ class MessageApi(abc.ABC):
         assert (
             top4_skin_weights.shape == top4_skin_indices.shape == (vertices.shape[0], 4)
         )
+
+        bone_wxyzs = onp.asarray(bone_wxyzs)
+        bone_positions = onp.asarray(bone_positions)
         self._queue(
-            _messages.MeshMessage(
+            _messages.SkinnedMeshMessage(
                 name,
                 vertices.astype(onp.float32),
                 faces.astype(onp.uint32),
@@ -947,9 +950,6 @@ class MessageApi(abc.ABC):
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
-                bone_names=None,
-                skin_indices=None,
-                skin_weights=None,
             )
         )
         return MeshHandle._make(self, name, wxyz, position, visible)
