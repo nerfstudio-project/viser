@@ -281,6 +281,7 @@ function useMessageHandler() {
       }
 
       // Add mesh
+      case "SkinnedMeshMessage":
       case "MeshMessage": {
         const geometry = new THREE.BufferGeometry();
 
@@ -372,7 +373,7 @@ function useMessageHandler() {
           geometry.dispose();
           material.dispose();
         };
-        if (message.skin_indices === null)
+        if (message.type === "MeshMessage")
           // Normal mesh.
           addSceneNodeMakeParents(
             new SceneNode<THREE.Mesh>(
@@ -387,7 +388,7 @@ function useMessageHandler() {
               cleanupMesh,
             ),
           );
-        else {
+        else if (message.type === "SkinMeshMessage") {
           const getT_world_local: (name: string) => THREE.Matrix4 = (
             name: string,
           ) => {

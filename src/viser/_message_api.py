@@ -51,6 +51,7 @@ from ._scene_handles import (
     SceneNodeHandle,
     SceneNodePointerEvent,
     ScenePointerEvent,
+    SkinnedMeshHandle,
     TransformControlsHandle,
     _TransformControlsState,
 )
@@ -816,8 +817,9 @@ class MessageApi(abc.ABC):
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> MeshHandle:
-        """Add a skinned mesh to the scene, which we can deform using a set of bone transformations.
+    ) -> SkinnedMeshHandle:
+        """Add a skinned mesh to the scene, which we can deform using a set of
+        bone transformations.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -825,9 +827,11 @@ class MessageApi(abc.ABC):
             vertices: A numpy array of vertex positions. Should have shape (V, 3).
             faces: A numpy array of faces, where each face is represented by indices of
                 vertices. Should have shape (F,)
-            bone_handles: Tuple of scene node handles. A bone will be attached to each.
+            bone_wxyzs: Nested tuple or array of initial bone orientations.
+            bone_positions: Nested tuple or array of initial bone positions.
             skin_weights: A numpy array of skin weights. Should have shape (V, B) where B
-                is the number of bones.
+                is the number of bones. Only the top 4 bone weights for each
+                vertex will be used.
             color: Color of the mesh as an RGB tuple.
             wireframe: Boolean indicating if the mesh should be rendered as a wireframe.
             opacity: Opacity of the mesh. None means opaque.
@@ -886,7 +890,7 @@ class MessageApi(abc.ABC):
                 skin_weights=top4_skin_weights.astype(onp.float32),
             )
         )
-        return MeshHandle._make(self, name, wxyz, position, visible)
+        return SkinnedMeshHandle._make(self, name, wxyz, position, visible)
 
     def add_mesh_simple(
         self,

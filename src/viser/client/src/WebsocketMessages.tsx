@@ -171,9 +171,29 @@ export interface MeshMessage {
   flat_shading: boolean;
   side: "front" | "back" | "double";
   material: "standard" | "toon3" | "toon5";
-  bone_names: string[] | null;
-  skin_indices: Uint8Array | null;
-  skin_weights: Uint8Array | null;
+}
+/** Mesh message.
+ *
+ * Vertices are internally canonicalized to float32, faces to uint32.
+ *
+ * (automatically generated)
+ */
+export interface SkinnedMeshMessage {
+  type: "SkinnedMeshMessage";
+  name: string;
+  vertices: Uint8Array;
+  faces: Uint8Array;
+  color: number | null;
+  vertex_colors: Uint8Array | null;
+  wireframe: boolean;
+  opacity: number | null;
+  flat_shading: boolean;
+  side: "front" | "back" | "double";
+  material: "standard" | "toon3" | "toon5";
+  bone_wxyzs: Uint8Array;
+  bone_positions: Uint8Array;
+  skin_indices: Uint8Array;
+  skin_weights: Uint8Array;
 }
 /** Message for transform gizmos.
  *
@@ -839,6 +859,7 @@ export type Message =
   | PointCloudMessage
   | MeshBoneMessage
   | MeshMessage
+  | SkinnedMeshMessage
   | TransformControlsMessage
   | SetCameraPositionMessage
   | SetCameraUpDirectionMessage
