@@ -215,6 +215,11 @@ class MeshHandle(_ClickableSceneNodeHandle):
 
 
 @dataclasses.dataclass
+class SkinnedMeshHandle(_ClickableSceneNodeHandle):
+    """Handle for skinned mesh objects."""
+
+
+@dataclasses.dataclass
 class GlbHandle(_ClickableSceneNodeHandle):
     """Handle for GLB objects."""
 
