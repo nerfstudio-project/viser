@@ -190,10 +190,34 @@ export interface SkinnedMeshMessage {
   flat_shading: boolean;
   side: "front" | "back" | "double";
   material: "standard" | "toon3" | "toon5";
-  bone_wxyzs: Uint8Array;
-  bone_positions: Uint8Array;
+  bone_wxyzs: [number, number, number, number][];
+  bone_positions: [number, number, number][];
   skin_indices: Uint8Array;
   skin_weights: Uint8Array;
+}
+/** Server -> client message to set a skinned mesh bone's orientation.
+ *
+ * As with all other messages, transforms take the `T_parent_local` convention.
+ *
+ * (automatically generated)
+ */
+export interface SetBoneOrientationMessage {
+  type: "SetBoneOrientationMessage";
+  name: string;
+  bone_index: number;
+  wxyz: [number, number, number, number];
+}
+/** Server -> client message to set a skinned mesh bone's position.
+ *
+ * As with all other messages, transforms take the `T_parent_local` convention.
+ *
+ * (automatically generated)
+ */
+export interface SetBonePositionMessage {
+  type: "SetBonePositionMessage";
+  name: string;
+  bone_index: number;
+  position: [number, number, number];
 }
 /** Message for transform gizmos.
  *
@@ -860,6 +884,8 @@ export type Message =
   | MeshBoneMessage
   | MeshMessage
   | SkinnedMeshMessage
+  | SetBoneOrientationMessage
+  | SetBonePositionMessage
   | TransformControlsMessage
   | SetCameraPositionMessage
   | SetCameraUpDirectionMessage

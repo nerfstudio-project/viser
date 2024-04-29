@@ -94,6 +94,16 @@ export type ViewerContextContents = {
   }>;
   // 2D canvas for drawing -- can be used to give feedback on cursor movement, or more.
   canvas2dRef: React.MutableRefObject<HTMLCanvasElement | null>;
+  // Poses for bones in skinned meshes.
+  skinnedMeshState: React.MutableRefObject<{
+    [name: string]: {
+      initialized: boolean;
+      poses: {
+        wxyz: [number, number, number, number];
+        position: [number, number, number];
+      }[];
+    };
+  }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -152,6 +162,7 @@ function ViewerRoot() {
       listening: false,
     }),
     canvas2dRef: React.useRef(null),
+    skinnedMeshState: React.useRef({}),
   };
 
   return (

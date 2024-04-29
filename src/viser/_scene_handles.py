@@ -218,6 +218,64 @@ class MeshHandle(_ClickableSceneNodeHandle):
 class SkinnedMeshHandle(_ClickableSceneNodeHandle):
     """Handle for skinned mesh objects."""
 
+    bones: Tuple[BoneHandle, ...]
+    """Bones of the skinned mesh. These handles can be used for reading and
+    writing poses, which are defined relative to the mesh root."""
+
+
+@dataclasses.dataclass
+class BoneState:
+    name: str
+    api: MessageApi
+    bone_index: int
+    wxyz: onp.ndarray
+    position: onp.ndarray
+
+
+@dataclasses.dataclass
+class BoneHandle:
+    """Handle for reading and writing the poses of bones in a skinned mesh."""
+
+    _impl: BoneState
+
+    @property
+    def wxyz(self) -> onp.ndarray:
+        """Orientation of the bone. This is the quaternion representation of the R
+        in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
+        """
+        return self._impl.wxyz
+
+    @wxyz.setter
+    def wxyz(self, wxyz: Tuple[float, float, float, float] | onp.ndarray) -> None:
+        from ._message_api import cast_vector
+
+        wxyz_cast = cast_vector(wxyz, 4)
+        self._impl.wxyz = onp.asarray(wxyz)
+        self._impl.api._queue(
+            _messages.SetBoneOrientationMessage(
+                self._impl.name, self._impl.bone_index, wxyz_cast
+            )
+        )
+
+    @property
+    def position(self) -> onp.ndarray:
+        """Position of the bone. This is equivalent to the t in
+        `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
+        """
+        return self._impl.position
+
+    @position.setter
+    def position(self, position: Tuple[float, float, float] | onp.ndarray) -> None:
+        from ._message_api import cast_vector
+
+        position_cast = cast_vector(position, 3)
+        self._impl.position = onp.asarray(position)
+        self._impl.api._queue(
+            _messages.SetBonePositionMessage(
+                self._impl.name, self._impl.bone_index, position_cast
+            )
+        )
+
 
 @dataclasses.dataclass
 class GlbHandle(_ClickableSceneNodeHandle):
