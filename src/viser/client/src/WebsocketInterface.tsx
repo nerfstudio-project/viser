@@ -227,16 +227,20 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
+                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                      : message.plane == "yx"
+                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                        : message.plane == "yz"
+                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                          : message.plane == "zx"
+                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                            : message.plane == "zy"
+                              ? new THREE.Euler(
+                                  -Math.PI / 2.0,
+                                  0.0,
+                                  -Math.PI / 2.0,
+                                )
+                              : undefined
                 }
               />
             </group>
@@ -324,16 +328,16 @@ function useMessageHandler() {
           message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(3),
-                ...standardArgs,
-              })
-            : message.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.material);
+              ? new THREE.MeshToonMaterial({
+                  gradientMap: generateGradientMap(3),
+                  ...standardArgs,
+                })
+              : message.material == "toon5"
+                ? new THREE.MeshToonMaterial({
+                    gradientMap: generateGradientMap(5),
+                    ...standardArgs,
+                  })
+                : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -388,47 +392,41 @@ function useMessageHandler() {
               cleanupMesh,
             ),
           );
-        else if (message.type === "SkinMeshMessage") {
-          const getT_world_local: (name: string) => THREE.Matrix4 = (
-            name: string,
-          ) => {
-            const T_current_local = new THREE.Matrix4().identity();
-            const T_parent_current = new THREE.Matrix4().identity();
-            let done = false;
-            while (!done) {
-              const attrs = viewer.nodeAttributesFromName.current[name];
-              let wxyz = attrs?.wxyz;
-              if (wxyz === undefined) wxyz = [1, 0, 0, 0];
-              T_parent_current.makeRotationFromQuaternion(
-                new THREE.Quaternion(wxyz[1], wxyz[2], wxyz[3], wxyz[0]),
-              );
-              let position = attrs?.position;
-              if (position === undefined) position = [0, 0, 0];
-              T_parent_current.setPosition(
-                new THREE.Vector3(position[0], position[1], position[2]),
-              );
-
-              T_current_local.premultiply(T_parent_current);
-              if (name === "") break;
-              name = name.split("/").slice(0, -1).join("/");
-              console.log(name);
-            }
-            return T_current_local;
-          };
+        else if (message.type === "SkinnedMeshMessage") {
           // Skinned mesh.
           const bones: THREE.Bone[] = [];
-          for (let i = 0; i < message.bone_names!.length; i++) {
+          for (let i = 0; i < message.bone_wxyzs!.length; i++) {
             bones.push(new THREE.Bone());
           }
+
+          const xyzw_quat = new THREE.Quaternion();
+          const boneInverses: THREE.Matrix4[] = [];
+          viewer.skinnedMeshState.current[message.name] = {
+            initialized: false,
+            poses: [],
+          };
           bones.forEach((bone, i) => {
-            scene.add(bone);
-            bone.matrix.copy(getT_world_local(message.bone_names![i]));
-            bone.matrixWorld.copy(getT_world_local(message.bone_names![i]));
-            // We'll manage the bone matrices manually.
+            const wxyz = message.bone_wxyzs[i];
+            const position = message.bone_positions[i];
+            xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+
+            const boneInverse = new THREE.Matrix4();
+            boneInverse.makeRotationFromQuaternion(xyzw_quat);
+            boneInverse.setPosition(position[0], position[1], position[2]);
+            boneInverse.invert();
+            boneInverses.push(boneInverse);
+
+            bone.quaternion.copy(xyzw_quat);
+            bone.position.set(position[0], position[1], position[2]);
             bone.matrixAutoUpdate = false;
             bone.matrixWorldAutoUpdate = false;
+
+            viewer.skinnedMeshState.current[message.name].poses.push({
+              wxyz: wxyz,
+              position: position,
+            });
           });
-          const skeleton = new THREE.Skeleton(bones);
+          const skeleton = new THREE.Skeleton(bones, boneInverses);
 
           geometry.setAttribute(
             "skinIndex",
@@ -456,6 +454,7 @@ function useMessageHandler() {
               4,
             ),
           );
+
           addSceneNodeMakeParents(
             new SceneNode<THREE.SkinnedMesh>(
               message.name,
@@ -481,24 +480,51 @@ function useMessageHandler() {
               false,
               // everyFrameCallback: update bone transforms.
               () => {
+                const parentNode = viewer.nodeRefFromName.current[message.name];
+                if (parentNode === undefined) return;
+
+                const state = viewer.skinnedMeshState.current[message.name];
                 bones.forEach((bone, i) => {
-                  const nodeRef =
-                    viewer.nodeRefFromName.current[message.bone_names![i]];
-                  if (nodeRef !== undefined) {
-                    // Our bone objects are placed in the scene root!
-                    // bone.matrix.copy(nodeRef?.matrixWorld);
-                    // bone.matrixWorld.copy(nodeRef?.matrixWorld);
-                    bone.matrix.copy(getT_world_local(message.bone_names![i]));
-                    bone.matrixWorld.copy(
-                      getT_world_local(message.bone_names![i]),
-                    );
+                  if (!state.initialized) {
+                    parentNode.add(bone);
                   }
+                  const wxyz = state.initialized
+                    ? state.poses[i].wxyz
+                    : message.bone_wxyzs[i];
+                  const position = state.initialized
+                    ? state.poses[i].position
+                    : message.bone_positions[i];
+
+                  xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+                  bone.matrix.makeRotationFromQuaternion(xyzw_quat);
+                  bone.matrix.setPosition(
+                    position[0],
+                    position[1],
+                    position[2],
+                  );
+                  bone.updateMatrixWorld();
                 });
+
+                if (!state.initialized) {
+                  state.initialized = true;
+                }
               },
             ),
           );
         }
         return;
+      }
+      // Set the bone poses.
+      case "SetBoneOrientationMessage": {
+        const bonePoses = viewer.skinnedMeshState.current;
+        bonePoses[message.name].poses[message.bone_index].wxyz = message.wxyz;
+        break;
+      }
+      case "SetBonePositionMessage": {
+        const bonePoses = viewer.skinnedMeshState.current;
+        bonePoses[message.name].poses[message.bone_index].position =
+          message.position;
+        break;
       }
       // Add a camera frustum.
       case "CameraFrustumMessage": {

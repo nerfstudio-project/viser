@@ -261,8 +261,8 @@ class SkinnedMeshMessage(MeshMessage):
 
     Vertices are internally canonicalized to float32, faces to uint32."""
 
-    bone_wxyzs: onpt.NDArray[onp.float32]
-    bone_positions: onpt.NDArray[onp.float32]
+    bone_wxyzs: Tuple[Tuple[float, float, float, float], ...]
+    bone_positions: Tuple[Tuple[float, float, float], ...]
     skin_indices: onpt.NDArray[onp.uint32]
     skin_weights: onpt.NDArray[onp.float32]
 
@@ -276,8 +276,36 @@ class SkinnedMeshMessage(MeshMessage):
             == self.skin_weights.shape
             == (self.vertices.shape[0], 4)
         )
-        assert self.bone_wxyzs.shape[-1] == 4
-        assert self.bone_positions.shape[-1] == 3
+
+
+@dataclasses.dataclass
+class SetBoneOrientationMessage(Message):
+    """Server -> client message to set a skinned mesh bone's orientation.
+
+    As with all other messages, transforms take the `T_parent_local` convention."""
+
+    name: str
+    bone_index: int
+    wxyz: Tuple[float, float, float, float]
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.name + "-" + str(self.bone_index)
+
+
+@dataclasses.dataclass
+class SetBonePositionMessage(Message):
+    """Server -> client message to set a skinned mesh bone's position.
+
+    As with all other messages, transforms take the `T_parent_local` convention."""
+
+    name: str
+    bone_index: int
+    position: Tuple[float, float, float]
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.name + "-" + str(self.bone_index)
 
 
 @dataclasses.dataclass

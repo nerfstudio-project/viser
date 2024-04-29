@@ -40,6 +40,8 @@ from . import _messages, infra, theme
 from . import transforms as tf
 from ._scene_handles import (
     BatchedAxesHandle,
+    BoneHandle,
+    BoneState,
     CameraFrustumHandle,
     FrameHandle,
     GlbHandle,
@@ -858,7 +860,8 @@ class MessageApi(abc.ABC):
                 stacklevel=2,
             )
 
-        assert skin_weights.shape == (vertices.shape[0], len(bone_wxyzs))
+        num_bones = len(bone_wxyzs)
+        assert skin_weights.shape == (vertices.shape[0], num_bones)
 
         # Take the four biggest indices.
         top4_skin_indices = onp.argsort(skin_weights, axis=-1)[:, -4:]
@@ -871,6 +874,8 @@ class MessageApi(abc.ABC):
 
         bone_wxyzs = onp.asarray(bone_wxyzs)
         bone_positions = onp.asarray(bone_positions)
+        assert bone_wxyzs.shape == (num_bones, 4)
+        assert bone_positions.shape == (num_bones, 3)
         self._queue(
             _messages.SkinnedMeshMessage(
                 name,
@@ -884,13 +889,39 @@ class MessageApi(abc.ABC):
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
-                bone_wxyzs=bone_wxyzs.astype(onp.float32),
-                bone_positions=bone_positions.astype(onp.float32),
+                bone_wxyzs=tuple(
+                    (
+                        float(wxyz[0]),
+                        float(wxyz[1]),
+                        float(wxyz[2]),
+                        float(wxyz[3]),
+                    )
+                    for wxyz in bone_wxyzs.astype(onp.float32)
+                ),
+                bone_positions=tuple(
+                    (float(xyz[0]), float(xyz[1]), float(xyz[2]))
+                    for xyz in bone_positions.astype(onp.float32)
+                ),
                 skin_indices=top4_skin_indices.astype(onp.uint16),
                 skin_weights=top4_skin_weights.astype(onp.float32),
             )
         )
-        return SkinnedMeshHandle._make(self, name, wxyz, position, visible)
+        handle = MeshHandle._make(self, name, wxyz, position, visible)
+        return SkinnedMeshHandle(
+            handle._impl,
+            bones=tuple(
+                BoneHandle(
+                    _impl=BoneState(
+                        name=name,
+                        api=self,
+                        bone_index=i,
+                        wxyz=bone_wxyzs[i],
+                        position=bone_positions[i],
+                    )
+                )
+                for i in range(num_bones)
+            ),
+        )
 
     def add_mesh_simple(
         self,
