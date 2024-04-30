@@ -18,9 +18,10 @@ function generatePlotWithAspect(json_str: string, aspect_ratio: number, staticPl
 
   // Box size change -> width value change -> plot rerender trigger.
   // This doesn't actually work for the *first* time a modal is opened...
-  const { ref, width } = useElementSize();
-  plot_json.layout.width = width;
-  plot_json.layout.height = width * aspect_ratio;
+  const { ref, width, height } = useElementSize();
+  // Figure out if (w, h*ar) or (w/ar, h) is smaller, and choose the smaller one, to avoid overflowing.
+  plot_json.layout.width = Math.min(width, height / aspect_ratio);
+  plot_json.layout.height = Math.min(height, width * aspect_ratio);
 
   // Make the plot static, if specified.
   if (plot_json.config === undefined) plot_json.config = {};
