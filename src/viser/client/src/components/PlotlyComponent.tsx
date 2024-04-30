@@ -23,9 +23,18 @@ function generatePlotWithAspect(json_str: string, aspect_ratio: number, staticPl
   plot_json.layout.width = Math.min(width, height / aspect_ratio);
   plot_json.layout.height = Math.min(height, width * aspect_ratio);
 
-  // Make the plot static, if specified.
-  if (plot_json.config === undefined) plot_json.config = {};
-  plot_json.config.staticPlot = staticPlot;
+  // Make the plot non-interactable, if specified.
+  // Ideally, we would use `staticplot`, but this has a known bug with 3D plots:
+  // - https://github.com/plotly/plotly.js/issues/457
+  // In the meantime, we choose to disable all interactions.
+  if (staticPlot) {
+    if (plot_json.config === undefined) plot_json.config = {};
+    plot_json.config.displayModeBar = false;
+
+    plot_json.layout.dragmode = false
+    plot_json.layout.hovermode = false
+    plot_json.layout.clickmode = "none"
+  }
 
   // Use React hooks to update the plotly object, when the plot data changes.
   // based on https://github.com/plotly/react-plotly.js/issues/242.
