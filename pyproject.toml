@@ -53,8 +53,21 @@ examples = [
 [project.urls]
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
+# <>
+# Important: in the ./.github/workflows/publish.yml action, we have sed
+# commands that assume the `viser = ...` line below directly follows
+# `[tool.setuptools.package-data]`. We use this to remove the client source
+# from PyPI builds.
+#
+# We should make sure that any modifications to the package-data list remain
+# compatible with the sed commands!
+#
+# We keep the client source in by default to support things like pip
+# installation via the Git URL, because build artifacts aren't
+# version-controlled.
 [tool.setuptools.package-data]
-viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/build/**/*"]
+viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/**/*", "client/**/.*"]
+# </>
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"

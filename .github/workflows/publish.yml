@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.8"
-      - name: Install dependencies
+      - name: Install dependencies and build client
         run: |
           pip install uv
           uv pip install --system -e ".[dev]"
@@ -27,6 +27,14 @@ jobs:
       - name: Strip unsupported tags in README
         run: |
           sed -i '/<!-- pypi-strip -->/,/<!-- \/pypi-strip -->/d' README.md
+      - name: Only bundle client build for PyPI release
+        run: |
+          # This sed command finds the line that immediately follows
+          # [tool.setuptools.package-data], then replaces instances of
+          # `client/**/*` with `client/build/**/*`.
+          sed -i=bak '/\[tool\.setuptools\.package-data\]/{n;s/"client\/\*\*\/\*"/"client\/build\/\*\*\/\*"/g;}' pyproject.toml
+          # This sed commands removes `, "client/**/.*"` from the package-data.
+          sed -i=bak '/\[tool\.setuptools\.package-data\]/{n;s/, "client\/\*\*\/\.\*"//g;}' pyproject.toml
       - name: Build and publish
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
