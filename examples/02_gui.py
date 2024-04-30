@@ -10,9 +10,7 @@ Examples of basic GUI elements that we can create, read from, and write to."""
 import time
 
 import numpy as onp
-import plotly.express as px
 import viser
-from PIL import Image
 
 
 def main() -> None:
@@ -93,45 +91,6 @@ def main() -> None:
     # Pre-generate a point cloud to send.
     point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(5000, 3))
     color_coeffs = onp.random.uniform(0.4, 1.0, size=(point_positions.shape[0]))
-
-    with server.add_gui_folder("Plots"):
-        plot_dropdown = server.add_gui_dropdown(
-            "Plot",
-            options=["Image", "Line"],
-            initial_value="Image",
-        )
-
-        cal_img_path = "examples/assets/Cal_logo.png"
-        img = Image.open(cal_img_path)
-        fig = px.imshow(img)
-        fig.update_layout(
-            margin=dict(l=20, r=20, t=20, b=20),
-        )
-        image_plot = server.add_gui_plotly(figure=fig, aspect_ratio=1.0, visible=True)
-
-        x_data = onp.linspace(0, 6 * onp.pi, 50)
-        y_data = onp.sin(x_data) * 10
-        x_data, y_data = list(x_data), list(y_data)
-
-        fig = px.line(x=x_data, y=y_data, labels={"x": "x", "y": "sin(x)"})
-        fig.update_layout(
-            margin=dict(l=20, r=20, t=20, b=20),
-        )
-        line_plot = server.add_gui_plotly(
-            figure=fig,
-            aspect_ratio=1.0,
-            visible=False,
-        )
-
-        @plot_dropdown.on_update
-        def _(_) -> None:
-            """Callback for when the plot dropdown changes."""
-            if plot_dropdown.value == "Image":
-                image_plot.visible = True
-                line_plot.visible = False
-            elif plot_dropdown.value == "Line":
-                image_plot.visible = False
-                line_plot.visible = True
 
     counter = 0
     while True:
