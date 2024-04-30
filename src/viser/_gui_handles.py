@@ -627,6 +627,7 @@ class GuiPlotlyHandle:
     _order: float
     _figure: go.Figure
     _aspect_ratio: float
+    _font: Optional[str]
 
     @property
     def figure(self) -> go.Figure:
@@ -636,6 +637,23 @@ class GuiPlotlyHandle:
     @figure.setter
     def figure(self, figure: go.Figure) -> None:
         self._figure = figure
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(
+                self._id,
+                {"plotly_json_str": self.plot_to_json()},
+            )
+        )
+
+    @property
+    def font(self) -> Optional[str]:
+        """Font of the plotly figure."""
+        return self._font
+
+    @font.setter
+    def font(self, font: Optional[str]) -> None:
+        self._font = font
+        self._figure.update_layout(font_family=self._font)
+        # Need to update the figure to reflect the new font.
         self._gui_api._get_api()._queue(
             GuiUpdateMessage(
                 self._id,

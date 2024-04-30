@@ -511,6 +511,7 @@ class GuiApi(abc.ABC):
         aspect_ratio: float = 1.0,
         order: Optional[float] = None,
         visible: bool = True,
+        font: Optional[str] = None,
     ) -> GuiPlotlyHandle:
         """Add a Plotly Plot to the GUI.
 
@@ -531,6 +532,7 @@ class GuiApi(abc.ABC):
             _order=_apply_default_order(order),
             _figure=figure,
             _aspect_ratio=aspect_ratio,
+            _font=font,
         )
 
         # If plotly.min.js hasn't been sent to the client yet, the client won't be able
