@@ -21,23 +21,30 @@ plot_dropdown = server.add_gui_dropdown(
     initial_value="Line",
 )
 
+
 # Plot type 1: Line plot.
 def create_sinusoidal_wave(t: float) -> go.Figure:
     """Create a sinusoidal wave plot, starting at time t."""
     x_data = onp.linspace(t, t + 6 * onp.pi, 50)
     y_data = onp.sin(x_data) * 10
-    x_data, y_data = list(x_data), list(y_data)
 
-    fig = px.line(x=x_data, y=y_data, labels={"x": "x", "y": "sin(x)"}, title="Sinusoidal Wave")
+    fig = px.line(
+        x=list(x_data),
+        y=list(y_data),
+        labels={"x": "x", "y": "sin(x)"},
+        title="Sinusoidal Wave",
+    )
 
-    fig.layout.title.automargin = True  # type: ignore  -- this sets the margins to be tight around the title.
+    # this sets the margins to be tight around the title.
+    fig.layout.title.automargin = True  # type: ignore
     fig.update_layout(
         margin=dict(l=20, r=20, t=20, b=20),
     )  # Reduce plot margins.
 
     return fig
 
-line_plot_time = 0
+
+line_plot_time = 0.0
 line_plot = server.add_gui_plotly(
     figure=create_sinusoidal_wave(line_plot_time),
     visible=True,
@@ -65,12 +72,7 @@ fig = px.scatter_3d(
     z="petal_width",
     color="species",
 )
-fig.update_layout(legend=dict(
-    yanchor="top",
-    y=0.99,
-    xanchor="left",
-    x=0.01
-))
+fig.update_layout(legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
 fig.update_layout(
     margin=dict(l=20, r=20, t=20, b=20),
 )
