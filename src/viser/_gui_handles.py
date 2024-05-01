@@ -528,7 +528,7 @@ def _get_data_url(url: str, image_root: Optional[Path]) -> str:
             ),
             stacklevel=2,
         )
-    if url.startswith("http"):
+    if url.startswith("http") or url.startswith("data:"):
         return url
     if image_root is None:
         image_root = Path(__file__).parent
