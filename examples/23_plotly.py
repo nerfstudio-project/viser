@@ -17,7 +17,7 @@ server = viser.ViserServer()
 # We should be able to support all plots in https://plotly.com/python/.
 plot_dropdown = server.add_gui_dropdown(
     "Plot",
-    options=["Line", "Image", "3D Scatter"],
+    options=("Line", "Image", "3D Scatter"),
     initial_value="Line",
 )
 

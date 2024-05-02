@@ -193,8 +193,9 @@ class GuiApi(abc.ABC):
         }
         self._current_file_upload_states: Dict[str, FileUploadState] = {}
 
+        # Set to True when plotly.min.js has been sent to client.
         self._setup_plotly_js: bool = (
-            False  # Set to True when plotly.min.js has been sent to client.
+            False
         )
 
         self._get_api()._message_handler.register_handler(
@@ -509,9 +510,9 @@ class GuiApi(abc.ABC):
         self,
         figure: go.Figure,
         aspect_ratio: float = 1.0,
+        font: str = "Inter",
         order: Optional[float] = None,
         visible: bool = True,
-        font: Optional[str] = None,
     ) -> GuiPlotlyHandle:
         """Add a Plotly Plot to the GUI.
 
@@ -520,7 +521,7 @@ class GuiApi(abc.ABC):
             aspect_ratio: Aspect ratio of the plot in the control panel (width / height).
             order: Optional ordering, smallest values will be displayed first.
             visible: Whether the component is visible.
-            font: Optional font to use for the plot.
+            font: Optional font to use for the plot. Defaults to "Inter", the default viser font.
 
         Returns:
             A handle that can be used to interact with the GUI element.
@@ -531,9 +532,9 @@ class GuiApi(abc.ABC):
             _visible=visible,
             _parent_container_id=self._get_container_id(),
             _order=_apply_default_order(order),
-            _figure=figure,
-            _aspect_ratio=aspect_ratio,
-            _font=font,
+            _figure=None,
+            _aspect_ratio=None,
+            _font=None,
         )
 
         # If plotly.min.js hasn't been sent to the client yet, the client won't be able
@@ -556,8 +557,7 @@ class GuiApi(abc.ABC):
             ), f"Could not find plotly.min.js at {plotly_path}."
 
             # Send it over!
-            with open(plotly_path, "r") as f:
-                plotly_js = f.read()
+            plotly_js = plotly_path.read_text(encoding='utf-8')
             self._get_api()._queue(
                 _messages.RunJavascriptMessage(
                     source=plotly_js,
@@ -572,12 +572,18 @@ class GuiApi(abc.ABC):
             _messages.GuiAddPlotlyMessage(
                 order=handle._order,
                 id=handle._id,
-                plotly_json_str=handle.plot_to_json(),
-                aspect_ratio=aspect_ratio,
+                plotly_json_str="",
+                aspect_ratio=1.0,
                 container_id=handle._parent_container_id,
                 visible=visible,
             )
         )
+
+        # Set the plotly handle properties.
+        handle.figure = figure
+        handle.aspect_ratio = aspect_ratio
+        handle.font = font
+
         return handle
 
     def add_gui_button(

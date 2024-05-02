@@ -631,13 +631,14 @@ class GuiPlotlyHandle:
     _visible: bool
     _parent_container_id: str  # Parent.
     _order: float
-    _figure: go.Figure
-    _aspect_ratio: float
+    _figure: Optional[go.Figure]
+    _aspect_ratio: Optional[float]
     _font: Optional[str]
 
     @property
     def figure(self) -> go.Figure:
         """Current content of this markdown element. Synchronized automatically when assigned."""
+        assert self._figure is not None
         return self._figure
 
     @figure.setter
@@ -656,7 +657,8 @@ class GuiPlotlyHandle:
         return self._font
 
     @font.setter
-    def font(self, font: Optional[str]) -> None:
+    def font(self, font: str) -> None:
+        assert self._figure is not None
         self._font = font
         self._figure.update_layout(font_family=self._font)
         # Need to update the figure to reflect the new font.
@@ -670,6 +672,7 @@ class GuiPlotlyHandle:
     @property
     def aspect_ratio(self) -> float:
         """Aspect ratio of the plotly figure, in the control panel."""
+        assert self._aspect_ratio is not None
         return self._aspect_ratio
 
     @aspect_ratio.setter
@@ -684,6 +687,7 @@ class GuiPlotlyHandle:
 
     def plot_to_json(self) -> str:
         """Convert the plotly figure to an HTML string."""
+        assert self._figure is not None
         json_str = self._figure.to_json()
         assert isinstance(json_str, str)
         return json_str
