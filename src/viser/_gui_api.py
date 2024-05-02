@@ -485,7 +485,7 @@ class GuiApi(abc.ABC):
             _gui_api=self,
             _id=_make_unique_id(),
             _visible=visible,
-            _container_id=self._get_container_id(),
+            _parent_container_id=self._get_container_id(),
             _order=_apply_default_order(order),
             _image_root=image_root,
             _content=None,
@@ -495,7 +495,7 @@ class GuiApi(abc.ABC):
                 order=handle._order,
                 id=handle._id,
                 markdown="",
-                container_id=handle._container_id,
+                container_id=handle._parent_container_id,
                 visible=visible,
             )
         )
@@ -528,7 +528,7 @@ class GuiApi(abc.ABC):
             _gui_api=self,
             _id=_make_unique_id(),
             _visible=visible,
-            _container_id=self._get_container_id(),
+            _parent_container_id=self._get_container_id(),
             _order=_apply_default_order(order),
             _figure=figure,
             _aspect_ratio=aspect_ratio,
@@ -573,7 +573,7 @@ class GuiApi(abc.ABC):
                 id=handle._id,
                 plotly_json_str=handle.plot_to_json(),
                 aspect_ratio=aspect_ratio,
-                container_id=handle._container_id,
+                container_id=handle._parent_container_id,
                 visible=visible,
             )
         )
