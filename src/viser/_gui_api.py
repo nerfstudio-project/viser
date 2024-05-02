@@ -194,9 +194,7 @@ class GuiApi(abc.ABC):
         self._current_file_upload_states: Dict[str, FileUploadState] = {}
 
         # Set to True when plotly.min.js has been sent to client.
-        self._setup_plotly_js: bool = (
-            False
-        )
+        self._setup_plotly_js: bool = False
 
         self._get_api()._message_handler.register_handler(
             _messages.GuiUpdateMessage, self._handle_gui_updates
@@ -557,7 +555,7 @@ class GuiApi(abc.ABC):
             ), f"Could not find plotly.min.js at {plotly_path}."
 
             # Send it over!
-            plotly_js = plotly_path.read_text(encoding='utf-8')
+            plotly_js = plotly_path.read_text(encoding="utf-8")
             self._get_api()._queue(
                 _messages.RunJavascriptMessage(
                     source=plotly_js,
