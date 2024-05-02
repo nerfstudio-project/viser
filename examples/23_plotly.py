@@ -53,7 +53,7 @@ line_plot.font = "Inter"  # You can also update the font family of the plot.
 
 
 # Plot type 2: Image plot.
-fig = px.imshow(Image.open("examples/assets/Cal_logo.png"))
+fig = px.imshow(Image.open("assets/Cal_logo.png"))
 fig.update_layout(
     margin=dict(l=20, r=20, t=20, b=20),
 )

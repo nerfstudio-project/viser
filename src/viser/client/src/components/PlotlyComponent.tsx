@@ -1,62 +1,82 @@
+import React from "react";
 import { GuiAddPlotlyMessage } from "../WebsocketMessages";
-import { useDisclosure } from '@mantine/hooks';
-import { Modal, Box, Paper, Tooltip } from '@mantine/core';
-
-import { useEffect, useState } from "react";
-import { useElementSize } from '@mantine/hooks';
+import { useDisclosure } from "@mantine/hooks";
+import { Modal, Box, Paper, Tooltip } from "@mantine/core";
+import { useElementSize } from "@mantine/hooks";
 
 // When drawing border around the plot, it should be aligned with the folder's.
 import { folderWrapper } from "./Folder.css";
 
-function generatePlotWithAspect(json_str: string, aspect_ratio: number, staticPlot: boolean) {
+const PlotWithAspect = React.memo(function PlotWithAspect({
+  jsonStr,
+  aspectRatio,
+  staticPlot,
+}: {
+  jsonStr: string;
+  aspectRatio: number;
+  staticPlot: boolean;
+}) {
   // Parse json string, to construct plotly object.
   // Note that only the JSON string is kept as state, not the json object.
-  const plot_json = JSON.parse(json_str);
+  const plotJson = JSON.parse(jsonStr);
 
   // This keeps the zoom-in state, etc, see https://plotly.com/javascript/uirevision/.
-  plot_json.layout.uirevision = "true";
+  plotJson.layout.uirevision = "true";
 
   // Box size change -> width value change -> plot rerender trigger.
-  // This doesn't actually work for the *first* time a modal is opened...
-  const { ref, width, height } = useElementSize();
-  // Figure out if (w, h*ar) or (w/ar, h) is smaller, and choose the smaller one, to avoid overflowing.
-  plot_json.layout.width = Math.min(width, height / aspect_ratio);
-  plot_json.layout.height = Math.min(height, width * aspect_ratio);
+  const { ref, width } = useElementSize();
+  plotJson.layout.width = width;
+  plotJson.layout.height = width * aspectRatio;
 
   // Make the plot non-interactable, if specified.
   // Ideally, we would use `staticplot`, but this has a known bug with 3D plots:
   // - https://github.com/plotly/plotly.js/issues/457
   // In the meantime, we choose to disable all interactions.
   if (staticPlot) {
-    if (plot_json.config === undefined) plot_json.config = {};
-    plot_json.config.displayModeBar = false;
-
-    plot_json.layout.dragmode = false
-    plot_json.layout.hovermode = false
-    plot_json.layout.clickmode = "none"
+    if (plotJson.config === undefined) plotJson.config = {};
+    plotJson.config.displayModeBar = false;
+    plotJson.layout.dragmode = false;
+    plotJson.layout.hovermode = false;
+    plotJson.layout.clickmode = "none";
   }
 
   // Use React hooks to update the plotly object, when the plot data changes.
   // based on https://github.com/plotly/react-plotly.js/issues/242.
-  const [plotRef, setPlotRef] = useState<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (plotRef === null) return;
+  const plotRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
     // @ts-ignore - Plotly.js is dynamically imported with an eval() call.
     Plotly.react(
-      plotRef,
-      plot_json.data,
-      plot_json.layout,
-      plot_json.config
+      plotRef.current!,
+      plotJson.data,
+      plotJson.layout,
+      plotJson.config,
     );
-  }, [plot_json])
-  const plot_div = <div ref={setPlotRef} />
+  }, [plotJson]);
 
   return (
-    <Paper ref={ref} className={folderWrapper} withBorder>
-      {plot_div}
+    <Paper
+      ref={ref}
+      className={folderWrapper}
+      withBorder
+      style={{ position: "relative" }}
+    >
+      <div ref={plotRef} />
+      {/* Add a div on top of the plot, to prevent interaction + cursor changes. */}
+      {staticPlot ? (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1000,
+          }}
+        />
+      ) : null}
     </Paper>
   );
-}
+});
 
 export default function PlotlyComponent({
   visible,
@@ -65,43 +85,37 @@ export default function PlotlyComponent({
 }: GuiAddPlotlyMessage) {
   if (!visible) return <></>;
 
-  // Create two plots; one for the control panel, and one for the modal.
-  // They should have different sizes, so we need to generate them separately.
-  const plot_controlpanel = generatePlotWithAspect(
-    plotly_json_str,
-    aspect_ratio,
-    true
-  );
-  const plot_modal = generatePlotWithAspect(
-    plotly_json_str,
-    aspect_ratio,
-    false  // User can interact with plot in modal.
-  );
-
   // Create a modal with the plot, and a button to open it.
   const [opened, { open, close }] = useDisclosure(false);
   return (
     <Box>
       {/* Draw static plot in the controlpanel, which can be clicked. */}
-      <Tooltip.Floating
-        zIndex={100}
-        label={"Click to expand"}
-      >
+      <Tooltip.Floating zIndex={100} label={"Click to expand"}>
         <Box
           style={{
             cursor: "pointer",
-            flexShrink: 0, position: "relative",
+            flexShrink: 0,
+            position: "relative",
           }}
           onClick={open}
         >
-          {plot_controlpanel}
+          <PlotWithAspect
+            jsonStr={plotly_json_str}
+            aspectRatio={aspect_ratio}
+            staticPlot={true}
+          />
         </Box>
       </Tooltip.Floating>
 
-      {/* Modal contents. */}
-      <Modal opened={opened} onClose={close} fullScreen>
-        {plot_modal}
+      {/* Modal contents. keepMounted makes state changes (eg zoom) to the plot
+      persistent. */}
+      <Modal opened={opened} onClose={close} size="xl" keepMounted>
+        <PlotWithAspect
+          jsonStr={plotly_json_str}
+          aspectRatio={aspect_ratio}
+          staticPlot={false}
+        />
       </Modal>
     </Box>
-  )
+  );
 }
