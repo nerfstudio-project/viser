@@ -520,6 +520,7 @@ class GuiApi(abc.ABC):
             aspect_ratio: Aspect ratio of the plot in the control panel (width / height).
             order: Optional ordering, smallest values will be displayed first.
             visible: Whether the component is visible.
+            font: Optional font to use for the plot.
 
         Returns:
             A handle that can be used to interact with the GUI element.
@@ -558,7 +559,7 @@ class GuiApi(abc.ABC):
             with open(plotly_path, "r") as f:
                 plotly_js = f.read()
             self._get_api()._queue(
-                _messages.SetupPlotlyMessage(
+                _messages.RunJavascriptMessage(
                     source=plotly_js,
                 )
             )

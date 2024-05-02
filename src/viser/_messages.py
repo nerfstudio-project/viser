@@ -66,7 +66,7 @@ def tag_class(tag: str) -> Callable[[T], T]:
 
 
 @dataclasses.dataclass
-class SetupPlotlyMessage(Message):
+class RunJavascriptMessage(Message):
     """Message for setting up the Plotly.js package,
     via sending the plotly.min.js source code."""
 

@@ -128,8 +128,10 @@ function useMessageHandler() {
         return;
       }
 
-      // Setup the plotly.js library using the plotly.min.js code (string).
-      case "SetupPlotlyMessage": {
+      // Run some arbitrary Javascript.
+      // This is used for plotting, where the Python server will send over a
+      // copy of plotly.min.js for the currently-installed version of plotly.
+      case "RunJavascriptMessage": {
         eval(message.source);
         return;
       }

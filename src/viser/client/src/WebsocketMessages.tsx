@@ -5,8 +5,8 @@
  *
  * (automatically generated)
  */
-export interface SetupPlotlyMessage {
-  type: "SetupPlotlyMessage";
+export interface RunJavascriptMessage {
+  type: "RunJavascriptMessage";
   source: string;
 }
 /** Message for a posed viewer camera.
@@ -837,7 +837,7 @@ export interface SetGuiPanelLabelMessage {
 }
 
 export type Message =
-  | SetupPlotlyMessage
+  | RunJavascriptMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage
