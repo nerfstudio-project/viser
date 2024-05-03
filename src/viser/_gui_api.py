@@ -508,7 +508,6 @@ class GuiApi(abc.ABC):
         self,
         figure: go.Figure,
         aspect_ratio: float = 1.0,
-        font: str = "Inter",
         order: Optional[float] = None,
         visible: bool = True,
     ) -> GuiPlotlyHandle:
@@ -519,7 +518,6 @@ class GuiApi(abc.ABC):
             aspect_ratio: Aspect ratio of the plot in the control panel (width / height).
             order: Optional ordering, smallest values will be displayed first.
             visible: Whether the component is visible.
-            font: Optional font to use for the plot. Defaults to "Inter", the default viser font.
 
         Returns:
             A handle that can be used to interact with the GUI element.
@@ -532,7 +530,6 @@ class GuiApi(abc.ABC):
             _order=_apply_default_order(order),
             _figure=None,
             _aspect_ratio=None,
-            _font=None,
         )
 
         # If plotly.min.js hasn't been sent to the client yet, the client won't be able
@@ -556,11 +553,7 @@ class GuiApi(abc.ABC):
 
             # Send it over!
             plotly_js = plotly_path.read_text(encoding="utf-8")
-            self._get_api()._queue(
-                _messages.RunJavascriptMessage(
-                    source=plotly_js,
-                )
-            )
+            self._get_api()._queue(_messages.RunJavascriptMessage(source=plotly_js))
 
             # Update the flag so we don't send it again.
             self._setup_plotly_js = True
@@ -580,7 +573,6 @@ class GuiApi(abc.ABC):
         # Set the plotly handle properties.
         handle.figure = figure
         handle.aspect_ratio = aspect_ratio
-        handle.font = font
 
         return handle
 

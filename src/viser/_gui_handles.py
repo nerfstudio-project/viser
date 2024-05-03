@@ -633,7 +633,6 @@ class GuiPlotlyHandle:
     _order: float
     _figure: Optional[go.Figure]
     _aspect_ratio: Optional[float]
-    _font: Optional[str]
 
     @property
     def figure(self) -> go.Figure:
@@ -644,28 +643,14 @@ class GuiPlotlyHandle:
     @figure.setter
     def figure(self, figure: go.Figure) -> None:
         self._figure = figure
+
+        json_str = figure.to_json()
+        assert isinstance(json_str, str)
+
         self._gui_api._get_api()._queue(
             GuiUpdateMessage(
                 self._id,
-                {"plotly_json_str": self.plot_to_json()},
-            )
-        )
-
-    @property
-    def font(self) -> Optional[str]:
-        """Font of the plotly figure."""
-        return self._font
-
-    @font.setter
-    def font(self, font: str) -> None:
-        assert self._figure is not None
-        self._font = font
-        self._figure.update_layout(font_family=self._font)
-        # Need to update the figure to reflect the new font.
-        self._gui_api._get_api()._queue(
-            GuiUpdateMessage(
-                self._id,
-                {"plotly_json_str": self.plot_to_json()},
+                {"plotly_json_str": json_str},
             )
         )
 
@@ -684,13 +669,6 @@ class GuiPlotlyHandle:
                 {"aspect_ratio": aspect_ratio},
             )
         )
-
-    def plot_to_json(self) -> str:
-        """Convert the plotly figure to an HTML string."""
-        assert self._figure is not None
-        json_str = self._figure.to_json()
-        assert isinstance(json_str, str)
-        return json_str
 
     @property
     def order(self) -> float:
