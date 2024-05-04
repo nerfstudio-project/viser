@@ -32,6 +32,8 @@ from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage,
 from .infra import ClientId
 
 if TYPE_CHECKING:
+    import plotly.graph_objects as go
+
     from ._gui_api import GuiApi
     from ._viser import ClientHandle
 
@@ -191,7 +193,7 @@ class _GuiInputHandle(Generic[T]):
         """We need to register ourself after construction for callbacks to work."""
         gui_api = self._impl.gui_api
 
-        # TODO: the current way we track GUI handles and children is fairly manual +
+        # TODO: the current way we track GUI handles and children is very manual +
         # error-prone. We should revist this design.
         gui_api._gui_handle_from_id[self._impl.id] = self
         parent = gui_api._container_handle_from_id[self._impl.container_id]
@@ -431,8 +433,11 @@ class GuiFolderHandle:
         visualizer."""
         self._gui_api._get_api()._queue(GuiRemoveMessage(self._id))
         self._gui_api._container_handle_from_id.pop(self._id)
-        for child in self._children.values():
+        for child in tuple(self._children.values()):
             child.remove()
+
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)
 
 
 @dataclasses.dataclass
@@ -466,7 +471,7 @@ class GuiModalHandle:
             GuiCloseModalMessage(self._id),
         )
         self._gui_api._container_handle_from_id.pop(self._id)
-        for child in self._children.values():
+        for child in tuple(self._children.values()):
             child.remove()
 
 
@@ -561,7 +566,7 @@ class GuiMarkdownHandle:
     _gui_api: GuiApi
     _id: str
     _visible: bool
-    _container_id: str  # Parent.
+    _parent_container_id: str  # Parent.
     _order: float
     _image_root: Optional[Path]
     _content: Optional[str]
@@ -605,10 +610,96 @@ class GuiMarkdownHandle:
 
     def __post_init__(self) -> None:
         """We need to register ourself after construction for callbacks to work."""
-        parent = self._gui_api._container_handle_from_id[self._container_id]
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
         parent._children[self._id] = self
 
     def remove(self) -> None:
         """Permanently remove this markdown from the visualizer."""
         api = self._gui_api._get_api()
         api._queue(GuiRemoveMessage(self._id))
+
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)
+
+
+@dataclasses.dataclass
+class GuiPlotlyHandle:
+    """Use to remove markdown."""
+
+    _gui_api: GuiApi
+    _id: str
+    _visible: bool
+    _parent_container_id: str  # Parent.
+    _order: float
+    _figure: Optional[go.Figure]
+    _aspect: Optional[float]
+
+    @property
+    def figure(self) -> go.Figure:
+        """Current content of this markdown element. Synchronized automatically when assigned."""
+        assert self._figure is not None
+        return self._figure
+
+    @figure.setter
+    def figure(self, figure: go.Figure) -> None:
+        self._figure = figure
+
+        json_str = figure.to_json()
+        assert isinstance(json_str, str)
+
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(
+                self._id,
+                {"plotly_json_str": json_str},
+            )
+        )
+
+    @property
+    def aspect(self) -> float:
+        """Aspect ratio of the plotly figure, in the control panel."""
+        assert self._aspect is not None
+        return self._aspect
+
+    @aspect.setter
+    def aspect(self, aspect: float) -> None:
+        self._aspect = aspect
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(
+                self._id,
+                {"aspect": aspect},
+            )
+        )
+
+    @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._order
+
+    @property
+    def visible(self) -> bool:
+        """Temporarily show or hide this GUI element from the visualizer. Synchronized
+        automatically when assigned."""
+        return self._visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        if visible == self.visible:
+            return
+
+        self._gui_api._get_api()._queue(
+            GuiUpdateMessage(self._id, {"visible": visible})
+        )
+        self._visible = visible
+
+    def __post_init__(self) -> None:
+        """We need to register ourself after construction for callbacks to work."""
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._id] = self
+
+    def remove(self) -> None:
+        """Permanently remove this markdown from the visualizer."""
+        api = self._gui_api._get_api()
+        api._queue(GuiRemoveMessage(self._id))
+
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)

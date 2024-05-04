@@ -46,6 +46,7 @@ from ._gui_handles import (
     GuiInputHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
+    GuiPlotlyHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
     SupportsRemoveProtocol,
@@ -60,6 +61,8 @@ from ._message_api import MessageApi, cast_vector
 from ._messages import FileTransferPartAck
 
 if TYPE_CHECKING:
+    import plotly.graph_objects as go
+
     from .infra import ClientId
 
 IntOrFloat = TypeVar("IntOrFloat", int, float)
@@ -189,6 +192,9 @@ class GuiApi(abc.ABC):
             "root": _RootGuiContainer({})
         }
         self._current_file_upload_states: Dict[str, FileUploadState] = {}
+
+        # Set to True when plotly.min.js has been sent to client.
+        self._setup_plotly_js: bool = False
 
         self._get_api()._message_handler.register_handler(
             _messages.GuiUpdateMessage, self._handle_gui_updates
@@ -478,7 +484,7 @@ class GuiApi(abc.ABC):
             _gui_api=self,
             _id=_make_unique_id(),
             _visible=visible,
-            _container_id=self._get_container_id(),
+            _parent_container_id=self._get_container_id(),
             _order=_apply_default_order(order),
             _image_root=image_root,
             _content=None,
@@ -488,7 +494,7 @@ class GuiApi(abc.ABC):
                 order=handle._order,
                 id=handle._id,
                 markdown="",
-                container_id=handle._container_id,
+                container_id=handle._parent_container_id,
                 visible=visible,
             )
         )
@@ -496,6 +502,79 @@ class GuiApi(abc.ABC):
         # Logic for processing markdown, handling images, etc is all in the
         # `.content` setter, which should send a GuiUpdateMessage.
         handle.content = content
+        return handle
+
+    def add_gui_plotly(
+        self,
+        figure: go.Figure,
+        aspect: float = 1.0,
+        order: Optional[float] = None,
+        visible: bool = True,
+    ) -> GuiPlotlyHandle:
+        """Add a Plotly figure to the GUI. Requires the `plotly` package to be
+        installed.
+
+        Args:
+            figure: Plotly figure to display.
+            aspect: Aspect ratio of the plot in the control panel (width/height).
+            order: Optional ordering, smallest values will be displayed first.
+            visible: Whether the component is visible.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        handle = GuiPlotlyHandle(
+            _gui_api=self,
+            _id=_make_unique_id(),
+            _visible=visible,
+            _parent_container_id=self._get_container_id(),
+            _order=_apply_default_order(order),
+            _figure=None,
+            _aspect=None,
+        )
+
+        # If plotly.min.js hasn't been sent to the client yet, the client won't be able
+        # to render the plot. Send this large file now! (~3MB)
+        if not self._setup_plotly_js:
+            # Check if plotly is installed.
+            try:
+                import plotly
+            except ImportError:
+                raise ImportError(
+                    "You must have the `plotly` package installed to use the Plotly GUI element."
+                )
+
+            # Check that plotly.min.js exists.
+            plotly_path = (
+                Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
+            )
+            assert (
+                plotly_path.exists()
+            ), f"Could not find plotly.min.js at {plotly_path}."
+
+            # Send it over!
+            plotly_js = plotly_path.read_text(encoding="utf-8")
+            self._get_api()._queue(_messages.RunJavascriptMessage(source=plotly_js))
+
+            # Update the flag so we don't send it again.
+            self._setup_plotly_js = True
+
+        # After plotly.min.js has been sent, we can send the plotly figure.
+        self._get_api()._queue(
+            _messages.GuiAddPlotlyMessage(
+                order=handle._order,
+                id=handle._id,
+                plotly_json_str="",
+                aspect=1.0,
+                container_id=handle._parent_container_id,
+                visible=visible,
+            )
+        )
+
+        # Set the plotly handle properties.
+        handle.figure = figure
+        handle.aspect = aspect
+
         return handle
 
     def add_gui_button(

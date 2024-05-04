@@ -41,12 +41,13 @@ dependencies = [
 dev = [
     "pyright>=1.1.308",
     "mypy>=1.4.1",
-    "ruff==0.3.3",
+    "ruff==0.4.3",
     "pre-commit==3.3.2",
 ]
 examples = [
     "torch>=1.13.1",
     "matplotlib>=3.7.1",
+    "plotly>=5.21.0",
 ]
 
 [project.urls]

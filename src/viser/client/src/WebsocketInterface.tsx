@@ -127,6 +127,15 @@ function useMessageHandler() {
         setTheme(message);
         return;
       }
+
+      // Run some arbitrary Javascript.
+      // This is used for plotting, where the Python server will send over a
+      // copy of plotly.min.js for the currently-installed version of plotly.
+      case "RunJavascriptMessage": {
+        eval(message.source);
+        return;
+      }
+
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.
