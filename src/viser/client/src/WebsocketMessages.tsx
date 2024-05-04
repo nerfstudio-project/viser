@@ -1,5 +1,15 @@
 // AUTOMATICALLY GENERATED message interfaces, from Python dataclass definitions.
 // This file should not be manually modified.
+/** Message for running some arbitrary Javascript on the client.
+ * We use this to set up the Plotly.js package, via the plotly.min.js source
+ * code.
+ *
+ * (automatically generated)
+ */
+export interface RunJavascriptMessage {
+  type: "RunJavascriptMessage";
+  source: string;
+}
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
  *
@@ -337,6 +347,19 @@ export interface GuiAddMarkdownMessage {
   order: number;
   id: string;
   markdown: string;
+  container_id: string;
+  visible: boolean;
+}
+/** GuiAddPlotlyMessage(order: 'float', id: 'str', plotly_json_str: 'str', aspect: 'float', container_id: 'str', visible: 'bool')
+ *
+ * (automatically generated)
+ */
+export interface GuiAddPlotlyMessage {
+  type: "GuiAddPlotlyMessage";
+  order: number;
+  id: string;
+  plotly_json_str: string;
+  aspect: number;
   container_id: string;
   visible: boolean;
 }
@@ -815,6 +838,7 @@ export interface SetGuiPanelLabelMessage {
 }
 
 export type Message =
+  | RunJavascriptMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage
@@ -844,6 +868,7 @@ export type Message =
   | ResetSceneMessage
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
+  | GuiAddPlotlyMessage
   | GuiAddTabGroupMessage
   | _GuiAddInputBase
   | GuiAddButtonMessage
@@ -878,6 +903,7 @@ export type Message =
 export type GuiAddComponentMessage =
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
+  | GuiAddPlotlyMessage
   | GuiAddTabGroupMessage
   | GuiAddButtonMessage
   | GuiAddUploadButtonMessage
