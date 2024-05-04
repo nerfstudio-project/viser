@@ -507,15 +507,16 @@ class GuiApi(abc.ABC):
     def add_gui_plotly(
         self,
         figure: go.Figure,
-        aspect_ratio: float = 1.0,
+        aspect: float = 1.0,
         order: Optional[float] = None,
         visible: bool = True,
     ) -> GuiPlotlyHandle:
-        """Add a Plotly Plot to the GUI.
+        """Add a Plotly figure to the GUI. Requires the `plotly` package to be
+        installed.
 
         Args:
             figure: Plotly figure to display.
-            aspect_ratio: Aspect ratio of the plot in the control panel (width / height).
+            aspect: Aspect ratio of the plot in the control panel (width/height).
             order: Optional ordering, smallest values will be displayed first.
             visible: Whether the component is visible.
 
@@ -529,7 +530,7 @@ class GuiApi(abc.ABC):
             _parent_container_id=self._get_container_id(),
             _order=_apply_default_order(order),
             _figure=None,
-            _aspect_ratio=None,
+            _aspect=None,
         )
 
         # If plotly.min.js hasn't been sent to the client yet, the client won't be able
@@ -564,7 +565,7 @@ class GuiApi(abc.ABC):
                 order=handle._order,
                 id=handle._id,
                 plotly_json_str="",
-                aspect_ratio=1.0,
+                aspect=1.0,
                 container_id=handle._parent_container_id,
                 visible=visible,
             )
@@ -572,7 +573,7 @@ class GuiApi(abc.ABC):
 
         # Set the plotly handle properties.
         handle.figure = figure
-        handle.aspect_ratio = aspect_ratio
+        handle.aspect = aspect
 
         return handle
 
@@ -723,7 +724,8 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]: ...
+    ) -> GuiButtonGroupHandle[TLiteralString]:
+        ...
 
     @overload
     def add_gui_button_group(
@@ -734,7 +736,8 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TString]: ...
+    ) -> GuiButtonGroupHandle[TString]:
+        ...
 
     def add_gui_button_group(
         self,
@@ -1062,7 +1065,8 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TLiteralString]: ...
+    ) -> GuiDropdownHandle[TLiteralString]:
+        ...
 
     @overload
     def add_gui_dropdown(
@@ -1074,7 +1078,8 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TString]: ...
+    ) -> GuiDropdownHandle[TString]:
+        ...
 
     def add_gui_dropdown(
         self,

@@ -44,7 +44,7 @@ def main() -> None:
     fig.update_layout(
         margin=dict(l=20, r=20, t=20, b=20),
     )
-    server.add_gui_plotly(figure=fig, aspect_ratio=1.0)
+    server.add_gui_plotly(figure=fig, aspect=1.0)
 
     # Plot type 3: 3D Scatter plot.
     fig = px.scatter_3d(
@@ -58,7 +58,7 @@ def main() -> None:
     fig.update_layout(
         margin=dict(l=20, r=20, t=20, b=20),
     )
-    server.add_gui_plotly(figure=fig, aspect_ratio=1.0)
+    server.add_gui_plotly(figure=fig, aspect=1.0)
 
     while True:
         # Update the line plot.

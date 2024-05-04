@@ -81,7 +81,7 @@ const PlotWithAspect = React.memo(function PlotWithAspect({
 export default function PlotlyComponent({
   visible,
   plotly_json_str,
-  aspect_ratio,
+  aspect,
 }: GuiAddPlotlyMessage) {
   if (!visible) return <></>;
 
@@ -101,7 +101,7 @@ export default function PlotlyComponent({
         >
           <PlotWithAspect
             jsonStr={plotly_json_str}
-            aspectRatio={aspect_ratio}
+            aspectRatio={aspect}
             staticPlot={true}
           />
         </Box>
@@ -112,7 +112,7 @@ export default function PlotlyComponent({
       <Modal opened={opened} onClose={close} size="xl" keepMounted>
         <PlotWithAspect
           jsonStr={plotly_json_str}
-          aspectRatio={aspect_ratio}
+          aspectRatio={aspect}
           staticPlot={false}
         />
       </Modal>

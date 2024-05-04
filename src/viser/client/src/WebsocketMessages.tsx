@@ -1,7 +1,8 @@
 // AUTOMATICALLY GENERATED message interfaces, from Python dataclass definitions.
 // This file should not be manually modified.
-/** Message for setting up the Plotly.js package,
- * via sending the plotly.min.js source code.
+/** Message for running some arbitrary Javascript on the client.
+ * We use this to set up the Plotly.js package, via the plotly.min.js source
+ * code.
  *
  * (automatically generated)
  */
@@ -349,7 +350,7 @@ export interface GuiAddMarkdownMessage {
   container_id: string;
   visible: boolean;
 }
-/** GuiAddPlotlyMessage(order: 'float', id: 'str', plotly_json_str: 'str', aspect_ratio: 'float', container_id: 'str', visible: 'bool')
+/** GuiAddPlotlyMessage(order: 'float', id: 'str', plotly_json_str: 'str', aspect: 'float', container_id: 'str', visible: 'bool')
  *
  * (automatically generated)
  */
@@ -358,7 +359,7 @@ export interface GuiAddPlotlyMessage {
   order: number;
   id: string;
   plotly_json_str: string;
-  aspect_ratio: number;
+  aspect: number;
   container_id: string;
   visible: boolean;
 }

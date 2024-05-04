@@ -429,7 +429,7 @@ class GuiAddPlotlyMessage(Message):
     order: float
     id: str
     plotly_json_str: str
-    aspect_ratio: float
+    aspect: float
     container_id: str
     visible: bool
 

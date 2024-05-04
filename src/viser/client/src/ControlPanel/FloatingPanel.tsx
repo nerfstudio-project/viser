@@ -107,11 +107,6 @@ export default function FloatingPanel({
     const parent = panel.parentElement;
     if (parent === null) return;
 
-    // panel.style.maxHeight = `${(
-    //   parent.clientHeight -
-    //   panelBoundaryPad * 2
-    // ).toString()}px`;
-
     const observer = new ResizeObserver(() => {
       if (unfixedOffset.current.x === undefined)
         unfixedOffset.current.x = computePanelOffset(
@@ -126,15 +121,7 @@ export default function FloatingPanel({
           parent.clientHeight,
         );
 
-      // panel.style.maxHeight = `${(
-      //   parent.clientHeight -
-      //   panelBoundaryPad * 2
-      // ).toString()}px`;
-
-      const newMaxHeight = Math.min(
-        parent.clientHeight - panelBoundaryPad * 2 - 2.5 * 16,
-        800,
-      );
+      const newMaxHeight = parent.clientHeight - panelBoundaryPad * 2 - 2.5 * 16;
       maxHeight !== newMaxHeight && setMaxHeight(newMaxHeight);
 
       let newX = unfixedOffset.current.x;

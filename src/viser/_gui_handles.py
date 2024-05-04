@@ -54,7 +54,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -632,7 +633,7 @@ class GuiPlotlyHandle:
     _parent_container_id: str  # Parent.
     _order: float
     _figure: Optional[go.Figure]
-    _aspect_ratio: Optional[float]
+    _aspect: Optional[float]
 
     @property
     def figure(self) -> go.Figure:
@@ -655,18 +656,18 @@ class GuiPlotlyHandle:
         )
 
     @property
-    def aspect_ratio(self) -> float:
+    def aspect(self) -> float:
         """Aspect ratio of the plotly figure, in the control panel."""
-        assert self._aspect_ratio is not None
-        return self._aspect_ratio
+        assert self._aspect is not None
+        return self._aspect
 
-    @aspect_ratio.setter
-    def aspect_ratio(self, aspect_ratio: float) -> None:
-        self._aspect_ratio = aspect_ratio
+    @aspect.setter
+    def aspect(self, aspect: float) -> None:
+        self._aspect = aspect
         self._gui_api._get_api()._queue(
             GuiUpdateMessage(
                 self._id,
-                {"aspect_ratio": aspect_ratio},
+                {"aspect": aspect},
             )
         )
 
