@@ -724,8 +724,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]:
-        ...
+    ) -> GuiButtonGroupHandle[TLiteralString]: ...
 
     @overload
     def add_gui_button_group(
@@ -736,8 +735,7 @@ class GuiApi(abc.ABC):
         disabled: bool = False,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiButtonGroupHandle[TString]:
-        ...
+    ) -> GuiButtonGroupHandle[TString]: ...
 
     def add_gui_button_group(
         self,
@@ -1065,8 +1063,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TLiteralString]:
-        ...
+    ) -> GuiDropdownHandle[TLiteralString]: ...
 
     @overload
     def add_gui_dropdown(
@@ -1078,8 +1075,7 @@ class GuiApi(abc.ABC):
         visible: bool = True,
         hint: Optional[str] = None,
         order: Optional[float] = None,
-    ) -> GuiDropdownHandle[TString]:
-        ...
+    ) -> GuiDropdownHandle[TString]: ...
 
     def add_gui_dropdown(
         self,
