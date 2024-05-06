@@ -74,6 +74,7 @@ Examples of basic GUI elements that we can create, read from, and write to.
                         max=100,
                         step=1,
                         initial_value=(0, 30, 100),
+                        marks=((0, "0"), (50, "5"), (70, "7"), 99),
                     )
                     gui_slider_positions = server.add_gui_slider(
                         "# sliders",
@@ -122,6 +123,8 @@ Examples of basic GUI elements that we can create, read from, and write to.
                 gui_text.visible = not gui_checkbox_hide.value
                 gui_button.visible = not gui_checkbox_hide.value
                 gui_rgb.disabled = gui_checkbox_disable.value
+                gui_button.disabled = gui_checkbox_disable.value
+                gui_upload_button.disabled = gui_checkbox_disable.value
 
                 # Update the number of handles in the multi-slider.
                 if gui_slider_positions.value != len(gui_multi_slider.value):

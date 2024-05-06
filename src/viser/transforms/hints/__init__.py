@@ -2,10 +2,10 @@ from typing import NamedTuple, Union
 
 import numpy as onp
 
-# Type aliases for JAX/Numpy arrays; primarily for function inputs.
+# Type aliases Numpy arrays; primarily for function inputs.
 
 Array = onp.ndarray
-"""Type alias for `onp.ndarray`."""
+"""Type alias for onp.ndarray."""
 
 Scalar = Union[float, Array]
 """Type alias for `Union[float, Array]`."""

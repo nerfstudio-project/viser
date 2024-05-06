@@ -72,6 +72,7 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
 
                     if len(hit_pos) == 0:
                         return
+                    client.remove_scene_pointer_callback()
 
                     # Get the first hit position (based on distance from the ray origin).
                     hit_pos = min(hit_pos, key=lambda x: onp.linalg.norm(x - origin))
@@ -85,10 +86,9 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
                     )
                     hit_pos_handles.append(hit_pos_handle)
 
-                @client.on_scene_pointer_done
+                @client.on_scene_pointer_removed
                 def _():
                     click_button_handle.disabled = False
-                    client.remove_scene_pointer_callback()
 
             # Tests "rect-select" scenepointerevent.
             paint_button_handle = client.add_gui_button("Paint mesh", icon=viser.Icon.PAINT)
@@ -99,6 +99,8 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
 
                 @client.on_scene_pointer(event_type="rect-select")
                 def _(message: viser.ScenePointerEvent) -> None:
+                    client.remove_scene_pointer_callback()
+
                     global mesh_handle
                     camera = message.client.camera
 
@@ -108,7 +110,7 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
                     R_camera_world = tf.SE3.from_rotation_and_translation(
                         tf.SO3(camera.wxyz), camera.position
                     ).inverse()
-                    vertices = mesh.vertices
+                    vertices = cast(onp.ndarray, mesh.vertices)
                     vertices = (R_mesh_world.as_matrix() @ vertices.T).T
                     vertices = (
                         R_camera_world.as_matrix()
@@ -141,10 +143,9 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
                         position=(0.0, 0.0, 0.0),
                     )
 
-                @client.on_scene_pointer_done
+                @client.on_scene_pointer_removed
                 def _():
                     paint_button_handle.disabled = False
-                    client.remove_scene_pointer_callback()
 
             # Button to clear spheres.
             clear_button_handle = client.add_gui_button("Clear scene", icon=viser.Icon.X)
