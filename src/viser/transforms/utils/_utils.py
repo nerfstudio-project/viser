@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Callable, Tuple, Type, TypeVar, Union, cast
 
 import numpy as onp
-from jaxlie.hints import Array
 
 if TYPE_CHECKING:
     from .._base import MatrixLieGroup
@@ -52,7 +51,7 @@ def register_lie_group(
 
 TupleOfBroadcastable = TypeVar(
     "TupleOfBroadcastable",
-    bound="Tuple[Union[MatrixLieGroup, Array], ...]",
+    bound="Tuple[Union[MatrixLieGroup, onp.ndarray], ...]",
 )
 
 
