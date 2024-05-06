@@ -11,6 +11,15 @@ from . import _base, hints
 from .utils import broadcast_leading_axes, get_epsilon, register_lie_group
 
 
+@dataclasses.dataclass(frozen=True)
+class RollPitchYaw:
+    """Struct containing roll, pitch, and yaw Euler angles."""
+
+    roll: onpt.NDArray[onp.floating]
+    pitch: onpt.NDArray[onp.floating]
+    yaw: onpt.NDArray[onp.floating]
+
+
 @register_lie_group(
     matrix_dim=3,
     parameters_dim=4,
@@ -21,6 +30,8 @@ from .utils import broadcast_leading_axes, get_epsilon, register_lie_group
 class SO3(_base.SOBase):
     """Special orthogonal group for 3D rotations. Broadcasting rules are the same as
     for numpy.
+
+    Ported to numpy from `jaxlie.SO3`.
 
     Internal parameterization is `(qw, qx, qy, qz)`. Tangent parameterization is
     `(omega_x, omega_y, omega_z)`.
@@ -97,7 +108,7 @@ class SO3(_base.SOBase):
         )
 
     @staticmethod
-    def from_quaternion_xyzw(xyzw: hints.Array) -> SO3:
+    def from_quaternion_xyzw(xyzw: onpt.NDArray[onp.floating]) -> SO3:
         """Construct a rotation from an `xyzw` quaternion.
 
         Note that `wxyz` quaternions can be constructed using the default dataclass
@@ -116,13 +127,13 @@ class SO3(_base.SOBase):
         """Grab parameters as xyzw quaternion."""
         return onp.roll(self.wxyz, axis=-1, shift=-1)
 
-    def as_rpy_radians(self) -> hints.RollPitchYaw:
+    def as_rpy_radians(self) -> RollPitchYaw:
         """Computes roll, pitch, and yaw angles. Uses the ZYX mobile robot convention.
 
         Returns:
             Named tuple containing Euler angles in radians.
         """
-        return hints.RollPitchYaw(
+        return RollPitchYaw(
             roll=self.compute_roll_radians(),
             pitch=self.compute_pitch_radians(),
             yaw=self.compute_yaw_radians(),
@@ -169,7 +180,7 @@ class SO3(_base.SOBase):
 
     @classmethod
     @override
-    def from_matrix(cls, matrix: hints.Array) -> SO3:
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> SO3:
         assert matrix.shape[-2:] == (3, 3)
 
         # Modified from:
@@ -299,7 +310,7 @@ class SO3(_base.SOBase):
     # Operations.
 
     @override
-    def apply(self, target: hints.Array) -> onpt.NDArray[onp.floating]:
+    def apply(self, target: onpt.NDArray[onp.floating]) -> onpt.NDArray[onp.floating]:
         assert target.shape[-1:] == (3,)
         self, target = broadcast_leading_axes((self, target))
 
@@ -327,7 +338,7 @@ class SO3(_base.SOBase):
 
     @classmethod
     @override
-    def exp(cls, tangent: hints.Array) -> SO3:
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> SO3:
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/so3.hpp#L583
 
@@ -338,7 +349,7 @@ class SO3(_base.SOBase):
         use_taylor = theta_squared < get_epsilon(tangent.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD in JAX. This isn't needed for vanilla numpy.
         safe_theta = onp.sqrt(
             onp.where(
                 use_taylor,
@@ -380,7 +391,7 @@ class SO3(_base.SOBase):
         use_taylor = norm_sq < get_epsilon(norm_sq.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD in JAX. This isn't needed for vanilla numpy.
         norm_safe = onp.sqrt(
             onp.where(
                 use_taylor,

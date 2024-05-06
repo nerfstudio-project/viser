@@ -21,6 +21,8 @@ class SE2(_base.SEBase[SO2]):
     """Special Euclidean group for proper rigid transforms in 2D. Broadcasting
     rules are the same as for numpy.
 
+    Ported to numpy from `jaxlie.SE2`.
+
     Internal parameterization is `(cos, sin, x, y)`. Tangent parameterization is `(vx,
     vy, omega)`.
     """
@@ -28,7 +30,7 @@ class SE2(_base.SEBase[SO2]):
     # SE2-specific.
 
     unit_complex_xy: onpt.NDArray[onp.floating]
-    """Internal parameters. `(cos, sin, x, y)`. Shape should be `(*, 3)`."""
+    """Internal parameters. `(cos, sin, x, y)`. Shape should be `(*, 4)`."""
 
     @override
     def __repr__(self) -> str:
@@ -40,7 +42,7 @@ class SE2(_base.SEBase[SO2]):
     def from_xy_theta(x: hints.Scalar, y: hints.Scalar, theta: hints.Scalar) -> "SE2":
         """Construct a transformation from standard 2D pose parameters.
 
-        Note that this is not the same as integrating over a length-3 twist.
+        This is not the same as integrating over a length-3 twist.
         """
         cos = onp.cos(theta)
         sin = onp.sin(theta)
@@ -53,7 +55,7 @@ class SE2(_base.SEBase[SO2]):
     def from_rotation_and_translation(
         cls,
         rotation: SO2,
-        translation: hints.Array,
+        translation: onpt.NDArray[onp.floating],
     ) -> "SE2":
         assert translation.shape[-1:] == (2,)
         rotation, translation = broadcast_leading_axes((rotation, translation))
@@ -84,7 +86,7 @@ class SE2(_base.SEBase[SO2]):
 
     @classmethod
     @override
-    def from_matrix(cls, matrix: hints.Array) -> "SE2":
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> "SE2":
         assert matrix.shape[-2:] == (3, 3)
         # Currently assumes bottom row is [0, 0, 1].
         return SE2.from_rotation_and_translation(
@@ -121,7 +123,7 @@ class SE2(_base.SEBase[SO2]):
 
     @classmethod
     @override
-    def exp(cls, tangent: hints.Array) -> "SE2":
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> "SE2":
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se2.hpp#L558
         # Also see:
@@ -133,7 +135,7 @@ class SE2(_base.SEBase[SO2]):
         use_taylor = onp.abs(theta) < get_epsilon(tangent.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD in JAX. This isn't needed for vanilla numpy.
         safe_theta = cast(
             onp.ndarray,
             onp.where(
@@ -190,7 +192,7 @@ class SE2(_base.SEBase[SO2]):
         use_taylor = onp.abs(cos_minus_one) < get_epsilon(theta.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD in JAX. This isn't needed for vanilla numpy.
         safe_cos_minus_one = onp.where(
             use_taylor,
             onp.ones_like(cos_minus_one),  # Any non-zero value should do here.

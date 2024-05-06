@@ -8,17 +8,7 @@ import threading
 from asyncio.events import AbstractEventLoop
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    NewType,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-)
+from typing import Any, Callable, Dict, List, NewType, Optional, Tuple, Type, TypeVar
 
 import msgpack
 import rich

@@ -5,8 +5,6 @@ import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import Self, final, get_args, override
 
-from . import hints
-
 
 class MatrixLieGroup(abc.ABC):
     """Interface definition for matrix Lie groups."""
@@ -44,17 +42,19 @@ class MatrixLieGroup(abc.ABC):
     def __matmul__(self, other: Self) -> Self: ...
 
     @overload
-    def __matmul__(self, other: hints.Array) -> onpt.NDArray[onp.floating]: ...
+    def __matmul__(
+        self, other: onpt.NDArray[onp.floating]
+    ) -> onpt.NDArray[onp.floating]: ...
 
     def __matmul__(
-        self, other: Union[Self, hints.Array]
+        self, other: Union[Self, onpt.NDArray[onp.floating]]
     ) -> Union[Self, onpt.NDArray[onp.floating]]:
         """Overload for the `@` operator.
 
         Switches between the group action (`.apply()`) and multiplication
         (`.multiply()`) based on the type of `other`.
         """
-        if isinstance(other, (onp.ndarray, onp.ndarray)):
+        if isinstance(other, onp.ndarray):
             return self.apply(target=other)
         elif isinstance(other, MatrixLieGroup):
             assert self.space_dim == other.space_dim
@@ -78,7 +78,7 @@ class MatrixLieGroup(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def from_matrix(cls, matrix: hints.Array) -> Self:
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> Self:
         """Get group member from matrix representation.
 
         Args:
@@ -101,7 +101,7 @@ class MatrixLieGroup(abc.ABC):
     # Operations.
 
     @abc.abstractmethod
-    def apply(self, target: hints.Array) -> onpt.NDArray[onp.floating]:
+    def apply(self, target: onpt.NDArray[onp.floating]) -> onpt.NDArray[onp.floating]:
         """Applies group action to a point.
 
         Args:
@@ -121,7 +121,7 @@ class MatrixLieGroup(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def exp(cls, tangent: hints.Array) -> Self:
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> Self:
         """Computes `expm(wedge(tangent))`.
 
         Args:
@@ -216,7 +216,7 @@ class SEBase(Generic[ContainedSOType], MatrixLieGroup):
     def from_rotation_and_translation(
         cls,
         rotation: ContainedSOType,
-        translation: hints.Array,
+        translation: onpt.NDArray[onp.floating],
     ) -> Self:
         """Construct a rigid transform from a rotation and a translation.
 
@@ -241,7 +241,7 @@ class SEBase(Generic[ContainedSOType], MatrixLieGroup):
 
     @final
     @classmethod
-    def from_translation(cls, translation: hints.Array) -> Self:
+    def from_translation(cls, translation: onpt.NDArray[onp.floating]) -> Self:
         # Extract rotation class from type parameter.
         assert len(cls.__orig_bases__) == 1  # type: ignore
         return cls.from_rotation_and_translation(
@@ -261,7 +261,7 @@ class SEBase(Generic[ContainedSOType], MatrixLieGroup):
 
     @final
     @override
-    def apply(self, target: hints.Array) -> onpt.NDArray[onp.floating]:
+    def apply(self, target: onpt.NDArray[onp.floating]) -> onpt.NDArray[onp.floating]:
         return self.rotation() @ target + self.translation()  # type: ignore
 
     @final

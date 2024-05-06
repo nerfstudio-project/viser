@@ -20,7 +20,9 @@ from .utils import broadcast_leading_axes, register_lie_group
 @dataclasses.dataclass(frozen=True)
 class SO2(_base.SOBase):
     """Special orthogonal group for 2D rotations. Broadcasting rules are the
-    same as for `numpy`.
+    same as for numpy.
+
+    Ported to numpy from `jaxlie.SO2`.
 
     Internal parameterization is `(cos, sin)`. Tangent parameterization is `(omega,)`.
     """
@@ -60,7 +62,7 @@ class SO2(_base.SOBase):
 
     @classmethod
     @override
-    def from_matrix(cls, matrix: hints.Array) -> SO2:
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> SO2:
         assert matrix.shape[-2:] == (2, 2)
         return SO2(unit_complex=onp.asarray(matrix[..., :, 0]))
 
@@ -88,7 +90,7 @@ class SO2(_base.SOBase):
     # Operations.
 
     @override
-    def apply(self, target: hints.Array) -> onpt.NDArray[onp.floating]:
+    def apply(self, target: onpt.NDArray[onp.floating]) -> onpt.NDArray[onp.floating]:
         assert target.shape[-1:] == (2,)
         self, target = broadcast_leading_axes((self, target))
         return onp.einsum("...ij,...j->...i", self.as_matrix(), target)
@@ -103,7 +105,7 @@ class SO2(_base.SOBase):
 
     @classmethod
     @override
-    def exp(cls, tangent: hints.Array) -> SO2:
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> SO2:
         assert tangent.shape[-1] == 1
         cos = onp.cos(tangent)
         sin = onp.sin(tangent)
