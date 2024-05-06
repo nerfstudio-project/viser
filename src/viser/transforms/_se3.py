@@ -7,12 +7,12 @@ import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import override
 
-from . import _base, hints
+from . import _base
 from ._so3 import SO3
 from .utils import broadcast_leading_axes, get_epsilon, register_lie_group
 
 
-def _skew(omega: hints.Array) -> onpt.NDArray[onp.floating]:
+def _skew(omega: onpt.NDArray[onp.floating]) -> onpt.NDArray[onp.floating]:
     """Returns the skew-symmetric form of a length-3 vector."""
 
     wx, wy, wz = onp.moveaxis(omega, -1, 0)
@@ -33,6 +33,8 @@ def _skew(omega: hints.Array) -> onpt.NDArray[onp.floating]:
 class SE3(_base.SEBase[SO3]):
     """Special Euclidean group for proper rigid transforms in 3D. Broadcasting
     rules are the same as for numpy.
+
+    Ported to numpy from `jaxlie.SE3`.
 
     Internal parameterization is `(qw, qx, qy, qz, x, y, z)`. Tangent parameterization
     is `(vx, vy, vz, omega_x, omega_y, omega_z)`.
@@ -56,7 +58,7 @@ class SE3(_base.SEBase[SO3]):
     def from_rotation_and_translation(
         cls,
         rotation: SO3,
-        translation: hints.Array,
+        translation: onpt.NDArray[onp.floating],
     ) -> SE3:
         assert translation.shape[-1:] == (3,)
         rotation, translation = broadcast_leading_axes((rotation, translation))
@@ -83,7 +85,7 @@ class SE3(_base.SEBase[SO3]):
 
     @classmethod
     @override
-    def from_matrix(cls, matrix: hints.Array) -> SE3:
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> SE3:
         assert matrix.shape[-2:] == (4, 4)
         # Currently assumes bottom row is [0, 0, 0, 1].
         return SE3.from_rotation_and_translation(
@@ -109,7 +111,7 @@ class SE3(_base.SEBase[SO3]):
 
     @classmethod
     @override
-    def exp(cls, tangent: hints.Array) -> SE3:
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> SE3:
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se3.hpp#L761
 
@@ -122,7 +124,7 @@ class SE3(_base.SEBase[SO3]):
         use_taylor = theta_squared < get_epsilon(theta_squared.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD in JAX. This isn't needed for vanilla numpy.
         theta_squared_safe = cast(
             onp.ndarray,
             onp.where(
@@ -166,7 +168,7 @@ class SE3(_base.SEBase[SO3]):
         skew_omega = _skew(omega)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD.
+        # reverse-mode AD in JAX. This isn't needed for vanilla numpy.
         theta_squared_safe = onp.where(
             use_taylor,
             onp.ones_like(theta_squared),  # Any non-zero value should do here.
