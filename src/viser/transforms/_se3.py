@@ -40,7 +40,7 @@ class SE3(_base.SEBase[SO3]):
 
     # SE3-specific.
 
-    wxyz_xyz: onp.ndarray
+    wxyz_xyz: onpt.NDArray[onp.floating]
     """Internal parameters. wxyz quaternion followed by xyz translation. Shape should be `(*, 7)`."""
 
     @override

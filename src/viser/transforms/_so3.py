@@ -26,7 +26,7 @@ class SO3(_base.SOBase):
     `(omega_x, omega_y, omega_z)`.
     """
 
-    wxyz: onp.ndarray
+    wxyz: onpt.NDArray[onp.floating]
     """Internal parameters. `(w, x, y, z)` quaternion. Shape should be `(*, 4)`."""
 
     @override

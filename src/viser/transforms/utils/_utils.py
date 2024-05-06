@@ -19,10 +19,12 @@ def get_epsilon(dtype: onp.dtype) -> float:
     Returns:
         Output float.
     """
-    return {
-        onp.dtype("float32"): 1e-5,
-        onp.dtype("float64"): 1e-10,
-    }[dtype]
+    if dtype == onp.float32:
+        return 1e-5
+    elif dtype == onp.float64:
+        return 1e-10
+    else:
+        assert False
 
 
 def register_lie_group(

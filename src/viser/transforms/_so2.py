@@ -27,7 +27,7 @@ class SO2(_base.SOBase):
 
     # SO2-specific.
 
-    unit_complex: onp.ndarray
+    unit_complex: onpt.NDArray[onp.floating]
     """Internal parameters. `(cos, sin)`. Shape should be `(*, 2)`."""
 
     @override

@@ -27,7 +27,7 @@ class SE2(_base.SEBase[SO2]):
 
     # SE2-specific.
 
-    unit_complex_xy: onp.ndarray
+    unit_complex_xy: onpt.NDArray[onp.floating]
     """Internal parameters. `(cos, sin, x, y)`. Shape should be `(*, 3)`."""
 
     @override
