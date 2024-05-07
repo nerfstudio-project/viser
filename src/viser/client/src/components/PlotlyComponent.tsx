@@ -18,7 +18,14 @@ const PlotWithAspect = React.memo(function PlotWithAspect({
 }) {
   // Parse json string, to construct plotly object.
   // Note that only the JSON string is kept as state, not the json object.
-  const plotJson = JSON.parse(jsonStr);
+  // Also, need to catch if the jsonStr is not valid JSON.
+  let plotJson;
+  try {
+    plotJson = JSON.parse(jsonStr);
+  } catch (e) {
+    console.error("Failed to parse JSON string:", e);
+    return <div></div>;
+  }
 
   // This keeps the zoom-in state, etc, see https://plotly.com/javascript/uirevision/.
   plotJson.layout.uirevision = "true";
