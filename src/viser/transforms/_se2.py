@@ -1,5 +1,5 @@
 import dataclasses
-from typing import cast
+from typing import Tuple, cast
 
 import numpy as onp
 import numpy.typing as onpt
@@ -7,7 +7,7 @@ from typing_extensions import override
 
 from . import _base, hints
 from ._so2 import SO2
-from .utils import get_epsilon, register_lie_group
+from .utils import broadcast_leading_axes, get_epsilon, register_lie_group
 
 
 @register_lie_group(
@@ -16,9 +16,10 @@ from .utils import get_epsilon, register_lie_group
     tangent_dim=3,
     space_dim=2,
 )
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class SE2(_base.SEBase[SO2]):
-    """Special Euclidean group for proper rigid transforms in 2D.
+    """Special Euclidean group for proper rigid transforms in 2D. Broadcasting
+    rules are the same as for numpy.
 
     Ported to numpy from `jaxlie.SE2`.
 
@@ -29,7 +30,7 @@ class SE2(_base.SEBase[SO2]):
     # SE2-specific.
 
     unit_complex_xy: onpt.NDArray[onp.floating]
-    """Internal parameters. `(cos, sin, x, y)`."""
+    """Internal parameters. `(cos, sin, x, y)`. Shape should be `(*, 4)`."""
 
     @override
     def __repr__(self) -> str:
@@ -41,11 +42,11 @@ class SE2(_base.SEBase[SO2]):
     def from_xy_theta(x: hints.Scalar, y: hints.Scalar, theta: hints.Scalar) -> "SE2":
         """Construct a transformation from standard 2D pose parameters.
 
-        Note that this is not the same as integrating over a length-3 twist.
+        This is not the same as integrating over a length-3 twist.
         """
         cos = onp.cos(theta)
         sin = onp.sin(theta)
-        return SE2(unit_complex_xy=onp.array([cos, sin, x, y]))
+        return SE2(unit_complex_xy=onp.stack([cos, sin, x, y], axis=-1))
 
     # SE-specific.
 
@@ -54,17 +55,15 @@ class SE2(_base.SEBase[SO2]):
     def from_rotation_and_translation(
         cls,
         rotation: SO2,
-        translation: hints.Array,
+        translation: onpt.NDArray[onp.floating],
     ) -> "SE2":
-        assert translation.shape == (2,)
+        assert translation.shape[-1:] == (2,)
+        rotation, translation = broadcast_leading_axes((rotation, translation))
         return SE2(
-            unit_complex_xy=onp.concatenate([rotation.unit_complex, translation])
+            unit_complex_xy=onp.concatenate(
+                [rotation.unit_complex, translation], axis=-1
+            )
         )
-
-    @override
-    @classmethod
-    def from_translation(cls, translation: onpt.NDArray[onp.floating]) -> "SE2":
-        return SE2.from_rotation_and_translation(SO2.identity(), translation)
 
     @override
     def rotation(self) -> SO2:
@@ -78,17 +77,21 @@ class SE2(_base.SEBase[SO2]):
 
     @classmethod
     @override
-    def identity(cls) -> "SE2":
-        return SE2(unit_complex_xy=onp.array([1.0, 0.0, 0.0, 0.0]))
+    def identity(cls, batch_axes: Tuple[int, ...] = ()) -> "SE2":
+        return SE2(
+            unit_complex_xy=onp.broadcast_to(
+                onp.array([1.0, 0.0, 0.0, 0.0]), (*batch_axes, 4)
+            )
+        )
 
     @classmethod
     @override
-    def from_matrix(cls, matrix: hints.Array) -> "SE2":
-        assert matrix.shape == (3, 3)
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> "SE2":
+        assert matrix.shape[-2:] == (3, 3)
         # Currently assumes bottom row is [0, 0, 1].
         return SE2.from_rotation_and_translation(
-            rotation=SO2.from_matrix(matrix[:2, :2]),
-            translation=matrix[:2, 2],
+            rotation=SO2.from_matrix(matrix[..., :2, :2]),
+            translation=matrix[..., :2, 2],
         )
 
     # Accessors.
@@ -99,44 +102,52 @@ class SE2(_base.SEBase[SO2]):
 
     @override
     def as_matrix(self) -> onpt.NDArray[onp.floating]:
-        cos, sin, x, y = self.unit_complex_xy
-        return onp.array(
+        cos, sin, x, y = onp.moveaxis(self.unit_complex_xy, -1, 0)
+        out = onp.stack(
             [
-                [cos, -sin, x],
-                [sin, cos, y],
-                [0.0, 0.0, 1.0],
-            ]
-        )
+                cos,
+                -sin,
+                x,
+                sin,
+                cos,
+                y,
+                onp.zeros_like(x),
+                onp.zeros_like(x),
+                onp.ones_like(x),
+            ],
+            axis=-1,
+        ).reshape((*self.get_batch_axes(), 3, 3))
+        return out
 
     # Operations.
 
     @classmethod
     @override
-    def exp(cls, tangent: hints.Array) -> "SE2":
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> "SE2":
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se2.hpp#L558
         # Also see:
         # > http://ethaneade.com/lie.pdf
 
-        assert tangent.shape == (3,)
+        assert tangent.shape[-1:] == (3,)
 
-        theta = tangent[2]
+        theta = tangent[..., 2]
         use_taylor = onp.abs(theta) < get_epsilon(tangent.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD. (note: this is needed in JAX, but not in numpy)
+        # reverse-mode AD in JAX. This isn't needed for vanilla numpy.
         safe_theta = cast(
-            onpt.NDArray[onp.floating],
+            onp.ndarray,
             onp.where(
                 use_taylor,
-                1.0,  # Any non-zero value should do here.
+                onp.ones_like(theta),  # Any non-zero value should do here.
                 theta,
             ),
         )
 
         theta_sq = theta**2
         sin_over_theta = cast(
-            onpt.NDArray[onp.floating],
+            onp.ndarray,
             onp.where(
                 use_taylor,
                 1.0 - theta_sq / 6.0,
@@ -144,7 +155,7 @@ class SE2(_base.SEBase[SO2]):
             ),
         )
         one_minus_cos_over_theta = cast(
-            onpt.NDArray[onp.floating],
+            onp.ndarray,
             onp.where(
                 use_taylor,
                 0.5 * theta - theta * theta_sq / 24.0,
@@ -152,15 +163,18 @@ class SE2(_base.SEBase[SO2]):
             ),
         )
 
-        V = onp.array(
+        V = onp.stack(
             [
-                [sin_over_theta, -one_minus_cos_over_theta],
-                [one_minus_cos_over_theta, sin_over_theta],
-            ]
-        )
+                sin_over_theta,
+                -one_minus_cos_over_theta,
+                one_minus_cos_over_theta,
+                sin_over_theta,
+            ],
+            axis=-1,
+        ).reshape((*tangent.shape[:-1], 2, 2))
         return SE2.from_rotation_and_translation(
             rotation=SO2.from_radians(theta),
-            translation=V @ tangent[:2],
+            translation=onp.einsum("...ij,...j->...i", V, tangent[..., :2]),
         )
 
     @override
@@ -170,7 +184,7 @@ class SE2(_base.SEBase[SO2]):
         # Also see:
         # > http://ethaneade.com/lie.pdf
 
-        theta = self.rotation().log()[0]
+        theta = self.rotation().log()[..., 0]
 
         cos = onp.cos(theta)
         cos_minus_one = cos - 1.0
@@ -178,10 +192,10 @@ class SE2(_base.SEBase[SO2]):
         use_taylor = onp.abs(cos_minus_one) < get_epsilon(theta.dtype)
 
         # Shim to avoid NaNs in onp.where branches, which cause failures for
-        # reverse-mode AD. (note: this is needed in JAX, but not in numpy)
+        # reverse-mode AD in JAX. This isn't needed for vanilla numpy.
         safe_cos_minus_one = onp.where(
             use_taylor,
-            1.0,  # Any non-zero value should do here.
+            onp.ones_like(cos_minus_one),  # Any non-zero value should do here.
             cos_minus_one,
         )
 
@@ -193,34 +207,58 @@ class SE2(_base.SEBase[SO2]):
             -(half_theta * onp.sin(theta)) / safe_cos_minus_one,
         )
 
-        V_inv = onp.array(
+        V_inv = onp.stack(
             [
-                [half_theta_over_tan_half_theta, half_theta],
-                [-half_theta, half_theta_over_tan_half_theta],
-            ]
-        )
+                half_theta_over_tan_half_theta,
+                half_theta,
+                -half_theta,
+                half_theta_over_tan_half_theta,
+            ],
+            axis=-1,
+        ).reshape((*theta.shape, 2, 2))
 
-        tangent = onp.concatenate([V_inv @ self.translation(), theta[None]])
+        tangent = onp.concatenate(
+            [
+                onp.einsum("...ij,...j->...i", V_inv, self.translation()),
+                theta[..., None],
+            ],
+            axis=-1,
+        )
         return tangent
 
     @override
     def adjoint(self: "SE2") -> onpt.NDArray[onp.floating]:
-        cos, sin, x, y = self.unit_complex_xy
-        return onp.array(
+        cos, sin, x, y = onp.moveaxis(self.unit_complex_xy, -1, 0)
+        return onp.stack(
             [
-                [cos, -sin, y],
-                [sin, cos, -x],
-                [0.0, 0.0, 1.0],
-            ]
-        )
+                cos,
+                -sin,
+                y,
+                sin,
+                cos,
+                -x,
+                onp.zeros_like(x),
+                onp.zeros_like(x),
+                onp.ones_like(x),
+            ],
+            axis=-1,
+        ).reshape((*self.get_batch_axes(), 3, 3))
 
-    #  @staticmethod
-    #  @override
-    #  def sample_uniform(key: hints.KeyArray) -> "SE2":
-    #      key0, key1 = jax.random.split(key)
-    #      return SE2.from_rotation_and_translation(
-    #          rotation=SO2.sample_uniform(key0),
-    #          translation=jax.random.uniform(
-    #              key=key1, shape=(2,), minval=-1.0, maxval=1.0
-    #          ),
-    #      )
+    # @classmethod
+    # @override
+    # def sample_uniform(
+    #     cls, key: onp.ndarray, batch_axes: jdc.Static[Tuple[int, ...]] = ()
+    # ) -> "SE2":
+    #     key0, key1 = jax.random.split(key)
+    #     return SE2.from_rotation_and_translation(
+    #         rotation=SO2.sample_uniform(key0, batch_axes=batch_axes),
+    #         translation=jax.random.uniform(
+    #             key=key1,
+    #             shape=(
+    #                 *batch_axes,
+    #                 2,
+    #             ),
+    #             minval=-1.0,
+    #             maxval=1.0,
+    #         ),
+    #     )

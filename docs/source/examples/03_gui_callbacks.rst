@@ -42,7 +42,7 @@ we get updates.
 
             gui_plane.on_update(lambda _: update_plane())
 
-            with server.add_gui_folder("Control", expand_by_default=False):
+            with server.add_gui_folder("Control"):
                 gui_show_frame = server.add_gui_checkbox("Show Frame", initial_value=True)
                 gui_show_everything = server.add_gui_checkbox(
                     "Show Everything", initial_value=True

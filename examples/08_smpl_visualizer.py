@@ -101,13 +101,10 @@ def main(model_path: Path) -> None:
         # Compute SMPL outputs.
         smpl_outputs = model.get_outputs(
             betas=np.array([x.value for x in gui_elements.gui_betas]),
-            joint_rotmats=np.stack(
-                [
-                    tf.SO3.exp(np.array(x.value)).as_matrix()
-                    for x in gui_elements.gui_joints
-                ],
-                axis=0,
-            ),
+            joint_rotmats=tf.SO3.exp(
+                # (num_joints, 3)
+                np.array([x.value for x in gui_elements.gui_joints])
+            ).as_matrix(),
         )
         server.add_mesh_simple(
             "/human",
