@@ -16,6 +16,9 @@ const PlotWithAspect = React.memo(function PlotWithAspect({
   aspectRatio: number;
   staticPlot: boolean;
 }) {
+  // Catch if the jsonStr is empty; if so, render an empty div.
+  if (jsonStr === "") return <div></div>;
+
   // Parse json string, to construct plotly object.
   // Note that only the JSON string is kept as state, not the json object.
   const plotJson = JSON.parse(jsonStr);
