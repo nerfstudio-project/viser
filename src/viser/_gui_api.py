@@ -560,6 +560,7 @@ class GuiApi(abc.ABC):
             self._setup_plotly_js = True
 
         # After plotly.min.js has been sent, we can send the plotly figure.
+        # Empty string for `plotly_json_str` is a signal to the client to render nothing.
         self._get_api()._queue(
             _messages.GuiAddPlotlyMessage(
                 order=handle._order,
