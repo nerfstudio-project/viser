@@ -18,6 +18,7 @@ interface GuiState {
   shareUrl: string | null;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
+  cameraControlMode: "world-orbit" | "camera-centric";
   guiIdSetFromContainerId: {
     [containerId: string]: { [id: string]: true } | undefined;
   };
@@ -67,6 +68,7 @@ const cleanGuiState: GuiState = {
   shareUrl: null,
   websocketConnected: false,
   backgroundAvailable: false,
+  cameraControlMode: "world-orbit",
   guiIdSetFromContainerId: {},
   modals: [],
   guiOrderFromId: {},

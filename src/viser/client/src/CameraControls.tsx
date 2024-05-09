@@ -55,9 +55,9 @@ export function SynchronizedCameraControls() {
   const scale = new THREE.Vector3();
   const sendCamera = React.useCallback(() => {
     const three_camera = camera;
-    const camera_control = viewer.cameraControlRef.current;
+    const cameraControl = viewer.cameraControlRef.current;
 
-    if (camera_control === null) {
+    if (cameraControl === null) {
       // Camera controls not yet ready, let's re-try later.
       setTimeout(sendCamera, 10);
       return;
@@ -75,14 +75,14 @@ export function SynchronizedCameraControls() {
       .multiply(tmpMatrix4.makeRotationFromQuaternion(R_threecam_cam));
     R_world_threeworld.setFromRotationMatrix(T_world_threeworld);
 
-    camera_control.getTarget(lookAt).applyQuaternion(R_world_threeworld);
+    cameraControl.getTarget(lookAt).applyQuaternion(R_world_threeworld);
     const up = three_camera.up.clone().applyQuaternion(R_world_threeworld);
 
     //Store initial camera values
     if (initialCameraRef.current === null) {
       initialCameraRef.current = {
         camera: three_camera.clone(),
-        lookAt: camera_control.getTarget(new THREE.Vector3()),
+        lookAt: cameraControl.getTarget(new THREE.Vector3()),
       };
     }
 
@@ -103,6 +103,52 @@ export function SynchronizedCameraControls() {
       up_direction: [up.x, up.y, up.z],
     });
   }, [camera, sendCameraThrottled]);
+
+  // Switch between world-centric and camera-centric orbit controls.
+  const cameraControlMode = viewer.useGui((state) => state.cameraControlMode);
+  const orbitDistanceRestoreRef = React.useRef<null | number>(null);
+  React.useEffect(() => {
+    if (
+      viewer.cameraRef.current === null ||
+      viewer.cameraControlRef.current === null
+    )
+      return;
+
+    // Vector between camera and look-at point.
+    const lookDelta = viewer.cameraControlRef.current
+      .getTarget(new THREE.Vector3())
+      .sub(viewer.cameraRef.current.position);
+
+    if (
+      cameraControlMode === "world-orbit" &&
+      orbitDistanceRestoreRef.current !== null
+    ) {
+      // Revert the look-at point distance.
+      lookDelta
+        .normalize()
+        .multiplyScalar(orbitDistanceRestoreRef.current)
+        .add(viewer.cameraRef.current.position);
+      viewer.cameraControlRef.current.setOrbitPoint(
+        lookDelta.x,
+        lookDelta.y,
+        lookDelta.z,
+      );
+      orbitDistanceRestoreRef.current = null;
+    } else if (cameraControlMode === "camera-centric") {
+      // Back up the current orbit distance.
+      orbitDistanceRestoreRef.current = lookDelta.length();
+      // Set the camera rotation point to match its position.
+      lookDelta
+        .normalize()
+        .multiplyScalar(1e-3)
+        .add(viewer.cameraRef.current.position);
+      viewer.cameraControlRef.current.setOrbitPoint(
+        lookDelta.x,
+        lookDelta.y,
+        lookDelta.z,
+      );
+    }
+  }, [cameraControlMode]);
 
   // Send camera for new connections.
   // We add a small delay to give the server time to add a callback.
@@ -162,16 +208,28 @@ export function SynchronizedCameraControls() {
     const rightKey = new holdEvent.KeyboardKeyHold("ArrowRight", 20);
     const upKey = new holdEvent.KeyboardKeyHold("ArrowUp", 20);
     const downKey = new holdEvent.KeyboardKeyHold("ArrowDown", 20);
+
+    function negateIfCameraCentric() {
+      return viewer.useGui.getState().cameraControlMode === "camera-centric"
+        ? -1
+        : 1;
+    }
     leftKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
-        -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
+        negateIfCameraCentric() *
+          -0.05 *
+          THREE.MathUtils.DEG2RAD *
+          event?.deltaTime,
         0,
         true,
       );
     });
     rightKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
-        0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
+        negateIfCameraCentric() *
+          0.05 *
+          THREE.MathUtils.DEG2RAD *
+          event?.deltaTime,
         0,
         true,
       );
@@ -179,14 +237,20 @@ export function SynchronizedCameraControls() {
     upKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
-        -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
+        negateIfCameraCentric() *
+          -0.05 *
+          THREE.MathUtils.DEG2RAD *
+          event?.deltaTime,
         true,
       );
     });
     downKey.addEventListener("holding", (event) => {
       cameraControls.rotate(
         0,
-        0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
+        negateIfCameraCentric() *
+          0.05 *
+          THREE.MathUtils.DEG2RAD *
+          event?.deltaTime,
         true,
       );
     });
@@ -197,11 +261,15 @@ export function SynchronizedCameraControls() {
     return () => {
       return;
     };
-  }, [CameraControls]);
+  });
 
   return (
     <CameraControls
       ref={viewer.cameraControlRef}
+      // dollyDragInverted={cameraControlMode === "camera-centric"}
+      // infinityDolly={cameraControlMode === "camera-centric"}
+      // minDistance={cameraControlMode === "world-orbit" ? 0.1 : 1e-3}
+      // maxDistance={cameraControlMode === "world-orbit" ? 200.0 : 1e-3}
       minDistance={0.1}
       maxDistance={200.0}
       dollySpeed={0.3}

@@ -1,14 +1,19 @@
 import { ViewerContext } from "../App";
+import * as THREE from "three";
 import {
   Box,
   Button,
+  Radio,
+  Group,
   Divider,
+  Select,
   Stack,
   Switch,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
-import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
+import { IconHomeMove, IconPhoto, IconViewfinder } from "@tabler/icons-react";
 import { Stats } from "@react-three/drei";
 import React from "react";
 import SceneTreeTable from "./SceneTreeTable";
@@ -59,6 +64,44 @@ export default function ServerControls() {
           }}
           mb="0.375em"
         />
+        <Radio.Group
+          onChange={(value) => {
+            viewer!.useGui.setState({
+              // Typing hack.
+              cameraControlMode:
+                value === "world-orbit" ? "world-orbit" : "camera-centric",
+            });
+          }}
+          label="Camera"
+          value={viewer!.useGui((state) => state.cameraControlMode)}
+        >
+          <Group mb="xs">
+            <Tooltip
+              label="Mouse and arrow keys will orbit around a look-at point in the world."
+              maw={300}
+              multiline
+              refProp="rootRef"
+            >
+              <Radio value="world-orbit" label="Orbit" size="sm" />
+            </Tooltip>
+            <Tooltip
+              label="Mouse and arrow keys will rotate the camera around itself."
+              maw={300}
+              multiline
+              refProp="rootRef"
+            >
+              <Radio value="camera-centric" label="Camera-centric" size="sm" />
+            </Tooltip>
+          </Group>
+        </Radio.Group>
+        <Button
+          onClick={() => {
+            viewer.resetCameraViewRef.current!();
+          }}
+          leftSection={<IconViewfinder size="1rem" />}
+        >
+          Reset View
+        </Button>
         <Button
           onClick={async () => {
             const supportsFileSystemAccess =
@@ -118,16 +161,6 @@ export default function ServerControls() {
           style={{ height: "1.875rem" }}
         >
           Export Canvas
-        </Button>
-        <Button
-          onClick={() => {
-            viewer.resetCameraViewRef.current!();
-          }}
-          fullWidth
-          leftSection={<IconHomeMove size="1rem" />}
-          style={{ height: "1.875rem" }}
-        >
-          Reset View
         </Button>
         <Switch
           radius="sm"
