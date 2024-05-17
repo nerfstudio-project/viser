@@ -7,14 +7,9 @@
 
 from __future__ import annotations
 
-import abc
 import base64
 import colorsys
-import contextlib
 import io
-import mimetypes
-import queue
-import threading
 import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
@@ -22,7 +17,6 @@ from typing import (
     TYPE_CHECKING,
     Callable,
     Dict,
-    Generator,
     Optional,
     Tuple,
     TypeVar,
@@ -36,7 +30,7 @@ import numpy as onp
 import numpy.typing as onpt
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
-from . import _messages, infra, theme
+from . import _messages
 from . import transforms as tf
 from ._scene_handles import (
     BatchedAxesHandle,
@@ -52,13 +46,14 @@ from ._scene_handles import (
     SceneNodePointerEvent,
     ScenePointerEvent,
     TransformControlsHandle,
+    _SceneNodeHandleState,
     _TransformControlsState,
 )
 
 if TYPE_CHECKING:
     import trimesh
 
-    from ._viser import ClientHandle
+    from ._viser import ClientHandle, ViserServer
     from .infra import ClientId
 
 
@@ -140,20 +135,42 @@ def cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
     return cast(TVector, tuple(map(float, vector)))
 
 
-class MessageApi(abc.ABC):
+class SceneApi:
     """Interface for all commands we can use to send messages over a websocket connection.
 
     Should be implemented by both our global server object (for broadcasting) and by
     invidividual clients."""
 
-    _locked_thread_id: int  # Appeasing mypy 1.5.1, not sure why this is needed.
-
     def __init__(
-        self, handler: infra.MessageHandler, thread_executor: ThreadPoolExecutor
+        self,
+        owner: ViserServer | ClientHandle,  # Who do I belong to?
+        thread_executor: ThreadPoolExecutor,
     ) -> None:
-        self._message_handler = handler
+        from ._viser import ViserServer
 
-        super().__init__()
+        self._owner = owner
+        """Entity that owns this API."""
+
+        self._websock_interface = (
+            owner._websock_server
+            if isinstance(owner, ViserServer)
+            else owner._websock_connection
+        )
+        """Interface for sending and listening to messages."""
+
+        self.world_axes = FrameHandle(
+            _SceneNodeHandleState(
+                "/WorldAxes",
+                self,
+                wxyz=onp.array([1.0, 0.0, 0.0, 0.0]),
+                position=onp.zeros(3),
+            )
+        )
+        """Handle for the world axes, which are hardcoded to exist."""
+
+        # Hide world axes on initialization.
+        if isinstance(owner, ViserServer):
+            self.world_axes.visible = False
 
         self._handle_from_transform_controls_name: Dict[
             str, TransformControlsHandle
@@ -164,105 +181,20 @@ class MessageApi(abc.ABC):
         self._scene_pointer_done_cb: Callable[[], None] = lambda: None
         self._scene_pointer_event_type: Optional[_messages.ScenePointerEventType] = None
 
-        handler.register_handler(
+        self._websock_interface.register_handler(
             _messages.TransformControlsUpdateMessage,
             self._handle_transform_controls_updates,
         )
-        handler.register_handler(
+        self._websock_interface.register_handler(
             _messages.SceneNodeClickMessage,
             self._handle_node_click_updates,
         )
-        handler.register_handler(
+        self._websock_interface.register_handler(
             _messages.ScenePointerMessage,
             self._handle_scene_pointer_updates,
         )
 
-        self._atomic_lock = threading.Lock()
-        self._queued_messages: queue.Queue = queue.Queue()
-        self._locked_thread_id = -1
         self._thread_executor = thread_executor
-
-    def set_gui_panel_label(self, label: Optional[str]) -> None:
-        """Set the main label that appears in the GUI panel.
-
-        Args:
-            label: The new label.
-        """
-        self._queue(_messages.SetGuiPanelLabelMessage(label))
-
-    def configure_theme(
-        self,
-        *,
-        titlebar_content: Optional[theme.TitlebarConfig] = None,
-        control_layout: Literal["floating", "collapsible", "fixed"] = "floating",
-        control_width: Literal["small", "medium", "large"] = "medium",
-        dark_mode: bool = False,
-        show_logo: bool = True,
-        show_share_button: bool = True,
-        brand_color: Optional[Tuple[int, int, int]] = None,
-    ) -> None:
-        """Configures the visual appearance of the viser front-end.
-
-        Args:
-            titlebar_content: Optional configuration for the title bar.
-            control_layout: The layout of control elements, options are "floating",
-                            "collapsible", or "fixed".
-            control_width: The width of control elements, options are "small",
-                           "medium", or "large".
-            dark_mode: A boolean indicating if dark mode should be enabled.
-            show_logo: A boolean indicating if the logo should be displayed.
-            show_share_button: A boolean indicating if the share button should be displayed.
-            brand_color: An optional tuple of integers (RGB) representing the brand color.
-        """
-
-        colors_cast: Optional[
-            Tuple[str, str, str, str, str, str, str, str, str, str]
-        ] = None
-
-        if brand_color is not None:
-            assert len(brand_color) in (3, 10)
-            if len(brand_color) == 3:
-                assert all(
-                    map(lambda val: isinstance(val, int), brand_color)
-                ), "All channels should be integers."
-
-                # RGB => HLS.
-                h, l, s = colorsys.rgb_to_hls(
-                    brand_color[0] / 255.0,
-                    brand_color[1] / 255.0,
-                    brand_color[2] / 255.0,
-                )
-
-                # Automatically generate a 10-color palette.
-                min_l = max(l - 0.08, 0.0)
-                max_l = min(0.8 + 0.5, 0.9)
-                l = max(min_l, min(max_l, l))
-
-                primary_index = 8
-                ls = tuple(
-                    onp.interp(
-                        x=onp.arange(10),
-                        xp=onp.array([0, primary_index, 9]),
-                        fp=onp.array([max_l, l, min_l]),
-                    )
-                )
-                colors_cast = tuple(_hex_from_hls(h, ls[i], s) for i in range(10))  # type: ignore
-
-        assert colors_cast is None or all(
-            [isinstance(val, str) and val.startswith("#") for val in colors_cast]
-        ), "All string colors should be in hexadecimal + prefixed with #, eg #ffffff."
-
-        self._queue(
-            _messages.ThemeConfigurationMessage(
-                titlebar_content=titlebar_content,
-                control_layout=control_layout,
-                control_width=control_width,
-                dark_mode=dark_mode,
-                show_logo=show_logo,
-                show_share_button=show_share_button,
-                colors=colors_cast,
-            ),
-        )
 
     def set_up_direction(
         self,
@@ -328,7 +260,7 @@ class MessageApi(abc.ABC):
 
         if not onp.any(onp.isnan(R_threeworld_world.wxyz)):
             # Set the orientation of the root node.
-            self._queue(
+            self._websock_interface.queue_message(
                 _messages.SetOrientationMessage(
                     "", cast_vector(R_threeworld_world.wxyz, 4)
                 )
@@ -340,7 +272,9 @@ class MessageApi(abc.ABC):
         Args:
             visible: Whether or not all scene nodes should be visible.
         """
-        self._queue(_messages.SetSceneNodeVisibilityMessage("", visible))
+        self._websock_interface.queue_message(
+            _messages.SetSceneNodeVisibilityMessage("", visible)
+        )
 
     def add_glb(
         self,
@@ -371,7 +305,9 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
-        self._queue(_messages.GlbMessage(name, glb_data, scale))
+        self._websock_interface.queue_message(
+            _messages.GlbMessage(name, glb_data, scale)
+        )
         return GlbHandle._make(self, name, wxyz, position, visible)
 
     def add_spline_catmull_rom(
@@ -415,7 +351,7 @@ class MessageApi(abc.ABC):
             positions = tuple(map(tuple, positions))  # type: ignore
         assert len(positions[0]) == 3
         assert isinstance(positions, tuple)
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.CatmullRomSplineMessage(
                 name,
                 positions,
@@ -473,7 +409,7 @@ class MessageApi(abc.ABC):
         assert isinstance(positions, tuple)
         assert isinstance(control_points, tuple)
         assert len(control_points) == (2 * len(positions) - 2)
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.CubicBezierSplineMessage(
                 name,
                 positions,
@@ -534,7 +470,7 @@ class MessageApi(abc.ABC):
             media_type = None
             base64_data = None
 
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.CameraFrustumMessage(
                 name=name,
                 fov=fov,
@@ -586,7 +522,7 @@ class MessageApi(abc.ABC):
         """
         if origin_radius is None:
             origin_radius = axes_radius * 2
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.FrameMessage(
                 name=name,
                 show_axes=show_axes,
@@ -641,7 +577,7 @@ class MessageApi(abc.ABC):
         num_axes = batched_wxyzs.shape[0]
         assert batched_wxyzs.shape == (num_axes, 4)
         assert batched_positions.shape == (num_axes, 3)
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.BatchedAxesMessage(
                 name=name,
                 wxyzs_batched=batched_wxyzs.astype(onp.float32),
@@ -694,7 +630,7 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.GridMessage(
                 name=name,
                 width=width,
@@ -735,7 +671,7 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating scene node.
         """
-        self._queue(_messages.LabelMessage(name, text))
+        self._websock_interface.queue_message(_messages.LabelMessage(name, text))
         return LabelHandle._make(self, name, wxyz, position, visible=visible)
 
     def add_point_cloud(
@@ -778,7 +714,7 @@ class MessageApi(abc.ABC):
         if colors_cast.shape == (3,):
             colors_cast = onp.tile(colors_cast[None, :], reps=(points.shape[0], 1))
 
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.PointCloudMessage(
                 name=name,
                 points=points.astype(onp.float32),
@@ -848,7 +784,7 @@ class MessageApi(abc.ABC):
                 stacklevel=2,
             )
 
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.MeshMessage(
                 name,
                 vertices.astype(onp.float32),
@@ -1021,7 +957,7 @@ class MessageApi(abc.ABC):
                     "ascii"
                 )
 
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.BackgroundImageMessage(
                 media_type=media_type,
                 base64_rgb=base64_data,
@@ -1062,7 +998,7 @@ class MessageApi(abc.ABC):
         media_type, base64_data = _encode_image_base64(
             image, format, jpeg_quality=jpeg_quality
         )
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.ImageMessage(
                 name=name,
                 media_type=media_type,
@@ -1123,7 +1059,7 @@ class MessageApi(abc.ABC):
         Returns:
             Handle for manipulating (and reading state of) scene node.
         """
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.TransformControlsMessage(
                 name=name,
                 scale=scale,
@@ -1147,14 +1083,14 @@ class MessageApi(abc.ABC):
                 wxyz=tuple(map(float, state._impl.wxyz)),  # type: ignore
             )
             message_orientation.excluded_self_client = client_id
-            self._queue(message_orientation)
+            self._websock_interface.queue_message(message_orientation)
 
             message_position = _messages.SetPositionMessage(
                 name=name,
                 position=tuple(map(float, state._impl.position)),  # type: ignore
             )
             message_position.excluded_self_client = client_id
-            self._queue(message_position)
+            self._websock_interface.queue_message(message_position)
 
         node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible)
         state_aux = _TransformControlsState(
@@ -1166,31 +1102,9 @@ class MessageApi(abc.ABC):
         self._handle_from_transform_controls_name[name] = handle
         return handle
 
-    def reset_scene(self) -> None:
+    def reset(self) -> None:
         """Reset the scene."""
-        self._queue(_messages.ResetSceneMessage())
-
-    def _queue(self, message: _messages.Message) -> None:
-        """Wrapped method for sending messages safely."""
-        got_lock = self._atomic_lock.acquire(blocking=False)
-        if got_lock:
-            self._queue_unsafe(message)
-            self._atomic_lock.release()
-        else:
-            # Send when lock is acquirable, while retaining message order.
-            # This could be optimized!
-            self._queued_messages.put(message)
-
-            def try_again() -> None:
-                with self._atomic_lock:
-                    self._queue_unsafe(self._queued_messages.get())
-
-            self._thread_executor.submit(try_again)
-
-    @abc.abstractmethod
-    def _queue_unsafe(self, message: _messages.Message) -> None:
-        """Abstract method for sending messages."""
-        ...
+        self._websock_interface.queue_message(_messages.ResetSceneMessage())
 
     def _get_client_handle(self, client_id: ClientId) -> ClientHandle:
         """Private helper for getting a client handle from its ID."""
@@ -1222,6 +1136,7 @@ class MessageApi(abc.ABC):
         # Update state.
         wxyz = onp.array(message.wxyz)
         position = onp.array(message.position)
+        assert False, "TODO implement atomic()"
         with self.atomic():
             handle._impl.wxyz = wxyz
             handle._impl.position = position
@@ -1268,20 +1183,7 @@ class MessageApi(abc.ABC):
             return
         self._scene_pointer_cb(event)
 
-    def on_scene_click(
-        self,
-        func: Callable[[ScenePointerEvent], None],
-    ) -> Callable[[ScenePointerEvent], None]:
-        """Deprecated. Use `on_scene_pointer` instead.
-
-        Registers a callback for scene click events. (event_type == "click")
-
-        Args:
-            func: The callback function to add.
-        """
-        return self.on_scene_pointer(event_type="click")(func)
-
-    def on_scene_pointer(
+    def on_pointer_event(
         self, event_type: Literal["click", "rect-select"]
     ) -> Callable[
         [Callable[[ScenePointerEvent], None]], Callable[[ScenePointerEvent], None]
@@ -1296,44 +1198,43 @@ class MessageApi(abc.ABC):
 
         from ._viser import ClientHandle, ViserServer
 
-        def cleanup_previous_event(msg_api: MessageApi):
+        def cleanup_previous_event(target: ViserServer | ClientHandle):
             # If the server or client does not have a scene pointer callback, return.
-            if msg_api._scene_pointer_cb is None:
+            if target.scene._scene_pointer_cb is None:
                 return
 
             # Remove callback.
-            msg_api.remove_scene_pointer_callback()
+            target.scene.remove_pointer_callback()
 
         def decorator(
             func: Callable[[ScenePointerEvent], None],
         ) -> Callable[[ScenePointerEvent], None]:
             # Check if another scene pointer event was previously registered.
             # If so, we need to clear the previous event and register the new one.
-            cleanup_previous_event(self)
+            cleanup_previous_event(self._owner)
 
             # If called on the server handle, remove all clients' callbacks.
-            if isinstance(self, ViserServer):
-                clients = list(self.get_clients().values())
-                for client in clients:
+            if isinstance(self._owner, ViserServer):
+                for client in self._owner.get_clients().values():
                     cleanup_previous_event(client)
 
             # If called on the client handle, and server handle has a callback, remove the server's callback.
             # (If the server has a callback, none of the clients should have callbacks.)
-            elif isinstance(self, ClientHandle):
-                server = self._state.viser_server
+            elif isinstance(self._owner, ClientHandle):
+                server = self._owner._viser_server
                 cleanup_previous_event(server)
 
             self._scene_pointer_cb = func
             self._scene_pointer_event_type = event_type
 
-            self._queue(
+            self._websock_interface.queue_message(
                 _messages.ScenePointerEnableMessage(enable=True, event_type=event_type)
             )
             return func
 
         return decorator
 
-    def on_scene_pointer_removed(
+    def on_pointer_callback_removed(
         self,
         func: Callable[[], None],
     ) -> Callable[[], None]:
@@ -1348,7 +1249,7 @@ class MessageApi(abc.ABC):
         self._scene_pointer_done_cb = func
         return func
 
-    def remove_scene_pointer_callback(
+    def remove_pointer_callback(
         self,
     ) -> None:
         """Remove the currently attached scene pointer event. This will trigger
@@ -1364,10 +1265,11 @@ class MessageApi(abc.ABC):
         # Notify client that the listener has been removed.
         event_type = self._scene_pointer_event_type
         assert event_type is not None
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.ScenePointerEnableMessage(enable=False, event_type=event_type)
         )
-        self.flush()
+        assert False, "TODO implement flush"
+        # self.flush()
 
         # Run cleanup callback.
         self._scene_pointer_done_cb()
@@ -1413,7 +1315,7 @@ class MessageApi(abc.ABC):
             gui_api._handle_from_node_name[name].remove()
 
         container_id = _make_unique_id()
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.Gui3DMessage(
                 order=time.time(),
                 name=name,
@@ -1422,83 +1324,3 @@ class MessageApi(abc.ABC):
         )
         node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible=visible)
         return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)
-
-    def send_file_download(
-        self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
-    ) -> None:
-        """Send a file for a client or clients to download.
-
-        Args:
-            filename: Name of the file to send. Used to infer MIME type.
-            content: Content of the file.
-            chunk_size: Number of bytes to send at a time.
-        """
-        mime_type = mimetypes.guess_type(filename, strict=False)[0]
-        assert (
-            mime_type is not None
-        ), f"Could not guess MIME type from filename {filename}!"
-
-        from ._gui_api import _make_unique_id
-
-        parts = [
-            content[i * chunk_size : (i + 1) * chunk_size]
-            for i in range(int(onp.ceil(len(content) / chunk_size)))
-        ]
-
-        uuid = _make_unique_id()
-
-        from ._viser import ClientHandle, ViserServer
-
-        # If called on the server handle, send the file to each client.
-        # If called on the client handle, send the file to just that client.
-        #
-        # We avoid calling ViserServer._queue() here because it will create a
-        # "persistent" message, which is saved and sent to all new clients in
-        # the future. While this makes sense for things like GUI components or
-        # 3D assets, this produces unintuitive behavior for file downloads.
-        if isinstance(self, ViserServer):
-            clients = list(self.get_clients().values())
-        elif isinstance(self, ClientHandle):
-            clients = [self]
-        else:
-            assert False
-
-        for client in clients:
-            client._queue(
-                _messages.FileTransferStart(
-                    source_component_id=None,
-                    transfer_uuid=uuid,
-                    filename=filename,
-                    mime_type=mime_type,
-                    part_count=len(parts),
-                    size_bytes=len(content),
-                )
-            )
-
-            for i, part in enumerate(parts):
-                client._queue(
-                    _messages.FileTransferPart(
-                        None,
-                        transfer_uuid=uuid,
-                        part=i,
-                        content=part,
-                    )
-                )
-                client.flush()
-
-    @abc.abstractmethod
-    def flush(self) -> None:
-        """Flush the outgoing message buffer. Any buffered messages will immediately be
-        sent. (by default they are windowed)"""
-        raise NotImplementedError()
-
-    @contextlib.contextmanager
-    @abc.abstractmethod
-    def atomic(self) -> Generator[None, None, None]:
-        """Returns a context where: all outgoing messages are grouped and applied by
-        clients atomically.
-
-        This can be helpful for things like animations, or when we want position and
-        orientation updates to happen synchronously.
-        """
-        raise NotImplementedError()

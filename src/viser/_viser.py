@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import contextlib
 import dataclasses
 import io
+import mimetypes
 import threading
 import time
 from pathlib import Path
-from typing import Callable, Dict, Generator, List, Optional, Tuple
+from typing import Callable, ContextManager, Dict, List, Optional, Tuple
 
 import imageio.v3 as iio
 import numpy as onp
@@ -15,13 +15,12 @@ import rich
 from rich import box, style
 from rich.panel import Panel
 from rich.table import Table
-from typing_extensions import Literal, override
+from typing_extensions import Literal
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
 from ._gui_api import GuiApi
-from ._message_api import MessageApi, cast_vector
-from ._scene_handles import FrameHandle, _SceneNodeHandleState
+from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
 
 
@@ -111,7 +110,7 @@ class CameraHandle:
         self._state.position = onp.asarray(position)
         self.look_at = onp.array(self.look_at) + offset
         self._state.update_timestamp = time.time()
-        self._state.client._queue(
+        self._state.client._websock_connection.queue_message(
             _messages.SetCameraPositionMessage(cast_vector(position, 3))
         )
 
@@ -136,7 +135,9 @@ class CameraHandle:
     def fov(self, fov: float) -> None:
         self._state.fov = fov
         self._state.update_timestamp = time.time()
-        self._state.client._queue(_messages.SetCameraFovMessage(fov))
+        self._state.client._websock_connection.queue_message(
+            _messages.SetCameraFovMessage(fov)
+        )
 
     @property
     def aspect(self) -> float:
@@ -160,7 +161,7 @@ class CameraHandle:
         self._state.look_at = onp.asarray(look_at)
         self._state.update_timestamp = time.time()
         self._update_wxyz()
-        self._state.client._queue(
+        self._state.client._websock_connection.queue_message(
             _messages.SetCameraLookAtMessage(cast_vector(look_at, 3))
         )
 
@@ -177,7 +178,7 @@ class CameraHandle:
         self._state.up_direction = onp.asarray(up_direction)
         self._update_wxyz()
         self._state.update_timestamp = time.time()
-        self._state.client._queue(
+        self._state.client._websock_connection.queue_message(
             _messages.SetCameraUpDirectionMessage(cast_vector(up_direction, 3))
         )
 
@@ -207,7 +208,7 @@ class CameraHandle:
         render_ready_event = threading.Event()
         out: Optional[onp.ndarray] = None
 
-        connection = self.client._state.connection
+        connection = self.client._websock_connection
 
         def got_render_cb(
             client_id: int, message: _messages.GetRenderResponseMessage
@@ -224,7 +225,7 @@ class CameraHandle:
             render_ready_event.set()
 
         connection.register_handler(_messages.GetRenderResponseMessage, got_render_cb)
-        self.client._queue(
+        self.client._websock_connection.queue_message(
             _messages.GetRenderRequestMessage(
                 "image/jpeg" if transport_format == "jpeg" else "image/png",
                 height=height,
@@ -240,40 +241,48 @@ class CameraHandle:
         return out
 
 
-@dataclasses.dataclass
-class _ClientHandleState:
-    viser_server: ViserServer
-    server: infra.Server
-    connection: infra.ClientConnection
-
-
-@dataclasses.dataclass
-class ClientHandle(MessageApi, GuiApi):
+class ClientHandle:
     """Handle for interacting with a specific client. Can be used to send messages to
     individual clients and read/write camera information."""
 
-    client_id: int
-    """Unique ID for this client."""
-    camera: CameraHandle
-    """Handle for reading from and manipulating the client's viewport camera."""
-    _state: _ClientHandleState
+    def __init__(
+        self, conn: infra.WebsockClientConnection, server: ViserServer
+    ) -> None:
+        self._websock_connection = conn
+        self._viser_server = server
 
-    def __post_init__(self):
-        super().__init__(self._state.connection, self._state.server._thread_executor)
+        self.scene = SceneApi(
+            self, thread_executor=server._websock_server._thread_executor
+        )
+        """Handle for interacting with the 3D scene."""
 
-    @override
-    def _get_api(self) -> MessageApi:
-        """Message API to use."""
-        return self
+        self.gui = GuiApi(self)
+        """Handle for interacting with the GUI."""
 
-    @override
-    def _queue_unsafe(self, message: _messages.Message) -> None:
-        """Define how the message API should send messages."""
-        self._state.connection.send(message)
+        self.client_id = conn.client_id
+        """Unique ID for this client."""
 
-    @override
-    @contextlib.contextmanager
-    def atomic(self) -> Generator[None, None, None]:
+        self.camera = CameraHandle(
+            _CameraHandleState(
+                self,
+                wxyz=onp.zeros(4),
+                position=onp.zeros(3),
+                fov=0.0,
+                aspect=0.0,
+                look_at=onp.zeros(3),
+                up_direction=onp.zeros(3),
+                update_timestamp=0.0,
+                camera_cb=[],
+            )
+        )
+        """Handle for reading from and manipulating the client's viewport camera."""
+
+    def flush(self) -> None:
+        """Flush the outgoing message buffer. Any buffered messages will immediately be
+        sent. (by default they are windowed)"""
+        self._viser_server._websock_server.flush_client(self.client_id)
+
+    def atomic(self) -> ContextManager[None]:
         """Returns a context where: all outgoing messages are grouped and applied by
         clients atomically.
 
@@ -284,26 +293,51 @@ class ClientHandle(MessageApi, GuiApi):
         Returns:
             Context manager.
         """
-        # If called multiple times in the same thread, we ignore inner calls.
-        thread_id = threading.get_ident()
-        if thread_id == self._locked_thread_id:
-            got_lock = False
-        else:
-            self._atomic_lock.acquire()
-            self._locked_thread_id = thread_id
-            got_lock = True
+        return self._websock_connection.atomic()
 
-        yield
+    def send_file_download(
+        self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
+    ) -> None:
+        """Send a file for a client or clients to download.
 
-        if got_lock:
-            self._atomic_lock.release()
-            self._locked_thread_id = -1
+        Args:
+            filename: Name of the file to send. Used to infer MIME type.
+            content: Content of the file.
+            chunk_size: Number of bytes to send at a time.
+        """
+        mime_type = mimetypes.guess_type(filename, strict=False)[0]
+        assert (
+            mime_type is not None
+        ), f"Could not guess MIME type from filename {filename}!"
 
-    @override
-    def flush(self) -> None:
-        """Flush the outgoing message buffer. Any buffered messages will immediately be
-        sent. (by default they are windowed)"""
-        self._state.server.flush_client(self.client_id)
+        from ._gui_api import _make_unique_id
+
+        parts = [
+            content[i * chunk_size : (i + 1) * chunk_size]
+            for i in range(int(onp.ceil(len(content) / chunk_size)))
+        ]
+
+        uuid = _make_unique_id()
+        self._websock_connection.queue_message(
+            _messages.FileTransferStart(
+                source_component_id=None,
+                transfer_uuid=uuid,
+                filename=filename,
+                mime_type=mime_type,
+                part_count=len(parts),
+                size_bytes=len(content),
+            )
+        )
+        for i, part in enumerate(parts):
+            self._websock_connection.queue_message(
+                _messages.FileTransferPart(
+                    None,
+                    transfer_uuid=uuid,
+                    part=i,
+                    content=part,
+                )
+            )
+            self.flush()
 
 
 # We can serialize the state of a ViserServer via a tuple of
@@ -311,18 +345,14 @@ class ClientHandle(MessageApi, GuiApi):
 SerializedServerState = Tuple[Tuple[bytes, float], ...]
 
 
-def dummy_process() -> None:
-    pass
-
-
 @dataclasses.dataclass
 class _ViserServerState:
-    connection: infra.Server
+    connection: infra.WebsockServer
     connected_clients: Dict[int, ClientHandle] = dataclasses.field(default_factory=dict)
     client_lock: threading.Lock = dataclasses.field(default_factory=threading.Lock)
 
 
-class ViserServer(MessageApi, GuiApi):
+class ViserServer:
     """Viser server class. The primary interface for functionality in `viser`.
 
     Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all
@@ -334,16 +364,14 @@ class ViserServer(MessageApi, GuiApi):
         label: Label shown at the top of the GUI panel.
     """
 
-    world_axes: FrameHandle
-    """Handle for manipulating the world frame axes (/WorldAxes), which is instantiated
-    and then hidden by default."""
+    scene: SceneApi
+    """Handle for interacting with the 3D scene."""
+
+    gui: GuiApi
+    """Handle for interacting with the GUI."""
 
     # Hide deprecated arguments from docstring and type checkers.
     def __init__(
-        self, host: str = "0.0.0.0", port: int = 8080, label: Optional[str] = None
-    ): ...
-
-    def _actual_init(
         self,
         host: str = "0.0.0.0",
         port: int = 8080,
@@ -351,15 +379,14 @@ class ViserServer(MessageApi, GuiApi):
         **_deprecated_kwargs,
     ):
         # Create server.
-        server = infra.Server(
+        server = infra.WebsockServer(
             host=host,
             port=port,
             message_class=_messages.Message,
             http_server_root=Path(__file__).absolute().parent / "client" / "build",
             client_api_version=1,
         )
-        self._server = server
-        super().__init__(server, server._thread_executor)
+        self._websock_server = server
 
         _client_autobuild.ensure_client_is_built()
 
@@ -370,27 +397,8 @@ class ViserServer(MessageApi, GuiApi):
 
         # For new clients, register and add a handler for camera messages.
         @server.on_client_connect
-        def _(conn: infra.ClientConnection) -> None:
-            camera = CameraHandle(
-                _CameraHandleState(
-                    # TODO: values are initially not valid.
-                    client=None,  # type: ignore
-                    wxyz=onp.zeros(4),
-                    position=onp.zeros(3),
-                    fov=0.0,
-                    aspect=0.0,
-                    look_at=onp.zeros(3),
-                    up_direction=onp.zeros(3),
-                    update_timestamp=0.0,
-                    camera_cb=[],
-                )
-            )
-            client = ClientHandle(
-                conn.client_id,
-                camera,
-                _ClientHandleState(self, server, conn),
-            )
-            camera._state.client = client
+        def _(conn: infra.WebsockClientConnection) -> None:
+            client = ClientHandle(conn, server=self)
             first = True
 
             def handle_camera_message(
@@ -430,7 +438,7 @@ class ViserServer(MessageApi, GuiApi):
 
         # Remove clients when they disconnect.
         @server.on_client_disconnect
-        def _(conn: infra.ClientConnection) -> None:
+        def _(conn: infra.WebsockClientConnection) -> None:
             with self._state.client_lock:
                 if conn.client_id not in state.connected_clients:
                     return
@@ -441,6 +449,9 @@ class ViserServer(MessageApi, GuiApi):
 
         # Start the server.
         server.start()
+
+        self.scene = SceneApi(owner=self, thread_executor=server._thread_executor)
+        self.gui = GuiApi(self)
 
         server.register_handler(
             _messages.ShareUrlDisconnect,
@@ -472,19 +483,8 @@ class ViserServer(MessageApi, GuiApi):
         if share:
             self.request_share_url()
 
-        self.reset_scene()
-        self.set_gui_panel_label(label)
-
-        # Create a handle for the world axes, which are hardcoded to exist in the client.
-        self.world_axes = FrameHandle(
-            _SceneNodeHandleState(
-                "/WorldAxes",
-                self,
-                wxyz=onp.array([1.0, 0.0, 0.0, 0.0]),
-                position=onp.zeros(3),
-            )
-        )
-        self.world_axes.visible = False
+        self.scene.reset()
+        self.gui.set_gui_panel_label(label)
 
     def get_host(self) -> str:
         """Returns the host address of the Viser server.
@@ -492,7 +492,7 @@ class ViserServer(MessageApi, GuiApi):
         Returns:
             Host address as string.
         """
-        return self._server._host
+        return self._websock_server._host
 
     def get_port(self) -> int:
         """Returns the port of the Viser server. This could be different from the
@@ -501,7 +501,7 @@ class ViserServer(MessageApi, GuiApi):
         Returns:
             Port as integer.
         """
-        return self._server._port
+        return self._websock_server._port
 
     def request_share_url(self, verbose: bool = True) -> Optional[str]:
         """Request a share URL for the Viser server, which allows for public access.
@@ -526,13 +526,17 @@ class ViserServer(MessageApi, GuiApi):
 
             connect_event = threading.Event()
 
-            self._share_tunnel = ViserTunnel("share.viser.studio", self._server._port)
+            self._share_tunnel = ViserTunnel(
+                "share.viser.studio", self._websock_server._port
+            )
 
             @self._share_tunnel.on_disconnect
             def _() -> None:
                 rich.print("[bold](viser)[/bold] Disconnected from share URL")
                 self._share_tunnel = None
-                self._server.broadcast(_messages.ShareUrlUpdated(None))
+                self._websock_server.unsafe_send_message(
+                    _messages.ShareUrlUpdated(None)
+                )
 
             @self._share_tunnel.on_connect
             def _(max_clients: int) -> None:
@@ -545,7 +549,9 @@ class ViserServer(MessageApi, GuiApi):
                         rich.print(
                             f"[bold](viser)[/bold] Generated share URL (expires in 24 hours, max {max_clients} clients): {share_url}"
                         )
-                self._server.broadcast(_messages.ShareUrlUpdated(share_url))
+                self._websock_server.unsafe_send_message(
+                    _messages.ShareUrlUpdated(share_url)
+                )
                 connect_event.set()
 
             connect_event.wait()
@@ -564,7 +570,7 @@ class ViserServer(MessageApi, GuiApi):
 
     def stop(self) -> None:
         """Stop the Viser server and associated threads and tunnels."""
-        self._server.stop()
+        self._websock_server.stop()
         if self._share_tunnel is not None:
             self._share_tunnel.close()
 
@@ -605,9 +611,12 @@ class ViserServer(MessageApi, GuiApi):
         self._client_disconnect_cb.append(cb)
         return cb
 
-    @override
-    @contextlib.contextmanager
-    def atomic(self) -> Generator[None, None, None]:
+    def flush(self) -> None:
+        """Flush the outgoing message buffer. Any buffered messages will immediately be
+        sent. (by default they are windowed)"""
+        self._websock_server.flush()
+
+    def atomic(self) -> ContextManager[None]:
         """Returns a context where: all outgoing messages are grouped and applied by
         clients atomically.
 
@@ -618,44 +627,17 @@ class ViserServer(MessageApi, GuiApi):
         Returns:
             Context manager.
         """
-        # Acquire the global atomic lock.
-        # If called multiple times in the same thread, we ignore inner calls.
-        thread_id = threading.get_ident()
-        if thread_id == self._locked_thread_id:
-            got_lock = False
-        else:
-            self._atomic_lock.acquire()
-            self._locked_thread_id = thread_id
-            got_lock = True
+        return self._websock_server.atomic()
 
-        with contextlib.ExitStack() as stack:
-            if got_lock:
-                # Grab each client's atomic lock.
-                # We don't need to do anything with `client._locked_thread_id`.
-                for client in self.get_clients().values():
-                    stack.enter_context(client._atomic_lock)
+    def send_file_download(
+        self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
+    ) -> None:
+        """Send a file for a client or clients to download.
 
-            yield
-
-        if got_lock:
-            self._atomic_lock.release()
-            self._locked_thread_id = -1
-
-    @override
-    def flush(self) -> None:
-        """Flush the outgoing message buffer. Any buffered messages will immediately be
-        sent. (by default they are windowed)"""
-        self._server.flush()
-
-    @override
-    def _get_api(self) -> MessageApi:
-        """Message API to use."""
-        return self
-
-    @override
-    def _queue_unsafe(self, message: _messages.Message) -> None:
-        """Define how the message API should send messages."""
-        self._server.broadcast(message)
-
-
-ViserServer.__init__ = ViserServer._actual_init  # type: ignore
+        Args:
+            filename: Name of the file to send. Used to infer MIME type.
+            content: Content of the file.
+            chunk_size: Number of bytes to send at a time.
+        """
+        for client in self.get_clients().values():
+            client.send_file_download(filename, content, chunk_size)

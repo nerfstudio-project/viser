@@ -34,7 +34,7 @@ def main(urdf_path: Path) -> None:
         upper = upper if upper is not None else onp.pi
 
         initial_angle = 0.0 if lower < 0 and upper > 0 else (lower + upper) / 2.0
-        slider = server.add_gui_slider(
+        slider = server.gui.add_slider(
             label=joint_name,
             min=lower,
             max=upper,
@@ -49,7 +49,7 @@ def main(urdf_path: Path) -> None:
         initial_angles.append(initial_angle)
 
     # Create joint reset button.
-    reset_button = server.add_gui_button("Reset")
+    reset_button = server.gui.add_button("Reset")
 
     @reset_button.on_click
     def _(_):

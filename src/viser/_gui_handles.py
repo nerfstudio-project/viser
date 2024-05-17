@@ -27,8 +27,8 @@ from typing_extensions import Protocol
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
-from ._message_api import _encode_image_base64
 from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
+from ._scene_api import _encode_image_base64
 from .infra import ClientId
 
 if TYPE_CHECKING:
@@ -54,7 +54,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass

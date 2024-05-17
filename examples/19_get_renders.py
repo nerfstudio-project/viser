@@ -12,20 +12,20 @@ import viser
 def main():
     server = viser.ViserServer()
 
-    button = server.add_gui_button("Render a GIF")
+    button = server.gui.add_button("Render a GIF")
 
     @button.on_click
     def _(event: viser.GuiEvent) -> None:
         client = event.client
         assert client is not None
 
-        client.reset_scene()
+        client.scene.reset()
 
         images = []
 
         for i in range(20):
             positions = onp.random.normal(size=(30, 3)) * 3.0
-            client.add_spline_catmull_rom(
+            client.scene.add_spline_catmull_rom(
                 f"/catmull_{i}",
                 positions,
                 tension=0.5,

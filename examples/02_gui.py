@@ -17,14 +17,14 @@ def main() -> None:
     server = viser.ViserServer()
 
     # Add some common GUI elements: number inputs, sliders, vectors, checkboxes.
-    with server.add_gui_folder("Read-only"):
-        gui_counter = server.add_gui_number(
+    with server.gui.add_folder("Read-only"):
+        gui_counter = server.gui.add_number(
             "Counter",
             initial_value=0,
             disabled=True,
         )
 
-        gui_slider = server.add_gui_slider(
+        gui_slider = server.gui.add_slider(
             "Slider",
             min=0,
             max=100,
@@ -33,36 +33,36 @@ def main() -> None:
             disabled=True,
         )
 
-    with server.add_gui_folder("Editable"):
-        gui_vector2 = server.add_gui_vector2(
+    with server.gui.add_folder("Editable"):
+        gui_vector2 = server.gui.add_vector2(
             "Position",
             initial_value=(0.0, 0.0),
             step=0.1,
         )
-        gui_vector3 = server.add_gui_vector3(
+        gui_vector3 = server.gui.add_vector3(
             "Size",
             initial_value=(1.0, 1.0, 1.0),
             step=0.25,
         )
-        with server.add_gui_folder("Text toggle"):
-            gui_checkbox_hide = server.add_gui_checkbox(
+        with server.gui.add_folder("Text toggle"):
+            gui_checkbox_hide = server.gui.add_checkbox(
                 "Hide",
                 initial_value=False,
             )
-            gui_text = server.add_gui_text(
+            gui_text = server.gui.add_text(
                 "Text",
                 initial_value="Hello world",
             )
-            gui_button = server.add_gui_button("Button")
-            gui_checkbox_disable = server.add_gui_checkbox(
+            gui_button = server.gui.add_button("Button")
+            gui_checkbox_disable = server.gui.add_checkbox(
                 "Disable",
                 initial_value=False,
             )
-            gui_rgb = server.add_gui_rgb(
+            gui_rgb = server.gui.add_rgb(
                 "Color",
                 initial_value=(255, 255, 0),
             )
-            gui_multi_slider = server.add_gui_multi_slider(
+            gui_multi_slider = server.gui.add_multi_slider(
                 "Multi slider",
                 min=0,
                 max=100,
@@ -70,7 +70,7 @@ def main() -> None:
                 initial_value=(0, 30, 100),
                 marks=((0, "0"), (50, "5"), (70, "7"), 99),
             )
-            gui_slider_positions = server.add_gui_slider(
+            gui_slider_positions = server.gui.add_slider(
                 "# sliders",
                 min=0,
                 max=10,
@@ -78,7 +78,7 @@ def main() -> None:
                 initial_value=3,
                 marks=((0, "0"), (5, "5"), (7, "7"), 10),
             )
-            gui_upload_button = server.add_gui_upload_button(
+            gui_upload_button = server.gui.add_upload_button(
                 "Upload", icon=viser.Icon.UPLOAD
             )
 
@@ -102,7 +102,7 @@ def main() -> None:
         # We can set the position of a scene node with `.position`, and read the value
         # of a gui element with `.value`. Changes are automatically reflected in
         # connected clients.
-        server.add_point_cloud(
+        server.scene.add_point_cloud(
             "/point_cloud",
             points=point_positions * onp.array(gui_vector3.value, dtype=onp.float32),
             colors=(

@@ -27,8 +27,3 @@ from ._scene_handles import TransformControlsHandle as TransformControlsHandle
 from ._viser import CameraHandle as CameraHandle
 from ._viser import ClientHandle as ClientHandle
 from ._viser import ViserServer as ViserServer
-
-if not TYPE_CHECKING:
-    # Backwards compatibility.
-    GuiHandle = GuiInputHandle
-    ClickEvent = SceneNodePointerEvent

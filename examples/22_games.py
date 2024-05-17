@@ -19,11 +19,11 @@ from typing_extensions import assert_never
 
 def main() -> None:
     server = viser.ViserServer()
-    server.configure_theme(dark_mode=True)
+    server.gui.configure_theme(dark_mode=True)
     play_connect_4(server)
 
-    server.add_gui_button("Tic-Tac-Toe").on_click(lambda _: play_tic_tac_toe(server))
-    server.add_gui_button("Connect 4").on_click(lambda _: play_connect_4(server))
+    server.gui.add_button("Tic-Tac-Toe").on_click(lambda _: play_tic_tac_toe(server))
+    server.gui.add_button("Connect 4").on_click(lambda _: play_connect_4(server))
 
     while True:
         time.sleep(10.0)
@@ -31,7 +31,7 @@ def main() -> None:
 
 def play_connect_4(server: viser.ViserServer) -> None:
     """Play a game of Connect 4."""
-    server.reset_scene()
+    server.scene.reset()
 
     num_rows = 6
     num_cols = 7
@@ -42,7 +42,7 @@ def play_connect_4(server: viser.ViserServer) -> None:
     # Create the board frame.
     for col in range(num_cols):
         for row in range(num_rows):
-            server.add_mesh_trimesh(
+            server.scene.add_mesh_trimesh(
                 f"/structure/{row}_{col}",
                 trimesh.creation.annulus(0.45, 0.55, 0.125),
                 position=(0.0, col, row),
@@ -51,7 +51,7 @@ def play_connect_4(server: viser.ViserServer) -> None:
 
     # Create a sphere to click on for each column.
     def setup_column(col: int) -> None:
-        sphere = server.add_icosphere(
+        sphere = server.scene.add_icosphere(
             f"/spheres/{col}",
             radius=0.25,
             position=(0, col, num_rows - 0.25),
@@ -70,7 +70,7 @@ def play_connect_4(server: viser.ViserServer) -> None:
 
             pieces_in_col[col] += 1
             cylinder = trimesh.creation.cylinder(radius=0.4, height=0.125)
-            piece = server.add_mesh_simple(
+            piece = server.scene.add_mesh_simple(
                 f"/game_pieces/{row}_{col}",
                 cylinder.vertices,
                 cylinder.faces,
@@ -91,12 +91,12 @@ def play_connect_4(server: viser.ViserServer) -> None:
 
 def play_tic_tac_toe(server: viser.ViserServer) -> None:
     """Play a game of tic-tac-toe."""
-    server.reset_scene()
+    server.scene.reset()
 
     whose_turn: Literal["x", "o"] = "x"
 
     for i in range(4):
-        server.add_spline_catmull_rom(
+        server.scene.add_spline_catmull_rom(
             f"/gridlines/{i}",
             ((-0.5, -1.5, 0), (-0.5, 1.5, 0)),
             color=(127, 127, 127),
@@ -109,7 +109,7 @@ def play_tic_tac_toe(server: viser.ViserServer) -> None:
         for scale in onp.linspace(0.01, 1.0, 5):
             if symbol == "x":
                 for k in range(2):
-                    server.add_box(
+                    server.scene.add_box(
                         f"/symbols/{i}_{j}/{k}",
                         dimensions=(0.7 * scale, 0.125 * scale, 0.125),
                         position=(i, j, 0),
@@ -120,7 +120,7 @@ def play_tic_tac_toe(server: viser.ViserServer) -> None:
                     )
             elif symbol == "o":
                 mesh = trimesh.creation.annulus(0.25 * scale, 0.35 * scale, 0.125)
-                server.add_mesh_simple(
+                server.scene.add_mesh_simple(
                     f"/symbols/{i}_{j}",
                     mesh.vertices,
                     mesh.faces,
@@ -134,7 +134,7 @@ def play_tic_tac_toe(server: viser.ViserServer) -> None:
 
     def setup_cell(i: int, j: int) -> None:
         """Create a clickable sphere in a given cell."""
-        sphere = server.add_icosphere(
+        sphere = server.scene.add_icosphere(
             f"/spheres/{i}_{j}",
             radius=0.25,
             position=(i, j, 0),
