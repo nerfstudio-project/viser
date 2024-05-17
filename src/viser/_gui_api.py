@@ -1020,7 +1020,7 @@ class GuiApi(abc.ABC):
             A handle that can be used to interact with the GUI element.
         """
         value = initial_value
-        value = cast_vector(value, 2)
+        value = cast_vector(value, 3)
         min = cast_vector(min, 3) if min is not None else None
         max = cast_vector(max, 3) if max is not None else None
         id = _make_unique_id()
