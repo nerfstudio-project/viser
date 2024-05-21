@@ -4,9 +4,8 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as onp
 import trimesh
-import yourdfpy
-
 import viser
+import yourdfpy
 
 from .. import transforms as tf
 
@@ -43,7 +42,7 @@ class ViserUrdf:
         for joint in self._urdf.joint_map.values():
             assert isinstance(joint, yourdfpy.Joint)
             self._joint_frames.append(
-                self._target.add_frame(
+                self._target.scene.add_frame(
                     _viser_name_from_frame(
                         self._urdf, joint.child, self._root_node_name
                     ),
@@ -69,9 +68,9 @@ class ViserUrdf:
             mesh.apply_transform(T_parent_child)
 
             if mesh_color_override is None:
-                target.add_mesh_trimesh(name, mesh)
+                target.scene.add_mesh_trimesh(name, mesh)
             else:
-                target.add_mesh_simple(
+                target.scene.add_mesh_simple(
                     name,
                     mesh.vertices,
                     mesh.faces,
