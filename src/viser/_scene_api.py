@@ -158,7 +158,7 @@ class SceneApi:
         )
         """Interface for sending and listening to messages."""
 
-        self.world_axes = FrameHandle(
+        self.world_axes: FrameHandle = FrameHandle(
             _SceneNodeHandleState(
                 "/WorldAxes",
                 self,
@@ -166,7 +166,7 @@ class SceneApi:
                 position=onp.zeros(3),
             )
         )
-        """Handle for the world axes, which are hardcoded to exist."""
+        """Handle for the world axes, which are created by default."""
 
         # Hide world axes on initialization.
         if isinstance(owner, ViserServer):
@@ -1135,8 +1135,7 @@ class SceneApi:
         # Update state.
         wxyz = onp.array(message.wxyz)
         position = onp.array(message.position)
-        assert False, "TODO implement atomic()"
-        with self.atomic():
+        with self._owner.atomic():
             handle._impl.wxyz = wxyz
             handle._impl.position = position
             handle._impl_aux.last_updated = time.time()
@@ -1267,8 +1266,7 @@ class SceneApi:
         self._websock_interface.queue_message(
             _messages.ScenePointerEnableMessage(enable=False, event_type=event_type)
         )
-        assert False, "TODO implement flush"
-        # self.flush()
+        self._owner.flush()
 
         # Run cleanup callback.
         self._scene_pointer_done_cb()

@@ -251,12 +251,14 @@ class ClientHandle:
         self._websock_connection = conn
         self._viser_server = server
 
-        self.scene = SceneApi(
+        self.scene: SceneApi = SceneApi(
             self, thread_executor=server._websock_server._thread_executor
         )
         """Handle for interacting with the 3D scene."""
 
-        self.gui = GuiApi(self, thread_executor=server._websock_server._thread_executor)
+        self.gui: GuiApi = GuiApi(
+            self, thread_executor=server._websock_server._thread_executor
+        )
         """Handle for interacting with the GUI."""
 
         self.client_id = conn.client_id
@@ -364,12 +366,6 @@ class ViserServer:
         label: Label shown at the top of the GUI panel.
     """
 
-    scene: SceneApi
-    """Handle for interacting with the 3D scene."""
-
-    gui: GuiApi
-    """Handle for interacting with the GUI."""
-
     # Hide deprecated arguments from docstring and type checkers.
     def __init__(
         self,
@@ -450,8 +446,11 @@ class ViserServer:
         # Start the server.
         server.start()
 
-        self.scene = SceneApi(self, thread_executor=server._thread_executor)
-        self.gui = GuiApi(self, thread_executor=server._thread_executor)
+        self.scene: SceneApi = SceneApi(self, thread_executor=server._thread_executor)
+        """Handle for interacting with the 3D scene."""
+
+        self.gui: GuiApi = GuiApi(self, thread_executor=server._thread_executor)
+        """Handle for interacting with the GUI."""
 
         server.register_handler(
             _messages.ShareUrlDisconnect,

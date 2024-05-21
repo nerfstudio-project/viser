@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from ._gui_api import GuiApi as GuiApi
 from ._gui_handles import GuiButtonGroupHandle as GuiButtonGroupHandle
 from ._gui_handles import GuiButtonHandle as GuiButtonHandle
 from ._gui_handles import GuiDropdownHandle as GuiDropdownHandle
@@ -12,6 +13,8 @@ from ._gui_handles import GuiTabGroupHandle as GuiTabGroupHandle
 from ._gui_handles import GuiTabHandle as GuiTabHandle
 from ._icons_enum import Icon as Icon
 from ._icons_enum import IconName as IconName
+from ._scene_api import SceneApi as SceneApi
+from ._scene_handles import BatchedAxesHandle as BatchedAxesHandle
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle
 from ._scene_handles import FrameHandle as FrameHandle
 from ._scene_handles import GlbHandle as GlbHandle

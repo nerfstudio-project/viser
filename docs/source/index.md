@@ -43,12 +43,22 @@ URL (default: `http://localhost:8080`).
    ./development.md
 
 .. toctree::
-   :caption: API (Core)
+   :caption: API (Basics)
    :hidden:
    :maxdepth: 1
    :titlesonly:
 
    ./server.md
+   ./scene_api.md
+   ./gui_api.md
+
+
+.. toctree::
+   :caption: API (Advanced)
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
+
    ./client_handles.md
    ./gui_handles.md
    ./scene_handles.md
@@ -57,13 +67,13 @@ URL (default: `http://localhost:8080`).
 
 
 .. toctree::
-   :caption: API (Additional)
+   :caption: API (Auxilliary)
    :hidden:
    :maxdepth: 1
    :titlesonly:
 
-   ./infrastructure.md
    ./transforms.md
+   ./infrastructure.md
    ./extras.md
 
 .. toctree::
