@@ -1,4 +1,4 @@
-# Gui API
+# GUI API
 
 <!-- prettier-ignore-start -->
 
