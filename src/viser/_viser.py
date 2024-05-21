@@ -256,7 +256,7 @@ class ClientHandle:
         )
         """Handle for interacting with the 3D scene."""
 
-        self.gui = GuiApi(self)
+        self.gui = GuiApi(self, thread_executor=server._websock_server._thread_executor)
         """Handle for interacting with the GUI."""
 
         self.client_id = conn.client_id
@@ -450,8 +450,8 @@ class ViserServer:
         # Start the server.
         server.start()
 
-        self.scene = SceneApi(owner=self, thread_executor=server._thread_executor)
-        self.gui = GuiApi(self)
+        self.scene = SceneApi(self, thread_executor=server._thread_executor)
+        self.gui = GuiApi(self, thread_executor=server._thread_executor)
 
         server.register_handler(
             _messages.ShareUrlDisconnect,

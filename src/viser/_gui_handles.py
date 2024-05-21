@@ -130,7 +130,7 @@ class _GuiInputHandle(Generic[T]):
 
         # Send to client, except for buttons.
         if not self._impl.is_button:
-            self._impl.gui_api._get_api()._queue(
+            self._impl.gui_api._websock_interface.queue_message(
                 GuiUpdateMessage(self._impl.id, {"value": value})
             )
 
@@ -143,7 +143,7 @@ class _GuiInputHandle(Generic[T]):
         for cb in self._impl.update_cb:
             # Pushing callbacks into separate threads helps prevent deadlocks when we
             # have a lock in a callback. TODO: revisit other callbacks.
-            self._impl.gui_api._get_api()._thread_executor.submit(
+            self._impl.gui_api._thread_executor.submit(
                 lambda: cb(
                     GuiEvent(
                         client_id=None,
@@ -169,7 +169,7 @@ class _GuiInputHandle(Generic[T]):
         if disabled == self.disabled:
             return
 
-        self._impl.gui_api._get_api()._queue(
+        self._impl.gui_api._websock_interface.queue_message(
             GuiUpdateMessage(self._impl.id, {"disabled": disabled})
         )
         self._impl.disabled = disabled
@@ -185,7 +185,7 @@ class _GuiInputHandle(Generic[T]):
         if visible == self.visible:
             return
 
-        self._impl.gui_api._get_api()._queue(
+        self._impl.gui_api._websock_interface.queue_message(
             GuiUpdateMessage(self._impl.id, {"visible": visible})
         )
         self._impl.visible = visible
@@ -203,7 +203,7 @@ class _GuiInputHandle(Generic[T]):
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
         gui_api = self._impl.gui_api
-        gui_api._get_api()._queue(GuiRemoveMessage(self._impl.id))
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
         gui_api._gui_handle_from_id.pop(self._impl.id)
 
 
@@ -330,7 +330,7 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
 
         need_to_overwrite_value = self.value not in self._impl_options
         if need_to_overwrite_value:
-            self._impl.gui_api._get_api()._queue(
+            self._impl.gui_api._websock_interface.queue_message(
                 GuiUpdateMessage(
                     self._impl.id,
                     {"options": self._impl_options, "value": self._impl_options[0]},
@@ -338,7 +338,7 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
             )
             self._impl.value = self._impl_options[0]
         else:
-            self._impl.gui_api._get_api()._queue(
+            self._impl.gui_api._websock_interface.queue_message(
                 GuiUpdateMessage(
                     self._impl.id,
                     {"options": self._impl_options},
@@ -379,11 +379,13 @@ class GuiTabGroupHandle:
         """Remove this tab group and all contained GUI elements."""
         for tab in self._tabs:
             tab.remove()
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._tab_group_id))
+        self._gui_api._websock_interface.queue_message(
+            GuiRemoveMessage(self._tab_group_id)
+        )
 
     def _sync_with_client(self) -> None:
         """Send messages for syncing tab state with the client."""
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(
                 self._tab_group_id,
                 {
@@ -432,7 +434,7 @@ class GuiFolderHandle:
     def remove(self) -> None:
         """Permanently remove this folder and all contained GUI elements from the
         visualizer."""
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._id))
+        self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
         self._gui_api._container_handle_from_id.pop(self._id)
         for child in tuple(self._children.values()):
             child.remove()
@@ -468,7 +470,7 @@ class GuiModalHandle:
 
     def close(self) -> None:
         """Close this modal and permananently remove all contained GUI elements."""
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiCloseModalMessage(self._id),
         )
         self._gui_api._container_handle_from_id.pop(self._id)
@@ -581,7 +583,7 @@ class GuiMarkdownHandle:
     @content.setter
     def content(self, content: str) -> None:
         self._content = content
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(
                 self._id,
                 {"markdown": _parse_markdown(content, self._image_root)},
@@ -604,7 +606,7 @@ class GuiMarkdownHandle:
         if visible == self.visible:
             return
 
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(self._id, {"visible": visible})
         )
         self._visible = visible
@@ -616,8 +618,7 @@ class GuiMarkdownHandle:
 
     def remove(self) -> None:
         """Permanently remove this markdown from the visualizer."""
-        api = self._gui_api._get_api()
-        api._queue(GuiRemoveMessage(self._id))
+        self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
 
         parent = self._gui_api._container_handle_from_id[self._parent_container_id]
         parent._children.pop(self._id)
@@ -648,7 +649,7 @@ class GuiPlotlyHandle:
         json_str = figure.to_json()
         assert isinstance(json_str, str)
 
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(
                 self._id,
                 {"plotly_json_str": json_str},
@@ -664,7 +665,7 @@ class GuiPlotlyHandle:
     @aspect.setter
     def aspect(self, aspect: float) -> None:
         self._aspect = aspect
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(
                 self._id,
                 {"aspect": aspect},
@@ -687,7 +688,7 @@ class GuiPlotlyHandle:
         if visible == self.visible:
             return
 
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(self._id, {"visible": visible})
         )
         self._visible = visible
@@ -699,8 +700,7 @@ class GuiPlotlyHandle:
 
     def remove(self) -> None:
         """Permanently remove this markdown from the visualizer."""
-        api = self._gui_api._get_api()
-        api._queue(GuiRemoveMessage(self._id))
+        self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
 
         parent = self._gui_api._container_handle_from_id[self._parent_container_id]
         parent._children.pop(self._id)

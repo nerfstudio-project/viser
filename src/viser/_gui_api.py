@@ -10,6 +10,7 @@ import functools
 import threading
 import time
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -191,11 +192,13 @@ class GuiApi:
     def __init__(
         self,
         owner: ViserServer | ClientHandle,  # Who do I belong to?
+        thread_executor: ThreadPoolExecutor,
     ) -> None:
         from ._viser import ViserServer
 
         self._owner = owner
         """Entity that owns this API."""
+        self._thread_executor = thread_executor
 
         self._websock_interface = (
             owner._websock_server

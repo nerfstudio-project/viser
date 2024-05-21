@@ -1109,21 +1109,20 @@ class SceneApi:
     def _get_client_handle(self, client_id: ClientId) -> ClientHandle:
         """Private helper for getting a client handle from its ID."""
         # Avoid circular imports.
-        from ._viser import ClientHandle, ViserServer
+        from ._viser import ViserServer
 
         # Implementation-wise, note that MessageApi is never directly instantiated.
         # Instead, it serves as a mixin/base class for either ViserServer, which
         # maintains a registry of connected clients, or ClientHandle, which should
         # only ever be dealing with its own client_id.
-        if isinstance(self, ViserServer):
+        if isinstance(self._owner, ViserServer):
             # TODO: there's a potential race condition here when the client disconnects.
             # This probably applies to multiple other parts of the code, we should
             # revisit all of the cases where we index into connected_clients.
-            return self._state.connected_clients[client_id]
+            return self._owner._state.connected_clients[client_id]
         else:
-            assert isinstance(self, ClientHandle)
-            assert client_id == self.client_id
-            return self
+            assert client_id == self._owner.client_id
+            return self._owner
 
     def _handle_transform_controls_updates(
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
