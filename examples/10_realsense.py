@@ -5,7 +5,6 @@ pyrealsense2.
 """
 
 import contextlib
-from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -39,7 +38,7 @@ def realsense_pipeline(fps: int = 30):
 
 def point_cloud_arrays_from_frames(
     depth_frame, color_frame
-) -> Tuple[npt.NDArray[np.float32], npt.NDArray[np.uint8]]:
+) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.uint8]]:
     """Maps realsense frames to two arrays.
 
     Returns:

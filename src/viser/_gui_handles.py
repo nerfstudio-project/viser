@@ -7,19 +7,7 @@ import urllib.parse
 import uuid
 import warnings
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, TypeVar
 
 import imageio.v3 as iio
 import numpy as onp
@@ -48,7 +36,7 @@ def _make_unique_id() -> str:
 
 
 class GuiContainerProtocol(Protocol):
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
@@ -63,7 +51,7 @@ class _GuiHandleState(Generic[T]):
     """Internal API for GUI elements."""
 
     label: str
-    typ: Type[T]
+    typ: type[T]
     gui_api: GuiApi
     value: T
     update_timestamp: float
@@ -71,13 +59,13 @@ class _GuiHandleState(Generic[T]):
     container_id: str
     """Container that this GUI input was placed into."""
 
-    update_cb: List[Callable[[GuiEvent], None]]
+    update_cb: list[Callable[[GuiEvent], None]]
     """Registered functions to call when this input is updated."""
 
     is_button: bool
     """Indicates a button element, which requires special handling."""
 
-    sync_cb: Optional[Callable[[ClientId, Dict[str, Any]], None]]
+    sync_cb: Callable[[ClientId, dict[str, Any]], None] | None
     """Callback for synchronizing inputs across clients."""
 
     disabled: bool
@@ -85,9 +73,9 @@ class _GuiHandleState(Generic[T]):
 
     order: float
     id: str
-    hint: Optional[str]
+    hint: str | None
 
-    message_type: Type[Message]
+    message_type: type[Message]
 
 
 @dataclasses.dataclass
@@ -234,9 +222,9 @@ class GuiEvent(Generic[TGuiHandle]):
 
     Passed as input to callback functions."""
 
-    client: Optional[ClientHandle]
+    client: ClientHandle | None
     """Client that triggered this event."""
-    client_id: Optional[int]
+    client_id: int | None
     """ID of client that triggered this event."""
     target: TGuiHandle
     """GUI element that was affected."""
@@ -311,10 +299,10 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
 
     Lets us get values, set values, and detect updates."""
 
-    _impl_options: Tuple[StringType, ...]
+    _impl_options: tuple[StringType, ...]
 
     @property
-    def options(self) -> Tuple[StringType, ...]:
+    def options(self) -> tuple[StringType, ...]:
         """Options for our dropdown. Synchronized automatically when assigned.
 
         For projects that care about typing: the static type of `options` should be
@@ -349,9 +337,9 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
 @dataclasses.dataclass(frozen=True)
 class GuiTabGroupHandle:
     _tab_group_id: str
-    _labels: List[str]
-    _icons_html: List[Optional[str]]
-    _tabs: List[GuiTabHandle]
+    _labels: list[str]
+    _icons_html: list[str | None]
+    _tabs: list[GuiTabHandle]
     _gui_api: GuiApi
     _order: float
 
@@ -360,7 +348,7 @@ class GuiTabGroupHandle:
         """Read-only order value, which dictates the position of the GUI element."""
         return self._order
 
-    def add_tab(self, label: str, icon: Optional[IconName] = None) -> GuiTabHandle:
+    def add_tab(self, label: str, icon: IconName | None = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
 
         id = _make_unique_id()
@@ -405,8 +393,8 @@ class GuiFolderHandle:
     _id: str  # Used as container ID for children.
     _order: float
     _parent_container_id: str  # Container ID of parent.
-    _container_id_restore: Optional[str] = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+    _container_id_restore: str | None = None
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
@@ -449,8 +437,8 @@ class GuiModalHandle:
 
     _gui_api: GuiApi
     _id: str  # Used as container ID of children.
-    _container_id_restore: Optional[str] = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+    _container_id_restore: str | None = None
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
@@ -484,8 +472,8 @@ class GuiTabHandle:
 
     _parent: GuiTabGroupHandle
     _id: str  # Used as container ID of children.
-    _container_id_restore: Optional[str] = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+    _container_id_restore: str | None = None
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
@@ -525,7 +513,7 @@ class GuiTabHandle:
             child.remove()
 
 
-def _get_data_url(url: str, image_root: Optional[Path]) -> str:
+def _get_data_url(url: str, image_root: Path | None) -> str:
     if not url.startswith("http") and not image_root:
         warnings.warn(
             (
@@ -551,7 +539,7 @@ def _get_data_url(url: str, image_root: Optional[Path]) -> str:
         return url
 
 
-def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
+def _parse_markdown(markdown: str, image_root: Path | None) -> str:
     markdown = re.sub(
         r"\!\[([^]]*)\]\(([^]]*)\)",
         lambda match: (
@@ -571,8 +559,8 @@ class GuiMarkdownHandle:
     _visible: bool
     _parent_container_id: str  # Parent.
     _order: float
-    _image_root: Optional[Path]
-    _content: Optional[str]
+    _image_root: Path | None
+    _content: str | None
 
     @property
     def content(self) -> str:
@@ -633,8 +621,8 @@ class GuiPlotlyHandle:
     _visible: bool
     _parent_container_id: str  # Parent.
     _order: float
-    _figure: Optional[go.Figure]
-    _aspect: Optional[float]
+    _figure: go.Figure | None
+    _aspect: float | None
 
     @property
     def figure(self) -> go.Figure:

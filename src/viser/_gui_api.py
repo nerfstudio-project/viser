@@ -9,22 +9,9 @@ import dataclasses
 import functools
 import threading
 import time
-import warnings
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Sequence, TypeVar, Union, overload
 
 import numpy as onp
 from typing_extensions import (
@@ -76,7 +63,7 @@ TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 T = TypeVar("T")
 
 
-def _compute_step(x: Optional[float]) -> float:  # type: ignore
+def _compute_step(x: float | None) -> float:  # type: ignore
     """For number inputs: compute an increment size from some number.
 
     Example inputs/outputs:
@@ -107,13 +94,13 @@ def _compute_precision_digits(x: float) -> int:
 
 @dataclasses.dataclass
 class _RootGuiContainer:
-    _children: Dict[str, SupportsRemoveProtocol]
+    _children: dict[str, SupportsRemoveProtocol]
 
 
 _global_order_counter = 0
 
 
-def _apply_default_order(order: Optional[float]) -> float:
+def _apply_default_order(order: float | None) -> float:
     """Apply default ordering logic for GUI elements.
 
     If `order` is set to a float, this function is a no-op and returns it back.
@@ -128,7 +115,7 @@ def _apply_default_order(order: Optional[float]) -> float:
 
 
 @functools.lru_cache(maxsize=None)
-def get_type_hints_cached(cls: Type[Any]) -> Dict[str, Any]:
+def get_type_hints_cached(cls: type[Any]) -> dict[str, Any]:
     return get_type_hints(cls)  # type: ignore
 
 
@@ -175,18 +162,18 @@ def cast_value(tp, value):
     raise TypeError(f"Cannot cast value {value} to type {tp}")
 
 
-class FileUploadState(TypedDict):
+class _FileUploadState(TypedDict):
     filename: str
     mime_type: str
     part_count: int
-    parts: Dict[int, bytes]
+    parts: dict[int, bytes]
     total_bytes: int
     transferred_bytes: int
     lock: threading.Lock
 
 
 class GuiApi:
-    _target_container_from_thread_id: Dict[int, str] = {}
+    _target_container_from_thread_id: dict[int, str] = {}
     """ID of container to put GUI elements into."""
 
     def __init__(
@@ -207,11 +194,11 @@ class GuiApi:
         )
         """Interface for sending and listening to messages."""
 
-        self._gui_handle_from_id: Dict[str, _GuiInputHandle[Any]] = {}
-        self._container_handle_from_id: Dict[str, GuiContainerProtocol] = {
+        self._gui_handle_from_id: dict[str, _GuiInputHandle[Any]] = {}
+        self._container_handle_from_id: dict[str, GuiContainerProtocol] = {
             "root": _RootGuiContainer({})
         }
-        self._current_file_upload_states: Dict[str, FileUploadState] = {}
+        self._current_file_upload_states: dict[str, _FileUploadState] = {}
 
         # Set to True when plotly.min.js has been sent to client.
         self._setup_plotly_js: bool = False
@@ -361,17 +348,7 @@ class GuiApi:
         """Set container ID associated with the current thread."""
         self._target_container_from_thread_id[threading.get_ident()] = container_id
 
-    if not TYPE_CHECKING:
-
-        def gui_folder(self, label: str) -> GuiFolderHandle:
-            """Deprecated."""
-            warnings.warn(
-                "gui_folder() is deprecated. Use add_folder() instead!",
-                stacklevel=2,
-            )
-            return self.add_folder(label)
-
-    def set_gui_panel_label(self, label: Optional[str]) -> None:
+    def set_panel_label(self, label: str | None) -> None:
         """Set the main label that appears in the GUI panel.
 
         Args:
@@ -382,13 +359,13 @@ class GuiApi:
     def configure_theme(
         self,
         *,
-        titlebar_content: Optional[theme.TitlebarConfig] = None,
+        titlebar_content: theme.TitlebarConfig | None = None,
         control_layout: Literal["floating", "collapsible", "fixed"] = "floating",
         control_width: Literal["small", "medium", "large"] = "medium",
         dark_mode: bool = False,
         show_logo: bool = True,
         show_share_button: bool = True,
-        brand_color: Optional[Tuple[int, int, int]] = None,
+        brand_color: tuple[int, int, int] | None = None,
     ) -> None:
         """Configures the visual appearance of the viser front-end.
 
@@ -404,9 +381,9 @@ class GuiApi:
             brand_color: An optional tuple of integers (RGB) representing the brand color.
         """
 
-        colors_cast: Optional[
-            Tuple[str, str, str, str, str, str, str, str, str, str]
-        ] = None
+        colors_cast: tuple[
+            str, str, str, str, str, str, str, str, str, str
+        ] | None = None
 
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
@@ -456,7 +433,7 @@ class GuiApi:
     def add_folder(
         self,
         label: str,
-        order: Optional[float] = None,
+        order: float | None = None,
         expand_by_default: bool = True,
         visible: bool = True,
     ) -> GuiFolderHandle:
@@ -494,7 +471,7 @@ class GuiApi:
     def add_modal(
         self,
         title: str,
-        order: Optional[float] = None,
+        order: float | None = None,
     ) -> GuiModalHandle:
         """Show a modal window, which can be useful for popups and messages, then return
         a handle that can be used to populate it.
@@ -522,7 +499,7 @@ class GuiApi:
 
     def add_tab_group(
         self,
-        order: Optional[float] = None,
+        order: float | None = None,
         visible: bool = True,
     ) -> GuiTabGroupHandle:
         """Add a tab group.
@@ -560,8 +537,8 @@ class GuiApi:
     def add_markdown(
         self,
         content: str,
-        image_root: Optional[Path] = None,
-        order: Optional[float] = None,
+        image_root: Path | None = None,
+        order: float | None = None,
         visible: bool = True,
     ) -> GuiMarkdownHandle:
         """Add markdown to the GUI.
@@ -603,7 +580,7 @@ class GuiApi:
         self,
         figure: go.Figure,
         aspect: float = 1.0,
-        order: Optional[float] = None,
+        order: float | None = None,
         visible: bool = True,
     ) -> GuiPlotlyHandle:
         """Add a Plotly figure to the GUI. Requires the `plotly` package to be
@@ -680,27 +657,26 @@ class GuiApi:
         label: str,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        color: Optional[
-            Literal[
-                "dark",
-                "gray",
-                "red",
-                "pink",
-                "grape",
-                "violet",
-                "indigo",
-                "blue",
-                "cyan",
-                "green",
-                "lime",
-                "yellow",
-                "orange",
-                "teal",
-            ]
-        ] = None,
-        icon: Optional[IconName] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        color: Literal[
+            "dark",
+            "gray",
+            "red",
+            "pink",
+            "grape",
+            "violet",
+            "indigo",
+            "blue",
+            "cyan",
+            "green",
+            "lime",
+            "yellow",
+            "orange",
+            "teal",
+        ]
+        | None = None,
+        icon: IconName | None = None,
+        order: float | None = None,
     ) -> GuiButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
         it is clicked; to detect clicks, we can manually set it back to `False`.
@@ -745,28 +721,27 @@ class GuiApi:
         label: str,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        color: Optional[
-            Literal[
-                "dark",
-                "gray",
-                "red",
-                "pink",
-                "grape",
-                "violet",
-                "indigo",
-                "blue",
-                "cyan",
-                "green",
-                "lime",
-                "yellow",
-                "orange",
-                "teal",
-            ]
-        ] = None,
-        icon: Optional[IconName] = None,
+        hint: str | None = None,
+        color: Literal[
+            "dark",
+            "gray",
+            "red",
+            "pink",
+            "grape",
+            "violet",
+            "indigo",
+            "blue",
+            "cyan",
+            "green",
+            "lime",
+            "yellow",
+            "orange",
+            "teal",
+        ]
+        | None = None,
+        icon: IconName | None = None,
         mime_type: str = "*/*",
-        order: Optional[float] = None,
+        order: float | None = None,
     ) -> GuiUploadButtonHandle:
         """Add a button to the GUI. The value of this input is set to `True` every time
         it is clicked; to detect clicks, we can manually set it back to `False`.
@@ -820,8 +795,8 @@ class GuiApi:
         options: Sequence[TLiteralString],
         visible: bool = True,
         disabled: bool = False,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiButtonGroupHandle[TLiteralString]:
         ...
 
@@ -832,8 +807,8 @@ class GuiApi:
         options: Sequence[TString],
         visible: bool = True,
         disabled: bool = False,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiButtonGroupHandle[TString]:
         ...
 
@@ -843,8 +818,8 @@ class GuiApi:
         options: Sequence[TLiteralString] | Sequence[TString],
         visible: bool = True,
         disabled: bool = False,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiButtonGroupHandle[Any]:  # Return types are specified in overloads.
         """Add a button group to the GUI.
 
@@ -885,8 +860,8 @@ class GuiApi:
         initial_value: bool,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiInputHandle[bool]:
         """Add a checkbox to the GUI.
 
@@ -925,8 +900,8 @@ class GuiApi:
         initial_value: str,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiInputHandle[str]:
         """Add a text input to the GUI.
 
@@ -963,13 +938,13 @@ class GuiApi:
         self,
         label: str,
         initial_value: IntOrFloat,
-        min: Optional[IntOrFloat] = None,
-        max: Optional[IntOrFloat] = None,
-        step: Optional[IntOrFloat] = None,
+        min: IntOrFloat | None = None,
+        max: IntOrFloat | None = None,
+        step: IntOrFloat | None = None,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a number input to the GUI, with user-specifiable bound and precision parameters.
 
@@ -1031,15 +1006,15 @@ class GuiApi:
     def add_vector2(
         self,
         label: str,
-        initial_value: Tuple[float, float] | onp.ndarray,
-        min: Tuple[float, float] | onp.ndarray | None = None,
-        max: Tuple[float, float] | onp.ndarray | None = None,
-        step: Optional[float] = None,
+        initial_value: tuple[float, float] | onp.ndarray,
+        min: tuple[float, float] | onp.ndarray | None = None,
+        max: tuple[float, float] | onp.ndarray | None = None,
+        step: float | None = None,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
-    ) -> GuiInputHandle[Tuple[float, float]]:
+        hint: str | None = None,
+        order: float | None = None,
+    ) -> GuiInputHandle[tuple[float, float]]:
         """Add a length-2 vector input to the GUI.
 
         Args:
@@ -1064,7 +1039,7 @@ class GuiApi:
         order = _apply_default_order(order)
 
         if step is None:
-            possible_steps: List[float] = []
+            possible_steps: list[float] = []
             possible_steps.extend([_compute_step(x) for x in value])
             if min is not None:
                 possible_steps.extend([_compute_step(x) for x in min])
@@ -1093,15 +1068,15 @@ class GuiApi:
     def add_vector3(
         self,
         label: str,
-        initial_value: Tuple[float, float, float] | onp.ndarray,
-        min: Tuple[float, float, float] | onp.ndarray | None = None,
-        max: Tuple[float, float, float] | onp.ndarray | None = None,
-        step: Optional[float] = None,
+        initial_value: tuple[float, float, float] | onp.ndarray,
+        min: tuple[float, float, float] | onp.ndarray | None = None,
+        max: tuple[float, float, float] | onp.ndarray | None = None,
+        step: float | None = None,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
-    ) -> GuiInputHandle[Tuple[float, float, float]]:
+        hint: str | None = None,
+        order: float | None = None,
+    ) -> GuiInputHandle[tuple[float, float, float]]:
         """Add a length-3 vector input to the GUI.
 
         Args:
@@ -1126,7 +1101,7 @@ class GuiApi:
         order = _apply_default_order(order)
 
         if step is None:
-            possible_steps: List[float] = []
+            possible_steps: list[float] = []
             possible_steps.extend([_compute_step(x) for x in value])
             if min is not None:
                 possible_steps.extend([_compute_step(x) for x in min])
@@ -1158,11 +1133,11 @@ class GuiApi:
         self,
         label: str,
         options: Sequence[TLiteralString],
-        initial_value: Optional[TLiteralString] = None,
+        initial_value: TLiteralString | None = None,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiDropdownHandle[TLiteralString]:
         ...
 
@@ -1171,11 +1146,11 @@ class GuiApi:
         self,
         label: str,
         options: Sequence[TString],
-        initial_value: Optional[TString] = None,
+        initial_value: TString | None = None,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiDropdownHandle[TString]:
         ...
 
@@ -1183,11 +1158,11 @@ class GuiApi:
         self,
         label: str,
         options: Sequence[TLiteralString] | Sequence[TString],
-        initial_value: Optional[TLiteralString | TString] = None,
+        initial_value: TLiteralString | TString | None = None,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiDropdownHandle[Any]:  # Output type is specified in overloads.
         """Add a dropdown to the GUI.
 
@@ -1233,11 +1208,11 @@ class GuiApi:
         max: IntOrFloat,
         step: IntOrFloat,
         initial_value: IntOrFloat,
-        marks: Optional[Tuple[IntOrFloat | Tuple[IntOrFloat, str], ...]] = None,
+        marks: tuple[IntOrFloat | tuple[IntOrFloat, str], ...] | None = None,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
+        hint: str | None = None,
+        order: float | None = None,
     ) -> GuiInputHandle[IntOrFloat]:
         """Add a slider to the GUI. Types of the min, max, step, and initial value should match.
 
@@ -1247,7 +1222,7 @@ class GuiApi:
             max: Maximum value of the slider.
             step: Step size of the slider.
             initial_value: Initial value of the slider.
-            marks: Tuple of marks to display below the slider. Each mark should
+            marks: tuple of marks to display below the slider. Each mark should
                 either be a numerical or a (number, label) tuple, where the
                 label is provided as a string.
             disabled: Whether the slider is disabled.
@@ -1313,15 +1288,15 @@ class GuiApi:
         min: IntOrFloat,
         max: IntOrFloat,
         step: IntOrFloat,
-        initial_value: Tuple[IntOrFloat, ...],
-        min_range: Optional[IntOrFloat] = None,
+        initial_value: tuple[IntOrFloat, ...],
+        min_range: IntOrFloat | None = None,
         fixed_endpoints: bool = False,
-        marks: Optional[Tuple[IntOrFloat | Tuple[IntOrFloat, str], ...]] = None,
+        marks: tuple[IntOrFloat | tuple[IntOrFloat, str], ...] | None = None,
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
-    ) -> GuiInputHandle[Tuple[IntOrFloat, ...]]:
+        hint: str | None = None,
+        order: float | None = None,
+    ) -> GuiInputHandle[tuple[IntOrFloat, ...]]:
         """Add a multi slider to the GUI. Types of the min, max, step, and initial value should match.
 
         Args:
@@ -1332,7 +1307,7 @@ class GuiApi:
             initial_value: Initial values of the slider.
             min_range: Optional minimum difference between two values of the slider.
             fixed_endpoints: Whether the endpoints of the slider are fixed.
-            marks: Tuple of marks to display below the slider. Each mark should
+            marks: tuple of marks to display below the slider. Each mark should
                 either be a numerical or a (number, label) tuple, where the
                 label is provided as a string.
             disabled: Whether the slider is disabled.
@@ -1394,12 +1369,12 @@ class GuiApi:
     def add_rgb(
         self,
         label: str,
-        initial_value: Tuple[int, int, int],
+        initial_value: tuple[int, int, int],
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
-    ) -> GuiInputHandle[Tuple[int, int, int]]:
+        hint: str | None = None,
+        order: float | None = None,
+    ) -> GuiInputHandle[tuple[int, int, int]]:
         """Add an RGB picker to the GUI.
 
         Args:
@@ -1434,12 +1409,12 @@ class GuiApi:
     def add_rgba(
         self,
         label: str,
-        initial_value: Tuple[int, int, int, int],
+        initial_value: tuple[int, int, int, int],
         disabled: bool = False,
         visible: bool = True,
-        hint: Optional[str] = None,
-        order: Optional[float] = None,
-    ) -> GuiInputHandle[Tuple[int, int, int, int]]:
+        hint: str | None = None,
+        order: float | None = None,
+    ) -> GuiInputHandle[tuple[int, int, int, int]]:
         """Add an RGBA picker to the GUI.
 
         Args:
@@ -1505,7 +1480,7 @@ class GuiApi:
         if not is_button:
 
             def sync_other_clients(
-                client_id: ClientId, updates: Dict[str, Any]
+                client_id: ClientId, updates: dict[str, Any]
             ) -> None:
                 message = _messages.GuiUpdateMessage(handle_state.id, updates)
                 message.excluded_self_client = client_id

@@ -6,17 +6,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Dict,
-    Generic,
-    List,
-    Literal,
-    Tuple,
-    Type,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Callable, Generic, Literal, TypeVar
 
 import numpy as onp
 
@@ -40,11 +30,11 @@ class ScenePointerEvent:
     """ID of client that triggered this event."""
     event_type: _messages.ScenePointerEventType
     """Type of event that was triggered. Currently we only support clicks and box selections."""
-    ray_origin: Tuple[float, float, float] | None
+    ray_origin: tuple[float, float, float] | None
     """Origin of 3D ray corresponding to this click, in world coordinates."""
-    ray_direction: Tuple[float, float, float] | None
+    ray_direction: tuple[float, float, float] | None
     """Direction of 3D ray corresponding to this click, in world coordinates."""
-    screen_pos: List[Tuple[float, float]]
+    screen_pos: list[tuple[float, float]]
     """Screen position of the click on the screen (OpenCV image coordinates, 0 to 1).
     (0, 0) is the upper-left corner, (1, 1) is the bottom-right corner.
     For a box selection, this includes the min- and max- corners of the box."""
@@ -70,7 +60,7 @@ class _SceneNodeHandleState:
     )
     visible: bool = True
     # TODO: we should remove SceneNodeHandle as an argument here.
-    click_cb: List[
+    click_cb: list[
         Callable[[SceneNodePointerEvent[SceneNodeHandle]], None]
     ] | None = None
 
@@ -83,11 +73,11 @@ class SceneNodeHandle:
 
     @classmethod
     def _make(
-        cls: Type[TSceneNodeHandle],
+        cls: type[TSceneNodeHandle],
         api: SceneApi,
         name: str,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray,
-        position: Tuple[float, float, float] | onp.ndarray,
+        wxyz: tuple[float, float, float, float] | onp.ndarray,
+        position: tuple[float, float, float] | onp.ndarray,
         visible: bool,
     ) -> TSceneNodeHandle:
         out = cls(_SceneNodeHandleState(name, api))
@@ -110,7 +100,7 @@ class SceneNodeHandle:
         return self._impl.wxyz
 
     @wxyz.setter
-    def wxyz(self, wxyz: Tuple[float, float, float, float] | onp.ndarray) -> None:
+    def wxyz(self, wxyz: tuple[float, float, float, float] | onp.ndarray) -> None:
         from ._scene_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
@@ -127,7 +117,7 @@ class SceneNodeHandle:
         return self._impl.position
 
     @position.setter
-    def position(self, position: Tuple[float, float, float] | onp.ndarray) -> None:
+    def position(self, position: tuple[float, float, float] | onp.ndarray) -> None:
         from ._scene_api import cast_vector
 
         position_cast = cast_vector(position, 3)
@@ -169,9 +159,9 @@ class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
     """Type of event that was triggered. Currently we only support clicks."""
     target: TSceneNodeHandle
     """Scene node that was clicked."""
-    ray_origin: Tuple[float, float, float]
+    ray_origin: tuple[float, float, float]
     """Origin of 3D ray corresponding to this click, in world coordinates."""
-    ray_direction: Tuple[float, float, float]
+    ray_direction: tuple[float, float, float]
     """Direction of 3D ray corresponding to this click, in world coordinates."""
 
 
@@ -234,7 +224,7 @@ class LabelHandle(SceneNodeHandle):
 @dataclasses.dataclass
 class _TransformControlsState:
     last_updated: float
-    update_cb: List[Callable[[TransformControlsHandle], None]]
+    update_cb: list[Callable[[TransformControlsHandle], None]]
     sync_cb: None | Callable[[ClientId, TransformControlsHandle], None] = None
 
 
@@ -263,7 +253,7 @@ class Gui3dContainerHandle(SceneNodeHandle):
     _gui_api: GuiApi
     _container_id: str
     _container_id_restore: str | None = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 

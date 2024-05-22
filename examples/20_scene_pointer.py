@@ -8,7 +8,7 @@ To get the demo data, see `./assets/download_dragon_mesh.sh`.
 
 import time
 from pathlib import Path
-from typing import List, cast
+from typing import cast
 
 import numpy as onp
 import trimesh
@@ -32,7 +32,7 @@ mesh_handle = server.scene.add_mesh_trimesh(
     position=(0.0, 0.0, 0.0),
 )
 
-hit_pos_handles: List[viser.GlbHandle] = []
+hit_pos_handles: list[viser.GlbHandle] = []
 
 
 # Buttons + callbacks will operate on a per-client basis, but will modify the global scene! :)

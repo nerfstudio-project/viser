@@ -5,7 +5,6 @@ Parse and stream record3d captures. To get the demo data, see `./assets/download
 
 import time
 from pathlib import Path
-from typing import List
 
 import numpy as onp
 import tyro
@@ -90,7 +89,7 @@ def main(
         position=(0, 0, 0),
         show_axes=False,
     )
-    frame_nodes: List[viser.FrameHandle] = []
+    frame_nodes: list[viser.FrameHandle] = []
     for i in tqdm(range(num_frames)):
         frame = loader.get_frame(i)
         position, color = frame.get_point_cloud(downsample_factor)

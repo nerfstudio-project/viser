@@ -6,7 +6,7 @@ import mimetypes
 import threading
 import time
 from pathlib import Path
-from typing import Callable, ContextManager, Dict, List, Optional, Tuple
+from typing import Callable, ContextManager
 
 import imageio.v3 as iio
 import numpy as onp
@@ -36,12 +36,22 @@ class _CameraHandleState:
     look_at: npt.NDArray[onp.float64]
     up_direction: npt.NDArray[onp.float64]
     update_timestamp: float
-    camera_cb: List[Callable[[CameraHandle], None]]
+    camera_cb: list[Callable[[CameraHandle], None]]
 
 
-@dataclasses.dataclass
 class CameraHandle:
-    _state: _CameraHandleState
+    def __init__(self, client: ClientHandle) -> None:
+        self._state = _CameraHandleState(
+            client,
+            wxyz=onp.zeros(4),
+            position=onp.zeros(3),
+            fov=0.0,
+            aspect=0.0,
+            look_at=onp.zeros(3),
+            up_direction=onp.zeros(3),
+            update_timestamp=0.0,
+            camera_cb=[],
+        )
 
     @property
     def client(self) -> ClientHandle:
@@ -59,7 +69,7 @@ class CameraHandle:
     # - https://github.com/python/mypy/issues/3004
     # - https://github.com/python/mypy/pull/11643
     @wxyz.setter
-    def wxyz(self, wxyz: Tuple[float, float, float, float] | onp.ndarray) -> None:
+    def wxyz(self, wxyz: tuple[float, float, float, float] | onp.ndarray) -> None:
         R_world_camera = tf.SO3(onp.asarray(wxyz)).as_matrix()
         look_distance = onp.linalg.norm(self.look_at - self.position)
 
@@ -105,7 +115,7 @@ class CameraHandle:
         return self._state.position
 
     @position.setter
-    def position(self, position: Tuple[float, float, float] | onp.ndarray) -> None:
+    def position(self, position: tuple[float, float, float] | onp.ndarray) -> None:
         offset = onp.asarray(position) - onp.array(self.position)  # type: ignore
         self._state.position = onp.asarray(position)
         self.look_at = onp.array(self.look_at) + offset
@@ -157,7 +167,7 @@ class CameraHandle:
         return self._state.look_at
 
     @look_at.setter
-    def look_at(self, look_at: Tuple[float, float, float] | onp.ndarray) -> None:
+    def look_at(self, look_at: tuple[float, float, float] | onp.ndarray) -> None:
         self._state.look_at = onp.asarray(look_at)
         self._state.update_timestamp = time.time()
         self._update_wxyz()
@@ -173,7 +183,7 @@ class CameraHandle:
 
     @up_direction.setter
     def up_direction(
-        self, up_direction: Tuple[float, float, float] | onp.ndarray
+        self, up_direction: tuple[float, float, float] | onp.ndarray
     ) -> None:
         self._state.up_direction = onp.asarray(up_direction)
         self._update_wxyz()
@@ -206,7 +216,7 @@ class CameraHandle:
         # Listen for a render reseponse message, which should contain the rendered
         # image.
         render_ready_event = threading.Event()
-        out: Optional[onp.ndarray] = None
+        out: onp.ndarray | None = None
 
         connection = self.client._websock_connection
 
@@ -248,35 +258,22 @@ class ClientHandle:
     def __init__(
         self, conn: infra.WebsockClientConnection, server: ViserServer
     ) -> None:
+        # Private attributes.
         self._websock_connection = conn
         self._viser_server = server
 
+        # Public attributes.
         self.scene: SceneApi = SceneApi(
             self, thread_executor=server._websock_server._thread_executor
         )
         """Handle for interacting with the 3D scene."""
-
         self.gui: GuiApi = GuiApi(
             self, thread_executor=server._websock_server._thread_executor
         )
         """Handle for interacting with the GUI."""
-
-        self.client_id = conn.client_id
+        self.client_id: int = conn.client_id
         """Unique ID for this client."""
-
-        self.camera = CameraHandle(
-            _CameraHandleState(
-                self,
-                wxyz=onp.zeros(4),
-                position=onp.zeros(3),
-                fov=0.0,
-                aspect=0.0,
-                look_at=onp.zeros(3),
-                up_direction=onp.zeros(3),
-                update_timestamp=0.0,
-                camera_cb=[],
-            )
-        )
+        self.camera: CameraHandle = CameraHandle(self)
         """Handle for reading from and manipulating the client's viewport camera."""
 
     def flush(self) -> None:
@@ -342,18 +339,6 @@ class ClientHandle:
             self.flush()
 
 
-# We can serialize the state of a ViserServer via a tuple of
-# (serialized message, timestamp) pairs.
-SerializedServerState = Tuple[Tuple[bytes, float], ...]
-
-
-@dataclasses.dataclass
-class _ViserServerState:
-    connection: infra.WebsockServer
-    connected_clients: Dict[int, ClientHandle] = dataclasses.field(default_factory=dict)
-    client_lock: threading.Lock = dataclasses.field(default_factory=threading.Lock)
-
-
 class ViserServer:
     """Viser server class. The primary interface for functionality in `viser`.
 
@@ -371,7 +356,7 @@ class ViserServer:
         self,
         host: str = "0.0.0.0",
         port: int = 8080,
-        label: Optional[str] = None,
+        label: str | None = None,
         **_deprecated_kwargs,
     ):
         # Create server.
@@ -386,10 +371,11 @@ class ViserServer:
 
         _client_autobuild.ensure_client_is_built()
 
-        state = _ViserServerState(server)
-        self._state = state
-        self._client_connect_cb: List[Callable[[ClientHandle], None]] = []
-        self._client_disconnect_cb: List[Callable[[ClientHandle], None]] = []
+        self._connection = server
+        self._connected_clients: dict[int, ClientHandle] = {}
+        self._client_lock = threading.Lock()
+        self._client_connect_cb: list[Callable[[ClientHandle], None]] = []
+        self._client_disconnect_cb: list[Callable[[ClientHandle], None]] = []
 
         # For new clients, register and add a handler for camera messages.
         @server.on_client_connect
@@ -422,8 +408,8 @@ class ViserServer:
                 # received.
                 if first:
                     first = False
-                    with self._state.client_lock:
-                        state.connected_clients[conn.client_id] = client
+                    with self._client_lock:
+                        self._connected_clients[conn.client_id] = client
                         for cb in self._client_connect_cb:
                             cb(client)
 
@@ -435,11 +421,11 @@ class ViserServer:
         # Remove clients when they disconnect.
         @server.on_client_disconnect
         def _(conn: infra.WebsockClientConnection) -> None:
-            with self._state.client_lock:
-                if conn.client_id not in state.connected_clients:
+            with self._client_lock:
+                if conn.client_id not in self._connected_clients:
                     return
 
-                handle = state.connected_clients.pop(conn.client_id)
+                handle = self._connected_clients.pop(conn.client_id)
                 for cb in self._client_disconnect_cb:
                     cb(handle)
 
@@ -474,7 +460,7 @@ class ViserServer:
         table.add_row("Websocket", ws_url)
         rich.print(Panel(table, title="[bold]viser[/bold]", expand=False))
 
-        self._share_tunnel: Optional[ViserTunnel] = None
+        self._share_tunnel: ViserTunnel | None = None
 
         # Create share tunnel if requested.
         # This is deprecated: we should use get_share_url() instead.
@@ -483,7 +469,7 @@ class ViserServer:
             self.request_share_url()
 
         self.scene.reset()
-        self.gui.set_gui_panel_label(label)
+        self.gui.set_panel_label(label)
 
     def get_host(self) -> str:
         """Returns the host address of the Viser server.
@@ -502,7 +488,7 @@ class ViserServer:
         """
         return self._websock_server._port
 
-    def request_share_url(self, verbose: bool = True) -> Optional[str]:
+    def request_share_url(self, verbose: bool = True) -> str | None:
         """Request a share URL for the Viser server, which allows for public access.
         On the first call, will block until a connecting with the share URL server is
         established. Afterwards, the URL will be returned directly.
@@ -573,22 +559,22 @@ class ViserServer:
         if self._share_tunnel is not None:
             self._share_tunnel.close()
 
-    def get_clients(self) -> Dict[int, ClientHandle]:
+    def get_clients(self) -> dict[int, ClientHandle]:
         """Creates and returns a copy of the mapping from connected client IDs to
         handles.
 
         Returns:
             Dictionary of clients.
         """
-        with self._state.client_lock:
-            return self._state.connected_clients.copy()
+        with self._client_lock:
+            return self._connected_clients.copy()
 
     def on_client_connect(
         self, cb: Callable[[ClientHandle], None]
     ) -> Callable[[ClientHandle], None]:
         """Attach a callback to run for newly connected clients."""
-        with self._state.client_lock:
-            clients = self._state.connected_clients.copy().values()
+        with self._client_lock:
+            clients = self._connected_clients.copy().values()
             self._client_connect_cb.append(cb)
 
         # Trigger callback on any already-connected clients.

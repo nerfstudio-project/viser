@@ -4,8 +4,9 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as onp
 import trimesh
-import viser
 import yourdfpy
+
+import viser
 
 from .. import transforms as tf
 

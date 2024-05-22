@@ -23,7 +23,7 @@ Make a ball with some random splines.
             server = viser.ViserServer()
             for i in range(10):
                 positions = onp.random.normal(size=(30, 3)) * 3.0
-                server.add_spline_catmull_rom(
+                server.scene.add_spline_catmull_rom(
                     f"/catmull_{i}",
                     positions,
                     tension=0.5,
@@ -33,7 +33,7 @@ Make a ball with some random splines.
                 )
 
                 control_points = onp.random.normal(size=(30 * 2 - 2, 3)) * 3.0
-                server.add_spline_cubic_bezier(
+                server.scene.add_spline_cubic_bezier(
                     f"/cubic_bezier_{i}",
                     positions,
                     control_points,

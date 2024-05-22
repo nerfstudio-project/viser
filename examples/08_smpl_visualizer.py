@@ -14,7 +14,6 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Tuple
 
 import numpy as np
 import numpy as onp
@@ -123,11 +122,11 @@ def main(model_path: Path) -> None:
 class GuiElements:
     """Structure containing handles for reading from GUI elements."""
 
-    gui_rgb: viser.GuiInputHandle[Tuple[int, int, int]]
+    gui_rgb: viser.GuiInputHandle[tuple[int, int, int]]
     gui_wireframe: viser.GuiInputHandle[bool]
-    gui_betas: List[viser.GuiInputHandle[float]]
-    gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]]
-    transform_controls: List[viser.TransformControlsHandle]
+    gui_betas: list[viser.GuiInputHandle[float]]
+    gui_joints: list[viser.GuiInputHandle[tuple[float, float, float]]]
+    transform_controls: list[viser.TransformControlsHandle]
 
     changed: bool
     """This flag will be flipped to True whenever the mesh needs to be re-generated."""
@@ -202,7 +201,7 @@ def make_gui_elements(
                 quat /= onp.linalg.norm(quat)
                 joint.value = tf.SO3(wxyz=quat).log()
 
-        gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]] = []
+        gui_joints: list[viser.GuiInputHandle[tuple[float, float, float]]] = []
         for i in range(num_joints):
             gui_joint = server.gui.add_vector3(
                 label=f"Joint {i}",
@@ -222,7 +221,7 @@ def make_gui_elements(
             set_callback_in_closure(i)
 
     # Transform control gizmos on joints.
-    transform_controls: List[viser.TransformControlsHandle] = []
+    transform_controls: list[viser.TransformControlsHandle] = []
     prefixed_joint_names = []  # Joint names, but prefixed with parents.
     for i in range(num_joints):
         prefixed_joint_name = f"joint_{i}"

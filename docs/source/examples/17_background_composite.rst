@@ -32,12 +32,12 @@ be useful when we want a 2D image to occlude 3D geometry, such as for NeRF rende
         img[250:750, 250:750, :] = 255
 
         mesh = trimesh.creation.box((0.5, 0.5, 0.5))
-        server.add_mesh_trimesh(
+        server.scene.add_mesh_trimesh(
             name="/cube",
             mesh=mesh,
             position=(0, 0, 0.0),
         )
-        server.set_background_image(img, depth=depth)
+        server.scene.set_background_image(img, depth=depth)
 
 
         while True:
