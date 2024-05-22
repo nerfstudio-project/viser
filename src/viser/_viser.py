@@ -5,8 +5,9 @@ import io
 import mimetypes
 import threading
 import time
+import warnings
 from pathlib import Path
-from typing import Callable, ContextManager
+from typing import TYPE_CHECKING, Any, Callable, ContextManager
 
 import imageio.v3 as iio
 import numpy as onp
@@ -22,6 +23,38 @@ from . import transforms as tf
 from ._gui_api import GuiApi
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
+
+
+class _BackwardsCompatibilityShim:
+    """Shims for backward compatibility with viser API from version
+    `<=0.1.30`."""
+
+    def __getattr__(self, name: str) -> Any:
+        fixed_name = {
+            "reset_scene": "reset",
+            "on_scene_pointer": "on_pointer_event",
+            "on_scene_pointer_removed": "on_pointer_callback_removed",
+            "remove_scene_pointer_callback": "remove_pointer_callback",
+            "add_mesh": "add_mesh_simple",
+        }.get(name, name)
+        if hasattr(self.scene, fixed_name):
+            warnings.warn(
+                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.scene.{fixed_name} instead. Alternatively, pin to `viser<=0.1.30`.",
+                stacklevel=2,
+            )
+            return object.__getattribute__(self.scene, fixed_name)
+
+        fixed_name = name.replace("add_gui_", "add_").replace("set_gui_", "set_")
+        if hasattr(self.gui, fixed_name):
+            warnings.warn(
+                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.gui.{fixed_name} instead. Alternatively, pin to `viser<=0.1.30`.",
+                stacklevel=2,
+            )
+            return object.__getattribute__(self.gui, fixed_name)
+
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'"
+        )
 
 
 @dataclasses.dataclass
@@ -251,7 +284,10 @@ class CameraHandle:
         return out
 
 
-class ClientHandle:
+# Don't inherit from _BackwardsCompatibilityShim during type checking, because
+# this will unnecessarily suppress type errors. (from the overriding of
+# __getattr__).
+class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
     """Handle for interacting with a specific client. Can be used to send messages to
     individual clients and read/write camera information."""
 
@@ -339,7 +375,7 @@ class ClientHandle:
             self.flush()
 
 
-class ViserServer:
+class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
     """Viser server class. The primary interface for functionality in `viser`.
 
     Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all
