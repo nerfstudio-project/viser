@@ -1,8 +1,3 @@
-# mypy: disable-error-code="assignment"
-#
-# Asymmetric properties are supported in Pyright, but not yet in mypy.
-# - https://github.com/python/mypy/issues/3004
-# - https://github.com/python/mypy/pull/11643
 """Games
 
 Some two-player games implemented using scene click events."""

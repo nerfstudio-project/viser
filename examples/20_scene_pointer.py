@@ -6,6 +6,8 @@ used to interact with the scene (e.g., ray-mesh intersections).
 To get the demo data, see `./assets/download_dragon_mesh.sh`.
 """
 
+from __future__ import annotations
+
 import time
 from pathlib import Path
 from typing import cast

@@ -1,6 +1,3 @@
-# mypy: disable-error-code="arg-type"
-#
-# Waiting on PEP 675 support in mypy. https://github.com/python/mypy/issues/12554
 """Theming
 
 Viser includes support for light theming.

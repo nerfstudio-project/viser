@@ -1,8 +1,3 @@
-# mypy: disable-error-code="assignment"
-#
-# Asymmetric properties are supported in Pyright, but not yet in mypy.
-# - https://github.com/python/mypy/issues/3004
-# - https://github.com/python/mypy/pull/11643
 """GUI basics
 
 Examples of basic GUI elements that we can create, read from, and write to."""

@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from ._gui_api import GuiApi as GuiApi
 from ._gui_handles import GuiButtonGroupHandle as GuiButtonGroupHandle
 from ._gui_handles import GuiButtonHandle as GuiButtonHandle

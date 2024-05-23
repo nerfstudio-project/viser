@@ -1,4 +1,5 @@
-# mypy: disable-error-code="type-var"
+from __future__ import annotations
+
 import asyncio
 import multiprocessing as mp
 import threading

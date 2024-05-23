@@ -1,7 +1,3 @@
-# mypy: disable-error-code="arg-type"
-#
-# assert_never() on the `axis` variable works in Pyright, but is waiting on PEP 675
-# support in mypy. https://github.com/python/mypy/issues/12554
 """GUI callbacks
 
 Asynchronous usage of GUI elements: we can attach callbacks that are called as soon as

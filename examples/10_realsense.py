@@ -4,6 +4,8 @@ Connect to a RealSense camera, then visualize RGB-D readings as a point clouds. 
 pyrealsense2.
 """
 
+from __future__ import annotations
+
 import contextlib
 
 import numpy as np

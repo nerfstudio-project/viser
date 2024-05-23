@@ -376,10 +376,14 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
 
 
 class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
-    """Viser server class. The primary interface for functionality in `viser`.
+    """:class:`viser.ViserServer` is the main class , which (a) launches a
+    thread with a visualization server and (b) provides a high-level API for
+    communicating with clients.
 
-    Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all
-    clients, including new clients that connect after a command is called.
+    Clients can connect via a web browser, and will be shown two components: a
+    3D scene and a 2D GUI panel. :attr:`ViserServer.scene` can be used to add
+    3D primitives to the scene. :attr:`ViserServer.gui` can be used to add 2D
+    GUI elements.
 
     Args:
         host: Host to bind server to.

@@ -1,10 +1,3 @@
-# mypy: disable-error-code="misc"
-#
-# TLiteralString overloads are waiting on PEP 675 support in mypy.
-# https://github.com/python/mypy/issues/12554
-#
-# In the meantime, it works great in Pyright/Pylance!
-
 from __future__ import annotations
 
 import base64
