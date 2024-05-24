@@ -92,8 +92,7 @@ class WebsockMessageHandler:
                 cb(client_id, message)
 
     @abc.abstractmethod
-    def unsafe_send_message(self, message: Message) -> None:
-        ...
+    def unsafe_send_message(self, message: Message) -> None: ...
 
     def queue_message(self, message: Message) -> None:
         """Wrapped method for sending messages safely."""

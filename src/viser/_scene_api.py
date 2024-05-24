@@ -239,7 +239,12 @@ class SceneApi:
             )
 
     def set_global_visibility(self, visible: bool) -> None:
-        """Set global scene node visibility. If visible is set to False, all scene nodes will be hidden.
+        """Set visibility for all scene nodes. If set to False, all scene nodes
+        will be hidden.
+
+        This can be useful when we've called
+        :meth:`SceneApi.set_background_image()`, and want to hide everything
+        except for the background.
 
         Args:
             visible: Whether or not all scene nodes should be visible.

@@ -40,7 +40,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pyright>=1.1.308",
-    "mypy>=1.4.1",
     "ruff==0.4.3",
     "pre-commit==3.3.2",
 ]
@@ -71,18 +70,6 @@ viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/**/*", "client/
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
-
-[tool.mypy]
-python_version = "3.10"
-ignore_missing_imports = true
-warn_unused_configs = true
-exclude="viser/client/.nodeenv"
-# [assignment] Asymmetric properties are supported in Pyright, but not yet in mypy.
-# - https://github.com/python/mypy/issues/3004
-# - https://github.com/python/mypy/pull/11643
-# [misc] TLiteralString overloads are waiting on PEP 675 support in mypy.
-# - https://github.com/python/mypy/issues/12554
-disable_error_code="var-annotated,assignment,misc,type-var,arg-type"  # Common source of mypy + numpy false positives.
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]

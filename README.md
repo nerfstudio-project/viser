@@ -12,7 +12,6 @@
 
 <p align="left">
     <img alt="pyright" src="https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg?branch=main" />
-    <img alt="mypy" src="https://github.com/nerfstudio-project/viser/workflows/mypy/badge.svg?branch=main" />
     <img alt="typescript-compile" src="https://github.com/nerfstudio-project/viser/workflows/typescript-compile/badge.svg?branch=main" />
     <a href="https://pypi.org/project/viser/">
         <img alt="codecov" src="https://img.shields.io/pypi/pyversions/viser" />

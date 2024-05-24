@@ -77,6 +77,7 @@ class _CameraHandleState:
 class CameraHandle:
     """A handle for reading and writing the camera state of a particular
     client. Typically accessed via :attr:`ClientHandle.camera`."""
+
     def __init__(self, client: ClientHandle) -> None:
         self._state = _CameraHandleState(
             client,

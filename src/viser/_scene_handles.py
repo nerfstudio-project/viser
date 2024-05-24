@@ -55,9 +55,9 @@ class _SceneNodeHandleState:
     )
     visible: bool = True
     # TODO: we should remove SceneNodeHandle as an argument here.
-    click_cb: list[
-        Callable[[SceneNodePointerEvent[SceneNodeHandle]], None]
-    ] | None = None
+    click_cb: list[Callable[[SceneNodePointerEvent[SceneNodeHandle]], None]] | None = (
+        None
+    )
 
 
 @dataclasses.dataclass

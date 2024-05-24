@@ -382,9 +382,9 @@ class GuiApi:
             brand_color: An optional tuple of integers (RGB) representing the brand color.
         """
 
-        colors_cast: tuple[
-            str, str, str, str, str, str, str, str, str, str
-        ] | None = None
+        colors_cast: tuple[str, str, str, str, str, str, str, str, str, str] | None = (
+            None
+        )
 
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
@@ -798,8 +798,7 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]:
-        ...
+    ) -> GuiButtonGroupHandle[TLiteralString]: ...
 
     @overload
     def add_button_group(
@@ -810,8 +809,7 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TString]:
-        ...
+    ) -> GuiButtonGroupHandle[TString]: ...
 
     def add_button_group(
         self,
@@ -1139,8 +1137,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TLiteralString]:
-        ...
+    ) -> GuiDropdownHandle[TLiteralString]: ...
 
     @overload
     def add_dropdown(
@@ -1152,8 +1149,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TString]:
-        ...
+    ) -> GuiDropdownHandle[TString]: ...
 
     def add_dropdown(
         self,
