@@ -5,7 +5,7 @@ import io
 import time
 import warnings
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Callable, TypeVar, Union, cast, get_args
+from typing import TYPE_CHECKING, Callable, Tuple, TypeVar, Union, cast, get_args
 
 import imageio.v3 as iio
 import numpy as onp
@@ -54,7 +54,7 @@ def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
 
 
 RgbTupleOrArray: TypeAlias = Union[
-    tuple[int, int, int], tuple[float, float, float], onp.ndarray
+    Tuple[int, int, int], Tuple[float, float, float], onp.ndarray
 ]
 
 
