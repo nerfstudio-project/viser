@@ -22,7 +22,7 @@ import toml
 # -- Project information -----------------------------------------------------
 
 project = "viser"
-copyright = "2023"
+copyright = "2024"
 author = "brentyi"
 
 # The short X.Y version
