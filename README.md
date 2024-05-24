@@ -45,19 +45,6 @@ To include example dependencies:
 pip install viser[examples]
 ```
 
-```bash
-# Clone the repository.
-git clone https://github.com/nerfstudio-project/viser.git
-
-# Install the package.
-# You can also install via pip: `pip install viser`.
-cd ./viser
-pip install -e .[examples]
-
-# Run an example.
-python ./examples/02_gui.py
-```
-
 After an example script is running, you can connect by navigating to the printed
 URL (default: `http://localhost:8080`).
 

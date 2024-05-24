@@ -14,6 +14,8 @@ pyrealsense2.
         :linenos:
 
 
+        from __future__ import annotations
+
         import contextlib
 
         import numpy as np

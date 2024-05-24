@@ -169,6 +169,11 @@ class _FileUploadState(TypedDict):
 
 
 class GuiApi:
+    """Interface for working with the 2D GUI in viser.
+
+    Used by both our global server object, for sharing the same GUI elements
+    with all clients, and by invidividual client handles."""
+
     _target_container_from_thread_id: dict[int, str] = {}
     """ID of container to put GUI elements into."""
 

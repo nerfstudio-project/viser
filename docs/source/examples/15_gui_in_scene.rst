@@ -55,7 +55,9 @@ performed on them.
                     if displayed_3d_container is not None:
                         displayed_3d_container.remove()
 
-                    displayed_3d_container = client.scene.add_3d_gui_container(f"/frame_{i}/gui")
+                    displayed_3d_container = client.scene.add_3d_gui_container(
+                        f"/frame_{i}/gui"
+                    )
                     with displayed_3d_container:
                         go_to = client.gui.add_button("Go to")
                         randomize_orientation = client.gui.add_button("Randomize orientation")

@@ -204,9 +204,13 @@ StringType = TypeVar("StringType", bound=str)
 # are slightly different: we have `on_click()` instead of `on_update()`.
 @dataclasses.dataclass
 class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
-    """Handle for a general GUI inputs in our visualizer.
+    """A handle is created for each GUI element that is added in `viser`.
+    Handles can be used to read and write state.
 
-    Lets us get values, set values, and detect updates."""
+    When a GUI element is added via :attr:`ViserServer.gui`, state is
+    synchronized between all connected clients. When a GUI element is added via
+    :attr:`ClientHandle.gui`, state is local to a specific client.
+    """
 
     def on_update(
         self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]

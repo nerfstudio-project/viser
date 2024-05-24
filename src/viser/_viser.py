@@ -31,7 +31,9 @@ class _BackwardsCompatibilityShim:
 
     def __getattr__(self, name: str) -> Any:
         fixed_name = {
+            # Map from old method names (viser v0.1.30) to new methods names.
             "reset_scene": "reset",
+            "set_global_scene_node_visibility": "set_global_visibility",
             "on_scene_pointer": "on_pointer_event",
             "on_scene_pointer_removed": "on_pointer_callback_removed",
             "remove_scene_pointer_callback": "remove_pointer_callback",
@@ -73,6 +75,8 @@ class _CameraHandleState:
 
 
 class CameraHandle:
+    """A handle for reading and writing the camera state of a particular
+    client. Typically accessed via :attr:`ClientHandle.camera`."""
     def __init__(self, client: ClientHandle) -> None:
         self._state = _CameraHandleState(
             client,
@@ -288,8 +292,16 @@ class CameraHandle:
 # this will unnecessarily suppress type errors. (from the overriding of
 # __getattr__).
 class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
-    """Handle for interacting with a specific client. Can be used to send messages to
-    individual clients and read/write camera information."""
+    """A handle is created for each client that connects to a server. Handles can be
+    used to communicate with just one client, as well as for reading and writing of
+    camera state.
+
+    Similar to :class:`ViserServer`, client handles also expose scene and GUI
+    interfaces at :attr:`ClientHandle.scene` and :attr:`ClientHandle.gui`. If
+    these are used, for example via a client's
+    :meth:`SceneApi.add_point_cloud()` method, created elements are local to
+    only one specific client.
+    """
 
     def __init__(
         self, conn: infra.WebsockClientConnection, server: ViserServer
@@ -376,14 +388,21 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
 
 
 class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
-    """:class:`viser.ViserServer` is the main class , which (a) launches a
-    thread with a visualization server and (b) provides a high-level API for
-    communicating with clients.
+    """:class:`ViserServer` is the main class for working with viser. On
+    instantiation, it (a) launches a thread with a web server and (b) provides
+    a high-level API for interactive 3D visualization.
 
-    Clients can connect via a web browser, and will be shown two components: a
-    3D scene and a 2D GUI panel. :attr:`ViserServer.scene` can be used to add
-    3D primitives to the scene. :attr:`ViserServer.gui` can be used to add 2D
-    GUI elements.
+    **Core API.** Clients can connect via a web browser, and will be shown two
+    components: a 3D scene and a 2D GUI panel. Methods belonging to
+    :attr:`ViserServer.scene` can be used to add 3D primitives to the scene.
+    Methods belonging to :attr:`ViserServer.gui` can be used to add 2D GUI
+    elements.
+
+    **Shared state.** Elements added to the server object, for example via a
+    server's :meth:`SceneApi.add_point_cloud` or :meth:`GuiApi.add_button`,
+    will have state that's shared and synchronized automatically between all
+    connected clients. To show elements that are local to a single client, see
+    :attr:`ClientHandle.scene` and :attr:`ClientHandle.gui`.
 
     Args:
         host: Host to bind server to.

@@ -108,10 +108,10 @@ def cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
 
 
 class SceneApi:
-    """Interface for all commands we can use to send messages over a websocket connection.
+    """Interface for adding 3D primitives to the scene.
 
-    Should be implemented by both our global server object (for broadcasting) and by
-    invidividual clients."""
+    Used by both our global server object, for sharing the same GUI elements
+    with all clients, and by invidividual client handles."""
 
     def __init__(
         self,
@@ -238,7 +238,7 @@ class SceneApi:
                 )
             )
 
-    def set_global_scene_node_visibility(self, visible: bool) -> None:
+    def set_global_visibility(self, visible: bool) -> None:
         """Set global scene node visibility. If visible is set to False, all scene nodes will be hidden.
 
         Args:

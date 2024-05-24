@@ -16,6 +16,8 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
         :linenos:
 
 
+        from __future__ import annotations
+
         import time
         from pathlib import Path
         from typing import cast
