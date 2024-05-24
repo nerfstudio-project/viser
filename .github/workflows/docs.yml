@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  release:
+    types: [created]
   workflow_dispatch:
 
 jobs:
@@ -27,11 +29,21 @@ jobs:
           uv pip install --system -r docs/requirements.txt
           sphinx-build docs/source docs/build -b dirhtml
 
-      # Deploy
+      # Get version from pyproject.toml.
+      - name: Extract version
+        id: get_version
+        run: |
+          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          echo "version_subdir=versions/$VERSION" >> $GITHUB_OUTPUT
+
+      # Deploy to version-dependent subdirectory.
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/build
+          # TODO: only set this to the version number for release actions.
+          destination_dir: ${{ steps.get_version.outputs.version_subdir }}
+          keep_files: false # This will only erase the destination subdirectory.
           cname: viser.studio
         if: github.event_name != 'pull_request'
