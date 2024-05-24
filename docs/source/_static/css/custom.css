@@ -3,5 +3,7 @@ img.sidebar-logo {
   margin: 1em 0 0 0;
 }
 .sidebar-brand-text {
-  display: none;
+  font-size: 1rem;
+  font-weight: 600;
+  font-style: italic;
 }
