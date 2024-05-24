@@ -13,7 +13,7 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      # Check out source
+      # Check out source.
       - uses: actions/checkout@v2
 
       - name: Set up Python
@@ -21,20 +21,34 @@ jobs:
         with:
           python-version: "3.10"
 
-      # Build documentation
-      - name: Building documentation
+      - name: Set up dependencies
         run: |
           pip install uv
           uv pip install --system -e ".[dev]"
           uv pip install --system -r docs/requirements.txt
+
+      # Hack to overwrite version.
+      - name: Set version to 'latest' for pushes (this will appear in the doc banner)
+        run: |
+          python -c "import toml; conf = toml.load('pyproject.toml'); conf['project']['version'] = 'latest'; toml.dump(conf, open('pyproject.toml', 'w'))"
+        if: github.event_name == 'push'
+
+      # Build documentation.
+      - name: Building documentation
+        run: |
           sphinx-build docs/source docs/build -b dirhtml
 
       # Get version from pyproject.toml.
-      - name: Extract version
-        id: get_version
+      - name: Get version + subdirectory
         run: |
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-          echo "version_subdir=versions/$VERSION" >> $GITHUB_OUTPUT
+          echo "DOCS_SUBDIR=versions/$VERSION" >> $GITHUB_ENV
+
+      # Get version from pyproject.toml.
+      - name: Override subdirectory to `latest/` for pushes
+        run: |
+          echo "DOCS_SUBDIR=latest" >> $GITHUB_ENV
+        if: github.event_name == 'push'
 
       # Deploy to version-dependent subdirectory.
       - name: Deploy to GitHub Pages
@@ -42,8 +56,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs/build
-          # TODO: only set this to the version number for release actions.
-          destination_dir: ${{ steps.get_version.outputs.version_subdir }}
-          keep_files: false # This will only erase the destination subdirectory.
+          destination_dir: ${{ env.DOCS_SUBDIR }}
+          keep_files: false  # This will only erase the destination subdirectory.
           cname: viser.studio
         if: github.event_name != 'pull_request'
