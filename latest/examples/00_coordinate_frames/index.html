@@ -12,7 +12,7 @@
         gtag('js', new Date());
         gtag('config', 'G-RRGY51J5ZH');
     </script>
-    <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="Images" href="../01_image/" /><link rel="prev" title="Extras" href="../../extras/" />
+    <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="Images" href="../01_image/" /><link rel="prev" title="Record3D + URDF Helpers" href="../../extras/" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Coordinate frames - viser</title>
@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
@@ -318,17 +324,17 @@ relative to /tree.</p>
 <span class="linenos"> 7</span>
 <span class="linenos"> 8</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
 <span class="linenos"> 9</span>    <span class="c1"># Add some coordinate frames to the scene. These will be visualized in the viewer.</span>
-<span class="linenos">10</span>    <span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
+<span class="linenos">10</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
 <span class="linenos">11</span>        <span class="s2">&quot;/tree&quot;</span><span class="p">,</span>
 <span class="linenos">12</span>        <span class="n">wxyz</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 <span class="linenos">13</span>        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
 <span class="linenos">14</span>    <span class="p">)</span>
-<span class="linenos">15</span>    <span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
+<span class="linenos">15</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
 <span class="linenos">16</span>        <span class="s2">&quot;/tree/branch&quot;</span><span class="p">,</span>
 <span class="linenos">17</span>        <span class="n">wxyz</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 <span class="linenos">18</span>        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
 <span class="linenos">19</span>    <span class="p">)</span>
-<span class="linenos">20</span>    <span class="n">leaf</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
+<span class="linenos">20</span>    <span class="n">leaf</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
 <span class="linenos">21</span>        <span class="s2">&quot;/tree/branch/leaf&quot;</span><span class="p">,</span>
 <span class="linenos">22</span>        <span class="n">wxyz</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 <span class="linenos">23</span>        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
@@ -363,7 +369,7 @@ relative to /tree.</p>
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Extras</div>
+                <div class="title">Record3D + URDF Helpers</div>
                 
               </div>
             </a>

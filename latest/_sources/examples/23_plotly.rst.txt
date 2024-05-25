@@ -48,14 +48,14 @@ Examples of visualizing plotly plots in Viser.
 
             # Plot type 1: Line plot.
             line_plot_time = 0.0
-            line_plot = server.add_gui_plotly(figure=create_sinusoidal_wave(line_plot_time))
+            line_plot = server.gui.add_plotly(figure=create_sinusoidal_wave(line_plot_time))
 
             # Plot type 2: Image plot.
             fig = px.imshow(Image.open("assets/Cal_logo.png"))
             fig.update_layout(
                 margin=dict(l=20, r=20, t=20, b=20),
             )
-            server.add_gui_plotly(figure=fig, aspect=1.0)
+            server.gui.add_plotly(figure=fig, aspect=1.0)
 
             # Plot type 3: 3D Scatter plot.
             fig = px.scatter_3d(
@@ -69,7 +69,7 @@ Examples of visualizing plotly plots in Viser.
             fig.update_layout(
                 margin=dict(l=20, r=20, t=20, b=20),
             )
-            server.add_gui_plotly(figure=fig, aspect=1.0)
+            server.gui.add_plotly(figure=fig, aspect=1.0)
 
             while True:
                 # Update the line plot.

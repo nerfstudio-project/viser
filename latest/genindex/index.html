@@ -227,20 +227,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -390,218 +396,76 @@
 </li>
         <li><a href="../icons/#viser.Icon.AD_OFF">AD_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_3d_gui_container">add_3d_gui_container() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_3d_gui_container">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_3d_gui_container">add_3d_gui_container() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_batched_axes">add_batched_axes() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_batched_axes">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_batched_axes">add_batched_axes() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_box">add_box() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_box">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_box">add_box() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_camera_frustum">add_camera_frustum() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_camera_frustum">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_button">add_button() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_frame">add_frame() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_frame">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_button_group">add_button_group() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_glb">add_glb() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_glb">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_camera_frustum">add_camera_frustum() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_grid">add_grid() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_grid">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_checkbox">add_checkbox() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_button">add_gui_button() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_button">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_dropdown">add_dropdown() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_button_group">add_gui_button_group() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_button_group">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_folder">add_folder() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_checkbox">add_gui_checkbox() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_checkbox">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_frame">add_frame() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_dropdown">add_gui_dropdown() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_dropdown">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_glb">add_glb() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_folder">add_gui_folder() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_folder">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_grid">add_grid() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_markdown">add_gui_markdown() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_markdown">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_icosphere">add_icosphere() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_modal">add_gui_modal() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_modal">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_image">add_image() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_multi_slider">add_gui_multi_slider() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_multi_slider">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_label">add_label() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_number">add_gui_number() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_number">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_markdown">add_markdown() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_plotly">add_gui_plotly() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_plotly">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_mesh_simple">add_mesh_simple() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_rgb">add_gui_rgb() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_rgb">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_mesh_trimesh">add_mesh_trimesh() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_rgba">add_gui_rgba() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_rgba">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_modal">add_modal() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_slider">add_gui_slider() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_slider">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_multi_slider">add_multi_slider() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_tab_group">add_gui_tab_group() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_tab_group">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_number">add_number() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_text">add_gui_text() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_text">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_plotly">add_plotly() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_upload_button">add_gui_upload_button() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_upload_button">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_point_cloud">add_point_cloud() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_vector2">add_gui_vector2() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_vector2">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_rgb">add_rgb() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_gui_vector3">add_gui_vector3() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_gui_vector3">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_rgba">add_rgba() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_icosphere">add_icosphere() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_icosphere">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_slider">add_slider() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_image">add_image() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_image">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_spline_catmull_rom">add_spline_catmull_rom() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_label">add_label() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_label">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.add_spline_cubic_bezier">add_spline_cubic_bezier() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_mesh">add_mesh() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_mesh">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_mesh_simple">add_mesh_simple() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_mesh_simple">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_mesh_trimesh">add_mesh_trimesh() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_mesh_trimesh">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_point_cloud">add_point_cloud() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_point_cloud">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_spline_catmull_rom">add_spline_catmull_rom() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_spline_catmull_rom">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_spline_cubic_bezier">add_spline_cubic_bezier() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_spline_cubic_bezier">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
         <li><a href="../gui_handles/#viser.GuiTabGroupHandle.add_tab">add_tab() (viser.GuiTabGroupHandle method)</a>
 </li>
-        <li><a href="../client_handles/#viser.ClientHandle.add_transform_controls">add_transform_controls() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.add_transform_controls">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.add_tab_group">add_tab_group() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
+        <li><a href="../gui_api/#viser.GuiApi.add_text">add_text() (viser.GuiApi method)</a>
+</li>
+        <li><a href="../scene_api/#viser.SceneApi.add_transform_controls">add_transform_controls() (viser.SceneApi method)</a>
+</li>
+        <li><a href="../gui_api/#viser.GuiApi.add_upload_button">add_upload_button() (viser.GuiApi method)</a>
+</li>
+        <li><a href="../gui_api/#viser.GuiApi.add_vector2">add_vector2() (viser.GuiApi method)</a>
+</li>
+        <li><a href="../gui_api/#viser.GuiApi.add_vector3">add_vector3() (viser.GuiApi method)</a>
+</li>
         <li><a href="../icons/#viser.Icon.ADDRESS_BOOK">ADDRESS_BOOK (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ADDRESS_BOOK_OFF">ADDRESS_BOOK_OFF (viser.Icon attribute)</a>
@@ -886,8 +750,6 @@
 </li>
         <li><a href="../icons/#viser.Icon.APPS_FILLED">APPS_FILLED (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.APPS_OFF">APPS_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ARCHIVE">ARCHIVE (viser.Icon attribute)</a>
@@ -926,6 +788,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.ARROW_BACK_UP_DOUBLE">ARROW_BACK_UP_DOUBLE (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.ARROW_BADGE_DOWN">ARROW_BADGE_DOWN (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ARROW_BADGE_DOWN_FILLED">ARROW_BADGE_DOWN_FILLED (viser.Icon attribute)</a>
@@ -1300,7 +1164,7 @@
 </li>
         <li><a href="../infrastructure/#viser.infra.Message.as_serializable_dict">as_serializable_dict() (viser.infra.Message method)</a>
 </li>
-        <li><a href="../client_handles/#viser.CameraHandle.aspect">aspect (viser.CameraHandle property)</a>
+        <li><a href="../camera_handles/#viser.CameraHandle.aspect">aspect (viser.CameraHandle property)</a>
 </li>
         <li><a href="../icons/#viser.Icon.ASPECT_RATIO">ASPECT_RATIO (viser.Icon attribute)</a>
 </li>
@@ -1333,6 +1197,12 @@
         <li><a href="../client_handles/#viser.ClientHandle.atomic">atomic() (viser.ClientHandle method)</a>
 
         <ul>
+          <li><a href="../infrastructure/#viser.infra.WebsockClientConnection.atomic">(viser.infra.WebsockClientConnection method)</a>
+</li>
+          <li><a href="../infrastructure/#viser.infra.WebsockMessageHandler.atomic">(viser.infra.WebsockMessageHandler method)</a>
+</li>
+          <li><a href="../infrastructure/#viser.infra.WebsockServer.atomic">(viser.infra.WebsockServer method)</a>
+</li>
           <li><a href="../server/#viser.ViserServer.atomic">(viser.ViserServer method)</a>
 </li>
         </ul></li>
@@ -1485,6 +1355,8 @@
         <li><a href="../icons/#viser.Icon.BASKET_OFF">BASKET_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BAT">BAT (viser.Icon attribute)</a>
+</li>
+        <li><a href="../scene_handles/#viser.BatchedAxesHandle">BatchedAxesHandle (class in viser)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BATH">BATH (viser.Icon attribute)</a>
 </li>
@@ -2004,10 +1876,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.BRAND_DISCORD">BRAND_DISCORD (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.BRAND_DISCORD_FILLED">BRAND_DISCORD_FILLED (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.BRAND_DISCORD_FILLED">BRAND_DISCORD_FILLED (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.BRAND_DISNEY">BRAND_DISNEY (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BRAND_DISQUS">BRAND_DISQUS (viser.Icon attribute)</a>
@@ -2554,8 +2426,6 @@
 </li>
         <li><a href="../icons/#viser.Icon.BROADCAST">BROADCAST (viser.Icon attribute)</a>
 </li>
-        <li><a href="../infrastructure/#viser.infra.Server.broadcast">broadcast() (viser.infra.Server method)</a>
-</li>
         <li><a href="../icons/#viser.Icon.BROADCAST_OFF">BROADCAST_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.BROWSER">BROWSER (viser.Icon attribute)</a>
@@ -2778,7 +2648,7 @@
 </li>
         <li><a href="../scene_handles/#viser.CameraFrustumHandle">CameraFrustumHandle (class in viser)</a>
 </li>
-        <li><a href="../client_handles/#viser.CameraHandle">CameraHandle (class in viser)</a>
+        <li><a href="../camera_handles/#viser.CameraHandle">CameraHandle (class in viser)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CAMPER">CAMPER (viser.Icon attribute)</a>
 </li>
@@ -3276,10 +3146,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_DIODE">CIRCUIT_DIODE (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.CIRCUIT_DIODE_ZENER">CIRCUIT_DIODE_ZENER (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.CIRCUIT_DIODE_ZENER">CIRCUIT_DIODE_ZENER (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_GROUND">CIRCUIT_GROUND (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CIRCUIT_GROUND_DIGITAL">CIRCUIT_GROUND_DIGITAL (viser.Icon attribute)</a>
@@ -3304,7 +3174,7 @@
 </li>
         <li><a href="../icons/#viser.Icon.CLICK">CLICK (viser.Icon attribute)</a>
 </li>
-        <li><a href="../client_handles/#viser.CameraHandle.client">client (viser.CameraHandle property)</a>
+        <li><a href="../camera_handles/#viser.CameraHandle.client">client (viser.CameraHandle property)</a>
 
         <ul>
           <li><a href="../events/#viser.GuiEvent.client">(viser.GuiEvent attribute)</a>
@@ -3319,15 +3189,11 @@
         <ul>
           <li><a href="../events/#viser.GuiEvent.client_id">(viser.GuiEvent attribute)</a>
 </li>
-          <li><a href="../infrastructure/#viser.infra.ClientConnection.client_id">(viser.infra.ClientConnection attribute)</a>
-</li>
           <li><a href="../events/#viser.SceneNodePointerEvent.client_id">(viser.SceneNodePointerEvent attribute)</a>
 </li>
           <li><a href="../events/#viser.ScenePointerEvent.client_id">(viser.ScenePointerEvent attribute)</a>
 </li>
         </ul></li>
-        <li><a href="../infrastructure/#viser.infra.ClientConnection">ClientConnection (class in viser.infra)</a>
-</li>
         <li><a href="../client_handles/#viser.ClientHandle">ClientHandle (class in viser)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CLIPBOARD">CLIPBOARD (viser.Icon attribute)</a>
@@ -3608,12 +3474,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.CONFETTI_OFF">CONFETTI_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../client_handles/#viser.ClientHandle.configure_theme">configure_theme() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.configure_theme">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.configure_theme">configure_theme() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
         <li><a href="../icons/#viser.Icon.CONFUCIUS">CONFUCIUS (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.CONTAINER">CONTAINER (viser.Icon attribute)</a>
@@ -5023,12 +4885,12 @@
         <li><a href="../client_handles/#viser.ClientHandle.flush">flush() (viser.ClientHandle method)</a>
 
         <ul>
-          <li><a href="../infrastructure/#viser.infra.Server.flush">(viser.infra.Server method)</a>
+          <li><a href="../infrastructure/#viser.infra.WebsockServer.flush">(viser.infra.WebsockServer method)</a>
 </li>
           <li><a href="../server/#viser.ViserServer.flush">(viser.ViserServer method)</a>
 </li>
         </ul></li>
-        <li><a href="../infrastructure/#viser.infra.Server.flush_client">flush_client() (viser.infra.Server method)</a>
+        <li><a href="../infrastructure/#viser.infra.WebsockServer.flush_client">flush_client() (viser.infra.WebsockServer method)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FOCUS">FOCUS (viser.Icon attribute)</a>
 </li>
@@ -5108,7 +4970,7 @@
 </li>
         <li><a href="../icons/#viser.Icon.FOUNTAIN_OFF">FOUNTAIN_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../client_handles/#viser.CameraHandle.fov">fov (viser.CameraHandle property)</a>
+        <li><a href="../camera_handles/#viser.CameraHandle.fov">fov (viser.CameraHandle property)</a>
 </li>
         <li><a href="../icons/#viser.Icon.FRAME">FRAME (viser.Icon attribute)</a>
 </li>
@@ -5288,7 +5150,7 @@
 </li>
         <li><a href="../server/#viser.ViserServer.get_port">get_port() (viser.ViserServer method)</a>
 </li>
-        <li><a href="../client_handles/#viser.CameraHandle.get_render">get_render() (viser.CameraHandle method)</a>
+        <li><a href="../camera_handles/#viser.CameraHandle.get_render">get_render() (viser.CameraHandle method)</a>
 </li>
         <li><a href="../infrastructure/#viser.infra.Message.get_subclasses">get_subclasses() (viser.infra.Message class method)</a>
 </li>
@@ -5384,14 +5246,16 @@
 </li>
         <li><a href="../icons/#viser.Icon.GROWTH">GROWTH (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.Gui3dContainerHandle">Gui3dContainerHandle (class in viser)</a>
-</li>
-        <li><a href="../client_handles/#viser.ClientHandle.gui_folder">gui_folder() (viser.ClientHandle method)</a>
+        <li><a href="../client_handles/#viser.ClientHandle.gui">gui (viser.ClientHandle attribute)</a>
 
         <ul>
-          <li><a href="../server/#viser.ViserServer.gui_folder">(viser.ViserServer method)</a>
+          <li><a href="../server/#viser.ViserServer.gui">(viser.ViserServer attribute)</a>
 </li>
         </ul></li>
+        <li><a href="../scene_handles/#viser.Gui3dContainerHandle">Gui3dContainerHandle (class in viser)</a>
+</li>
+        <li><a href="../gui_api/#viser.GuiApi">GuiApi (class in viser)</a>
+</li>
         <li><a href="../gui_handles/#viser.GuiButtonGroupHandle">GuiButtonGroupHandle (class in viser)</a>
 </li>
         <li><a href="../gui_handles/#viser.GuiButtonHandle">GuiButtonHandle (class in viser)</a>
@@ -6394,7 +6258,7 @@
 </li>
         <li><a href="../icons/#viser.Icon.LOLLIPOP_OFF">LOLLIPOP_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../client_handles/#viser.CameraHandle.look_at">look_at (viser.CameraHandle property)</a>
+        <li><a href="../camera_handles/#viser.CameraHandle.look_at">look_at (viser.CameraHandle property)</a>
 </li>
         <li><a href="../icons/#viser.Icon.LUGGAGE">LUGGAGE (viser.Icon attribute)</a>
 </li>
@@ -6822,8 +6686,6 @@
 </li>
         <li><a href="../icons/#viser.Icon.MESSAGE_X">MESSAGE_X (viser.Icon attribute)</a>
 </li>
-        <li><a href="../infrastructure/#viser.infra.MessageHandler">MessageHandler (class in viser.infra)</a>
-</li>
         <li><a href="../icons/#viser.Icon.MESSAGES">MESSAGES (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.MESSAGES_OFF">MESSAGES_OFF (viser.Icon attribute)</a>
@@ -7205,9 +7067,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.OMEGA">OMEGA (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.CameraFrustumHandle.on_click">on_click() (viser.CameraFrustumHandle method)</a>
+        <li><a href="../scene_handles/#viser.BatchedAxesHandle.on_click">on_click() (viser.BatchedAxesHandle method)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.CameraFrustumHandle.on_click">(viser.CameraFrustumHandle method)</a>
+</li>
           <li><a href="../scene_handles/#viser.FrameHandle.on_click">(viser.FrameHandle method)</a>
 </li>
           <li><a href="../scene_handles/#viser.GlbHandle.on_click">(viser.GlbHandle method)</a>
@@ -7223,39 +7087,25 @@
           <li><a href="../scene_handles/#viser.TransformControlsHandle.on_click">(viser.TransformControlsHandle method)</a>
 </li>
         </ul></li>
-        <li><a href="../infrastructure/#viser.infra.Server.on_client_connect">on_client_connect() (viser.infra.Server method)</a>
+        <li><a href="../infrastructure/#viser.infra.WebsockServer.on_client_connect">on_client_connect() (viser.infra.WebsockServer method)</a>
 
         <ul>
           <li><a href="../server/#viser.ViserServer.on_client_connect">(viser.ViserServer method)</a>
 </li>
         </ul></li>
-        <li><a href="../infrastructure/#viser.infra.Server.on_client_disconnect">on_client_disconnect() (viser.infra.Server method)</a>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../infrastructure/#viser.infra.WebsockServer.on_client_disconnect">on_client_disconnect() (viser.infra.WebsockServer method)</a>
 
         <ul>
           <li><a href="../server/#viser.ViserServer.on_client_disconnect">(viser.ViserServer method)</a>
 </li>
         </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.on_scene_click">on_scene_click() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.on_scene_click">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.on_pointer_callback_removed">on_pointer_callback_removed() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="../client_handles/#viser.ClientHandle.on_scene_pointer">on_scene_pointer() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.on_scene_pointer">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.on_pointer_event">on_pointer_event() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.on_scene_pointer_removed">on_scene_pointer_removed() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.on_scene_pointer_removed">(viser.ViserServer method)</a>
-</li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.CameraHandle.on_update">on_update() (viser.CameraHandle method)</a>
+        <li><a href="../camera_handles/#viser.CameraHandle.on_update">on_update() (viser.CameraHandle method)</a>
 
         <ul>
           <li><a href="../gui_handles/#viser.GuiDropdownHandle.on_update">(viser.GuiDropdownHandle method)</a>
@@ -7743,10 +7593,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.POOL_OFF">POOL_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.CameraFrustumHandle.position">position (viser.CameraFrustumHandle property)</a>
+        <li><a href="../scene_handles/#viser.BatchedAxesHandle.position">position (viser.BatchedAxesHandle property)</a>
 
         <ul>
-          <li><a href="../client_handles/#viser.CameraHandle.position">(viser.CameraHandle property)</a>
+          <li><a href="../scene_handles/#viser.CameraFrustumHandle.position">(viser.CameraFrustumHandle property)</a>
+</li>
+          <li><a href="../camera_handles/#viser.CameraHandle.position">(viser.CameraHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.FrameHandle.position">(viser.FrameHandle property)</a>
 </li>
@@ -7841,10 +7693,18 @@
 </li>
         <li><a href="../icons/#viser.Icon.QRCODE_OFF">QRCODE_OFF (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.QUESTION_MARK">QUESTION_MARK (viser.Icon attribute)</a>
 </li>
+        <li><a href="../infrastructure/#viser.infra.WebsockClientConnection.queue_message">queue_message() (viser.infra.WebsockClientConnection method)</a>
+
+        <ul>
+          <li><a href="../infrastructure/#viser.infra.WebsockMessageHandler.queue_message">(viser.infra.WebsockMessageHandler method)</a>
+</li>
+          <li><a href="../infrastructure/#viser.infra.WebsockServer.queue_message">(viser.infra.WebsockServer method)</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.QUOTE">QUOTE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.QUOTE_OFF">QUOTE_OFF (viser.Icon attribute)</a>
@@ -7967,12 +7827,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.REGEX_OFF">REGEX_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../infrastructure/#viser.infra.ClientConnection.register_handler">register_handler() (viser.infra.ClientConnection method)</a>
+        <li><a href="../infrastructure/#viser.infra.WebsockClientConnection.register_handler">register_handler() (viser.infra.WebsockClientConnection method)</a>
 
         <ul>
-          <li><a href="../infrastructure/#viser.infra.MessageHandler.register_handler">(viser.infra.MessageHandler method)</a>
+          <li><a href="../infrastructure/#viser.infra.WebsockMessageHandler.register_handler">(viser.infra.WebsockMessageHandler method)</a>
 </li>
-          <li><a href="../infrastructure/#viser.infra.Server.register_handler">(viser.infra.Server method)</a>
+          <li><a href="../infrastructure/#viser.infra.WebsockServer.register_handler">(viser.infra.WebsockServer method)</a>
 </li>
         </ul></li>
         <li><a href="../icons/#viser.Icon.REGISTERED">REGISTERED (viser.Icon attribute)</a>
@@ -7985,9 +7845,11 @@
 </li>
         <li><a href="../icons/#viser.Icon.RELOAD">RELOAD (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.CameraFrustumHandle.remove">remove() (viser.CameraFrustumHandle method)</a>
+        <li><a href="../scene_handles/#viser.BatchedAxesHandle.remove">remove() (viser.BatchedAxesHandle method)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.CameraFrustumHandle.remove">(viser.CameraFrustumHandle method)</a>
+</li>
           <li><a href="../scene_handles/#viser.FrameHandle.remove">(viser.FrameHandle method)</a>
 </li>
           <li><a href="../scene_handles/#viser.GlbHandle.remove">(viser.GlbHandle method)</a>
@@ -8023,22 +7885,18 @@
           <li><a href="../scene_handles/#viser.TransformControlsHandle.remove">(viser.TransformControlsHandle method)</a>
 </li>
         </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.remove_scene_pointer_callback">remove_scene_pointer_callback() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.remove_scene_pointer_callback">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.remove_pointer_callback">remove_pointer_callback() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
         <li><a href="../icons/#viser.Icon.REPEAT">REPEAT (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.REPEAT_OFF">REPEAT_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.REPEAT_ONCE">REPEAT_ONCE (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.REPLACE">REPLACE (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.REPLACE">REPLACE (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.REPLACE_FILLED">REPLACE_FILLED (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.REPLACE_OFF">REPLACE_OFF (viser.Icon attribute)</a>
@@ -8059,12 +7917,8 @@
 </li>
         <li><a href="../icons/#viser.Icon.RESERVED_LINE">RESERVED_LINE (viser.Icon attribute)</a>
 </li>
-        <li><a href="../client_handles/#viser.ClientHandle.reset_scene">reset_scene() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.reset_scene">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.reset">reset() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
         <li><a href="../icons/#viser.Icon.RESIZE">RESIZE (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.RESTORE">RESTORE (viser.Icon attribute)</a>
@@ -8257,6 +8111,14 @@
 </li>
         <li><a href="../icons/#viser.Icon.SCAN_EYE">SCAN_EYE (viser.Icon attribute)</a>
 </li>
+        <li><a href="../client_handles/#viser.ClientHandle.scene">scene (viser.ClientHandle attribute)</a>
+
+        <ul>
+          <li><a href="../server/#viser.ViserServer.scene">(viser.ViserServer attribute)</a>
+</li>
+        </ul></li>
+        <li><a href="../scene_api/#viser.SceneApi">SceneApi (class in viser)</a>
+</li>
         <li><a href="../scene_handles/#viser.SceneNodeHandle">SceneNodeHandle (class in viser)</a>
 </li>
         <li><a href="../events/#viser.SceneNodePointerEvent">SceneNodePointerEvent (class in viser)</a>
@@ -8335,8 +8197,6 @@
 </li>
         <li><a href="../icons/#viser.Icon.SEND">SEND (viser.Icon attribute)</a>
 </li>
-        <li><a href="../infrastructure/#viser.infra.ClientConnection.send">send() (viser.infra.ClientConnection method)</a>
-</li>
         <li><a href="../client_handles/#viser.ClientHandle.send_file_download">send_file_download() (viser.ClientHandle method)</a>
 
         <ul>
@@ -8353,8 +8213,6 @@
 </li>
         <li><a href="../icons/#viser.Icon.SEPARATOR_VERTICAL">SEPARATOR_VERTICAL (viser.Icon attribute)</a>
 </li>
-        <li><a href="../infrastructure/#viser.infra.Server">Server (class in viser.infra)</a>
-</li>
         <li><a href="../icons/#viser.Icon.SERVER">SERVER (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SERVER_2">SERVER_2 (viser.Icon attribute)</a>
@@ -8367,30 +8225,14 @@
 </li>
         <li><a href="../icons/#viser.Icon.SERVICEMARK">SERVICEMARK (viser.Icon attribute)</a>
 </li>
-        <li><a href="../client_handles/#viser.ClientHandle.set_background_image">set_background_image() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.set_background_image">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.set_background_image">set_background_image() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.set_global_scene_node_visibility">set_global_scene_node_visibility() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.set_global_scene_node_visibility">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.set_global_visibility">set_global_visibility() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.set_gui_panel_label">set_gui_panel_label() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.set_gui_panel_label">(viser.ViserServer method)</a>
+        <li><a href="../gui_api/#viser.GuiApi.set_panel_label">set_panel_label() (viser.GuiApi method)</a>
 </li>
-        </ul></li>
-        <li><a href="../client_handles/#viser.ClientHandle.set_up_direction">set_up_direction() (viser.ClientHandle method)</a>
-
-        <ul>
-          <li><a href="../server/#viser.ViserServer.set_up_direction">(viser.ViserServer method)</a>
+        <li><a href="../scene_api/#viser.SceneApi.set_up_direction">set_up_direction() (viser.SceneApi method)</a>
 </li>
-        </ul></li>
         <li><a href="../icons/#viser.Icon.SETTINGS">SETTINGS (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SETTINGS_2">SETTINGS_2 (viser.Icon attribute)</a>
@@ -8725,12 +8567,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.SPORT_BILLARD">SPORT_BILLARD (viser.Icon attribute)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.SPRAY">SPRAY (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SPY">SPY (viser.Icon attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="../icons/#viser.Icon.SPY_OFF">SPY_OFF (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.SQL">SQL (viser.Icon attribute)</a>
@@ -9129,7 +8971,7 @@
 </li>
         <li><a href="../icons/#viser.Icon.STARS_OFF">STARS_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../infrastructure/#viser.infra.Server.start">start() (viser.infra.Server method)</a>
+        <li><a href="../infrastructure/#viser.infra.WebsockServer.start">start() (viser.infra.WebsockServer method)</a>
 </li>
         <li><a href="../icons/#viser.Icon.STATUS_CHANGE">STATUS_CHANGE (viser.Icon attribute)</a>
 </li>
@@ -9151,7 +8993,7 @@
 </li>
         <li><a href="../icons/#viser.Icon.STICKER">STICKER (viser.Icon attribute)</a>
 </li>
-        <li><a href="../infrastructure/#viser.infra.Server.stop">stop() (viser.infra.Server method)</a>
+        <li><a href="../infrastructure/#viser.infra.WebsockServer.stop">stop() (viser.infra.WebsockServer method)</a>
 
         <ul>
           <li><a href="../server/#viser.ViserServer.stop">(viser.ViserServer method)</a>
@@ -9647,19 +9489,27 @@
 </li>
         <li><a href="../icons/#viser.Icon.UNLINK">UNLINK (viser.Icon attribute)</a>
 </li>
-        <li><a href="../infrastructure/#viser.infra.ClientConnection.unregister_handler">unregister_handler() (viser.infra.ClientConnection method)</a>
+        <li><a href="../infrastructure/#viser.infra.WebsockClientConnection.unregister_handler">unregister_handler() (viser.infra.WebsockClientConnection method)</a>
 
         <ul>
-          <li><a href="../infrastructure/#viser.infra.MessageHandler.unregister_handler">(viser.infra.MessageHandler method)</a>
+          <li><a href="../infrastructure/#viser.infra.WebsockMessageHandler.unregister_handler">(viser.infra.WebsockMessageHandler method)</a>
 </li>
-          <li><a href="../infrastructure/#viser.infra.Server.unregister_handler">(viser.infra.Server method)</a>
+          <li><a href="../infrastructure/#viser.infra.WebsockServer.unregister_handler">(viser.infra.WebsockServer method)</a>
 </li>
         </ul></li>
-        <li><a href="../client_handles/#viser.CameraHandle.up_direction">up_direction (viser.CameraHandle property)</a>
+        <li><a href="../infrastructure/#viser.infra.WebsockClientConnection.unsafe_send_message">unsafe_send_message() (viser.infra.WebsockClientConnection method)</a>
+
+        <ul>
+          <li><a href="../infrastructure/#viser.infra.WebsockMessageHandler.unsafe_send_message">(viser.infra.WebsockMessageHandler method)</a>
+</li>
+          <li><a href="../infrastructure/#viser.infra.WebsockServer.unsafe_send_message">(viser.infra.WebsockServer method)</a>
+</li>
+        </ul></li>
+        <li><a href="../camera_handles/#viser.CameraHandle.up_direction">up_direction (viser.CameraHandle property)</a>
 </li>
         <li><a href="../extras/#viser.extras.ViserUrdf.update_cfg">update_cfg() (viser.extras.ViserUrdf method)</a>
 </li>
-        <li><a href="../client_handles/#viser.CameraHandle.update_timestamp">update_timestamp (viser.CameraHandle property)</a>
+        <li><a href="../camera_handles/#viser.CameraHandle.update_timestamp">update_timestamp (viser.CameraHandle property)</a>
 
         <ul>
           <li><a href="../gui_handles/#viser.GuiButtonGroupHandle.update_timestamp">(viser.GuiButtonGroupHandle property)</a>
@@ -9683,10 +9533,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.USER_BOLT">USER_BOLT (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.USER_CANCEL">USER_CANCEL (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.USER_CANCEL">USER_CANCEL (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.USER_CHECK">USER_CHECK (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.USER_CIRCLE">USER_CIRCLE (viser.Icon attribute)</a>
@@ -9862,9 +9712,11 @@
 </li>
         <li><a href="../extras/#viser.extras.ViserUrdf">ViserUrdf (class in viser.extras)</a>
 </li>
-        <li><a href="../scene_handles/#viser.CameraFrustumHandle.visible">visible (viser.CameraFrustumHandle property)</a>
+        <li><a href="../scene_handles/#viser.BatchedAxesHandle.visible">visible (viser.BatchedAxesHandle property)</a>
 
         <ul>
+          <li><a href="../scene_handles/#viser.CameraFrustumHandle.visible">(viser.CameraFrustumHandle property)</a>
+</li>
           <li><a href="../scene_handles/#viser.FrameHandle.visible">(viser.FrameHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.GlbHandle.visible">(viser.GlbHandle property)</a>
@@ -10006,6 +9858,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.WEBHOOK_OFF">WEBHOOK_OFF (viser.Icon attribute)</a>
 </li>
+        <li><a href="../infrastructure/#viser.infra.WebsockClientConnection">WebsockClientConnection (class in viser.infra)</a>
+</li>
+        <li><a href="../infrastructure/#viser.infra.WebsockMessageHandler">WebsockMessageHandler (class in viser.infra)</a>
+</li>
+        <li><a href="../infrastructure/#viser.infra.WebsockServer">WebsockServer (class in viser.infra)</a>
+</li>
         <li><a href="../icons/#viser.Icon.WEIGHT">WEIGHT (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.WHEELCHAIR">WHEELCHAIR (viser.Icon attribute)</a>
@@ -10026,10 +9884,10 @@
 </li>
         <li><a href="../icons/#viser.Icon.WIND">WIND (viser.Icon attribute)</a>
 </li>
-        <li><a href="../icons/#viser.Icon.WIND_OFF">WIND_OFF (viser.Icon attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="../icons/#viser.Icon.WIND_OFF">WIND_OFF (viser.Icon attribute)</a>
+</li>
         <li><a href="../icons/#viser.Icon.WINDMILL">WINDMILL (viser.Icon attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.WINDMILL_FILLED">WINDMILL_FILLED (viser.Icon attribute)</a>
@@ -10056,7 +9914,7 @@
 </li>
         <li><a href="../icons/#viser.Icon.WORLD">WORLD (viser.Icon attribute)</a>
 </li>
-        <li><a href="../server/#viser.ViserServer.world_axes">world_axes (viser.ViserServer attribute)</a>
+        <li><a href="../scene_api/#viser.SceneApi.world_axes">world_axes (viser.SceneApi attribute)</a>
 </li>
         <li><a href="../icons/#viser.Icon.WORLD_BOLT">WORLD_BOLT (viser.Icon attribute)</a>
 </li>
@@ -10118,10 +9976,12 @@
 </li>
         <li><a href="../icons/#viser.Icon.WRITING_SIGN_OFF">WRITING_SIGN_OFF (viser.Icon attribute)</a>
 </li>
-        <li><a href="../scene_handles/#viser.CameraFrustumHandle.wxyz">wxyz (viser.CameraFrustumHandle property)</a>
+        <li><a href="../scene_handles/#viser.BatchedAxesHandle.wxyz">wxyz (viser.BatchedAxesHandle property)</a>
 
         <ul>
-          <li><a href="../client_handles/#viser.CameraHandle.wxyz">(viser.CameraHandle property)</a>
+          <li><a href="../scene_handles/#viser.CameraFrustumHandle.wxyz">(viser.CameraFrustumHandle property)</a>
+</li>
+          <li><a href="../camera_handles/#viser.CameraHandle.wxyz">(viser.CameraHandle property)</a>
 </li>
           <li><a href="../scene_handles/#viser.FrameHandle.wxyz">(viser.FrameHandle property)</a>
 </li>

@@ -25,17 +25,17 @@ relative to /tree.
 
         while True:
             # Add some coordinate frames to the scene. These will be visualized in the viewer.
-            server.add_frame(
+            server.scene.add_frame(
                 "/tree",
                 wxyz=(1.0, 0.0, 0.0, 0.0),
                 position=(random.random() * 2.0, 2.0, 0.2),
             )
-            server.add_frame(
+            server.scene.add_frame(
                 "/tree/branch",
                 wxyz=(1.0, 0.0, 0.0, 0.0),
                 position=(random.random() * 2.0, 2.0, 0.2),
             )
-            leaf = server.add_frame(
+            leaf = server.scene.add_frame(
                 "/tree/branch/leaf",
                 wxyz=(1.0, 0.0, 0.0, 0.0),
                 position=(random.random() * 2.0, 2.0, 0.2),

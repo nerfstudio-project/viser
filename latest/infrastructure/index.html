@@ -12,7 +12,7 @@
         gtag('js', new Date());
         gtag('config', 'G-RRGY51J5ZH');
     </script>
-    <link rel="index" title="Index" href="../genindex/" /><link rel="search" title="Search" href="../search/" /><link rel="next" title="Transforms" href="../transforms/" /><link rel="prev" title="Icons" href="../icons/" />
+    <link rel="index" title="Index" href="../genindex/" /><link rel="search" title="Search" href="../search/" /><link rel="next" title="Record3D + URDF Helpers" href="../extras/" /><link rel="prev" title="Transforms" href="../transforms/" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>Communication - viser</title>
@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../extras/">Extras</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -318,19 +324,14 @@
 <p>These are what <code class="docutils literal notranslate"><span class="pre">viser</span></code> runs on under-the-hood, and generally won’t be useful unless
 you’re building a web-based application from scratch.</p>
 <dl class="py class">
-<dt class="sig sig-object py" id="viser.infra.ClientConnection">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">ClientConnection</span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#ClientConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.ClientConnection" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#viser.infra.MessageHandler" title="viser.infra._infra.MessageHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageHandler</span></code></a></p>
-<p>Handle for interacting with a single connected client.</p>
-<p>We can use this to read the camera state or send client-specific messages.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.infra.ClientConnection.client_id">
-<span class="sig-name descname"><span class="pre">client_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClientId</span></em><a class="headerlink" href="#viser.infra.ClientConnection.client_id" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
+<dt class="sig sig-object py" id="viser.infra.WebsockClientConnection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">WebsockClientConnection</span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockClientConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockClientConnection" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#viser.infra.WebsockMessageHandler" title="viser.infra._infra.WebsockMessageHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">WebsockMessageHandler</span></code></a></p>
+<p>Handle for sending messages to and listening to messages from a single
+connected client.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.ClientConnection.send">
-<span class="sig-name descname"><span class="pre">send</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#ClientConnection.send"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.ClientConnection.send" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockClientConnection.unsafe_send_message">
+<span class="sig-name descname"><span class="pre">unsafe_send_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockClientConnection.unsafe_send_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockClientConnection.unsafe_send_message" title="Link to this definition">#</a></dt>
 <dd><p>Send a message to a specific client.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -343,8 +344,40 @@ you’re building a web-based application from scratch.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.ClientConnection.register_handler">
-<span class="sig-name descname"><span class="pre">register_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.infra.ClientConnection.register_handler" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockClientConnection.atomic">
+<span class="sig-name descname"><span class="pre">atomic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#viser.infra.WebsockClientConnection.atomic" title="Link to this definition">#</a></dt>
+<dd><p>Returns a context where: all outgoing messages are grouped and applied by
+clients atomically.</p>
+<p>This should be treated as a soft constraint that’s helpful for things
+like animations, or when we want position and orientation updates to
+happen synchronously.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Context manager.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Generator</em>[None, None, None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.WebsockClientConnection.queue_message">
+<span class="sig-name descname"><span class="pre">queue_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.infra.WebsockClientConnection.queue_message" title="Link to this definition">#</a></dt>
+<dd><p>Wrapped method for sending messages safely.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><em>Message</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.WebsockClientConnection.register_handler">
+<span class="sig-name descname"><span class="pre">register_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.infra.WebsockClientConnection.register_handler" title="Link to this definition">#</a></dt>
 <dd><p>Register a handler for a particular message type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -360,8 +393,8 @@ you’re building a web-based application from scratch.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.ClientConnection.unregister_handler">
-<span class="sig-name descname"><span class="pre">unregister_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.infra.ClientConnection.unregister_handler" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockClientConnection.unregister_handler">
+<span class="sig-name descname"><span class="pre">unregister_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.infra.WebsockClientConnection.unregister_handler" title="Link to this definition">#</a></dt>
 <dd><p>Unregister a handler for a particular message type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -376,13 +409,13 @@ you’re building a web-based application from scratch.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="viser.infra.MessageHandler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">MessageHandler</span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#MessageHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.MessageHandler" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockMessageHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">WebsockMessageHandler</span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockMessageHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockMessageHandler" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Mix-in for adding message handling to a class.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.MessageHandler.register_handler">
-<span class="sig-name descname"><span class="pre">register_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#MessageHandler.register_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.MessageHandler.register_handler" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockMessageHandler.register_handler">
+<span class="sig-name descname"><span class="pre">register_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockMessageHandler.register_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockMessageHandler.register_handler" title="Link to this definition">#</a></dt>
 <dd><p>Register a handler for a particular message type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -398,8 +431,8 @@ you’re building a web-based application from scratch.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.MessageHandler.unregister_handler">
-<span class="sig-name descname"><span class="pre">unregister_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_infra/#MessageHandler.unregister_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.MessageHandler.unregister_handler" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockMessageHandler.unregister_handler">
+<span class="sig-name descname"><span class="pre">unregister_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockMessageHandler.unregister_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockMessageHandler.unregister_handler" title="Link to this definition">#</a></dt>
 <dd><p>Unregister a handler for a particular message type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -411,12 +444,57 @@ you’re building a web-based application from scratch.</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.WebsockMessageHandler.unsafe_send_message">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unsafe_send_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockMessageHandler.unsafe_send_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockMessageHandler.unsafe_send_message" title="Link to this definition">#</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><em>Message</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.WebsockMessageHandler.queue_message">
+<span class="sig-name descname"><span class="pre">queue_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockMessageHandler.queue_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockMessageHandler.queue_message" title="Link to this definition">#</a></dt>
+<dd><p>Wrapped method for sending messages safely.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><em>Message</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.WebsockMessageHandler.atomic">
+<span class="sig-name descname"><span class="pre">atomic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockMessageHandler.atomic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockMessageHandler.atomic" title="Link to this definition">#</a></dt>
+<dd><p>Returns a context where: all outgoing messages are grouped and applied by
+clients atomically.</p>
+<p>This should be treated as a soft constraint that’s helpful for things
+like animations, or when we want position and orientation updates to
+happen synchronously.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Context manager.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Generator</em>[None, None, None]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="viser.infra.Server">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">Server</span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#viser.infra.MessageHandler" title="viser.infra._infra.MessageHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">MessageHandler</span></code></a></p>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">WebsockServer</span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockServer" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#viser.infra.WebsockMessageHandler" title="viser.infra._infra.WebsockMessageHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">WebsockMessageHandler</span></code></a></p>
 <p>Websocket server abstraction. Communicates asynchronously with client
 applications.</p>
 <p>By default, all messages are broadcasted to all connected clients.</p>
@@ -438,8 +516,8 @@ messages. 1 sends windowed messages.</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.start">
-<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.start" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockServer.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockServer.start" title="Link to this definition">#</a></dt>
 <dd><p>Start the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -449,8 +527,8 @@ messages. 1 sends windowed messages.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.stop">
-<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.stop" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockServer.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockServer.stop" title="Link to this definition">#</a></dt>
 <dd><p>Stop the server.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -460,12 +538,12 @@ messages. 1 sends windowed messages.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.on_client_connect">
-<span class="sig-name descname"><span class="pre">on_client_connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.ClientConnection" title="viser.infra._infra.ClientConnection"><span class="pre">ClientConnection</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.on_client_connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.on_client_connect" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.on_client_connect">
+<span class="sig-name descname"><span class="pre">on_client_connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.WebsockClientConnection" title="viser.infra._infra.WebsockClientConnection"><span class="pre">WebsockClientConnection</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockServer.on_client_connect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockServer.on_client_connect" title="Link to this definition">#</a></dt>
 <dd><p>Attach a callback to run for newly connected clients.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.infra.ClientConnection" title="viser.infra._infra.ClientConnection"><em>ClientConnection</em></a><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.infra.WebsockClientConnection" title="viser.infra._infra.WebsockClientConnection"><em>WebsockClientConnection</em></a><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -474,12 +552,12 @@ messages. 1 sends windowed messages.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.on_client_disconnect">
-<span class="sig-name descname"><span class="pre">on_client_disconnect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.ClientConnection" title="viser.infra._infra.ClientConnection"><span class="pre">ClientConnection</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.on_client_disconnect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.on_client_disconnect" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.on_client_disconnect">
+<span class="sig-name descname"><span class="pre">on_client_disconnect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.WebsockClientConnection" title="viser.infra._infra.WebsockClientConnection"><span class="pre">WebsockClientConnection</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockServer.on_client_disconnect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockServer.on_client_disconnect" title="Link to this definition">#</a></dt>
 <dd><p>Attach a callback to run when clients disconnect.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.infra.ClientConnection" title="viser.infra._infra.ClientConnection"><em>ClientConnection</em></a><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
+<dd class="field-odd"><p><strong>cb</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.infra.WebsockClientConnection" title="viser.infra._infra.WebsockClientConnection"><em>WebsockClientConnection</em></a><em>]</em><em>, </em><em>Any</em><em>]</em>) – </p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -488,8 +566,8 @@ messages. 1 sends windowed messages.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.broadcast">
-<span class="sig-name descname"><span class="pre">broadcast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.broadcast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.broadcast" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.unsafe_send_message">
+<span class="sig-name descname"><span class="pre">unsafe_send_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockServer.unsafe_send_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockServer.unsafe_send_message" title="Link to this definition">#</a></dt>
 <dd><p>Pushes a message onto the broadcast queue. Message will be sent to all clients.</p>
 <p>Broadcasted messages are persistent: if a new client connects to the server,
 they will receive a buffered set of previously broadcasted messages. The buffer
@@ -505,8 +583,8 @@ is culled using the value of <code class="docutils literal notranslate"><span cl
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.flush">
-<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.flush"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.flush" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.flush">
+<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockServer.flush"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockServer.flush" title="Link to this definition">#</a></dt>
 <dd><p>Flush the outgoing message buffer for broadcasted messages. Any buffered
 messages will immediately be sent. (by default they are windowed)</p>
 <dl class="field-list simple">
@@ -517,8 +595,8 @@ messages will immediately be sent. (by default they are windowed)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.flush_client">
-<span class="sig-name descname"><span class="pre">flush_client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#Server.flush_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.Server.flush_client" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.flush_client">
+<span class="sig-name descname"><span class="pre">flush_client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockServer.flush_client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockServer.flush_client" title="Link to this definition">#</a></dt>
 <dd><p>Flush the outgoing message buffer for a particular client. Any buffered
 messages will immediately be sent. (by default they are windowed)</p>
 <dl class="field-list simple">
@@ -532,8 +610,40 @@ messages will immediately be sent. (by default they are windowed)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.register_handler">
-<span class="sig-name descname"><span class="pre">register_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.infra.Server.register_handler" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.atomic">
+<span class="sig-name descname"><span class="pre">atomic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Generator</span><span class="p"><span class="pre">[</span></span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#viser.infra.WebsockServer.atomic" title="Link to this definition">#</a></dt>
+<dd><p>Returns a context where: all outgoing messages are grouped and applied by
+clients atomically.</p>
+<p>This should be treated as a soft constraint that’s helpful for things
+like animations, or when we want position and orientation updates to
+happen synchronously.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Context manager.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Generator</em>[None, None, None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.queue_message">
+<span class="sig-name descname"><span class="pre">queue_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.infra.WebsockServer.queue_message" title="Link to this definition">#</a></dt>
+<dd><p>Wrapped method for sending messages safely.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><em>Message</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.register_handler">
+<span class="sig-name descname"><span class="pre">register_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.infra.WebsockServer.register_handler" title="Link to this definition">#</a></dt>
 <dd><p>Register a handler for a particular message type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -549,8 +659,8 @@ messages will immediately be sent. (by default they are windowed)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.infra.Server.unregister_handler">
-<span class="sig-name descname"><span class="pre">unregister_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.infra.Server.unregister_handler" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="viser.infra.WebsockServer.unregister_handler">
+<span class="sig-name descname"><span class="pre">unregister_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">ClientId</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">TMessage</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#viser.infra.WebsockServer.unregister_handler" title="Link to this definition">#</a></dt>
 <dd><p>Unregister a handler for a particular message type.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -662,23 +772,23 @@ TypeScript annotation corresponding to a dataclass field.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../transforms/">
+          <a class="next-page" href="../extras/">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Transforms</div>
+                <div class="title">Record3D + URDF Helpers</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../icons/">
+          <a class="prev-page" href="../transforms/">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Icons</div>
+                <div class="title">Transforms</div>
                 
               </div>
             </a>
@@ -720,28 +830,34 @@ TypeScript annotation corresponding to a dataclass field.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Communication</a><ul>
-<li><a class="reference internal" href="#viser.infra.ClientConnection"><code class="docutils literal notranslate"><span class="pre">ClientConnection</span></code></a><ul>
-<li><a class="reference internal" href="#viser.infra.ClientConnection.client_id"><code class="docutils literal notranslate"><span class="pre">ClientConnection.client_id</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.ClientConnection.send"><code class="docutils literal notranslate"><span class="pre">ClientConnection.send()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.ClientConnection.register_handler"><code class="docutils literal notranslate"><span class="pre">ClientConnection.register_handler()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.ClientConnection.unregister_handler"><code class="docutils literal notranslate"><span class="pre">ClientConnection.unregister_handler()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockClientConnection"><code class="docutils literal notranslate"><span class="pre">WebsockClientConnection</span></code></a><ul>
+<li><a class="reference internal" href="#viser.infra.WebsockClientConnection.unsafe_send_message"><code class="docutils literal notranslate"><span class="pre">WebsockClientConnection.unsafe_send_message()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockClientConnection.atomic"><code class="docutils literal notranslate"><span class="pre">WebsockClientConnection.atomic()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockClientConnection.queue_message"><code class="docutils literal notranslate"><span class="pre">WebsockClientConnection.queue_message()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockClientConnection.register_handler"><code class="docutils literal notranslate"><span class="pre">WebsockClientConnection.register_handler()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockClientConnection.unregister_handler"><code class="docutils literal notranslate"><span class="pre">WebsockClientConnection.unregister_handler()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#viser.infra.MessageHandler"><code class="docutils literal notranslate"><span class="pre">MessageHandler</span></code></a><ul>
-<li><a class="reference internal" href="#viser.infra.MessageHandler.register_handler"><code class="docutils literal notranslate"><span class="pre">MessageHandler.register_handler()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.MessageHandler.unregister_handler"><code class="docutils literal notranslate"><span class="pre">MessageHandler.unregister_handler()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockMessageHandler"><code class="docutils literal notranslate"><span class="pre">WebsockMessageHandler</span></code></a><ul>
+<li><a class="reference internal" href="#viser.infra.WebsockMessageHandler.register_handler"><code class="docutils literal notranslate"><span class="pre">WebsockMessageHandler.register_handler()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockMessageHandler.unregister_handler"><code class="docutils literal notranslate"><span class="pre">WebsockMessageHandler.unregister_handler()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockMessageHandler.unsafe_send_message"><code class="docutils literal notranslate"><span class="pre">WebsockMessageHandler.unsafe_send_message()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockMessageHandler.queue_message"><code class="docutils literal notranslate"><span class="pre">WebsockMessageHandler.queue_message()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockMessageHandler.atomic"><code class="docutils literal notranslate"><span class="pre">WebsockMessageHandler.atomic()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#viser.infra.Server"><code class="docutils literal notranslate"><span class="pre">Server</span></code></a><ul>
-<li><a class="reference internal" href="#viser.infra.Server.start"><code class="docutils literal notranslate"><span class="pre">Server.start()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.Server.stop"><code class="docutils literal notranslate"><span class="pre">Server.stop()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.Server.on_client_connect"><code class="docutils literal notranslate"><span class="pre">Server.on_client_connect()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.Server.on_client_disconnect"><code class="docutils literal notranslate"><span class="pre">Server.on_client_disconnect()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.Server.broadcast"><code class="docutils literal notranslate"><span class="pre">Server.broadcast()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.Server.flush"><code class="docutils literal notranslate"><span class="pre">Server.flush()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.Server.flush_client"><code class="docutils literal notranslate"><span class="pre">Server.flush_client()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.Server.register_handler"><code class="docutils literal notranslate"><span class="pre">Server.register_handler()</span></code></a></li>
-<li><a class="reference internal" href="#viser.infra.Server.unregister_handler"><code class="docutils literal notranslate"><span class="pre">Server.unregister_handler()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer"><code class="docutils literal notranslate"><span class="pre">WebsockServer</span></code></a><ul>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.start"><code class="docutils literal notranslate"><span class="pre">WebsockServer.start()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.stop"><code class="docutils literal notranslate"><span class="pre">WebsockServer.stop()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.on_client_connect"><code class="docutils literal notranslate"><span class="pre">WebsockServer.on_client_connect()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.on_client_disconnect"><code class="docutils literal notranslate"><span class="pre">WebsockServer.on_client_disconnect()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.unsafe_send_message"><code class="docutils literal notranslate"><span class="pre">WebsockServer.unsafe_send_message()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.flush"><code class="docutils literal notranslate"><span class="pre">WebsockServer.flush()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.flush_client"><code class="docutils literal notranslate"><span class="pre">WebsockServer.flush_client()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.atomic"><code class="docutils literal notranslate"><span class="pre">WebsockServer.atomic()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.queue_message"><code class="docutils literal notranslate"><span class="pre">WebsockServer.queue_message()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.register_handler"><code class="docutils literal notranslate"><span class="pre">WebsockServer.register_handler()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.WebsockServer.unregister_handler"><code class="docutils literal notranslate"><span class="pre">WebsockServer.unregister_handler()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.infra.Message"><code class="docutils literal notranslate"><span class="pre">Message</span></code></a><ul>

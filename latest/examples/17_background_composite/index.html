@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
@@ -326,12 +332,12 @@ be useful when we want a 2D image to occlude 3D geometry, such as for NeRF rende
 <span class="linenos">16</span><span class="n">img</span><span class="p">[</span><span class="mi">250</span><span class="p">:</span><span class="mi">750</span><span class="p">,</span> <span class="mi">250</span><span class="p">:</span><span class="mi">750</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mi">255</span>
 <span class="linenos">17</span>
 <span class="linenos">18</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">creation</span><span class="o">.</span><span class="n">box</span><span class="p">((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
-<span class="linenos">19</span><span class="n">server</span><span class="o">.</span><span class="n">add_mesh_trimesh</span><span class="p">(</span>
+<span class="linenos">19</span><span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_mesh_trimesh</span><span class="p">(</span>
 <span class="linenos">20</span>    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/cube&quot;</span><span class="p">,</span>
 <span class="linenos">21</span>    <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
 <span class="linenos">22</span>    <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 <span class="linenos">23</span><span class="p">)</span>
-<span class="linenos">24</span><span class="n">server</span><span class="o">.</span><span class="n">set_background_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">)</span>
+<span class="linenos">24</span><span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">set_background_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">)</span>
 <span class="linenos">25</span>
 <span class="linenos">26</span>
 <span class="linenos">27</span><span class="k">while</span> <span class="kc">True</span><span class="p">:</span>

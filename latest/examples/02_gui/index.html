@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
@@ -317,14 +323,14 @@
 <span class="linenos">  8</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos">  9</span>
 <span class="linenos"> 10</span>    <span class="c1"># Add some common GUI elements: number inputs, sliders, vectors, checkboxes.</span>
-<span class="linenos"> 11</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Read-only&quot;</span><span class="p">):</span>
-<span class="linenos"> 12</span>        <span class="n">gui_counter</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_number</span><span class="p">(</span>
+<span class="linenos"> 11</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_folder</span><span class="p">(</span><span class="s2">&quot;Read-only&quot;</span><span class="p">):</span>
+<span class="linenos"> 12</span>        <span class="n">gui_counter</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_number</span><span class="p">(</span>
 <span class="linenos"> 13</span>            <span class="s2">&quot;Counter&quot;</span><span class="p">,</span>
 <span class="linenos"> 14</span>            <span class="n">initial_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="linenos"> 15</span>            <span class="n">disabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="linenos"> 16</span>        <span class="p">)</span>
 <span class="linenos"> 17</span>
-<span class="linenos"> 18</span>        <span class="n">gui_slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
+<span class="linenos"> 18</span>        <span class="n">gui_slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
 <span class="linenos"> 19</span>            <span class="s2">&quot;Slider&quot;</span><span class="p">,</span>
 <span class="linenos"> 20</span>            <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="linenos"> 21</span>            <span class="nb">max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
@@ -333,36 +339,36 @@
 <span class="linenos"> 24</span>            <span class="n">disabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="linenos"> 25</span>        <span class="p">)</span>
 <span class="linenos"> 26</span>
-<span class="linenos"> 27</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Editable&quot;</span><span class="p">):</span>
-<span class="linenos"> 28</span>        <span class="n">gui_vector2</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_vector2</span><span class="p">(</span>
+<span class="linenos"> 27</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_folder</span><span class="p">(</span><span class="s2">&quot;Editable&quot;</span><span class="p">):</span>
+<span class="linenos"> 28</span>        <span class="n">gui_vector2</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_vector2</span><span class="p">(</span>
 <span class="linenos"> 29</span>            <span class="s2">&quot;Position&quot;</span><span class="p">,</span>
 <span class="linenos"> 30</span>            <span class="n">initial_value</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
 <span class="linenos"> 31</span>            <span class="n">step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
 <span class="linenos"> 32</span>        <span class="p">)</span>
-<span class="linenos"> 33</span>        <span class="n">gui_vector3</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_vector3</span><span class="p">(</span>
+<span class="linenos"> 33</span>        <span class="n">gui_vector3</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_vector3</span><span class="p">(</span>
 <span class="linenos"> 34</span>            <span class="s2">&quot;Size&quot;</span><span class="p">,</span>
 <span class="linenos"> 35</span>            <span class="n">initial_value</span><span class="o">=</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
 <span class="linenos"> 36</span>            <span class="n">step</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
 <span class="linenos"> 37</span>        <span class="p">)</span>
-<span class="linenos"> 38</span>        <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Text toggle&quot;</span><span class="p">):</span>
-<span class="linenos"> 39</span>            <span class="n">gui_checkbox_hide</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span>
+<span class="linenos"> 38</span>        <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_folder</span><span class="p">(</span><span class="s2">&quot;Text toggle&quot;</span><span class="p">):</span>
+<span class="linenos"> 39</span>            <span class="n">gui_checkbox_hide</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span>
 <span class="linenos"> 40</span>                <span class="s2">&quot;Hide&quot;</span><span class="p">,</span>
 <span class="linenos"> 41</span>                <span class="n">initial_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="linenos"> 42</span>            <span class="p">)</span>
-<span class="linenos"> 43</span>            <span class="n">gui_text</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_text</span><span class="p">(</span>
+<span class="linenos"> 43</span>            <span class="n">gui_text</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_text</span><span class="p">(</span>
 <span class="linenos"> 44</span>                <span class="s2">&quot;Text&quot;</span><span class="p">,</span>
 <span class="linenos"> 45</span>                <span class="n">initial_value</span><span class="o">=</span><span class="s2">&quot;Hello world&quot;</span><span class="p">,</span>
 <span class="linenos"> 46</span>            <span class="p">)</span>
-<span class="linenos"> 47</span>            <span class="n">gui_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Button&quot;</span><span class="p">)</span>
-<span class="linenos"> 48</span>            <span class="n">gui_checkbox_disable</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span>
+<span class="linenos"> 47</span>            <span class="n">gui_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Button&quot;</span><span class="p">)</span>
+<span class="linenos"> 48</span>            <span class="n">gui_checkbox_disable</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span>
 <span class="linenos"> 49</span>                <span class="s2">&quot;Disable&quot;</span><span class="p">,</span>
 <span class="linenos"> 50</span>                <span class="n">initial_value</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="linenos"> 51</span>            <span class="p">)</span>
-<span class="linenos"> 52</span>            <span class="n">gui_rgb</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_rgb</span><span class="p">(</span>
+<span class="linenos"> 52</span>            <span class="n">gui_rgb</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_rgb</span><span class="p">(</span>
 <span class="linenos"> 53</span>                <span class="s2">&quot;Color&quot;</span><span class="p">,</span>
 <span class="linenos"> 54</span>                <span class="n">initial_value</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
 <span class="linenos"> 55</span>            <span class="p">)</span>
-<span class="linenos"> 56</span>            <span class="n">gui_multi_slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_multi_slider</span><span class="p">(</span>
+<span class="linenos"> 56</span>            <span class="n">gui_multi_slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_multi_slider</span><span class="p">(</span>
 <span class="linenos"> 57</span>                <span class="s2">&quot;Multi slider&quot;</span><span class="p">,</span>
 <span class="linenos"> 58</span>                <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="linenos"> 59</span>                <span class="nb">max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
@@ -370,7 +376,7 @@
 <span class="linenos"> 61</span>                <span class="n">initial_value</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
 <span class="linenos"> 62</span>                <span class="n">marks</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="s2">&quot;5&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="s2">&quot;7&quot;</span><span class="p">),</span> <span class="mi">99</span><span class="p">),</span>
 <span class="linenos"> 63</span>            <span class="p">)</span>
-<span class="linenos"> 64</span>            <span class="n">gui_slider_positions</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
+<span class="linenos"> 64</span>            <span class="n">gui_slider_positions</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
 <span class="linenos"> 65</span>                <span class="s2">&quot;# sliders&quot;</span><span class="p">,</span>
 <span class="linenos"> 66</span>                <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
 <span class="linenos"> 67</span>                <span class="nb">max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
@@ -378,7 +384,7 @@
 <span class="linenos"> 69</span>                <span class="n">initial_value</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
 <span class="linenos"> 70</span>                <span class="n">marks</span><span class="o">=</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;5&quot;</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s2">&quot;7&quot;</span><span class="p">),</span> <span class="mi">10</span><span class="p">),</span>
 <span class="linenos"> 71</span>            <span class="p">)</span>
-<span class="linenos"> 72</span>            <span class="n">gui_upload_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_upload_button</span><span class="p">(</span>
+<span class="linenos"> 72</span>            <span class="n">gui_upload_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_upload_button</span><span class="p">(</span>
 <span class="linenos"> 73</span>                <span class="s2">&quot;Upload&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="n">viser</span><span class="o">.</span><span class="n">Icon</span><span class="o">.</span><span class="n">UPLOAD</span>
 <span class="linenos"> 74</span>            <span class="p">)</span>
 <span class="linenos"> 75</span>
@@ -402,7 +408,7 @@
 <span class="linenos"> 93</span>        <span class="c1"># We can set the position of a scene node with `.position`, and read the value</span>
 <span class="linenos"> 94</span>        <span class="c1"># of a gui element with `.value`. Changes are automatically reflected in</span>
 <span class="linenos"> 95</span>        <span class="c1"># connected clients.</span>
-<span class="linenos"> 96</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
+<span class="linenos"> 96</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
 <span class="linenos"> 97</span>            <span class="s2">&quot;/point_cloud&quot;</span><span class="p">,</span>
 <span class="linenos"> 98</span>            <span class="n">points</span><span class="o">=</span><span class="n">point_positions</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gui_vector3</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
 <span class="linenos"> 99</span>            <span class="n">colors</span><span class="o">=</span><span class="p">(</span>

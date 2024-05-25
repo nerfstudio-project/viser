@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
@@ -309,143 +315,142 @@
 <p>Parse and stream record3d captures. To get the demo data, see <code class="docutils literal notranslate"><span class="pre">./assets/download_record3d_dance.sh</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span> <span class="nn">time</span>
 <span class="linenos">  2</span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="linenos">  3</span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-<span class="linenos">  4</span>
-<span class="linenos">  5</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
-<span class="linenos">  6</span><span class="kn">import</span> <span class="nn">tyro</span>
-<span class="linenos">  7</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos">  8</span><span class="kn">import</span> <span class="nn">viser.extras</span>
-<span class="linenos">  9</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="linenos"> 10</span><span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="linenos">  3</span>
+<span class="linenos">  4</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
+<span class="linenos">  5</span><span class="kn">import</span> <span class="nn">tyro</span>
+<span class="linenos">  6</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos">  7</span><span class="kn">import</span> <span class="nn">viser.extras</span>
+<span class="linenos">  8</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="linenos">  9</span><span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="linenos"> 10</span>
 <span class="linenos"> 11</span>
-<span class="linenos"> 12</span>
-<span class="linenos"> 13</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
-<span class="linenos"> 14</span>    <span class="n">data_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/record3d_dance&quot;</span><span class="p">,</span>
-<span class="linenos"> 15</span>    <span class="n">downsample_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-<span class="linenos"> 16</span>    <span class="n">max_frames</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
-<span class="linenos"> 17</span>    <span class="n">share</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="linenos"> 18</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos"> 19</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos"> 20</span>    <span class="k">if</span> <span class="n">share</span><span class="p">:</span>
-<span class="linenos"> 21</span>        <span class="n">server</span><span class="o">.</span><span class="n">request_share_url</span><span class="p">()</span>
-<span class="linenos"> 22</span>
-<span class="linenos"> 23</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading frames!&quot;</span><span class="p">)</span>
-<span class="linenos"> 24</span>    <span class="n">loader</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">Record3dLoader</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
-<span class="linenos"> 25</span>    <span class="n">num_frames</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_frames</span><span class="p">,</span> <span class="n">loader</span><span class="o">.</span><span class="n">num_frames</span><span class="p">())</span>
-<span class="linenos"> 26</span>
-<span class="linenos"> 27</span>    <span class="c1"># Add playback UI.</span>
-<span class="linenos"> 28</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_folder</span><span class="p">(</span><span class="s2">&quot;Playback&quot;</span><span class="p">):</span>
-<span class="linenos"> 29</span>        <span class="n">gui_timestep</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
-<span class="linenos"> 30</span>            <span class="s2">&quot;Timestep&quot;</span><span class="p">,</span>
-<span class="linenos"> 31</span>            <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos"> 32</span>            <span class="nb">max</span><span class="o">=</span><span class="n">num_frames</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-<span class="linenos"> 33</span>            <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-<span class="linenos"> 34</span>            <span class="n">initial_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-<span class="linenos"> 35</span>            <span class="n">disabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="linenos"> 36</span>        <span class="p">)</span>
-<span class="linenos"> 37</span>        <span class="n">gui_next_frame</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Next Frame&quot;</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos"> 38</span>        <span class="n">gui_prev_frame</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Prev Frame&quot;</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos"> 39</span>        <span class="n">gui_playing</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Playing&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-<span class="linenos"> 40</span>        <span class="n">gui_framerate</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
-<span class="linenos"> 41</span>            <span class="s2">&quot;FPS&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">fps</span>
-<span class="linenos"> 42</span>        <span class="p">)</span>
-<span class="linenos"> 43</span>        <span class="n">gui_framerate_options</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button_group</span><span class="p">(</span>
-<span class="linenos"> 44</span>            <span class="s2">&quot;FPS options&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;10&quot;</span><span class="p">,</span> <span class="s2">&quot;20&quot;</span><span class="p">,</span> <span class="s2">&quot;30&quot;</span><span class="p">,</span> <span class="s2">&quot;60&quot;</span><span class="p">)</span>
-<span class="linenos"> 45</span>        <span class="p">)</span>
-<span class="linenos"> 46</span>
-<span class="linenos"> 47</span>    <span class="c1"># Frame step buttons.</span>
-<span class="linenos"> 48</span>    <span class="nd">@gui_next_frame</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos"> 49</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos"> 50</span>        <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
-<span class="linenos"> 51</span>
-<span class="linenos"> 52</span>    <span class="nd">@gui_prev_frame</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos"> 53</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos"> 54</span>        <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
-<span class="linenos"> 55</span>
-<span class="linenos"> 56</span>    <span class="c1"># Disable frame controls when we&#39;re playing.</span>
-<span class="linenos"> 57</span>    <span class="nd">@gui_playing</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos"> 58</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos"> 59</span>        <span class="n">gui_timestep</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos"> 60</span>        <span class="n">gui_next_frame</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos"> 61</span>        <span class="n">gui_prev_frame</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos"> 62</span>
-<span class="linenos"> 63</span>    <span class="c1"># Set the framerate when we click one of the options.</span>
-<span class="linenos"> 64</span>    <span class="nd">@gui_framerate_options</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos"> 65</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos"> 66</span>        <span class="n">gui_framerate</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gui_framerate_options</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-<span class="linenos"> 67</span>
-<span class="linenos"> 68</span>    <span class="n">prev_timestep</span> <span class="o">=</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos"> 69</span>
-<span class="linenos"> 70</span>    <span class="c1"># Toggle frame visibility when the timestep slider changes.</span>
-<span class="linenos"> 71</span>    <span class="nd">@gui_timestep</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos"> 72</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos"> 73</span>        <span class="k">nonlocal</span> <span class="n">prev_timestep</span>
-<span class="linenos"> 74</span>        <span class="n">current_timestep</span> <span class="o">=</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos"> 75</span>        <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
-<span class="linenos"> 76</span>            <span class="n">frame_nodes</span><span class="p">[</span><span class="n">current_timestep</span><span class="p">]</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="linenos"> 77</span>            <span class="n">frame_nodes</span><span class="p">[</span><span class="n">prev_timestep</span><span class="p">]</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="linenos"> 78</span>        <span class="n">prev_timestep</span> <span class="o">=</span> <span class="n">current_timestep</span>
-<span class="linenos"> 79</span>        <span class="n">server</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>  <span class="c1"># Optional!</span>
-<span class="linenos"> 80</span>
-<span class="linenos"> 81</span>    <span class="c1"># Load in frames.</span>
-<span class="linenos"> 82</span>    <span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
-<span class="linenos"> 83</span>        <span class="s2">&quot;/frames&quot;</span><span class="p">,</span>
-<span class="linenos"> 84</span>        <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
-<span class="linenos"> 85</span>        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-<span class="linenos"> 86</span>        <span class="n">show_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="linenos"> 87</span>    <span class="p">)</span>
-<span class="linenos"> 88</span>    <span class="n">frame_nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">FrameHandle</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos"> 89</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_frames</span><span class="p">)):</span>
-<span class="linenos"> 90</span>        <span class="n">frame</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-<span class="linenos"> 91</span>        <span class="n">position</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">get_point_cloud</span><span class="p">(</span><span class="n">downsample_factor</span><span class="p">)</span>
-<span class="linenos"> 92</span>
-<span class="linenos"> 93</span>        <span class="c1"># Add base frame.</span>
-<span class="linenos"> 94</span>        <span class="n">frame_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">show_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
-<span class="linenos"> 95</span>
-<span class="linenos"> 96</span>        <span class="c1"># Place the point cloud in the frame.</span>
-<span class="linenos"> 97</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
-<span class="linenos"> 98</span>            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/point_cloud&quot;</span><span class="p">,</span>
-<span class="linenos"> 99</span>            <span class="n">points</span><span class="o">=</span><span class="n">position</span><span class="p">,</span>
-<span class="linenos">100</span>            <span class="n">colors</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
-<span class="linenos">101</span>            <span class="n">point_size</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
-<span class="linenos">102</span>            <span class="n">point_shape</span><span class="o">=</span><span class="s2">&quot;rounded&quot;</span><span class="p">,</span>
-<span class="linenos">103</span>        <span class="p">)</span>
-<span class="linenos">104</span>
-<span class="linenos">105</span>        <span class="c1"># Place the frustum.</span>
-<span class="linenos">106</span>        <span class="n">fov</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
-<span class="linenos">107</span>        <span class="n">aspect</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="linenos">108</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_camera_frustum</span><span class="p">(</span>
-<span class="linenos">109</span>            <span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/frustum&quot;</span><span class="p">,</span>
-<span class="linenos">110</span>            <span class="n">fov</span><span class="o">=</span><span class="n">fov</span><span class="p">,</span>
-<span class="linenos">111</span>            <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span>
-<span class="linenos">112</span>            <span class="n">scale</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
-<span class="linenos">113</span>            <span class="n">image</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="p">[::</span><span class="n">downsample_factor</span><span class="p">,</span> <span class="p">::</span><span class="n">downsample_factor</span><span class="p">],</span>
-<span class="linenos">114</span>            <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">T_world_camera</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
-<span class="linenos">115</span>            <span class="n">position</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">T_world_camera</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
-<span class="linenos">116</span>        <span class="p">)</span>
-<span class="linenos">117</span>
-<span class="linenos">118</span>        <span class="c1"># Add some axes.</span>
-<span class="linenos">119</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
-<span class="linenos">120</span>            <span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/frustum/axes&quot;</span><span class="p">,</span>
-<span class="linenos">121</span>            <span class="n">axes_length</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
-<span class="linenos">122</span>            <span class="n">axes_radius</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
-<span class="linenos">123</span>        <span class="p">)</span>
-<span class="linenos">124</span>
-<span class="linenos">125</span>    <span class="c1"># Hide all but the current frame.</span>
-<span class="linenos">126</span>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame_node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frame_nodes</span><span class="p">):</span>
-<span class="linenos">127</span>        <span class="n">frame_node</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos">128</span>
-<span class="linenos">129</span>    <span class="c1"># Playback update loop.</span>
-<span class="linenos">130</span>    <span class="n">prev_timestep</span> <span class="o">=</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
-<span class="linenos">131</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">132</span>        <span class="k">if</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-<span class="linenos">133</span>            <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
-<span class="linenos">134</span>
-<span class="linenos">135</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">gui_framerate</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="linenos"> 12</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
+<span class="linenos"> 13</span>    <span class="n">data_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/record3d_dance&quot;</span><span class="p">,</span>
+<span class="linenos"> 14</span>    <span class="n">downsample_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+<span class="linenos"> 15</span>    <span class="n">max_frames</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+<span class="linenos"> 16</span>    <span class="n">share</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="linenos"> 17</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 18</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos"> 19</span>    <span class="k">if</span> <span class="n">share</span><span class="p">:</span>
+<span class="linenos"> 20</span>        <span class="n">server</span><span class="o">.</span><span class="n">request_share_url</span><span class="p">()</span>
+<span class="linenos"> 21</span>
+<span class="linenos"> 22</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading frames!&quot;</span><span class="p">)</span>
+<span class="linenos"> 23</span>    <span class="n">loader</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">extras</span><span class="o">.</span><span class="n">Record3dLoader</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
+<span class="linenos"> 24</span>    <span class="n">num_frames</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">max_frames</span><span class="p">,</span> <span class="n">loader</span><span class="o">.</span><span class="n">num_frames</span><span class="p">())</span>
+<span class="linenos"> 25</span>
+<span class="linenos"> 26</span>    <span class="c1"># Add playback UI.</span>
+<span class="linenos"> 27</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_folder</span><span class="p">(</span><span class="s2">&quot;Playback&quot;</span><span class="p">):</span>
+<span class="linenos"> 28</span>        <span class="n">gui_timestep</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
+<span class="linenos"> 29</span>            <span class="s2">&quot;Timestep&quot;</span><span class="p">,</span>
+<span class="linenos"> 30</span>            <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="linenos"> 31</span>            <span class="nb">max</span><span class="o">=</span><span class="n">num_frames</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+<span class="linenos"> 32</span>            <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos"> 33</span>            <span class="n">initial_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="linenos"> 34</span>            <span class="n">disabled</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="linenos"> 35</span>        <span class="p">)</span>
+<span class="linenos"> 36</span>        <span class="n">gui_next_frame</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Next Frame&quot;</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos"> 37</span>        <span class="n">gui_prev_frame</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Prev Frame&quot;</span><span class="p">,</span> <span class="n">disabled</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos"> 38</span>        <span class="n">gui_playing</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Playing&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<span class="linenos"> 39</span>        <span class="n">gui_framerate</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
+<span class="linenos"> 40</span>            <span class="s2">&quot;FPS&quot;</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="n">loader</span><span class="o">.</span><span class="n">fps</span>
+<span class="linenos"> 41</span>        <span class="p">)</span>
+<span class="linenos"> 42</span>        <span class="n">gui_framerate_options</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button_group</span><span class="p">(</span>
+<span class="linenos"> 43</span>            <span class="s2">&quot;FPS options&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;10&quot;</span><span class="p">,</span> <span class="s2">&quot;20&quot;</span><span class="p">,</span> <span class="s2">&quot;30&quot;</span><span class="p">,</span> <span class="s2">&quot;60&quot;</span><span class="p">)</span>
+<span class="linenos"> 44</span>        <span class="p">)</span>
+<span class="linenos"> 45</span>
+<span class="linenos"> 46</span>    <span class="c1"># Frame step buttons.</span>
+<span class="linenos"> 47</span>    <span class="nd">@gui_next_frame</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos"> 48</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 49</span>        <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
+<span class="linenos"> 50</span>
+<span class="linenos"> 51</span>    <span class="nd">@gui_prev_frame</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos"> 52</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 53</span>        <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
+<span class="linenos"> 54</span>
+<span class="linenos"> 55</span>    <span class="c1"># Disable frame controls when we&#39;re playing.</span>
+<span class="linenos"> 56</span>    <span class="nd">@gui_playing</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos"> 57</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 58</span>        <span class="n">gui_timestep</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos"> 59</span>        <span class="n">gui_next_frame</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos"> 60</span>        <span class="n">gui_prev_frame</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos"> 61</span>
+<span class="linenos"> 62</span>    <span class="c1"># Set the framerate when we click one of the options.</span>
+<span class="linenos"> 63</span>    <span class="nd">@gui_framerate_options</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos"> 64</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 65</span>        <span class="n">gui_framerate</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">gui_framerate_options</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="linenos"> 66</span>
+<span class="linenos"> 67</span>    <span class="n">prev_timestep</span> <span class="o">=</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos"> 68</span>
+<span class="linenos"> 69</span>    <span class="c1"># Toggle frame visibility when the timestep slider changes.</span>
+<span class="linenos"> 70</span>    <span class="nd">@gui_timestep</span><span class="o">.</span><span class="n">on_update</span>
+<span class="linenos"> 71</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 72</span>        <span class="k">nonlocal</span> <span class="n">prev_timestep</span>
+<span class="linenos"> 73</span>        <span class="n">current_timestep</span> <span class="o">=</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos"> 74</span>        <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">atomic</span><span class="p">():</span>
+<span class="linenos"> 75</span>            <span class="n">frame_nodes</span><span class="p">[</span><span class="n">current_timestep</span><span class="p">]</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="linenos"> 76</span>            <span class="n">frame_nodes</span><span class="p">[</span><span class="n">prev_timestep</span><span class="p">]</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="linenos"> 77</span>        <span class="n">prev_timestep</span> <span class="o">=</span> <span class="n">current_timestep</span>
+<span class="linenos"> 78</span>        <span class="n">server</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>  <span class="c1"># Optional!</span>
+<span class="linenos"> 79</span>
+<span class="linenos"> 80</span>    <span class="c1"># Load in frames.</span>
+<span class="linenos"> 81</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
+<span class="linenos"> 82</span>        <span class="s2">&quot;/frames&quot;</span><span class="p">,</span>
+<span class="linenos"> 83</span>        <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
+<span class="linenos"> 84</span>        <span class="n">position</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<span class="linenos"> 85</span>        <span class="n">show_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="linenos"> 86</span>    <span class="p">)</span>
+<span class="linenos"> 87</span>    <span class="n">frame_nodes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">FrameHandle</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos"> 88</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_frames</span><span class="p">)):</span>
+<span class="linenos"> 89</span>        <span class="n">frame</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_frame</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="linenos"> 90</span>        <span class="n">position</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">get_point_cloud</span><span class="p">(</span><span class="n">downsample_factor</span><span class="p">)</span>
+<span class="linenos"> 91</span>
+<span class="linenos"> 92</span>        <span class="c1"># Add base frame.</span>
+<span class="linenos"> 93</span>        <span class="n">frame_nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">show_axes</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+<span class="linenos"> 94</span>
+<span class="linenos"> 95</span>        <span class="c1"># Place the point cloud in the frame.</span>
+<span class="linenos"> 96</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
+<span class="linenos"> 97</span>            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/point_cloud&quot;</span><span class="p">,</span>
+<span class="linenos"> 98</span>            <span class="n">points</span><span class="o">=</span><span class="n">position</span><span class="p">,</span>
+<span class="linenos"> 99</span>            <span class="n">colors</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+<span class="linenos">100</span>            <span class="n">point_size</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+<span class="linenos">101</span>            <span class="n">point_shape</span><span class="o">=</span><span class="s2">&quot;rounded&quot;</span><span class="p">,</span>
+<span class="linenos">102</span>        <span class="p">)</span>
+<span class="linenos">103</span>
+<span class="linenos">104</span>        <span class="c1"># Place the frustum.</span>
+<span class="linenos">105</span>        <span class="n">fov</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="linenos">106</span>        <span class="n">aspect</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos">107</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_camera_frustum</span><span class="p">(</span>
+<span class="linenos">108</span>            <span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/frustum&quot;</span><span class="p">,</span>
+<span class="linenos">109</span>            <span class="n">fov</span><span class="o">=</span><span class="n">fov</span><span class="p">,</span>
+<span class="linenos">110</span>            <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span>
+<span class="linenos">111</span>            <span class="n">scale</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
+<span class="linenos">112</span>            <span class="n">image</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">rgb</span><span class="p">[::</span><span class="n">downsample_factor</span><span class="p">,</span> <span class="p">::</span><span class="n">downsample_factor</span><span class="p">],</span>
+<span class="linenos">113</span>            <span class="n">wxyz</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">from_matrix</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">T_world_camera</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
+<span class="linenos">114</span>            <span class="n">position</span><span class="o">=</span><span class="n">frame</span><span class="o">.</span><span class="n">T_world_camera</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="linenos">115</span>        <span class="p">)</span>
+<span class="linenos">116</span>
+<span class="linenos">117</span>        <span class="c1"># Add some axes.</span>
+<span class="linenos">118</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
+<span class="linenos">119</span>            <span class="sa">f</span><span class="s2">&quot;/frames/t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">/frustum/axes&quot;</span><span class="p">,</span>
+<span class="linenos">120</span>            <span class="n">axes_length</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+<span class="linenos">121</span>            <span class="n">axes_radius</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span>
+<span class="linenos">122</span>        <span class="p">)</span>
+<span class="linenos">123</span>
+<span class="linenos">124</span>    <span class="c1"># Hide all but the current frame.</span>
+<span class="linenos">125</span>    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">frame_node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">frame_nodes</span><span class="p">):</span>
+<span class="linenos">126</span>        <span class="n">frame_node</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">i</span> <span class="o">==</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">127</span>
+<span class="linenos">128</span>    <span class="c1"># Playback update loop.</span>
+<span class="linenos">129</span>    <span class="n">prev_timestep</span> <span class="o">=</span> <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span>
+<span class="linenos">130</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">131</span>        <span class="k">if</span> <span class="n">gui_playing</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+<span class="linenos">132</span>            <span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">gui_timestep</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="n">num_frames</span>
+<span class="linenos">133</span>
+<span class="linenos">134</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">gui_framerate</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="linenos">135</span>
 <span class="linenos">136</span>
-<span class="linenos">137</span>
-<span class="linenos">138</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">139</span>    <span class="n">tyro</span><span class="o">.</span><span class="n">cli</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+<span class="linenos">137</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">138</span>    <span class="n">tyro</span><span class="o">.</span><span class="n">cli</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

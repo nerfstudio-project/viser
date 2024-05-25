@@ -12,7 +12,7 @@
         gtag('js', new Date());
         gtag('config', 'G-RRGY51J5ZH');
     </script>
-    <link rel="index" title="Index" href="../genindex/" /><link rel="search" title="Search" href="../search/" /><link rel="next" title="Scene Handles" href="../scene_handles/" /><link rel="prev" title="Client Handles" href="../client_handles/" />
+    <link rel="index" title="Index" href="../genindex/" /><link rel="search" title="Search" href="../search/" /><link rel="next" title="Scene Handles" href="../scene_handles/" /><link rel="prev" title="Camera Handles" href="../camera_handles/" />
 
     <!-- Generated with Sphinx 7.2.6 and Furo 2023.09.10 -->
         <title>GUI Handles - viser</title>
@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
-<ul class="current">
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -306,17 +312,14 @@
         <article role="main">
           <section id="gui-handles">
 <h1>GUI Handles<a class="headerlink" href="#gui-handles" title="Link to this heading">#</a></h1>
-<p>A handle is created for each GUI element that is added. Handles can be used to
-read and write state.</p>
-<p>When a GUI element is added to a server (for example, via
-<a class="reference internal" href="../server/#viser.ViserServer.add_gui_text" title="viser.ViserServer.add_gui_text"><code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ViserServer.add_gui_text()</span></code></a>), state is synchronized between all
-connected clients. When a GUI element is added to a client (for example, via
-<a class="reference internal" href="../client_handles/#viser.ClientHandle.add_gui_text" title="viser.ClientHandle.add_gui_text"><code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ClientHandle.add_gui_text()</span></code></a>), state is local to a specific client.</p>
 <!-- prettier-ignore-start --><dl class="py class">
 <dt class="sig sig-object py" id="viser.GuiInputHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiInputHandle</span></span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiInputHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiInputHandle" title="Link to this definition">#</a></dt>
-<dd><p>Handle for a general GUI inputs in our visualizer.</p>
-<p>Lets us get values, set values, and detect updates.</p>
+<dd><p>A handle is created for each GUI element that is added in <code class="docutils literal notranslate"><span class="pre">viser</span></code>.
+Handles can be used to read and write state.</p>
+<p>When a GUI element is added via <a class="reference internal" href="../server/#viser.ViserServer.gui" title="viser.ViserServer.gui"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ViserServer.gui</span></code></a>, state is
+synchronized between all connected clients. When a GUI element is added via
+<a class="reference internal" href="../client_handles/#viser.ClientHandle.gui" title="viser.ClientHandle.gui"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ClientHandle.gui</span></code></a>, state is local to a specific client.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiInputHandle.on_update">
 <span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.GuiEvent" title="viser._gui_handles.GuiEvent"><span class="pre">GuiEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.GuiEvent" title="viser._gui_handles.GuiEvent"><span class="pre">GuiEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiInputHandle.on_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiInputHandle.on_update" title="Link to this definition">#</a></dt>
@@ -552,7 +555,7 @@ automatically when assigned.</p>
 <p>Lets us get values, set values, and detect updates.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.GuiDropdownHandle.options">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">StringType</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GuiDropdownHandle.options" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">StringType</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.GuiDropdownHandle.options" title="Link to this definition">#</a></dt>
 <dd><p>Options for our dropdown. Synchronized automatically when assigned.</p>
 <p>For projects that care about typing: the static type of <code class="docutils literal notranslate"><span class="pre">options</span></code> should be
 consistent with the <code class="docutils literal notranslate"><span class="pre">StringType</span></code> associated with a handle. Literal types will be
@@ -707,7 +710,7 @@ automatically when assigned.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="viser.GuiTabGroupHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiTabGroupHandle</span></span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiTabGroupHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiTabGroupHandle" title="Link to this definition">#</a></dt>
-<dd><p>GuiTabGroupHandle(_tab_group_id: ‘str’, _labels: ‘List[str]’, _icons_html: ‘List[Optional[str]]’, _tabs: ‘List[GuiTabHandle]’, _gui_api: ‘GuiApi’, _order: ‘float’)</p>
+<dd><p>GuiTabGroupHandle(_tab_group_id: ‘str’, _labels: ‘list[str]’, _icons_html: ‘list[str | None]’, _tabs: ‘list[GuiTabHandle]’, _gui_api: ‘GuiApi’, _order: ‘float’)</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.GuiTabGroupHandle.order">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">order</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#viser.GuiTabGroupHandle.order" title="Link to this definition">#</a></dt>
@@ -778,14 +781,14 @@ visualizer.</p>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../client_handles/">
+          <a class="prev-page" href="../camera_handles/">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Client Handles</div>
+                <div class="title">Camera Handles</div>
                 
               </div>
             </a>

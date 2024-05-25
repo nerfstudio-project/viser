@@ -229,20 +229,26 @@
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -337,8 +343,8 @@ parent frame:</p>
 <section id="world-coordinates">
 <h2>World coordinates<a class="headerlink" href="#world-coordinates" title="Link to this heading">#</a></h2>
 <p>In the world coordinate space, +Z points upward by default. This can be
-overridden with <a class="reference internal" href="../server/#viser.ViserServer.set_up_direction" title="viser.ViserServer.set_up_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ViserServer.set_up_direction()</span></code></a> or
-<a class="reference internal" href="../client_handles/#viser.ClientHandle.set_up_direction" title="viser.ClientHandle.set_up_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ClientHandle.set_up_direction()</span></code></a>.</p>
+overridden with <code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ViserServer.set_up_direction()</span></code> or
+<code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ClientHandle.set_up_direction()</span></code>.</p>
 </section>
 <section id="cameras">
 <h2>Cameras<a class="headerlink" href="#cameras" title="Link to this heading">#</a></h2>

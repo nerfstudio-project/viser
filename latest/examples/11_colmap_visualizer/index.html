@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
@@ -337,13 +343,13 @@
 <span class="linenos"> 28</span><span class="sd">        downsample_factor: Downsample factor for the images.</span>
 <span class="linenos"> 29</span><span class="sd">    &quot;&quot;&quot;</span>
 <span class="linenos"> 30</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos"> 31</span>    <span class="n">server</span><span class="o">.</span><span class="n">configure_theme</span><span class="p">(</span><span class="n">titlebar_content</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">control_layout</span><span class="o">=</span><span class="s2">&quot;collapsible&quot;</span><span class="p">)</span>
+<span class="linenos"> 31</span>    <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">configure_theme</span><span class="p">(</span><span class="n">titlebar_content</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">control_layout</span><span class="o">=</span><span class="s2">&quot;collapsible&quot;</span><span class="p">)</span>
 <span class="linenos"> 32</span>
 <span class="linenos"> 33</span>    <span class="c1"># Load the colmap info.</span>
 <span class="linenos"> 34</span>    <span class="n">cameras</span> <span class="o">=</span> <span class="n">read_cameras_binary</span><span class="p">(</span><span class="n">colmap_path</span> <span class="o">/</span> <span class="s2">&quot;cameras.bin&quot;</span><span class="p">)</span>
 <span class="linenos"> 35</span>    <span class="n">images</span> <span class="o">=</span> <span class="n">read_images_binary</span><span class="p">(</span><span class="n">colmap_path</span> <span class="o">/</span> <span class="s2">&quot;images.bin&quot;</span><span class="p">)</span>
 <span class="linenos"> 36</span>    <span class="n">points3d</span> <span class="o">=</span> <span class="n">read_points3d_binary</span><span class="p">(</span><span class="n">colmap_path</span> <span class="o">/</span> <span class="s2">&quot;points3D.bin&quot;</span><span class="p">)</span>
-<span class="linenos"> 37</span>    <span class="n">gui_reset_up</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span>
+<span class="linenos"> 37</span>    <span class="n">gui_reset_up</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span>
 <span class="linenos"> 38</span>        <span class="s2">&quot;Reset up direction&quot;</span><span class="p">,</span>
 <span class="linenos"> 39</span>        <span class="n">hint</span><span class="o">=</span><span class="s2">&quot;Set the camera control &#39;up&#39; direction to the current camera&#39;s &#39;up&#39;.&quot;</span><span class="p">,</span>
 <span class="linenos"> 40</span>    <span class="p">)</span>
@@ -356,21 +362,21 @@
 <span class="linenos"> 47</span>            <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
 <span class="linenos"> 48</span>        <span class="p">)</span>
 <span class="linenos"> 49</span>
-<span class="linenos"> 50</span>    <span class="n">gui_points</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
+<span class="linenos"> 50</span>    <span class="n">gui_points</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
 <span class="linenos"> 51</span>        <span class="s2">&quot;Max points&quot;</span><span class="p">,</span>
 <span class="linenos"> 52</span>        <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="linenos"> 53</span>        <span class="nb">max</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">points3d</span><span class="p">),</span>
 <span class="linenos"> 54</span>        <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="linenos"> 55</span>        <span class="n">initial_value</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points3d</span><span class="p">),</span> <span class="mi">50_000</span><span class="p">),</span>
 <span class="linenos"> 56</span>    <span class="p">)</span>
-<span class="linenos"> 57</span>    <span class="n">gui_frames</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_slider</span><span class="p">(</span>
+<span class="linenos"> 57</span>    <span class="n">gui_frames</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
 <span class="linenos"> 58</span>        <span class="s2">&quot;Max frames&quot;</span><span class="p">,</span>
 <span class="linenos"> 59</span>        <span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="linenos"> 60</span>        <span class="nb">max</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">),</span>
 <span class="linenos"> 61</span>        <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
 <span class="linenos"> 62</span>        <span class="n">initial_value</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">images</span><span class="p">),</span> <span class="mi">100</span><span class="p">),</span>
 <span class="linenos"> 63</span>    <span class="p">)</span>
-<span class="linenos"> 64</span>    <span class="n">gui_point_size</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_number</span><span class="p">(</span><span class="s2">&quot;Point size&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="linenos"> 64</span>    <span class="n">gui_point_size</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_number</span><span class="p">(</span><span class="s2">&quot;Point size&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
 <span class="linenos"> 65</span>
 <span class="linenos"> 66</span>    <span class="k">def</span> <span class="nf">visualize_colmap</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 67</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Send all COLMAP elements to viser for visualization. This could be optimized</span>
@@ -384,7 +390,7 @@
 <span class="linenos"> 75</span>        <span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">points_selection</span><span class="p">]</span>
 <span class="linenos"> 76</span>        <span class="n">colors</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">points_selection</span><span class="p">]</span>
 <span class="linenos"> 77</span>
-<span class="linenos"> 78</span>        <span class="n">server</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
+<span class="linenos"> 78</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
 <span class="linenos"> 79</span>            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;/colmap/pcd&quot;</span><span class="p">,</span>
 <span class="linenos"> 80</span>            <span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
 <span class="linenos"> 81</span>            <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
@@ -417,7 +423,7 @@
 <span class="linenos">108</span>            <span class="n">T_world_camera</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SE3</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span>
 <span class="linenos">109</span>                <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">qvec</span><span class="p">),</span> <span class="n">img</span><span class="o">.</span><span class="n">tvec</span>
 <span class="linenos">110</span>            <span class="p">)</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
-<span class="linenos">111</span>            <span class="n">frame</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
+<span class="linenos">111</span>            <span class="n">frame</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_frame</span><span class="p">(</span>
 <span class="linenos">112</span>                <span class="sa">f</span><span class="s2">&quot;/colmap/frame_</span><span class="si">{</span><span class="n">img_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
 <span class="linenos">113</span>                <span class="n">wxyz</span><span class="o">=</span><span class="n">T_world_camera</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span><span class="o">.</span><span class="n">wxyz</span><span class="p">,</span>
 <span class="linenos">114</span>                <span class="n">position</span><span class="o">=</span><span class="n">T_world_camera</span><span class="o">.</span><span class="n">translation</span><span class="p">(),</span>
@@ -433,7 +439,7 @@
 <span class="linenos">124</span>            <span class="n">fy</span> <span class="o">=</span> <span class="n">cam</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 <span class="linenos">125</span>            <span class="n">image</span> <span class="o">=</span> <span class="n">iio</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">image_filename</span><span class="p">)</span>
 <span class="linenos">126</span>            <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[::</span><span class="n">downsample_factor</span><span class="p">,</span> <span class="p">::</span><span class="n">downsample_factor</span><span class="p">]</span>
-<span class="linenos">127</span>            <span class="n">frustum</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_camera_frustum</span><span class="p">(</span>
+<span class="linenos">127</span>            <span class="n">frustum</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_camera_frustum</span><span class="p">(</span>
 <span class="linenos">128</span>                <span class="sa">f</span><span class="s2">&quot;/colmap/frame_</span><span class="si">{</span><span class="n">img_id</span><span class="si">}</span><span class="s2">/frustum&quot;</span><span class="p">,</span>
 <span class="linenos">129</span>                <span class="n">fov</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">onp</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">H</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">fy</span><span class="p">),</span>
 <span class="linenos">130</span>                <span class="n">aspect</span><span class="o">=</span><span class="n">W</span> <span class="o">/</span> <span class="n">H</span><span class="p">,</span>
@@ -463,7 +469,7 @@
 <span class="linenos">154</span>        <span class="k">if</span> <span class="n">need_update</span><span class="p">:</span>
 <span class="linenos">155</span>            <span class="n">need_update</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="linenos">156</span>
-<span class="linenos">157</span>            <span class="n">server</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
+<span class="linenos">157</span>            <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 <span class="linenos">158</span>            <span class="n">visualize_colmap</span><span class="p">()</span>
 <span class="linenos">159</span>
 <span class="linenos">160</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1e-3</span><span class="p">)</span>

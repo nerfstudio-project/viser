@@ -30,14 +30,14 @@ Visualize a mesh. To get the demo data, see ``./assets/download_dragon_mesh.sh``
         print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
 
         server = viser.ViserServer()
-        server.add_mesh_simple(
+        server.scene.add_mesh_simple(
             name="/simple",
             vertices=vertices,
             faces=faces,
             wxyz=tf.SO3.from_x_radians(onp.pi / 2).wxyz,
             position=(0.0, 0.0, 0.0),
         )
-        server.add_mesh_trimesh(
+        server.scene.add_mesh_trimesh(
             name="/trimesh",
             mesh=mesh.smoothed(),
             wxyz=tf.SO3.from_x_radians(onp.pi / 2).wxyz,

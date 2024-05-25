@@ -14,8 +14,9 @@ pyrealsense2.
         :linenos:
 
 
+        from __future__ import annotations
+
         import contextlib
-        from typing import Tuple
 
         import numpy as np
         import numpy.typing as npt
@@ -49,7 +50,7 @@ pyrealsense2.
 
         def point_cloud_arrays_from_frames(
             depth_frame, color_frame
-        ) -> Tuple[npt.NDArray[np.float32], npt.NDArray[np.uint8]]:
+        ) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.uint8]]:
             """Maps realsense frames to two arrays.
 
             Returns:
@@ -101,7 +102,7 @@ pyrealsense2.
 
         def main():
             # Start visualization server.
-            viser_server = viser.ViserServer()
+            server = viser.ViserServer()
 
             with realsense_pipeline() as pipeline:
                 for i in tqdm(range(10000000)):
@@ -124,7 +125,7 @@ pyrealsense2.
                     positions = positions @ R.T
 
                     # Visualize.
-                    viser_server.add_point_cloud(
+                    server.scene.add_point_cloud(
                         "/realsense",
                         points=positions * 10.0,
                         colors=colors,

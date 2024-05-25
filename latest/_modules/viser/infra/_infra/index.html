@@ -228,20 +228,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -305,15 +311,29 @@
           <h1>Source code for viser.infra._infra</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span> <span class="nn">abc</span>
 <span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">import</span> <span class="nn">http</span>
 <span class="kn">import</span> <span class="nn">mimetypes</span>
+<span class="kn">import</span> <span class="nn">queue</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">from</span> <span class="nn">asyncio.events</span> <span class="kn">import</span> <span class="n">AbstractEventLoop</span>
 <span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">NewType</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Generator</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">NewType</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">TypeVar</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">import</span> <span class="nn">msgpack</span>
 <span class="kn">import</span> <span class="nn">rich</span>
@@ -321,7 +341,7 @@
 <span class="kn">import</span> <span class="nn">websockets.datastructures</span>
 <span class="kn">import</span> <span class="nn">websockets.exceptions</span>
 <span class="kn">import</span> <span class="nn">websockets.server</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">assert_never</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">assert_never</span><span class="p">,</span> <span class="n">override</span>
 <span class="kn">from</span> <span class="nn">websockets.legacy.server</span> <span class="kn">import</span> <span class="n">WebSocketServerProtocol</span>
 
 <span class="kn">from</span> <span class="nn">._async_message_buffer</span> <span class="kn">import</span> <span class="n">AsyncMessageBuffer</span>
@@ -340,18 +360,22 @@
 <span class="n">TMessage</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TMessage&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Message</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="MessageHandler">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.MessageHandler">[docs]</a>
-<span class="k">class</span> <span class="nc">MessageHandler</span><span class="p">:</span>
+<div class="viewcode-block" id="WebsockMessageHandler">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockMessageHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">WebsockMessageHandler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mix-in for adding message handling to a class.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread_executor</span><span class="p">:</span> <span class="n">ThreadPoolExecutor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span> <span class="o">=</span> <span class="n">thread_executor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_handlers</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span>
             <span class="n">Type</span><span class="p">[</span><span class="n">Message</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">Message</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
         <span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queued_messages</span><span class="p">:</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
-<div class="viewcode-block" id="MessageHandler.register_handler">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.MessageHandler.register_handler">[docs]</a>
+<div class="viewcode-block" id="WebsockMessageHandler.register_handler">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockMessageHandler.register_handler">[docs]</a>
     <span class="k">def</span> <span class="nf">register_handler</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">message_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">TMessage</span><span class="p">],</span>
@@ -363,8 +387,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_handlers</span><span class="p">[</span><span class="n">message_cls</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div>
 
 
-<div class="viewcode-block" id="MessageHandler.unregister_handler">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.MessageHandler.unregister_handler">[docs]</a>
+<div class="viewcode-block" id="WebsockMessageHandler.unregister_handler">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockMessageHandler.unregister_handler">[docs]</a>
     <span class="k">def</span> <span class="nf">unregister_handler</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">message_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">TMessage</span><span class="p">],</span>
@@ -384,36 +408,95 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle incoming messages.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_handlers</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_handlers</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="n">message</span><span class="p">)]:</span>
-                <span class="n">cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span></div>
+                <span class="n">cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="WebsockMessageHandler.unsafe_send_message">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockMessageHandler.unsafe_send_message">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">unsafe_send_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span></div>
+
+
+<div class="viewcode-block" id="WebsockMessageHandler.queue_message">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockMessageHandler.queue_message">[docs]</a>
+    <span class="k">def</span> <span class="nf">queue_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wrapped method for sending messages safely.&quot;&quot;&quot;</span>
+        <span class="n">got_lock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">blocking</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unsafe_send_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Send when lock is acquirable, while retaining message order.</span>
+            <span class="c1"># This could be optimized!</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queued_messages</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">try_again</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">unsafe_send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_queued_messages</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">try_again</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="WebsockMessageHandler.atomic">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockMessageHandler.atomic">[docs]</a>
+    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+    <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
+<span class="sd">        clients atomically.</span>
+
+<span class="sd">        This should be treated as a soft constraint that&#39;s helpful for things</span>
+<span class="sd">        like animations, or when we want position and orientation updates to</span>
+<span class="sd">        happen synchronously.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Context manager.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If called multiple times in the same thread, we ignore inner calls.</span>
+        <span class="n">thread_id</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">thread_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span><span class="p">:</span>
+            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="n">thread_id</span>
+            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">yield</span>
+
+        <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div>
+</div>
 
 
 
-<div class="viewcode-block" id="ClientConnection">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.ClientConnection">[docs]</a>
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">ClientConnection</span><span class="p">(</span><span class="n">MessageHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with a single connected client.</span>
+<div class="viewcode-block" id="WebsockClientConnection">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockClientConnection">[docs]</a>
+<span class="k">class</span> <span class="nc">WebsockClientConnection</span><span class="p">(</span><span class="n">WebsockMessageHandler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for sending messages to and listening to messages from a single</span>
+<span class="sd">    connected client.&quot;&quot;&quot;</span>
 
-<span class="sd">    We can use this to read the camera state or send client-specific messages.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">thread_executor</span><span class="p">:</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span>
+        <span class="n">client_state</span><span class="p">:</span> <span class="n">_ClientHandleState</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span> <span class="o">=</span> <span class="n">client_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">client_state</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thread_executor</span><span class="p">)</span>
 
-    <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span>
-    <span class="n">_state</span><span class="p">:</span> <span class="n">_ClientHandleState</span>
-
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-
-<div class="viewcode-block" id="ClientConnection.send">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.ClientConnection.send">[docs]</a>
-    <span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebsockClientConnection.unsafe_send_message">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockClientConnection.unsafe_send_message">[docs]</a>
+    <span class="nd">@override</span>
+    <span class="k">def</span> <span class="nf">unsafe_send_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a message to a specific client.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">message_buffer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 </div>
 
 
 
-<div class="viewcode-block" id="Server">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server">[docs]</a>
-<span class="k">class</span> <span class="nc">Server</span><span class="p">(</span><span class="n">MessageHandler</span><span class="p">):</span>
+<div class="viewcode-block" id="WebsockServer">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockServer">[docs]</a>
+<span class="k">class</span> <span class="nc">WebsockServer</span><span class="p">(</span><span class="n">WebsockMessageHandler</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Websocket server abstraction. Communicates asynchronously with client</span>
 <span class="sd">    applications.</span>
 
@@ -443,11 +526,11 @@
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">client_api_version</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">thread_executor</span><span class="o">=</span><span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">32</span><span class="p">))</span>
 
         <span class="c1"># Track connected clients.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientConnection</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientConnection</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">WebsockClientConnection</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">WebsockClientConnection</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_host</span> <span class="o">=</span> <span class="n">host</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="n">port</span>
@@ -455,14 +538,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_http_server_root</span> <span class="o">=</span> <span class="n">http_server_root</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_api_version</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_api_version</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_state_from_id</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">_ClientHandleState</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="Server.start">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.start">[docs]</a>
+<div class="viewcode-block" id="WebsockServer.start">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockServer.start">[docs]</a>
     <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the server.&quot;&quot;&quot;</span>
 
@@ -481,31 +562,34 @@
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="p">,</span> <span class="n">AsyncMessageBuffer</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Server.stop">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.stop">[docs]</a>
+<div class="viewcode-block" id="WebsockServer.stop">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockServer.stop">[docs]</a>
     <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the server.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">shutdown</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_loop</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="Server.on_client_connect">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.on_client_connect">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_client_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientConnection</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebsockServer.on_client_connect">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockServer.on_client_connect">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_client_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">WebsockClientConnection</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run for newly connected clients.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Server.on_client_disconnect">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.on_client_disconnect">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_client_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientConnection</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebsockServer.on_client_disconnect">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockServer.on_client_disconnect">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_client_disconnect</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">WebsockClientConnection</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run when clients disconnect.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Server.broadcast">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.broadcast">[docs]</a>
-    <span class="k">def</span> <span class="nf">broadcast</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="WebsockServer.unsafe_send_message">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockServer.unsafe_send_message">[docs]</a>
+    <span class="nd">@override</span>
+    <span class="k">def</span> <span class="nf">unsafe_send_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Pushes a message onto the broadcast queue. Message will be sent to all clients.</span>
 
 <span class="sd">        Broadcasted messages are persistent: if a new client connects to the server,</span>
@@ -514,8 +598,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Server.flush">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.flush">[docs]</a>
+<div class="viewcode-block" id="WebsockServer.flush">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockServer.flush">[docs]</a>
     <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer for broadcasted messages. Any buffered</span>
 <span class="sd">        messages will immediately be sent. (by default they are windowed)&quot;&quot;&quot;</span>
@@ -523,8 +607,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="Server.flush_client">
-<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.Server.flush_client">[docs]</a>
+<div class="viewcode-block" id="WebsockServer.flush_client">
+<a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockServer.flush_client">[docs]</a>
     <span class="k">def</span> <span class="nf">flush_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer for a particular client. Any buffered</span>
 <span class="sd">        messages will immediately be sent. (by default they are windowed)&quot;&quot;&quot;</span>
@@ -572,7 +656,9 @@
                 <span class="n">AsyncMessageBuffer</span><span class="p">(</span><span class="n">event_loop</span><span class="p">,</span> <span class="n">persistent_messages</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
                 <span class="n">event_loop</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="n">client_connection</span> <span class="o">=</span> <span class="n">ClientConnection</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">client_state</span><span class="p">)</span>
+            <span class="n">client_connection</span> <span class="o">=</span> <span class="n">WebsockClientConnection</span><span class="p">(</span>
+                <span class="n">client_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="p">,</span> <span class="n">client_state</span>
+            <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_client_state_from_id</span><span class="p">[</span><span class="n">client_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_state</span>
 
             <span class="k">def</span> <span class="nf">handle_incoming</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>

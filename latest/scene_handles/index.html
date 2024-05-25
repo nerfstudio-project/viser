@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
-<ul class="current">
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -309,9 +315,9 @@
 <p>A handle is created for each object that is added to the scene. These can be
 used to read and set state, as well as detect clicks.</p>
 <p>When a scene node is added to a server (for example, via
-<a class="reference internal" href="../server/#viser.ViserServer.add_frame" title="viser.ViserServer.add_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ViserServer.add_frame()</span></code></a>), state is synchronized between all
+<code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ViserServer.add_frame()</span></code>), state is synchronized between all
 connected clients. When a scene node is added to a client (for example, via
-<a class="reference internal" href="../client_handles/#viser.ClientHandle.add_frame" title="viser.ClientHandle.add_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ClientHandle.add_frame()</span></code></a>), state is local to a specific client.</p>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">viser.ClientHandle.add_frame()</span></code>), state is local to a specific client.</p>
 <!-- prettier-ignore-start --><dl class="py class">
 <dt class="sig sig-object py" id="viser.SceneNodeHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">SceneNodeHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#SceneNodeHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.SceneNodeHandle" title="Link to this definition">#</a></dt>
@@ -451,6 +457,60 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.FrameHandle.wxyz">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.FrameHandle.wxyz" title="Link to this definition">#</a></dt>
+<dd><p>Orientation of the scene node. This is the quaternion representation of the R
+in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="viser.BatchedAxesHandle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">BatchedAxesHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#BatchedAxesHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.BatchedAxesHandle" title="Link to this definition">#</a></dt>
+<dd><p>Handle for batched coordinate frames.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.BatchedAxesHandle.on_click">
+<span class="sig-name descname"><span class="pre">on_click</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><span class="pre">SceneNodePointerEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><span class="pre">SceneNodePointerEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TSceneNodeHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#viser.BatchedAxesHandle.on_click" title="Link to this definition">#</a></dt>
+<dd><p>Attach a callback for when a scene node is clicked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>TSceneNodeHandle</em>) – </p></li>
+<li><p><strong>func</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><em>SceneNodePointerEvent</em></a><em>[</em><em>TSceneNodeHandle</em><em>]</em><em>]</em><em>, </em><em>None</em><em>]</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Callable</em>[[<a class="reference internal" href="../events/#viser.SceneNodePointerEvent" title="viser._scene_handles.SceneNodePointerEvent"><em>SceneNodePointerEvent</em></a>[<em>TSceneNodeHandle</em>]], None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedAxesHandle.position">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.BatchedAxesHandle.position" title="Link to this definition">#</a></dt>
+<dd><p>Position of the scene node. This is equivalent to the t in
+<code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.BatchedAxesHandle.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.BatchedAxesHandle.remove" title="Link to this definition">#</a></dt>
+<dd><p>Remove the node from the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedAxesHandle.visible">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.BatchedAxesHandle.visible" title="Link to this definition">#</a></dt>
+<dd><p>Whether the scene node is visible or not. Synchronized to clients automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="viser.BatchedAxesHandle.wxyz">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wxyz</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.BatchedAxesHandle.wxyz" title="Link to this definition">#</a></dt>
 <dd><p>Orientation of the scene node. This is the quaternion representation of the R
 in <code class="docutils literal notranslate"><span class="pre">p_parent</span> <span class="pre">=</span> <span class="pre">[R</span> <span class="pre">|</span> <span class="pre">t]</span> <span class="pre">p_local</span></code>. Synchronized to clients automatically when assigned.</p>
 </dd></dl>
@@ -889,6 +949,14 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.FrameHandle.remove"><code class="docutils literal notranslate"><span class="pre">FrameHandle.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.FrameHandle.visible"><code class="docutils literal notranslate"><span class="pre">FrameHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.FrameHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">FrameHandle.wxyz</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#viser.BatchedAxesHandle"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.BatchedAxesHandle.on_click"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.on_click()</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedAxesHandle.position"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.position</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedAxesHandle.remove"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.remove()</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedAxesHandle.visible"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.visible</span></code></a></li>
+<li><a class="reference internal" href="#viser.BatchedAxesHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">BatchedAxesHandle.wxyz</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GlbHandle"><code class="docutils literal notranslate"><span class="pre">GlbHandle</span></code></a><ul>

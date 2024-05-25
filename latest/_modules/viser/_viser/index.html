@@ -228,20 +228,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -305,13 +311,14 @@
           <h1>Source code for viser._viser</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">mimetypes</span>
 <span class="kn">import</span> <span class="nn">threading</span>
 <span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">ContextManager</span>
 
 <span class="kn">import</span> <span class="nn">imageio.v3</span> <span class="k">as</span> <span class="nn">iio</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
@@ -320,14 +327,47 @@
 <span class="kn">from</span> <span class="nn">rich</span> <span class="kn">import</span> <span class="n">box</span><span class="p">,</span> <span class="n">style</span>
 <span class="kn">from</span> <span class="nn">rich.panel</span> <span class="kn">import</span> <span class="n">Panel</span>
 <span class="kn">from</span> <span class="nn">rich.table</span> <span class="kn">import</span> <span class="n">Table</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">override</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_client_autobuild</span><span class="p">,</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">infra</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
 <span class="kn">from</span> <span class="nn">._gui_api</span> <span class="kn">import</span> <span class="n">GuiApi</span>
-<span class="kn">from</span> <span class="nn">._message_api</span> <span class="kn">import</span> <span class="n">MessageApi</span><span class="p">,</span> <span class="n">cast_vector</span>
-<span class="kn">from</span> <span class="nn">._scene_handles</span> <span class="kn">import</span> <span class="n">FrameHandle</span><span class="p">,</span> <span class="n">_SceneNodeHandleState</span>
+<span class="kn">from</span> <span class="nn">._scene_api</span> <span class="kn">import</span> <span class="n">SceneApi</span><span class="p">,</span> <span class="n">cast_vector</span>
 <span class="kn">from</span> <span class="nn">._tunnel</span> <span class="kn">import</span> <span class="n">ViserTunnel</span>
+
+
+<span class="k">class</span> <span class="nc">_BackwardsCompatibilityShim</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Shims for backward compatibility with viser API from version</span>
+<span class="sd">    `&lt;=0.1.30`.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">fixed_name</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="c1"># Map from old method names (viser v0.1.30) to new methods names.</span>
+            <span class="s2">&quot;reset_scene&quot;</span><span class="p">:</span> <span class="s2">&quot;reset&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;set_global_scene_node_visibility&quot;</span><span class="p">:</span> <span class="s2">&quot;set_global_visibility&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;on_scene_pointer&quot;</span><span class="p">:</span> <span class="s2">&quot;on_pointer_event&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;on_scene_pointer_removed&quot;</span><span class="p">:</span> <span class="s2">&quot;on_pointer_callback_removed&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;remove_scene_pointer_callback&quot;</span><span class="p">:</span> <span class="s2">&quot;remove_pointer_callback&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;add_mesh&quot;</span><span class="p">:</span> <span class="s2">&quot;add_mesh_simple&quot;</span><span class="p">,</span>
+        <span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">fixed_name</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> has been deprecated, use </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.scene.</span><span class="si">{</span><span class="n">fixed_name</span><span class="si">}</span><span class="s2"> instead. Alternatively, pin to `viser&lt;=0.1.30`.&quot;</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">,</span> <span class="n">fixed_name</span><span class="p">)</span>
+
+        <span class="n">fixed_name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;add_gui_&quot;</span><span class="p">,</span> <span class="s2">&quot;add_&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;set_gui_&quot;</span><span class="p">,</span> <span class="s2">&quot;set_&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">,</span> <span class="n">fixed_name</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> has been deprecated, use </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.gui.</span><span class="si">{</span><span class="n">fixed_name</span><span class="si">}</span><span class="s2"> instead. Alternatively, pin to `viser&lt;=0.1.30`.&quot;</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">,</span> <span class="n">fixed_name</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; object has no attribute &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="p">)</span>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -342,14 +382,27 @@
     <span class="n">look_at</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
     <span class="n">up_direction</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">float64</span><span class="p">]</span>
     <span class="n">update_timestamp</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">camera_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
+    <span class="n">camera_cb</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
 
 
 <div class="viewcode-block" id="CameraHandle">
-<a class="viewcode-back" href="../../../client_handles/#viser.CameraHandle">[docs]</a>
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<a class="viewcode-back" href="../../../camera_handles/#viser.CameraHandle">[docs]</a>
 <span class="k">class</span> <span class="nc">CameraHandle</span><span class="p">:</span>
-    <span class="n">_state</span><span class="p">:</span> <span class="n">_CameraHandleState</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A handle for reading and writing the camera state of a particular</span>
+<span class="sd">    client. Typically accessed via :attr:`ClientHandle.camera`.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">_CameraHandleState</span><span class="p">(</span>
+            <span class="n">client</span><span class="p">,</span>
+            <span class="n">wxyz</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>
+            <span class="n">position</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+            <span class="n">fov</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">aspect</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">look_at</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+            <span class="n">up_direction</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+            <span class="n">update_timestamp</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+            <span class="n">camera_cb</span><span class="o">=</span><span class="p">[],</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClientHandle</span><span class="p">:</span>
@@ -367,7 +420,7 @@
     <span class="c1"># - https://github.com/python/mypy/issues/3004</span>
     <span class="c1"># - https://github.com/python/mypy/pull/11643</span>
     <span class="nd">@wxyz</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">R_world_camera</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wxyz</span><span class="p">))</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
         <span class="n">look_distance</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">look_at</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
 
@@ -413,12 +466,12 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span>
 
     <span class="nd">@position</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">offset</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">position</span><span class="p">)</span> <span class="o">-</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">look_at</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_websock_connection</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraPositionMessage</span><span class="p">(</span><span class="n">cast_vector</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
         <span class="p">)</span>
 
@@ -443,7 +496,9 @@
     <span class="k">def</span> <span class="nf">fov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">fov</span> <span class="o">=</span> <span class="n">fov</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraFovMessage</span><span class="p">(</span><span class="n">fov</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_websock_connection</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraFovMessage</span><span class="p">(</span><span class="n">fov</span><span class="p">)</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -463,11 +518,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span>
 
     <span class="nd">@look_at</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">look_at</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">look_at</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">look_at</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_wxyz</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_websock_connection</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraLookAtMessage</span><span class="p">(</span><span class="n">cast_vector</span><span class="p">(</span><span class="n">look_at</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
         <span class="p">)</span>
 
@@ -479,17 +534,17 @@
 
     <span class="nd">@up_direction</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">up_direction</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">up_direction</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">up_direction</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">up_direction</span> <span class="o">=</span> <span class="n">onp</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">up_direction</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_wxyz</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_websock_connection</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">SetCameraUpDirectionMessage</span><span class="p">(</span><span class="n">cast_vector</span><span class="p">(</span><span class="n">up_direction</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
         <span class="p">)</span>
 
 <div class="viewcode-block" id="CameraHandle.on_update">
-<a class="viewcode-back" href="../../../client_handles/#viser.CameraHandle.on_update">[docs]</a>
+<a class="viewcode-back" href="../../../camera_handles/#viser.CameraHandle.on_update">[docs]</a>
     <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
@@ -499,7 +554,7 @@
 
 
 <div class="viewcode-block" id="CameraHandle.get_render">
-<a class="viewcode-back" href="../../../client_handles/#viser.CameraHandle.get_render">[docs]</a>
+<a class="viewcode-back" href="../../../camera_handles/#viser.CameraHandle.get_render">[docs]</a>
     <span class="k">def</span> <span class="nf">get_render</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">transport_format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
@@ -517,9 +572,9 @@
         <span class="c1"># Listen for a render reseponse message, which should contain the rendered</span>
         <span class="c1"># image.</span>
         <span class="n">render_ready_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
-        <span class="n">out</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">out</span><span class="p">:</span> <span class="n">onp</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="n">connection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span>
+        <span class="n">connection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_websock_connection</span>
 
         <span class="k">def</span> <span class="nf">got_render_cb</span><span class="p">(</span>
             <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderResponseMessage</span>
@@ -536,7 +591,7 @@
             <span class="n">render_ready_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
 
         <span class="n">connection</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderResponseMessage</span><span class="p">,</span> <span class="n">got_render_cb</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_queue</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">_websock_connection</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderRequestMessage</span><span class="p">(</span>
                 <span class="s2">&quot;image/jpeg&quot;</span> <span class="k">if</span> <span class="n">transport_format</span> <span class="o">==</span> <span class="s2">&quot;jpeg&quot;</span> <span class="k">else</span> <span class="s2">&quot;image/png&quot;</span><span class="p">,</span>
                 <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
@@ -554,44 +609,55 @@
 
 
 
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">_ClientHandleState</span><span class="p">:</span>
-    <span class="n">viser_server</span><span class="p">:</span> <span class="n">ViserServer</span>
-    <span class="n">server</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Server</span>
-    <span class="n">connection</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span>
-
-
+<span class="c1"># Don&#39;t inherit from _BackwardsCompatibilityShim during type checking, because</span>
+<span class="c1"># this will unnecessarily suppress type errors. (from the overriding of</span>
+<span class="c1"># __getattr__).</span>
 <div class="viewcode-block" id="ClientHandle">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle">[docs]</a>
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">ClientHandle</span><span class="p">(</span><span class="n">MessageApi</span><span class="p">,</span> <span class="n">GuiApi</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for interacting with a specific client. Can be used to send messages to</span>
-<span class="sd">    individual clients and read/write camera information.&quot;&quot;&quot;</span>
+<span class="k">class</span> <span class="nc">ClientHandle</span><span class="p">(</span><span class="n">_BackwardsCompatibilityShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A handle is created for each client that connects to a server. Handles can be</span>
+<span class="sd">    used to communicate with just one client, as well as for reading and writing of</span>
+<span class="sd">    camera state.</span>
 
-    <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Unique ID for this client.&quot;&quot;&quot;</span>
-    <span class="n">camera</span><span class="p">:</span> <span class="n">CameraHandle</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for reading from and manipulating the client&#39;s viewport camera.&quot;&quot;&quot;</span>
-    <span class="n">_state</span><span class="p">:</span> <span class="n">_ClientHandleState</span>
+<span class="sd">    Similar to :class:`ViserServer`, client handles also expose scene and GUI</span>
+<span class="sd">    interfaces at :attr:`ClientHandle.scene` and :attr:`ClientHandle.gui`. If</span>
+<span class="sd">    these are used, for example via a client&#39;s</span>
+<span class="sd">    :meth:`SceneApi.add_point_cloud()` method, created elements are local to</span>
+<span class="sd">    only one specific client.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">_thread_executor</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">,</span> <span class="n">server</span><span class="p">:</span> <span class="n">ViserServer</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Private attributes.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_websock_connection</span> <span class="o">=</span> <span class="n">conn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_viser_server</span> <span class="o">=</span> <span class="n">server</span>
 
-    <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">_get_api</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MessageApi</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Message API to use.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="c1"># Public attributes.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">:</span> <span class="n">SceneApi</span> <span class="o">=</span> <span class="n">SceneApi</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">thread_executor</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">_thread_executor</span>
+        <span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle for interacting with the 3D scene.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">:</span> <span class="n">GuiApi</span> <span class="o">=</span> <span class="n">GuiApi</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">thread_executor</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">_thread_executor</span>
+        <span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle for interacting with the GUI.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">client_id</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unique ID for this client.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">camera</span><span class="p">:</span> <span class="n">CameraHandle</span> <span class="o">=</span> <span class="n">CameraHandle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle for reading from and manipulating the client&#39;s viewport camera.&quot;&quot;&quot;</span>
 
-    <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">_queue_unsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+<div class="viewcode-block" id="ClientHandle.flush">
+<a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.flush">[docs]</a>
+    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
+<span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_viser_server</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">flush_client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="ClientHandle.atomic">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.atomic">[docs]</a>
-    <span class="nd">@override</span>
-    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
-    <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
 <span class="sd">        clients atomically.</span>
 
@@ -602,56 +668,76 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Context manager.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># If called multiple times in the same thread, we ignore inner calls.</span>
-        <span class="n">thread_id</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">thread_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span><span class="p">:</span>
-            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="n">thread_id</span>
-            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">True</span>
-
-        <span class="k">yield</span>
-
-        <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_websock_connection</span><span class="o">.</span><span class="n">atomic</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="ClientHandle.flush">
-<a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.flush">[docs]</a>
-    <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
-<span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">flush_client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span></div>
+<div class="viewcode-block" id="ClientHandle.send_file_download">
+<a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.send_file_download">[docs]</a>
+    <span class="k">def</span> <span class="nf">send_file_download</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a file for a client or clients to download.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename: Name of the file to send. Used to infer MIME type.</span>
+<span class="sd">            content: Content of the file.</span>
+<span class="sd">            chunk_size: Number of bytes to send at a time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mime_type</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">mime_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Could not guess MIME type from filename </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">!&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">._gui_api</span> <span class="kn">import</span> <span class="n">_make_unique_id</span>
+
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">content</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">chunk_size</span> <span class="p">:</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">chunk_size</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="o">/</span> <span class="n">chunk_size</span><span class="p">)))</span>
+        <span class="p">]</span>
+
+        <span class="n">uuid</span> <span class="o">=</span> <span class="n">_make_unique_id</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_websock_connection</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferStart</span><span class="p">(</span>
+                <span class="n">source_component_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">transfer_uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+                <span class="n">mime_type</span><span class="o">=</span><span class="n">mime_type</span><span class="p">,</span>
+                <span class="n">part_count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span>
+                <span class="n">size_bytes</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">content</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parts</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_websock_connection</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
+                <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferPart</span><span class="p">(</span>
+                    <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">transfer_uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span>
+                    <span class="n">part</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                    <span class="n">content</span><span class="o">=</span><span class="n">part</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
 </div>
 
 
 
-<span class="c1"># We can serialize the state of a ViserServer via a tuple of</span>
-<span class="c1"># (serialized message, timestamp) pairs.</span>
-<span class="n">SerializedServerState</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">bytes</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
-
-
-<span class="k">def</span> <span class="nf">dummy_process</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-    <span class="k">pass</span>
-
-
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">_ViserServerState</span><span class="p">:</span>
-    <span class="n">connection</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">Server</span>
-    <span class="n">connected_clients</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
-    <span class="n">client_lock</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">)</span>
-
-
 <div class="viewcode-block" id="ViserServer">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer">[docs]</a>
-<span class="k">class</span> <span class="nc">ViserServer</span><span class="p">(</span><span class="n">MessageApi</span><span class="p">,</span> <span class="n">GuiApi</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Viser server class. The primary interface for functionality in `viser`.</span>
+<span class="k">class</span> <span class="nc">ViserServer</span><span class="p">(</span><span class="n">_BackwardsCompatibilityShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`ViserServer` is the main class for working with viser. On</span>
+<span class="sd">    instantiation, it (a) launches a thread with a web server and (b) provides</span>
+<span class="sd">    a high-level API for interactive 3D visualization.</span>
 
-<span class="sd">    Commands on a server object (`add_frame`, `add_gui_*`, ...) will be sent to all</span>
-<span class="sd">    clients, including new clients that connect after a command is called.</span>
+<span class="sd">    **Core API.** Clients can connect via a web browser, and will be shown two</span>
+<span class="sd">    components: a 3D scene and a 2D GUI panel. Methods belonging to</span>
+<span class="sd">    :attr:`ViserServer.scene` can be used to add 3D primitives to the scene.</span>
+<span class="sd">    Methods belonging to :attr:`ViserServer.gui` can be used to add 2D GUI</span>
+<span class="sd">    elements.</span>
+
+<span class="sd">    **Shared state.** Elements added to the server object, for example via a</span>
+<span class="sd">    server&#39;s :meth:`SceneApi.add_point_cloud` or :meth:`GuiApi.add_button`,</span>
+<span class="sd">    will have state that&#39;s shared and synchronized automatically between all</span>
+<span class="sd">    connected clients. To show elements that are local to a single client, see</span>
+<span class="sd">    :attr:`ClientHandle.scene` and :attr:`ClientHandle.gui`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        host: Host to bind server to.</span>
@@ -659,63 +745,36 @@
 <span class="sd">        label: Label shown at the top of the GUI panel.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">world_axes</span><span class="p">:</span> <span class="n">FrameHandle</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for manipulating the world frame axes (/WorldAxes), which is instantiated</span>
-<span class="sd">    and then hidden by default.&quot;&quot;&quot;</span>
-
     <span class="c1"># Hide deprecated arguments from docstring and type checkers.</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">):</span> <span class="o">...</span>
-
-    <span class="k">def</span> <span class="nf">_actual_init</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span>
         <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">,</span>
-        <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_deprecated_kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># Create server.</span>
-        <span class="n">server</span> <span class="o">=</span> <span class="n">infra</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span>
+        <span class="n">server</span> <span class="o">=</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockServer</span><span class="p">(</span>
             <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
             <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
             <span class="n">message_class</span><span class="o">=</span><span class="n">_messages</span><span class="o">.</span><span class="n">Message</span><span class="p">,</span>
             <span class="n">http_server_root</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;client&quot;</span> <span class="o">/</span> <span class="s2">&quot;build&quot;</span><span class="p">,</span>
             <span class="n">client_api_version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span> <span class="o">=</span> <span class="n">server</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">server</span><span class="o">.</span><span class="n">_thread_executor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span> <span class="o">=</span> <span class="n">server</span>
 
         <span class="n">_client_autobuild</span><span class="o">.</span><span class="n">ensure_client_is_built</span><span class="p">()</span>
 
-        <span class="n">state</span> <span class="o">=</span> <span class="n">_ViserServerState</span><span class="p">(</span><span class="n">server</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">state</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="n">server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connected_clients</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># For new clients, register and add a handler for camera messages.</span>
         <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_connect</span>
-        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">camera</span> <span class="o">=</span> <span class="n">CameraHandle</span><span class="p">(</span>
-                <span class="n">_CameraHandleState</span><span class="p">(</span>
-                    <span class="c1"># TODO: values are initially not valid.</span>
-                    <span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
-                    <span class="n">wxyz</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>
-                    <span class="n">position</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
-                    <span class="n">fov</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                    <span class="n">aspect</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                    <span class="n">look_at</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
-                    <span class="n">up_direction</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
-                    <span class="n">update_timestamp</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-                    <span class="n">camera_cb</span><span class="o">=</span><span class="p">[],</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-            <span class="n">client</span> <span class="o">=</span> <span class="n">ClientHandle</span><span class="p">(</span>
-                <span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">,</span>
-                <span class="n">camera</span><span class="p">,</span>
-                <span class="n">_ClientHandleState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server</span><span class="p">,</span> <span class="n">conn</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">camera</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">ClientHandle</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">server</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
             <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="k">def</span> <span class="nf">handle_camera_message</span><span class="p">(</span>
@@ -743,8 +802,8 @@
                 <span class="c1"># received.</span>
                 <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
                     <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
-                    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
-                        <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="p">[</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">client</span>
+                    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_lock</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_connected_clients</span><span class="p">[</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">client</span>
                         <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="p">:</span>
                             <span class="n">cb</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
 
@@ -755,17 +814,23 @@
 
         <span class="c1"># Remove clients when they disconnect.</span>
         <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_disconnect</span>
-        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">conn</span><span class="o">.</span><span class="n">client_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_lock</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">conn</span><span class="o">.</span><span class="n">client_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connected_clients</span><span class="p">:</span>
                     <span class="k">return</span>
 
-                <span class="n">handle</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">connected_clients</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span>
+                <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connected_clients</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_disconnect_cb</span><span class="p">:</span>
                     <span class="n">cb</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
 
         <span class="c1"># Start the server.</span>
         <span class="n">server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">:</span> <span class="n">SceneApi</span> <span class="o">=</span> <span class="n">SceneApi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread_executor</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">_thread_executor</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle for interacting with the 3D scene.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="p">:</span> <span class="n">GuiApi</span> <span class="o">=</span> <span class="n">GuiApi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread_executor</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">_thread_executor</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Handle for interacting with the GUI.&quot;&quot;&quot;</span>
 
         <span class="n">server</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">ShareUrlDisconnect</span><span class="p">,</span>
@@ -789,7 +854,7 @@
         <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">&quot;Websocket&quot;</span><span class="p">,</span> <span class="n">ws_url</span><span class="p">)</span>
         <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Panel</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;[bold]viser[/bold]&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ViserTunnel</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="p">:</span> <span class="n">ViserTunnel</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Create share tunnel if requested.</span>
         <span class="c1"># This is deprecated: we should use get_share_url() instead.</span>
@@ -797,19 +862,8 @@
         <span class="k">if</span> <span class="n">share</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">request_share_url</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_scene</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_gui_panel_label</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
-
-        <span class="c1"># Create a handle for the world axes, which are hardcoded to exist in the client.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span> <span class="o">=</span> <span class="n">FrameHandle</span><span class="p">(</span>
-            <span class="n">_SceneNodeHandleState</span><span class="p">(</span>
-                <span class="s2">&quot;/WorldAxes&quot;</span><span class="p">,</span>
-                <span class="bp">self</span><span class="p">,</span>
-                <span class="n">wxyz</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
-                <span class="n">position</span><span class="o">=</span><span class="n">onp</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
-            <span class="p">)</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">world_axes</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">set_panel_label</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ViserServer.get_host">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.get_host">[docs]</a>
@@ -819,7 +873,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Host address as string.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">_host</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">_host</span></div>
 
 
 <div class="viewcode-block" id="ViserServer.get_port">
@@ -831,12 +885,12 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Port as integer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">_port</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">_port</span></div>
 
 
 <div class="viewcode-block" id="ViserServer.request_share_url">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.request_share_url">[docs]</a>
-    <span class="k">def</span> <span class="nf">request_share_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">request_share_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Request a share URL for the Viser server, which allows for public access.</span>
 <span class="sd">        On the first call, will block until a connecting with the share URL server is</span>
 <span class="sd">        established. Afterwards, the URL will be returned directly.</span>
@@ -859,13 +913,17 @@
 
             <span class="n">connect_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="o">=</span> <span class="n">ViserTunnel</span><span class="p">(</span><span class="s2">&quot;share.viser.studio&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">_port</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="o">=</span> <span class="n">ViserTunnel</span><span class="p">(</span>
+                <span class="s2">&quot;share.viser.studio&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">_port</span>
+            <span class="p">)</span>
 
             <span class="nd">@self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">on_disconnect</span>
             <span class="k">def</span> <span class="nf">_</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Disconnected from share URL&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">ShareUrlUpdated</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">unsafe_send_message</span><span class="p">(</span>
+                    <span class="n">_messages</span><span class="o">.</span><span class="n">ShareUrlUpdated</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                <span class="p">)</span>
 
             <span class="nd">@self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">on_connect</span>
             <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">max_clients</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -878,7 +936,9 @@
                         <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
                             <span class="sa">f</span><span class="s2">&quot;[bold](viser)[/bold] Generated share URL (expires in 24 hours, max </span><span class="si">{</span><span class="n">max_clients</span><span class="si">}</span><span class="s2"> clients): </span><span class="si">{</span><span class="n">share_url</span><span class="si">}</span><span class="s2">&quot;</span>
                         <span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">ShareUrlUpdated</span><span class="p">(</span><span class="n">share_url</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">unsafe_send_message</span><span class="p">(</span>
+                    <span class="n">_messages</span><span class="o">.</span><span class="n">ShareUrlUpdated</span><span class="p">(</span><span class="n">share_url</span><span class="p">)</span>
+                <span class="p">)</span>
                 <span class="n">connect_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
 
             <span class="n">connect_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
@@ -903,22 +963,22 @@
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.stop">[docs]</a>
     <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the Viser server and associated threads and tunnels.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="ViserServer.get_clients">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.get_clients">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates and returns a copy of the mapping from connected client IDs to</span>
 <span class="sd">        handles.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Dictionary of clients.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connected_clients</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connected_clients</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="ViserServer.on_client_connect">
@@ -927,8 +987,8 @@
         <span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run for newly connected clients.&quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client_lock</span><span class="p">:</span>
-            <span class="n">clients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">connected_clients</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_lock</span><span class="p">:</span>
+            <span class="n">clients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connected_clients</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_client_connect_cb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cb</span><span class="p">)</span>
 
         <span class="c1"># Trigger callback on any already-connected clients.</span>
@@ -954,11 +1014,17 @@
         <span class="k">return</span> <span class="n">cb</span></div>
 
 
+<div class="viewcode-block" id="ViserServer.flush">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.flush">[docs]</a>
+    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
+<span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+
+
 <div class="viewcode-block" id="ViserServer.atomic">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.atomic">[docs]</a>
-    <span class="nd">@override</span>
-    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
-    <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
 <span class="sd">        clients atomically.</span>
 
@@ -969,52 +1035,25 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Context manager.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Acquire the global atomic lock.</span>
-        <span class="c1"># If called multiple times in the same thread, we ignore inner calls.</span>
-        <span class="n">thread_id</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">thread_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span><span class="p">:</span>
-            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="n">thread_id</span>
-            <span class="n">got_lock</span> <span class="o">=</span> <span class="kc">True</span>
-
-        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">ExitStack</span><span class="p">()</span> <span class="k">as</span> <span class="n">stack</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
-                <span class="c1"># Grab each client&#39;s atomic lock.</span>
-                <span class="c1"># We don&#39;t need to do anything with `client._locked_thread_id`.</span>
-                <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                    <span class="n">stack</span><span class="o">.</span><span class="n">enter_context</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="p">)</span>
-
-            <span class="k">yield</span>
-
-        <span class="k">if</span> <span class="n">got_lock</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_atomic_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_locked_thread_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">atomic</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="ViserServer.flush">
-<a class="viewcode-back" href="../../../server/#viser.ViserServer.flush">[docs]</a>
-    <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
-<span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+<div class="viewcode-block" id="ViserServer.send_file_download">
+<a class="viewcode-back" href="../../../server/#viser.ViserServer.send_file_download">[docs]</a>
+    <span class="k">def</span> <span class="nf">send_file_download</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a file for a client or clients to download.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            filename: Name of the file to send. Used to infer MIME type.</span>
+<span class="sd">            content: Content of the file.</span>
+<span class="sd">            chunk_size: Number of bytes to send at a time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">send_file_download</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span></div>
+</div>
 
-    <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">_get_api</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MessageApi</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Message API to use.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span>
-
-    <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">_queue_unsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define how the message API should send messages.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_server</span><span class="o">.</span><span class="n">broadcast</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
-
-
-
-<span class="n">ViserServer</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="n">ViserServer</span><span class="o">.</span><span class="n">_actual_init</span>  <span class="c1"># type: ignore</span>
 </pre></div>
         </article>
       </div>

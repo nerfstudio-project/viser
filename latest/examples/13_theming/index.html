@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
@@ -341,28 +347,28 @@
 <span class="linenos">32</span>    <span class="p">)</span>
 <span class="linenos">33</span>    <span class="n">titlebar_theme</span> <span class="o">=</span> <span class="n">TitlebarConfig</span><span class="p">(</span><span class="n">buttons</span><span class="o">=</span><span class="n">buttons</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">)</span>
 <span class="linenos">34</span>
-<span class="linenos">35</span>    <span class="n">server</span><span class="o">.</span><span class="n">add_gui_markdown</span><span class="p">(</span>
+<span class="linenos">35</span>    <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_markdown</span><span class="p">(</span>
 <span class="linenos">36</span>        <span class="s2">&quot;Viser includes support for light theming via the `.configure_theme()` method.&quot;</span>
 <span class="linenos">37</span>    <span class="p">)</span>
 <span class="linenos">38</span>
-<span class="linenos">39</span>    <span class="n">gui_theme_code</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_markdown</span><span class="p">(</span><span class="s2">&quot;no theme applied yet&quot;</span><span class="p">)</span>
+<span class="linenos">39</span>    <span class="n">gui_theme_code</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_markdown</span><span class="p">(</span><span class="s2">&quot;no theme applied yet&quot;</span><span class="p">)</span>
 <span class="linenos">40</span>
 <span class="linenos">41</span>    <span class="c1"># GUI elements for controllable values.</span>
-<span class="linenos">42</span>    <span class="n">titlebar</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Titlebar&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos">43</span>    <span class="n">dark_mode</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Dark mode&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos">44</span>    <span class="n">show_logo</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Show logo&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos">45</span>    <span class="n">show_share_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_checkbox</span><span class="p">(</span><span class="s2">&quot;Show share button&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos">46</span>    <span class="n">brand_color</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_rgb</span><span class="p">(</span><span class="s2">&quot;Brand color&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">230</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
-<span class="linenos">47</span>    <span class="n">control_layout</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_dropdown</span><span class="p">(</span>
+<span class="linenos">42</span>    <span class="n">titlebar</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Titlebar&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">43</span>    <span class="n">dark_mode</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Dark mode&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">44</span>    <span class="n">show_logo</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Show logo&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">45</span>    <span class="n">show_share_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_checkbox</span><span class="p">(</span><span class="s2">&quot;Show share button&quot;</span><span class="p">,</span> <span class="n">initial_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">46</span>    <span class="n">brand_color</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_rgb</span><span class="p">(</span><span class="s2">&quot;Brand color&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">230</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">30</span><span class="p">))</span>
+<span class="linenos">47</span>    <span class="n">control_layout</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_dropdown</span><span class="p">(</span>
 <span class="linenos">48</span>        <span class="s2">&quot;Control layout&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;floating&quot;</span><span class="p">,</span> <span class="s2">&quot;fixed&quot;</span><span class="p">,</span> <span class="s2">&quot;collapsible&quot;</span><span class="p">)</span>
 <span class="linenos">49</span>    <span class="p">)</span>
-<span class="linenos">50</span>    <span class="n">control_width</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_dropdown</span><span class="p">(</span>
+<span class="linenos">50</span>    <span class="n">control_width</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_dropdown</span><span class="p">(</span>
 <span class="linenos">51</span>        <span class="s2">&quot;Control width&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;small&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">,</span> <span class="s2">&quot;large&quot;</span><span class="p">),</span> <span class="n">initial_value</span><span class="o">=</span><span class="s2">&quot;medium&quot;</span>
 <span class="linenos">52</span>    <span class="p">)</span>
-<span class="linenos">53</span>    <span class="n">synchronize</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_button</span><span class="p">(</span><span class="s2">&quot;Apply theme&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="n">viser</span><span class="o">.</span><span class="n">Icon</span><span class="o">.</span><span class="n">CHECK</span><span class="p">)</span>
+<span class="linenos">53</span>    <span class="n">synchronize</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Apply theme&quot;</span><span class="p">,</span> <span class="n">icon</span><span class="o">=</span><span class="n">viser</span><span class="o">.</span><span class="n">Icon</span><span class="o">.</span><span class="n">CHECK</span><span class="p">)</span>
 <span class="linenos">54</span>
 <span class="linenos">55</span>    <span class="k">def</span> <span class="nf">synchronize_theme</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos">56</span>        <span class="n">server</span><span class="o">.</span><span class="n">configure_theme</span><span class="p">(</span>
+<span class="linenos">56</span>        <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">configure_theme</span><span class="p">(</span>
 <span class="linenos">57</span>            <span class="n">titlebar_content</span><span class="o">=</span><span class="n">titlebar_theme</span> <span class="k">if</span> <span class="n">titlebar</span><span class="o">.</span><span class="n">value</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
 <span class="linenos">58</span>            <span class="n">control_layout</span><span class="o">=</span><span class="n">control_layout</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
 <span class="linenos">59</span>            <span class="n">control_width</span><span class="o">=</span><span class="n">control_width</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
@@ -374,7 +380,7 @@
 <span class="linenos">65</span>        <span class="n">gui_theme_code</span><span class="o">.</span><span class="n">content</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="linenos">66</span><span class="s2">            ### Current applied theme</span>
 <span class="linenos">67</span><span class="s2">            ```</span>
-<span class="linenos">68</span><span class="s2">            server.configure_theme(</span>
+<span class="linenos">68</span><span class="s2">            server.gui.configure_theme(</span>
 <span class="linenos">69</span><span class="s2">                titlebar_content=</span><span class="si">{</span><span class="s2">&quot;titlebar_content&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">titlebar</span><span class="o">.</span><span class="n">value</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="kc">None</span><span class="si">}</span><span class="s2">,</span>
 <span class="linenos">70</span><span class="s2">                control_layout=&quot;</span><span class="si">{</span><span class="n">control_layout</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;,</span>
 <span class="linenos">71</span><span class="s2">                control_width=&quot;</span><span class="si">{</span><span class="n">control_width</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;,</span>

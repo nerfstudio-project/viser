@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
@@ -316,24 +322,22 @@
 <li><p>Programmatic camera control and rendering</p></li>
 <li><p>An entirely web-based client, for easy use over SSH!</p></li>
 </ul>
-<section id="running-examples">
-<h2>Running examples<a class="headerlink" href="#running-examples" title="Link to this heading">#</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone the repository.</span>
-git<span class="w"> </span>clone<span class="w"> </span>https://github.com/nerfstudio-project/viser.git
-
-<span class="c1"># Install the package.</span>
-<span class="c1"># You can also install via pip: `pip install viser`.</span>
-<span class="nb">cd</span><span class="w"> </span>./viser
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
-
-<span class="c1"># Run an example.</span>
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="o">[</span>examples<span class="o">]</span>
-python<span class="w"> </span>./examples/02_gui.py
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<p>You can install <code class="docutils literal notranslate"><span class="pre">viser</span></code> with <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>viser
+</pre></div>
+</div>
+<p>To include example dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>viser<span class="o">[</span>examples<span class="o">]</span>
 </pre></div>
 </div>
 <p>After an example script is running, you can connect by navigating to the printed
 URL (default: <code class="docutils literal notranslate"><span class="pre">http://localhost:8080</span></code>).</p>
+<p>See also: our <a class="reference external" href="https://viser.studio/development/">development docs</a>.</p>
 <!-- prettier-ignore-start --><div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
 </div>
 <div class="toctree-wrapper compound">
 </div>
@@ -397,7 +401,7 @@ URL (default: <code class="docutils literal notranslate"><span class="pre">http:
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">viser</a><ul>
-<li><a class="reference internal" href="#running-examples">Running examples</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
 </ul>
 </li>
 </ul>

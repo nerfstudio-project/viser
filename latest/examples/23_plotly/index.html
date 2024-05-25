@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
@@ -342,14 +348,14 @@
 <span class="linenos">33</span>
 <span class="linenos">34</span>    <span class="c1"># Plot type 1: Line plot.</span>
 <span class="linenos">35</span>    <span class="n">line_plot_time</span> <span class="o">=</span> <span class="mf">0.0</span>
-<span class="linenos">36</span>    <span class="n">line_plot</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">add_gui_plotly</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="n">create_sinusoidal_wave</span><span class="p">(</span><span class="n">line_plot_time</span><span class="p">))</span>
+<span class="linenos">36</span>    <span class="n">line_plot</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_plotly</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="n">create_sinusoidal_wave</span><span class="p">(</span><span class="n">line_plot_time</span><span class="p">))</span>
 <span class="linenos">37</span>
 <span class="linenos">38</span>    <span class="c1"># Plot type 2: Image plot.</span>
 <span class="linenos">39</span>    <span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;assets/Cal_logo.png&quot;</span><span class="p">))</span>
 <span class="linenos">40</span>    <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
 <span class="linenos">41</span>        <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
 <span class="linenos">42</span>    <span class="p">)</span>
-<span class="linenos">43</span>    <span class="n">server</span><span class="o">.</span><span class="n">add_gui_plotly</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="linenos">43</span>    <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_plotly</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="linenos">44</span>
 <span class="linenos">45</span>    <span class="c1"># Plot type 3: 3D Scatter plot.</span>
 <span class="linenos">46</span>    <span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter_3d</span><span class="p">(</span>
@@ -363,7 +369,7 @@
 <span class="linenos">54</span>    <span class="n">fig</span><span class="o">.</span><span class="n">update_layout</span><span class="p">(</span>
 <span class="linenos">55</span>        <span class="n">margin</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">l</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
 <span class="linenos">56</span>    <span class="p">)</span>
-<span class="linenos">57</span>    <span class="n">server</span><span class="o">.</span><span class="n">add_gui_plotly</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="linenos">57</span>    <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_plotly</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="n">fig</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="linenos">58</span>
 <span class="linenos">59</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
 <span class="linenos">60</span>        <span class="c1"># Update the line plot.</span>

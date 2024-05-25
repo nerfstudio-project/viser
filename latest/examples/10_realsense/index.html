@@ -229,20 +229,26 @@
 <li class="toctree-l1"><a class="reference internal" href="../../conventions/">Frame Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development/">Development</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Core)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Basics)</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../client_handles/">Client Handles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../camera_handles/">Camera Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_handles/">GUI Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_handles/">Scene Handles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../events/">Events</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../icons/">Icons</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API (Additional)</span></p>
+<p class="caption" role="heading"><span class="caption-text">API (Auxilliary)</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../transforms/">Transforms</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../extras/">Extras</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../infrastructure/">Communication</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../extras/">Record3D + URDF Helpers</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul class="current">
@@ -308,126 +314,127 @@
 <h1>RealSense visualizer<a class="headerlink" href="#realsense-visualizer" title="Link to this heading">#</a></h1>
 <p>Connect to a RealSense camera, then visualize RGB-D readings as a point clouds. Requires
 pyrealsense2.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span> <span class="nn">contextlib</span>
-<span class="linenos">  2</span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
-<span class="linenos">  3</span>
-<span class="linenos">  4</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="linenos">  5</span><span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
-<span class="linenos">  6</span><span class="kn">import</span> <span class="nn">pyrealsense2</span> <span class="k">as</span> <span class="nn">rs</span>  <span class="c1"># type: ignore</span>
-<span class="linenos">  7</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos">  8</span><span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
-<span class="linenos">  9</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="linenos">  2</span>
+<span class="linenos">  3</span><span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="linenos">  4</span>
+<span class="linenos">  5</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="linenos">  6</span><span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
+<span class="linenos">  7</span><span class="kn">import</span> <span class="nn">pyrealsense2</span> <span class="k">as</span> <span class="nn">rs</span>  <span class="c1"># type: ignore</span>
+<span class="linenos">  8</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos">  9</span><span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
 <span class="linenos"> 10</span>
-<span class="linenos"> 11</span><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
-<span class="linenos"> 12</span><span class="k">def</span> <span class="nf">realsense_pipeline</span><span class="p">(</span><span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
-<span class="linenos"> 13</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Context manager that yields a RealSense pipeline.&quot;&quot;&quot;</span>
-<span class="linenos"> 14</span>
-<span class="linenos"> 15</span>    <span class="c1"># Configure depth and color streams.</span>
-<span class="linenos"> 16</span>    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">pipeline</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-<span class="linenos"> 17</span>    <span class="n">config</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">config</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-<span class="linenos"> 18</span>
-<span class="linenos"> 19</span>    <span class="n">pipeline_wrapper</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">pipeline_wrapper</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-<span class="linenos"> 20</span>    <span class="n">config</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">pipeline_wrapper</span><span class="p">)</span>
-<span class="linenos"> 21</span>
-<span class="linenos"> 22</span>    <span class="n">config</span><span class="o">.</span><span class="n">enable_stream</span><span class="p">(</span><span class="n">rs</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="n">rs</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">z16</span><span class="p">,</span> <span class="n">fps</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-<span class="linenos"> 23</span>    <span class="n">config</span><span class="o">.</span><span class="n">enable_stream</span><span class="p">(</span><span class="n">rs</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">rs</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">rgb8</span><span class="p">,</span> <span class="n">fps</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-<span class="linenos"> 24</span>
-<span class="linenos"> 25</span>    <span class="c1"># Start streaming.</span>
-<span class="linenos"> 26</span>    <span class="n">pipeline</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-<span class="linenos"> 27</span>
-<span class="linenos"> 28</span>    <span class="k">yield</span> <span class="n">pipeline</span>
-<span class="linenos"> 29</span>
-<span class="linenos"> 30</span>    <span class="c1"># Close pipeline when done.</span>
-<span class="linenos"> 31</span>    <span class="n">pipeline</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos"> 32</span>
+<span class="linenos"> 11</span>
+<span class="linenos"> 12</span><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="linenos"> 13</span><span class="k">def</span> <span class="nf">realsense_pipeline</span><span class="p">(</span><span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
+<span class="linenos"> 14</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Context manager that yields a RealSense pipeline.&quot;&quot;&quot;</span>
+<span class="linenos"> 15</span>
+<span class="linenos"> 16</span>    <span class="c1"># Configure depth and color streams.</span>
+<span class="linenos"> 17</span>    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">pipeline</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+<span class="linenos"> 18</span>    <span class="n">config</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">config</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+<span class="linenos"> 19</span>
+<span class="linenos"> 20</span>    <span class="n">pipeline_wrapper</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">pipeline_wrapper</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="linenos"> 21</span>    <span class="n">config</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">pipeline_wrapper</span><span class="p">)</span>
+<span class="linenos"> 22</span>
+<span class="linenos"> 23</span>    <span class="n">config</span><span class="o">.</span><span class="n">enable_stream</span><span class="p">(</span><span class="n">rs</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="n">rs</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">z16</span><span class="p">,</span> <span class="n">fps</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="linenos"> 24</span>    <span class="n">config</span><span class="o">.</span><span class="n">enable_stream</span><span class="p">(</span><span class="n">rs</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="n">rs</span><span class="o">.</span><span class="n">format</span><span class="o">.</span><span class="n">rgb8</span><span class="p">,</span> <span class="n">fps</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="linenos"> 25</span>
+<span class="linenos"> 26</span>    <span class="c1"># Start streaming.</span>
+<span class="linenos"> 27</span>    <span class="n">pipeline</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="linenos"> 28</span>
+<span class="linenos"> 29</span>    <span class="k">yield</span> <span class="n">pipeline</span>
+<span class="linenos"> 30</span>
+<span class="linenos"> 31</span>    <span class="c1"># Close pipeline when done.</span>
+<span class="linenos"> 32</span>    <span class="n">pipeline</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 <span class="linenos"> 33</span>
-<span class="linenos"> 34</span><span class="k">def</span> <span class="nf">point_cloud_arrays_from_frames</span><span class="p">(</span>
-<span class="linenos"> 35</span>    <span class="n">depth_frame</span><span class="p">,</span> <span class="n">color_frame</span>
-<span class="linenos"> 36</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]]:</span>
-<span class="linenos"> 37</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Maps realsense frames to two arrays.</span>
-<span class="linenos"> 38</span>
-<span class="linenos"> 39</span><span class="sd">    Returns:</span>
-<span class="linenos"> 40</span><span class="sd">    - A point position array: (N, 3) float32.</span>
-<span class="linenos"> 41</span><span class="sd">    - A point color array: (N, 3) uint8.</span>
-<span class="linenos"> 42</span><span class="sd">    &quot;&quot;&quot;</span>
-<span class="linenos"> 43</span>    <span class="c1"># Processing blocks. Could be tuned.</span>
-<span class="linenos"> 44</span>    <span class="n">point_cloud</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">pointcloud</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-<span class="linenos"> 45</span>    <span class="n">decimate</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">decimation_filter</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
-<span class="linenos"> 46</span>    <span class="n">decimate</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="n">rs</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">filter_magnitude</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-<span class="linenos"> 47</span>
-<span class="linenos"> 48</span>    <span class="c1"># Downsample depth frame.</span>
-<span class="linenos"> 49</span>    <span class="n">depth_frame</span> <span class="o">=</span> <span class="n">decimate</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">depth_frame</span><span class="p">)</span>
-<span class="linenos"> 50</span>
-<span class="linenos"> 51</span>    <span class="c1"># Map texture and calculate points from frames. Uses frame intrinsics.</span>
-<span class="linenos"> 52</span>    <span class="n">point_cloud</span><span class="o">.</span><span class="n">map_to</span><span class="p">(</span><span class="n">color_frame</span><span class="p">)</span>
-<span class="linenos"> 53</span>    <span class="n">points</span> <span class="o">=</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">depth_frame</span><span class="p">)</span>
-<span class="linenos"> 54</span>
-<span class="linenos"> 55</span>    <span class="c1"># Get color coordinates.</span>
-<span class="linenos"> 56</span>    <span class="n">texture_uv</span> <span class="o">=</span> <span class="p">(</span>
-<span class="linenos"> 57</span>        <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">get_texture_coordinates</span><span class="p">())</span>
-<span class="linenos"> 58</span>        <span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="linenos"> 59</span>        <span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="linenos"> 60</span>    <span class="p">)</span>
-<span class="linenos"> 61</span>    <span class="n">color_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">color_frame</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
-<span class="linenos"> 62</span>    <span class="n">color_h</span><span class="p">,</span> <span class="n">color_w</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">color_image</span><span class="o">.</span><span class="n">shape</span>
-<span class="linenos"> 63</span>
-<span class="linenos"> 64</span>    <span class="c1"># Note: for points that aren&#39;t in the view of our RGB camera, we currently clamp to</span>
-<span class="linenos"> 65</span>    <span class="c1"># the closes available RGB pixel. We could also just remove these points.</span>
-<span class="linenos"> 66</span>    <span class="n">texture_uv</span> <span class="o">=</span> <span class="n">texture_uv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
-<span class="linenos"> 67</span>
-<span class="linenos"> 68</span>    <span class="c1"># Get positions and colors.</span>
-<span class="linenos"> 69</span>    <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">get_vertices</span><span class="p">())</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="linenos"> 70</span>    <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
-<span class="linenos"> 71</span>    <span class="n">colors</span> <span class="o">=</span> <span class="n">color_image</span><span class="p">[</span>
-<span class="linenos"> 72</span>        <span class="p">(</span><span class="n">texture_uv</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">color_h</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-<span class="linenos"> 73</span>        <span class="p">(</span><span class="n">texture_uv</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">color_w</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-<span class="linenos"> 74</span>        <span class="p">:,</span>
-<span class="linenos"> 75</span>    <span class="p">]</span>
-<span class="linenos"> 76</span>    <span class="n">N</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="linenos"> 77</span>
-<span class="linenos"> 78</span>    <span class="k">assert</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="linenos"> 79</span>    <span class="k">assert</span> <span class="n">positions</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
-<span class="linenos"> 80</span>    <span class="k">assert</span> <span class="n">colors</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="linenos"> 81</span>    <span class="k">assert</span> <span class="n">colors</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span>
-<span class="linenos"> 82</span>
-<span class="linenos"> 83</span>    <span class="k">return</span> <span class="n">positions</span><span class="p">,</span> <span class="n">colors</span>
-<span class="linenos"> 84</span>
+<span class="linenos"> 34</span>
+<span class="linenos"> 35</span><span class="k">def</span> <span class="nf">point_cloud_arrays_from_frames</span><span class="p">(</span>
+<span class="linenos"> 36</span>    <span class="n">depth_frame</span><span class="p">,</span> <span class="n">color_frame</span>
+<span class="linenos"> 37</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]]:</span>
+<span class="linenos"> 38</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Maps realsense frames to two arrays.</span>
+<span class="linenos"> 39</span>
+<span class="linenos"> 40</span><span class="sd">    Returns:</span>
+<span class="linenos"> 41</span><span class="sd">    - A point position array: (N, 3) float32.</span>
+<span class="linenos"> 42</span><span class="sd">    - A point color array: (N, 3) uint8.</span>
+<span class="linenos"> 43</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 44</span>    <span class="c1"># Processing blocks. Could be tuned.</span>
+<span class="linenos"> 45</span>    <span class="n">point_cloud</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">pointcloud</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+<span class="linenos"> 46</span>    <span class="n">decimate</span> <span class="o">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">decimation_filter</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+<span class="linenos"> 47</span>    <span class="n">decimate</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="n">rs</span><span class="o">.</span><span class="n">option</span><span class="o">.</span><span class="n">filter_magnitude</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+<span class="linenos"> 48</span>
+<span class="linenos"> 49</span>    <span class="c1"># Downsample depth frame.</span>
+<span class="linenos"> 50</span>    <span class="n">depth_frame</span> <span class="o">=</span> <span class="n">decimate</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">depth_frame</span><span class="p">)</span>
+<span class="linenos"> 51</span>
+<span class="linenos"> 52</span>    <span class="c1"># Map texture and calculate points from frames. Uses frame intrinsics.</span>
+<span class="linenos"> 53</span>    <span class="n">point_cloud</span><span class="o">.</span><span class="n">map_to</span><span class="p">(</span><span class="n">color_frame</span><span class="p">)</span>
+<span class="linenos"> 54</span>    <span class="n">points</span> <span class="o">=</span> <span class="n">point_cloud</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">depth_frame</span><span class="p">)</span>
+<span class="linenos"> 55</span>
+<span class="linenos"> 56</span>    <span class="c1"># Get color coordinates.</span>
+<span class="linenos"> 57</span>    <span class="n">texture_uv</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos"> 58</span>        <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">get_texture_coordinates</span><span class="p">())</span>
+<span class="linenos"> 59</span>        <span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="linenos"> 60</span>        <span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="linenos"> 61</span>    <span class="p">)</span>
+<span class="linenos"> 62</span>    <span class="n">color_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">color_frame</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
+<span class="linenos"> 63</span>    <span class="n">color_h</span><span class="p">,</span> <span class="n">color_w</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">color_image</span><span class="o">.</span><span class="n">shape</span>
+<span class="linenos"> 64</span>
+<span class="linenos"> 65</span>    <span class="c1"># Note: for points that aren&#39;t in the view of our RGB camera, we currently clamp to</span>
+<span class="linenos"> 66</span>    <span class="c1"># the closes available RGB pixel. We could also just remove these points.</span>
+<span class="linenos"> 67</span>    <span class="n">texture_uv</span> <span class="o">=</span> <span class="n">texture_uv</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="linenos"> 68</span>
+<span class="linenos"> 69</span>    <span class="c1"># Get positions and colors.</span>
+<span class="linenos"> 70</span>    <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asanyarray</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">get_vertices</span><span class="p">())</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="linenos"> 71</span>    <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="linenos"> 72</span>    <span class="n">colors</span> <span class="o">=</span> <span class="n">color_image</span><span class="p">[</span>
+<span class="linenos"> 73</span>        <span class="p">(</span><span class="n">texture_uv</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">color_h</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+<span class="linenos"> 74</span>        <span class="p">(</span><span class="n">texture_uv</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">color_w</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+<span class="linenos"> 75</span>        <span class="p">:,</span>
+<span class="linenos"> 76</span>    <span class="p">]</span>
+<span class="linenos"> 77</span>    <span class="n">N</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="linenos"> 78</span>
+<span class="linenos"> 79</span>    <span class="k">assert</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="linenos"> 80</span>    <span class="k">assert</span> <span class="n">positions</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+<span class="linenos"> 81</span>    <span class="k">assert</span> <span class="n">colors</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="linenos"> 82</span>    <span class="k">assert</span> <span class="n">colors</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span>
+<span class="linenos"> 83</span>
+<span class="linenos"> 84</span>    <span class="k">return</span> <span class="n">positions</span><span class="p">,</span> <span class="n">colors</span>
 <span class="linenos"> 85</span>
-<span class="linenos"> 86</span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-<span class="linenos"> 87</span>    <span class="c1"># Start visualization server.</span>
-<span class="linenos"> 88</span>    <span class="n">viser_server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos"> 89</span>
-<span class="linenos"> 90</span>    <span class="k">with</span> <span class="n">realsense_pipeline</span><span class="p">()</span> <span class="k">as</span> <span class="n">pipeline</span><span class="p">:</span>
-<span class="linenos"> 91</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10000000</span><span class="p">)):</span>
-<span class="linenos"> 92</span>            <span class="c1"># Wait for a coherent pair of frames: depth and color</span>
-<span class="linenos"> 93</span>            <span class="n">frames</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">wait_for_frames</span><span class="p">()</span>
-<span class="linenos"> 94</span>            <span class="n">depth_frame</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">get_depth_frame</span><span class="p">()</span>
-<span class="linenos"> 95</span>            <span class="n">color_frame</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">get_color_frame</span><span class="p">()</span>
-<span class="linenos"> 96</span>
-<span class="linenos"> 97</span>            <span class="c1"># Compute point cloud from frames.</span>
-<span class="linenos"> 98</span>            <span class="n">positions</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="n">point_cloud_arrays_from_frames</span><span class="p">(</span><span class="n">depth_frame</span><span class="p">,</span> <span class="n">color_frame</span><span class="p">)</span>
-<span class="linenos"> 99</span>
-<span class="linenos">100</span>            <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-<span class="linenos">101</span>                <span class="p">[</span>
-<span class="linenos">102</span>                    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-<span class="linenos">103</span>                    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
-<span class="linenos">104</span>                    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
-<span class="linenos">105</span>                <span class="p">],</span>
-<span class="linenos">106</span>                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
-<span class="linenos">107</span>            <span class="p">)</span>
-<span class="linenos">108</span>            <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span> <span class="o">@</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span>
-<span class="linenos">109</span>
-<span class="linenos">110</span>            <span class="c1"># Visualize.</span>
-<span class="linenos">111</span>            <span class="n">viser_server</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
-<span class="linenos">112</span>                <span class="s2">&quot;/realsense&quot;</span><span class="p">,</span>
-<span class="linenos">113</span>                <span class="n">points</span><span class="o">=</span><span class="n">positions</span> <span class="o">*</span> <span class="mf">10.0</span><span class="p">,</span>
-<span class="linenos">114</span>                <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
-<span class="linenos">115</span>                <span class="n">point_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
-<span class="linenos">116</span>            <span class="p">)</span>
-<span class="linenos">117</span>
+<span class="linenos"> 86</span>
+<span class="linenos"> 87</span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<span class="linenos"> 88</span>    <span class="c1"># Start visualization server.</span>
+<span class="linenos"> 89</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos"> 90</span>
+<span class="linenos"> 91</span>    <span class="k">with</span> <span class="n">realsense_pipeline</span><span class="p">()</span> <span class="k">as</span> <span class="n">pipeline</span><span class="p">:</span>
+<span class="linenos"> 92</span>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10000000</span><span class="p">)):</span>
+<span class="linenos"> 93</span>            <span class="c1"># Wait for a coherent pair of frames: depth and color</span>
+<span class="linenos"> 94</span>            <span class="n">frames</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">wait_for_frames</span><span class="p">()</span>
+<span class="linenos"> 95</span>            <span class="n">depth_frame</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">get_depth_frame</span><span class="p">()</span>
+<span class="linenos"> 96</span>            <span class="n">color_frame</span> <span class="o">=</span> <span class="n">frames</span><span class="o">.</span><span class="n">get_color_frame</span><span class="p">()</span>
+<span class="linenos"> 97</span>
+<span class="linenos"> 98</span>            <span class="c1"># Compute point cloud from frames.</span>
+<span class="linenos"> 99</span>            <span class="n">positions</span><span class="p">,</span> <span class="n">colors</span> <span class="o">=</span> <span class="n">point_cloud_arrays_from_frames</span><span class="p">(</span><span class="n">depth_frame</span><span class="p">,</span> <span class="n">color_frame</span><span class="p">)</span>
+<span class="linenos">100</span>
+<span class="linenos">101</span>            <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+<span class="linenos">102</span>                <span class="p">[</span>
+<span class="linenos">103</span>                    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+<span class="linenos">104</span>                    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+<span class="linenos">105</span>                    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+<span class="linenos">106</span>                <span class="p">],</span>
+<span class="linenos">107</span>                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+<span class="linenos">108</span>            <span class="p">)</span>
+<span class="linenos">109</span>            <span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span> <span class="o">@</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span>
+<span class="linenos">110</span>
+<span class="linenos">111</span>            <span class="c1"># Visualize.</span>
+<span class="linenos">112</span>            <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_point_cloud</span><span class="p">(</span>
+<span class="linenos">113</span>                <span class="s2">&quot;/realsense&quot;</span><span class="p">,</span>
+<span class="linenos">114</span>                <span class="n">points</span><span class="o">=</span><span class="n">positions</span> <span class="o">*</span> <span class="mf">10.0</span><span class="p">,</span>
+<span class="linenos">115</span>                <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
+<span class="linenos">116</span>                <span class="n">point_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+<span class="linenos">117</span>            <span class="p">)</span>
 <span class="linenos">118</span>
-<span class="linenos">119</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">120</span>    <span class="n">main</span><span class="p">()</span>
+<span class="linenos">119</span>
+<span class="linenos">120</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">121</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
