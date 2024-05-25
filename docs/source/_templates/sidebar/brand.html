@@ -19,36 +19,13 @@
     <script>
       var viserDocsVersionsPopulated = false;
 
-      function viserMemoizeHelper(fn) {
-        const cacheKey = fn.name || 'memoizedFunction';
-        const ttl = 3 * 60 * 1000; // 3 minutes in milliseconds.
-
-        return async function(...args) {
-            const now = Date.now();
-            const cache = JSON.parse(localStorage.getItem(cacheKey)) || {};
-            if (cache.timestamp && (now - cache.timestamp < ttl)) {
-                console.log("Using cached value");
-                return cache.value;
-            }
-            const value = await fn(...args);
-            if (value === null) {
-              console.log("Using cached value (failed to recompute)");
-              return cache.value
-            }
-            localStorage.setItem(cacheKey, JSON.stringify({ value, timestamp: now }));
-            return value;
-        };
-      }
-      async function getVersionListViaGithubApi() {
-        console.log("Polling GitHub REST API");
+      async function getViserVersionList() {
+        // This index.txt file is written by the docs.yml GitHub action.
+        // https://github.com/nerfstudio-project/viser/blob/main/.github/workflows/docs.yml
         const response = await fetch(
-          "https://api.github.com/repos/nerfstudio-project/viser/contents/versions?ref=gh-pages",
+          "https://viser.studio/versions/index.txt",
         );
-        if (await response.status === 403) {
-            console.error(await response.json());
-            return null;
-        }
-        return await response.json();
+        return await response.text();
       }
       async function viserDocsPopulateVersionDropDown () {
         // Load the version list lazily... reduces likelihood of running into GitHub API rate limits.
@@ -57,18 +34,17 @@
         }
         viserDocsVersionsPopulated = true;
 
-        // Populate the version list by polling the GitHub REST API.
         console.log("Populating docs version list!")
-        const data = viserMemoizeHelper(getVersionListViaGithubApi)();
+        const versions = (await getViserVersionList()).trim().split("\n").reverse();
+        console.log(versions);
         let htmlString = "<ul style='margin: 0.5rem 0 0 0'>";
         htmlString += `<li><a href="https://viser.studio/latest">latest</a></li>`;
-        for (let file of data) {
-          htmlString += `<li><a href="https://viser.studio/${file.path}">${file.name}</a></li>`;
+        for (let version of versions) {
+          htmlString += `<li><a href="https://viser.studio/versions/${version}">${version}</a></li>`;
         }
 
         htmlString += "</ul>";
-        document.getElementById("version-dropdown").innerHTML =
-          htmlString;
+        document.getElementById("viser-version-dropdown").innerHTML = htmlString;
       }
     </script>
     <details
@@ -76,7 +52,7 @@
         ontoggle="viserDocsPopulateVersionDropDown()"
     >
     <summary style="cursor: pointer;"><strong>Version:</strong> <em>{{ version }}</em></summary>
-      <div id="version-dropdown"></div>
+      <div id="viser-version-dropdown"></div>
     </details>
     <!-- End dropdown -->
 </div>
