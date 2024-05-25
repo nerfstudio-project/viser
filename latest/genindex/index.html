@@ -175,6 +175,7 @@
         // https://github.com/nerfstudio-project/viser/blob/main/.github/workflows/docs.yml
         const response = await fetch(
           "https://viser.studio/versions/index.txt",
+          { cache: "no-cache" }
         );
         return await response.text();
       }
