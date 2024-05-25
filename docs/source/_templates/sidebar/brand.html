@@ -1,4 +1,4 @@
-<div class="sidebar-brand{% if logo %} centered{% endif %}">
+<a class="sidebar-brand{% if logo %} centered{% endif %}" href="{{ pathto(master_doc) }}">
     {% block brand_content %} {%- if logo_url %}
     <div class="sidebar-logo-container">
         <a href="{{ pathto(master_doc) }}"><img class="sidebar-logo" src="{{ logo_url }}" alt="Logo" /></a>
@@ -12,7 +12,7 @@
     <!-- <span class="sidebar-brand-text">{{ project }}</span> -->
 
     {% endblock brand_content %}
-</div>
+</a>
 
 <!-- Dropdown for different versions of the viser docs. Slightly hacky. -->
 <div style="padding: 0 1em;">
