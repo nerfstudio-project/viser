@@ -1,7 +1,7 @@
-<a class="sidebar-brand{% if logo %} centered{% endif %}" href="{{ pathto(master_doc) }}">
+<div class="sidebar-brand{% if logo %} centered{% endif %}">
     {% block brand_content %} {%- if logo_url %}
     <div class="sidebar-logo-container">
-        <img class="sidebar-logo" src="{{ logo_url }}" alt="Logo" />
+        <a href="{{ pathto(master_doc) }}"><img class="sidebar-logo" src="{{ logo_url }}" alt="Logo" /></a>
     </div>
     {%- endif %} {%- if theme_light_logo and theme_dark_logo %}
     <div class="sidebar-logo-container" style="margin: .5rem 1em .5rem 0">
@@ -10,8 +10,33 @@
     </div>
     {%- endif %}
     <span class="sidebar-brand-text">{{ version }}</span>
+
+    <!-- Dropdown for different versions of the viser docs. Slightly hacky -->
+    <details style="padding: 0.5rem; background: var(--color-background-primary); border-radius: 0.5rem; border: 1px solid var(--color-sidebar-background-border);">
+      <summary style="cursor: pointer;">Versions</summary>
+      <div id="version-dropdown"></div>
+    </details>
+    <script>
+      (async () => {
+        // Populate the version list by polling the GitHub REST API.
+        const response = await fetch(
+          "https://api.github.com/repos/nerfstudio-project/viser/contents/versions?ref=gh-pages",
+        );
+        const data = await response.json();
+        let htmlString = "<ul style='margin: 0.5rem 0 0 0'>";
+        htmlString += `<li><a href="https://viser.studio/latest">latest</a></li>`;
+        for (let file of data) {
+          htmlString += `<li><a href="https://viser.studio/${file.path}">${file.name}</a></li>`;
+        }
+
+        htmlString += "</ul>";
+        document.getElementById("version-dropdown").innerHTML =
+          htmlString;
+      })();
+    </script>
+    <!-- End dropdown -->
     {% endblock brand_content %}
-</a>
+</div>
 
 <div style="text-align: left; padding: 1em">
     <script async defer src="https://buttons.github.io/buttons.js"></script>
