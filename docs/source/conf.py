@@ -6,9 +6,11 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/stable/config
 
+from pathlib import Path
 from typing import Dict, List
 
 import m2r2
+import toml
 
 # -- Path setup --------------------------------------------------------------
 
@@ -20,11 +22,20 @@ import m2r2
 # -- Project information -----------------------------------------------------
 
 project = "viser"
-copyright = "2023"
+copyright = "2024"
 author = "brentyi"
 
 # The short X.Y version
-version = ""
+version: str = toml.load(
+    Path(__file__).absolute().parent.parent.parent / "pyproject.toml"
+)["project"]["version"]
+
+# Formatting!
+#     0.1.30 => v0.1.30
+#     dev => dev
+if not version.isalpha():
+    version = "v" + version
+
 # The full version, including alpha/beta/rc tags
 release = ""
 
