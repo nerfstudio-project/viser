@@ -12,24 +12,24 @@ Features include:
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
 
-## Running examples
+## Installation
+
+You can install `viser` with `pip`:
 
 ```bash
-# Clone the repository.
-git clone https://github.com/nerfstudio-project/viser.git
+pip install viser
+```
 
-# Install the package.
-# You can also install via pip: `pip install viser`.
-cd ./viser
-pip install -e .
+To include example dependencies:
 
-# Run an example.
-pip install -e .[examples]
-python ./examples/02_gui.py
+```bash
+pip install viser[examples]
 ```
 
 After an example script is running, you can connect by navigating to the printed
 URL (default: `http://localhost:8080`).
+
+See also: our [development docs](https://viser.studio/development/).
 
 <!-- prettier-ignore-start -->
 
@@ -43,13 +43,24 @@ URL (default: `http://localhost:8080`).
    ./development.md
 
 .. toctree::
-   :caption: API (Core)
+   :caption: API (Basics)
    :hidden:
    :maxdepth: 1
    :titlesonly:
 
    ./server.md
+   ./scene_api.md
+   ./gui_api.md
+
+
+.. toctree::
+   :caption: API (Advanced)
+   :hidden:
+   :maxdepth: 1
+   :titlesonly:
+
    ./client_handles.md
+   ./camera_handles.md
    ./gui_handles.md
    ./scene_handles.md
    ./events.md
@@ -57,13 +68,13 @@ URL (default: `http://localhost:8080`).
 
 
 .. toctree::
-   :caption: API (Additional)
+   :caption: API (Auxilliary)
    :hidden:
    :maxdepth: 1
    :titlesonly:
 
-   ./infrastructure.md
    ./transforms.md
+   ./infrastructure.md
    ./extras.md
 
 .. toctree::

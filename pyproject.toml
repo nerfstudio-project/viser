@@ -40,7 +40,6 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pyright>=1.1.308",
-    "mypy>=1.4.1",
     "ruff==0.4.3",
     "pre-commit==3.3.2",
 ]
@@ -71,13 +70,6 @@ viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/**/*", "client/
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
-
-[tool.mypy]
-python_version = "3.8"
-ignore_missing_imports = true
-warn_unused_configs = true
-exclude="viser/client/.nodeenv"
-disable_error_code="var-annotated"  # Common source of mypy + numpy false positives.
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]

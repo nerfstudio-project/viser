@@ -1,6 +1,3 @@
-# mypy: disable-error-code="arg-type"
-#
-# Waiting on PEP 675 support in mypy. https://github.com/python/mypy/issues/12554
 """Theming
 
 Viser includes support for light theming.
@@ -40,28 +37,28 @@ def main():
     )
     titlebar_theme = TitlebarConfig(buttons=buttons, image=image)
 
-    server.add_gui_markdown(
+    server.gui.add_markdown(
         "Viser includes support for light theming via the `.configure_theme()` method."
     )
 
-    gui_theme_code = server.add_gui_markdown("no theme applied yet")
+    gui_theme_code = server.gui.add_markdown("no theme applied yet")
 
     # GUI elements for controllable values.
-    titlebar = server.add_gui_checkbox("Titlebar", initial_value=True)
-    dark_mode = server.add_gui_checkbox("Dark mode", initial_value=True)
-    show_logo = server.add_gui_checkbox("Show logo", initial_value=True)
-    show_share_button = server.add_gui_checkbox("Show share button", initial_value=True)
-    brand_color = server.add_gui_rgb("Brand color", (230, 180, 30))
-    control_layout = server.add_gui_dropdown(
+    titlebar = server.gui.add_checkbox("Titlebar", initial_value=True)
+    dark_mode = server.gui.add_checkbox("Dark mode", initial_value=True)
+    show_logo = server.gui.add_checkbox("Show logo", initial_value=True)
+    show_share_button = server.gui.add_checkbox("Show share button", initial_value=True)
+    brand_color = server.gui.add_rgb("Brand color", (230, 180, 30))
+    control_layout = server.gui.add_dropdown(
         "Control layout", ("floating", "fixed", "collapsible")
     )
-    control_width = server.add_gui_dropdown(
+    control_width = server.gui.add_dropdown(
         "Control width", ("small", "medium", "large"), initial_value="medium"
     )
-    synchronize = server.add_gui_button("Apply theme", icon=viser.Icon.CHECK)
+    synchronize = server.gui.add_button("Apply theme", icon=viser.Icon.CHECK)
 
     def synchronize_theme() -> None:
-        server.configure_theme(
+        server.gui.configure_theme(
             titlebar_content=titlebar_theme if titlebar.value else None,
             control_layout=control_layout.value,
             control_width=control_width.value,
@@ -73,7 +70,7 @@ def main():
         gui_theme_code.content = f"""
             ### Current applied theme
             ```
-            server.configure_theme(
+            server.gui.configure_theme(
                 titlebar_content={"titlebar_content" if titlebar.value else None},
                 control_layout="{control_layout.value}",
                 control_width="{control_width.value}",

@@ -40,8 +40,8 @@ corresponding client automatically.
                 position = rng.uniform(-3.0, 3.0, size=(3,))
 
                 # Create a coordinate frame and label.
-                frame = client.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
-                client.add_label(f"/frame_{i}/label", text=f"Frame {i}")
+                frame = client.scene.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
+                client.scene.add_label(f"/frame_{i}/label", text=f"Frame {i}")
 
                 # Move the camera when we click a frame.
                 @frame.on_click

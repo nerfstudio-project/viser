@@ -1,8 +1,8 @@
-# Client Handles
+# Scene API
 
 <!-- prettier-ignore-start -->
 
-.. autoclass:: viser.ClientHandle
+.. autoclass:: viser.SceneApi
    :members:
    :undoc-members:
    :inherited-members:

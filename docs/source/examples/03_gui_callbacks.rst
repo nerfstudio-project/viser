@@ -24,14 +24,14 @@ we get updates.
         def main() -> None:
             server = viser.ViserServer()
 
-            gui_reset_scene = server.add_gui_button("Reset Scene")
+            gui_reset_scene = server.gui.add_button("Reset Scene")
 
-            gui_plane = server.add_gui_dropdown(
+            gui_plane = server.gui.add_dropdown(
                 "Grid plane", ("xz", "xy", "yx", "yz", "zx", "zy")
             )
 
             def update_plane() -> None:
-                server.add_grid(
+                server.scene.add_grid(
                     "/grid",
                     width=10.0,
                     height=20.0,
@@ -42,23 +42,23 @@ we get updates.
 
             gui_plane.on_update(lambda _: update_plane())
 
-            with server.add_gui_folder("Control"):
-                gui_show_frame = server.add_gui_checkbox("Show Frame", initial_value=True)
-                gui_show_everything = server.add_gui_checkbox(
+            with server.gui.add_folder("Control"):
+                gui_show_frame = server.gui.add_checkbox("Show Frame", initial_value=True)
+                gui_show_everything = server.gui.add_checkbox(
                     "Show Everything", initial_value=True
                 )
-                gui_axis = server.add_gui_dropdown("Axis", ("x", "y", "z"))
-                gui_include_z = server.add_gui_checkbox("Z in dropdown", initial_value=True)
+                gui_axis = server.gui.add_dropdown("Axis", ("x", "y", "z"))
+                gui_include_z = server.gui.add_checkbox("Z in dropdown", initial_value=True)
 
                 @gui_include_z.on_update
                 def _(_) -> None:
                     gui_axis.options = ("x", "y", "z") if gui_include_z.value else ("x", "y")
 
-                with server.add_gui_folder("Sliders"):
-                    gui_location = server.add_gui_slider(
+                with server.gui.add_folder("Sliders"):
+                    gui_location = server.gui.add_slider(
                         "Location", min=-5.0, max=5.0, step=0.05, initial_value=0.0
                     )
-                    gui_num_points = server.add_gui_slider(
+                    gui_num_points = server.gui.add_slider(
                         "# Points", min=1000, max=200_000, step=1000, initial_value=10_000
                     )
 
@@ -73,7 +73,7 @@ we get updates.
                 else:
                     assert_never(axis)
 
-                server.add_frame(
+                server.scene.add_frame(
                     "/frame",
                     wxyz=(1.0, 0.0, 0.0, 0.0),
                     position=pos,
@@ -83,7 +83,7 @@ we get updates.
 
             def draw_points() -> None:
                 num_points = gui_num_points.value
-                server.add_point_cloud(
+                server.scene.add_point_cloud(
                     "/frame/point_cloud",
                     points=onp.random.normal(size=(num_points, 3)),
                     colors=onp.random.randint(0, 256, size=(num_points, 3)),
@@ -93,7 +93,9 @@ we get updates.
             # Here, we update the point clouds + frames whenever any of the GUI items are updated.
             gui_show_frame.on_update(lambda _: draw_frame())
             gui_show_everything.on_update(
-                lambda _: server.set_global_scene_node_visibility(gui_show_everything.value)
+                lambda _: server.scene.set_global_scene_node_visibility(
+                    gui_show_everything.value
+                )
             )
             gui_axis.on_update(lambda _: draw_frame())
             gui_location.on_update(lambda _: draw_frame())

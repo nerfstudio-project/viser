@@ -1,11 +1,12 @@
-# mypy: disable-error-code="type-var"
+from __future__ import annotations
+
 import asyncio
 import multiprocessing as mp
 import threading
 from functools import lru_cache
 from multiprocessing.managers import DictProxy
 from pathlib import Path
-from typing import Callable, Literal, Optional, Union
+from typing import Callable, Literal
 
 import rich
 
@@ -39,11 +40,11 @@ class ViserTunnel:
                 "[bold](viser)[/bold] No `if __name__ == '__main__'` check found; creating share URL tunnel in a thread"
             )
 
-        self._process: Optional[mp.Process] = None
-        self._thread: Optional[threading.Thread] = None
-        self._event_loop: Optional[asyncio.AbstractEventLoop] = None
+        self._process: mp.Process | None = None
+        self._thread: threading.Thread | None = None
+        self._event_loop: asyncio.AbstractEventLoop | None = None
 
-        self._shared_state: Union[DictProxy, dict]
+        self._shared_state: DictProxy | dict
         if self._multiprocess_ok:
             manager = mp.Manager()
             self._connect_event = manager.Event()
@@ -119,7 +120,7 @@ class ViserTunnel:
             )
             self._thread.start()
 
-    def get_url(self) -> Optional[str]:
+    def get_url(self) -> str | None:
         """Get tunnel URL. None if not connected (or connection failed)."""
         return self._shared_state["url"]
 
@@ -149,11 +150,11 @@ class ViserTunnel:
 def _connect_job(
     connect_event: threading.Event,
     disconnect_event: threading.Event,
-    close_event: Optional[asyncio.Event],  # Only for threads.
+    close_event: asyncio.Event | None,  # Only for threads.
     share_domain: str,
     local_port: int,
-    shared_state: Union[DictProxy, dict],
-    event_loop_target: Optional[ViserTunnel],  # Only for threads.
+    shared_state: DictProxy | dict,
+    event_loop_target: ViserTunnel | None,  # Only for threads.
 ) -> None:
     event_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(event_loop)
@@ -184,10 +185,10 @@ def _connect_job(
 async def _make_tunnel(
     connect_event: threading.Event,
     disconnect_event: threading.Event,
-    close_event: Optional[asyncio.Event],
+    close_event: asyncio.Event | None,
     share_domain: str,
     local_port: int,
-    shared_state: Union[DictProxy, dict],
+    shared_state: DictProxy | dict,
 ) -> None:
     share_domain = "share.viser.studio"
 

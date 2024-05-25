@@ -1,8 +1,3 @@
-# mypy: disable-error-code="assignment"
-#
-# Asymmetric properties are supported in Pyright, but not yet in mypy.
-# - https://github.com/python/mypy/issues/3004
-# - https://github.com/python/mypy/pull/11643
 """3D GUI Elements
 
 `add_3d_gui_container()` allows standard GUI elements to be incorporated directly into a
@@ -39,7 +34,7 @@ def _(client: viser.ClientHandle) -> None:
         position = rng.uniform(-3.0, 3.0, size=(3,))
 
         # Create a coordinate frame and label.
-        frame = client.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
+        frame = client.scene.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
 
         # Move the camera when we click a frame.
         @frame.on_click
@@ -50,11 +45,13 @@ def _(client: viser.ClientHandle) -> None:
             if displayed_3d_container is not None:
                 displayed_3d_container.remove()
 
-            displayed_3d_container = client.add_3d_gui_container(f"/frame_{i}/gui")
+            displayed_3d_container = client.scene.add_3d_gui_container(
+                f"/frame_{i}/gui"
+            )
             with displayed_3d_container:
-                go_to = client.add_gui_button("Go to")
-                randomize_orientation = client.add_gui_button("Randomize orientation")
-                close = client.add_gui_button("Close GUI")
+                go_to = client.gui.add_button("Go to")
+                randomize_orientation = client.gui.add_button("Randomize orientation")
+                close = client.gui.add_button("Close GUI")
 
             @go_to.on_click
             def _(_) -> None:
