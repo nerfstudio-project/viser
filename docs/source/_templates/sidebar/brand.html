@@ -29,7 +29,7 @@
         return await response.text();
       }
       async function viserDocsPopulateVersionDropDown () {
-        // Load the version list lazily... reduces likelihood of running into GitHub API rate limits.
+        // Load the version list lazily...
         if (viserDocsVersionsPopulated) {
           return;
         }

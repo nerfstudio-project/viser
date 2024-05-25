@@ -68,7 +68,7 @@ See also: our [development docs](https://viser.studio/development/).
 
 
 .. toctree::
-   :caption: API (Auxilliary)
+   :caption: API (Auxiliary)
    :hidden:
    :maxdepth: 1
    :titlesonly:
