@@ -99,7 +99,7 @@ class SE3(_base.SEBase[SO3]):
     def as_matrix(self) -> onpt.NDArray[onp.floating]:
         out = onp.zeros((*self.get_batch_axes(), 4, 4))
         out[..., :3, :3] = self.rotation().as_matrix()
-        out[..., :3, 3] = set(self.translation())
+        out[..., :3, 3] = self.translation()
         out[..., 3, 3] = 1.0
         return out
 
