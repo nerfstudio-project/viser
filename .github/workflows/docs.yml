@@ -15,6 +15,8 @@ jobs:
     steps:
       # Check out source.
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # This ensures the entire history is fetched so we can switch branches
 
       - name: Set up Python
         uses: actions/setup-python@v1
@@ -27,6 +29,13 @@ jobs:
           uv pip install --system -e ".[dev]"
           uv pip install --system -r docs/requirements.txt
 
+      # Get version from pyproject.toml.
+      - name: Get version + subdirectory
+        run: |
+          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "DOCS_SUBDIR=versions/$VERSION" >> $GITHUB_ENV
+
       # Hack to overwrite version.
       - name: Set version to 'latest' for pushes (this will appear in the doc banner)
         run: |
@@ -37,12 +46,6 @@ jobs:
       - name: Building documentation
         run: |
           sphinx-build docs/source docs/build -b dirhtml
-
-      # Get version from pyproject.toml.
-      - name: Get version + subdirectory
-        run: |
-          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-          echo "DOCS_SUBDIR=versions/$VERSION" >> $GITHUB_ENV
 
       # Get version from pyproject.toml.
       - name: Override subdirectory to `latest/` for pushes
@@ -60,3 +63,24 @@ jobs:
           keep_files: false  # This will only erase the destination subdirectory.
           cname: viser.studio
         if: github.event_name != 'pull_request'
+
+      # We'll maintain an index of all versions under viser.studio/versions.
+      # This will be useful for dynamically generating lists of possible doc links.
+      - name: Update versions index.txt
+        run: |
+          git checkout .  # Revert change to pyproject.toml from earlier...
+          git checkout gh-pages
+          git pull
+          git config --global user.email "yibrenth@gmail.com"
+          git config --global user.name "Brent Yi"
+          FILE="versions/index.txt"  # Replace with your file path
+          if ! grep -qx "$VERSION" "$FILE"; then
+            echo "$VERSION" >> "$FILE"
+            git add $FILE
+            git commit -m "Update versions.txt with new version $VERSION"
+            git push origin gh-pages
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ env.VERSION }}
+        if: github.event_name == 'push' # TODO: should be release.
