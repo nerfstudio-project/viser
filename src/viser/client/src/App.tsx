@@ -6,6 +6,7 @@ import {
   AdaptiveEvents,
   CameraControls,
   Environment,
+  SoftShadows,
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
@@ -209,6 +210,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   );
   return (
     <Canvas
+      shadows
       camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
       gl={{ preserveDrawingBuffer: true }}
       style={{
@@ -264,7 +266,15 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SynchronizedCameraControls />
       <SceneNodeThreeObject name="" parent={null} />
       <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
-      <directionalLight color={0xffffff} intensity={1.0} position={[0, 1, 0]} />
+      <SoftShadows size={10} samples={50} />
+      <directionalLight
+        color={0xffffff}
+        intensity={1.0}
+        position={[1, 3.5, 1]}
+        castShadow
+        shadow-mapSize-height={2014}
+        shadow-mapSize-width={1024}
+      />
       <directionalLight
         color={0xffffff}
         intensity={0.2}

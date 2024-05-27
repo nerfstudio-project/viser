@@ -1,5 +1,11 @@
 import AwaitLock from "await-lock";
-import { CatmullRomLine, CubicBezierLine, Grid } from "@react-three/drei";
+import {
+  Box,
+  CatmullRomLine,
+  CubicBezierLine,
+  Grid,
+  Plane,
+} from "@react-three/drei";
 import { unpack } from "msgpackr";
 import { notifications } from "@mantine/notifications";
 
@@ -199,6 +205,14 @@ function useMessageHandler() {
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => (
             <group ref={ref}>
+              <Plane
+                material-color="hotpink"
+                args={[message.width, message.height]}
+                position={[0.0, 0.0, -0.0001]}
+                receiveShadow
+              >
+                <shadowMaterial attach="material" opacity={0.15} transparent />
+              </Plane>
               <Grid
                 args={[
                   message.width,
@@ -213,6 +227,7 @@ function useMessageHandler() {
                 sectionColor={message.section_color}
                 sectionThickness={message.section_thickness}
                 sectionSize={message.section_size}
+                receiveShadow
                 rotation={
                   // There's redundancy here when we set the side to
                   // THREE.DoubleSide, where xy and yx should be the same.
@@ -376,7 +391,12 @@ function useMessageHandler() {
             message.name,
             (ref) => {
               return (
-                <mesh ref={ref} geometry={geometry} material={material}>
+                <mesh
+                  castShadow
+                  ref={ref}
+                  geometry={geometry}
+                  material={material}
+                >
                   <OutlinesIfHovered alwaysMounted />
                 </mesh>
               );
