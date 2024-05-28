@@ -842,7 +842,7 @@ class SceneApi:
         assert rgbs.shape == (num_gaussians, 3)
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
-        self._queue(
+        self._websock_interface.queue_message(
             _messages.GaussianSplatsMessage(
                 name=name,
                 centers=centers.astype(onp.float32),
