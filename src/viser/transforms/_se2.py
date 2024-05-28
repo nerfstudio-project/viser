@@ -87,7 +87,7 @@ class SE2(_base.SEBase[SO2]):
     @classmethod
     @override
     def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> "SE2":
-        assert matrix.shape[-2:] == (3, 3)
+        assert matrix.shape[-2:] == (3, 3) or matrix.shape[-2:] == (2, 3)
         # Currently assumes bottom row is [0, 0, 1].
         return SE2.from_rotation_and_translation(
             rotation=SO2.from_matrix(matrix[..., :2, :2]),
