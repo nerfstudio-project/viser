@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import abc
 import asyncio
+import contextlib
 import dataclasses
 import http
 import mimetypes
+import queue
 import threading
 from asyncio.events import AbstractEventLoop
 from concurrent.futures import ThreadPoolExecutor
@@ -12,6 +15,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Generator,
     List,
     NewType,
     Optional,
@@ -26,7 +30,7 @@ import websockets.connection
 import websockets.datastructures
 import websockets.exceptions
 import websockets.server
-from typing_extensions import Literal, assert_never
+from typing_extensions import Literal, assert_never, override
 from websockets.legacy.server import WebSocketServerProtocol
 
 from ._async_message_buffer import AsyncMessageBuffer
@@ -45,13 +49,17 @@ ClientId = NewType("ClientId", int)
 TMessage = TypeVar("TMessage", bound=Message)
 
 
-class MessageHandler:
+class WebsockMessageHandler:
     """Mix-in for adding message handling to a class."""
 
-    def __init__(self) -> None:
+    def __init__(self, thread_executor: ThreadPoolExecutor) -> None:
+        self._thread_executor = thread_executor
         self._incoming_handlers: Dict[
             Type[Message], List[Callable[[ClientId, Message], None]]
         ] = {}
+        self._atomic_lock = threading.Lock()
+        self._queued_messages: queue.Queue = queue.Queue()
+        self._locked_thread_id = -1
 
     def register_handler(
         self,
@@ -83,25 +91,75 @@ class MessageHandler:
             for cb in self._incoming_handlers[type(message)]:
                 cb(client_id, message)
 
+    @abc.abstractmethod
+    def unsafe_send_message(self, message: Message) -> None: ...
 
-@dataclasses.dataclass
-class ClientConnection(MessageHandler):
-    """Handle for interacting with a single connected client.
+    def queue_message(self, message: Message) -> None:
+        """Wrapped method for sending messages safely."""
+        got_lock = self._atomic_lock.acquire(blocking=False)
+        if got_lock:
+            self.unsafe_send_message(message)
+            self._atomic_lock.release()
+        else:
+            # Send when lock is acquirable, while retaining message order.
+            # This could be optimized!
+            self._queued_messages.put(message)
 
-    We can use this to read the camera state or send client-specific messages."""
+            def try_again() -> None:
+                with self._atomic_lock:
+                    self.unsafe_send_message(self._queued_messages.get())
 
-    client_id: ClientId
-    _state: _ClientHandleState
+            self._thread_executor.submit(try_again)
 
-    def __post_init__(self) -> None:
-        super().__init__()
+    @contextlib.contextmanager
+    def atomic(self) -> Generator[None, None, None]:
+        """Returns a context where: all outgoing messages are grouped and applied by
+        clients atomically.
 
-    def send(self, message: Message) -> None:
+        This should be treated as a soft constraint that's helpful for things
+        like animations, or when we want position and orientation updates to
+        happen synchronously.
+
+        Returns:
+            Context manager.
+        """
+        # If called multiple times in the same thread, we ignore inner calls.
+        thread_id = threading.get_ident()
+        if thread_id == self._locked_thread_id:
+            got_lock = False
+        else:
+            self._atomic_lock.acquire()
+            self._locked_thread_id = thread_id
+            got_lock = True
+
+        yield
+
+        if got_lock:
+            self._atomic_lock.release()
+            self._locked_thread_id = -1
+
+
+class WebsockClientConnection(WebsockMessageHandler):
+    """Handle for sending messages to and listening to messages from a single
+    connected client."""
+
+    def __init__(
+        self,
+        client_id: int,
+        thread_executor: ThreadPoolExecutor,
+        client_state: _ClientHandleState,
+    ) -> None:
+        self.client_id = client_id
+        self._state = client_state
+        super().__init__(thread_executor)
+
+    @override
+    def unsafe_send_message(self, message: Message) -> None:
         """Send a message to a specific client."""
         self._state.message_buffer.push(message)
 
 
-class Server(MessageHandler):
+class WebsockServer(WebsockMessageHandler):
     """Websocket server abstraction. Communicates asynchronously with client
     applications.
 
@@ -131,11 +189,11 @@ class Server(MessageHandler):
         verbose: bool = True,
         client_api_version: Literal[0, 1] = 0,
     ):
-        super().__init__()
+        super().__init__(thread_executor=ThreadPoolExecutor(max_workers=32))
 
         # Track connected clients.
-        self._client_connect_cb: List[Callable[[ClientConnection], None]] = []
-        self._client_disconnect_cb: List[Callable[[ClientConnection], None]] = []
+        self._client_connect_cb: List[Callable[[WebsockClientConnection], None]] = []
+        self._client_disconnect_cb: List[Callable[[WebsockClientConnection], None]] = []
 
         self._host = host
         self._port = port
@@ -143,8 +201,6 @@ class Server(MessageHandler):
         self._http_server_root = http_server_root
         self._verbose = verbose
         self._client_api_version: Literal[0, 1] = client_api_version
-
-        self._thread_executor = ThreadPoolExecutor(max_workers=32)
         self._shutdown_event = threading.Event()
 
         self._client_state_from_id: Dict[int, _ClientHandleState] = {}
@@ -171,15 +227,18 @@ class Server(MessageHandler):
         self._thread_executor.shutdown(wait=True)
         self._event_loop.stop()
 
-    def on_client_connect(self, cb: Callable[[ClientConnection], Any]) -> None:
+    def on_client_connect(self, cb: Callable[[WebsockClientConnection], Any]) -> None:
         """Attach a callback to run for newly connected clients."""
         self._client_connect_cb.append(cb)
 
-    def on_client_disconnect(self, cb: Callable[[ClientConnection], Any]) -> None:
+    def on_client_disconnect(
+        self, cb: Callable[[WebsockClientConnection], Any]
+    ) -> None:
         """Attach a callback to run when clients disconnect."""
         self._client_disconnect_cb.append(cb)
 
-    def broadcast(self, message: Message) -> None:
+    @override
+    def unsafe_send_message(self, message: Message) -> None:
         """Pushes a message onto the broadcast queue. Message will be sent to all clients.
 
         Broadcasted messages are persistent: if a new client connects to the server,
@@ -239,7 +298,9 @@ class Server(MessageHandler):
                 AsyncMessageBuffer(event_loop, persistent_messages=False),
                 event_loop,
             )
-            client_connection = ClientConnection(client_id, client_state)
+            client_connection = WebsockClientConnection(
+                client_id, self._thread_executor, client_state
+            )
             self._client_state_from_id[client_id] = client_state
 
             def handle_incoming(message: Message) -> None:

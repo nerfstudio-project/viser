@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.28"
+version = "0.1.31"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -40,30 +40,36 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pyright>=1.1.308",
-    "mypy>=1.4.1",
-    "ruff==0.3.3",
+    "ruff==0.4.3",
     "pre-commit==3.3.2",
 ]
 examples = [
     "torch>=1.13.1",
     "matplotlib>=3.7.1",
+    "plotly>=5.21.0",
 ]
 
 [project.urls]
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
+# <>
+# Important: in the ./.github/workflows/publish.yml action, we have sed
+# commands that assume the `viser = ...` line below directly follows
+# `[tool.setuptools.package-data]`. We use this to remove the client source
+# from PyPI builds.
+#
+# We should make sure that any modifications to the package-data list remain
+# compatible with the sed commands!
+#
+# We keep the client source in by default to support things like pip
+# installation via the Git URL, because build artifacts aren't
+# version-controlled.
 [tool.setuptools.package-data]
-viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/build/**/*"]
+viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/**/*", "client/**/.*"]
+# </>
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
-
-[tool.mypy]
-python_version = "3.8"
-ignore_missing_imports = true
-warn_unused_configs = true
-exclude="viser/client/.nodeenv"
-disable_error_code="var-annotated"  # Common source of mypy + numpy false positives.
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]

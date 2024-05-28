@@ -16,6 +16,7 @@ import RgbComponent from "../components/Rgb";
 import RgbaComponent from "../components/Rgba";
 import ButtonGroupComponent from "../components/ButtonGroup";
 import MarkdownComponent from "../components/Markdown";
+import PlotlyComponent from "../components/PlotlyComponent";
 import TabGroupComponent from "../components/TabGroup";
 import FolderComponent from "../components/Folder";
 import MultiSliderComponent from "../components/MultiSlider";
@@ -90,6 +91,8 @@ function GeneratedInput(props: { guiId: string }) {
       return <TabGroupComponent {...conf} />;
     case "GuiAddMarkdownMessage":
       return <MarkdownComponent {...conf} />;
+    case "GuiAddPlotlyMessage":
+      return <PlotlyComponent {...conf} />;
     case "GuiAddButtonMessage":
       return <ButtonComponent {...conf} />;
     case "GuiAddUploadButtonMessage":

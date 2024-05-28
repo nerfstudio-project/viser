@@ -33,13 +33,13 @@ def main(
         downsample_factor: Downsample factor for the images.
     """
     server = viser.ViserServer()
-    server.configure_theme(titlebar_content=None, control_layout="collapsible")
+    server.gui.configure_theme(titlebar_content=None, control_layout="collapsible")
 
     # Load the colmap info.
     cameras = read_cameras_binary(colmap_path / "cameras.bin")
     images = read_images_binary(colmap_path / "images.bin")
     points3d = read_points3d_binary(colmap_path / "points3D.bin")
-    gui_reset_up = server.add_gui_button(
+    gui_reset_up = server.gui.add_button(
         "Reset up direction",
         hint="Set the camera control 'up' direction to the current camera's 'up'.",
     )
@@ -52,21 +52,21 @@ def main(
             [0.0, -1.0, 0.0]
         )
 
-    gui_points = server.add_gui_slider(
+    gui_points = server.gui.add_slider(
         "Max points",
         min=1,
         max=len(points3d),
         step=1,
         initial_value=min(len(points3d), 50_000),
     )
-    gui_frames = server.add_gui_slider(
+    gui_frames = server.gui.add_slider(
         "Max frames",
         min=1,
         max=len(images),
         step=1,
         initial_value=min(len(images), 100),
     )
-    gui_point_size = server.add_gui_number("Point size", initial_value=0.05)
+    gui_point_size = server.gui.add_number("Point size", initial_value=0.05)
 
     def visualize_colmap() -> None:
         """Send all COLMAP elements to viser for visualization. This could be optimized
@@ -80,7 +80,7 @@ def main(
         points = points[points_selection]
         colors = colors[points_selection]
 
-        server.add_point_cloud(
+        server.scene.add_point_cloud(
             name="/colmap/pcd",
             points=points,
             colors=colors,
@@ -113,7 +113,7 @@ def main(
             T_world_camera = tf.SE3.from_rotation_and_translation(
                 tf.SO3(img.qvec), img.tvec
             ).inverse()
-            frame = server.add_frame(
+            frame = server.scene.add_frame(
                 f"/colmap/frame_{img_id}",
                 wxyz=T_world_camera.rotation().wxyz,
                 position=T_world_camera.translation(),
@@ -129,7 +129,7 @@ def main(
             fy = cam.params[1]
             image = iio.imread(image_filename)
             image = image[::downsample_factor, ::downsample_factor]
-            frustum = server.add_camera_frustum(
+            frustum = server.scene.add_camera_frustum(
                 f"/colmap/frame_{img_id}/frustum",
                 fov=2 * onp.arctan2(H / 2, fy),
                 aspect=W / H,
@@ -159,7 +159,7 @@ def main(
         if need_update:
             need_update = False
 
-            server.reset_scene()
+            server.scene.reset()
             visualize_colmap()
 
         time.sleep(1e-3)

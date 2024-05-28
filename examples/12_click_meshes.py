@@ -13,14 +13,14 @@ def main() -> None:
     grid_shape = (4, 5)
     server = viser.ViserServer()
 
-    with server.add_gui_folder("Last clicked"):
-        x_value = server.add_gui_number(
+    with server.gui.add_folder("Last clicked"):
+        x_value = server.gui.add_number(
             label="x",
             initial_value=0,
             disabled=True,
             hint="x coordinate of the last clicked mesh",
         )
-        y_value = server.add_gui_number(
+        y_value = server.gui.add_number(
             label="y",
             initial_value=0,
             disabled=True,
@@ -46,14 +46,14 @@ def main() -> None:
                 color = colormap(index)[:3]
 
             if counter in (0, 1):
-                handle = server.add_box(
+                handle = server.scene.add_box(
                     name=f"/sphere_{i}_{j}",
                     position=(i, j, 0.0),
                     color=color,
                     dimensions=(0.5, 0.5, 0.5),
                 )
             else:
-                handle = server.add_icosphere(
+                handle = server.scene.add_icosphere(
                     name=f"/sphere_{i}_{j}",
                     radius=0.4,
                     color=color,

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import dataclasses
+import uuid
 from typing import (
     Any,
     Callable,
@@ -63,6 +64,20 @@ def tag_class(tag: str) -> Callable[[T], T]:
         return cls
 
     return wrapper
+
+
+@dataclasses.dataclass
+class RunJavascriptMessage(Message):
+    """Message for running some arbitrary Javascript on the client.
+    We use this to set up the Plotly.js package, via the plotly.min.js source
+    code."""
+
+    source: str
+
+    @override
+    def redundancy_key(self) -> str:
+        # Never cull these messages.
+        return str(uuid.uuid4())
 
 
 @dataclasses.dataclass
@@ -404,6 +419,17 @@ class GuiAddMarkdownMessage(Message):
     order: float
     id: str
     markdown: str
+    container_id: str
+    visible: bool
+
+
+@tag_class("GuiAddComponentMessage")
+@dataclasses.dataclass
+class GuiAddPlotlyMessage(Message):
+    order: float
+    id: str
+    plotly_json_str: str
+    aspect: float
     container_id: str
     visible: bool
 

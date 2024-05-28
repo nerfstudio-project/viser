@@ -327,7 +327,6 @@ export function SceneNodeThreeObject(props: {
               });
             }}
             onPointerOver={(e) => {
-              console.log("over");
               if (!isDisplayed()) return;
               e.stopPropagation();
               setHovered(true);

@@ -18,13 +18,13 @@ def main() -> None:
     server = viser.ViserServer()
 
     # Add a background image.
-    server.set_background_image(
+    server.scene.set_background_image(
         iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
         format="png",
     )
 
     # Add main image.
-    server.add_image(
+    server.scene.add_image(
         "/img",
         iio.imread(Path(__file__).parent / "assets/Cal_logo.png"),
         4.0,
@@ -34,7 +34,7 @@ def main() -> None:
         position=(2.0, 2.0, 0.0),
     )
     while True:
-        server.add_image(
+        server.scene.add_image(
             "/noise",
             onp.random.randint(
                 0,

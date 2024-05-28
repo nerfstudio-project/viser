@@ -1,8 +1,8 @@
-# Client Handles
+# GUI API
 
 <!-- prettier-ignore-start -->
 
-.. autoclass:: viser.ClientHandle
+.. autoclass:: viser.GuiApi
    :members:
    :undoc-members:
    :inherited-members:
