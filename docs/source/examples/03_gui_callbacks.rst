@@ -93,9 +93,7 @@ we get updates.
             # Here, we update the point clouds + frames whenever any of the GUI items are updated.
             gui_show_frame.on_update(lambda _: draw_frame())
             gui_show_everything.on_update(
-                lambda _: server.scene.set_global_scene_node_visibility(
-                    gui_show_everything.value
-                )
+                lambda _: server.scene.set_global_visibility(gui_show_everything.value)
             )
             gui_axis.on_update(lambda _: draw_frame())
             gui_location.on_update(lambda _: draw_frame())

@@ -464,9 +464,9 @@ class GuiModalHandle:
         self._gui_api._websock_interface.queue_message(
             GuiCloseModalMessage(self._id),
         )
-        self._gui_api._container_handle_from_id.pop(self._id)
         for child in tuple(self._children.values()):
             child.remove()
+        self._gui_api._container_handle_from_id.pop(self._id)
 
 
 @dataclasses.dataclass
