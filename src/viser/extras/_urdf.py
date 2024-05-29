@@ -1,36 +1,48 @@
+from __future__ import annotations
+
 from functools import partial
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Tuple
 
 import numpy as onp
 import trimesh
-import yourdfpy
-
 import viser
+import yourdfpy
 
 from .. import transforms as tf
 
 
 class ViserUrdf:
-    """Helper for rendering URDFs in Viser."""
+    """Helper for rendering URDFs in Viser.
+
+    Args:
+        target: ViserServer or ClientHandle object to add URDF to.
+        urdf_or_path: Either a path to a URDF file or a yourdfpy URDF object.
+        scale: Scale factor to apply to resize the URDF.
+        root_node_name: Viser scene tree name for the root of the URDF geometry.
+        mesh_color_override: Optional color to override the URDF's mesh colors.
+    """
 
     def __init__(
         self,
-        target: Union[viser.ViserServer, viser.ClientHandle],
-        urdf_path: Path,
+        target: viser.ViserServer | viser.ClientHandle,
+        urdf_or_path: yourdfpy.URDF | Path,
         scale: float = 1.0,
         root_node_name: str = "/",
-        mesh_color_override: Optional[Tuple[float, float, float]] = None,
+        mesh_color_override: tuple[float, float, float] | None = None,
     ) -> None:
         assert root_node_name.startswith("/")
         assert len(root_node_name) == 1 or not root_node_name.endswith("/")
 
-        urdf = yourdfpy.URDF.load(
-            urdf_path,
-            filename_handler=partial(
-                yourdfpy.filename_handler_magic, dir=urdf_path.parent
-            ),
-        )
+        if isinstance(urdf_or_path, Path):
+            urdf = yourdfpy.URDF.load(
+                urdf_or_path,
+                filename_handler=partial(
+                    yourdfpy.filename_handler_magic, dir=urdf_or_path.parent
+                ),
+            )
+        else:
+            urdf = urdf_or_path
         assert isinstance(urdf, yourdfpy.URDF)
 
         self._target = target
@@ -92,9 +104,9 @@ class ViserUrdf:
 
     def get_actuated_joint_limits(
         self,
-    ) -> Dict[str, Tuple[Optional[float], Optional[float]]]:
+    ) -> dict[str, tuple[float | None, float | None]]:
         """Returns an ordered mapping from actuated joint names to position limits."""
-        out: Dict[str, Tuple[Optional[float], Optional[float]]] = {}
+        out: dict[str, tuple[float | None, float | None]] = {}
         for joint_name, joint in zip(
             self._urdf.actuated_joint_names, self._urdf.actuated_joints
         ):

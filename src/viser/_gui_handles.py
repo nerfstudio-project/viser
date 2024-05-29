@@ -42,7 +42,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -55,7 +56,7 @@ class _GuiHandleState(Generic[T]):
     value: T
     update_timestamp: float
 
-    container_id: str
+    parent_container_id: str
     """Container that this GUI input was placed into."""
 
     update_cb: list[Callable[[GuiEvent], None]]
@@ -183,15 +184,17 @@ class _GuiInputHandle(Generic[T]):
 
         # TODO: the current way we track GUI handles and children is very manual +
         # error-prone. We should revist this design.
-        gui_api._gui_handle_from_id[self._impl.id] = self
-        parent = gui_api._container_handle_from_id[self._impl.container_id]
+        gui_api._gui_input_handle_from_id[self._impl.id] = self
+        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
         parent._children[self._impl.id] = self
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
         gui_api = self._impl.gui_api
         gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
-        gui_api._gui_handle_from_id.pop(self._impl.id)
+        gui_api._gui_input_handle_from_id.pop(self._impl.id)
+        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
+        parent._children.pop(self._impl.id)
 
 
 StringType = TypeVar("StringType", bound=str)
@@ -344,6 +347,7 @@ class GuiTabGroupHandle:
     _icons_html: list[str | None]
     _tabs: list[GuiTabHandle]
     _gui_api: GuiApi
+    _parent_container_id: str
     _order: float
 
     @property
@@ -366,13 +370,18 @@ class GuiTabGroupHandle:
         self._sync_with_client()
         return out
 
+    def __post_init__(self) -> None:
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._tab_group_id] = self
+
     def remove(self) -> None:
         """Remove this tab group and all contained GUI elements."""
-        for tab in self._tabs:
+        for tab in tuple(self._tabs):
             tab.remove()
-        self._gui_api._websock_interface.queue_message(
-            GuiRemoveMessage(self._tab_group_id)
-        )
+        gui_api = self._gui_api
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._tab_group_id))
+        parent = gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._tab_group_id)
 
     def _sync_with_client(self) -> None:
         """Send messages for syncing tab state with the client."""
@@ -426,12 +435,11 @@ class GuiFolderHandle:
         """Permanently remove this folder and all contained GUI elements from the
         visualizer."""
         self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
-        self._gui_api._container_handle_from_id.pop(self._id)
         for child in tuple(self._children.values()):
             child.remove()
-
         parent = self._gui_api._container_handle_from_id[self._parent_container_id]
         parent._children.pop(self._id)
+        self._gui_api._container_handle_from_id.pop(self._id)
 
 
 @dataclasses.dataclass
@@ -464,9 +472,9 @@ class GuiModalHandle:
         self._gui_api._websock_interface.queue_message(
             GuiCloseModalMessage(self._id),
         )
-        self._gui_api._container_handle_from_id.pop(self._id)
         for child in tuple(self._children.values()):
             child.remove()
+        self._gui_api._container_handle_from_id.pop(self._id)
 
 
 @dataclasses.dataclass
@@ -505,15 +513,13 @@ class GuiTabHandle:
                 break
         assert container_index != -1, "Tab already removed!"
 
-        self._parent._gui_api._container_handle_from_id.pop(self._id)
-
         self._parent._labels.pop(container_index)
         self._parent._icons_html.pop(container_index)
         self._parent._tabs.pop(container_index)
         self._parent._sync_with_client()
-
-        for child in self._children.values():
+        for child in tuple(self._children.values()):
             child.remove()
+        self._parent._gui_api._container_handle_from_id.pop(self._id)
 
 
 def _get_data_url(url: str, image_root: Path | None) -> str:
@@ -692,6 +698,5 @@ class GuiPlotlyHandle:
     def remove(self) -> None:
         """Permanently remove this markdown from the visualizer."""
         self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
-
         parent = self._gui_api._container_handle_from_id[self._parent_container_id]
         parent._children.pop(self._id)
