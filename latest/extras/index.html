@@ -261,7 +261,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/07_record3d_visualizer/">Record3D visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/08_smpl_visualizer/">Visualizer for SMPL human body models. Requires a .npz model file.</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/09_urdf_visualizer/">URDF visualizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/09_urdf_visualizer/">Robot URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/11_colmap_visualizer/">COLMAP visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/12_click_meshes/">Mesh click events</a></li>
@@ -390,6 +390,17 @@
 <dt class="sig sig-object py" id="viser.extras.ViserUrdf">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.extras.</span></span><span class="sig-name descname"><span class="pre">ViserUrdf</span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf" title="Link to this definition">#</a></dt>
 <dd><p>Helper for rendering URDFs in Viser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> – ViserServer or ClientHandle object to add URDF to.</p></li>
+<li><p><strong>urdf_or_path</strong> – Either a path to a URDF file or a yourdfpy URDF object.</p></li>
+<li><p><strong>scale</strong> – Scale factor to apply to resize the URDF.</p></li>
+<li><p><strong>root_node_name</strong> – Viser scene tree name for the root of the URDF geometry.</p></li>
+<li><p><strong>mesh_color_override</strong> – Optional color to override the URDF’s mesh colors.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.extras.ViserUrdf.update_cfg">
 <span class="sig-name descname"><span class="pre">update_cfg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf.update_cfg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf.update_cfg" title="Link to this definition">#</a></dt>
@@ -406,11 +417,11 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.extras.ViserUrdf.get_actuated_joint_limits">
-<span class="sig-name descname"><span class="pre">get_actuated_joint_limits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf.get_actuated_joint_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf.get_actuated_joint_limits" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">get_actuated_joint_limits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf.get_actuated_joint_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf.get_actuated_joint_limits" title="Link to this definition">#</a></dt>
 <dd><p>Returns an ordered mapping from actuated joint names to position limits.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>Dict</em>[str, <em>Tuple</em>[float | None, float | None]]</p>
+<dd class="field-odd"><p>dict[str, tuple[float | None, float | None]]</p>
 </dd>
 </dl>
 </dd></dl>

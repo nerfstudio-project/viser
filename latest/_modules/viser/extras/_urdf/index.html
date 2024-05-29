@@ -260,7 +260,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/07_record3d_visualizer/">Record3D visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/08_smpl_visualizer/">Visualizer for SMPL human body models. Requires a .npz model file.</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../examples/09_urdf_visualizer/">URDF visualizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/09_urdf_visualizer/">Robot URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/11_colmap_visualizer/">COLMAP visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/12_click_meshes/">Mesh click events</a></li>
@@ -309,15 +309,16 @@
         </div>
         <article role="main">
           <h1>Source code for viser.extras._urdf</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="kn">import</span> <span class="nn">trimesh</span>
-<span class="kn">import</span> <span class="nn">yourdfpy</span>
-
 <span class="kn">import</span> <span class="nn">viser</span>
+<span class="kn">import</span> <span class="nn">yourdfpy</span>
 
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
 
@@ -325,25 +326,36 @@
 <div class="viewcode-block" id="ViserUrdf">
 <a class="viewcode-back" href="../../../../extras/#viser.extras.ViserUrdf">[docs]</a>
 <span class="k">class</span> <span class="nc">ViserUrdf</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for rendering URDFs in Viser.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for rendering URDFs in Viser.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        target: ViserServer or ClientHandle object to add URDF to.</span>
+<span class="sd">        urdf_or_path: Either a path to a URDF file or a yourdfpy URDF object.</span>
+<span class="sd">        scale: Scale factor to apply to resize the URDF.</span>
+<span class="sd">        root_node_name: Viser scene tree name for the root of the URDF geometry.</span>
+<span class="sd">        mesh_color_override: Optional color to override the URDF&#39;s mesh colors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">,</span> <span class="n">viser</span><span class="o">.</span><span class="n">ClientHandle</span><span class="p">],</span>
-        <span class="n">urdf_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span> <span class="o">|</span> <span class="n">viser</span><span class="o">.</span><span class="n">ClientHandle</span><span class="p">,</span>
+        <span class="n">urdf_or_path</span><span class="p">:</span> <span class="n">yourdfpy</span><span class="o">.</span><span class="n">URDF</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
         <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
         <span class="n">root_node_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>
-        <span class="n">mesh_color_override</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mesh_color_override</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">root_node_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">root_node_name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">root_node_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
 
-        <span class="n">urdf</span> <span class="o">=</span> <span class="n">yourdfpy</span><span class="o">.</span><span class="n">URDF</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
-            <span class="n">urdf_path</span><span class="p">,</span>
-            <span class="n">filename_handler</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span>
-                <span class="n">yourdfpy</span><span class="o">.</span><span class="n">filename_handler_magic</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">urdf_path</span><span class="o">.</span><span class="n">parent</span>
-            <span class="p">),</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urdf_or_path</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+            <span class="n">urdf</span> <span class="o">=</span> <span class="n">yourdfpy</span><span class="o">.</span><span class="n">URDF</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+                <span class="n">urdf_or_path</span><span class="p">,</span>
+                <span class="n">filename_handler</span><span class="o">=</span><span class="n">partial</span><span class="p">(</span>
+                    <span class="n">yourdfpy</span><span class="o">.</span><span class="n">filename_handler_magic</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="n">urdf_or_path</span><span class="o">.</span><span class="n">parent</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">urdf</span> <span class="o">=</span> <span class="n">urdf_or_path</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urdf</span><span class="p">,</span> <span class="n">yourdfpy</span><span class="o">.</span><span class="n">URDF</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_target</span> <span class="o">=</span> <span class="n">target</span>
@@ -410,9 +422,9 @@
 <a class="viewcode-back" href="../../../../extras/#viser.extras.ViserUrdf.get_actuated_joint_limits">[docs]</a>
     <span class="k">def</span> <span class="nf">get_actuated_joint_limits</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns an ordered mapping from actuated joint names to position limits.&quot;&quot;&quot;</span>
-        <span class="n">out</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">joint_name</span><span class="p">,</span> <span class="n">joint</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_urdf</span><span class="o">.</span><span class="n">actuated_joint_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_urdf</span><span class="o">.</span><span class="n">actuated_joints</span>
         <span class="p">):</span>

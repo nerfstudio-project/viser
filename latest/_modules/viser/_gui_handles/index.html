@@ -260,7 +260,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/06_mesh/">Meshes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/07_record3d_visualizer/">Record3D visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/08_smpl_visualizer/">Visualizer for SMPL human body models. Requires a .npz model file.</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/09_urdf_visualizer/">URDF visualizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/09_urdf_visualizer/">Robot URDF visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/10_realsense/">RealSense visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/11_colmap_visualizer/">COLMAP visualizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/12_click_meshes/">Mesh click events</a></li>
@@ -814,9 +814,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
             <span class="n">GuiCloseModalMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">),</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
             <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="GuiTabHandle">
