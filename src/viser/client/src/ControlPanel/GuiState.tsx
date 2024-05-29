@@ -126,6 +126,12 @@ export function useGuiState(initialServer: string) {
             delete state.guiIdSetFromContainerId[guiConfig.container_id]![id];
             delete state.guiOrderFromId[id];
             delete state.guiConfigFromId[id];
+            if (
+              Object.keys(
+                state.guiIdSetFromContainerId[guiConfig.container_id]!,
+              ).length == 0
+            )
+              delete state.guiIdSetFromContainerId[guiConfig.container_id];
           }),
         resetGui: () =>
           set((state) => {

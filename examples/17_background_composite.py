@@ -9,6 +9,7 @@ import time
 import numpy as onp
 import trimesh
 import trimesh.creation
+
 import viser
 
 server = viser.ViserServer()

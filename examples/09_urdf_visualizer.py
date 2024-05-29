@@ -11,12 +11,12 @@ and viser. It can also take a path to a local URDF file as input.
 from __future__ import annotations
 
 import time
-from pathlib import Path
 
 import numpy as onp
 import tyro
-import viser
 from robot_descriptions.loaders.yourdfpy import load_robot_description
+
+import viser
 from viser.extras import ViserUrdf
 
 

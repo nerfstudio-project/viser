@@ -6,6 +6,7 @@ Make a ball with some random splines.
 import time
 
 import numpy as onp
+
 import viser
 
 

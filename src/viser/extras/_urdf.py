@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from functools import partial
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 import numpy as onp
 import trimesh
-import viser
 import yourdfpy
+
+import viser
 
 from .. import transforms as tf
 
