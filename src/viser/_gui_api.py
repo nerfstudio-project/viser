@@ -187,7 +187,7 @@ class GuiApi(abc.ABC):
     def __init__(self) -> None:
         super().__init__()
 
-        self._gui_handle_from_id: Dict[str, _GuiInputHandle[Any]] = {}
+        self._gui_input_handle_from_id: Dict[str, _GuiInputHandle[Any]] = {}
         self._container_handle_from_id: Dict[str, GuiContainerProtocol] = {
             "root": _RootGuiContainer({})
         }
@@ -211,7 +211,7 @@ class GuiApi(abc.ABC):
         self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
         """Callback for handling GUI messages."""
-        handle = self._gui_handle_from_id.get(message.id, None)
+        handle = self._gui_input_handle_from_id.get(message.id, None)
         if handle is None:
             return
         handle_state = handle._impl
@@ -261,7 +261,7 @@ class GuiApi(abc.ABC):
     def _handle_file_transfer_start(
         self, client_id: ClientId, message: _messages.FileTransferStart
     ) -> None:
-        if message.source_component_id not in self._gui_handle_from_id:
+        if message.source_component_id not in self._gui_input_handle_from_id:
             return
         self._current_file_upload_states[message.transfer_uuid] = {
             "filename": message.filename,
@@ -278,7 +278,7 @@ class GuiApi(abc.ABC):
     ) -> None:
         if message.transfer_uuid not in self._current_file_upload_states:
             return
-        assert message.source_component_id in self._gui_handle_from_id
+        assert message.source_component_id in self._gui_input_handle_from_id
 
         state = self._current_file_upload_states[message.transfer_uuid]
         state["parts"][message.part] = message.content
@@ -304,7 +304,7 @@ class GuiApi(abc.ABC):
         assert state["transferred_bytes"] == total_bytes
         state = self._current_file_upload_states.pop(message.transfer_uuid)
 
-        handle = self._gui_handle_from_id.get(message.source_component_id, None)
+        handle = self._gui_input_handle_from_id.get(message.source_component_id, None)
         if handle is None:
             return
 
@@ -459,6 +459,7 @@ class GuiApi(abc.ABC):
             _icons_html=[],
             _tabs=[],
             _gui_api=self,
+            _parent_container_id=self._get_container_id(),
             _order=order,
         )
 
@@ -1388,7 +1389,7 @@ class GuiApi(abc.ABC):
             gui_api=self,
             value=value,
             update_timestamp=time.time(),
-            container_id=self._get_container_id(),
+            parent_container_id=self._get_container_id(),
             update_cb=[],
             is_button=is_button,
             sync_cb=None,
