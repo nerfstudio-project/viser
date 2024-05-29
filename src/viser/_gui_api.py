@@ -195,7 +195,7 @@ class GuiApi:
         )
         """Interface for sending and listening to messages."""
 
-        self._gui_handle_from_id: dict[str, _GuiInputHandle[Any]] = {}
+        self._gui_input_handle_from_id: dict[str, _GuiInputHandle[Any]] = {}
         self._container_handle_from_id: dict[str, GuiContainerProtocol] = {
             "root": _RootGuiContainer({})
         }
@@ -219,7 +219,7 @@ class GuiApi:
         self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
         """Callback for handling GUI messages."""
-        handle = self._gui_handle_from_id.get(message.id, None)
+        handle = self._gui_input_handle_from_id.get(message.id, None)
         if handle is None:
             return
         handle_state = handle._impl
@@ -268,7 +268,7 @@ class GuiApi:
     def _handle_file_transfer_start(
         self, client_id: ClientId, message: _messages.FileTransferStart
     ) -> None:
-        if message.source_component_id not in self._gui_handle_from_id:
+        if message.source_component_id not in self._gui_input_handle_from_id:
             return
         self._current_file_upload_states[message.transfer_uuid] = {
             "filename": message.filename,
@@ -285,7 +285,7 @@ class GuiApi:
     ) -> None:
         if message.transfer_uuid not in self._current_file_upload_states:
             return
-        assert message.source_component_id in self._gui_handle_from_id
+        assert message.source_component_id in self._gui_input_handle_from_id
 
         state = self._current_file_upload_states[message.transfer_uuid]
         state["parts"][message.part] = message.content
@@ -311,7 +311,7 @@ class GuiApi:
         assert state["transferred_bytes"] == total_bytes
         state = self._current_file_upload_states.pop(message.transfer_uuid)
 
-        handle = self._gui_handle_from_id.get(message.source_component_id, None)
+        handle = self._gui_input_handle_from_id.get(message.source_component_id, None)
         if handle is None:
             return
 
@@ -382,9 +382,9 @@ class GuiApi:
             brand_color: An optional tuple of integers (RGB) representing the brand color.
         """
 
-        colors_cast: tuple[str, str, str, str, str, str, str, str, str, str] | None = (
-            None
-        )
+        colors_cast: tuple[
+            str, str, str, str, str, str, str, str, str, str
+        ] | None = None
 
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
@@ -532,6 +532,7 @@ class GuiApi:
             _icons_html=[],
             _tabs=[],
             _gui_api=self,
+            _parent_container_id=self._get_container_id(),
             _order=order,
         )
 
@@ -798,7 +799,8 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]: ...
+    ) -> GuiButtonGroupHandle[TLiteralString]:
+        ...
 
     @overload
     def add_button_group(
@@ -809,7 +811,8 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TString]: ...
+    ) -> GuiButtonGroupHandle[TString]:
+        ...
 
     def add_button_group(
         self,
@@ -1137,7 +1140,8 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TLiteralString]: ...
+    ) -> GuiDropdownHandle[TLiteralString]:
+        ...
 
     @overload
     def add_dropdown(
@@ -1149,7 +1153,8 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TString]: ...
+    ) -> GuiDropdownHandle[TString]:
+        ...
 
     def add_dropdown(
         self,
@@ -1461,7 +1466,7 @@ class GuiApi:
             gui_api=self,
             value=value,
             update_timestamp=time.time(),
-            container_id=self._get_container_id(),
+            parent_container_id=self._get_container_id(),
             update_cb=[],
             is_button=is_button,
             sync_cb=None,
