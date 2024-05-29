@@ -508,7 +508,7 @@
         <span class="p">)</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Interface for sending and listening to messages.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_handle_from_id</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_input_handle_from_id</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">GuiContainerProtocol</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;root&quot;</span><span class="p">:</span> <span class="n">_RootGuiContainer</span><span class="p">({})</span>
         <span class="p">}</span>
@@ -532,7 +532,7 @@
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GuiUpdateMessage</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback for handling GUI messages.&quot;&quot;&quot;</span>
-        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_handle_from_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_input_handle_from_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">handle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">handle_state</span> <span class="o">=</span> <span class="n">handle</span><span class="o">.</span><span class="n">_impl</span>
@@ -581,7 +581,7 @@
     <span class="k">def</span> <span class="nf">_handle_file_transfer_start</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferStart</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">source_component_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_handle_from_id</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">source_component_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_input_handle_from_id</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_file_upload_states</span><span class="p">[</span><span class="n">message</span><span class="o">.</span><span class="n">transfer_uuid</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
@@ -598,7 +598,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">transfer_uuid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_file_upload_states</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="k">assert</span> <span class="n">message</span><span class="o">.</span><span class="n">source_component_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_handle_from_id</span>
+        <span class="k">assert</span> <span class="n">message</span><span class="o">.</span><span class="n">source_component_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_input_handle_from_id</span>
 
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_file_upload_states</span><span class="p">[</span><span class="n">message</span><span class="o">.</span><span class="n">transfer_uuid</span><span class="p">]</span>
         <span class="n">state</span><span class="p">[</span><span class="s2">&quot;parts&quot;</span><span class="p">][</span><span class="n">message</span><span class="o">.</span><span class="n">part</span><span class="p">]</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">content</span>
@@ -624,7 +624,7 @@
         <span class="k">assert</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;transferred_bytes&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">total_bytes</span>
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_file_upload_states</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">transfer_uuid</span><span class="p">)</span>
 
-        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_handle_from_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">source_component_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_input_handle_from_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">source_component_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">handle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -700,9 +700,9 @@
 <span class="sd">            brand_color: An optional tuple of integers (RGB) representing the brand color.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">colors_cast</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="kc">None</span>
-        <span class="p">)</span>
+        <span class="n">colors_cast</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span>
+            <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span>
+        <span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">brand_color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">brand_color</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
@@ -859,6 +859,7 @@
             <span class="n">_icons_html</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">_tabs</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">_gui_api</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">_parent_container_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_container_id</span><span class="p">(),</span>
             <span class="n">_order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span>
         <span class="p">)</span></div>
 
@@ -1138,7 +1139,8 @@
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiButtonGroupHandle</span><span class="p">[</span><span class="n">TLiteralString</span><span class="p">]:</span> <span class="o">...</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiButtonGroupHandle</span><span class="p">[</span><span class="n">TLiteralString</span><span class="p">]:</span>
+        <span class="o">...</span>
 
     <span class="nd">@overload</span>
     <span class="k">def</span> <span class="nf">add_button_group</span><span class="p">(</span>
@@ -1149,7 +1151,8 @@
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiButtonGroupHandle</span><span class="p">[</span><span class="n">TString</span><span class="p">]:</span> <span class="o">...</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiButtonGroupHandle</span><span class="p">[</span><span class="n">TString</span><span class="p">]:</span>
+        <span class="o">...</span>
 
 <div class="viewcode-block" id="GuiApi.add_button_group">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_button_group">[docs]</a>
@@ -1495,7 +1498,8 @@
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiDropdownHandle</span><span class="p">[</span><span class="n">TLiteralString</span><span class="p">]:</span> <span class="o">...</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiDropdownHandle</span><span class="p">[</span><span class="n">TLiteralString</span><span class="p">]:</span>
+        <span class="o">...</span>
 
     <span class="nd">@overload</span>
     <span class="k">def</span> <span class="nf">add_dropdown</span><span class="p">(</span>
@@ -1507,7 +1511,8 @@
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">hint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiDropdownHandle</span><span class="p">[</span><span class="n">TString</span><span class="p">]:</span> <span class="o">...</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiDropdownHandle</span><span class="p">[</span><span class="n">TString</span><span class="p">]:</span>
+        <span class="o">...</span>
 
 <div class="viewcode-block" id="GuiApi.add_dropdown">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_dropdown">[docs]</a>
@@ -1834,7 +1839,7 @@
             <span class="n">gui_api</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
             <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
             <span class="n">update_timestamp</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
-            <span class="n">container_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_container_id</span><span class="p">(),</span>
+            <span class="n">parent_container_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_container_id</span><span class="p">(),</span>
             <span class="n">update_cb</span><span class="o">=</span><span class="p">[],</span>
             <span class="n">is_button</span><span class="o">=</span><span class="n">is_button</span><span class="p">,</span>
             <span class="n">sync_cb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>

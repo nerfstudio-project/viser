@@ -353,7 +353,8 @@
 
 
 <span class="k">class</span> <span class="nc">SupportsRemoveProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="o">...</span>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
@@ -366,7 +367,7 @@
     <span class="n">value</span><span class="p">:</span> <span class="n">T</span>
     <span class="n">update_timestamp</span><span class="p">:</span> <span class="nb">float</span>
 
-    <span class="n">container_id</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">parent_container_id</span><span class="p">:</span> <span class="nb">str</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Container that this GUI input was placed into.&quot;&quot;&quot;</span>
 
     <span class="n">update_cb</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span>
@@ -494,15 +495,17 @@
 
         <span class="c1"># TODO: the current way we track GUI handles and children is very manual +</span>
         <span class="c1"># error-prone. We should revist this design.</span>
-        <span class="n">gui_api</span><span class="o">.</span><span class="n">_gui_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
-        <span class="n">parent</span> <span class="o">=</span> <span class="n">gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">container_id</span><span class="p">]</span>
+        <span class="n">gui_api</span><span class="o">.</span><span class="n">_gui_input_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">parent_container_id</span><span class="p">]</span>
         <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
     <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this GUI element from the visualizer.&quot;&quot;&quot;</span>
         <span class="n">gui_api</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span>
         <span class="n">gui_api</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
-        <span class="n">gui_api</span><span class="o">.</span><span class="n">_gui_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">gui_api</span><span class="o">.</span><span class="n">_gui_input_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">parent_container_id</span><span class="p">]</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
 
 
 <span class="n">StringType</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;StringType&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
@@ -681,6 +684,7 @@
     <span class="n">_icons_html</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
     <span class="n">_tabs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">GuiTabHandle</span><span class="p">]</span>
     <span class="n">_gui_api</span><span class="p">:</span> <span class="n">GuiApi</span>
+    <span class="n">_parent_container_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">_order</span><span class="p">:</span> <span class="nb">float</span>
 
     <span class="nd">@property</span>
@@ -706,15 +710,20 @@
         <span class="k">return</span> <span class="n">out</span></div>
 
 
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_container_id</span><span class="p">]</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
+
 <div class="viewcode-block" id="GuiTabGroupHandle.remove">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.remove">[docs]</a>
     <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove this tab group and all contained GUI elements.&quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">tab</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tabs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">tab</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tabs</span><span class="p">):</span>
             <span class="n">tab</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
-            <span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">)</span>
-        <span class="p">)</span></div>
+        <span class="n">gui_api</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span>
+        <span class="n">gui_api</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">))</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_container_id</span><span class="p">]</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tab_group_id</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">_sync_with_client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -774,12 +783,11 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this folder and all contained GUI elements from the</span>
 <span class="sd">        visualizer.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
             <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-
         <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_container_id</span><span class="p">]</span>
-        <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span></div>
+        <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span></div>
 </div>
 
 
@@ -859,15 +867,13 @@
                 <span class="k">break</span>
         <span class="k">assert</span> <span class="n">container_index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Tab already removed!&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_labels</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">container_index</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_icons_html</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">container_index</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_tabs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">container_index</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_sync_with_client</span><span class="p">()</span>
-
-        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span></div>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span></div>
 </div>
 
 
@@ -1057,7 +1063,6 @@
     <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this markdown from the visualizer.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span><span class="n">GuiRemoveMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">))</span>
-
         <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_id</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_container_id</span><span class="p">]</span>
         <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
 </pre></div>
