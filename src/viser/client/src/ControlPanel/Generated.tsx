@@ -32,7 +32,7 @@ export default function GeneratedGuiContainer({
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
 
-  function setValue(id: string, value: any) {
+  function setValue(id: string, value: NonNullable<unknown>) {
     updateGuiProps(id, { value: value });
     messageSender({
       type: "GuiUpdateMessage",
