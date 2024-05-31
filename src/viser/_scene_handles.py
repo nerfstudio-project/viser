@@ -273,6 +273,6 @@ class Gui3dContainerHandle(SceneNodeHandle):
         super().remove()
 
         # Clean up contained GUI elements.
-        self._gui_api._container_handle_from_id.pop(self._container_id)
-        for child in self._children.values():
+        for child in tuple(self._children.values()):
             child.remove()
+        self._gui_api._container_handle_from_id.pop(self._container_id)
