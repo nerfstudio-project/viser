@@ -6,9 +6,8 @@ we get updates."""
 import time
 
 import numpy as onp
-from typing_extensions import assert_never
-
 import viser
+from typing_extensions import assert_never
 
 
 def main() -> None:

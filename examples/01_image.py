@@ -11,7 +11,6 @@ from pathlib import Path
 
 import imageio.v3 as iio
 import numpy as onp
-
 import viser
 
 

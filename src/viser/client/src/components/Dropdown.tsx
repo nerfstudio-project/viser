@@ -22,7 +22,7 @@ export default function DropdownComponent({
         radius="xs"
         value={value}
         data={options}
-        onChange={(value) => setValue(id, value)}
+        onChange={(value) => value !== null && setValue(id, value)}
         disabled={disabled}
         searchable
         maxDropdownHeight={400}

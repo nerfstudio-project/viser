@@ -48,8 +48,12 @@ def ensure_client_is_built() -> None:
     elif not (build_dir / "index.html").exists():
         rich.print("[bold](viser)[/bold] No client build found. Building now...")
         build = True
-    elif _modified_time_recursive(client_dir / "src") > _modified_time_recursive(
-        build_dir
+    elif (
+        # We should be at least 10 seconds newer than the last build.
+        # This buffer is important when we install from pip, and the src/ +
+        # build/ directories have very similar timestamps.
+        _modified_time_recursive(client_dir / "src")
+        > _modified_time_recursive(build_dir) + 10.0
     ):
         rich.print(
             "[bold](viser)[/bold] Client build looks out of date. Building now..."

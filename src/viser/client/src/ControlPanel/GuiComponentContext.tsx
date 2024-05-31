@@ -3,7 +3,7 @@ import * as Messages from "../WebsocketMessages";
 
 interface GuiComponentContext {
   folderDepth: number;
-  setValue: (id: string, value: any) => void;
+  setValue: (id: string, value: NonNullable<unknown>) => void;
   messageSender: (message: Messages.Message) => void;
   GuiContainer: React.FC<{ containerId: string }>;
 }
