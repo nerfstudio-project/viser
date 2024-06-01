@@ -1272,17 +1272,16 @@ class SceneApi:
         """
 
         # Avoids circular import.
-        from ._gui_api import GuiApi, _make_unique_id
+        from ._gui_api import _make_unique_id
 
         # New name to make the type checker happy; ViserServer and ClientHandle inherit
         # from both GuiApi and MessageApi. The pattern below is unideal.
-        gui_api = self
-        assert isinstance(gui_api, GuiApi)
+        gui_api = self._owner.gui
 
         # Remove the 3D GUI container if it already exists. This will make sure
         # contained GUI elements are removed, preventing potential memory leaks.
-        if name in gui_api._handle_from_node_name:
-            gui_api._handle_from_node_name[name].remove()
+        if name in self._handle_from_node_name:
+            self._handle_from_node_name[name].remove()
 
         container_id = _make_unique_id()
         self._websock_interface.queue_message(
