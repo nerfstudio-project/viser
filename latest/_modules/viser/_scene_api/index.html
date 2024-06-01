@@ -1586,8 +1586,9 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a callback to run automatically when the callback for a scene</span>
 <span class="sd">        pointer event is removed. This will be triggered exactly once, either</span>
-<span class="sd">        manually (via `remove_scene_pointer()`) or automatically (if the scene</span>
-<span class="sd">        pointer event is overridden with another call to `on_scene_pointer()`).</span>
+<span class="sd">        manually (via :meth:`remove_pointer_callback()`) or automatically (if</span>
+<span class="sd">        the scene pointer event is overridden with another call to</span>
+<span class="sd">        :meth:`on_pointer_event()`).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            func: Callback for when scene pointer events are removed.</span>
