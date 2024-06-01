@@ -1211,8 +1211,9 @@ class SceneApi:
     ) -> Callable[[], None]:
         """Add a callback to run automatically when the callback for a scene
         pointer event is removed. This will be triggered exactly once, either
-        manually (via `remove_scene_pointer()`) or automatically (if the scene
-        pointer event is overridden with another call to `on_scene_pointer()`).
+        manually (via :meth:`remove_pointer_callback()`) or automatically (if
+        the scene pointer event is overridden with another call to
+        :meth:`on_pointer_event()`).
 
         Args:
             func: Callback for when scene pointer events are removed.

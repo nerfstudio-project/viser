@@ -42,7 +42,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -341,6 +342,8 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
 
 @dataclasses.dataclass(frozen=True)
 class GuiTabGroupHandle:
+    """Handle for a tab group. Call :meth:`add_tab()` to add a tab."""
+
     _tab_group_id: str
     _labels: list[str]
     _icons_html: list[str | None]
@@ -622,7 +625,7 @@ class GuiMarkdownHandle:
 
 @dataclasses.dataclass
 class GuiPlotlyHandle:
-    """Use to remove markdown."""
+    """Use to update or remove markdown elements."""
 
     _gui_api: GuiApi
     _id: str
