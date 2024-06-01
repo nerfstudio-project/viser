@@ -31,7 +31,7 @@ class _BackwardsCompatibilityShim:
 
     def __getattr__(self, name: str) -> Any:
         fixed_name = {
-            # Map from old method names (viser v0.1.30) to new methods names.
+            # Map from old method names (viser v0.1.*) to new methods names.
             "reset_scene": "reset",
             "set_global_scene_node_visibility": "set_global_visibility",
             "on_scene_pointer": "on_pointer_event",
@@ -41,7 +41,7 @@ class _BackwardsCompatibilityShim:
         }.get(name, name)
         if hasattr(self.scene, fixed_name):
             warnings.warn(
-                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.scene.{fixed_name} instead. Alternatively, pin to `viser<=0.1.30`.",
+                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.scene.{fixed_name} instead. Alternatively, pin to `viser<0.2.0`.",
                 stacklevel=2,
             )
             return object.__getattribute__(self.scene, fixed_name)
@@ -49,7 +49,7 @@ class _BackwardsCompatibilityShim:
         fixed_name = name.replace("add_gui_", "add_").replace("set_gui_", "set_")
         if hasattr(self.gui, fixed_name):
             warnings.warn(
-                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.gui.{fixed_name} instead. Alternatively, pin to `viser<=0.1.30`.",
+                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.gui.{fixed_name} instead. Alternatively, pin to `viser<0.2.0`.",
                 stacklevel=2,
             )
             return object.__getattribute__(self.gui, fixed_name)
