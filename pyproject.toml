@@ -41,7 +41,7 @@ dependencies = [
 dev = [
     "pyright>=1.1.308",
     "mypy>=1.4.1",
-    "ruff==0.4.3",
+    "ruff==0.4.6",
     "pre-commit==3.3.2",
 ]
 examples = [
