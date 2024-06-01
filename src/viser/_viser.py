@@ -42,6 +42,7 @@ class _BackwardsCompatibilityShim:
         if hasattr(self.scene, fixed_name):
             warnings.warn(
                 f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.scene.{fixed_name} instead. Alternatively, pin to `viser<0.2.0`.",
+                category=DeprecationWarning,
                 stacklevel=2,
             )
             return object.__getattribute__(self.scene, fixed_name)
@@ -50,6 +51,7 @@ class _BackwardsCompatibilityShim:
         if hasattr(self.gui, fixed_name):
             warnings.warn(
                 f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.gui.{fixed_name} instead. Alternatively, pin to `viser<0.2.0`.",
+                category=DeprecationWarning,
                 stacklevel=2,
             )
             return object.__getattribute__(self.gui, fixed_name)
