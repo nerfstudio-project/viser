@@ -678,8 +678,6 @@
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">GuiTabGroupHandle</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a tab group. Call :meth:`add_tab()` to add a tab.&quot;&quot;&quot;</span>
-
     <span class="n">_tab_group_id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">_labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
     <span class="n">_icons_html</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
@@ -989,7 +987,7 @@
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">GuiPlotlyHandle</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use to update or remove markdown elements.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use to remove markdown.&quot;&quot;&quot;</span>
 
     <span class="n">_gui_api</span><span class="p">:</span> <span class="n">GuiApi</span>
     <span class="n">_id</span><span class="p">:</span> <span class="nb">str</span>

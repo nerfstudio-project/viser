@@ -1586,9 +1586,8 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a callback to run automatically when the callback for a scene</span>
 <span class="sd">        pointer event is removed. This will be triggered exactly once, either</span>
-<span class="sd">        manually (via :meth:`remove_pointer_callback()`) or automatically (if</span>
-<span class="sd">        the scene pointer event is overridden with another call to</span>
-<span class="sd">        :meth:`on_pointer_event()`).</span>
+<span class="sd">        manually (via `remove_scene_pointer()`) or automatically (if the scene</span>
+<span class="sd">        pointer event is overridden with another call to `on_scene_pointer()`).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            func: Callback for when scene pointer events are removed.</span>
@@ -1654,16 +1653,17 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Avoids circular import.</span>
-        <span class="kn">from</span> <span class="nn">._gui_api</span> <span class="kn">import</span> <span class="n">_make_unique_id</span>
+        <span class="kn">from</span> <span class="nn">._gui_api</span> <span class="kn">import</span> <span class="n">GuiApi</span><span class="p">,</span> <span class="n">_make_unique_id</span>
 
         <span class="c1"># New name to make the type checker happy; ViserServer and ClientHandle inherit</span>
         <span class="c1"># from both GuiApi and MessageApi. The pattern below is unideal.</span>
-        <span class="n">gui_api</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">gui</span>
+        <span class="n">gui_api</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gui_api</span><span class="p">,</span> <span class="n">GuiApi</span><span class="p">)</span>
 
         <span class="c1"># Remove the 3D GUI container if it already exists. This will make sure</span>
         <span class="c1"># contained GUI elements are removed, preventing potential memory leaks.</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_from_node_name</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_from_node_name</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">gui_api</span><span class="o">.</span><span class="n">_handle_from_node_name</span><span class="p">:</span>
+            <span class="n">gui_api</span><span class="o">.</span><span class="n">_handle_from_node_name</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
 
         <span class="n">container_id</span> <span class="o">=</span> <span class="n">_make_unique_id</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
