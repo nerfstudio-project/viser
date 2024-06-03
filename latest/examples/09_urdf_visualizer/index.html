@@ -319,144 +319,105 @@
 </ul>
 <p>The <a class="reference internal" href="../../extras/#viser.extras.ViserUrdf" title="viser.extras.ViserUrdf"><code class="xref py py-class docutils literal notranslate"><span class="pre">viser.extras.ViserUrdf</span></code></a> is a lightweight interface between yourdfpy
 and viser. It can also take a path to a local URDF file as input.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
-<span class="linenos">  2</span>
-<span class="linenos">  3</span><span class="kn">import</span> <span class="nn">time</span>
-<span class="linenos">  4</span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="linenos">  5</span>
-<span class="linenos">  6</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
-<span class="linenos">  7</span><span class="kn">import</span> <span class="nn">tyro</span>
-<span class="linenos">  8</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos">  9</span><span class="kn">from</span> <span class="nn">robot_descriptions.loaders.yourdfpy</span> <span class="kn">import</span> <span class="n">load_robot_description</span>
-<span class="linenos"> 10</span><span class="kn">from</span> <span class="nn">viser.extras</span> <span class="kn">import</span> <span class="n">ViserUrdf</span>
-<span class="linenos"> 11</span>
-<span class="linenos"> 12</span>
-<span class="linenos"> 13</span><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos"> 14</span>    <span class="c1"># Start viser server.</span>
-<span class="linenos"> 15</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos"> 16</span>
-<span class="linenos"> 17</span>    <span class="c1"># Logic for updating the visualized robot.</span>
-<span class="linenos"> 18</span>    <span class="n">gui_joints</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos"> 19</span>    <span class="n">initial_angles</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="linenos"> 20</span>
-<span class="linenos"> 21</span>    <span class="k">def</span> <span class="nf">update_robot_model</span><span class="p">(</span><span class="n">robot_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="linenos"> 22</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos"> 23</span>
-<span class="linenos"> 24</span>        <span class="n">loading_modal</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_modal</span><span class="p">(</span><span class="s2">&quot;Loading URDF...&quot;</span><span class="p">)</span>
-<span class="linenos"> 25</span>        <span class="k">with</span> <span class="n">loading_modal</span><span class="p">:</span>
-<span class="linenos"> 26</span>            <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_markdown</span><span class="p">(</span><span class="s2">&quot;See terminal for progress!&quot;</span><span class="p">)</span>
-<span class="linenos"> 27</span>
-<span class="linenos"> 28</span>        <span class="c1"># Create a helper for adding URDFs to Viser. This just adds meshes to the scene,</span>
-<span class="linenos"> 29</span>        <span class="c1"># helps us set the joint angles, etc.</span>
-<span class="linenos"> 30</span>        <span class="n">urdf</span> <span class="o">=</span> <span class="n">ViserUrdf</span><span class="p">(</span>
-<span class="linenos"> 31</span>            <span class="n">server</span><span class="p">,</span>
-<span class="linenos"> 32</span>            <span class="c1"># This can also be set to a path to a local URDF file.</span>
-<span class="linenos"> 33</span>            <span class="n">urdf_or_path</span><span class="o">=</span><span class="n">load_robot_description</span><span class="p">(</span><span class="n">robot_name</span><span class="p">),</span>
-<span class="linenos"> 34</span>        <span class="p">)</span>
-<span class="linenos"> 35</span>        <span class="n">loading_modal</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos"> 36</span>
-<span class="linenos"> 37</span>        <span class="k">for</span> <span class="n">gui_joint</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">:</span>
-<span class="linenos"> 38</span>            <span class="n">gui_joint</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
-<span class="linenos"> 39</span>        <span class="n">gui_joints</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-<span class="linenos"> 40</span>
-<span class="linenos"> 41</span>        <span class="k">for</span> <span class="n">joint_name</span><span class="p">,</span> <span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span> <span class="ow">in</span> <span class="n">urdf</span><span class="o">.</span><span class="n">get_actuated_joint_limits</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-<span class="linenos"> 42</span>            <span class="n">lower</span> <span class="o">=</span> <span class="n">lower</span> <span class="k">if</span> <span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="o">-</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span>
-<span class="linenos"> 43</span>            <span class="n">upper</span> <span class="o">=</span> <span class="n">upper</span> <span class="k">if</span> <span class="n">upper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">onp</span><span class="o">.</span><span class="n">pi</span>
-<span class="linenos"> 44</span>
-<span class="linenos"> 45</span>            <span class="n">initial_angle</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">lower</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">upper</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">lower</span> <span class="o">+</span> <span class="n">upper</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
-<span class="linenos"> 46</span>            <span class="n">slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
-<span class="linenos"> 47</span>                <span class="n">label</span><span class="o">=</span><span class="n">joint_name</span><span class="p">,</span>
-<span class="linenos"> 48</span>                <span class="nb">min</span><span class="o">=</span><span class="n">lower</span><span class="p">,</span>
-<span class="linenos"> 49</span>                <span class="nb">max</span><span class="o">=</span><span class="n">upper</span><span class="p">,</span>
-<span class="linenos"> 50</span>                <span class="n">step</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
-<span class="linenos"> 51</span>                <span class="n">initial_value</span><span class="o">=</span><span class="n">initial_angle</span><span class="p">,</span>
-<span class="linenos"> 52</span>            <span class="p">)</span>
-<span class="linenos"> 53</span>            <span class="n">slider</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span>  <span class="c1"># When sliders move, we update the URDF configuration.</span>
-<span class="linenos"> 54</span>                <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">urdf</span><span class="o">.</span><span class="n">update_cfg</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gui</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">gui</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">]))</span>
-<span class="linenos"> 55</span>            <span class="p">)</span>
-<span class="linenos"> 56</span>
-<span class="linenos"> 57</span>            <span class="n">gui_joints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">slider</span><span class="p">)</span>
-<span class="linenos"> 58</span>            <span class="n">initial_angles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">initial_angle</span><span class="p">)</span>
-<span class="linenos"> 59</span>
-<span class="linenos"> 60</span>        <span class="c1"># Apply initial joint angles.</span>
-<span class="linenos"> 61</span>        <span class="n">urdf</span><span class="o">.</span><span class="n">update_cfg</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gui</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">gui</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">]))</span>
-<span class="linenos"> 62</span>
-<span class="linenos"> 63</span>    <span class="n">robot_model_name</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_dropdown</span><span class="p">(</span><span class="s2">&quot;Robot model&quot;</span><span class="p">,</span> <span class="n">ROBOT_MODEL_LIST</span><span class="p">)</span>
-<span class="linenos"> 64</span>    <span class="n">robot_model_name</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">update_robot_model</span><span class="p">(</span><span class="n">robot_model_name</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
-<span class="linenos"> 65</span>
-<span class="linenos"> 66</span>    <span class="c1"># Create joint reset button.</span>
-<span class="linenos"> 67</span>    <span class="n">reset_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Reset&quot;</span><span class="p">)</span>
-<span class="linenos"> 68</span>
-<span class="linenos"> 69</span>    <span class="nd">@reset_button</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos"> 70</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-<span class="linenos"> 71</span>        <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">initial_angle</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gui_joints</span><span class="p">,</span> <span class="n">initial_angles</span><span class="p">):</span>
-<span class="linenos"> 72</span>            <span class="n">g</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">initial_angle</span>
-<span class="linenos"> 73</span>
-<span class="linenos"> 74</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos"> 75</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
-<span class="linenos"> 76</span>
-<span class="linenos"> 77</span>
-<span class="linenos"> 78</span><span class="n">ROBOT_MODEL_LIST</span> <span class="o">=</span> <span class="p">(</span>
-<span class="linenos"> 79</span>    <span class="s2">&quot;edo_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 80</span>    <span class="s2">&quot;fanuc_m710ic_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 81</span>    <span class="s2">&quot;gen2_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 82</span>    <span class="s2">&quot;gen3_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 83</span>    <span class="s2">&quot;iiwa14_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 84</span>    <span class="s2">&quot;iiwa7_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 85</span>    <span class="s2">&quot;panda_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 86</span>    <span class="s2">&quot;poppy_ergo_jr_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 87</span>    <span class="s2">&quot;ur10_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 88</span>    <span class="s2">&quot;ur3_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 89</span>    <span class="s2">&quot;ur5_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 90</span>    <span class="s2">&quot;z1_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 91</span>    <span class="s2">&quot;bolt_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 92</span>    <span class="s2">&quot;cassie_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 93</span>    <span class="s2">&quot;rhea_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 94</span>    <span class="s2">&quot;spryped_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 95</span>    <span class="s2">&quot;upkie_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 96</span>    <span class="s2">&quot;baxter_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 97</span>    <span class="s2">&quot;nextage_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 98</span>    <span class="s2">&quot;poppy_torso_description&quot;</span><span class="p">,</span>
-<span class="linenos"> 99</span>    <span class="s2">&quot;yumi_description&quot;</span><span class="p">,</span>
-<span class="linenos">100</span>    <span class="s2">&quot;cf2_description&quot;</span><span class="p">,</span>
-<span class="linenos">101</span>    <span class="s2">&quot;skydio_x2_description&quot;</span><span class="p">,</span>
-<span class="linenos">102</span>    <span class="s2">&quot;double_pendulum_description&quot;</span><span class="p">,</span>
-<span class="linenos">103</span>    <span class="s2">&quot;finger_edu_description&quot;</span><span class="p">,</span>
-<span class="linenos">104</span>    <span class="s2">&quot;simple_humanoid_description&quot;</span><span class="p">,</span>
-<span class="linenos">105</span>    <span class="s2">&quot;trifinger_edu_description&quot;</span><span class="p">,</span>
-<span class="linenos">106</span>    <span class="s2">&quot;allegro_hand_description&quot;</span><span class="p">,</span>
-<span class="linenos">107</span>    <span class="s2">&quot;barrett_hand_description&quot;</span><span class="p">,</span>
-<span class="linenos">108</span>    <span class="s2">&quot;robotiq_2f85_description&quot;</span><span class="p">,</span>
-<span class="linenos">109</span>    <span class="s2">&quot;atlas_drc_description&quot;</span><span class="p">,</span>
-<span class="linenos">110</span>    <span class="s2">&quot;atlas_v4_description&quot;</span><span class="p">,</span>
-<span class="linenos">111</span>    <span class="s2">&quot;draco3_description&quot;</span><span class="p">,</span>
-<span class="linenos">112</span>    <span class="s2">&quot;ergocub_description&quot;</span><span class="p">,</span>
-<span class="linenos">113</span>    <span class="s2">&quot;g1_description&quot;</span><span class="p">,</span>
-<span class="linenos">114</span>    <span class="s2">&quot;h1_description&quot;</span><span class="p">,</span>
-<span class="linenos">115</span>    <span class="s2">&quot;icub_description&quot;</span><span class="p">,</span>
-<span class="linenos">116</span>    <span class="s2">&quot;jaxon_description&quot;</span><span class="p">,</span>
-<span class="linenos">117</span>    <span class="s2">&quot;jvrc_description&quot;</span><span class="p">,</span>
-<span class="linenos">118</span>    <span class="s2">&quot;r2_description&quot;</span><span class="p">,</span>
-<span class="linenos">119</span>    <span class="s2">&quot;romeo_description&quot;</span><span class="p">,</span>
-<span class="linenos">120</span>    <span class="s2">&quot;sigmaban_description&quot;</span><span class="p">,</span>
-<span class="linenos">121</span>    <span class="s2">&quot;talos_description&quot;</span><span class="p">,</span>
-<span class="linenos">122</span>    <span class="s2">&quot;valkyrie_description&quot;</span><span class="p">,</span>
-<span class="linenos">123</span>    <span class="s2">&quot;a1_description&quot;</span><span class="p">,</span>
-<span class="linenos">124</span>    <span class="s2">&quot;aliengo_description&quot;</span><span class="p">,</span>
-<span class="linenos">125</span>    <span class="s2">&quot;anymal_b_description&quot;</span><span class="p">,</span>
-<span class="linenos">126</span>    <span class="s2">&quot;anymal_c_description&quot;</span><span class="p">,</span>
-<span class="linenos">127</span>    <span class="s2">&quot;b1_description&quot;</span><span class="p">,</span>
-<span class="linenos">128</span>    <span class="s2">&quot;go1_description&quot;</span><span class="p">,</span>
-<span class="linenos">129</span>    <span class="s2">&quot;go2_description&quot;</span><span class="p">,</span>
-<span class="linenos">130</span>    <span class="s2">&quot;hyq_description&quot;</span><span class="p">,</span>
-<span class="linenos">131</span>    <span class="s2">&quot;laikago_description&quot;</span><span class="p">,</span>
-<span class="linenos">132</span>    <span class="s2">&quot;mini_cheetah_description&quot;</span><span class="p">,</span>
-<span class="linenos">133</span>    <span class="s2">&quot;minitaur_description&quot;</span><span class="p">,</span>
-<span class="linenos">134</span>    <span class="s2">&quot;solo_description&quot;</span><span class="p">,</span>
-<span class="linenos">135</span><span class="p">)</span>
-<span class="linenos">136</span>
-<span class="linenos">137</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">138</span>    <span class="n">tyro</span><span class="o">.</span><span class="n">cli</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="kn">import</span> <span class="nn">time</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
+<span class="linenos"> 6</span><span class="kn">import</span> <span class="nn">tyro</span>
+<span class="linenos"> 7</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 8</span><span class="kn">from</span> <span class="nn">robot_descriptions.loaders.yourdfpy</span> <span class="kn">import</span> <span class="n">load_robot_description</span>
+<span class="linenos"> 9</span><span class="kn">from</span> <span class="nn">viser.extras</span> <span class="kn">import</span> <span class="n">ViserUrdf</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="c1"># A subset of robots available in the robot_descriptions package.</span>
+<span class="linenos">12</span><span class="n">ROBOT_MODEL_LIST</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos">13</span>    <span class="s2">&quot;panda_description&quot;</span><span class="p">,</span>
+<span class="linenos">14</span>    <span class="s2">&quot;ur10_description&quot;</span><span class="p">,</span>
+<span class="linenos">15</span>    <span class="s2">&quot;ur3_description&quot;</span><span class="p">,</span>
+<span class="linenos">16</span>    <span class="s2">&quot;ur5_description&quot;</span><span class="p">,</span>
+<span class="linenos">17</span>    <span class="s2">&quot;cassie_description&quot;</span><span class="p">,</span>
+<span class="linenos">18</span>    <span class="s2">&quot;skydio_x2_description&quot;</span><span class="p">,</span>
+<span class="linenos">19</span>    <span class="s2">&quot;allegro_hand_description&quot;</span><span class="p">,</span>
+<span class="linenos">20</span>    <span class="s2">&quot;barrett_hand_description&quot;</span><span class="p">,</span>
+<span class="linenos">21</span>    <span class="s2">&quot;robotiq_2f85_description&quot;</span><span class="p">,</span>
+<span class="linenos">22</span>    <span class="s2">&quot;atlas_drc_description&quot;</span><span class="p">,</span>
+<span class="linenos">23</span>    <span class="s2">&quot;atlas_v4_description&quot;</span><span class="p">,</span>
+<span class="linenos">24</span>    <span class="s2">&quot;draco3_description&quot;</span><span class="p">,</span>
+<span class="linenos">25</span>    <span class="s2">&quot;g1_description&quot;</span><span class="p">,</span>
+<span class="linenos">26</span>    <span class="s2">&quot;h1_description&quot;</span><span class="p">,</span>
+<span class="linenos">27</span>    <span class="s2">&quot;anymal_c_description&quot;</span><span class="p">,</span>
+<span class="linenos">28</span>    <span class="s2">&quot;go2_description&quot;</span><span class="p">,</span>
+<span class="linenos">29</span>    <span class="s2">&quot;mini_cheetah_description&quot;</span><span class="p">,</span>
+<span class="linenos">30</span><span class="p">)</span>
+<span class="linenos">31</span>
+<span class="linenos">32</span>
+<span class="linenos">33</span><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">34</span>    <span class="c1"># Start viser server.</span>
+<span class="linenos">35</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
+<span class="linenos">36</span>
+<span class="linenos">37</span>    <span class="c1"># Logic for updating the visualized robot.</span>
+<span class="linenos">38</span>    <span class="n">gui_joints</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">39</span>    <span class="n">initial_angles</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="linenos">40</span>
+<span class="linenos">41</span>    <span class="k">def</span> <span class="nf">update_robot_model</span><span class="p">(</span><span class="n">robot_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">42</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">43</span>
+<span class="linenos">44</span>        <span class="n">loading_modal</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_modal</span><span class="p">(</span><span class="s2">&quot;Loading URDF...&quot;</span><span class="p">)</span>
+<span class="linenos">45</span>        <span class="k">with</span> <span class="n">loading_modal</span><span class="p">:</span>
+<span class="linenos">46</span>            <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_markdown</span><span class="p">(</span><span class="s2">&quot;See terminal for progress!&quot;</span><span class="p">)</span>
+<span class="linenos">47</span>
+<span class="linenos">48</span>        <span class="c1"># Create a helper for adding URDFs to Viser. This just adds meshes to the scene,</span>
+<span class="linenos">49</span>        <span class="c1"># helps us set the joint angles, etc.</span>
+<span class="linenos">50</span>        <span class="n">urdf</span> <span class="o">=</span> <span class="n">ViserUrdf</span><span class="p">(</span>
+<span class="linenos">51</span>            <span class="n">server</span><span class="p">,</span>
+<span class="linenos">52</span>            <span class="c1"># This can also be set to a path to a local URDF file.</span>
+<span class="linenos">53</span>            <span class="n">urdf_or_path</span><span class="o">=</span><span class="n">load_robot_description</span><span class="p">(</span><span class="n">robot_name</span><span class="p">),</span>
+<span class="linenos">54</span>        <span class="p">)</span>
+<span class="linenos">55</span>        <span class="n">loading_modal</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos">56</span>
+<span class="linenos">57</span>        <span class="k">for</span> <span class="n">gui_joint</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">:</span>
+<span class="linenos">58</span>            <span class="n">gui_joint</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<span class="linenos">59</span>        <span class="n">gui_joints</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+<span class="linenos">60</span>
+<span class="linenos">61</span>        <span class="k">for</span> <span class="n">joint_name</span><span class="p">,</span> <span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span> <span class="ow">in</span> <span class="n">urdf</span><span class="o">.</span><span class="n">get_actuated_joint_limits</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="linenos">62</span>            <span class="n">lower</span> <span class="o">=</span> <span class="n">lower</span> <span class="k">if</span> <span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="o">-</span><span class="n">onp</span><span class="o">.</span><span class="n">pi</span>
+<span class="linenos">63</span>            <span class="n">upper</span> <span class="o">=</span> <span class="n">upper</span> <span class="k">if</span> <span class="n">upper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">onp</span><span class="o">.</span><span class="n">pi</span>
+<span class="linenos">64</span>
+<span class="linenos">65</span>            <span class="n">initial_angle</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">lower</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">upper</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">lower</span> <span class="o">+</span> <span class="n">upper</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+<span class="linenos">66</span>            <span class="n">slider</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_slider</span><span class="p">(</span>
+<span class="linenos">67</span>                <span class="n">label</span><span class="o">=</span><span class="n">joint_name</span><span class="p">,</span>
+<span class="linenos">68</span>                <span class="nb">min</span><span class="o">=</span><span class="n">lower</span><span class="p">,</span>
+<span class="linenos">69</span>                <span class="nb">max</span><span class="o">=</span><span class="n">upper</span><span class="p">,</span>
+<span class="linenos">70</span>                <span class="n">step</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+<span class="linenos">71</span>                <span class="n">initial_value</span><span class="o">=</span><span class="n">initial_angle</span><span class="p">,</span>
+<span class="linenos">72</span>            <span class="p">)</span>
+<span class="linenos">73</span>            <span class="n">slider</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span>  <span class="c1"># When sliders move, we update the URDF configuration.</span>
+<span class="linenos">74</span>                <span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">urdf</span><span class="o">.</span><span class="n">update_cfg</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gui</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">gui</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">]))</span>
+<span class="linenos">75</span>            <span class="p">)</span>
+<span class="linenos">76</span>
+<span class="linenos">77</span>            <span class="n">gui_joints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">slider</span><span class="p">)</span>
+<span class="linenos">78</span>            <span class="n">initial_angles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">initial_angle</span><span class="p">)</span>
+<span class="linenos">79</span>
+<span class="linenos">80</span>        <span class="c1"># Apply initial joint angles.</span>
+<span class="linenos">81</span>        <span class="n">urdf</span><span class="o">.</span><span class="n">update_cfg</span><span class="p">(</span><span class="n">onp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">gui</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">gui</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">]))</span>
+<span class="linenos">82</span>
+<span class="linenos">83</span>    <span class="n">robot_model_name</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_dropdown</span><span class="p">(</span><span class="s2">&quot;Robot model&quot;</span><span class="p">,</span> <span class="n">ROBOT_MODEL_LIST</span><span class="p">)</span>
+<span class="linenos">84</span>    <span class="n">robot_model_name</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">update_robot_model</span><span class="p">(</span><span class="n">robot_model_name</span><span class="o">.</span><span class="n">value</span><span class="p">))</span>
+<span class="linenos">85</span>
+<span class="linenos">86</span>    <span class="c1"># Create joint reset button.</span>
+<span class="linenos">87</span>    <span class="n">reset_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Reset&quot;</span><span class="p">)</span>
+<span class="linenos">88</span>
+<span class="linenos">89</span>    <span class="nd">@reset_button</span><span class="o">.</span><span class="n">on_click</span>
+<span class="linenos">90</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">91</span>        <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">initial_angle</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gui_joints</span><span class="p">,</span> <span class="n">initial_angles</span><span class="p">):</span>
+<span class="linenos">92</span>            <span class="n">g</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">initial_angle</span>
+<span class="linenos">93</span>
+<span class="linenos">94</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">95</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos">96</span>
+<span class="linenos">97</span>
+<span class="linenos">98</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">99</span>    <span class="n">tyro</span><span class="o">.</span><span class="n">cli</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

@@ -23,13 +23,33 @@ and viser. It can also take a path to a local URDF file as input.
         from __future__ import annotations
 
         import time
-        from pathlib import Path
 
         import numpy as onp
         import tyro
         import viser
         from robot_descriptions.loaders.yourdfpy import load_robot_description
         from viser.extras import ViserUrdf
+
+        # A subset of robots available in the robot_descriptions package.
+        ROBOT_MODEL_LIST = (
+            "panda_description",
+            "ur10_description",
+            "ur3_description",
+            "ur5_description",
+            "cassie_description",
+            "skydio_x2_description",
+            "allegro_hand_description",
+            "barrett_hand_description",
+            "robotiq_2f85_description",
+            "atlas_drc_description",
+            "atlas_v4_description",
+            "draco3_description",
+            "g1_description",
+            "h1_description",
+            "anymal_c_description",
+            "go2_description",
+            "mini_cheetah_description",
+        )
 
 
         def main() -> None:
@@ -96,65 +116,6 @@ and viser. It can also take a path to a local URDF file as input.
             while True:
                 time.sleep(10.0)
 
-
-        ROBOT_MODEL_LIST = (
-            "edo_description",
-            "fanuc_m710ic_description",
-            "gen2_description",
-            "gen3_description",
-            "iiwa14_description",
-            "iiwa7_description",
-            "panda_description",
-            "poppy_ergo_jr_description",
-            "ur10_description",
-            "ur3_description",
-            "ur5_description",
-            "z1_description",
-            "bolt_description",
-            "cassie_description",
-            "rhea_description",
-            "spryped_description",
-            "upkie_description",
-            "baxter_description",
-            "nextage_description",
-            "poppy_torso_description",
-            "yumi_description",
-            "cf2_description",
-            "skydio_x2_description",
-            "double_pendulum_description",
-            "finger_edu_description",
-            "simple_humanoid_description",
-            "trifinger_edu_description",
-            "allegro_hand_description",
-            "barrett_hand_description",
-            "robotiq_2f85_description",
-            "atlas_drc_description",
-            "atlas_v4_description",
-            "draco3_description",
-            "ergocub_description",
-            "g1_description",
-            "h1_description",
-            "icub_description",
-            "jaxon_description",
-            "jvrc_description",
-            "r2_description",
-            "romeo_description",
-            "sigmaban_description",
-            "talos_description",
-            "valkyrie_description",
-            "a1_description",
-            "aliengo_description",
-            "anymal_b_description",
-            "anymal_c_description",
-            "b1_description",
-            "go1_description",
-            "go2_description",
-            "hyq_description",
-            "laikago_description",
-            "mini_cheetah_description",
-            "minitaur_description",
-            "solo_description",
-        )
 
         if __name__ == "__main__":
             tyro.cli(main)
