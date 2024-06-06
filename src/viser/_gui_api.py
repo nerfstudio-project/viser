@@ -7,12 +7,13 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Sequence, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Sequence, Tuple, TypeVar, Union, cast, overload
 
 import numpy as onp
 from typing_extensions import (
     Literal,
     LiteralString,
+    TypeAlias,
     TypedDict,
     get_args,
     get_origin,
@@ -57,6 +58,17 @@ IntOrFloat = TypeVar("IntOrFloat", int, float)
 TString = TypeVar("TString", bound=str)
 TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 T = TypeVar("T")
+LengthTenStrTuple: TypeAlias = Tuple[str, str, str, str, str, str, str, str, str, str]
+
+
+def _hex_from_hls(h: float, l: float, s: float) -> str:
+    """Converts HLS values in [0.0, 1.0] to a hex-formatted string, eg 0xffffff."""
+    return "#" + "".join(
+        [
+            int(min(255, max(0, channel * 255.0)) + 0.5).to_bytes(1, "little").hex()
+            for channel in colorsys.hls_to_rgb(h, l, s)
+        ]
+    )
 
 
 def _compute_step(x: float | None) -> float:  # type: ignore
@@ -382,9 +394,7 @@ class GuiApi:
             brand_color: An optional tuple of integers (RGB) representing the brand color.
         """
 
-        colors_cast: tuple[
-            str, str, str, str, str, str, str, str, str, str
-        ] | None = None
+        colors_cast: LengthTenStrTuple | None = None
 
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
@@ -413,7 +423,10 @@ class GuiApi:
                         fp=onp.array([max_l, l, min_l]),
                     )
                 )
-                colors_cast = tuple(_hex_from_hls(h, ls[i], s) for i in range(10))  # type: ignore
+                colors_cast = cast(
+                    LengthTenStrTuple,
+                    tuple(_hex_from_hls(h, ls[i], s) for i in range(10)),
+                )
 
         assert colors_cast is None or all(
             [isinstance(val, str) and val.startswith("#") for val in colors_cast]
