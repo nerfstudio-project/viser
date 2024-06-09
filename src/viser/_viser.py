@@ -42,6 +42,7 @@ class _BackwardsCompatibilityShim:
         if hasattr(self.scene, fixed_name):
             warnings.warn(
                 f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.scene.{fixed_name} instead. Alternatively, pin to `viser<0.2.0`.",
+                category=DeprecationWarning,
                 stacklevel=2,
             )
             return object.__getattribute__(self.scene, fixed_name)
@@ -49,7 +50,8 @@ class _BackwardsCompatibilityShim:
         fixed_name = name.replace("add_gui_", "add_").replace("set_gui_", "set_")
         if hasattr(self.gui, fixed_name):
             warnings.warn(
-                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.gui.{fixed_name} instead. Alternatively, pin to `viser<=0.1.30`.",
+                f"{type(self).__name__}.{name} has been deprecated, use {type(self).__name__}.gui.{fixed_name} instead. Alternatively, pin to `viser<0.2.0`.",
+                category=DeprecationWarning,
                 stacklevel=2,
             )
             return object.__getattribute__(self.gui, fixed_name)
@@ -417,6 +419,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         host: str = "0.0.0.0",
         port: int = 8080,
         label: str | None = None,
+        verbose: bool = True,
         **_deprecated_kwargs,
     ):
         # Create server.
@@ -425,6 +428,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             port=port,
             message_class=_messages.Message,
             http_server_root=Path(__file__).absolute().parent / "client" / "build",
+            verbose=verbose,
             client_api_version=1,
         )
         self._websock_server = server
