@@ -842,15 +842,35 @@ class SceneApi:
         assert rgbs.shape == (num_gaussians, 3)
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
+
+        # Make our covariances more compact!
+        covariances_triu = (
+            covariances.reshape((-1, 9))[:, onp.array([0, 1, 2, 4, 5, 8])]
+            .astype(onp.float32)
+            .copy()
+        )
+        covariances_scale = onp.max(onp.abs(covariances_triu), axis=-1, keepdims=True)
+
+        # For memory layout, see GaussianSplatsMessage docstring.
+        float_buffer = onp.concatenate([centers, covariances_scale], axis=-1)
+        assert float_buffer.shape == (num_gaussians, 4)
+        int_buffer = onp.concatenate(
+            [
+                (covariances_triu / covariances_scale * 32767)
+                .astype(onp.int16)
+                .view(onp.uint8),
+                _colors_to_uint8(rgbs),
+                _colors_to_uint8(opacities),
+            ],
+            axis=-1,
+        ).view(onp.uint32)
+        assert int_buffer.shape == (num_gaussians, 4)
+
         self._websock_interface.queue_message(
             _messages.GaussianSplatsMessage(
                 name=name,
-                centers=centers.astype(onp.float32),
-                rgbs=_colors_to_uint8(rgbs),
-                opacities=_colors_to_uint8(opacities),
-                covariances_triu=covariances.reshape((-1, 9))[
-                    :, onp.array([0, 1, 2, 4, 5, 8])
-                ].astype(onp.float32),
+                float_buffer=float_buffer,
+                int_buffer=int_buffer,
             )
         )
         node_handle = GaussianSplatHandle._make(self, name, wxyz, position, visible)

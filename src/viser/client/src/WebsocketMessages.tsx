@@ -759,10 +759,8 @@ export interface CubicBezierSplineMessage {
 export interface GaussianSplatsMessage {
   type: "GaussianSplatsMessage";
   name: string;
-  centers: Uint8Array;
-  rgbs: Uint8Array;
-  opacities: Uint8Array;
-  covariances_triu: Uint8Array;
+  float_buffer: Uint8Array;
+  int_buffer: Uint8Array;
 }
 /** Message from server->client requesting a render of the current viewport.
  *

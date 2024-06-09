@@ -3,14 +3,30 @@
 
 import time
 from pathlib import Path
+from typing import TypedDict
 
 import numpy as onp
+import numpy.typing as onpt
 import tyro
 import viser
 from viser import transforms as tf
 
 
-def main(splat_path: Path) -> None:
+class SplatFile(TypedDict):
+    """Data loaded from an antimatter15-style splat file."""
+
+    centers: onpt.NDArray[onp.float32]
+    """(N, 3)."""
+    rgbs: onpt.NDArray[onp.float32]
+    """(N, 3). Range [0, 1]."""
+    opacities: onpt.NDArray[onp.float32]
+    """(N, 1). Range [0, 1]."""
+    covariances: onpt.NDArray[onp.float32]
+    """(N, 3, 3)."""
+
+
+def load_splat_file(splat_path: Path) -> SplatFile:
+    """Load an antimatter15-style splat file."""
     splat_buffer = splat_path.read_bytes()
     bytes_per_gaussian = (
         # Each Gaussian is serialized as:
@@ -37,10 +53,20 @@ def main(splat_path: Path) -> None:
     covariances = onp.einsum(
         "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
     )
+    return {
+        "centers": splat_uint8[:, 0:12].copy().view(onp.float32),
+        # Colors should have shape (N, 3).
+        "rgbs": splat_uint8[:, 24:27] / 255.0,
+        "opacities": splat_uint8[:, 27:28] / 255.0,
+        # Covariances should have shape (N, 3, 3).
+        "covariances": covariances,
+    }
 
+
+def main(splat_path: Path) -> None:
     server = viser.ViserServer(share=True)
-    server.configure_theme(dark_mode=True)
-    gui_reset_up = server.add_gui_button(
+    server.gui.configure_theme(dark_mode=True)
+    gui_reset_up = server.gui.add_button(
         "Reset up direction",
         hint="Set the camera control 'up' direction to the current camera's 'up'.",
     )
@@ -53,15 +79,23 @@ def main(splat_path: Path) -> None:
             [0.0, -1.0, 0.0]
         )
 
-    server.add_gaussian_splats(
-        "/gaussian_splats",
-        # Centers should have shape (N, 3).
-        centers=splat_uint8[:, 0:12].copy().view(onp.float32),
-        # Colors should have shape (N, 3).
-        rgbs=splat_uint8[:, 24:27] / 255.0,
-        opacities=splat_uint8[:, 27:28] / 255.0,
-        # Covariances should have shape (N, 3, 3).
-        covariances=covariances,
+    splat_data = load_splat_file(splat_path)
+
+    server.scene.add_transform_controls("/0")
+    server.scene.add_transform_controls("/1")
+    server.scene.add_gaussian_splats(
+        "/0/gaussian_splats",
+        centers=splat_data["centers"],
+        rgbs=splat_data["rgbs"],
+        opacities=splat_data["opacities"],
+        covariances=splat_data["covariances"],
+    )
+    server.scene.add_gaussian_splats(
+        "/1/gaussian_splats",
+        centers=splat_data["centers"],
+        rgbs=splat_data["rgbs"],
+        opacities=splat_data["opacities"],
+        covariances=splat_data["covariances"],
     )
 
     while True:
