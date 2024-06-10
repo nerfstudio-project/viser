@@ -1,5 +1,7 @@
 """Gaussian splatting"""
 
+from __future__ import annotations
+
 import time
 from pathlib import Path
 from typing import TypedDict
@@ -65,7 +67,7 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     }
 
 
-def main(splat_path: Path, test_multisplat: bool = False) -> None:
+def main(splat_paths: tuple[Path, ...], test_multisplat: bool = False) -> None:
     server = viser.ViserServer(share=True)
     server.gui.configure_theme(dark_mode=True)
     gui_reset_up = server.gui.add_button(
@@ -81,25 +83,16 @@ def main(splat_path: Path, test_multisplat: bool = False) -> None:
             [0.0, -1.0, 0.0]
         )
 
-    splat_data = load_splat_file(splat_path, center=True)
-
-    server.scene.add_transform_controls("/0")
-    server.scene.add_gaussian_splats(
-        "/0/gaussian_splats",
-        centers=splat_data["centers"],
-        rgbs=splat_data["rgbs"],
-        opacities=splat_data["opacities"],
-        covariances=splat_data["covariances"],
-    )
-    if test_multisplat:
+    for i, splat_path in enumerate(splat_paths):
+        splat_data = load_splat_file(splat_path, center=True)
+        server.scene.add_transform_controls(f"/{i}")
         server.scene.add_gaussian_splats(
-            "/1/gaussian_splats",
+            f"/{i}/gaussian_splats",
             centers=splat_data["centers"],
             rgbs=splat_data["rgbs"],
             opacities=splat_data["opacities"],
             covariances=splat_data["covariances"],
         )
-        server.scene.add_transform_controls("/1")
 
     while True:
         time.sleep(10.0)

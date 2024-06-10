@@ -21,34 +21,48 @@ export type GaussianBuffers = {
 
 const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   {
-    alphaTest: 0.1,
-    alphaHash: false,
     numGaussians: 0,
-    transitionInState: 0.0,
     focal: 100.0,
     viewport: [640, 480],
+    near: 1.0,
+    far: 100.0,
     depthTest: true,
     depthWrite: true,
     transparent: true,
     floatBufferTexture: null,
     intBufferTexture: null,
+    sortSynchronizedModelViewMatrix: new THREE.Matrix4(),
+    transitionInState: 0.0,
   },
   `precision highp usampler2D; // Most important: ints must be 32-bit.
   precision mediump sampler2D;
 
+  // Index from the splat sorter.
   attribute uint sortedIndex;
 
+  // Buffers for splat data; each Gaussian gets 4 floats and 4 int32s. We just
+  // copy quadjr for this.
   uniform sampler2D floatBufferTexture;
   uniform usampler2D intBufferTexture;
+
+  // Various other uniforms...
   uniform uint numGaussians;
   uniform vec2 focal;
   uniform vec2 viewport;
+  uniform float near;
+  uniform float far;
 
+  // Depth testing is useful for compositing multiple splat objects, but causes
+  // artifacts when closer Gaussians are rendered before further ones. Synchronizing
+  // the modelViewMatrix updates used for depth computation with the splat sorter
+  // mitigates this for Gaussians within the same object.
+  uniform mat4 sortSynchronizedModelViewMatrix;
+
+  // Fade in state between [0, 1].
   uniform float transitionInState;
 
   varying vec4 vRgba;
-  varying float vOpacity;
-  varying vec2 vPosition;
+  varying vec3 vPosition;
 
   vec2 unpackInt16(in uint value) {
     int v = int(value);
@@ -60,15 +74,16 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   }
 
   void main () {
-    // Read from textures.
+    // Get position + scale from float buffer.
     ivec2 texSize = textureSize(floatBufferTexture, 0);
     ivec2 texPos = ivec2(sortedIndex % uint(texSize.x), sortedIndex / uint(texSize.x));
     vec4 floatBufferData = texelFetch(floatBufferTexture, texPos, 0);
     vec3 center = floatBufferData.xyz;
-    float shift = 1.0 - (float(numGaussians) - float(sortedIndex)) / float(numGaussians);
-    float state = max(0.0, transitionInState - shift) / (1.0 - shift);
-    float cov_scale = floatBufferData.w * state;
 
+    float perGaussianShift = 1.0 - (float(numGaussians * 2u) - float(sortedIndex)) / float(numGaussians * 2u);
+    float cov_scale = floatBufferData.w * max(0.0, transitionInState - perGaussianShift) / (1.0 - perGaussianShift);
+
+    // Get covariance terms from int buffer.
     uvec4 intBufferData = texelFetch(intBufferTexture, texPos, 0);
     uint rgbaUint32 = intBufferData.w;
     vec2 cov01 = unpackInt16(intBufferData.x) / 32767. * cov_scale;
@@ -79,7 +94,10 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec4 c_cam = modelViewMatrix * vec4(center, 1);
     vec4 pos2d = projectionMatrix * c_cam;
 
-    // Splat covariance.
+    vec4 c_camstable = sortSynchronizedModelViewMatrix * vec4(center, 1);
+    vec4 stablePos2d = projectionMatrix * c_camstable;
+
+    // Do the actual splatting.
     mat3 cov3d = mat3(
         cov01.x, cov01.y, cov23.x,
         cov01.y, cov23.y, cov45.x,
@@ -110,37 +128,31 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
       float(rgbaUint32 & uint(0xFF)) / 255.0,
       float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
       float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
-      float(rgbaUint32 >> uint(24)) / 255.0 * sqrt(state)
+      float(rgbaUint32 >> uint(24)) / 255.0
     );
-    vPosition = vec2(position.x, position.y);
+    if (-c_cam.z < near || -c_cam.z > far) vRgba.a = 0.0;
+    vPosition = position;
 
     gl_Position = vec4(
         vec2(pos2d) / pos2d.w
             + position.x * v1 / viewport * 2.0
-            + position.y * v2 / viewport * 2.0, pos2d.z / pos2d.w, 1.);
+            + position.y * v2 / viewport * 2.0, stablePos2d.z / stablePos2d.w, 1.);
   }
 `,
-  `
-  #include <alphatest_pars_fragment>
-  #include <alphahash_pars_fragment>
-
-  precision highp float;
+  `precision highp float;
 
   uniform vec2 viewport;
   uniform vec2 focal;
 
   varying vec4 vRgba;
-  varying vec2 vPosition;
-
+  varying vec3 vPosition;
 
   void main () {
-    float A = -dot(vPosition, vPosition);
+    float A = -dot(vPosition.xy, vPosition.xy);
     if (A < -4.0) discard;
     float B = exp(A) * vRgba.a;
-    vec4 diffuseColor = vec4(vRgba.rgb, B);
-    #include <alphatest_fragment>
-    #include <alphahash_fragment>
-    gl_FragColor = diffuseColor;
+    if ( B < 0.02 ) discard;  // alphaTest.
+    gl_FragColor = vec4(vRgba.rgb, B);
   }`,
 );
 
@@ -155,6 +167,7 @@ export default function GaussianSplats({
   const maxTextureSize = useThree((state) => state.gl).capabilities
     .maxTextureSize;
   const initializedTextures = React.useRef<boolean>(false);
+  const [sortSynchronizedModelViewMatrix] = React.useState(new THREE.Matrix4());
 
   // We'll use the vanilla three.js API, which for our use case is more
   // flexible than the declarative version (particularly for operations like
@@ -185,14 +198,17 @@ export default function GaussianSplats({
     sortedIndexAttribute.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute("sortedIndex", sortedIndexAttribute);
 
+    // Create texture buffers.
     const textureWidth = Math.min(numGaussians, maxTextureSize);
     const textureHeight = Math.ceil(numGaussians / textureWidth);
+
     const floatBufferPadded = new Float32Array(
       textureWidth * textureHeight * 4,
     );
     floatBufferPadded.set(buffers.floatBuffer);
     const intBufferPadded = new Uint32Array(textureWidth * textureHeight * 4);
     intBufferPadded.set(buffers.intBuffer);
+
     const floatBufferTexture = new THREE.DataTexture(
       floatBufferPadded,
       textureWidth,
@@ -200,7 +216,6 @@ export default function GaussianSplats({
       THREE.RGBAFormat,
       THREE.FloatType,
     );
-
     const intBufferTexture = new THREE.DataTexture(
       intBufferPadded,
       textureWidth,
@@ -216,6 +231,7 @@ export default function GaussianSplats({
       intBufferTexture: intBufferTexture,
       numGaussians: 0,
       transitionInState: 0.0,
+      sortSynchronizedModelViewMatrix: new THREE.Matrix4(),
     });
 
     // Update component state.
@@ -226,16 +242,18 @@ export default function GaussianSplats({
     const sortWorker = new SplatSortWorker();
     sortWorker.onmessage = (e) => {
       sortedIndexAttribute.set(e.data.sortedIndices as Int32Array);
+      material.uniforms.sortSynchronizedModelViewMatrix.value.copy(
+        sortSynchronizedModelViewMatrix,
+      );
       sortedIndexAttribute.needsUpdate = true;
-
       // A simple but reasonably effective heuristic for render ordering.
       //
       // To minimize artifacts:
       // - When there are multiple splat objects, we want to render the closest
-      //   ones *last*. This results in correct alpha compositing and reduces
-      //   reliance on alphaTest.
+      //   ones *last*. This improves the likelihood of correct alpha
+      //   compositing and reduces reliance on alpha testing.
       // - We generally want to render other objects like meshes *before*
-      //   Gaussians. This is because they're (usually) not translucent.
+      //   Gaussians. They're usually opaque.
       meshRef.current!.renderOrder = (-e.data.minZ as number) + 1000.0;
 
       // Trigger initial render.
@@ -266,9 +284,9 @@ export default function GaussianSplats({
   // Synchronize view projection matrix with sort worker. We pre-allocate some
   // matrices to make life easier for the garbage collector.
   const meshRef = React.useRef<THREE.Mesh>(null);
-  const prevViewProj = new THREE.Matrix4();
-  const viewProj = new THREE.Matrix4();
-  const T_camera_obj = new THREE.Matrix4();
+  const [prevViewProj] = React.useState(new THREE.Matrix4());
+  const [viewProj] = React.useState(new THREE.Matrix4());
+  const [T_camera_obj] = React.useState(new THREE.Matrix4());
 
   useFrame((state) => {
     const mesh = meshRef.current;
@@ -285,10 +303,12 @@ export default function GaussianSplats({
 
     if (material === undefined) return;
     material.uniforms.transitionInState.value = Math.min(
-      material.uniforms.transitionInState.value + 0.05,
+      material.uniforms.transitionInState.value + 0.01,
       1.0,
     );
     material.uniforms.focal.value = [fx, fy];
+    material.uniforms.near.value = state.camera.near;
+    material.uniforms.far.value = state.camera.far;
     material.uniforms.viewport.value = [
       state.size.width * dpr,
       state.size.height * dpr,
@@ -302,6 +322,7 @@ export default function GaussianSplats({
 
     // If changed, use projection matrix to sort Gaussians.
     if (prevViewProj === undefined || !viewProj.equals(prevViewProj)) {
+      sortSynchronizedModelViewMatrix.copy(T_camera_obj);
       sortWorker.postMessage({ setViewProj: viewProj.elements });
       prevViewProj.copy(viewProj);
     }
