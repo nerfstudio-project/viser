@@ -24,7 +24,7 @@ class SplatFile(TypedDict):
     """(N, 3, 3)."""
 
 
-def load_splat_file(splat_path: Path) -> SplatFile:
+def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     """Load an antimatter15-style splat file."""
     splat_buffer = splat_path.read_bytes()
     bytes_per_gaussian = (
@@ -52,8 +52,11 @@ def load_splat_file(splat_path: Path) -> SplatFile:
     covariances = onp.einsum(
         "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
     )
+    if center:
+        centers = splat_uint8[:, 0:12].copy().view(onp.float32)
+        centers -= onp.mean(centers, axis=0, keepdims=True)
     return {
-        "centers": splat_uint8[:, 0:12].copy().view(onp.float32),
+        "centers": centers,
         # Colors should have shape (N, 3).
         "rgbs": splat_uint8[:, 24:27] / 255.0,
         "opacities": splat_uint8[:, 27:28] / 255.0,
@@ -62,7 +65,7 @@ def load_splat_file(splat_path: Path) -> SplatFile:
     }
 
 
-def main(splat_path: Path) -> None:
+def main(splat_path: Path, test_multisplat: bool = False) -> None:
     server = viser.ViserServer(share=True)
     server.gui.configure_theme(dark_mode=True)
     gui_reset_up = server.gui.add_button(
@@ -78,10 +81,9 @@ def main(splat_path: Path) -> None:
             [0.0, -1.0, 0.0]
         )
 
-    splat_data = load_splat_file(splat_path)
+    splat_data = load_splat_file(splat_path, center=True)
 
     server.scene.add_transform_controls("/0")
-    server.scene.add_transform_controls("/1")
     server.scene.add_gaussian_splats(
         "/0/gaussian_splats",
         centers=splat_data["centers"],
@@ -89,13 +91,15 @@ def main(splat_path: Path) -> None:
         opacities=splat_data["opacities"],
         covariances=splat_data["covariances"],
     )
-    server.scene.add_gaussian_splats(
-        "/1/gaussian_splats",
-        centers=splat_data["centers"],
-        rgbs=splat_data["rgbs"],
-        opacities=splat_data["opacities"],
-        covariances=splat_data["covariances"],
-    )
+    if test_multisplat:
+        server.scene.add_gaussian_splats(
+            "/1/gaussian_splats",
+            centers=splat_data["centers"],
+            rgbs=splat_data["rgbs"],
+            opacities=splat_data["opacities"],
+            covariances=splat_data["covariances"],
+        )
+        server.scene.add_transform_controls("/1")
 
     while True:
         time.sleep(10.0)

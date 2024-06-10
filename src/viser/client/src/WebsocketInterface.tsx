@@ -651,7 +651,7 @@ function useMessageHandler() {
               );
             },
             undefined,
-            true,
+            true, // unmountWhenInvisible
           ),
         );
         return;
@@ -694,7 +694,7 @@ function useMessageHandler() {
               );
             },
             undefined,
-            true,
+            true, // unmountWhenInvisible
           ),
         );
         return;

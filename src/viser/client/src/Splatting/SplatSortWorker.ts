@@ -19,6 +19,7 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
     const sortedIndices = sorter.sort(viewProj[2], viewProj[6], viewProj[10]);
     self.postMessage({
       sortedIndices: sortedIndices,
+      minZ: sorter.getMinZ(),
     });
 
     setTimeout(() => {

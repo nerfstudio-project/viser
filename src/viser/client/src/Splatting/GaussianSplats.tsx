@@ -21,9 +21,10 @@ export type GaussianBuffers = {
 
 const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   {
-    alphaTest: 0.05,
+    alphaTest: 0.1,
     alphaHash: false,
     numGaussians: 0,
+    transitionInState: 0.0,
     focal: 100.0,
     viewport: [640, 480],
     depthTest: true,
@@ -42,6 +43,8 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   uniform uint numGaussians;
   uniform vec2 focal;
   uniform vec2 viewport;
+
+  uniform float transitionInState;
 
   varying vec4 vRgba;
   varying float vOpacity;
@@ -62,7 +65,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     ivec2 texPos = ivec2(sortedIndex % uint(texSize.x), sortedIndex / uint(texSize.x));
     vec4 floatBufferData = texelFetch(floatBufferTexture, texPos, 0);
     vec3 center = floatBufferData.xyz;
-    float cov_scale = floatBufferData.w;
+    float shift = 1.0 - (float(numGaussians) - float(sortedIndex)) / float(numGaussians);
+    float state = max(0.0, transitionInState - shift) / (1.0 - shift);
+    float cov_scale = floatBufferData.w * state;
 
     uvec4 intBufferData = texelFetch(intBufferTexture, texPos, 0);
     uint rgbaUint32 = intBufferData.w;
@@ -105,7 +110,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
       float(rgbaUint32 & uint(0xFF)) / 255.0,
       float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
       float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
-      float(rgbaUint32 >> uint(24)) / 255.0
+      float(rgbaUint32 >> uint(24)) / 255.0 * sqrt(state)
     );
     vPosition = vec2(position.x, position.y);
 
@@ -147,10 +152,9 @@ export default function GaussianSplats({
   const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
   const [material, setMaterial] = React.useState<THREE.ShaderMaterial>();
   const splatSortWorkerRef = React.useRef<Worker | null>(null);
-
-  const gl = useThree((state) => state.gl);
-  const maxTextureSize = gl.capabilities.maxTextureSize;
-  const originRef = React.useRef<THREE.Vector3>(new THREE.Vector3());
+  const maxTextureSize = useThree((state) => state.gl).capabilities
+    .maxTextureSize;
+  const initializedTextures = React.useRef<boolean>(false);
 
   // We'll use the vanilla three.js API, which for our use case is more
   // flexible than the declarative version (particularly for operations like
@@ -181,15 +185,6 @@ export default function GaussianSplats({
     sortedIndexAttribute.setUsage(THREE.DynamicDrawUsage);
     geometry.setAttribute("sortedIndex", sortedIndexAttribute);
 
-    // Compute center of the Gaussians. This is used for a render ordering
-    // heuristic.
-    for (let i = 0; i < numGaussians; i++) {
-      originRef.current.x += buffers.floatBuffer[i * 3 + 0];
-      originRef.current.y += buffers.floatBuffer[i * 3 + 1];
-      originRef.current.z += buffers.floatBuffer[i * 3 + 2];
-    }
-    originRef.current.divideScalar(numGaussians);
-
     const textureWidth = Math.min(numGaussians, maxTextureSize);
     const textureHeight = Math.ceil(numGaussians / textureWidth);
     const floatBufferPadded = new Float32Array(
@@ -219,7 +214,8 @@ export default function GaussianSplats({
       // @ts-ignore
       floatBufferTexture: floatBufferTexture,
       intBufferTexture: intBufferTexture,
-      numGaussians: numGaussians,
+      numGaussians: 0,
+      transitionInState: 0.0,
     });
 
     // Update component state.
@@ -231,7 +227,20 @@ export default function GaussianSplats({
     sortWorker.onmessage = (e) => {
       sortedIndexAttribute.set(e.data.sortedIndices as Int32Array);
       sortedIndexAttribute.needsUpdate = true;
+
+      // A simple but reasonably effective heuristic for render ordering.
+      //
+      // To minimize artifacts:
+      // - When there are multiple splat objects, we want to render the closest
+      //   ones *last*. This results in correct alpha compositing and reduces
+      //   reliance on alphaTest.
+      // - We generally want to render other objects like meshes *before*
+      //   Gaussians. This is because they're (usually) not translucent.
+      meshRef.current!.renderOrder = (-e.data.minZ as number) + 1000.0;
+
+      // Trigger initial render.
       if (!initializedTextures.current) {
+        material.uniforms.numGaussians.value = numGaussians;
         floatBufferTexture.needsUpdate = true;
         intBufferTexture.needsUpdate = true;
         initializedTextures.current = true;
@@ -246,7 +255,7 @@ export default function GaussianSplats({
     prevViewProj.identity();
 
     return () => {
-      // intBufferTexture.dispose();
+      intBufferTexture.dispose();
       floatBufferTexture.dispose();
       geometry.dispose();
       if (material !== undefined) material.dispose();
@@ -254,19 +263,19 @@ export default function GaussianSplats({
     };
   }, [buffers]);
 
-  // Synchronize view projection matrix with sort worker.
+  // Synchronize view projection matrix with sort worker. We pre-allocate some
+  // matrices to make life easier for the garbage collector.
   const meshRef = React.useRef<THREE.Mesh>(null);
-  const initializedTextures = React.useRef<boolean>(false);
   const prevViewProj = new THREE.Matrix4();
   const viewProj = new THREE.Matrix4();
-  const T_camera_world = new THREE.Matrix4();
+  const T_camera_obj = new THREE.Matrix4();
 
   useFrame((state) => {
     const mesh = meshRef.current;
     const sortWorker = splatSortWorkerRef.current;
     if (mesh === null || sortWorker === null) return;
 
-    // Update uniforms.
+    // Update camera parameter uniforms.
     const dpr = state.viewport.dpr;
     const fovY =
       ((state.camera as THREE.PerspectiveCamera).fov * Math.PI) / 180.0;
@@ -275,6 +284,10 @@ export default function GaussianSplats({
     const fx = (dpr * state.size.width) / (2 * Math.tan(fovX / 2));
 
     if (material === undefined) return;
+    material.uniforms.transitionInState.value = Math.min(
+      material.uniforms.transitionInState.value + 0.05,
+      1.0,
+    );
     material.uniforms.focal.value = [fx, fy];
     material.uniforms.viewport.value = [
       state.size.width * dpr,
@@ -282,16 +295,10 @@ export default function GaussianSplats({
     ];
 
     // Compute view projection matrix.
-    T_camera_world.copy(state.camera.matrixWorldInverse).multiply(
+    T_camera_obj.copy(state.camera.matrixWorldInverse).multiply(
       mesh.matrixWorld,
     );
-    viewProj.copy(state.camera.projectionMatrix).multiply(T_camera_world);
-
-    // Heuristic for rendering order; reduces artifacts when multiple splat
-    // objects are present.
-    meshRef.current!.renderOrder = originRef.current
-      .clone()
-      .applyMatrix4(T_camera_world).z;
+    viewProj.copy(state.camera.projectionMatrix).multiply(T_camera_obj);
 
     // If changed, use projection matrix to sort Gaussians.
     if (prevViewProj === undefined || !viewProj.equals(prevViewProj)) {

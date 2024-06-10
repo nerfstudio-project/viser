@@ -9,6 +9,7 @@
 class Sorter {
     std::vector<std::array<float, 3>> unsorted_centers;
     std::vector<uint32_t> sorted_indices;
+    float minZ;
 
   public:
     Sorter(const emscripten::val &floatBuffer) {
@@ -51,6 +52,8 @@ class Sorter {
             if (i == 0 || depth > max_depth)
                 max_depth = depth;
         }
+        minZ = min_depth / 4096.0;
+
         const float depth_inv =
             (256 * 256 - 1) / (max_depth - min_depth + 1e-5);
         for (int i = 0; i < num_gaussians; i++) {
@@ -71,10 +74,15 @@ class Sorter {
             sorted_indices.size(), &(sorted_indices[0])
         ));
     }
+
+    float getMinZ() {
+        return minZ;
+    }
 };
 
 EMSCRIPTEN_BINDINGS(c) {
     emscripten::class_<Sorter>("Sorter")
         .constructor<emscripten::val>()
-        .function("sort", &Sorter::sort, emscripten::allow_raw_pointers());
+        .function("sort", &Sorter::sort, emscripten::allow_raw_pointers())
+        .function("getMinZ", &Sorter::getMinZ);
 };
