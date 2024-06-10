@@ -54,8 +54,8 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     covariances = onp.einsum(
         "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
     )
+    centers = splat_uint8[:, 0:12].copy().view(onp.float32)
     if center:
-        centers = splat_uint8[:, 0:12].copy().view(onp.float32)
         centers -= onp.mean(centers, axis=0, keepdims=True)
     return {
         "centers": centers,
