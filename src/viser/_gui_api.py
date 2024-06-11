@@ -33,6 +33,7 @@ from ._gui_handles import (
     GuiInputHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
+    GuiNotificationHandle,
     GuiPlotlyHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
@@ -865,6 +866,66 @@ class GuiApi:
                     visible=visible,
                 ),
             )._impl,
+        )
+    
+    def add_notification(
+        self,
+        label: str,
+        disabled: bool = False,
+        visible: bool = True,
+        color: Literal[
+            "dark",
+            "gray",
+            "red",
+            "pink",
+            "grape",
+            "violet",
+            "indigo",
+            "blue",
+            "cyan",
+            "green",
+            "lime",
+            "yellow",
+            "orange",
+            "teal",
+        ]
+        | None = None,
+        icon: IconName | None = None,
+        order: float | None = None,
+    ) -> GuiNotificationHandle:
+        """Add a button to the GUI. The value of this input is set to `True` every time
+        it is clicked; to detect clicks, we can manually set it back to `False`.
+
+        Args:
+            label: Label to display on the notification.
+            visible: Whether the notification is visible.
+            disabled: Whether the notification is disabled.
+            color: Optional color to use for the notification.
+            icon: Optional icon to display on the notification.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        id = _make_unique_id()
+        order = _apply_default_order(order)
+        return GuiNotificationHandle(
+            self._create_gui_input(
+                value=False,
+                message=_messages.GuiAddButtonMessage(
+                    order=order,
+                    id=id,
+                    label=label,
+                    container_id=self._get_container_id(),
+                    hint=hint,
+                    value=False,
+                    color=color,
+                    icon_html=None if icon is None else svg_from_icon(icon),
+                    disabled=disabled,
+                    visible=visible,
+                ),
+                is_button=True,
+            )._impl
         )
 
     def add_checkbox(

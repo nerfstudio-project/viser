@@ -526,6 +526,28 @@ class GuiAddUploadButtonMessage(_GuiAddInputBase):
 
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
+class GuiAddNotificationMessage(_GuiAddInputBase):
+    color: Optional[
+        Literal[
+            "dark",
+            "gray",
+            "red",
+            "pink",
+            "grape",
+            "violet",
+            "indigo",
+            "blue",
+            "cyan",
+            "green",
+            "lime",
+            "yellow",
+            "orange",
+            "teal",
+        ]
+    ]
+
+@tag_class("GuiAddComponentMessage")
+@dataclasses.dataclass
 class GuiAddSliderMessage(_GuiAddInputBase):
     min: float
     max: float
