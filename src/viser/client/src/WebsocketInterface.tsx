@@ -1043,6 +1043,23 @@ export function FrameSynchronizedMessageHandler() {
   return null;
 }
 
+export function NotificationHandler({
+  title,
+  message,
+}: {
+  title: string;
+  message: string;
+}) {
+  notifications.show({
+    id: notificationId,
+    title: title,
+    message: message,
+    autoClose: false,
+    withCloseButton: false,
+    loading: true,
+    });
+}
+
 /** Component for handling websocket connections. */
 export function WebsocketMessageProducer() {
   const messageQueueRef = useContext(ViewerContext)!.messageQueueRef;

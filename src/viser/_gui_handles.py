@@ -299,12 +299,6 @@ class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
 
 
 @dataclasses.dataclass
-class GuiNotificationHandle:
-    """Handle for notifications in our visualizer."""
-    pass
-
-
-@dataclasses.dataclass
 class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
     """Handle for a dropdown-style GUI input in our visualizer.
 

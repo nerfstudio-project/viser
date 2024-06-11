@@ -33,7 +33,6 @@ from ._gui_handles import (
     GuiInputHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
-    GuiNotificationHandle,
     GuiPlotlyHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
@@ -909,7 +908,7 @@ class GuiApi:
         """
         id = _make_unique_id()
         order = _apply_default_order(order)
-        return GuiNotificationHandle(
+        return NotificationHandler(
             self._create_gui_input(
                 value=False,
                 message=_messages.GuiAddButtonMessage(

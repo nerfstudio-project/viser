@@ -97,8 +97,6 @@ function GeneratedInput(props: { guiId: string }) {
       return <ButtonComponent {...conf} />;
     case "GuiAddUploadButtonMessage":
       return <UploadButtonComponent {...conf} />;
-    case "GuiAddNotificationMessage":
-      return <NotificationComponent {...conf} />;
     case "GuiAddSliderMessage":
       return <SliderComponent {...conf} />;
     case "GuiAddMultiSliderMessage":
