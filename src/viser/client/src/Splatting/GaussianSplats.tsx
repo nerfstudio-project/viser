@@ -254,7 +254,8 @@ export default function GaussianSplats({
       //   compositing and reduces reliance on alpha testing.
       // - We generally want to render other objects like meshes *before*
       //   Gaussians. They're usually opaque.
-      meshRef.current!.renderOrder = (-e.data.minZ as number) + 1000.0;
+      console.log(e.data.minDepth);
+      meshRef.current!.renderOrder = (-e.data.minDepth as number) + 1000.0;
 
       // Trigger initial render.
       if (!initializedTextures.current) {
@@ -270,7 +271,7 @@ export default function GaussianSplats({
     splatSortWorkerRef.current = sortWorker;
 
     // We should always re-send view projection when buffers are replaced.
-    prevViewProj.identity();
+    prevT_camera_obj.identity();
 
     return () => {
       intBufferTexture.dispose();
@@ -284,8 +285,7 @@ export default function GaussianSplats({
   // Synchronize view projection matrix with sort worker. We pre-allocate some
   // matrices to make life easier for the garbage collector.
   const meshRef = React.useRef<THREE.Mesh>(null);
-  const [prevViewProj] = React.useState(new THREE.Matrix4());
-  const [viewProj] = React.useState(new THREE.Matrix4());
+  const [prevT_camera_obj] = React.useState(new THREE.Matrix4());
   const [T_camera_obj] = React.useState(new THREE.Matrix4());
 
   useFrame((state) => {
@@ -315,16 +315,19 @@ export default function GaussianSplats({
     ];
 
     // Compute view projection matrix.
+    // T_camera_obj = T_cam_world * T_world_obj.
     T_camera_obj.copy(state.camera.matrixWorldInverse).multiply(
       mesh.matrixWorld,
     );
-    viewProj.copy(state.camera.projectionMatrix).multiply(T_camera_obj);
 
     // If changed, use projection matrix to sort Gaussians.
-    if (prevViewProj === undefined || !viewProj.equals(prevViewProj)) {
+    if (
+      prevT_camera_obj === undefined ||
+      !T_camera_obj.equals(prevT_camera_obj)
+    ) {
       sortSynchronizedModelViewMatrix.copy(T_camera_obj);
-      sortWorker.postMessage({ setViewProj: viewProj.elements });
-      prevViewProj.copy(viewProj);
+      sortWorker.postMessage({ setT_camera_obj: T_camera_obj.elements });
+      prevT_camera_obj.copy(T_camera_obj);
     }
   });
 

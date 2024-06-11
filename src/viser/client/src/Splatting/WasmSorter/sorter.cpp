@@ -9,7 +9,7 @@
 class Sorter {
     std::vector<std::array<float, 3>> unsorted_centers;
     std::vector<uint32_t> sorted_indices;
-    float minZ;
+    float min_visible_depth;
 
   public:
     Sorter(const emscripten::val &floatBuffer) {
@@ -26,40 +26,58 @@ class Sorter {
 
     // Run sorting using the newest view projection matrix. Mutates internal
     // buffers.
-    emscripten::val
-    sort(float view_proj_2, float view_proj_6, float view_proj_10) {
+    emscripten::val sort(
+        // column-major matrix ordering:
+        // 0 4 8  12
+        // 1 5 9  13
+        // 2 6 10 14
+        // 3 7 11 15
+        const float view_proj_2,
+        const float view_proj_6,
+        const float view_proj_10,
+        const float view_proj_14
+    ) {
         const int num_gaussians = unsorted_centers.size();
 
         // We do a 16-bit counting sort. This is mostly translated from Kevin
         // Kwok's Javascript implementation:
         //     https://github.com/antimatter15/splat/blob/main/main.js
-        std::vector<int> depths(num_gaussians);
+        //
+        // Note: we want to sort from minimum Z (high depth) to maximum Z (low
+        // depth).
+        std::vector<int> gaussian_zs(num_gaussians);
         std::vector<int> counts0(256 * 256, 0);
         std::vector<int> starts0(256 * 256, 0);
 
-        int min_depth;
-        int max_depth;
+        int min_z;
+        int max_z;
+        min_visible_depth = 100000.0;
         for (int i = 0; i < num_gaussians; i++) {
-            const int depth =
-                -(((view_proj_2 * unsorted_centers[i][0] +
-                    view_proj_6 * unsorted_centers[i][1] +
-                    view_proj_10 * unsorted_centers[i][2]) *
-                   4096.0));
-            depths[i] = depth;
+            const float cam_z = view_proj_2 * unsorted_centers[i][0] +
+                                view_proj_6 * unsorted_centers[i][1] +
+                                view_proj_10 * unsorted_centers[i][2] +
+                                view_proj_14;
 
-            if (i == 0 || depth < min_depth)
-                min_depth = depth;
-            if (i == 0 || depth > max_depth)
-                max_depth = depth;
+            // OpenGL camera convention: -Z is forward.
+            const float depth = -cam_z;
+            if (depth > 1e-4 && depth < min_visible_depth) {
+                min_visible_depth = depth;
+            }
+
+            const int z_int = cam_z * 4096.0;
+            gaussian_zs[i] = z_int;
+
+            if (i == 0 || z_int < min_z)
+                min_z = z_int;
+            if (i == 0 || z_int > max_z)
+                max_z = z_int;
         }
-        minZ = min_depth / 4096.0;
 
-        const float depth_inv =
-            (256 * 256 - 1) / (max_depth - min_depth + 1e-5);
+        const float z_inv = (256 * 256 - 1) / (max_z - min_z + 1e-5);
         for (int i = 0; i < num_gaussians; i++) {
-            const int depth_bin = ((depths[i] - min_depth) * depth_inv);
-            depths[i] = depth_bin;
-            counts0[depth_bin]++;
+            const int z_bin = ((gaussian_zs[i] - min_z) * z_inv);
+            gaussian_zs[i] = z_bin;
+            counts0[z_bin]++;
         }
         for (int i = 1; i < 256 * 256; i++) {
             starts0[i] = starts0[i - 1] + counts0[i - 1];
@@ -68,21 +86,19 @@ class Sorter {
         // Update and return sorted indices.
         sorted_indices.resize(num_gaussians);
         for (int i = 0; i < num_gaussians; i++)
-            sorted_indices[starts0[depths[i]]++] = i;
+            sorted_indices[starts0[gaussian_zs[i]]++] = i;
 
         return emscripten::val(emscripten::typed_memory_view(
             sorted_indices.size(), &(sorted_indices[0])
         ));
     }
 
-    float getMinZ() {
-        return minZ;
-    }
+    float getMinDepth() { return min_visible_depth; }
 };
 
 EMSCRIPTEN_BINDINGS(c) {
     emscripten::class_<Sorter>("Sorter")
         .constructor<emscripten::val>()
         .function("sort", &Sorter::sort, emscripten::allow_raw_pointers())
-        .function("getMinZ", &Sorter::getMinZ);
+        .function("getMinDepth", &Sorter::getMinDepth);
 };
