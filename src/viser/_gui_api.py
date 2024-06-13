@@ -873,19 +873,18 @@ class GuiApi:
         self,
         title: str,
         body: str,
-        autoClose: bool,
         withCloseButton: bool,
         loading: bool,
+        autoClose: int | bool = False,
     ) -> None:
         """Add a notification, which can be toggled on/off in the GUI.
 
-        Args:
-            label: Label to display on the notification.
-            visible: Whether the notification is visible.
-            disabled: Whether the notification is disabled.
-            color: Optional color to use for the notification.
-            icon: Optional icon to display on the notification.
-            order: Optional ordering, smallest values will be displayed first.
+        Args: (https://mantine.dev/x/notifications/)
+            title: Title to display on the notification.
+            body: Message to display on the notification body.
+            withCloseButton: Whether the close button is visible.
+            loading: Whether the notification is loading.
+            autoClose: Timeout in ms on which notification will be automatically closed, use False to disable.
 
         Returns:
             A handle that can be used to interact with the GUI element.

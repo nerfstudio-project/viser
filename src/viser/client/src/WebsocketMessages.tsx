@@ -18,9 +18,9 @@ export interface NotificationMessage {
   type: "NotificationMessage";
   title: string;
   body: string;
-  autoClose: boolean;
   withCloseButton: boolean;
   loading: boolean;
+  autoClose: number | boolean;
 }
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.

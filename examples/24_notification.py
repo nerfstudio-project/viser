@@ -18,9 +18,9 @@ def main() -> None:
         server.gui.add_notification(
             title="Notification",
             body="You have clicked a button!",
-            autoClose=True,
             withCloseButton=True,
             loading=False,
+            autoClose=2000,
         )
 
     while True:
