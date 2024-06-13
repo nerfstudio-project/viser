@@ -6,15 +6,27 @@ import time
 
 import viser
 
+
 def main() -> None:
     server = viser.ViserServer()
 
-    gui_upload_button = server.gui.add_upload_button(
-                "Upload", icon=viser.Icon.UPLOAD
-            )
+    gui_reset_scene = server.gui.add_button("Reset Scene")
+    server.gui.add_notification(
+        title="test",
+        body="testing",
+        autoClose=True,
+        withCloseButton=True,
+        loading=False,
+    )
+
+    @gui_reset_scene.on_click
+    def _(_) -> None:
+        """Reset the scene when the reset button is clicked."""
+        # server.gui.add_notification()
 
     while True:
         time.sleep(1.0)
+
 
 if __name__ == "__main__":
     main()

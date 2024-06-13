@@ -812,7 +812,8 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]: ...
+    ) -> GuiButtonGroupHandle[TLiteralString]:
+        ...
 
     @overload
     def add_button_group(
@@ -823,7 +824,8 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TString]: ...
+    ) -> GuiButtonGroupHandle[TString]:
+        ...
 
     def add_button_group(
         self,
@@ -866,34 +868,16 @@ class GuiApi:
                 ),
             )._impl,
         )
-    
+
     def add_notification(
         self,
-        label: str,
-        disabled: bool = False,
-        visible: bool = True,
-        color: Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-        | None = None,
-        icon: IconName | None = None,
-        order: float | None = None,
-    ) -> GuiNotificationHandle:
-        """Add a button to the GUI. The value of this input is set to `True` every time
-        it is clicked; to detect clicks, we can manually set it back to `False`.
+        title: str,
+        body: str,
+        autoClose: bool,
+        withCloseButton: bool,
+        loading: bool,
+    ) -> None:
+        """Add a notification, which can be toggled on/off in the GUI.
 
         Args:
             label: Label to display on the notification.
@@ -906,25 +890,12 @@ class GuiApi:
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        id = _make_unique_id()
-        order = _apply_default_order(order)
-        return NotificationHandler(
-            self._create_gui_input(
-                value=False,
-                message=_messages.GuiAddButtonMessage(
-                    order=order,
-                    id=id,
-                    label=label,
-                    container_id=self._get_container_id(),
-                    hint=hint,
-                    value=False,
-                    color=color,
-                    icon_html=None if icon is None else svg_from_icon(icon),
-                    disabled=disabled,
-                    visible=visible,
-                ),
-                is_button=True,
-            )._impl
+        _messages.NotificationMessage(
+            title=title,
+            body=body,
+            autoClose=autoClose,
+            withCloseButton=withCloseButton,
+            loading=loading,
         )
 
     def add_checkbox(
@@ -1211,7 +1182,8 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TLiteralString]: ...
+    ) -> GuiDropdownHandle[TLiteralString]:
+        ...
 
     @overload
     def add_dropdown(
@@ -1223,7 +1195,8 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TString]: ...
+    ) -> GuiDropdownHandle[TString]:
+        ...
 
     def add_dropdown(
         self,

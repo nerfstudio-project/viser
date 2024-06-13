@@ -81,6 +81,17 @@ class RunJavascriptMessage(Message):
 
 
 @dataclasses.dataclass
+class NotificationMessage(Message):
+    """Notification message."""
+
+    title: str
+    body: str
+    autoClose: bool
+    withCloseButton: bool
+    loading: bool
+
+
+@dataclasses.dataclass
 class ViewerCameraMessage(Message):
     """Message for a posed viewer camera.
     Pose is in the form T_world_camera, OpenCV convention, +Z forward."""
@@ -142,7 +153,7 @@ class CameraFrustumMessage(Message):
 
 @dataclasses.dataclass
 class GlbMessage(Message):
-    """GlTF Message"""
+    """GlTF message."""
 
     name: str
     glb_data: bytes

@@ -10,6 +10,18 @@ export interface RunJavascriptMessage {
   type: "RunJavascriptMessage";
   source: string;
 }
+/** Notification message.
+ *
+ * (automatically generated)
+ */
+export interface NotificationMessage {
+  type: "NotificationMessage";
+  title: string;
+  body: string;
+  autoClose: boolean;
+  withCloseButton: boolean;
+  loading: boolean;
+}
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
  *
@@ -63,7 +75,7 @@ export interface CameraFrustumMessage {
   image_media_type: "image/jpeg" | "image/png" | null;
   image_base64_data: string | null;
 }
-/** GlTF Message
+/** GlTF message.
  *
  * (automatically generated)
  */
@@ -839,6 +851,7 @@ export interface SetGuiPanelLabelMessage {
 
 export type Message =
   | RunJavascriptMessage
+  | NotificationMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage

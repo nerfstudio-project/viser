@@ -136,6 +136,19 @@ function useMessageHandler() {
         return;
       }
 
+      // Add a notification.
+      case "NotificationMessage": {
+        notifications.show({
+          // id: notificationId,
+          title: message.title,
+          message: message.body,
+          autoClose: message.autoClose,
+          withCloseButton: message.withCloseButton,
+          loading: message.loading,
+          });
+        return;
+      }
+
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.
@@ -1041,23 +1054,6 @@ export function FrameSynchronizedMessageHandler() {
   });
 
   return null;
-}
-
-export function NotificationHandler({
-  title,
-  message,
-}: {
-  title: string;
-  message: string;
-}) {
-  notifications.show({
-    id: notificationId,
-    title: title,
-    message: message,
-    autoClose: false,
-    withCloseButton: false,
-    loading: true,
-    });
 }
 
 /** Component for handling websocket connections. */

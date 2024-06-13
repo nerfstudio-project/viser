@@ -76,7 +76,7 @@ viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
 
 [tool.ruff]
-lint.select = [
+select = [
     "E",  # pycodestyle errors.
     "F",  # Pyflakes rules.
     "PLC",  # Pylint convention warnings.
@@ -85,7 +85,7 @@ lint.select = [
     "PLW",  # Pylint warnings.
     "I", # Import sorting.
 ]
-lint.ignore = [
+ignore = [
     "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "E721",  # Do not compare types, use `isinstance()`.
