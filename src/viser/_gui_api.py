@@ -890,12 +890,15 @@ class GuiApi:
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        _messages.NotificationMessage(
-            title=title,
-            body=body,
-            autoClose=autoClose,
-            withCloseButton=withCloseButton,
-            loading=loading,
+
+        self._websock_interface.queue_message(
+            _messages.NotificationMessage(
+                title=title,
+                body=body,
+                autoClose=autoClose,
+                withCloseButton=withCloseButton,
+                loading=loading,
+            )
         )
 
     def add_checkbox(
