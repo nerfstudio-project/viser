@@ -844,18 +844,10 @@ function useMessageHandler() {
               <group ref={ref}>
                 <GaussianSplats
                   buffers={{
-                    floatBuffer: new Float32Array(
-                      message.float_buffer.buffer.slice(
-                        message.float_buffer.byteOffset,
-                        message.float_buffer.byteOffset +
-                          message.float_buffer.byteLength,
-                      ),
-                    ),
-                    intBuffer: new Int32Array(
-                      message.int_buffer.buffer.slice(
-                        message.int_buffer.byteOffset,
-                        message.int_buffer.byteOffset +
-                          message.int_buffer.byteLength,
+                    buffer: new Uint32Array(
+                      message.buffer.buffer.slice(
+                        message.buffer.byteOffset,
+                        message.buffer.byteOffset + message.buffer.byteLength,
                       ),
                     ),
                   }}

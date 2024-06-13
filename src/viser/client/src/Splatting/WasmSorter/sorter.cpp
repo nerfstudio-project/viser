@@ -12,15 +12,18 @@ class Sorter {
     float min_visible_depth;
 
   public:
-    Sorter(const emscripten::val &floatBuffer) {
-        const std::vector<float> bufferVec =
-            emscripten::convertJSArrayToNumberVector<float>(floatBuffer);
-        const int num_gaussians = bufferVec.size() / 4;
+    Sorter(const emscripten::val &buffer) {
+        const std::vector<uint32_t> bufferVec =
+            emscripten::convertJSArrayToNumberVector<uint32_t>(buffer);
+        const int num_gaussians = bufferVec.size() / 8;
         unsorted_centers.resize(num_gaussians);
         for (int i = 0; i < num_gaussians; i++) {
-            unsorted_centers[i][0] = bufferVec[i * 4 + 0];
-            unsorted_centers[i][1] = bufferVec[i * 4 + 1];
-            unsorted_centers[i][2] = bufferVec[i * 4 + 2];
+            unsorted_centers[i][0] =
+                reinterpret_cast<const float &>(bufferVec[i * 8 + 0]);
+            unsorted_centers[i][1] =
+                reinterpret_cast<const float &>(bufferVec[i * 8 + 1]);
+            unsorted_centers[i][2] =
+                reinterpret_cast<const float &>(bufferVec[i * 8 + 2]);
         }
     };
 

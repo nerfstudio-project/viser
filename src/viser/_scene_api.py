@@ -849,28 +849,24 @@ class SceneApi:
             .astype(onp.float32)
             .copy()
         )
-        covariances_scale = onp.max(onp.abs(covariances_triu), axis=-1, keepdims=True)
-
-        # For memory layout, see GaussianSplatsMessage docstring.
-        float_buffer = onp.concatenate([centers, covariances_scale], axis=-1)
-        assert float_buffer.shape == (num_gaussians, 4)
-        int_buffer = onp.concatenate(
+        buffer = onp.concatenate(
             [
-                (covariances_triu / covariances_scale * 32767)
-                .astype(onp.int16)
-                .view(onp.uint8),
+                # First texelFetch.
+                centers.astype(onp.float32).view(onp.uint8),
+                onp.zeros((num_gaussians, 4), dtype=onp.uint8),
+                # Second texelFetch.
+                covariances_triu.astype(onp.float16).view(onp.uint8),
                 _colors_to_uint8(rgbs),
                 _colors_to_uint8(opacities),
             ],
             axis=-1,
         ).view(onp.uint32)
-        assert int_buffer.shape == (num_gaussians, 4)
+        assert buffer.shape == (num_gaussians, 8)
 
         self._websock_interface.queue_message(
             _messages.GaussianSplatsMessage(
                 name=name,
-                float_buffer=float_buffer,
-                int_buffer=int_buffer,
+                buffer=buffer,
             )
         )
         node_handle = GaussianSplatHandle._make(self, name, wxyz, position, visible)

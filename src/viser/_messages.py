@@ -690,21 +690,18 @@ class GaussianSplatsMessage(Message):
     name: str
 
     # Memory layout is borrowed from:
-    # https://github.com/quadjr/aframe-gaussian-splatting/tree/main
-    float_buffer: onpt.NDArray[onp.float32]
-    """Our float buffer will contain:
+    # https://github.com/antimatter15/splat
+    buffer: onpt.NDArray[onp.uint32]
+    """Our buffer will contain:
     - x as f32
     - y as f32
     - z as f32
-    - cov scale as f32."""
-    int_buffer: onpt.NDArray[onp.uint32]
-    """Our int buffer will contain:
-    - cov1 (int16), cov2 (int16) packed in int32
-    - cov3 (int16), cov4 (int16) packed in int32
-    - cov5 (int16), cov6 (int16) packed in int32
-    - rgba packed in int32
-    Where cov1-6 are the upper triangular elements of the covariance matrix,
-    mapped from [0, cov scale] to [0, 255]."""
+    - (unused)
+    - cov1 (f16), cov2 (f16)
+    - cov3 (f16), cov4 (f16)
+    - cov5 (f16), cov6 (f16)
+    - rgba (int32)
+    Where cov1-6 are the upper triangular elements of the covariance matrix."""
 
 
 @dataclasses.dataclass

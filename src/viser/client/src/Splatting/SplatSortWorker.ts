@@ -40,16 +40,16 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
   self.onmessage = async (e) => {
     const data = e.data as
       | {
-          setFloatBuffer: Float32Array;
+          setBuffer: Float32Array;
         }
       | {
           setT_camera_obj: number[];
         }
       | { close: true };
 
-    if ("setFloatBuffer" in data) {
+    if ("setBuffer" in data) {
       // Instantiate sorter with buffers populated.
-      sorter = new (await SorterModulePromise).Sorter(data.setFloatBuffer);
+      sorter = new (await SorterModulePromise).Sorter(data.setBuffer);
     } else if ("setT_camera_obj" in data) {
       // Update view projection matrix.
       T_camera_obj = data.setT_camera_obj;
