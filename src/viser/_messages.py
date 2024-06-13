@@ -92,6 +92,11 @@ class NotificationMessage(Message):
 
 
 @dataclasses.dataclass
+class ClearNotificationMessage(Message):
+    """Clear notification message."""
+
+
+@dataclasses.dataclass
 class ViewerCameraMessage(Message):
     """Message for a posed viewer camera.
     Pose is in the form T_world_camera, OpenCV convention, +Z forward."""

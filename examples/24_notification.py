@@ -11,6 +11,7 @@ def main() -> None:
     server = viser.ViserServer()
 
     gui_button = server.gui.add_button("Button")
+    clear_button = server.gui.add_button("Clear Notifications")
 
     @gui_button.on_click
     def _(_) -> None:
@@ -22,6 +23,11 @@ def main() -> None:
             loading=False,
             autoClose=2000,
         )
+
+    @clear_button.on_click
+    def _(_) -> None:
+        """Clear all open notifcations."""
+        server.gui.clear_notification()
 
     while True:
         time.sleep(1.0)

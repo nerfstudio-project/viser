@@ -149,6 +149,12 @@ function useMessageHandler() {
         return;
       }
 
+      // Clear all notifications.
+      case "ClearNotificationMessage": {
+        notifications.clean();
+        return;
+      }
+
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.

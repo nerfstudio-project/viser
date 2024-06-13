@@ -22,6 +22,13 @@ export interface NotificationMessage {
   loading: boolean;
   autoClose: number | boolean;
 }
+/** Clear notification message.
+ *
+ * (automatically generated)
+ */
+export interface ClearNotificationMessage {
+  type: "ClearNotificationMessage";
+}
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
  *
@@ -852,6 +859,7 @@ export interface SetGuiPanelLabelMessage {
 export type Message =
   | RunJavascriptMessage
   | NotificationMessage
+  | ClearNotificationMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage

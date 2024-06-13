@@ -900,6 +900,9 @@ class GuiApi:
             )
         )
 
+    def clear_notification(self) -> None:
+        self._websock_interface.queue_message(_messages.ClearNotificationMessage())
+
     def add_checkbox(
         self,
         label: str,
