@@ -48,6 +48,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { clickToNDC, clickToOpenCV, isClickValid } from "./ClickUtils";
 import { theme } from "./AppTheme";
+import { GaussianSplatsContext } from "./Splatting/GaussianSplats";
 
 export type ViewerContextContents = {
   // Zustand hooks.
@@ -213,9 +214,13 @@ function ViewerContents() {
               })}
             >
               <Viewer2DCanvas />
-              <ViewerCanvas>
-                <FrameSynchronizedMessageHandler />
-              </ViewerCanvas>
+              <GaussianSplatsContext.Provider
+                value={React.useRef({ numSorting: 0, sortUpdateCallbacks: [] })}
+              >
+                <ViewerCanvas>
+                  <FrameSynchronizedMessageHandler />
+                </ViewerCanvas>
+              </GaussianSplatsContext.Provider>
               {viewer.useGui((state) => state.theme.show_logo) ? (
                 <ViserLogo />
               ) : null}

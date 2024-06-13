@@ -843,9 +843,11 @@ class SceneApi:
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
 
-        # Make our covariances more compact!
-        covariances_triu = (
-            covariances.reshape((-1, 9))[:, onp.array([0, 1, 2, 4, 5, 8])]
+        # Get cholesky factor of covariance.
+        cov_cholesky_triu = (
+            onp.linalg.cholesky(covariances)
+            .swapaxes(-1, -2)  # tril => triu
+            .reshape((-1, 9))[:, onp.array([0, 1, 2, 4, 5, 8])]
             .astype(onp.float32)
             .copy()
         )
@@ -855,7 +857,7 @@ class SceneApi:
                 centers.astype(onp.float32).view(onp.uint8),
                 onp.zeros((num_gaussians, 4), dtype=onp.uint8),
                 # Second texelFetch.
-                covariances_triu.astype(onp.float16).view(onp.uint8),
+                cov_cholesky_triu.astype(onp.float16).view(onp.uint8),
                 _colors_to_uint8(rgbs),
                 _colors_to_uint8(opacities),
             ],
