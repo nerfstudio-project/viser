@@ -33,6 +33,7 @@ from ._gui_handles import (
     GuiInputHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
+    GuiNotificationHandle,
     GuiPlotlyHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
@@ -876,7 +877,7 @@ class GuiApi:
         withCloseButton: bool,
         loading: bool,
         autoClose: int | bool = False,
-    ) -> None:
+    ) -> GuiNotificationHandle:
         """Add a notification, which can be toggled on/off in the GUI.
 
         Args: (https://mantine.dev/x/notifications/)
@@ -889,15 +890,15 @@ class GuiApi:
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-
-        self._websock_interface.queue_message(
-            _messages.NotificationMessage(
+        return GuiNotificationHandle(
+            gui_api=self,
+            notification=_messages.NotificationMessage(
                 title=title,
                 body=body,
-                autoClose=autoClose,
                 withCloseButton=withCloseButton,
                 loading=loading,
-            )
+                autoClose=autoClose,
+            ),
         )
 
     def clear_notification(self) -> None:

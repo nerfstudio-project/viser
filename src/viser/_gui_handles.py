@@ -15,7 +15,13 @@ from typing_extensions import Protocol
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
-from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
+from ._messages import (
+    GuiCloseModalMessage,
+    GuiRemoveMessage,
+    GuiUpdateMessage,
+    Message,
+    NotificationMessage,
+)
 from ._scene_api import _encode_image_base64
 from .infra import ClientId
 
@@ -42,7 +48,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -296,6 +303,17 @@ class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
     def disabled(self, disabled: bool) -> None:
         """Button groups cannot be disabled."""
         assert not disabled, "Button groups cannot be disabled."
+
+
+@dataclasses.dataclass
+class GuiNotificationHandle:
+    """Handle for a notification in our visualizer."""
+
+    gui_api: GuiApi
+    notification: NotificationMessage
+
+    def show(self):
+        self.gui_api._websock_interface.queue_message(self.notification)
 
 
 @dataclasses.dataclass
