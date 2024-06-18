@@ -895,9 +895,9 @@ class GuiApi:
             notification=_messages.NotificationMessage(
                 title=title,
                 body=body,
-                withCloseButton=with_close_button,
+                with_close_button=with_close_button,
                 loading=loading,
-                autoClose=auto_close,
+                auto_close=auto_close,
             ),
         )
 

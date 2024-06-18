@@ -16,7 +16,7 @@ def main() -> None:
     @gui_button.on_click
     def _(_) -> None:
         """Reset the scene when the button is clicked."""
-        notif = server.gui.add_notification(
+        server.gui.add_notification(
             title="Notification",
             body="You have clicked a button!",
             with_close_button=True,
