@@ -86,9 +86,9 @@ class NotificationMessage(Message):
 
     title: str
     body: str
-    withCloseButton: bool
+    with_close_button: bool
     loading: bool
-    autoClose: Union[int, bool]
+    auto_close: Union[int, Literal[False]]
 
 
 @dataclasses.dataclass

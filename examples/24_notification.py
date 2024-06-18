@@ -19,11 +19,10 @@ def main() -> None:
         notif = server.gui.add_notification(
             title="Notification",
             body="You have clicked a button!",
-            withCloseButton=True,
+            with_close_button=True,
             loading=False,
-            autoClose=2000,
+            auto_close=2000,
         )
-        notif.show()
 
     @clear_button.on_click
     def _(_) -> None:

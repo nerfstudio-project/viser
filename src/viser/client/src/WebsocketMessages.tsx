@@ -18,9 +18,9 @@ export interface NotificationMessage {
   type: "NotificationMessage";
   title: string;
   body: string;
-  withCloseButton: boolean;
+  with_close_button: boolean;
   loading: boolean;
-  autoClose: number | boolean;
+  auto_close: number | false;
 }
 /** Clear notification message.
  *

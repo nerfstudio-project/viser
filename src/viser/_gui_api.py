@@ -874,9 +874,9 @@ class GuiApi:
         self,
         title: str,
         body: str,
-        withCloseButton: bool,
+        with_close_button: bool,
         loading: bool,
-        autoClose: int | bool = False,
+        auto_close: int | Literal[False],
     ) -> GuiNotificationHandle:
         """Add a notification, which can be toggled on/off in the GUI.
 
@@ -895,9 +895,9 @@ class GuiApi:
             notification=_messages.NotificationMessage(
                 title=title,
                 body=body,
-                withCloseButton=withCloseButton,
+                withCloseButton=with_close_button,
                 loading=loading,
-                autoClose=autoClose,
+                autoClose=auto_close,
             ),
         )
 

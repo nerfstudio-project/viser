@@ -312,7 +312,7 @@ class GuiNotificationHandle:
     gui_api: GuiApi
     notification: NotificationMessage
 
-    def show(self):
+    def __post_init__(self) -> None:
         self.gui_api._websock_interface.queue_message(self.notification)
 
 

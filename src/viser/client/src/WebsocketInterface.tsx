@@ -142,9 +142,9 @@ function useMessageHandler() {
           // id: notificationId,
           title: message.title,
           message: message.body,
-          withCloseButton: message.withCloseButton,
+          withCloseButton: message.with_close_button,
           loading: message.loading,
-          autoClose: message.autoClose,
+          autoClose: message.auto_close,
           });
         return;
       }
