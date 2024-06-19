@@ -890,44 +890,47 @@ class GuiApi:
         Returns:
             A handle that can be used to interact with the GUI element.
         """
+        id=_make_unique_id()
         match type:
             case "persistent":
                 return GuiNotificationHandle(
                         notification=_messages.NotificationMessage(
-                        title=title,
-                        body=body,
-                        loading=loading,
-                        with_close_button=True,
-                        auto_close=False,
-                    ),
+                            id=id,
+                            title=title,
+                            body=body,
+                            loading=loading,
+                            with_close_button=True,
+                            auto_close=False,
+                        ),
                         _send_msg_fn=self._websock_interface.queue_message
                 )
             case "timed":
                 return GuiNotificationHandle(
                         notification=_messages.NotificationMessage(
-                        title=title,
-                        body=body,
-                        loading=loading,
-                        with_close_button=True,
-                        auto_close=5000,
-                    ),
+                            id=id,
+                            title=title,
+                            body=body,
+                            loading=loading,
+                            with_close_button=True,
+                            auto_close=5000,
+                        ),
                         _send_msg_fn=self._websock_interface.queue_message
                 )
             case "controlled":
                 return GuiNotificationHandle(
                         notification=_messages.NotificationMessage(
-                        title=title,
-                        body=body,
-                        loading=loading,
-                        with_close_button=False,
-                        auto_close=False,
-                    ),
+                            id=id,
+                            title=title,
+                            body=body,
+                            loading=loading,
+                            with_close_button=False,
+                            auto_close=False,
+                        ),
                         _send_msg_fn=self._websock_interface.queue_message
                 )
         
-
-    def clear_notification(self) -> None:
-        self._websock_interface.queue_message(_messages.ClearNotificationMessage())
+    def clear_all_notification(self) -> None:
+        self._websock_interface.queue_message(_messages.ClearAllNotificationMessage())
 
     def add_checkbox(
         self,

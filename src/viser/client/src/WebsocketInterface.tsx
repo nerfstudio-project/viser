@@ -139,7 +139,7 @@ function useMessageHandler() {
       // Add a notification.
       case "NotificationMessage": {
         notifications.show({
-          // id: notificationId,
+          id: message.id,
           title: message.title,
           message: message.body,
           withCloseButton: message.with_close_button,
@@ -149,8 +149,14 @@ function useMessageHandler() {
         return;
       }
 
-      // Clear all notifications.
+      // Clear a specific notification.
       case "ClearNotificationMessage": {
+        notifications.hide(message.id);
+        return;
+      }
+
+      // Clear all notifications.
+      case "ClearAllNotificationMessage": {
         notifications.clean();
         return;
       }

@@ -16,18 +16,27 @@ export interface RunJavascriptMessage {
  */
 export interface NotificationMessage {
   type: "NotificationMessage";
+  id: string;
   title: string;
   body: string;
   loading: boolean;
   with_close_button: boolean;
   auto_close: number | false;
 }
-/** Clear notification message.
+/** Clear a specific notification.
  *
  * (automatically generated)
  */
 export interface ClearNotificationMessage {
   type: "ClearNotificationMessage";
+  id: string;
+}
+/** Clear all open notification messages.
+ *
+ * (automatically generated)
+ */
+export interface ClearAllNotificationMessage {
+  type: "ClearAllNotificationMessage";
 }
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
@@ -860,6 +869,7 @@ export type Message =
   | RunJavascriptMessage
   | NotificationMessage
   | ClearNotificationMessage
+  | ClearAllNotificationMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage

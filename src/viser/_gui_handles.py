@@ -21,6 +21,7 @@ from ._messages import (
     GuiUpdateMessage,
     Message,
     NotificationMessage,
+    ClearNotificationMessage,
 )
 from ._scene_api import _encode_image_base64
 from .infra import ClientId
@@ -314,6 +315,9 @@ class GuiNotificationHandle:
 
     def __post_init__(self) -> None:
         self._send_msg_fn(self.notification)
+    
+    def clear(self) -> None:
+        self._send_msg_fn(ClearNotificationMessage(self.notification.id))
 
 
 @dataclasses.dataclass

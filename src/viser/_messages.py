@@ -84,16 +84,22 @@ class RunJavascriptMessage(Message):
 class NotificationMessage(Message):
     """Notification message."""
 
+    id: str
     title: str
     body: str
     loading: bool
     with_close_button: bool
     auto_close: Union[int, Literal[False]]
 
-
 @dataclasses.dataclass
 class ClearNotificationMessage(Message):
-    """Clear notification message."""
+    """Clear a specific notification."""
+    id: str
+
+    
+@dataclasses.dataclass
+class ClearAllNotificationMessage(Message):
+    """Clear all open notification messages."""
 
 
 @dataclasses.dataclass
