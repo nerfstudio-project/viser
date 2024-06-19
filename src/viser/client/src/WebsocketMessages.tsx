@@ -18,8 +18,8 @@ export interface NotificationMessage {
   type: "NotificationMessage";
   title: string;
   body: string;
-  with_close_button: boolean;
   loading: boolean;
+  with_close_button: boolean;
   auto_close: number | false;
 }
 /** Clear notification message.

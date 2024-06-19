@@ -10,21 +10,50 @@ import viser
 def main() -> None:
     server = viser.ViserServer()
 
-    gui_button = server.gui.add_button("Button")
-    clear_button = server.gui.add_button("Clear Notifications")
+    persistent_notif = server.gui.add_button("Show persistent notification (default)")
+    timed_notif = server.gui.add_button("Show timed notification")
+    controlled_notif = server.gui.add_button("Show controlled notification")
+    loading_notif = server.gui.add_button("Show loading notification")
+    clear_all_notif = server.gui.add_button("Clear Notifications")
 
-    @gui_button.on_click
+    @persistent_notif.on_click
     def _(_) -> None:
         """Reset the scene when the button is clicked."""
         server.gui.add_notification(
-            title="Notification",
-            body="You have clicked a button!",
-            with_close_button=True,
+            title="Persistent notification",
+            body="This can be closed manually and does not disappear on its own!",
             loading=False,
-            auto_close=2000,
+            type="persistent",
         )
 
-    @clear_button.on_click
+    @timed_notif.on_click
+    def _(_) -> None:
+        server.gui.add_notification(
+            title="Timed notification",
+            body="This disappears automatically after 5 seconds!",
+            loading=False,
+            type="timed"
+        )
+
+    @controlled_notif.on_click
+    def _(_) -> None:
+        server.gui.add_notification(
+            title="Controlled notification",
+            body="This cannot be closed by the user and is controlled in code only!",
+            loading=False,
+            type="controlled"
+        )
+
+    @loading_notif.on_click
+    def _(_) -> None:
+        server.gui.add_notification(
+            title="Loading notification",
+            body="This indicates that some action is in progress!",
+            loading=True,
+            type="persistent"
+        )
+
+    @clear_all_notif.on_click
     def _(_) -> None:
         """Clear all open notifcations."""
         server.gui.clear_notification()

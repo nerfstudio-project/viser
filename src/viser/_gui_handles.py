@@ -309,11 +309,11 @@ class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
 class GuiNotificationHandle:
     """Handle for a notification in our visualizer."""
 
-    gui_api: GuiApi
     notification: NotificationMessage
+    _send_msg_fn: Callable[[Message], None]
 
     def __post_init__(self) -> None:
-        self.gui_api._websock_interface.queue_message(self.notification)
+        self._send_msg_fn(self.notification)
 
 
 @dataclasses.dataclass

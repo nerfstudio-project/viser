@@ -874,32 +874,57 @@ class GuiApi:
         self,
         title: str,
         body: str,
-        with_close_button: bool,
-        loading: bool,
-        auto_close: int | Literal[False],
+        loading: bool = False,
+        type: Literal["persistent", "timed", "controlled"] = "persistent",
     ) -> GuiNotificationHandle:
         """Add a notification, which can be toggled on/off in the GUI.
 
-        Args: (https://mantine.dev/x/notifications/)
+        Args: 
             title: Title to display on the notification.
             body: Message to display on the notification body.
-            withCloseButton: Whether the close button is visible.
-            loading: Whether the notification is loading.
-            autoClose: Timeout in ms on which notification will be automatically closed, use False to disable.
+            type: Indicates type of notification.
+                "persistent": Does not disappear and can be closed manually by the user.
+                "timed": Automatically disappears after 5 sec.
+                "controlled": Can only be closed programatically.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        return GuiNotificationHandle(
-            gui_api=self,
-            notification=_messages.NotificationMessage(
-                title=title,
-                body=body,
-                with_close_button=with_close_button,
-                loading=loading,
-                auto_close=auto_close,
-            ),
-        )
+        match type:
+            case "persistent":
+                return GuiNotificationHandle(
+                        notification=_messages.NotificationMessage(
+                        title=title,
+                        body=body,
+                        loading=loading,
+                        with_close_button=True,
+                        auto_close=False,
+                    ),
+                        _send_msg_fn=self._websock_interface.queue_message
+                )
+            case "timed":
+                return GuiNotificationHandle(
+                        notification=_messages.NotificationMessage(
+                        title=title,
+                        body=body,
+                        loading=loading,
+                        with_close_button=True,
+                        auto_close=5000,
+                    ),
+                        _send_msg_fn=self._websock_interface.queue_message
+                )
+            case "controlled":
+                return GuiNotificationHandle(
+                        notification=_messages.NotificationMessage(
+                        title=title,
+                        body=body,
+                        loading=loading,
+                        with_close_button=False,
+                        auto_close=False,
+                    ),
+                        _send_msg_fn=self._websock_interface.queue_message
+                )
+        
 
     def clear_notification(self) -> None:
         self._websock_interface.queue_message(_messages.ClearNotificationMessage())

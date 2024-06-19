@@ -86,8 +86,8 @@ class NotificationMessage(Message):
 
     title: str
     body: str
-    with_close_button: bool
     loading: bool
+    with_close_button: bool
     auto_close: Union[int, Literal[False]]
 
 
