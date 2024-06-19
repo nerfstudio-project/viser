@@ -56,12 +56,16 @@ def main() -> None:
     @loading_notif_button.on_click
     def _(_) -> None:
         """Show loading notification when the button is clicked."""
-        server.gui.add_notification(
-            title="Loading notification",
-            body="This indicates that some action is in progress!",
-            loading=True,
-            type="persistent"
-        )
+        loading_notif = server.gui.add_notification(
+                        title="Loading notification",
+                        body="This indicates that some action is in progress!",
+                        loading=True,
+                        type="persistent"
+                    )
+        
+        time.sleep(3.0)
+        loading_notif.update(title="Update notification", 
+                             body="This notification was updated!")
 
     @clear_all_notif.on_click
     def _(_) -> None:

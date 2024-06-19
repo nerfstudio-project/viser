@@ -94,9 +94,19 @@ class NotificationMessage(Message):
 @dataclasses.dataclass
 class ClearNotificationMessage(Message):
     """Clear a specific notification."""
+
     id: str
 
-    
+@dataclasses.dataclass
+class UpdateNotificationMessage(Message):
+    """Update a specific notification."""
+
+    id: str
+    title: str
+    body: str
+    loading: bool
+
+
 @dataclasses.dataclass
 class ClearAllNotificationMessage(Message):
     """Clear all open notification messages."""

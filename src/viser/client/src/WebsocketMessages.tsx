@@ -31,6 +31,17 @@ export interface ClearNotificationMessage {
   type: "ClearNotificationMessage";
   id: string;
 }
+/** Update a specific notification.
+ *
+ * (automatically generated)
+ */
+export interface UpdateNotificationMessage {
+  type: "UpdateNotificationMessage";
+  id: string;
+  title: string;
+  body: string;
+  loading: boolean;
+}
 /** Clear all open notification messages.
  *
  * (automatically generated)
@@ -869,6 +880,7 @@ export type Message =
   | RunJavascriptMessage
   | NotificationMessage
   | ClearNotificationMessage
+  | UpdateNotificationMessage
   | ClearAllNotificationMessage
   | ViewerCameraMessage
   | ScenePointerMessage

@@ -155,6 +155,17 @@ function useMessageHandler() {
         return;
       }
 
+      // Update a specific notification.
+      case "UpdateNotificationMessage": {
+        notifications.update({
+          id: message.id,
+          title: message.title,
+          message: message.body,
+          loading: message.loading
+        });
+        return;
+      }
+
       // Clear all notifications.
       case "ClearAllNotificationMessage": {
         notifications.clean();
