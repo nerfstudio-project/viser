@@ -16,12 +16,12 @@ from typing_extensions import Protocol
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._messages import (
+    ClearNotificationMessage,
     GuiCloseModalMessage,
     GuiRemoveMessage,
     GuiUpdateMessage,
     Message,
     NotificationMessage,
-    ClearNotificationMessage,
     UpdateNotificationMessage,
 )
 from ._scene_api import _encode_image_base64
@@ -50,8 +50,7 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None:
-        ...
+    def remove(self) -> None: ...
 
 
 @dataclasses.dataclass
@@ -316,12 +315,14 @@ class GuiNotificationHandle:
 
     def __post_init__(self) -> None:
         self._send_msg_fn(self.notification)
-    
+
     def clear(self) -> None:
         self._send_msg_fn(ClearNotificationMessage(self.notification.id))
-    
-    def update(self, title: str, body: str, loading: bool=False) -> None:
-        self._send_msg_fn(UpdateNotificationMessage(self.notification.id, title, body, loading))
+
+    def update(self, title: str, body: str, loading: bool = False) -> None:
+        self._send_msg_fn(
+            UpdateNotificationMessage(self.notification.id, title, body, loading)
+        )
 
 
 @dataclasses.dataclass

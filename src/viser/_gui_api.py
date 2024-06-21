@@ -813,8 +813,7 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]:
-        ...
+    ) -> GuiButtonGroupHandle[TLiteralString]: ...
 
     @overload
     def add_button_group(
@@ -825,8 +824,7 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TString]:
-        ...
+    ) -> GuiButtonGroupHandle[TString]: ...
 
     def add_button_group(
         self,
@@ -879,7 +877,7 @@ class GuiApi:
     ) -> GuiNotificationHandle:
         """Add a notification, which can be toggled on/off in the GUI.
 
-        Args: 
+        Args:
             title: Title to display on the notification.
             body: Message to display on the notification body.
             type: Indicates type of notification.
@@ -890,45 +888,45 @@ class GuiApi:
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        id=_make_unique_id()
+        id = _make_unique_id()
         match type:
             case "persistent":
                 return GuiNotificationHandle(
-                        notification=_messages.NotificationMessage(
-                            id=id,
-                            title=title,
-                            body=body,
-                            loading=loading,
-                            with_close_button=True,
-                            auto_close=False,
-                        ),
-                        _send_msg_fn=self._websock_interface.queue_message
+                    notification=_messages.NotificationMessage(
+                        id=id,
+                        title=title,
+                        body=body,
+                        loading=loading,
+                        with_close_button=True,
+                        auto_close=False,
+                    ),
+                    _send_msg_fn=self._websock_interface.queue_message,
                 )
             case "timed":
                 return GuiNotificationHandle(
-                        notification=_messages.NotificationMessage(
-                            id=id,
-                            title=title,
-                            body=body,
-                            loading=loading,
-                            with_close_button=True,
-                            auto_close=5000,
-                        ),
-                        _send_msg_fn=self._websock_interface.queue_message
+                    notification=_messages.NotificationMessage(
+                        id=id,
+                        title=title,
+                        body=body,
+                        loading=loading,
+                        with_close_button=True,
+                        auto_close=5000,
+                    ),
+                    _send_msg_fn=self._websock_interface.queue_message,
                 )
             case "controlled":
                 return GuiNotificationHandle(
-                        notification=_messages.NotificationMessage(
-                            id=id,
-                            title=title,
-                            body=body,
-                            loading=loading,
-                            with_close_button=False,
-                            auto_close=False,
-                        ),
-                        _send_msg_fn=self._websock_interface.queue_message
+                    notification=_messages.NotificationMessage(
+                        id=id,
+                        title=title,
+                        body=body,
+                        loading=loading,
+                        with_close_button=False,
+                        auto_close=False,
+                    ),
+                    _send_msg_fn=self._websock_interface.queue_message,
                 )
-        
+
     def clear_all_notification(self) -> None:
         self._websock_interface.queue_message(_messages.ClearAllNotificationMessage())
 
@@ -1216,8 +1214,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TLiteralString]:
-        ...
+    ) -> GuiDropdownHandle[TLiteralString]: ...
 
     @overload
     def add_dropdown(
@@ -1229,8 +1226,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TString]:
-        ...
+    ) -> GuiDropdownHandle[TString]: ...
 
     def add_dropdown(
         self,

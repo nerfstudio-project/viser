@@ -91,11 +91,13 @@ class NotificationMessage(Message):
     with_close_button: bool
     auto_close: Union[int, Literal[False]]
 
+
 @dataclasses.dataclass
 class ClearNotificationMessage(Message):
     """Clear a specific notification."""
 
     id: str
+
 
 @dataclasses.dataclass
 class UpdateNotificationMessage(Message):
