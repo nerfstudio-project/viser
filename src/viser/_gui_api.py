@@ -889,43 +889,19 @@ class GuiApi:
             A handle that can be used to interact with the GUI element.
         """
         id = _make_unique_id()
-        match type:
-            case "persistent":
-                return GuiNotificationHandle(
-                    notification=_messages.NotificationMessage(
-                        id=id,
-                        title=title,
-                        body=body,
-                        loading=loading,
-                        with_close_button=True,
-                        auto_close=False,
-                    ),
-                    _send_msg_fn=self._websock_interface.queue_message,
-                )
-            case "timed":
-                return GuiNotificationHandle(
-                    notification=_messages.NotificationMessage(
-                        id=id,
-                        title=title,
-                        body=body,
-                        loading=loading,
-                        with_close_button=True,
-                        auto_close=5000,
-                    ),
-                    _send_msg_fn=self._websock_interface.queue_message,
-                )
-            case "controlled":
-                return GuiNotificationHandle(
-                    notification=_messages.NotificationMessage(
-                        id=id,
-                        title=title,
-                        body=body,
-                        loading=loading,
-                        with_close_button=False,
-                        auto_close=False,
-                    ),
-                    _send_msg_fn=self._websock_interface.queue_message,
-                )
+        with_close_button = False if type == "controlled" else True
+        auto_close = 5000 if type == "timed" else False
+        return GuiNotificationHandle(
+                notification=_messages.NotificationMessage(
+                    id=id,
+                    title=title,
+                    body=body,
+                    loading=loading,
+                    with_close_button=with_close_button,
+                    auto_close=auto_close,
+                ),
+                _send_msg_fn=self._websock_interface.queue_message,
+            ) 
 
     def clear_all_notification(self) -> None:
         self._websock_interface.queue_message(_messages.ClearAllNotificationMessage())
