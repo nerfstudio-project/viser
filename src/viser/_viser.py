@@ -357,7 +357,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         """
         mime_type = mimetypes.guess_type(filename, strict=False)[0]
         if mime_type is None:
-            mime_type = 'application/octet-stream'
+            mime_type = "application/octet-stream"
 
         from ._gui_api import _make_unique_id
 
