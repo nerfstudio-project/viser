@@ -41,6 +41,8 @@ export interface UpdateNotificationMessage {
   title: string;
   body: string;
   loading: boolean;
+  with_close_button: boolean;
+  auto_close: number | false;
 }
 /** Clear all open notification messages.
  *

@@ -7,7 +7,7 @@ import urllib.parse
 import uuid
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Literal, TypeVar
 
 import imageio.v3 as iio
 import numpy as onp
@@ -50,7 +50,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -310,18 +311,32 @@ class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
 class GuiNotificationHandle:
     """Handle for a notification in our visualizer."""
 
-    notification: NotificationMessage
+    _notification: NotificationMessage
     _send_msg_fn: Callable[[Message], None]
 
     def __post_init__(self) -> None:
-        self._send_msg_fn(self.notification)
+        self._send_msg_fn(self._notification)
 
     def clear(self) -> None:
-        self._send_msg_fn(ClearNotificationMessage(self.notification.id))
+        self._send_msg_fn(ClearNotificationMessage(self._notification.id))
 
-    def update(self, title: str, body: str, loading: bool = False) -> None:
+    def update(
+        self,
+        title: str,
+        body: str,
+        loading: bool = False,
+        with_close_button: bool = True,
+        auto_close: int | Literal["False"] = False,
+    ) -> None:
         self._send_msg_fn(
-            UpdateNotificationMessage(self.notification.id, title, body, loading)
+            UpdateNotificationMessage(
+                self._notification.id,
+                title,
+                body,
+                loading,
+                with_close_button,
+                auto_close,
+            )
         )
 
 

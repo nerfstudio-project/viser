@@ -107,6 +107,8 @@ class UpdateNotificationMessage(Message):
     title: str
     body: str
     loading: bool
+    with_close_button: bool
+    auto_close: Union[int, Literal[False]]
 
 
 @dataclasses.dataclass

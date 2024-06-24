@@ -873,26 +873,25 @@ class GuiApi:
         title: str,
         body: str,
         loading: bool = False,
-        type: Literal["persistent", "timed", "controlled"] = "persistent",
+        with_close_button: bool = True,
+        auto_close: int | Literal["False"] = False,
     ) -> GuiNotificationHandle:
         """Add a notification, which can be toggled on/off in the GUI.
 
         Args:
             title: Title to display on the notification.
             body: Message to display on the notification body.
-            type: Indicates type of notification.
-                "persistent": Does not disappear and can be closed manually by the user.
-                "timed": Automatically disappears after 5 sec.
-                "controlled": Can only be closed programatically.
+            loading: Whether the notification shows loading icon.
+            with_close_button: Whether the notification can be manually closed.
+            auto_close: Time in ms before the notification automatically closes;
+                        otherwise False such that the notification never closes on its own.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
         id = _make_unique_id()
-        with_close_button = False if type == "controlled" else True
-        auto_close = 5000 if type == "timed" else False
         return GuiNotificationHandle(
-                notification=_messages.NotificationMessage(
+                _notification=_messages.NotificationMessage(
                     id=id,
                     title=title,
                     body=body,

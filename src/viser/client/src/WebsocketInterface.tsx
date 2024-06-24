@@ -161,7 +161,9 @@ function useMessageHandler() {
           id: message.id,
           title: message.title,
           message: message.body,
-          loading: message.loading
+          loading: message.loading,
+          withCloseButton: message.with_close_button,
+          autoClose: message.auto_close,
         });
         return;
       }

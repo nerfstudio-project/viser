@@ -27,7 +27,8 @@ def main() -> None:
             title="Persistent notification",
             body="This can be closed manually and does not disappear on its own!",
             loading=False,
-            type="persistent",
+            with_close_button=True,
+            auto_close=False,
         )
 
     @timed_notif_button.on_click
@@ -37,7 +38,8 @@ def main() -> None:
             title="Timed notification",
             body="This disappears automatically after 5 seconds!",
             loading=False,
-            type="timed",
+            with_close_button=True,
+            auto_close=5000,
         )
 
     @controlled_notif_button.on_click
@@ -47,7 +49,8 @@ def main() -> None:
             title="Controlled notification",
             body="This cannot be closed by the user and is controlled in code only!",
             loading=False,
-            type="controlled",
+            with_close_button=False,
+            auto_close=False,
         )
 
         @close_controlled_notif.on_click
@@ -61,8 +64,9 @@ def main() -> None:
         loading_notif = server.gui.add_notification(
             title="Loading notification",
             body="This indicates that some action is in progress!",
-            loading=True,
-            type="persistent",
+            loading=False,
+            with_close_button=True,
+            auto_close=False,
         )
 
         time.sleep(3.0)
