@@ -392,11 +392,11 @@ class WebsockServer(WebsockMessageHandler):
 
             use_gzip = "gzip" in request_headers.get("Accept-Encoding", "")
 
-            mime_type = mimetypes.MimeTypes().guess_type(relpath)[0]
+            mime_type = mimetypes.guess_type(relpath)[0]
             if mime_type is None:
                 mime_type = "application/octet-stream"
             response_headers = {
-                "Content-Type": str(mime_type),
+                "Content-Type": mime_type,
             }
 
             if source_path not in file_cache:
