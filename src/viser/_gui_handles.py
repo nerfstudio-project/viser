@@ -326,7 +326,7 @@ class GuiNotificationHandle:
         body: str,
         loading: bool = False,
         with_close_button: bool = True,
-        auto_close: int | Literal["False"] = False,
+        auto_close: int | Literal[False] = False,
     ) -> None:
         self._send_msg_fn(
             UpdateNotificationMessage(

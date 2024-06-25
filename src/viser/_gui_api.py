@@ -813,7 +813,8 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]: ...
+    ) -> GuiButtonGroupHandle[TLiteralString]:
+        ...
 
     @overload
     def add_button_group(
@@ -824,7 +825,8 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TString]: ...
+    ) -> GuiButtonGroupHandle[TString]:
+        ...
 
     def add_button_group(
         self,
@@ -874,7 +876,7 @@ class GuiApi:
         body: str,
         loading: bool = False,
         with_close_button: bool = True,
-        auto_close: int | Literal["False"] = False,
+        auto_close: int | Literal[False] = False,
     ) -> GuiNotificationHandle:
         """Add a notification, which can be toggled on/off in the GUI.
 
@@ -891,16 +893,16 @@ class GuiApi:
         """
         id = _make_unique_id()
         return GuiNotificationHandle(
-                _notification=_messages.NotificationMessage(
-                    id=id,
-                    title=title,
-                    body=body,
-                    loading=loading,
-                    with_close_button=with_close_button,
-                    auto_close=auto_close,
-                ),
-                _send_msg_fn=self._websock_interface.queue_message,
-            ) 
+            _notification=_messages.NotificationMessage(
+                id=id,
+                title=title,
+                body=body,
+                loading=loading,
+                with_close_button=with_close_button,
+                auto_close=auto_close,
+            ),
+            _send_msg_fn=self._websock_interface.queue_message,
+        )
 
     def clear_all_notification(self) -> None:
         self._websock_interface.queue_message(_messages.ClearAllNotificationMessage())
@@ -1189,7 +1191,8 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TLiteralString]: ...
+    ) -> GuiDropdownHandle[TLiteralString]:
+        ...
 
     @overload
     def add_dropdown(
@@ -1201,7 +1204,8 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TString]: ...
+    ) -> GuiDropdownHandle[TString]:
+        ...
 
     def add_dropdown(
         self,
