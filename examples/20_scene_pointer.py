@@ -18,9 +18,13 @@ import trimesh.creation
 import trimesh.ray
 import viser
 import viser.transforms as tf
+from viser.theme import TitlebarConfig
 
 server = viser.ViserServer()
-server.gui.configure_theme(brand_color=(130, 0, 150))
+server.gui.configure_theme(
+    brand_color=(130, 0, 150),
+    titlebar_content=TitlebarConfig(buttons=(), image=None),
+)
 server.scene.set_up_direction("+y")
 
 mesh = cast(

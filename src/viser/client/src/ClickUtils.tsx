@@ -4,18 +4,24 @@ import { ViewerContextContents } from "./App";
 
 /** Turn a click event into a normalized device coordinate (NDC) vector.
  * Normalizes click coordinates to be between -1 and 1, with (0, 0) being the center of the screen.
- * Uses offsetX/Y, and clientWidth/Height to get the coordinates.
+ *
+ * Returns null if input is not valid.
  */
-export function clickToNDC(
+export function ndcFromPointerXy(
   viewer: ViewerContextContents,
-  event: React.PointerEvent<HTMLDivElement>,
-): THREE.Vector2 {
+  xy: [number, number],
+): THREE.Vector2 | null {
   const mouseVector = new THREE.Vector2();
   mouseVector.x =
-    2 * ((event.clientX + 0.5) / viewer.canvasRef.current!.clientWidth) - 1;
+    2 * ((xy[0] + 0.5) / viewer.canvasRef.current!.clientWidth) - 1;
   mouseVector.y =
-    1 - 2 * ((event.clientY + 0.5) / viewer.canvasRef.current!.clientHeight);
-  return mouseVector;
+    1 - 2 * ((xy[1] + 0.5) / viewer.canvasRef.current!.clientHeight);
+  return mouseVector.x < 1 &&
+    mouseVector.x > -1 &&
+    mouseVector.y < 1 &&
+    mouseVector.y > -1
+    ? mouseVector
+    : null;
 }
 
 /** Turn a click event to normalized OpenCV coordinate (NDC) vector.
@@ -23,24 +29,12 @@ export function clickToNDC(
  * and (1, 1) as lower-right corner, with (0.5, 0.5) being the center of the screen.
  * Uses offsetX/Y, and clientWidth/Height to get the coordinates.
  */
-export function clickToOpenCV(
+export function opencvXyFromPointerXy(
   viewer: ViewerContextContents,
-  event: React.PointerEvent<HTMLDivElement>,
+  xy: [number, number],
 ): THREE.Vector2 {
   const mouseVector = new THREE.Vector2();
-  mouseVector.x = (event.clientX + 0.5) / viewer.canvasRef.current!.clientWidth;
-  mouseVector.y =
-    (event.clientY + 0.5) / viewer.canvasRef.current!.clientHeight;
+  mouseVector.x = (xy[0] + 0.5) / viewer.canvasRef.current!.clientWidth;
+  mouseVector.y = (xy[1] + 0.5) / viewer.canvasRef.current!.clientHeight;
   return mouseVector;
-}
-
-/** Given a normalized click (using `normalizeClick`), check if it is within the bounds of the canvas.
- */
-export function isClickValid(mouseVector: THREE.Vector2): boolean {
-  return (
-    mouseVector.x < 1 &&
-    mouseVector.x > -1 &&
-    mouseVector.y < 1 &&
-    mouseVector.y > -1
-  );
 }
