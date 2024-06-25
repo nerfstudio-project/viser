@@ -289,12 +289,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         const firstScreenEvent = screenEventList[0];
         const lastScreenEvent = screenEventList![screenEventList.length - 1];
         if (
-          Math.abs(
-            e.nativeEvent.offsetX - lastScreenEvent.nativeEvent.offsetX,
-          ) <= 3 &&
-          Math.abs(
-            e.nativeEvent.offsetY - lastScreenEvent.nativeEvent.offsetY,
-          ) <= 3
+          Math.abs(e.clientX - lastScreenEvent.clientX) <= 3 &&
+          Math.abs(e.clientY - lastScreenEvent.clientY) <= 3
         )
           return;
 
@@ -310,10 +306,10 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           ctx.strokeStyle = "blue";
           ctx.globalAlpha = 0.2;
           ctx.fillRect(
-            firstScreenEvent.nativeEvent.offsetX,
-            firstScreenEvent.nativeEvent.offsetY,
-            e.nativeEvent.offsetX - firstScreenEvent.nativeEvent.offsetX,
-            e.nativeEvent.offsetY - firstScreenEvent.nativeEvent.offsetY,
+            firstScreenEvent.clientX,
+            firstScreenEvent.clientY,
+            e.clientX - firstScreenEvent.clientX,
+            e.clientY - firstScreenEvent.clientY,
           );
           ctx.globalAlpha = 1.0;
           ctx.stroke();

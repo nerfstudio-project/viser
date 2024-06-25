@@ -12,15 +12,9 @@ export function clickToNDC(
 ): THREE.Vector2 {
   const mouseVector = new THREE.Vector2();
   mouseVector.x =
-    2 *
-      ((event.nativeEvent.offsetX + 0.5) /
-        viewer.canvasRef.current!.clientWidth) -
-    1;
+    2 * ((event.clientX + 0.5) / viewer.canvasRef.current!.clientWidth) - 1;
   mouseVector.y =
-    1 -
-    2 *
-      ((event.nativeEvent.offsetY + 0.5) /
-        viewer.canvasRef.current!.clientHeight);
+    1 - 2 * ((event.clientY + 0.5) / viewer.canvasRef.current!.clientHeight);
   return mouseVector;
 }
 
@@ -34,10 +28,9 @@ export function clickToOpenCV(
   event: React.PointerEvent<HTMLDivElement>,
 ): THREE.Vector2 {
   const mouseVector = new THREE.Vector2();
-  mouseVector.x =
-    (event.nativeEvent.offsetX + 0.5) / viewer.canvasRef.current!.clientWidth;
+  mouseVector.x = (event.clientX + 0.5) / viewer.canvasRef.current!.clientWidth;
   mouseVector.y =
-    (event.nativeEvent.offsetY + 0.5) / viewer.canvasRef.current!.clientHeight;
+    (event.clientY + 0.5) / viewer.canvasRef.current!.clientHeight;
   return mouseVector;
 }
 
