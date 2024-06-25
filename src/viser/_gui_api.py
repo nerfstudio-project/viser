@@ -674,23 +674,25 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-        | None = None,
+        color: (
+            Literal[
+                "dark",
+                "gray",
+                "red",
+                "pink",
+                "grape",
+                "violet",
+                "indigo",
+                "blue",
+                "cyan",
+                "green",
+                "lime",
+                "yellow",
+                "orange",
+                "teal",
+            ]
+            | None
+        ) = None,
         icon: IconName | None = None,
         order: float | None = None,
     ) -> GuiButtonHandle:
@@ -738,23 +740,25 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-        | None = None,
+        color: (
+            Literal[
+                "dark",
+                "gray",
+                "red",
+                "pink",
+                "grape",
+                "violet",
+                "indigo",
+                "blue",
+                "cyan",
+                "green",
+                "lime",
+                "yellow",
+                "orange",
+                "teal",
+            ]
+            | None
+        ) = None,
         icon: IconName | None = None,
         mime_type: str = "*/*",
         order: float | None = None,
@@ -813,8 +817,7 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]:
-        ...
+    ) -> GuiButtonGroupHandle[TLiteralString]: ...
 
     @overload
     def add_button_group(
@@ -825,8 +828,7 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TString]:
-        ...
+    ) -> GuiButtonGroupHandle[TString]: ...
 
     def add_button_group(
         self,
@@ -1191,8 +1193,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TLiteralString]:
-        ...
+    ) -> GuiDropdownHandle[TLiteralString]: ...
 
     @overload
     def add_dropdown(
@@ -1204,8 +1205,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TString]:
-        ...
+    ) -> GuiDropdownHandle[TString]: ...
 
     def add_dropdown(
         self,
@@ -1323,14 +1323,18 @@ class GuiApi:
                 precision=_compute_precision_digits(step),
                 visible=visible,
                 disabled=disabled,
-                marks=tuple(
-                    {"value": float(x[0]), "label": x[1]}
-                    if isinstance(x, tuple)
-                    else {"value": float(x)}
-                    for x in marks
-                )
-                if marks is not None
-                else None,
+                marks=(
+                    tuple(
+                        (
+                            {"value": float(x[0]), "label": x[1]}
+                            if isinstance(x, tuple)
+                            else {"value": float(x)}
+                        )
+                        for x in marks
+                    )
+                    if marks is not None
+                    else None
+                ),
             ),
             is_button=False,
         )
@@ -1407,14 +1411,18 @@ class GuiApi:
                 disabled=disabled,
                 fixed_endpoints=fixed_endpoints,
                 precision=_compute_precision_digits(step),
-                marks=tuple(
-                    {"value": float(x[0]), "label": x[1]}
-                    if isinstance(x, tuple)
-                    else {"value": float(x)}
-                    for x in marks
-                )
-                if marks is not None
-                else None,
+                marks=(
+                    tuple(
+                        (
+                            {"value": float(x[0]), "label": x[1]}
+                            if isinstance(x, tuple)
+                            else {"value": float(x)}
+                        )
+                        for x in marks
+                    )
+                    if marks is not None
+                    else None
+                ),
             ),
             is_button=False,
         )
