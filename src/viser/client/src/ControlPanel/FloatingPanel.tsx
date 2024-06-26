@@ -121,7 +121,8 @@ export default function FloatingPanel({
           parent.clientHeight,
         );
 
-      const newMaxHeight = parent.clientHeight - panelBoundaryPad * 2 - 2.5 * 16;
+      const newMaxHeight =
+        parent.clientHeight - panelBoundaryPad * 2 - 2.5 * 16;
       maxHeight !== newMaxHeight && setMaxHeight(newMaxHeight);
 
       let newX = unfixedOffset.current.x;

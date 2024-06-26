@@ -32,22 +32,28 @@ import {
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
+import GaussianSplats from "./Splatting/GaussianSplats";
 import { MantineProvider, Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { theme } from "./AppTheme";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
+function linearColorArrayFromSrgbColorArray(colors: ArrayBuffer) {
+  return new Float32Array(new Uint8Array(colors)).map((value) => {
+    value = value / 255.0;
+    if (value <= 0.04045) {
+      return value / 12.92;
+    } else {
+      return Math.pow((value + 0.055) / 1.055, 2.4);
+    }
+  });
+}
+
+/** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
   return new THREE.Float32BufferAttribute(
-    new Float32Array(new Uint8Array(colors)).map((value) => {
-      value = value / 255.0;
-      if (value <= 0.04045) {
-        return value / 12.92;
-      } else {
-        return Math.pow((value + 0.055) / 1.055, 2.4);
-      }
-    }),
+    linearColorArrayFromSrgbColorArray(colors),
     3,
   );
 }
@@ -641,7 +647,7 @@ function useMessageHandler() {
               );
             },
             undefined,
-            true,
+            true, // unmountWhenInvisible
           ),
         );
         return;
@@ -684,7 +690,7 @@ function useMessageHandler() {
               );
             },
             undefined,
-            true,
+            true, // unmountWhenInvisible
           ),
         );
         return;
@@ -821,6 +827,27 @@ function useMessageHandler() {
                     segments={(message.segments ?? undefined) as undefined}
                   ></CubicBezierLine>
                 ))}
+              </group>
+            );
+          }),
+        );
+        return;
+      }
+      case "GaussianSplatsMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => {
+            return (
+              <group ref={ref}>
+                <GaussianSplats
+                  buffers={{
+                    buffer: new Uint32Array(
+                      message.buffer.buffer.slice(
+                        message.buffer.byteOffset,
+                        message.buffer.byteOffset + message.buffer.byteLength,
+                      ),
+                    ),
+                  }}
+                />
               </group>
             );
           }),
