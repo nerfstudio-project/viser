@@ -25,6 +25,7 @@
     "dayjs": "^1.11.10",
     "hold-event": "^1.1.0",
     "immer": "^10.0.4",
+    "its-fine": "^1.2.5",
     "mantine-react-table": "^2.0.0-beta.0",
     "msgpackr": "^1.8.5",
     "postcss": "^8.4.38",

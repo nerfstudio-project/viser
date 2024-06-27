@@ -356,9 +356,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             chunk_size: Number of bytes to send at a time.
         """
         mime_type = mimetypes.guess_type(filename, strict=False)[0]
-        assert (
-            mime_type is not None
-        ), f"Could not guess MIME type from filename {filename}!"
+        if mime_type is None:
+            mime_type = "application/octet-stream"
 
         from ._gui_api import _make_unique_id
 
