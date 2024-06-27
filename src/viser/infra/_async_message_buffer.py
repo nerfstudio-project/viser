@@ -37,6 +37,7 @@ class AsyncMessageBuffer:
         assert isinstance(message, Message)
 
         # Add message to buffer.
+        redundancy_key = message.redundancy_key()
         with self.buffer_lock:
             new_message_id = self.message_counter
             self.message_from_id[new_message_id] = message
@@ -44,7 +45,6 @@ class AsyncMessageBuffer:
 
             # If an existing message with the same key already exists in our buffer, we
             # don't need the old one anymore. :-)
-            redundancy_key = message.redundancy_key()
             if (
                 redundancy_key is not None
                 and redundancy_key in self.id_from_redundancy_key
@@ -93,9 +93,8 @@ class AsyncMessageBuffer:
                     with self.buffer_lock:
                         message = self.message_from_id.pop(last_sent_id, None)
                         if message is not None:
-                            self.id_from_redundancy_key.pop(
-                                message.redundancy_key(), None
-                            )
+                            redundancy_key = message.redundancy_key()
+                            self.id_from_redundancy_key.pop(redundancy_key, None)
 
                 if message is not None and message.excluded_self_client != client_id:
                     window.append(message)
