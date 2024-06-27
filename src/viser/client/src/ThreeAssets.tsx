@@ -1,4 +1,4 @@
-import { Instance, Instances, shaderMaterial } from "@react-three/drei";
+import { Instance, Instances, shaderMaterial, Html } from "@react-three/drei";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { Outlines } from "./Outlines";
 import React from "react";
