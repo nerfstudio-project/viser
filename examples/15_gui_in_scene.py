@@ -13,6 +13,7 @@ import viser
 import viser.transforms as tf
 
 server = viser.ViserServer()
+server.gui.configure_theme(dark_mode=True)
 num_frames = 20
 
 
