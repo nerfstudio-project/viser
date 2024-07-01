@@ -10,6 +10,47 @@ export interface RunJavascriptMessage {
   type: "RunJavascriptMessage";
   source: string;
 }
+/** Notification message.
+ *
+ * (automatically generated)
+ */
+export interface NotificationMessage {
+  type: "NotificationMessage";
+  id: string;
+  title: string;
+  body: string;
+  loading: boolean;
+  with_close_button: boolean;
+  auto_close: number | false;
+}
+/** Clear a specific notification.
+ *
+ * (automatically generated)
+ */
+export interface ClearNotificationMessage {
+  type: "ClearNotificationMessage";
+  id: string;
+}
+/** Update a specific notification.
+ *
+ * (automatically generated)
+ */
+export interface UpdateNotificationMessage {
+  type: "UpdateNotificationMessage";
+  id: string;
+  title: string;
+  body: string;
+  loading: boolean;
+  with_close_button: boolean;
+  auto_close: number | false;
+}
+/** Clear all open notification messages.
+ *
+ * (automatically generated)
+ */
+export interface ClearAllNotificationMessage {
+  type: "ClearAllNotificationMessage";
+}
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
  *
@@ -63,7 +104,7 @@ export interface CameraFrustumMessage {
   image_media_type: "image/jpeg" | "image/png" | null;
   image_base64_data: string | null;
 }
-/** GlTF Message
+/** GlTF message.
  *
  * (automatically generated)
  */
@@ -839,6 +880,10 @@ export interface SetGuiPanelLabelMessage {
 
 export type Message =
   | RunJavascriptMessage
+  | NotificationMessage
+  | ClearNotificationMessage
+  | UpdateNotificationMessage
+  | ClearAllNotificationMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage

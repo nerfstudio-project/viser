@@ -81,6 +81,42 @@ class RunJavascriptMessage(Message):
 
 
 @dataclasses.dataclass
+class NotificationMessage(Message):
+    """Notification message."""
+
+    id: str
+    title: str
+    body: str
+    loading: bool
+    with_close_button: bool
+    auto_close: Union[int, Literal[False]]
+
+
+@dataclasses.dataclass
+class ClearNotificationMessage(Message):
+    """Clear a specific notification."""
+
+    id: str
+
+
+@dataclasses.dataclass
+class UpdateNotificationMessage(Message):
+    """Update a specific notification."""
+
+    id: str
+    title: str
+    body: str
+    loading: bool
+    with_close_button: bool
+    auto_close: Union[int, Literal[False]]
+
+
+@dataclasses.dataclass
+class ClearAllNotificationMessage(Message):
+    """Clear all open notification messages."""
+
+
+@dataclasses.dataclass
 class ViewerCameraMessage(Message):
     """Message for a posed viewer camera.
     Pose is in the form T_world_camera, OpenCV convention, +Z forward."""
@@ -142,7 +178,7 @@ class CameraFrustumMessage(Message):
 
 @dataclasses.dataclass
 class GlbMessage(Message):
-    """GlTF Message"""
+    """GlTF message."""
 
     name: str
     glb_data: bytes

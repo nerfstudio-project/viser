@@ -31,6 +31,7 @@ from ._gui_handles import (
     GuiInputHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
+    GuiNotificationHandle,
     GuiPlotlyHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
@@ -637,23 +638,25 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-        | None = None,
+        color: (
+            Literal[
+                "dark",
+                "gray",
+                "red",
+                "pink",
+                "grape",
+                "violet",
+                "indigo",
+                "blue",
+                "cyan",
+                "green",
+                "lime",
+                "yellow",
+                "orange",
+                "teal",
+            ]
+            | None
+        ) = None,
         icon: IconName | None = None,
         order: float | None = None,
     ) -> GuiButtonHandle:
@@ -701,23 +704,25 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-        | None = None,
+        color: (
+            Literal[
+                "dark",
+                "gray",
+                "red",
+                "pink",
+                "grape",
+                "violet",
+                "indigo",
+                "blue",
+                "cyan",
+                "green",
+                "lime",
+                "yellow",
+                "orange",
+                "teal",
+            ]
+            | None
+        ) = None,
         icon: IconName | None = None,
         mime_type: str = "*/*",
         order: float | None = None,
@@ -830,6 +835,43 @@ class GuiApi:
                 ),
             )._impl,
         )
+
+    def add_notification(
+        self,
+        title: str,
+        body: str,
+        loading: bool = False,
+        with_close_button: bool = True,
+        auto_close: int | Literal[False] = False,
+    ) -> GuiNotificationHandle:
+        """Add a notification, which can be toggled on/off in the GUI.
+
+        Args:
+            title: Title to display on the notification.
+            body: Message to display on the notification body.
+            loading: Whether the notification shows loading icon.
+            with_close_button: Whether the notification can be manually closed.
+            auto_close: Time in ms before the notification automatically closes;
+                        otherwise False such that the notification never closes on its own.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        id = _make_unique_id()
+        return GuiNotificationHandle(
+            _notification=_messages.NotificationMessage(
+                id=id,
+                title=title,
+                body=body,
+                loading=loading,
+                with_close_button=with_close_button,
+                auto_close=auto_close,
+            ),
+            _send_msg_fn=self._websock_interface.queue_message,
+        )
+
+    def clear_all_notification(self) -> None:
+        self._websock_interface.queue_message(_messages.ClearAllNotificationMessage())
 
     def add_checkbox(
         self,
@@ -1245,14 +1287,18 @@ class GuiApi:
                 precision=_compute_precision_digits(step),
                 visible=visible,
                 disabled=disabled,
-                marks=tuple(
-                    {"value": float(x[0]), "label": x[1]}
-                    if isinstance(x, tuple)
-                    else {"value": float(x)}
-                    for x in marks
-                )
-                if marks is not None
-                else None,
+                marks=(
+                    tuple(
+                        (
+                            {"value": float(x[0]), "label": x[1]}
+                            if isinstance(x, tuple)
+                            else {"value": float(x)}
+                        )
+                        for x in marks
+                    )
+                    if marks is not None
+                    else None
+                ),
             ),
             is_button=False,
         )
@@ -1329,14 +1375,18 @@ class GuiApi:
                 disabled=disabled,
                 fixed_endpoints=fixed_endpoints,
                 precision=_compute_precision_digits(step),
-                marks=tuple(
-                    {"value": float(x[0]), "label": x[1]}
-                    if isinstance(x, tuple)
-                    else {"value": float(x)}
-                    for x in marks
-                )
-                if marks is not None
-                else None,
+                marks=(
+                    tuple(
+                        (
+                            {"value": float(x[0]), "label": x[1]}
+                            if isinstance(x, tuple)
+                            else {"value": float(x)}
+                        )
+                        for x in marks
+                    )
+                    if marks is not None
+                    else None
+                ),
             ),
             is_button=False,
         )

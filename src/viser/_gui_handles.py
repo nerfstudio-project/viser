@@ -7,7 +7,7 @@ import urllib.parse
 import uuid
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Literal, TypeVar
 
 import imageio.v3 as iio
 import numpy as onp
@@ -15,7 +15,15 @@ from typing_extensions import Protocol
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
-from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
+from ._messages import (
+    ClearNotificationMessage,
+    GuiCloseModalMessage,
+    GuiRemoveMessage,
+    GuiUpdateMessage,
+    Message,
+    NotificationMessage,
+    UpdateNotificationMessage,
+)
 from ._scene_api import _encode_image_base64
 from .infra import ClientId
 
@@ -295,6 +303,39 @@ class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
     def disabled(self, disabled: bool) -> None:
         """Button groups cannot be disabled."""
         assert not disabled, "Button groups cannot be disabled."
+
+
+@dataclasses.dataclass
+class GuiNotificationHandle:
+    """Handle for a notification in our visualizer."""
+
+    _notification: NotificationMessage
+    _send_msg_fn: Callable[[Message], None]
+
+    def __post_init__(self) -> None:
+        self._send_msg_fn(self._notification)
+
+    def clear(self) -> None:
+        self._send_msg_fn(ClearNotificationMessage(self._notification.id))
+
+    def update(
+        self,
+        title: str,
+        body: str,
+        loading: bool = False,
+        with_close_button: bool = True,
+        auto_close: int | Literal[False] = False,
+    ) -> None:
+        self._send_msg_fn(
+            UpdateNotificationMessage(
+                self._notification.id,
+                title,
+                body,
+                loading,
+                with_close_button,
+                auto_close,
+            )
+        )
 
 
 @dataclasses.dataclass
