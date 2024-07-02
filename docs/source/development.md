@@ -115,4 +115,4 @@ one of:
 - `prettier -w .`
 - `npx prettier -w .`
 
-from `~/viser/client`.
+from `~/viser/src/viser/client`.

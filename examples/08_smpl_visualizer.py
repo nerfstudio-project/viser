@@ -1,4 +1,6 @@
-"""Visualizer for SMPL human body models. Requires a .npz model file.
+"""SMPL model visualizer
+
+Visualizer for SMPL human body models. Requires a .npz model file.
 
 See here for download instructions:
     https://github.com/vchoutas/smplx?tab=readme-ov-file#downloading-the-model
