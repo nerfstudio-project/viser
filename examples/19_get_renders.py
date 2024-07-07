@@ -18,27 +18,25 @@ def main():
     def _(event: viser.GuiEvent) -> None:
         client = event.client
         assert client is not None
+        with client.with_file_download("image.gif") as file_download:
+            client.scene.reset()
 
-        client.scene.reset()
+            images = []
 
-        images = []
+            for i in range(20):
+                positions = onp.random.normal(size=(30, 3)) * 3.0
+                client.scene.add_spline_catmull_rom(
+                    f"/catmull_{i}",
+                    positions,
+                    tension=0.5,
+                    line_width=3.0,
+                    color=onp.random.uniform(size=3),
+                )
+                images.append(client.camera.get_render(height=720, width=1280))
 
-        for i in range(20):
-            positions = onp.random.normal(size=(30, 3)) * 3.0
-            client.scene.add_spline_catmull_rom(
-                f"/catmull_{i}",
-                positions,
-                tension=0.5,
-                line_width=3.0,
-                color=onp.random.uniform(size=3),
-            )
-            images.append(client.camera.get_render(height=720, width=1280))
-
-        print("Generating and sending GIF...")
-        client.send_file_download(
-            "image.gif", iio.imwrite("<bytes>", images, extension=".gif")
-        )
-        print("Done!")
+            print("Generating and sending GIF...")
+            file_download(iio.imwrite("<bytes>", images, extension=".gif"))
+            print("Done!")
 
     while True:
         time.sleep(10.0)

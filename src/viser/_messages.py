@@ -709,8 +709,8 @@ class FileTransferStart(Message):
     transfer_uuid: str
     filename: str
     mime_type: str
-    part_count: int
-    size_bytes: int
+    part_count: Optional[int]
+    size_bytes: Optional[int]
 
     @override
     def redundancy_key(self) -> str:

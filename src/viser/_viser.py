@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import dataclasses
 import io
 import mimetypes
@@ -7,7 +8,7 @@ import threading
 import time
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ContextManager
+from typing import TYPE_CHECKING, Any, Callable, ContextManager, Iterator
 
 import imageio.v3 as iio
 import numpy as onp
@@ -345,6 +346,77 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         """
         return self._websock_connection.atomic()
 
+    @contextlib.contextmanager
+    def with_file_download(
+        self,
+        filename: str,
+        chunk_size: int = 1024 * 1024,
+        _send_immediately: bool = False,
+    ) -> Iterator[Callable[[bytes], None]]:
+        """Context manager for starting file download.
+
+        Args:
+            filename: Name of the file to send. Used to infer MIME type.
+
+        Returns:
+            Context manager which can be called with content (bytes) to send parts of the file.
+        """
+        from ._gui_api import _make_unique_id
+
+        mime_type = mimetypes.guess_type(filename, strict=False)[0]
+        if mime_type is None:
+            mime_type = "application/octet-stream"
+
+        uuid = _make_unique_id()
+        if not _send_immediately:
+            self._websock_connection.queue_message(
+                _messages.FileTransferStart(
+                    source_component_id=None,
+                    transfer_uuid=uuid,
+                    filename=filename,
+                    mime_type=mime_type,
+                    part_count=None,
+                    size_bytes=None,
+                )
+            )
+        was_called = False
+
+        def send(content: bytes) -> None:
+            nonlocal was_called
+            if was_called:
+                raise RuntimeError("send() can only be called once")
+            was_called = True
+            parts = [
+                content[i * chunk_size : (i + 1) * chunk_size]
+                for i in range(int(onp.ceil(len(content) / chunk_size)))
+            ]
+
+            self._websock_connection.queue_message(
+                _messages.FileTransferStart(
+                    source_component_id=None,
+                    transfer_uuid=uuid,
+                    filename=filename,
+                    mime_type=mime_type,
+                    part_count=len(parts),
+                    size_bytes=len(content),
+                )
+            )
+
+            for i, part in enumerate(parts):
+                self._websock_connection.queue_message(
+                    _messages.FileTransferPart(
+                        None,
+                        transfer_uuid=uuid,
+                        part=i,
+                        content=part,
+                    )
+                )
+                self.flush()
+
+        yield send
+        if not was_called:
+            raise RuntimeError("send() was never called")
+
     def send_file_download(
         self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
     ) -> None:
@@ -359,34 +431,10 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         if mime_type is None:
             mime_type = "application/octet-stream"
 
-        from ._gui_api import _make_unique_id
-
-        parts = [
-            content[i * chunk_size : (i + 1) * chunk_size]
-            for i in range(int(onp.ceil(len(content) / chunk_size)))
-        ]
-
-        uuid = _make_unique_id()
-        self._websock_connection.queue_message(
-            _messages.FileTransferStart(
-                source_component_id=None,
-                transfer_uuid=uuid,
-                filename=filename,
-                mime_type=mime_type,
-                part_count=len(parts),
-                size_bytes=len(content),
-            )
-        )
-        for i, part in enumerate(parts):
-            self._websock_connection.queue_message(
-                _messages.FileTransferPart(
-                    None,
-                    transfer_uuid=uuid,
-                    part=i,
-                    content=part,
-                )
-            )
-            self.flush()
+        with self.with_file_download(
+            filename, chunk_size, _send_immediately=False
+        ) as send:
+            send(content)
 
 
 class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):

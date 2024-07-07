@@ -100,7 +100,7 @@ function useMessageHandler() {
   const fileDownloadHandler = useFileDownloadHandler();
 
   // Return message handler.
-  return (message: Message) => {
+  return async (message: Message) => {
     if (isGuiConfig(message)) {
       addGui(message);
       return;
@@ -830,7 +830,7 @@ function useMessageHandler() {
       }
       case "FileTransferStart":
       case "FileTransferPart": {
-        fileDownloadHandler(message);
+        await fileDownloadHandler(message);
         return;
       }
       case "FileTransferPartAck": {
@@ -854,19 +854,54 @@ function useFileDownloadHandler() {
     [uuid: string]: {
       metadata: FileTransferStart;
       notificationId: string;
-      parts: Uint8Array[];
+      parts: (Uint8Array|null)[];
+      writable: any;
       bytesDownloaded: number;
       displayFilesize: string;
     };
   }>({});
 
-  return (message: FileTransferStart | FileTransferPart) => {
+  return async (message: FileTransferStart | FileTransferPart) => {
     const notificationId = "download-" + message.transfer_uuid;
 
     // Create or update download state.
     switch (message.type) {
       case "FileTransferStart": {
         let displaySize = message.size_bytes;
+        let writable = null;
+        if (displaySize === null) {
+          // If the file_download is used from a with_file_download wrapper
+          // (opened immediately after pressing a button), we allow for the
+          // saveAs dialog to be opened.
+          // This is because the dialog can only be opened as a reaction
+          // to a user action.
+          if((window as any).showSaveFilePicker) {
+            console.log("showSaveFilePicker is available, opening");
+            const fileExtension = message.filename.split('.').pop();
+            const handle = await showSaveFilePicker({
+              suggestedName: message.filename,
+              types: [{
+                  accept: {
+                      [message.mime_type]: [`.${fileExtension}` as any],
+                  },
+              }],
+            });
+            writable = await handle.createWritable();
+            downloadStatesRef.current[message.transfer_uuid] = {
+              metadata: message,
+              notificationId: notificationId,
+              writable: writable,
+              parts: [],
+              bytesDownloaded: 0,
+              displayFilesize: 'preparing',
+            };
+            break;
+          } else {
+            console.log("showSaveFilePicker is not available");
+            return;
+          }
+        }
+        console.log(message);
         const displayUnits = ["B", "K", "M", "G", "T", "P"];
         let displayUnitIndex = 0;
         while (
@@ -879,6 +914,7 @@ function useFileDownloadHandler() {
         downloadStatesRef.current[message.transfer_uuid] = {
           metadata: message,
           notificationId: notificationId,
+          writable: downloadStatesRef.current[message.transfer_uuid]?.writable || null,
           parts: [],
           bytesDownloaded: 0,
           displayFilesize: `${displaySize.toFixed(1)}${
@@ -894,19 +930,31 @@ function useFileDownloadHandler() {
             "A file download message was dropped; this should never happen!",
           );
         }
-        downloadState.parts.push(message.content);
-        downloadState.bytesDownloaded += message.content.length;
+        if (downloadState.writable) {
+          await downloadState.writable.write(new Blob([message.content]));
+          downloadState.parts.push(null);
+        } else {
+          downloadState.parts.push(message.content);
+          downloadState.bytesDownloaded += message.content.length;
+        }
         break;
       }
     }
 
     // Show notification.
+    let messageContent: any = null;
     const downloadState = downloadStatesRef.current[message.transfer_uuid];
-    const progressValue =
-      (100.0 * downloadState.bytesDownloaded) /
-      downloadState.metadata.size_bytes;
-    const isDone =
-      downloadState.bytesDownloaded == downloadState.metadata.size_bytes;
+    let isDone = false;
+    if (downloadState.metadata.size_bytes === null) {
+      messageContent = "Preparing download...";
+    } else {
+      const progressValue =
+        (100.0 * downloadState.bytesDownloaded) /
+        downloadState.metadata.size_bytes;
+      isDone =
+        downloadState.bytesDownloaded == downloadState.metadata.size_bytes;
+      messageContent = (<Progress size="sm" value={progressValue} />)
+    }
 
     (downloadState.bytesDownloaded == 0
       ? notifications.show
@@ -914,7 +962,7 @@ function useFileDownloadHandler() {
       title:
         (isDone ? "Downloaded " : "Downloading ") +
         `${downloadState.metadata.filename} (${downloadState.displayFilesize})`,
-      message: <Progress size="sm" value={progressValue} />,
+      message: messageContent,
       id: notificationId,
       autoClose: isDone,
       withCloseButton: isDone,
@@ -924,15 +972,18 @@ function useFileDownloadHandler() {
 
     // If done: download file and clear state.
     if (isDone) {
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(
-        new Blob(downloadState.parts, {
+      if((window as any).showSaveFilePicker) {
+        downloadState.writable.close();
+      } else {
+        const blob = new Blob(downloadState.parts as any, {
           type: downloadState.metadata.mime_type,
-        }),
-      );
-      link.download = downloadState.metadata.filename;
-      link.click();
-      link.remove();
+        });
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = downloadState.metadata.filename;
+        link.click();
+        link.remove();
+      }
       delete downloadStatesRef.current[message.transfer_uuid];
     }
   };
@@ -943,7 +994,7 @@ export function FrameSynchronizedMessageHandler() {
   const viewer = useContext(ViewerContext)!;
   const messageQueueRef = viewer.messageQueueRef;
 
-  useFrame(() => {
+  useFrame(async () => {
     // Send a render along if it was requested!
     if (viewer.getRenderRequestState.current === "triggered") {
       viewer.getRenderRequestState.current = "pause";
@@ -1037,7 +1088,9 @@ export function FrameSynchronizedMessageHandler() {
           ? requestRenderIndex + 1
           : messageQueueRef.current.length;
       const processBatch = messageQueueRef.current.splice(0, numMessages);
-      processBatch.forEach(handleMessage);
+      for (const message of processBatch) {
+        await handleMessage(message);
+      }
     }
   });
 

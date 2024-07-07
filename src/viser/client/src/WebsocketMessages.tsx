@@ -781,8 +781,8 @@ export interface FileTransferStart {
   transfer_uuid: string;
   filename: string;
   mime_type: string;
-  part_count: number;
-  size_bytes: number;
+  part_count: number | null;
+  size_bytes: number | null;
 }
 /** Send a file for clients to download or upload files from client.
  *
