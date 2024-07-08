@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 import time
 from pathlib import Path
 from typing import TypedDict
@@ -10,6 +11,7 @@ import numpy as onp
 import numpy.typing as onpt
 import tyro
 import viser
+from plyfile import PlyData
 from viser import transforms as tf
 
 
@@ -50,6 +52,7 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     )
     scales = splat_uint8[:, 12:24].copy().view(onp.float32)
     wxyzs = splat_uint8[:, 28:32] / 255.0 * 2.0 - 1.0
+    print(onp.shape(wxyzs))
     Rs = onp.array([tf.SO3(wxyz).as_matrix() for wxyz in wxyzs])
     covariances = onp.einsum(
         "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
@@ -57,11 +60,69 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     centers = splat_uint8[:, 0:12].copy().view(onp.float32)
     if center:
         centers -= onp.mean(centers, axis=0, keepdims=True)
+    print("loaded")
     return {
         "centers": centers,
         # Colors should have shape (N, 3).
         "rgbs": splat_uint8[:, 24:27] / 255.0,
         "opacities": splat_uint8[:, 27:28] / 255.0,
+        # Covariances should have shape (N, 3, 3).
+        "covariances": covariances,
+    }
+
+
+def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
+    plydata = PlyData.read(ply_file_path)
+    vert = plydata["vertex"]
+    sorted_indices = onp.argsort(
+        -onp.exp(vert["scale_0"] + vert["scale_1"] + vert["scale_2"])
+        / (1 + onp.exp(-vert["opacity"]))
+    )
+    colors = onp.zeros((len(sorted_indices), 3))
+    opacities = onp.zeros((len(sorted_indices), 1))
+    positions = onp.zeros((len(sorted_indices), 3))
+    wxyzs = onp.zeros((len(sorted_indices), 4))
+    scales = onp.zeros((len(sorted_indices), 3))
+    for idx in sorted_indices:
+        v = plydata["vertex"][idx]
+        position = onp.array([v["x"], v["y"], v["z"]], dtype=onp.float32)
+        scale = onp.exp(
+            onp.array([v["scale_0"], v["scale_1"], v["scale_2"]], dtype=onp.float32)
+        )
+
+        rot = onp.array(
+            [v["rot_0"], v["rot_1"], v["rot_2"], v["rot_3"]], dtype=onp.float32
+        )
+        SH_C0 = 0.28209479177387814
+        color = onp.array(
+            [
+                0.5 + SH_C0 * v["f_dc_0"],
+                0.5 + SH_C0 * v["f_dc_1"],
+                0.5 + SH_C0 * v["f_dc_2"],
+            ]
+        )
+        opacity = 1 / (1 + onp.exp(-v["opacity"]))
+        wxyz = ((rot / onp.linalg.norm(rot)) * 128 + 128).clip(0, 255).astype(
+            onp.uint8
+        ) / 255.0 * 2.0 - 1.0
+        scales[idx] = scale
+        colors[idx] = color
+        opacities[idx] = onp.array([opacity])
+        positions[idx] = position
+        wxyzs[idx] = wxyz
+
+    Rs = onp.array([tf.SO3(wxyz).as_matrix() for wxyz in wxyzs])
+    covariances = onp.einsum(
+        "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
+    )
+    if center:
+        positions -= onp.mean(positions, axis=0, keepdims=True)
+    print("loaded")
+    return {
+        "centers": positions,
+        # Colors should have shape (N, 3).
+        "rgbs": colors,
+        "opacities": opacities,
         # Covariances should have shape (N, 3, 3).
         "covariances": covariances,
     }
@@ -84,7 +145,13 @@ def main(splat_paths: tuple[Path, ...], test_multisplat: bool = False) -> None:
         )
 
     for i, splat_path in enumerate(splat_paths):
-        splat_data = load_splat_file(splat_path, center=True)
+        if splat_path.suffix == ".splat":
+            splat_data = load_splat_file(splat_path, center=True)
+        elif splat_path.suffix == ".ply":
+            splat_data = load_ply_file(splat_path, center=True)
+        else:
+            sys.exit("Please provide a filepath to a .splat or .ply file.")
+
         server.scene.add_transform_controls(f"/{i}")
         server.scene.add_gaussian_splats(
             f"/{i}/gaussian_splats",
