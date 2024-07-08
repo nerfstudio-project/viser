@@ -29,7 +29,6 @@ dependencies = [
     "scipy>=1.7.3",
     "tqdm>=4.0.0",
     "tyro>=0.2.0",
-    "gdown>=4.6.6",
     "rich>=13.3.3",
     "trimesh>=3.21.7",
     "nodeenv>=1.8.0",
@@ -48,6 +47,7 @@ examples = [
     "matplotlib>=3.7.1",
     "plotly>=5.21.0",
     "robot_descriptions>=1.10.0",
+    "gdown>=4.6.6",
 ]
 
 [project.urls]
