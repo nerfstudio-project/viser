@@ -42,7 +42,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -557,6 +558,82 @@ def _parse_markdown(markdown: str, image_root: Path | None) -> str:
         markdown,
     )
     return markdown
+
+
+@dataclasses.dataclass
+class GuiProgressBarHandle:
+    """Use to remove markdown."""
+
+    _gui_api: GuiApi
+    _id: str
+    _visible: bool
+    _loading: bool
+    _parent_container_id: str  # Parent.
+    _order: float
+    _value: float
+
+    @property
+    def value(self) -> float:
+        """Current content of this progress bar element. Synchronized automatically when assigned."""
+        return self._value
+
+    @value.setter
+    def value(self, value: float) -> None:
+        self._value = value
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(
+                self._id,
+                {"value": value},
+            )
+        )
+
+    @property
+    def loading(self) -> bool:
+        """Show this progress bar as loading (animated, striped)."""
+        return self._loading
+
+    @loading.setter
+    def loading(self, loading: bool) -> None:
+        self._loading = loading
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(
+                self._id,
+                {"loading": loading},
+            )
+        )
+
+    @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._order
+
+    @property
+    def visible(self) -> bool:
+        """Temporarily show or hide this GUI element from the visualizer. Synchronized
+        automatically when assigned."""
+        return self._visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        if visible == self.visible:
+            return
+
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(self._id, {"visible": visible})
+        )
+        self._visible = visible
+
+    def __post_init__(self) -> None:
+        """We need to register ourself after construction for callbacks to work."""
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._id] = self
+
+    def remove(self) -> None:
+        """Permanently remove this markdown from the visualizer."""
+        self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
+
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)
 
 
 @dataclasses.dataclass

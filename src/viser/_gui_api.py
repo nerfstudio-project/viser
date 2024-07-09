@@ -30,6 +30,7 @@ from ._gui_handles import (
     GuiFolderHandle,
     GuiInputHandle,
     GuiMarkdownHandle,
+    GuiProgressBarHandle,
     GuiModalHandle,
     GuiPlotlyHandle,
     GuiTabGroupHandle,
@@ -57,6 +58,22 @@ TString = TypeVar("TString", bound=str)
 TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 T = TypeVar("T")
 LengthTenStrTuple: TypeAlias = Tuple[str, str, str, str, str, str, str, str, str, str]
+Color: TypeAlias = Literal[
+    "dark",
+    "gray",
+    "red",
+    "pink",
+    "grape",
+    "violet",
+    "indigo",
+    "blue",
+    "cyan",
+    "green",
+    "lime",
+    "yellow",
+    "orange",
+    "teal",
+]
 
 
 def _hex_from_hls(h: float, l: float, s: float) -> str:
@@ -637,23 +654,7 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-        | None = None,
+        color: Color | None = None,
         icon: IconName | None = None,
         order: float | None = None,
     ) -> GuiButtonHandle:
@@ -701,23 +702,7 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-        | None = None,
+        color: Color | None = None,
         icon: IconName | None = None,
         mime_type: str = "*/*",
         order: float | None = None,
@@ -776,7 +761,8 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]: ...
+    ) -> GuiButtonGroupHandle[TLiteralString]:
+        ...
 
     @overload
     def add_button_group(
@@ -787,7 +773,8 @@ class GuiApi:
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TString]: ...
+    ) -> GuiButtonGroupHandle[TString]:
+        ...
 
     def add_button_group(
         self,
@@ -1115,7 +1102,8 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TLiteralString]: ...
+    ) -> GuiDropdownHandle[TLiteralString]:
+        ...
 
     @overload
     def add_dropdown(
@@ -1127,7 +1115,8 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiDropdownHandle[TString]: ...
+    ) -> GuiDropdownHandle[TString]:
+        ...
 
     def add_dropdown(
         self,
@@ -1175,6 +1164,47 @@ class GuiApi:
             )._impl,
             _impl_options=tuple(options),
         )
+
+    def add_progressbar(
+        self,
+        value: float,
+        visible: bool = True,
+        loading: bool = False,
+        color: Color | None = None,
+        order: float | None = None,
+    ) -> GuiProgressBarHandle:
+        """Add a progress bar to the GUI.
+
+        Args:
+            value: Value of the progress bar.
+            visible: Whether the progress bar is visible.
+            loading: Whether the progress bar is in a loading state (animated, striped).
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        handle = GuiProgressBarHandle(
+            _gui_api=self,
+            _id=_make_unique_id(),
+            _visible=visible,
+            _loading=loading,
+            _parent_container_id=self._get_container_id(),
+            _order=_apply_default_order(order),
+            _value=value,
+        )
+        self._websock_interface.queue_message(
+            _messages.GuiAddProgressBarMessage(
+                order=handle._order,
+                id=handle._id,
+                value=value,
+                loading=loading,
+                color=color,
+                container_id=handle._parent_container_id,
+                visible=visible,
+            )
+        )
+        return handle
 
     def add_slider(
         self,

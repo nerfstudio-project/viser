@@ -21,6 +21,7 @@ import TabGroupComponent from "../components/TabGroup";
 import FolderComponent from "../components/Folder";
 import MultiSliderComponent from "../components/MultiSlider";
 import UploadButtonComponent from "../components/UploadButton";
+import ProgressBarComponent from "../components/ProgressBar";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -119,6 +120,8 @@ function GeneratedInput(props: { guiId: string }) {
       return <RgbaComponent {...conf} />;
     case "GuiAddButtonGroupMessage":
       return <ButtonGroupComponent {...conf} />;
+    case "GuiAddProgressBarMessage":
+        return <ProgressBarComponent {...conf} />;
     default:
       assertNeverType(conf);
   }
