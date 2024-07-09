@@ -31,7 +31,7 @@ import {
   sendWebsocketMessage,
 } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";

@@ -16,7 +16,6 @@ from . import _messages
 from . import transforms as tf
 from ._scene_handles import (
     BatchedAxesHandle,
-    MeshSkinnedBoneHandle,
     BoneState,
     CameraFrustumHandle,
     FrameHandle,
@@ -25,11 +24,12 @@ from ._scene_handles import (
     ImageHandle,
     LabelHandle,
     MeshHandle,
+    MeshSkinnedBoneHandle,
+    MeshSkinnedHandle,
     PointCloudHandle,
     SceneNodeHandle,
     SceneNodePointerEvent,
     ScenePointerEvent,
-    MeshSkinnedHandle,
     TransformControlsHandle,
     _SceneNodeHandleState,
     _TransformControlsState,
