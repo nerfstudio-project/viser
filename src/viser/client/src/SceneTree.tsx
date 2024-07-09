@@ -309,16 +309,20 @@ export function SceneNodeThreeObject(props: {
               if (!isDisplayed()) return;
               e.stopPropagation();
               const state = dragInfo.current;
-              state.startClientX = e.clientX;
-              state.startClientY = e.clientY;
+              const canvasBbox =
+                viewer.canvasRef.current!.getBoundingClientRect();
+              state.startClientX = e.clientX - canvasBbox.left;
+              state.startClientY = e.clientY - canvasBbox.top;
               state.dragging = false;
             }}
             onPointerMove={(e) => {
               if (!isDisplayed()) return;
               e.stopPropagation();
               const state = dragInfo.current;
-              const deltaX = e.clientX - state.startClientX;
-              const deltaY = e.clientY - state.startClientY;
+              const canvasBbox =
+                viewer.canvasRef.current!.getBoundingClientRect();
+              const deltaX = e.clientX - canvasBbox.left - state.startClientX;
+              const deltaY = e.clientY - canvasBbox.top - state.startClientY;
               // Minimum motion.
               if (Math.abs(deltaX) <= 3 && Math.abs(deltaY) <= 3) return;
               state.dragging = true;

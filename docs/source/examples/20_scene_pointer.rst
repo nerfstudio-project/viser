@@ -16,9 +16,11 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
         :linenos:
 
 
+        from __future__ import annotations
+
         import time
         from pathlib import Path
-        from typing import List, cast
+        from typing import cast
 
         import numpy as onp
         import trimesh
@@ -26,23 +28,27 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
         import trimesh.ray
         import viser
         import viser.transforms as tf
+        from viser.theme import TitlebarConfig
 
         server = viser.ViserServer()
-        server.configure_theme(brand_color=(130, 0, 150))
-        server.set_up_direction("+y")
+        server.gui.configure_theme(
+            brand_color=(130, 0, 150),
+            titlebar_content=TitlebarConfig(buttons=(), image=None),
+        )
+        server.scene.set_up_direction("+y")
 
         mesh = cast(
             trimesh.Trimesh, trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
         )
         mesh.apply_scale(0.05)
 
-        mesh_handle = server.add_mesh_trimesh(
+        mesh_handle = server.scene.add_mesh_trimesh(
             name="/mesh",
             mesh=mesh,
             position=(0.0, 0.0, 0.0),
         )
 
-        hit_pos_handles: List[viser.GlbHandle] = []
+        hit_pos_handles: list[viser.GlbHandle] = []
 
 
         # Buttons + callbacks will operate on a per-client basis, but will modify the global scene! :)
@@ -53,13 +59,13 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
             client.camera.wxyz = onp.array([0.0, 0.0, 0.0, 1.0])
 
             # Tests "click" scenepointerevent.
-            click_button_handle = client.add_gui_button("Add sphere", icon=viser.Icon.POINTER)
+            click_button_handle = client.gui.add_button("Add sphere", icon=viser.Icon.POINTER)
 
             @click_button_handle.on_click
             def _(_):
                 click_button_handle.disabled = True
 
-                @client.on_scene_pointer(event_type="click")
+                @client.scene.on_pointer_event(event_type="click")
                 def _(event: viser.ScenePointerEvent) -> None:
                     # Check for intersection with the mesh, using trimesh's ray-mesh intersection.
                     # Note that mesh is in the mesh frame, so we need to transform the ray.
@@ -72,6 +78,7 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
 
                     if len(hit_pos) == 0:
                         return
+                    client.scene.remove_pointer_callback()
 
                     # Get the first hit position (based on distance from the ray origin).
                     hit_pos = min(hit_pos, key=lambda x: onp.linalg.norm(x - origin))
@@ -80,25 +87,26 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
                     hit_pos_mesh = trimesh.creation.icosphere(radius=0.1)
                     hit_pos_mesh.vertices += R_world_mesh @ hit_pos
                     hit_pos_mesh.visual.vertex_colors = (0.5, 0.0, 0.7, 1.0)  # type: ignore
-                    hit_pos_handle = server.add_mesh_trimesh(
+                    hit_pos_handle = server.scene.add_mesh_trimesh(
                         name=f"/hit_pos_{len(hit_pos_handles)}", mesh=hit_pos_mesh
                     )
                     hit_pos_handles.append(hit_pos_handle)
 
-                @client.on_scene_pointer_done
+                @client.scene.on_pointer_callback_removed
                 def _():
                     click_button_handle.disabled = False
-                    client.remove_scene_pointer_callback()
 
             # Tests "rect-select" scenepointerevent.
-            paint_button_handle = client.add_gui_button("Paint mesh", icon=viser.Icon.PAINT)
+            paint_button_handle = client.gui.add_button("Paint mesh", icon=viser.Icon.PAINT)
 
             @paint_button_handle.on_click
             def _(_):
                 paint_button_handle.disabled = True
 
-                @client.on_scene_pointer(event_type="rect-select")
+                @client.scene.on_pointer_event(event_type="rect-select")
                 def _(message: viser.ScenePointerEvent) -> None:
+                    client.scene.remove_pointer_callback()
+
                     global mesh_handle
                     camera = message.client.camera
 
@@ -108,7 +116,7 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
                     R_camera_world = tf.SE3.from_rotation_and_translation(
                         tf.SO3(camera.wxyz), camera.position
                     ).inverse()
-                    vertices = mesh.vertices
+                    vertices = cast(onp.ndarray, mesh.vertices)
                     vertices = (R_mesh_world.as_matrix() @ vertices.T).T
                     vertices = (
                         R_camera_world.as_matrix()
@@ -135,19 +143,18 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
                     mesh.visual.vertex_colors = onp.where(  # type: ignore
                         mask, (0.5, 0.0, 0.7, 1.0), (0.9, 0.9, 0.9, 1.0)
                     )
-                    mesh_handle = server.add_mesh_trimesh(
+                    mesh_handle = server.scene.add_mesh_trimesh(
                         name="/mesh",
                         mesh=mesh,
                         position=(0.0, 0.0, 0.0),
                     )
 
-                @client.on_scene_pointer_done
+                @client.scene.on_pointer_callback_removed
                 def _():
                     paint_button_handle.disabled = False
-                    client.remove_scene_pointer_callback()
 
             # Button to clear spheres.
-            clear_button_handle = client.add_gui_button("Clear scene", icon=viser.Icon.X)
+            clear_button_handle = client.gui.add_button("Clear scene", icon=viser.Icon.X)
 
             @clear_button_handle.on_click
             def _(_):
@@ -157,7 +164,7 @@ To get the demo data, see ``./assets/download_dragon_mesh.sh``.
                     handle.remove()
                 hit_pos_handles.clear()
                 mesh.visual.vertex_colors = (0.9, 0.9, 0.9, 1.0)  # type: ignore
-                mesh_handle = server.add_mesh_trimesh(
+                mesh_handle = server.scene.add_mesh_trimesh(
                     name="/mesh",
                     mesh=mesh,
                     position=(0.0, 0.0, 0.0),

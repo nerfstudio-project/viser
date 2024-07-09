@@ -18,7 +18,7 @@ Example showing how we can detect new clients and read camera poses from them.
         import viser
 
         server = viser.ViserServer()
-        server.world_axes.visible = True
+        server.scene.world_axes.visible = True
 
 
         @server.on_client_connect
@@ -31,7 +31,7 @@ Example showing how we can detect new clients and read camera poses from them.
                 print(f"New camera on client {client.client_id}!")
 
             # Show the client ID in the GUI.
-            gui_info = client.add_gui_text("Client ID", initial_value=str(client.client_id))
+            gui_info = client.gui.add_text("Client ID", initial_value=str(client.client_id))
             gui_info.disabled = True
 
 

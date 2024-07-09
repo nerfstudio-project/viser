@@ -16,7 +16,7 @@ connected clients. When a scene node is added to a client (for example, via
 
 .. autoclass:: viser.FrameHandle
 
-.. autoclass:: viser.FramesBatchedHandle
+.. autoclass:: viser.BatchedAxesHandle
 
 .. autoclass:: viser.GlbHandle
 
@@ -27,6 +27,10 @@ connected clients. When a scene node is added to a client (for example, via
 .. autoclass:: viser.LabelHandle
 
 .. autoclass:: viser.MeshHandle
+
+.. autoclass:: viser.MeshSkinnedHandle
+
+.. autoclass:: viser.MeshSkinnedBoneHandle
 
 .. autoclass:: viser.PointCloudHandle
 

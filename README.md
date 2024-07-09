@@ -1,18 +1,11 @@
 <h1 align="left">
-    <img alt="viser logo" src="https://viser.studio/_static/logo.svg" width="auto" height="30" />
+    <img alt="viser logo" src="https://viser.studio/latest/_static/logo.svg" width="auto" height="30" />
     viser
-    <img alt="viser logo" src="https://viser.studio/_static/logo.svg" width="auto" height="30" />
+    <img alt="viser logo" src="https://viser.studio/latest/_static/logo.svg" width="auto" height="30" />
 </h1>
-
-<!-- <p align="left"> -->
-<!--     <code>pip install viser</code> -->
-<!--     &nbsp;&nbsp;&bull;&nbsp;&nbsp; -->
-<!--     <strong><a href="https://viser.studio">Documentation</a></strong> -->
-<!-- </p> -->
 
 <p align="left">
     <img alt="pyright" src="https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg?branch=main" />
-    <img alt="mypy" src="https://github.com/nerfstudio-project/viser/workflows/mypy/badge.svg?branch=main" />
     <img alt="typescript-compile" src="https://github.com/nerfstudio-project/viser/workflows/typescript-compile/badge.svg?branch=main" />
     <a href="https://pypi.org/project/viser/">
         <img alt="codecov" src="https://img.shields.io/pypi/pyversions/viser" />
@@ -29,7 +22,7 @@ Features include:
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
 
-For usage and API reference, see our <a href="https://viser.studio">documentation</a>.
+For usage and API reference, see our <a href="https://viser.studio/latest">documentation</a>.
 
 ## Installation
 
@@ -45,23 +38,10 @@ To include example dependencies:
 pip install viser[examples]
 ```
 
-```bash
-# Clone the repository.
-git clone https://github.com/nerfstudio-project/viser.git
-
-# Install the package.
-# You can also install via pip: `pip install viser`.
-cd ./viser
-pip install -e .[examples]
-
-# Run an example.
-python ./examples/02_gui.py
-```
-
 After an example script is running, you can connect by navigating to the printed
 URL (default: `http://localhost:8080`).
 
-See also: our [development docs](https://viser.studio/development/).
+See also: our [development docs](https://viser.studio/latest/development/).
 
 ## Examples
 

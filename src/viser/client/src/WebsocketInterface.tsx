@@ -1,6 +1,7 @@
 import AwaitLock from "await-lock";
-import { CatmullRomLine, CubicBezierLine, Grid } from "@react-three/drei";
+import { CatmullRomLine, CubicBezierLine, Grid, Html } from "@react-three/drei";
 import { unpack } from "msgpackr";
+import { useContextBridge } from "its-fine";
 import { notifications } from "@mantine/notifications";
 
 import React, { useContext } from "react";
@@ -23,7 +24,7 @@ import {
   FileTransferStart,
   Message,
 } from "./WebsocketMessages";
-import { Html, PivotControls } from "@react-three/drei";
+import { PivotControls } from "@react-three/drei";
 import {
   isTexture,
   makeThrottledMessageSender,
@@ -32,10 +33,9 @@ import {
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame, useThree } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { MantineProvider, Paper, Progress } from "@mantine/core";
+import { Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
-import { theme } from "./AppTheme";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -55,6 +55,7 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
+  const ContextBridge = useContextBridge();
 
   // We could reduce the redundancy here if we wanted to.
   // https://github.com/nerfstudio-project/viser/issues/39
@@ -70,8 +71,6 @@ function useMessageHandler() {
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const setClickable = viewer.useSceneTree((state) => state.setClickable);
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
-
-  const scene = useThree((state) => state.scene);
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
@@ -129,6 +128,15 @@ function useMessageHandler() {
         setTheme(message);
         return;
       }
+
+      // Run some arbitrary Javascript.
+      // This is used for plotting, where the Python server will send over a
+      // copy of plotly.min.js for the currently-installed version of plotly.
+      case "RunJavascriptMessage": {
+        eval(message.source);
+        return;
+      }
+
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.
@@ -790,8 +798,8 @@ function useMessageHandler() {
               // after the component is mounted.
               return (
                 <group ref={ref} position={new THREE.Vector3(1e8, 1e8, 1e8)}>
-                  <Html prepend={false}>
-                    <MantineProvider theme={theme}>
+                  <Html>
+                    <ContextBridge>
                       <Paper
                         style={{
                           width: "18em",
@@ -811,7 +819,7 @@ function useMessageHandler() {
                           />
                         </ViewerContext.Provider>
                       </Paper>
-                    </MantineProvider>
+                    </ContextBridge>
                   </Html>
                 </group>
               );

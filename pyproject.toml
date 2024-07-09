@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.1.28"
+version = "0.2.3"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -29,7 +29,6 @@ dependencies = [
     "scipy>=1.7.3",
     "tqdm>=4.0.0",
     "tyro>=0.2.0",
-    "gdown>=4.6.6",
     "rich>=13.3.3",
     "trimesh>=3.21.7",
     "nodeenv>=1.8.0",
@@ -40,13 +39,15 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pyright>=1.1.308",
-    "mypy>=1.4.1",
-    "ruff==0.3.3",
+    "ruff==0.4.6",
     "pre-commit==3.3.2",
 ]
 examples = [
     "torch>=1.13.1",
     "matplotlib>=3.7.1",
+    "plotly>=5.21.0",
+    "robot_descriptions>=1.10.0",
+    "gdown>=4.6.6",
 ]
 
 [project.urls]
@@ -70,13 +71,6 @@ viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/**/*", "client/
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
-
-[tool.mypy]
-python_version = "3.8"
-ignore_missing_imports = true
-warn_unused_configs = true
-exclude="viser/client/.nodeenv"
-disable_error_code="var-annotated"  # Common source of mypy + numpy false positives.
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]

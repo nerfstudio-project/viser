@@ -78,8 +78,8 @@ class SmplHelper:
 
 def main(model_path: Path) -> None:
     server = viser.ViserServer()
-    server.set_up_direction("+y")
-    server.configure_theme(control_layout="collapsible")
+    server.scene.set_up_direction("+y")
+    server.gui.configure_theme(control_layout="collapsible")
 
     # Main loop. We'll read pose/shape from the GUI elements, compute the mesh,
     # and then send the updated mesh in a loop.
@@ -100,9 +100,8 @@ def main(model_path: Path) -> None:
     )
     bone_positions = smpl_outputs.T_world_joint[:, :3, 3]
 
-    server.add_transform_controls("/root")
-    skinned_handle = server.add_mesh_skinned(
-        "/root/human",
+    skinned_handle = server.scene.add_mesh_skinned(
+        "/human",
         smpl_outputs.vertices,
         smpl_outputs.faces,
         bone_wxyzs=bone_wxyzs,
@@ -165,16 +164,16 @@ def make_gui_elements(
 ) -> GuiElements:
     """Make GUI elements for interacting with the model."""
 
-    tab_group = server.add_gui_tab_group()
+    tab_group = server.gui.add_tab_group()
 
     def set_changed(_) -> None:
         out.changed = True  # out is define later!
 
     # GUI elements: mesh settings + visibility.
     with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
-        gui_rgb = server.add_gui_rgb("Color", initial_value=(90, 200, 255))
-        gui_wireframe = server.add_gui_checkbox("Wireframe", initial_value=False)
-        gui_show_controls = server.add_gui_checkbox("Handles", initial_value=True)
+        gui_rgb = server.gui.add_rgb("Color", initial_value=(90, 200, 255))
+        gui_wireframe = server.gui.add_checkbox("Wireframe", initial_value=False)
+        gui_show_controls = server.gui.add_checkbox("Handles", initial_value=True)
 
         gui_rgb.on_update(set_changed)
         gui_wireframe.on_update(set_changed)
@@ -186,8 +185,8 @@ def make_gui_elements(
 
     # GUI elements: shape parameters.
     with tab_group.add_tab("Shape", viser.Icon.BOX):
-        gui_reset_shape = server.add_gui_button("Reset Shape")
-        gui_random_shape = server.add_gui_button("Random Shape")
+        gui_reset_shape = server.gui.add_button("Reset Shape")
+        gui_random_shape = server.gui.add_button("Random Shape")
 
         @gui_reset_shape.on_click
         def _(_):
@@ -201,7 +200,7 @@ def make_gui_elements(
 
         gui_betas = []
         for i in range(num_betas):
-            beta = server.add_gui_slider(
+            beta = server.gui.add_slider(
                 f"beta{i}", min=-5.0, max=5.0, step=0.01, initial_value=0.0
             )
             gui_betas.append(beta)
@@ -209,8 +208,8 @@ def make_gui_elements(
 
     # GUI elements: joint angles.
     with tab_group.add_tab("Joints", viser.Icon.ANGLE):
-        gui_reset_joints = server.add_gui_button("Reset Joints")
-        gui_random_joints = server.add_gui_button("Random Joints")
+        gui_reset_joints = server.gui.add_button("Reset Joints")
+        gui_random_joints = server.gui.add_button("Random Joints")
 
         @gui_reset_joints.on_click
         def _(_):
@@ -228,7 +227,7 @@ def make_gui_elements(
 
         gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]] = []
         for i in range(num_joints):
-            gui_joint = server.add_gui_vector3(
+            gui_joint = server.gui.add_vector3(
                 label=f"Joint {i}",
                 initial_value=(0.0, 0.0, 0.0),
                 step=0.05,
@@ -255,8 +254,8 @@ def make_gui_elements(
                 prefixed_joint_names[parent_idx[i]] + "/" + prefixed_joint_name
             )
         prefixed_joint_names.append(prefixed_joint_name)
-        controls = server.add_transform_controls(
-            f"/root/smpl/{prefixed_joint_name}",
+        controls = server.scene.add_transform_controls(
+            f"/smpl/{prefixed_joint_name}",
             depth_test=False,
             scale=0.2 * (0.75 ** prefixed_joint_name.count("/")),
             disable_axes=True,

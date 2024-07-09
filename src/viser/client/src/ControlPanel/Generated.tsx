@@ -16,6 +16,7 @@ import RgbComponent from "../components/Rgb";
 import RgbaComponent from "../components/Rgba";
 import ButtonGroupComponent from "../components/ButtonGroup";
 import MarkdownComponent from "../components/Markdown";
+import PlotlyComponent from "../components/PlotlyComponent";
 import TabGroupComponent from "../components/TabGroup";
 import FolderComponent from "../components/Folder";
 import MultiSliderComponent from "../components/MultiSlider";
@@ -31,7 +32,7 @@ export default function GeneratedGuiContainer({
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
 
-  function setValue(id: string, value: any) {
+  function setValue(id: string, value: NonNullable<unknown>) {
     updateGuiProps(id, { value: value });
     messageSender({
       type: "GuiUpdateMessage",
@@ -90,6 +91,8 @@ function GeneratedInput(props: { guiId: string }) {
       return <TabGroupComponent {...conf} />;
     case "GuiAddMarkdownMessage":
       return <MarkdownComponent {...conf} />;
+    case "GuiAddPlotlyMessage":
+      return <PlotlyComponent {...conf} />;
     case "GuiAddButtonMessage":
       return <ButtonComponent {...conf} />;
     case "GuiAddUploadButtonMessage":

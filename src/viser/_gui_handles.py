@@ -7,19 +7,7 @@ import urllib.parse
 import uuid
 import warnings
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, TypeVar
 
 import imageio.v3 as iio
 import numpy as onp
@@ -27,11 +15,13 @@ from typing_extensions import Protocol
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
-from ._message_api import _encode_image_base64
 from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
+from ._scene_api import _encode_image_base64
 from .infra import ClientId
 
 if TYPE_CHECKING:
+    import plotly.graph_objects as go
+
     from ._gui_api import GuiApi
     from ._viser import ClientHandle
 
@@ -46,7 +36,7 @@ def _make_unique_id() -> str:
 
 
 class GuiContainerProtocol(Protocol):
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
@@ -60,21 +50,20 @@ class _GuiHandleState(Generic[T]):
     """Internal API for GUI elements."""
 
     label: str
-    typ: Type[T]
     gui_api: GuiApi
     value: T
     update_timestamp: float
 
-    container_id: str
+    parent_container_id: str
     """Container that this GUI input was placed into."""
 
-    update_cb: List[Callable[[GuiEvent], None]]
+    update_cb: list[Callable[[GuiEvent], None]]
     """Registered functions to call when this input is updated."""
 
     is_button: bool
     """Indicates a button element, which requires special handling."""
 
-    sync_cb: Optional[Callable[[ClientId, Dict[str, Any]], None]]
+    sync_cb: Callable[[ClientId, dict[str, Any]], None] | None
     """Callback for synchronizing inputs across clients."""
 
     disabled: bool
@@ -82,9 +71,9 @@ class _GuiHandleState(Generic[T]):
 
     order: float
     id: str
-    hint: Optional[str]
+    hint: str | None
 
-    message_type: Type[Message]
+    message_type: type[Message]
 
 
 @dataclasses.dataclass
@@ -127,7 +116,7 @@ class _GuiInputHandle(Generic[T]):
 
         # Send to client, except for buttons.
         if not self._impl.is_button:
-            self._impl.gui_api._get_api()._queue(
+            self._impl.gui_api._websock_interface.queue_message(
                 GuiUpdateMessage(self._impl.id, {"value": value})
             )
 
@@ -140,7 +129,7 @@ class _GuiInputHandle(Generic[T]):
         for cb in self._impl.update_cb:
             # Pushing callbacks into separate threads helps prevent deadlocks when we
             # have a lock in a callback. TODO: revisit other callbacks.
-            self._impl.gui_api._get_api()._thread_executor.submit(
+            self._impl.gui_api._thread_executor.submit(
                 lambda: cb(
                     GuiEvent(
                         client_id=None,
@@ -166,7 +155,7 @@ class _GuiInputHandle(Generic[T]):
         if disabled == self.disabled:
             return
 
-        self._impl.gui_api._get_api()._queue(
+        self._impl.gui_api._websock_interface.queue_message(
             GuiUpdateMessage(self._impl.id, {"disabled": disabled})
         )
         self._impl.disabled = disabled
@@ -182,7 +171,7 @@ class _GuiInputHandle(Generic[T]):
         if visible == self.visible:
             return
 
-        self._impl.gui_api._get_api()._queue(
+        self._impl.gui_api._websock_interface.queue_message(
             GuiUpdateMessage(self._impl.id, {"visible": visible})
         )
         self._impl.visible = visible
@@ -191,17 +180,19 @@ class _GuiInputHandle(Generic[T]):
         """We need to register ourself after construction for callbacks to work."""
         gui_api = self._impl.gui_api
 
-        # TODO: the current way we track GUI handles and children is fairly manual +
+        # TODO: the current way we track GUI handles and children is very manual +
         # error-prone. We should revist this design.
-        gui_api._gui_handle_from_id[self._impl.id] = self
-        parent = gui_api._container_handle_from_id[self._impl.container_id]
+        gui_api._gui_input_handle_from_id[self._impl.id] = self
+        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
         parent._children[self._impl.id] = self
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
         gui_api = self._impl.gui_api
-        gui_api._get_api()._queue(GuiRemoveMessage(self._impl.id))
-        gui_api._gui_handle_from_id.pop(self._impl.id)
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
+        gui_api._gui_input_handle_from_id.pop(self._impl.id)
+        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
+        parent._children.pop(self._impl.id)
 
 
 StringType = TypeVar("StringType", bound=str)
@@ -213,9 +204,13 @@ StringType = TypeVar("StringType", bound=str)
 # are slightly different: we have `on_click()` instead of `on_update()`.
 @dataclasses.dataclass
 class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
-    """Handle for a general GUI inputs in our visualizer.
+    """A handle is created for each GUI element that is added in `viser`.
+    Handles can be used to read and write state.
 
-    Lets us get values, set values, and detect updates."""
+    When a GUI element is added via :attr:`ViserServer.gui`, state is
+    synchronized between all connected clients. When a GUI element is added via
+    :attr:`ClientHandle.gui`, state is local to a specific client.
+    """
 
     def on_update(
         self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
@@ -231,9 +226,9 @@ class GuiEvent(Generic[TGuiHandle]):
 
     Passed as input to callback functions."""
 
-    client: Optional[ClientHandle]
+    client: ClientHandle | None
     """Client that triggered this event."""
-    client_id: Optional[int]
+    client_id: int | None
     """ID of client that triggered this event."""
     target: TGuiHandle
     """GUI element that was affected."""
@@ -308,10 +303,10 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
 
     Lets us get values, set values, and detect updates."""
 
-    _impl_options: Tuple[StringType, ...]
+    _impl_options: tuple[StringType, ...]
 
     @property
-    def options(self) -> Tuple[StringType, ...]:
+    def options(self) -> tuple[StringType, ...]:
         """Options for our dropdown. Synchronized automatically when assigned.
 
         For projects that care about typing: the static type of `options` should be
@@ -327,7 +322,7 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
 
         need_to_overwrite_value = self.value not in self._impl_options
         if need_to_overwrite_value:
-            self._impl.gui_api._get_api()._queue(
+            self._impl.gui_api._websock_interface.queue_message(
                 GuiUpdateMessage(
                     self._impl.id,
                     {"options": self._impl_options, "value": self._impl_options[0]},
@@ -335,7 +330,7 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
             )
             self._impl.value = self._impl_options[0]
         else:
-            self._impl.gui_api._get_api()._queue(
+            self._impl.gui_api._websock_interface.queue_message(
                 GuiUpdateMessage(
                     self._impl.id,
                     {"options": self._impl_options},
@@ -345,11 +340,14 @@ class GuiDropdownHandle(GuiInputHandle[StringType], Generic[StringType]):
 
 @dataclasses.dataclass(frozen=True)
 class GuiTabGroupHandle:
+    """Handle for a tab group. Call :meth:`add_tab()` to add a tab."""
+
     _tab_group_id: str
-    _labels: List[str]
-    _icons_html: List[Optional[str]]
-    _tabs: List[GuiTabHandle]
+    _labels: list[str]
+    _icons_html: list[str | None]
+    _tabs: list[GuiTabHandle]
     _gui_api: GuiApi
+    _parent_container_id: str
     _order: float
 
     @property
@@ -357,7 +355,7 @@ class GuiTabGroupHandle:
         """Read-only order value, which dictates the position of the GUI element."""
         return self._order
 
-    def add_tab(self, label: str, icon: Optional[IconName] = None) -> GuiTabHandle:
+    def add_tab(self, label: str, icon: IconName | None = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
 
         id = _make_unique_id()
@@ -372,15 +370,22 @@ class GuiTabGroupHandle:
         self._sync_with_client()
         return out
 
+    def __post_init__(self) -> None:
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._tab_group_id] = self
+
     def remove(self) -> None:
         """Remove this tab group and all contained GUI elements."""
-        for tab in self._tabs:
+        for tab in tuple(self._tabs):
             tab.remove()
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._tab_group_id))
+        gui_api = self._gui_api
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._tab_group_id))
+        parent = gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._tab_group_id)
 
     def _sync_with_client(self) -> None:
         """Send messages for syncing tab state with the client."""
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(
                 self._tab_group_id,
                 {
@@ -400,8 +405,8 @@ class GuiFolderHandle:
     _id: str  # Used as container ID for children.
     _order: float
     _parent_container_id: str  # Container ID of parent.
-    _container_id_restore: Optional[str] = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+    _container_id_restore: str | None = None
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
@@ -429,10 +434,12 @@ class GuiFolderHandle:
     def remove(self) -> None:
         """Permanently remove this folder and all contained GUI elements from the
         visualizer."""
-        self._gui_api._get_api()._queue(GuiRemoveMessage(self._id))
-        self._gui_api._container_handle_from_id.pop(self._id)
-        for child in self._children.values():
+        self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
+        for child in tuple(self._children.values()):
             child.remove()
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)
+        self._gui_api._container_handle_from_id.pop(self._id)
 
 
 @dataclasses.dataclass
@@ -441,8 +448,8 @@ class GuiModalHandle:
 
     _gui_api: GuiApi
     _id: str  # Used as container ID of children.
-    _container_id_restore: Optional[str] = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+    _container_id_restore: str | None = None
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
@@ -462,12 +469,12 @@ class GuiModalHandle:
 
     def close(self) -> None:
         """Close this modal and permananently remove all contained GUI elements."""
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiCloseModalMessage(self._id),
         )
-        self._gui_api._container_handle_from_id.pop(self._id)
-        for child in self._children.values():
+        for child in tuple(self._children.values()):
             child.remove()
+        self._gui_api._container_handle_from_id.pop(self._id)
 
 
 @dataclasses.dataclass
@@ -476,8 +483,8 @@ class GuiTabHandle:
 
     _parent: GuiTabGroupHandle
     _id: str  # Used as container ID of children.
-    _container_id_restore: Optional[str] = None
-    _children: Dict[str, SupportsRemoveProtocol] = dataclasses.field(
+    _container_id_restore: str | None = None
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
@@ -506,18 +513,16 @@ class GuiTabHandle:
                 break
         assert container_index != -1, "Tab already removed!"
 
-        self._parent._gui_api._container_handle_from_id.pop(self._id)
-
         self._parent._labels.pop(container_index)
         self._parent._icons_html.pop(container_index)
         self._parent._tabs.pop(container_index)
         self._parent._sync_with_client()
-
-        for child in self._children.values():
+        for child in tuple(self._children.values()):
             child.remove()
+        self._parent._gui_api._container_handle_from_id.pop(self._id)
 
 
-def _get_data_url(url: str, image_root: Optional[Path]) -> str:
+def _get_data_url(url: str, image_root: Path | None) -> str:
     if not url.startswith("http") and not image_root:
         warnings.warn(
             (
@@ -526,7 +531,7 @@ def _get_data_url(url: str, image_root: Optional[Path]) -> str:
             ),
             stacklevel=2,
         )
-    if url.startswith("http"):
+    if url.startswith("http") or url.startswith("data:"):
         return url
     if image_root is None:
         image_root = Path(__file__).parent
@@ -543,7 +548,7 @@ def _get_data_url(url: str, image_root: Optional[Path]) -> str:
         return url
 
 
-def _parse_markdown(markdown: str, image_root: Optional[Path]) -> str:
+def _parse_markdown(markdown: str, image_root: Path | None) -> str:
     markdown = re.sub(
         r"\!\[([^]]*)\]\(([^]]*)\)",
         lambda match: (
@@ -561,10 +566,10 @@ class GuiMarkdownHandle:
     _gui_api: GuiApi
     _id: str
     _visible: bool
-    _container_id: str  # Parent.
+    _parent_container_id: str  # Parent.
     _order: float
-    _image_root: Optional[Path]
-    _content: Optional[str]
+    _image_root: Path | None
+    _content: str | None
 
     @property
     def content(self) -> str:
@@ -575,7 +580,7 @@ class GuiMarkdownHandle:
     @content.setter
     def content(self, content: str) -> None:
         self._content = content
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(
                 self._id,
                 {"markdown": _parse_markdown(content, self._image_root)},
@@ -598,17 +603,100 @@ class GuiMarkdownHandle:
         if visible == self.visible:
             return
 
-        self._gui_api._get_api()._queue(
+        self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(self._id, {"visible": visible})
         )
         self._visible = visible
 
     def __post_init__(self) -> None:
         """We need to register ourself after construction for callbacks to work."""
-        parent = self._gui_api._container_handle_from_id[self._container_id]
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
         parent._children[self._id] = self
 
     def remove(self) -> None:
         """Permanently remove this markdown from the visualizer."""
-        api = self._gui_api._get_api()
-        api._queue(GuiRemoveMessage(self._id))
+        self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
+
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)
+
+
+@dataclasses.dataclass
+class GuiPlotlyHandle:
+    """Use to update or remove markdown elements."""
+
+    _gui_api: GuiApi
+    _id: str
+    _visible: bool
+    _parent_container_id: str  # Parent.
+    _order: float
+    _figure: go.Figure | None
+    _aspect: float | None
+
+    @property
+    def figure(self) -> go.Figure:
+        """Current content of this markdown element. Synchronized automatically when assigned."""
+        assert self._figure is not None
+        return self._figure
+
+    @figure.setter
+    def figure(self, figure: go.Figure) -> None:
+        self._figure = figure
+
+        json_str = figure.to_json()
+        assert isinstance(json_str, str)
+
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(
+                self._id,
+                {"plotly_json_str": json_str},
+            )
+        )
+
+    @property
+    def aspect(self) -> float:
+        """Aspect ratio of the plotly figure, in the control panel."""
+        assert self._aspect is not None
+        return self._aspect
+
+    @aspect.setter
+    def aspect(self, aspect: float) -> None:
+        self._aspect = aspect
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(
+                self._id,
+                {"aspect": aspect},
+            )
+        )
+
+    @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._order
+
+    @property
+    def visible(self) -> bool:
+        """Temporarily show or hide this GUI element from the visualizer. Synchronized
+        automatically when assigned."""
+        return self._visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        if visible == self.visible:
+            return
+
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(self._id, {"visible": visible})
+        )
+        self._visible = visible
+
+    def __post_init__(self) -> None:
+        """We need to register ourself after construction for callbacks to work."""
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._id] = self
+
+    def remove(self) -> None:
+        """Permanently remove this markdown from the visualizer."""
+        self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)

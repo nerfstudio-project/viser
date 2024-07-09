@@ -1,8 +1,8 @@
-# Client Handles
+# Camera Handles
 
 <!-- prettier-ignore-start -->
 
-.. autoclass:: viser.ClientHandle
+.. autoclass:: viser.CameraHandle
    :members:
    :undoc-members:
    :inherited-members:

@@ -15,7 +15,6 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
 
         import time
         from pathlib import Path
-        from typing import List
 
         import numpy as onp
         import tyro
@@ -40,8 +39,8 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
             num_frames = min(max_frames, loader.num_frames())
 
             # Add playback UI.
-            with server.add_gui_folder("Playback"):
-                gui_timestep = server.add_gui_slider(
+            with server.gui.add_folder("Playback"):
+                gui_timestep = server.gui.add_slider(
                     "Timestep",
                     min=0,
                     max=num_frames - 1,
@@ -49,13 +48,13 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                     initial_value=0,
                     disabled=True,
                 )
-                gui_next_frame = server.add_gui_button("Next Frame", disabled=True)
-                gui_prev_frame = server.add_gui_button("Prev Frame", disabled=True)
-                gui_playing = server.add_gui_checkbox("Playing", True)
-                gui_framerate = server.add_gui_slider(
+                gui_next_frame = server.gui.add_button("Next Frame", disabled=True)
+                gui_prev_frame = server.gui.add_button("Prev Frame", disabled=True)
+                gui_playing = server.gui.add_checkbox("Playing", True)
+                gui_framerate = server.gui.add_slider(
                     "FPS", min=1, max=60, step=0.1, initial_value=loader.fps
                 )
-                gui_framerate_options = server.add_gui_button_group(
+                gui_framerate_options = server.gui.add_button_group(
                     "FPS options", ("10", "20", "30", "60")
                 )
 
@@ -94,22 +93,22 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 server.flush()  # Optional!
 
             # Load in frames.
-            server.add_frame(
+            server.scene.add_frame(
                 "/frames",
                 wxyz=tf.SO3.exp(onp.array([onp.pi / 2.0, 0.0, 0.0])).wxyz,
                 position=(0, 0, 0),
                 show_axes=False,
             )
-            frame_nodes: List[viser.FrameHandle] = []
+            frame_nodes: list[viser.FrameHandle] = []
             for i in tqdm(range(num_frames)):
                 frame = loader.get_frame(i)
                 position, color = frame.get_point_cloud(downsample_factor)
 
                 # Add base frame.
-                frame_nodes.append(server.add_frame(f"/frames/t{i}", show_axes=False))
+                frame_nodes.append(server.scene.add_frame(f"/frames/t{i}", show_axes=False))
 
                 # Place the point cloud in the frame.
-                server.add_point_cloud(
+                server.scene.add_point_cloud(
                     name=f"/frames/t{i}/point_cloud",
                     points=position,
                     colors=color,
@@ -120,7 +119,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 # Place the frustum.
                 fov = 2 * onp.arctan2(frame.rgb.shape[0] / 2, frame.K[0, 0])
                 aspect = frame.rgb.shape[1] / frame.rgb.shape[0]
-                server.add_camera_frustum(
+                server.scene.add_camera_frustum(
                     f"/frames/t{i}/frustum",
                     fov=fov,
                     aspect=aspect,
@@ -131,7 +130,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 )
 
                 # Add some axes.
-                server.add_frame(
+                server.scene.add_frame(
                     f"/frames/t{i}/frustum/axes",
                     axes_length=0.05,
                     axes_radius=0.005,

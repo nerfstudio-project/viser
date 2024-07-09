@@ -1,8 +1,3 @@
-# mypy: disable-error-code="assignment"
-#
-# Asymmetric properties are supported in Pyright, but not yet in mypy.
-# - https://github.com/python/mypy/issues/3004
-# - https://github.com/python/mypy/pull/11643
 """Camera commands
 
 In addition to reads, camera parameters also support writes. These are synced to the
@@ -35,8 +30,8 @@ def _(client: viser.ClientHandle) -> None:
         position = rng.uniform(-3.0, 3.0, size=(3,))
 
         # Create a coordinate frame and label.
-        frame = client.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
-        client.add_label(f"/frame_{i}/label", text=f"Frame {i}")
+        frame = client.scene.add_frame(f"/frame_{i}", wxyz=wxyz, position=position)
+        client.scene.add_label(f"/frame_{i}/label", text=f"Frame {i}")
 
         # Move the camera when we click a frame.
         @frame.on_click

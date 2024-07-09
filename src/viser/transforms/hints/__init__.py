@@ -1,26 +1,14 @@
-from typing import NamedTuple, Union
+from typing import Union
 
 import numpy as onp
+import numpy.typing as onpt
 
-# Type aliases for JAX/Numpy arrays; primarily for function inputs.
+# Type aliases Numpy arrays; primarily for function inputs.
 
-Array = onp.ndarray
-"""Type alias for `onp.ndarray`."""
-
-Scalar = Union[float, Array]
+Scalar = Union[float, onpt.NDArray[onp.floating]]
 """Type alias for `Union[float, Array]`."""
 
 
-class RollPitchYaw(NamedTuple):
-    """Tuple containing roll, pitch, and yaw Euler angles."""
-
-    roll: Scalar
-    pitch: Scalar
-    yaw: Scalar
-
-
 __all__ = [
-    "Array",
     "Scalar",
-    "RollPitchYaw",
 ]

@@ -22,12 +22,12 @@ depth[250:750, 250:750, :] = 10.0
 img[250:750, 250:750, :] = 255
 
 mesh = trimesh.creation.box((0.5, 0.5, 0.5))
-server.add_mesh_trimesh(
+server.scene.add_mesh_trimesh(
     name="/cube",
     mesh=mesh,
     position=(0, 0, 0.0),
 )
-server.set_background_image(img, depth=depth)
+server.scene.set_background_image(img, depth=depth)
 
 
 while True:
