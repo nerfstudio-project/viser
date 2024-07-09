@@ -86,10 +86,10 @@ function useMessageHandler() {
 
     // Make sure parents exists.
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
-    const parent_name = node.name.split("/").slice(0, -1).join("/");
-    if (!(parent_name in nodeFromName)) {
+    const parentName = node.name.split("/").slice(0, -1).join("/");
+    if (!(parentName in nodeFromName)) {
       addSceneNodeMakeParents(
-        new SceneNode<THREE.Group>(parent_name, (ref) => (
+        new SceneNode<THREE.Group>(parentName, (ref) => (
           <CoordinateFrame ref={ref} showAxes={false} />
         )),
       );
@@ -289,6 +289,7 @@ function useMessageHandler() {
       }
 
       // Add mesh
+      case "SkinnedMeshMessage":
       case "MeshMessage": {
         const geometry = new THREE.BufferGeometry();
 
@@ -373,26 +374,161 @@ function useMessageHandler() {
         );
         geometry.computeVertexNormals();
         geometry.computeBoundingSphere();
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Mesh>(
-            message.name,
-            (ref) => {
-              return (
-                <mesh ref={ref} geometry={geometry} material={material}>
-                  <OutlinesIfHovered alwaysMounted />
-                </mesh>
-              );
-            },
-            () => {
-              // TODO: we can switch to the react-three-fiber <bufferGeometry />,
-              // <meshStandardMaterial />, etc components to avoid manual
-              // disposal.
-              geometry.dispose();
-              material.dispose();
-            },
-          ),
-        );
+        const cleanupMesh = () => {
+          // TODO: we can switch to the react-three-fiber <bufferGeometry />,
+          // <meshStandardMaterial />, etc components to avoid manual
+          // disposal.
+          geometry.dispose();
+          material.dispose();
+        };
+        if (message.type === "MeshMessage")
+          // Normal mesh.
+          addSceneNodeMakeParents(
+            new SceneNode<THREE.Mesh>(
+              message.name,
+              (ref) => {
+                return (
+                  <mesh ref={ref} geometry={geometry} material={material}>
+                    <OutlinesIfHovered alwaysMounted />
+                  </mesh>
+                );
+              },
+              cleanupMesh,
+            ),
+          );
+        else if (message.type === "SkinnedMeshMessage") {
+          // Skinned mesh.
+          const bones: THREE.Bone[] = [];
+          for (let i = 0; i < message.bone_wxyzs!.length; i++) {
+            bones.push(new THREE.Bone());
+          }
+
+          const xyzw_quat = new THREE.Quaternion();
+          const boneInverses: THREE.Matrix4[] = [];
+          viewer.skinnedMeshState.current[message.name] = {
+            initialized: false,
+            poses: [],
+          };
+          bones.forEach((bone, i) => {
+            const wxyz = message.bone_wxyzs[i];
+            const position = message.bone_positions[i];
+            xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+
+            const boneInverse = new THREE.Matrix4();
+            boneInverse.makeRotationFromQuaternion(xyzw_quat);
+            boneInverse.setPosition(position[0], position[1], position[2]);
+            boneInverse.invert();
+            boneInverses.push(boneInverse);
+
+            bone.quaternion.copy(xyzw_quat);
+            bone.position.set(position[0], position[1], position[2]);
+            bone.matrixAutoUpdate = false;
+            bone.matrixWorldAutoUpdate = false;
+
+            viewer.skinnedMeshState.current[message.name].poses.push({
+              wxyz: wxyz,
+              position: position,
+            });
+          });
+          const skeleton = new THREE.Skeleton(bones, boneInverses);
+
+          geometry.setAttribute(
+            "skinIndex",
+            new THREE.Uint16BufferAttribute(
+              new Uint16Array(
+                message.skin_indices.buffer.slice(
+                  message.skin_indices.byteOffset,
+                  message.skin_indices.byteOffset +
+                    message.skin_indices.byteLength,
+                ),
+              ),
+              4,
+            ),
+          );
+          geometry.setAttribute(
+            "skinWeight",
+            new THREE.Float32BufferAttribute(
+              new Float32Array(
+                message.skin_weights!.buffer.slice(
+                  message.skin_weights!.byteOffset,
+                  message.skin_weights!.byteOffset +
+                    message.skin_weights!.byteLength,
+                ),
+              ),
+              4,
+            ),
+          );
+
+          addSceneNodeMakeParents(
+            new SceneNode<THREE.SkinnedMesh>(
+              message.name,
+              (ref) => {
+                return (
+                  <skinnedMesh
+                    ref={ref}
+                    geometry={geometry}
+                    material={material}
+                    skeleton={skeleton}
+                  >
+                    <OutlinesIfHovered alwaysMounted />
+                  </skinnedMesh>
+                );
+              },
+              () => {
+                bones.forEach((bone) => {
+                  bone.remove();
+                });
+                skeleton.dispose();
+                cleanupMesh();
+              },
+              false,
+              // everyFrameCallback: update bone transforms.
+              () => {
+                const parentNode = viewer.nodeRefFromName.current[message.name];
+                if (parentNode === undefined) return;
+
+                const state = viewer.skinnedMeshState.current[message.name];
+                bones.forEach((bone, i) => {
+                  if (!state.initialized) {
+                    parentNode.add(bone);
+                  }
+                  const wxyz = state.initialized
+                    ? state.poses[i].wxyz
+                    : message.bone_wxyzs[i];
+                  const position = state.initialized
+                    ? state.poses[i].position
+                    : message.bone_positions[i];
+
+                  xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+                  bone.matrix.makeRotationFromQuaternion(xyzw_quat);
+                  bone.matrix.setPosition(
+                    position[0],
+                    position[1],
+                    position[2],
+                  );
+                  bone.updateMatrixWorld();
+                });
+
+                if (!state.initialized) {
+                  state.initialized = true;
+                }
+              },
+            ),
+          );
+        }
         return;
+      }
+      // Set the bone poses.
+      case "SetBoneOrientationMessage": {
+        const bonePoses = viewer.skinnedMeshState.current;
+        bonePoses[message.name].poses[message.bone_index].wxyz = message.wxyz;
+        break;
+      }
+      case "SetBonePositionMessage": {
+        const bonePoses = viewer.skinnedMeshState.current;
+        bonePoses[message.name].poses[message.bone_index].position =
+          message.position;
+        break;
       }
       // Add a camera frustum.
       case "CameraFrustumMessage": {

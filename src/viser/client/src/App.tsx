@@ -54,6 +54,8 @@ export type ViewerContextContents = {
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   // Useful references.
+  // TODO: there's really no reason these all need to be their own ref objects.
+  // We could have just one ref to a global mutable struct.
   websocketRef: React.MutableRefObject<WebSocket | null>;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
@@ -75,6 +77,9 @@ export type ViewerContextContents = {
           overrideVisibility?: boolean; // Override from the GUI.
         };
   }>;
+  nodeRefFromName: React.MutableRefObject<{
+    [name: string]: undefined | THREE.Object3D;
+  }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
   // Requested a render.
   getRenderRequestState: React.MutableRefObject<
@@ -90,6 +95,16 @@ export type ViewerContextContents = {
   }>;
   // 2D canvas for drawing -- can be used to give feedback on cursor movement, or more.
   canvas2dRef: React.MutableRefObject<HTMLCanvasElement | null>;
+  // Poses for bones in skinned meshes.
+  skinnedMeshState: React.MutableRefObject<{
+    [name: string]: {
+      initialized: boolean;
+      poses: {
+        wxyz: [number, number, number, number];
+        position: [number, number, number];
+      }[];
+    };
+  }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -138,6 +153,7 @@ function ViewerRoot() {
         })(),
       },
     }),
+    nodeRefFromName: React.useRef({}),
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
@@ -148,6 +164,7 @@ function ViewerRoot() {
       isDragging: false,
     }),
     canvas2dRef: React.useRef(null),
+    skinnedMeshState: React.useRef({}),
   };
 
   return (

@@ -16,6 +16,7 @@ from . import _messages
 from . import transforms as tf
 from ._scene_handles import (
     BatchedAxesHandle,
+    BoneState,
     CameraFrustumHandle,
     FrameHandle,
     GlbHandle,
@@ -23,6 +24,8 @@ from ._scene_handles import (
     ImageHandle,
     LabelHandle,
     MeshHandle,
+    MeshSkinnedBoneHandle,
+    MeshSkinnedHandle,
     PointCloudHandle,
     SceneNodeHandle,
     SceneNodePointerEvent,
@@ -707,6 +710,127 @@ class SceneApi:
             )
         )
         return PointCloudHandle._make(self, name, wxyz, position, visible)
+
+    def add_mesh_skinned(
+        self,
+        name: str,
+        vertices: onp.ndarray,
+        faces: onp.ndarray,
+        bone_wxyzs: tuple[tuple[float, float, float, float], ...] | onp.ndarray,
+        bone_positions: tuple[tuple[float, float, float], ...] | onp.ndarray,
+        skin_weights: onp.ndarray,
+        color: RgbTupleOrArray = (90, 200, 255),
+        wireframe: bool = False,
+        opacity: float | None = None,
+        material: Literal["standard", "toon3", "toon5"] = "standard",
+        flat_shading: bool = False,
+        side: Literal["front", "back", "double"] = "front",
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> MeshSkinnedHandle:
+        """Add a skinned mesh to the scene, which we can deform using a set of
+        bone transformations.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            vertices: A numpy array of vertex positions. Should have shape (V, 3).
+            faces: A numpy array of faces, where each face is represented by indices of
+                vertices. Should have shape (F,)
+            bone_wxyzs: Nested tuple or array of initial bone orientations.
+            bone_positions: Nested tuple or array of initial bone positions.
+            skin_weights: A numpy array of skin weights. Should have shape (V, B) where B
+                is the number of bones. Only the top 4 bone weights for each
+                vertex will be used.
+            color: Color of the mesh as an RGB tuple.
+            wireframe: Boolean indicating if the mesh should be rendered as a wireframe.
+            opacity: Opacity of the mesh. None means opaque.
+            material: Material type of the mesh ('standard', 'toon3', 'toon5').
+                This argument is ignored when wireframe=True.
+            flat_shading: Whether to do flat shading. This argument is ignored
+                when wireframe=True.
+            side: Side of the surface to render ('front', 'back', 'double').
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not this mesh is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        if wireframe and material != "standard":
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {material=}. Material argument will be ignored.",
+                stacklevel=2,
+            )
+        if wireframe and flat_shading:
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {flat_shading=}. Flat shading argument will be ignored.",
+                stacklevel=2,
+            )
+
+        num_bones = len(bone_wxyzs)
+        assert skin_weights.shape == (vertices.shape[0], num_bones)
+
+        # Take the four biggest indices.
+        top4_skin_indices = onp.argsort(skin_weights, axis=-1)[:, -4:]
+        top4_skin_weights = skin_weights[
+            onp.arange(vertices.shape[0])[:, None], top4_skin_indices
+        ]
+        assert (
+            top4_skin_weights.shape == top4_skin_indices.shape == (vertices.shape[0], 4)
+        )
+
+        bone_wxyzs = onp.asarray(bone_wxyzs)
+        bone_positions = onp.asarray(bone_positions)
+        assert bone_wxyzs.shape == (num_bones, 4)
+        assert bone_positions.shape == (num_bones, 3)
+        self._websock_interface.queue_message(
+            _messages.SkinnedMeshMessage(
+                name,
+                vertices.astype(onp.float32),
+                faces.astype(onp.uint32),
+                # (255, 255, 255) => 0xffffff, etc
+                color=_encode_rgb(color),
+                vertex_colors=None,
+                wireframe=wireframe,
+                opacity=opacity,
+                flat_shading=flat_shading,
+                side=side,
+                material=material,
+                bone_wxyzs=tuple(
+                    (
+                        float(wxyz[0]),
+                        float(wxyz[1]),
+                        float(wxyz[2]),
+                        float(wxyz[3]),
+                    )
+                    for wxyz in bone_wxyzs.astype(onp.float32)
+                ),
+                bone_positions=tuple(
+                    (float(xyz[0]), float(xyz[1]), float(xyz[2]))
+                    for xyz in bone_positions.astype(onp.float32)
+                ),
+                skin_indices=top4_skin_indices.astype(onp.uint16),
+                skin_weights=top4_skin_weights.astype(onp.float32),
+            )
+        )
+        handle = MeshHandle._make(self, name, wxyz, position, visible)
+        return MeshSkinnedHandle(
+            handle._impl,
+            bones=tuple(
+                MeshSkinnedBoneHandle(
+                    _impl=BoneState(
+                        name=name,
+                        websock_interface=self._websock_interface,
+                        bone_index=i,
+                        wxyz=bone_wxyzs[i],
+                        position=bone_positions[i],
+                    )
+                )
+                for i in range(num_bones)
+            ),
+        )
 
     def add_mesh_simple(
         self,

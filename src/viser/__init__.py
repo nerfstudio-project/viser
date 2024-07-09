@@ -20,6 +20,8 @@ from ._scene_handles import Gui3dContainerHandle as Gui3dContainerHandle
 from ._scene_handles import ImageHandle as ImageHandle
 from ._scene_handles import LabelHandle as LabelHandle
 from ._scene_handles import MeshHandle as MeshHandle
+from ._scene_handles import MeshSkinnedBoneHandle as MeshSkinnedBoneHandle
+from ._scene_handles import MeshSkinnedHandle as MeshSkinnedHandle
 from ._scene_handles import PointCloudHandle as PointCloudHandle
 from ._scene_handles import SceneNodeHandle as SceneNodeHandle
 from ._scene_handles import SceneNodePointerEvent as SceneNodePointerEvent
