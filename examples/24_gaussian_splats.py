@@ -58,7 +58,7 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     centers = splat_uint8[:, 0:12].copy().view(onp.float32)
     if center:
         centers -= onp.mean(centers, axis=0, keepdims=True)
-    print("Render loaded")
+    print("Splat file loaded")
     return {
         "centers": centers,
         # Colors should have shape (N, 3).
@@ -115,7 +115,7 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     )
     if center:
         positions -= onp.mean(positions, axis=0, keepdims=True)
-    print("Render loaded")
+    print("PLY file loaded")
     return {
         "centers": positions,
         # Colors should have shape (N, 3).
