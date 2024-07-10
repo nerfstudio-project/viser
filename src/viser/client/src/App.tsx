@@ -49,6 +49,11 @@ import { GaussianSplatsContext } from "./Splatting/GaussianSplats";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 
+//WebXR
+import { VRButton, ARButton, XR, Controllers, Hands, Interactive,XRInteractionEvent } from '@react-three/xr'
+import { Html } from '@react-three/drei';
+
+
 export type ViewerContextContents = {
   messageSource: "websocket" | "file_playback";
   // Zustand hooks.
@@ -214,7 +219,7 @@ function ViewerContents() {
             },
           }}
         />
-        <ViserModal />
+      
         <Box
           style={{
             width: "100%",
@@ -276,6 +281,9 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const theme = useMantineTheme();
 
   return (
+    <>
+    <VRButton/>
+
     <Canvas
       camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
       gl={{ preserveDrawingBuffer: true }}
@@ -288,6 +296,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       performance={{ min: 0.95 }}
       ref={viewer.canvasRef}
       // Handle scene click events (onPointerDown, onPointerMove, onPointerUp)
+      //WebXR: maybe we can handle VR controller button pressing events
       onPointerDown={(e) => {
         const pointerInfo = viewer.scenePointerInfo.current!;
 
@@ -431,6 +440,32 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         pointerInfo.isDragging = false;
       }}
     >
+    {/*
+          <Html
+					position={[0, 3, 0]}
+					rotation={[0, 0, 0]}
+					castShadow
+					receiveShadow
+					occlude="blending" 
+          transform 
+				>
+					<h1 style={{ background: "red" }}>Hello World</h1>
+				</Html> */}
+       <XR>
+          <Controllers />
+        {/*
+          <RayGrab onSelect={handleSelect}>
+            <Box args={[0.2, 0.2, 0.2]} position={[0, 0, -0.5]}>
+              <meshStandardMaterial color="orange" />
+            </Box>
+          </RayGrab> */}
+
+          <Hands />
+        {/*<FloatingPanel position={[0, 2, -3]} /> */}
+    
+          <SmoothLocomotion hand="left" />
+          <SnapRotation hand="right" />
+        </XR>
       {children}
       <BackgroundImage />
       <AdaptiveDpr pixelated />
@@ -446,9 +481,51 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         position={[0, -1, 0]}
       />
     </Canvas>
+    </>
   );
 }
 
+{/*
+function FloatingPanel({ position }) {
+  const panelRef = useRef();
+  useFrame(() => {
+   // if (panelRef.current) {
+   //   panelRef.current.lookAt(new THREE.Vector3(0, 0, 0));
+   // }
+  });
+
+  return (
+    <mesh position={position} ref={panelRef}>
+      <planeGeometry args={[2, 1]} />
+      <meshBasicMaterial>
+        <HtmlPanel />
+        
+      </meshBasicMaterial>
+    </mesh>
+  );
+}
+
+function HtmlPanel() {
+  const panelStyle = {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    padding: '10px',
+    boxSizing: 'border-box',
+  };
+
+  return (
+    <Html>
+    <div style={panelStyle}>
+      <h1>React Panel</h1>
+      <p>This is a floating UI panel in WebXR!</p>
+    </div>
+    </Html>
+  );
+}
+*/}
 /* HTML Canvas, for drawing 2D. */
 function Viewer2DCanvas() {
   const viewer = React.useContext(ViewerContext)!;
@@ -468,6 +545,7 @@ function Viewer2DCanvas() {
     return () => resizeObserver.disconnect();
   });
   return (
+    <>
     <canvas
       ref={viewer.canvas2dRef}
       style={{
@@ -477,7 +555,10 @@ function Viewer2DCanvas() {
         height: "100%",
         pointerEvents: "none",
       }}
+      
     />
+  
+    </>
   );
 }
 
@@ -679,4 +760,65 @@ function ViserLogo() {
       </Modal>
     </>
   );
+}
+
+
+//Locomotion code from mattrossman/react-xr-smooth-locomotion
+
+import { useController, useXR } from '@react-three/xr'
+import { Vector2, Vector3 } from 'three'
+
+const controllerDir = new Vector2()
+const controllerDir3 = new Vector3()
+const joystickDir = new Vector2()
+
+function SmoothLocomotion({ hand = 'left' }) {
+  
+  const { player,controllers,isHandTracking } = useXR()
+  console.log("isHandTracking is",isHandTracking)
+
+
+  //if (!isHandTracking){
+    console.log("isHandTracking is",isHandTracking)
+  const controller = useController('left')
+ 
+  
+    useFrame((_, delta) => {
+      if (!isHandTracking && controller?.inputSource?.gamepad) {
+        const [, , ax, ay] = controller.inputSource.gamepad.axes
+        joystickDir.set(ax, ay)
+        controller.controller.getWorldDirection(controllerDir3)
+        controllerDir.set(controllerDir3.x, -controllerDir3.z).normalize()
+        //player.getWorldDirection
+        player.position.x += controllerDir.cross(joystickDir) * delta
+        player.position.z -= controllerDir.dot(joystickDir) * delta
+      }
+    })
+  
+  //}
+  return null
+}
+
+import { useRef } from 'react'
+
+function SnapRotation({ hand = 'right', increment = Math.PI / 4, threshold = 0.6 }) {
+  const { player,isHandTracking } = useXR()
+  //if (!isHandTracking){
+  const controller = useController('right')
+
+  const snapping = useRef(false)
+  
+  useFrame(() => {
+    if (!isHandTracking && controller?.inputSource?.gamepad) {
+      const [, , ax] = controller.inputSource.gamepad.axes
+      if (Math.abs(ax) > threshold) {
+        !snapping.current && player.rotateY(-increment * Math.sign(ax))
+        snapping.current = true
+      } else {
+        snapping.current = false
+      }
+    }
+  })
+  //}
+  return null
 }
