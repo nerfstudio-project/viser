@@ -8,6 +8,7 @@ import http
 import mimetypes
 import queue
 import threading
+import zlib
 from asyncio.events import AbstractEventLoop
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -49,6 +50,46 @@ ClientId = NewType("ClientId", int)
 TMessage = TypeVar("TMessage", bound=Message)
 
 
+class RecordHandle:
+    """**Experimental.**
+
+    Handle for recording outgoing messages. Useful for logging + debugging."""
+
+    def __init__(self, handler: WebsockMessageHandler):
+        self._handler = handler
+        self._loop_start_index: int | None = None
+        self._time: float = 0.0
+        self._messages: list[tuple[float, dict[str, Any]]] = []
+
+    def _insert_message(self, message: Message) -> None:
+        """Insert a message into the recorded file."""
+        self._messages.append((self._time, message.as_serializable_dict()))
+
+    def insert_sleep(self, duration: float) -> None:
+        """Insert a sleep into the recorded file."""
+        self._time += duration
+
+    def set_loop_start(self) -> None:
+        """Mark the start of the loop. Messages sent after this point will be
+        looped. Should only be called once."""
+        assert self._loop_start_index is None, "Loop start already set."
+        self._loop_start_index = len(self._messages)
+
+    def end_and_serialize(self) -> bytes:
+        """End the recording and serialize contents. Returns the recording as
+        bytes, which should generally be written to a file."""
+        packed_bytes = msgpack.packb(
+            {
+                "loopStartIndex": self._loop_start_index,
+                "endTime": self._time,
+                "messages": self._messages,
+            }
+        )
+        assert isinstance(packed_bytes, bytes)
+        self._handler._record_handle = None
+        return zlib.compress(packed_bytes, level=9)
+
+
 class WebsockMessageHandler:
     """Mix-in for adding message handling to a class."""
 
@@ -60,6 +101,16 @@ class WebsockMessageHandler:
         self._atomic_lock = threading.Lock()
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
+
+        # Set to None if not recording.
+        self._record_handle: RecordHandle | None = None
+
+    def start_recording(self) -> RecordHandle:
+        """Start recording messages that are sent. Sent messages will be
+        serialized and can be used for playback."""
+        assert self._record_handle is None, "Already recording."
+        self._record_handle = RecordHandle(self)
+        return self._record_handle
 
     def register_handler(
         self,
@@ -92,10 +143,14 @@ class WebsockMessageHandler:
                 cb(client_id, message)
 
     @abc.abstractmethod
-    def unsafe_send_message(self, message: Message) -> None: ...
+    def unsafe_send_message(self, message: Message) -> None:
+        ...
 
     def queue_message(self, message: Message) -> None:
         """Wrapped method for sending messages safely."""
+        if self._record_handle is not None:
+            self._record_handle._insert_message(message)
+
         got_lock = self._atomic_lock.acquire(blocking=False)
         if got_lock:
             self.unsafe_send_message(message)

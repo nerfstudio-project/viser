@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import dataclasses
 import io
 import mimetypes
@@ -7,7 +8,7 @@ import threading
 import time
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ContextManager
+from typing import TYPE_CHECKING, Any, Callable, ContextManager, Generator
 
 import imageio.v3 as iio
 import numpy as onp
@@ -23,6 +24,7 @@ from . import transforms as tf
 from ._gui_api import GuiApi
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
+from .infra._infra import RecordHandle
 
 
 class _BackwardsCompatibilityShim:
@@ -689,3 +691,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         """
         for client in self.get_clients().values():
             client.send_file_download(filename, content, chunk_size)
+
+    def _start_recording(self) -> RecordHandle:
+        """**Experimental.** Start recording outgoing messages."""
+        return self._websock_server.start_recording()
