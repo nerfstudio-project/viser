@@ -121,7 +121,7 @@ function GeneratedInput(props: { guiId: string }) {
     case "GuiAddButtonGroupMessage":
       return <ButtonGroupComponent {...conf} />;
     case "GuiAddProgressBarMessage":
-        return <ProgressBarComponent {...conf} />;
+      return <ProgressBarComponent {...conf} />;
     default:
       assertNeverType(conf);
   }

@@ -42,8 +42,7 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None:
-        ...
+    def remove(self) -> None: ...
 
 
 @dataclasses.dataclass
