@@ -57,7 +57,7 @@ class RecordHandle:
         """Insert a message into the recorded file."""
 
         # Exclude GUI messages. This is hacky.
-        if not filter(message):
+        if not self._filter(message):
             return
         self._messages.append((self._time, message.as_serializable_dict()))
 
