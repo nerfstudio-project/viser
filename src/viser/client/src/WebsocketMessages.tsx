@@ -155,6 +155,14 @@ export interface PointCloudMessage {
   point_size: number;
   point_ball_norm: number;
 }
+/** Message for a bone of a skinned mesh.
+ *
+ * (automatically generated)
+ */
+export interface MeshBoneMessage {
+  type: "MeshBoneMessage";
+  name: string;
+}
 /** Mesh message.
  *
  * Vertices are internally canonicalized to float32, faces to uint32.
@@ -173,6 +181,53 @@ export interface MeshMessage {
   flat_shading: boolean;
   side: "front" | "back" | "double";
   material: "standard" | "toon3" | "toon5";
+}
+/** Mesh message.
+ *
+ * Vertices are internally canonicalized to float32, faces to uint32.
+ *
+ * (automatically generated)
+ */
+export interface SkinnedMeshMessage {
+  type: "SkinnedMeshMessage";
+  name: string;
+  vertices: Uint8Array;
+  faces: Uint8Array;
+  color: number | null;
+  vertex_colors: Uint8Array | null;
+  wireframe: boolean;
+  opacity: number | null;
+  flat_shading: boolean;
+  side: "front" | "back" | "double";
+  material: "standard" | "toon3" | "toon5";
+  bone_wxyzs: [number, number, number, number][];
+  bone_positions: [number, number, number][];
+  skin_indices: Uint8Array;
+  skin_weights: Uint8Array;
+}
+/** Server -> client message to set a skinned mesh bone's orientation.
+ *
+ * As with all other messages, transforms take the `T_parent_local` convention.
+ *
+ * (automatically generated)
+ */
+export interface SetBoneOrientationMessage {
+  type: "SetBoneOrientationMessage";
+  name: string;
+  bone_index: number;
+  wxyz: [number, number, number, number];
+}
+/** Server -> client message to set a skinned mesh bone's position.
+ *
+ * As with all other messages, transforms take the `T_parent_local` convention.
+ *
+ * (automatically generated)
+ */
+export interface SetBonePositionMessage {
+  type: "SetBonePositionMessage";
+  name: string;
+  bone_index: number;
+  position: [number, number, number];
 }
 /** Message for transform gizmos.
  *
@@ -781,6 +836,15 @@ export interface CubicBezierSplineMessage {
   color: number;
   segments: number | null;
 }
+/** Message from server->client carrying splattable Gaussians.
+ *
+ * (automatically generated)
+ */
+export interface GaussianSplatsMessage {
+  type: "GaussianSplatsMessage";
+  name: string;
+  buffer: Uint8Array;
+}
 /** Message from server->client requesting a render of the current viewport.
  *
  * (automatically generated)
@@ -879,7 +943,11 @@ export type Message =
   | LabelMessage
   | Gui3DMessage
   | PointCloudMessage
+  | MeshBoneMessage
   | MeshMessage
+  | SkinnedMeshMessage
+  | SetBoneOrientationMessage
+  | SetBonePositionMessage
   | TransformControlsMessage
   | SetCameraPositionMessage
   | SetCameraUpDirectionMessage
@@ -921,6 +989,7 @@ export type Message =
   | ThemeConfigurationMessage
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
+  | GaussianSplatsMessage
   | GetRenderRequestMessage
   | GetRenderResponseMessage
   | FileTransferStart

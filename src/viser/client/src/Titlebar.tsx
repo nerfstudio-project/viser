@@ -21,14 +21,15 @@ import { useContext } from "react";
 // Type helpers.
 type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
-type NoNull<T> = Exclude<T, null>;
-type TitlebarContent = NoNull<ThemeConfigurationMessage["titlebar_content"]>;
+type TitlebarContent = NonNullable<
+  ThemeConfigurationMessage["titlebar_content"]
+>;
 function assertUnreachable(x: never): never {
   throw new Error("Didn't expect to get here", x);
 }
 
 function getIcon(
-  icon: ArrayElement<NoNull<TitlebarContent["buttons"]>>["icon"],
+  icon: ArrayElement<NonNullable<TitlebarContent["buttons"]>>["icon"],
 ) {
   let Icon = null;
   switch (icon) {
@@ -51,7 +52,7 @@ function getIcon(
 
 // We inherit props directly from message contents.
 export function TitlebarButton(
-  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>,
+  props: ArrayElement<NonNullable<TitlebarContent["buttons"]>>,
 ) {
   const Icon = getIcon(props.icon);
   return (
@@ -71,7 +72,7 @@ export function TitlebarButton(
 }
 
 export function MobileTitlebarButton(
-  props: ArrayElement<NoNull<TitlebarContent["buttons"]>>,
+  props: ArrayElement<NonNullable<TitlebarContent["buttons"]>>,
 ) {
   const Icon = getIcon(props.icon);
   return (
@@ -91,7 +92,7 @@ export function MobileTitlebarButton(
 }
 
 export function TitlebarImage(
-  props: NoNull<TitlebarContent["image"]>,
+  props: NonNullable<TitlebarContent["image"]>,
   colorScheme: string,
 ) {
   let imageSource: string;

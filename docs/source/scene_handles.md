@@ -28,8 +28,14 @@ connected clients. When a scene node is added to a client (for example, via
 
 .. autoclass:: viser.MeshHandle
 
+.. autoclass:: viser.MeshSkinnedHandle
+
+.. autoclass:: viser.MeshSkinnedBoneHandle
+
 .. autoclass:: viser.PointCloudHandle
 
 .. autoclass:: viser.TransformControlsHandle
+
+.. autoclass:: viser.GaussianSplatHandle
 
 <!-- prettier-ignore-end -->

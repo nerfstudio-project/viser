@@ -15,11 +15,14 @@ from ._scene_api import SceneApi as SceneApi
 from ._scene_handles import BatchedAxesHandle as BatchedAxesHandle
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle
 from ._scene_handles import FrameHandle as FrameHandle
+from ._scene_handles import GaussianSplatHandle as GaussianSplatHandle
 from ._scene_handles import GlbHandle as GlbHandle
 from ._scene_handles import Gui3dContainerHandle as Gui3dContainerHandle
 from ._scene_handles import ImageHandle as ImageHandle
 from ._scene_handles import LabelHandle as LabelHandle
 from ._scene_handles import MeshHandle as MeshHandle
+from ._scene_handles import MeshSkinnedBoneHandle as MeshSkinnedBoneHandle
+from ._scene_handles import MeshSkinnedHandle as MeshSkinnedHandle
 from ._scene_handles import PointCloudHandle as PointCloudHandle
 from ._scene_handles import SceneNodeHandle as SceneNodeHandle
 from ._scene_handles import SceneNodePointerEvent as SceneNodePointerEvent

@@ -34,10 +34,7 @@ import "./index.css";
 import ControlPanel from "./ControlPanel/ControlPanel";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
-import {
-  WebsocketMessageProducer,
-  FrameSynchronizedMessageHandler,
-} from "./WebsocketInterface";
+import { WebsocketMessageProducer } from "./WebsocketInterface";
 
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
@@ -48,12 +45,18 @@ import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
 import { theme } from "./AppTheme";
+import { GaussianSplatsContext } from "./Splatting/GaussianSplats";
+import { FrameSynchronizedMessageHandler } from "./MessageHandler";
+import { PlaybackFromFile } from "./FilePlayback";
 
 export type ViewerContextContents = {
+  messageSource: "websocket" | "file_playback";
   // Zustand hooks.
   useSceneTree: UseSceneTree;
   useGui: UseGui;
   // Useful references.
+  // TODO: there's really no reason these all need to be their own ref objects.
+  // We could have just one ref to a global mutable struct.
   websocketRef: React.MutableRefObject<WebSocket | null>;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
@@ -75,6 +78,9 @@ export type ViewerContextContents = {
           overrideVisibility?: boolean; // Override from the GUI.
         };
   }>;
+  nodeRefFromName: React.MutableRefObject<{
+    [name: string]: undefined | THREE.Object3D;
+  }>;
   messageQueueRef: React.MutableRefObject<Message[]>;
   // Requested a render.
   getRenderRequestState: React.MutableRefObject<
@@ -90,6 +96,16 @@ export type ViewerContextContents = {
   }>;
   // 2D canvas for drawing -- can be used to give feedback on cursor movement, or more.
   canvas2dRef: React.MutableRefObject<HTMLCanvasElement | null>;
+  // Poses for bones in skinned meshes.
+  skinnedMeshState: React.MutableRefObject<{
+    [name: string]: {
+      initialized: boolean;
+      poses: {
+        wxyz: [number, number, number, number];
+        position: [number, number, number];
+      }[];
+    };
+  }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -115,8 +131,15 @@ function ViewerRoot() {
   const initialServer =
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
 
+  // Playback mode for embedding viser.
+  const playbackPath = new URLSearchParams(window.location.search).get(
+    "playbackPath",
+  );
+  console.log(playbackPath);
+
   // Values that can be globally accessed by components in a viewer.
   const viewer: ViewerContextContents = {
+    messageSource: playbackPath === null ? "websocket" : "file_playback",
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
     websocketRef: React.useRef(null),
@@ -138,6 +161,7 @@ function ViewerRoot() {
         })(),
       },
     }),
+    nodeRefFromName: React.useRef({}),
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
@@ -148,11 +172,17 @@ function ViewerRoot() {
       isDragging: false,
     }),
     canvas2dRef: React.useRef(null),
+    skinnedMeshState: React.useRef({}),
   };
 
   return (
     <ViewerContext.Provider value={viewer}>
-      <WebsocketMessageProducer />
+      {viewer.messageSource === "websocket" ? (
+        <WebsocketMessageProducer />
+      ) : null}
+      {viewer.messageSource === "file_playback" ? (
+        <PlaybackFromFile fileUrl={playbackPath!} />
+      ) : null}
       <ViewerContents />
     </ViewerContext.Provider>
   );
@@ -215,14 +245,21 @@ function ViewerContents() {
               })}
             >
               <Viewer2DCanvas />
-              <ViewerCanvas>
-                <FrameSynchronizedMessageHandler />
-              </ViewerCanvas>
-              {viewer.useGui((state) => state.theme.show_logo) ? (
+              <GaussianSplatsContext.Provider
+                value={React.useRef({ numSorting: 0, sortUpdateCallbacks: [] })}
+              >
+                <ViewerCanvas>
+                  <FrameSynchronizedMessageHandler />
+                </ViewerCanvas>
+              </GaussianSplatsContext.Provider>
+              {viewer.useGui((state) => state.theme.show_logo) &&
+              viewer.messageSource == "websocket" ? (
                 <ViserLogo />
               ) : null}
             </Box>
-            <ControlPanel control_layout={control_layout} />
+            {viewer.messageSource == "websocket" ? (
+              <ControlPanel control_layout={control_layout} />
+            ) : null}
           </Box>
         </Box>
       </MantineProvider>
