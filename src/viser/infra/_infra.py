@@ -4,6 +4,7 @@ import abc
 import asyncio
 import contextlib
 import dataclasses
+import gzip
 import http
 import mimetypes
 import queue
@@ -11,18 +12,7 @@ import threading
 from asyncio.events import AbstractEventLoop
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    List,
-    NewType,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-)
+from typing import Any, Callable, Generator, NewType, TypeVar
 
 import msgpack
 import rich
@@ -49,21 +39,78 @@ ClientId = NewType("ClientId", int)
 TMessage = TypeVar("TMessage", bound=Message)
 
 
+class RecordHandle:
+    """**Experimental.**
+
+    Handle for recording outgoing messages. Useful for logging + debugging."""
+
+    def __init__(
+        self, handler: WebsockMessageHandler, filter: Callable[[Message], bool]
+    ):
+        self._handler = handler
+        self._filter = filter
+        self._loop_start_index: int | None = None
+        self._time: float = 0.0
+        self._messages: list[tuple[float, dict[str, Any]]] = []
+
+    def _insert_message(self, message: Message) -> None:
+        """Insert a message into the recorded file."""
+
+        # Exclude GUI messages. This is hacky.
+        if not self._filter(message):
+            return
+        self._messages.append((self._time, message.as_serializable_dict()))
+
+    def insert_sleep(self, duration: float) -> None:
+        """Insert a sleep into the recorded file."""
+        self._time += duration
+
+    def set_loop_start(self) -> None:
+        """Mark the start of the loop. Messages sent after this point will be
+        looped. Should only be called once."""
+        assert self._loop_start_index is None, "Loop start already set."
+        self._loop_start_index = len(self._messages)
+
+    def end_and_serialize(self) -> bytes:
+        """End the recording and serialize contents. Returns the recording as
+        bytes, which should generally be written to a file."""
+        packed_bytes = msgpack.packb(
+            {
+                "loopStartIndex": self._loop_start_index,
+                "durationSeconds": self._time,
+                "messages": self._messages,
+            }
+        )
+        assert isinstance(packed_bytes, bytes)
+        self._handler._record_handle = None
+        return gzip.compress(packed_bytes, compresslevel=9)
+
+
 class WebsockMessageHandler:
     """Mix-in for adding message handling to a class."""
 
     def __init__(self, thread_executor: ThreadPoolExecutor) -> None:
         self._thread_executor = thread_executor
-        self._incoming_handlers: Dict[
-            Type[Message], List[Callable[[ClientId, Message], None]]
+        self._incoming_handlers: dict[
+            type[Message], list[Callable[[ClientId, Message], None]]
         ] = {}
         self._atomic_lock = threading.Lock()
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
 
+        # Set to None if not recording.
+        self._record_handle: RecordHandle | None = None
+
+    def start_recording(self, filter: Callable[[Message], bool]) -> RecordHandle:
+        """Start recording messages that are sent. Sent messages will be
+        serialized and can be used for playback."""
+        assert self._record_handle is None, "Already recording."
+        self._record_handle = RecordHandle(self, filter)
+        return self._record_handle
+
     def register_handler(
         self,
-        message_cls: Type[TMessage],
+        message_cls: type[TMessage],
         callback: Callable[[ClientId, TMessage], Any],
     ) -> None:
         """Register a handler for a particular message type."""
@@ -73,8 +120,8 @@ class WebsockMessageHandler:
 
     def unregister_handler(
         self,
-        message_cls: Type[TMessage],
-        callback: Optional[Callable[[ClientId, TMessage], Any]] = None,
+        message_cls: type[TMessage],
+        callback: Callable[[ClientId, TMessage], Any] | None = None,
     ):
         """Unregister a handler for a particular message type."""
         assert (
@@ -96,6 +143,9 @@ class WebsockMessageHandler:
 
     def queue_message(self, message: Message) -> None:
         """Wrapped method for sending messages safely."""
+        if self._record_handle is not None:
+            self._record_handle._insert_message(message)
+
         got_lock = self._atomic_lock.acquire(blocking=False)
         if got_lock:
             self.unsafe_send_message(message)
@@ -184,16 +234,16 @@ class WebsockServer(WebsockMessageHandler):
         self,
         host: str,
         port: int,
-        message_class: Type[Message] = Message,
-        http_server_root: Optional[Path] = None,
+        message_class: type[Message] = Message,
+        http_server_root: Path | None = None,
         verbose: bool = True,
         client_api_version: Literal[0, 1] = 0,
     ):
         super().__init__(thread_executor=ThreadPoolExecutor(max_workers=32))
 
         # Track connected clients.
-        self._client_connect_cb: List[Callable[[WebsockClientConnection], None]] = []
-        self._client_disconnect_cb: List[Callable[[WebsockClientConnection], None]] = []
+        self._client_connect_cb: list[Callable[[WebsockClientConnection], None]] = []
+        self._client_disconnect_cb: list[Callable[[WebsockClientConnection], None]] = []
 
         self._host = host
         self._port = port
@@ -203,7 +253,7 @@ class WebsockServer(WebsockMessageHandler):
         self._client_api_version: Literal[0, 1] = client_api_version
         self._shutdown_event = threading.Event()
 
-        self._client_state_from_id: Dict[int, _ClientHandleState] = {}
+        self._client_state_from_id: dict[int, _ClientHandleState] = {}
 
     def start(self) -> None:
         """Start the server."""
@@ -365,16 +415,14 @@ class WebsockServer(WebsockMessageHandler):
                     )
 
         # Host client on the same port as the websocket.
-        file_cache: Dict[Path, bytes] = {}
-        file_cache_gzipped: Dict[Path, bytes] = {}
-
-        import gzip
+        file_cache: dict[Path, bytes] = {}
+        file_cache_gzipped: dict[Path, bytes] = {}
 
         async def viser_http_server(
             path: str, request_headers: websockets.datastructures.Headers
-        ) -> Optional[
-            Tuple[http.HTTPStatus, websockets.datastructures.HeadersLike, bytes]
-        ]:
+        ) -> (
+            tuple[http.HTTPStatus, websockets.datastructures.HeadersLike, bytes] | None
+        ):
             # Ignore websocket packets.
             if request_headers.get("Upgrade") == "websocket":
                 return None
@@ -392,8 +440,11 @@ class WebsockServer(WebsockMessageHandler):
 
             use_gzip = "gzip" in request_headers.get("Accept-Encoding", "")
 
+            mime_type = mimetypes.guess_type(relpath)[0]
+            if mime_type is None:
+                mime_type = "application/octet-stream"
             response_headers = {
-                "Content-Type": str(mimetypes.MimeTypes().guess_type(relpath)[0]),
+                "Content-Type": mime_type,
             }
 
             if source_path not in file_cache:
@@ -463,7 +514,7 @@ async def _message_producer(
 async def _message_consumer(
     websocket: WebSocketServerProtocol,
     handle_message: Callable[[Message], None],
-    message_class: Type[Message],
+    message_class: type[Message],
 ) -> None:
     """Infinite loop waiting for and then handling incoming messages."""
     while True:

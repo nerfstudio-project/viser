@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Callable, Generic, Literal, TypeVar
 import numpy as onp
 
 from . import _messages
+from .infra._infra import WebsockClientConnection, WebsockServer
 
 if TYPE_CHECKING:
     from ._gui_api import GuiApi
@@ -201,9 +202,70 @@ class MeshHandle(_ClickableSceneNodeHandle):
     """Handle for mesh objects."""
 
 
-@dataclasses.dataclass
 class GaussianSplatHandle(_ClickableSceneNodeHandle):
     """Handle for Gaussian splatting objects."""
+
+
+class MeshSkinnedHandle(_ClickableSceneNodeHandle):
+    """Handle for skinned mesh objects."""
+
+    bones: tuple[MeshSkinnedBoneHandle, ...]
+    """Bones of the skinned mesh. These handles can be used for reading and
+    writing poses, which are defined relative to the mesh root."""
+
+
+@dataclasses.dataclass
+class BoneState:
+    name: str
+    websock_interface: WebsockServer | WebsockClientConnection
+    bone_index: int
+    wxyz: onp.ndarray
+    position: onp.ndarray
+
+
+@dataclasses.dataclass
+class MeshSkinnedBoneHandle:
+    """Handle for reading and writing the poses of bones in a skinned mesh."""
+
+    _impl: BoneState
+
+    @property
+    def wxyz(self) -> onp.ndarray:
+        """Orientation of the bone. This is the quaternion representation of the R
+        in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
+        """
+        return self._impl.wxyz
+
+    @wxyz.setter
+    def wxyz(self, wxyz: tuple[float, float, float, float] | onp.ndarray) -> None:
+        from ._scene_api import cast_vector
+
+        wxyz_cast = cast_vector(wxyz, 4)
+        self._impl.wxyz = onp.asarray(wxyz)
+        self._impl.websock_interface.queue_message(
+            _messages.SetBoneOrientationMessage(
+                self._impl.name, self._impl.bone_index, wxyz_cast
+            )
+        )
+
+    @property
+    def position(self) -> onp.ndarray:
+        """Position of the bone. This is equivalent to the t in
+        `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
+        """
+        return self._impl.position
+
+    @position.setter
+    def position(self, position: tuple[float, float, float] | onp.ndarray) -> None:
+        from ._scene_api import cast_vector
+
+        position_cast = cast_vector(position, 3)
+        self._impl.position = onp.asarray(position)
+        self._impl.websock_interface.queue_message(
+            _messages.SetBonePositionMessage(
+                self._impl.name, self._impl.bone_index, position_cast
+            )
+        )
 
 
 @dataclasses.dataclass

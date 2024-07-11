@@ -45,9 +45,9 @@ The `viser` frontend and backend communicate via a shared set of message
 definitions:
 
 - On the server, these are defined as Python dataclasses in
-  `~/viser/viser/_messages.py`.
+  `~/viser/src/viser/_messages.py`.
 - On the client, these are defined as TypeScript interfaces in
-  `~/viser/viser/client/src/WebsocketMessages.tsx`.
+  `~/viser/src/viser/client/src/WebsocketMessages.tsx`.
 
 Note that there is a 1:1 correspondence between the dataclasses message types
 and the TypeScript ones.
@@ -81,7 +81,7 @@ If changes to the client source files are detected on startup, `viser` will
 re-build the client automatically. This is okay for quick changes, but for
 faster iteration we can also launch a development version of the frontend, which
 will reflect changes we make to the client source files
-(`~/viser/viser/client/src`) without a full build. This requires a few more
+(`~/viser/src/viser/client/src`) without a full build. This requires a few more
 steps.
 
 **Installing dependencies.**
@@ -90,7 +90,7 @@ steps.
 2. [Install yarn.](https://yarnpkg.com/getting-started/install)
 3. Install dependencies.
    ```
-   cd ~/viser/viser/client
+   cd ~/viser/src/viser/client
    yarn install
    ```
 
@@ -99,11 +99,11 @@ steps.
 To launch the client, we can run:
 
 ```
-cd ~/viser/viser/client
+cd ~/viser/src/viser/client
 yarn start
 ```
 
-from the `viser/viser/client` directory. After opening the client in a web
+from the `viser/src/viser/client` directory. After opening the client in a web
 browser, the websocket server address typically needs to be updated in the
 "Server" tab.
 
@@ -115,4 +115,4 @@ one of:
 - `prettier -w .`
 - `npx prettier -w .`
 
-from `~/viser/client`.
+from `~/viser/src/viser/client`.

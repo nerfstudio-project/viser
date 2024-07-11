@@ -1,6 +1,9 @@
-"""SMPL model visualizer
-
-Visualizer for SMPL human body models. Requires a .npz model file.
+# mypy: disable-error-code="assignment"
+#
+# Asymmetric properties are supported in Pyright, but not yet in mypy.
+# - https://github.com/python/mypy/issues/3004
+# - https://github.com/python/mypy/pull/11643
+"""Visualizer for SMPL human body models. Requires a .npz model file.
 
 See here for download instructions:
     https://github.com/vchoutas/smplx?tab=readme-ov-file#downloading-the-model
@@ -11,6 +14,7 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import List, Tuple
 
 import numpy as np
 import numpy as onp
@@ -86,6 +90,27 @@ def main(model_path: Path) -> None:
         num_joints=model.num_joints,
         parent_idx=model.parent_idx,
     )
+    smpl_outputs = model.get_outputs(
+        betas=np.array([x.value for x in gui_elements.gui_betas]),
+        joint_rotmats=onp.zeros((model.num_joints, 3, 3)) + onp.eye(3),
+    )
+
+    bone_wxyzs = np.array(
+        [tf.SO3.from_matrix(R).wxyz for R in smpl_outputs.T_world_joint[:, :3, :3]]
+    )
+    bone_positions = smpl_outputs.T_world_joint[:, :3, 3]
+
+    skinned_handle = server.scene.add_mesh_skinned(
+        "/human",
+        smpl_outputs.vertices,
+        smpl_outputs.faces,
+        bone_wxyzs=bone_wxyzs,
+        bone_positions=bone_positions,
+        skin_weights=model._weights,
+        wireframe=gui_elements.gui_wireframe.value,
+        color=gui_elements.gui_rgb.value,
+    )
+
     while True:
         # Do nothing if no change.
         time.sleep(0.02)
@@ -97,33 +122,35 @@ def main(model_path: Path) -> None:
         # Compute SMPL outputs.
         smpl_outputs = model.get_outputs(
             betas=np.array([x.value for x in gui_elements.gui_betas]),
-            joint_rotmats=tf.SO3.exp(
-                # (num_joints, 3)
-                np.array([x.value for x in gui_elements.gui_joints])
-            ).as_matrix(),
-        )
-        server.scene.add_mesh_simple(
-            "/human",
-            smpl_outputs.vertices,
-            smpl_outputs.faces,
-            wireframe=gui_elements.gui_wireframe.value,
-            color=gui_elements.gui_rgb.value,
+            joint_rotmats=np.stack(
+                [
+                    tf.SO3.exp(np.array(x.value)).as_matrix()
+                    for x in gui_elements.gui_joints
+                ],
+                axis=0,
+            ),
         )
 
         # Match transform control gizmos to joint positions.
         for i, control in enumerate(gui_elements.transform_controls):
             control.position = smpl_outputs.T_parent_joint[i, :3, 3]
+            print(control.position)
+
+            skinned_handle.bones[i].wxyz = tf.SO3.from_matrix(
+                smpl_outputs.T_world_joint[i, :3, :3]
+            ).wxyz
+            skinned_handle.bones[i].position = smpl_outputs.T_world_joint[i, :3, 3]
 
 
 @dataclass
 class GuiElements:
     """Structure containing handles for reading from GUI elements."""
 
-    gui_rgb: viser.GuiInputHandle[tuple[int, int, int]]
+    gui_rgb: viser.GuiInputHandle[Tuple[int, int, int]]
     gui_wireframe: viser.GuiInputHandle[bool]
-    gui_betas: list[viser.GuiInputHandle[float]]
-    gui_joints: list[viser.GuiInputHandle[tuple[float, float, float]]]
-    transform_controls: list[viser.TransformControlsHandle]
+    gui_betas: List[viser.GuiInputHandle[float]]
+    gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]]
+    transform_controls: List[viser.TransformControlsHandle]
 
     changed: bool
     """This flag will be flipped to True whenever the mesh needs to be re-generated."""
@@ -146,7 +173,7 @@ def make_gui_elements(
     with tab_group.add_tab("View", viser.Icon.VIEWFINDER):
         gui_rgb = server.gui.add_rgb("Color", initial_value=(90, 200, 255))
         gui_wireframe = server.gui.add_checkbox("Wireframe", initial_value=False)
-        gui_show_controls = server.gui.add_checkbox("Handles", initial_value=False)
+        gui_show_controls = server.gui.add_checkbox("Handles", initial_value=True)
 
         gui_rgb.on_update(set_changed)
         gui_wireframe.on_update(set_changed)
@@ -198,7 +225,7 @@ def make_gui_elements(
                 quat /= onp.linalg.norm(quat)
                 joint.value = tf.SO3(wxyz=quat).log()
 
-        gui_joints: list[viser.GuiInputHandle[tuple[float, float, float]]] = []
+        gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]] = []
         for i in range(num_joints):
             gui_joint = server.gui.add_vector3(
                 label=f"Joint {i}",
@@ -218,7 +245,7 @@ def make_gui_elements(
             set_callback_in_closure(i)
 
     # Transform control gizmos on joints.
-    transform_controls: list[viser.TransformControlsHandle] = []
+    transform_controls: List[viser.TransformControlsHandle] = []
     prefixed_joint_names = []  # Joint names, but prefixed with parents.
     for i in range(num_joints):
         prefixed_joint_name = f"joint_{i}"

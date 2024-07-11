@@ -239,6 +239,13 @@ class PointCloudMessage(Message):
 
 
 @dataclasses.dataclass
+class MeshBoneMessage(Message):
+    """Message for a bone of a skinned mesh."""
+
+    name: str
+
+
+@dataclasses.dataclass
 class MeshMessage(Message):
     """Mesh message.
 
@@ -261,6 +268,59 @@ class MeshMessage(Message):
         # Check shapes.
         assert self.vertices.shape[-1] == 3
         assert self.faces.shape[-1] == 3
+
+
+@dataclasses.dataclass
+class SkinnedMeshMessage(MeshMessage):
+    """Mesh message.
+
+    Vertices are internally canonicalized to float32, faces to uint32."""
+
+    bone_wxyzs: Tuple[Tuple[float, float, float, float], ...]
+    bone_positions: Tuple[Tuple[float, float, float], ...]
+    skin_indices: onpt.NDArray[onp.uint32]
+    skin_weights: onpt.NDArray[onp.float32]
+
+    def __post_init__(self):
+        # Check shapes.
+        assert self.vertices.shape[-1] == 3
+        assert self.faces.shape[-1] == 3
+        assert self.skin_weights is not None
+        assert (
+            self.skin_indices.shape
+            == self.skin_weights.shape
+            == (self.vertices.shape[0], 4)
+        )
+
+
+@dataclasses.dataclass
+class SetBoneOrientationMessage(Message):
+    """Server -> client message to set a skinned mesh bone's orientation.
+
+    As with all other messages, transforms take the `T_parent_local` convention."""
+
+    name: str
+    bone_index: int
+    wxyz: Tuple[float, float, float, float]
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.name + "-" + str(self.bone_index)
+
+
+@dataclasses.dataclass
+class SetBonePositionMessage(Message):
+    """Server -> client message to set a skinned mesh bone's position.
+
+    As with all other messages, transforms take the `T_parent_local` convention."""
+
+    name: str
+    bone_index: int
+    position: Tuple[float, float, float]
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.name + "-" + str(self.bone_index)
 
 
 @dataclasses.dataclass
