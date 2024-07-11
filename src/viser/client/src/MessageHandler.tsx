@@ -60,6 +60,7 @@ function useMessageHandler() {
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
+  const resetGui = viewer.useGui((state) => state.resetGui);
   const setTheme = viewer.useGui((state) => state.setTheme);
   const setShareUrl = viewer.useGui((state) => state.setShareUrl);
   const addGui = viewer.useGui((state) => state.addGui);
@@ -890,6 +891,11 @@ function useMessageHandler() {
         viewer.useGui.setState({ backgroundAvailable: false });
         // Disable the depth texture rendering
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
+        return;
+      }
+      // Reset the GUI state.
+      case "ResetGuiMessage": {
+        resetGui();
         return;
       }
       // Update props of a GUI component

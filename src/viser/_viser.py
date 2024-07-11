@@ -533,6 +533,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             self.request_share_url()
 
         self.scene.reset()
+        self.gui.reset()
         self.gui.set_panel_label(label)
 
     def get_host(self) -> str:

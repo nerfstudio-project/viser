@@ -380,6 +380,13 @@ export interface SceneNodeClickMessage {
 export interface ResetSceneMessage {
   type: "ResetSceneMessage";
 }
+/** Reset GUI.
+ *
+ * (automatically generated)
+ */
+export interface ResetGuiMessage {
+  type: "ResetGuiMessage";
+}
 /** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', expand_by_default: 'bool', visible: 'bool')
  *
  * (automatically generated)
@@ -934,6 +941,7 @@ export type Message =
   | SetSceneNodeClickableMessage
   | SceneNodeClickMessage
   | ResetSceneMessage
+  | ResetGuiMessage
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
   | GuiAddPlotlyMessage

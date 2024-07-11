@@ -135,10 +135,15 @@ export function useGuiState(initialServer: string) {
           }),
         resetGui: () =>
           set((state) => {
+            // This feels brittle, could be cleaned up...
+            state.theme = cleanGuiState.theme;
+            state.label = cleanGuiState.label;
             state.shareUrl = null;
             state.guiIdSetFromContainerId = {};
+            state.modals = [];
             state.guiOrderFromId = {};
             state.guiConfigFromId = {};
+            state.uploadsInProgress = {};
           }),
         updateUploadState: (state) =>
           set((globalState) => {
