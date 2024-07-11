@@ -77,37 +77,5 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       setTimeout(continuePlayback, recording.messages[0][0] * 1000.0);
     });
   });
-
-  // useFrame(() => {
-  //   const currentState = state.current;
-  //   if (currentState === null) return;
-  //
-  //   // Get seconds elapsed since start. We offset by the first message's
-  //   // timestamp.
-  //   const elapsedSeconds = Date.now() / 1000.0 - currentState.startTimeSeconds;
-  //
-  //   // Handle messages.
-  //   while (
-  //     currentState.index < currentState.loaded.messages.length &&
-  //     currentState.loaded.messages[currentState.index][0] <= elapsedSeconds
-  //   ) {
-  //     const msg = currentState.loaded.messages[currentState.index][1];
-  //     messageQueueRef.current.push(msg);
-  //     currentState.index += 1;
-  //   }
-  //
-  //   // Reset if looping.
-  //   if (
-  //     currentState.loaded.loopStartIndex !== null &&
-  //     elapsedSeconds >= currentState.loaded.durationSeconds
-  //   ) {
-  //     currentState.index = currentState.loaded.loopStartIndex;
-  //     currentState.startTimeSeconds =
-  //       Date.now() / 1000.0 -
-  //       currentState.loaded.messages[currentState.index][0];
-  //     return;
-  //   }
-  // });
-
   return <></>;
 }
