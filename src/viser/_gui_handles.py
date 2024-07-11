@@ -567,18 +567,20 @@ class GuiProgressBarHandle:
     _gui_api: GuiApi
     _id: str
     _visible: bool
-    _loading: bool
+    _animated: bool
     _parent_container_id: str  # Parent.
     _order: float
     _value: float
 
     @property
     def value(self) -> float:
-        """Current content of this progress bar element. Synchronized automatically when assigned."""
+        """Current content of this progress bar element, 0 - 100. Synchronized
+        automatically when assigned."""
         return self._value
 
     @value.setter
     def value(self, value: float) -> None:
+        assert value >= 0 and value <= 100
         self._value = value
         self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(
@@ -588,17 +590,17 @@ class GuiProgressBarHandle:
         )
 
     @property
-    def loading(self) -> bool:
+    def animated(self) -> bool:
         """Show this progress bar as loading (animated, striped)."""
-        return self._loading
+        return self._animated
 
-    @loading.setter
-    def loading(self, loading: bool) -> None:
-        self._loading = loading
+    @animated.setter
+    def animated(self, animated: bool) -> None:
+        self._animated = animated
         self._gui_api._websock_interface.queue_message(
             GuiUpdateMessage(
                 self._id,
-                {"loading": loading},
+                {"animated": animated},
             )
         )
 

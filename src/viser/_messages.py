@@ -445,7 +445,7 @@ class GuiAddProgressBarMessage(Message):
     order: float
     id: str
     value: float
-    loading: bool
+    animated: bool
     color: Optional[Color]
     container_id: str
     visible: bool

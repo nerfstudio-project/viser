@@ -5,12 +5,18 @@ export default function ProgressBarComponent({
   visible,
   color,
   value,
-  loading,
+  animated,
 }: GuiAddProgressBarMessage) {
   if (!visible) return <></>;
   return (
-    <Box pb="xs" px="sm">
-      <Progress color={color ?? undefined} value={value} striped={loading} animated={loading} />
+    <Box pb="xs" px="xs">
+      <Progress
+        radius="xs"
+        color={color ?? undefined}
+        value={value}
+        animated={animated}
+        transitionDuration={0}
+      />
     </Box>
   );
 }

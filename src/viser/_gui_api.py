@@ -30,9 +30,9 @@ from ._gui_handles import (
     GuiFolderHandle,
     GuiInputHandle,
     GuiMarkdownHandle,
-    GuiProgressBarHandle,
     GuiModalHandle,
     GuiPlotlyHandle,
+    GuiProgressBarHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
     SupportsRemoveProtocol,
@@ -1165,30 +1165,32 @@ class GuiApi:
             _impl_options=tuple(options),
         )
 
-    def add_progressbar(
+    def add_progress_bar(
         self,
         value: float,
         visible: bool = True,
-        loading: bool = False,
+        animated: bool = False,
         color: Color | None = None,
         order: float | None = None,
     ) -> GuiProgressBarHandle:
         """Add a progress bar to the GUI.
 
         Args:
-            value: Value of the progress bar.
+            value: Value of the progress bar. (0 - 100)
             visible: Whether the progress bar is visible.
-            loading: Whether the progress bar is in a loading state (animated, striped).
+            animated: Whether the progress bar is in a loading state (animated, striped).
+            color: The color of the progress bar.
             order: Optional ordering, smallest values will be displayed first.
 
         Returns:
             A handle that can be used to interact with the GUI element.
         """
+        assert value >= 0 and value <= 100
         handle = GuiProgressBarHandle(
             _gui_api=self,
             _id=_make_unique_id(),
             _visible=visible,
-            _loading=loading,
+            _animated=animated,
             _parent_container_id=self._get_container_id(),
             _order=_apply_default_order(order),
             _value=value,
@@ -1198,7 +1200,7 @@ class GuiApi:
                 order=handle._order,
                 id=handle._id,
                 value=value,
-                loading=loading,
+                animated=animated,
                 color=color,
                 container_id=handle._parent_container_id,
                 visible=visible,

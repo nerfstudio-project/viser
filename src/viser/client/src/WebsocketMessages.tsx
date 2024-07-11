@@ -350,7 +350,7 @@ export interface GuiAddMarkdownMessage {
   container_id: string;
   visible: boolean;
 }
-/** GuiAddProgressBarMessage(order: 'float', id: 'str', value: 'float', loading: 'bool', color: 'Optional[Color]', container_id: 'str', visible: 'bool')
+/** GuiAddProgressBarMessage(order: 'float', id: 'str', value: 'float', animated: 'bool', color: 'Optional[Color]', container_id: 'str', visible: 'bool')
  *
  * (automatically generated)
  */
@@ -359,7 +359,7 @@ export interface GuiAddProgressBarMessage {
   order: number;
   id: string;
   value: number;
-  loading: boolean;
+  animated: boolean;
   color:
     | "dark"
     | "gray"
