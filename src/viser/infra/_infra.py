@@ -4,26 +4,15 @@ import abc
 import asyncio
 import contextlib
 import dataclasses
+import gzip
 import http
 import mimetypes
 import queue
 import threading
-import zlib
 from asyncio.events import AbstractEventLoop
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    List,
-    NewType,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-)
+from typing import Any, Callable, Generator, NewType, TypeVar
 
 import msgpack
 import rich
@@ -81,13 +70,13 @@ class RecordHandle:
         packed_bytes = msgpack.packb(
             {
                 "loopStartIndex": self._loop_start_index,
-                "endTime": self._time,
+                "durationSeconds": self._time,
                 "messages": self._messages,
             }
         )
         assert isinstance(packed_bytes, bytes)
         self._handler._record_handle = None
-        return zlib.compress(packed_bytes, level=9)
+        return gzip.compress(packed_bytes, compresslevel=9)
 
 
 class WebsockMessageHandler:
@@ -95,8 +84,8 @@ class WebsockMessageHandler:
 
     def __init__(self, thread_executor: ThreadPoolExecutor) -> None:
         self._thread_executor = thread_executor
-        self._incoming_handlers: Dict[
-            Type[Message], List[Callable[[ClientId, Message], None]]
+        self._incoming_handlers: dict[
+            type[Message], list[Callable[[ClientId, Message], None]]
         ] = {}
         self._atomic_lock = threading.Lock()
         self._queued_messages: queue.Queue = queue.Queue()
@@ -114,7 +103,7 @@ class WebsockMessageHandler:
 
     def register_handler(
         self,
-        message_cls: Type[TMessage],
+        message_cls: type[TMessage],
         callback: Callable[[ClientId, TMessage], Any],
     ) -> None:
         """Register a handler for a particular message type."""
@@ -124,8 +113,8 @@ class WebsockMessageHandler:
 
     def unregister_handler(
         self,
-        message_cls: Type[TMessage],
-        callback: Optional[Callable[[ClientId, TMessage], Any]] = None,
+        message_cls: type[TMessage],
+        callback: Callable[[ClientId, TMessage], Any] | None = None,
     ):
         """Unregister a handler for a particular message type."""
         assert (
@@ -239,16 +228,16 @@ class WebsockServer(WebsockMessageHandler):
         self,
         host: str,
         port: int,
-        message_class: Type[Message] = Message,
-        http_server_root: Optional[Path] = None,
+        message_class: type[Message] = Message,
+        http_server_root: Path | None = None,
         verbose: bool = True,
         client_api_version: Literal[0, 1] = 0,
     ):
         super().__init__(thread_executor=ThreadPoolExecutor(max_workers=32))
 
         # Track connected clients.
-        self._client_connect_cb: List[Callable[[WebsockClientConnection], None]] = []
-        self._client_disconnect_cb: List[Callable[[WebsockClientConnection], None]] = []
+        self._client_connect_cb: list[Callable[[WebsockClientConnection], None]] = []
+        self._client_disconnect_cb: list[Callable[[WebsockClientConnection], None]] = []
 
         self._host = host
         self._port = port
@@ -258,7 +247,7 @@ class WebsockServer(WebsockMessageHandler):
         self._client_api_version: Literal[0, 1] = client_api_version
         self._shutdown_event = threading.Event()
 
-        self._client_state_from_id: Dict[int, _ClientHandleState] = {}
+        self._client_state_from_id: dict[int, _ClientHandleState] = {}
 
     def start(self) -> None:
         """Start the server."""
@@ -420,16 +409,14 @@ class WebsockServer(WebsockMessageHandler):
                     )
 
         # Host client on the same port as the websocket.
-        file_cache: Dict[Path, bytes] = {}
-        file_cache_gzipped: Dict[Path, bytes] = {}
-
-        import gzip
+        file_cache: dict[Path, bytes] = {}
+        file_cache_gzipped: dict[Path, bytes] = {}
 
         async def viser_http_server(
             path: str, request_headers: websockets.datastructures.Headers
-        ) -> Optional[
-            Tuple[http.HTTPStatus, websockets.datastructures.HeadersLike, bytes]
-        ]:
+        ) -> (
+            tuple[http.HTTPStatus, websockets.datastructures.HeadersLike, bytes] | None
+        ):
             # Ignore websocket packets.
             if request_headers.get("Upgrade") == "websocket":
                 return None
@@ -521,7 +508,7 @@ async def _message_producer(
 async def _message_consumer(
     websocket: WebSocketServerProtocol,
     handle_message: Callable[[Message], None],
-    message_class: Type[Message],
+    message_class: type[Message],
 ) -> None:
     """Infinite loop waiting for and then handling incoming messages."""
     while True:
