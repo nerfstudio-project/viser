@@ -204,7 +204,10 @@ class MeshHandle(_ClickableSceneNodeHandle):
 
 @dataclasses.dataclass
 class GaussianSplatHandle(_ClickableSceneNodeHandle):
-    """Handle for Gaussian splatting objects."""
+    """Handle for Gaussian splatting objects.
+
+    **Work-in-progress.** Gaussian rendering is still under development.
+    """
 
 
 @dataclasses.dataclass
