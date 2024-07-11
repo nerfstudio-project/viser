@@ -34,10 +34,7 @@ import "./index.css";
 import ControlPanel from "./ControlPanel/ControlPanel";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
-import {
-  WebsocketMessageProducer,
-  FrameSynchronizedMessageHandler,
-} from "./WebsocketInterface";
+import { WebsocketMessageProducer } from "./WebsocketInterface";
 
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
@@ -48,8 +45,11 @@ import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
 import { theme } from "./AppTheme";
+import { FrameSynchronizedMessageHandler } from "./MessageHandler";
+import { PlaybackFromFile } from "./FilePlayback";
 
 export type ViewerContextContents = {
+  messageSource: "websocket" | "file_playback";
   // Zustand hooks.
   useSceneTree: UseSceneTree;
   useGui: UseGui;
@@ -130,8 +130,15 @@ function ViewerRoot() {
   const initialServer =
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
 
+  // Playback mode for embedding viser.
+  const playbackPath = new URLSearchParams(window.location.search).get(
+    "playbackPath",
+  );
+  console.log(playbackPath);
+
   // Values that can be globally accessed by components in a viewer.
   const viewer: ViewerContextContents = {
+    messageSource: playbackPath === null ? "websocket" : "file_playback",
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
     websocketRef: React.useRef(null),
@@ -169,7 +176,12 @@ function ViewerRoot() {
 
   return (
     <ViewerContext.Provider value={viewer}>
-      <WebsocketMessageProducer />
+      {viewer.messageSource === "websocket" ? (
+        <WebsocketMessageProducer />
+      ) : null}
+      {viewer.messageSource === "file_playback" ? (
+        <PlaybackFromFile fileUrl={playbackPath!} />
+      ) : null}
       <ViewerContents />
     </ViewerContext.Provider>
   );
@@ -235,11 +247,14 @@ function ViewerContents() {
               <ViewerCanvas>
                 <FrameSynchronizedMessageHandler />
               </ViewerCanvas>
-              {viewer.useGui((state) => state.theme.show_logo) ? (
+              {viewer.useGui((state) => state.theme.show_logo) &&
+              viewer.messageSource == "websocket" ? (
                 <ViserLogo />
               ) : null}
             </Box>
-            <ControlPanel control_layout={control_layout} />
+            {viewer.messageSource == "websocket" ? (
+              <ControlPanel control_layout={control_layout} />
+            ) : null}
           </Box>
         </Box>
       </MantineProvider>
