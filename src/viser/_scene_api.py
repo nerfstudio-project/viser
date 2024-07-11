@@ -935,7 +935,7 @@ class SceneApi:
                 visible=visible,
             )
 
-    def add_gaussian_splats(
+    def _add_gaussian_splats(
         self,
         name: str,
         centers: onp.ndarray,
@@ -946,7 +946,11 @@ class SceneApi:
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GaussianSplatHandle:
-        """Add some splattable Gaussians to the scene.
+        """Add a model to render using Gaussian Splatting. Does not yet support
+        spherical harmonics.
+
+        **Work-in-progress.** This feature is experimental and still under
+        development. It may be changed or removed.
 
         Arguments:
             name: Scene node name.
@@ -969,7 +973,7 @@ class SceneApi:
 
         # Get cholesky factor of covariance.
         cov_cholesky_triu = (
-            onp.linalg.cholesky(covariances)
+            onp.linalg.cholesky(covariances + onp.ones(3) * 1e-7)
             .swapaxes(-1, -2)  # tril => triu
             .reshape((-1, 9))[:, onp.array([0, 1, 2, 4, 5, 8])]
             .astype(onp.float32)

@@ -695,7 +695,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         """Start recording outgoing messages for playback or
         embedding. Includes only the scene.
 
-        **Experimental.** This API may be removed or changed.
+        **Work-in-progress.** This API may be changed or removed.
         """
         return self._websock_server.start_recording(
             # Don't record GUI messages. This feels brittle.
