@@ -42,7 +42,8 @@ class GuiContainerProtocol(Protocol):
 
 
 class SupportsRemoveProtocol(Protocol):
-    def remove(self) -> None: ...
+    def remove(self) -> None:
+        ...
 
 
 @dataclasses.dataclass
@@ -567,7 +568,7 @@ class GuiProgressBarHandle:
     _id: str
     _visible: bool
     _animated: bool
-    _parent_container_id: str  # Parent.
+    _parent_container_id: str
     _order: float
     _value: float
 
@@ -630,7 +631,7 @@ class GuiProgressBarHandle:
         parent._children[self._id] = self
 
     def remove(self) -> None:
-        """Permanently remove this markdown from the visualizer."""
+        """Permanently remove this progress bar from the visualizer."""
         self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
 
         parent = self._gui_api._container_handle_from_id[self._parent_container_id]
@@ -644,7 +645,7 @@ class GuiMarkdownHandle:
     _gui_api: GuiApi
     _id: str
     _visible: bool
-    _parent_container_id: str  # Parent.
+    _parent_container_id: str
     _order: float
     _image_root: Path | None
     _content: str | None
@@ -706,7 +707,7 @@ class GuiPlotlyHandle:
     _gui_api: GuiApi
     _id: str
     _visible: bool
-    _parent_container_id: str  # Parent.
+    _parent_container_id: str
     _order: float
     _figure: go.Figure | None
     _aspect: float | None
@@ -774,7 +775,7 @@ class GuiPlotlyHandle:
         parent._children[self._id] = self
 
     def remove(self) -> None:
-        """Permanently remove this markdown from the visualizer."""
+        """Permanently remove this figure from the visualizer."""
         self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
         parent = self._gui_api._container_handle_from_id[self._parent_container_id]
         parent._children.pop(self._id)
