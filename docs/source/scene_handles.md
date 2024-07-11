@@ -36,4 +36,6 @@ connected clients. When a scene node is added to a client (for example, via
 
 .. autoclass:: viser.TransformControlsHandle
 
+.. autoclass:: viser.GaussianSplatHandle
+
 <!-- prettier-ignore-end -->

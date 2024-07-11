@@ -45,6 +45,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
 import { theme } from "./AppTheme";
+import { GaussianSplatsContext } from "./Splatting/GaussianSplats";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 
@@ -244,9 +245,13 @@ function ViewerContents() {
               })}
             >
               <Viewer2DCanvas />
-              <ViewerCanvas>
-                <FrameSynchronizedMessageHandler />
-              </ViewerCanvas>
+              <GaussianSplatsContext.Provider
+                value={React.useRef({ numSorting: 0, sortUpdateCallbacks: [] })}
+              >
+                <ViewerCanvas>
+                  <FrameSynchronizedMessageHandler />
+                </ViewerCanvas>
+              </GaussianSplatsContext.Provider>
               {viewer.useGui((state) => state.theme.show_logo) &&
               viewer.messageSource == "websocket" ? (
                 <ViserLogo />

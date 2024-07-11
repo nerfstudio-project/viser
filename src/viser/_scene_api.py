@@ -19,6 +19,7 @@ from ._scene_handles import (
     BoneState,
     CameraFrustumHandle,
     FrameHandle,
+    GaussianSplatHandle,
     GlbHandle,
     Gui3dContainerHandle,
     ImageHandle,
@@ -933,6 +934,71 @@ class SceneApi:
                 position=position,
                 visible=visible,
             )
+
+    def _add_gaussian_splats(
+        self,
+        name: str,
+        centers: onp.ndarray,
+        covariances: onp.ndarray,
+        rgbs: onp.ndarray,
+        opacities: onp.ndarray,
+        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> GaussianSplatHandle:
+        """Add a model to render using Gaussian Splatting. Does not yet support
+        spherical harmonics.
+
+        **Work-in-progress.** This feature is experimental and still under
+        development. It may be changed or removed.
+
+        Arguments:
+            name: Scene node name.
+            centers: Centers of Gaussians. (N, 3).
+            covariances: Second moment for each Gaussian. (N, 3, 3).
+            rgbs: Color for each Gaussian. (N, 3).
+            opacities: Opacity for each Gaussian. (N, 1).
+            wxyz: R_parent_local transformation.
+            position: t_parent_local transformation.
+            visibile: Initial visibility of scene node.
+
+        Returns:
+            Scene node handle.
+        """
+        num_gaussians = centers.shape[0]
+        assert centers.shape == (num_gaussians, 3)
+        assert rgbs.shape == (num_gaussians, 3)
+        assert opacities.shape == (num_gaussians, 1)
+        assert covariances.shape == (num_gaussians, 3, 3)
+
+        # Get cholesky factor of covariance.
+        cov_cholesky_triu = (
+            onp.linalg.cholesky(covariances.astype(onp.float64) + onp.ones(3) * 1e-7)
+            .swapaxes(-1, -2)  # tril => triu
+            .reshape((-1, 9))[:, onp.array([0, 1, 2, 4, 5, 8])]
+        )
+        buffer = onp.concatenate(
+            [
+                # First texelFetch.
+                centers.astype(onp.float32).view(onp.uint8),
+                onp.zeros((num_gaussians, 4), dtype=onp.uint8),
+                # Second texelFetch.
+                cov_cholesky_triu.astype(onp.float16).copy().view(onp.uint8),
+                _colors_to_uint8(rgbs),
+                _colors_to_uint8(opacities),
+            ],
+            axis=-1,
+        ).view(onp.uint32)
+        assert buffer.shape == (num_gaussians, 8)
+
+        self._websock_interface.queue_message(
+            _messages.GaussianSplatsMessage(
+                name=name,
+                buffer=buffer,
+            )
+        )
+        node_handle = GaussianSplatHandle._make(self, name, wxyz, position, visible)
+        return node_handle
 
     def add_box(
         self,

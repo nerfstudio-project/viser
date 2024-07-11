@@ -33,6 +33,7 @@ import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
+import GaussianSplats from "./Splatting/GaussianSplats";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -955,6 +956,27 @@ function useMessageHandler() {
                     segments={(message.segments ?? undefined) as undefined}
                   ></CubicBezierLine>
                 ))}
+              </group>
+            );
+          }),
+        );
+        return;
+      }
+      case "GaussianSplatsMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.Group>(message.name, (ref) => {
+            return (
+              <group ref={ref}>
+                <GaussianSplats
+                  buffers={{
+                    buffer: new Uint32Array(
+                      message.buffer.buffer.slice(
+                        message.buffer.byteOffset,
+                        message.buffer.byteOffset + message.buffer.byteLength,
+                      ),
+                    ),
+                  }}
+                />
               </group>
             );
           }),

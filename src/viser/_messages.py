@@ -744,6 +744,27 @@ class CubicBezierSplineMessage(Message):
 
 
 @dataclasses.dataclass
+class GaussianSplatsMessage(Message):
+    """Message from server->client carrying splattable Gaussians."""
+
+    name: str
+
+    # Memory layout is borrowed from:
+    # https://github.com/antimatter15/splat
+    buffer: onpt.NDArray[onp.uint32]
+    """Our buffer will contain:
+    - x as f32
+    - y as f32
+    - z as f32
+    - (unused)
+    - cov1 (f16), cov2 (f16)
+    - cov3 (f16), cov4 (f16)
+    - cov5 (f16), cov6 (f16)
+    - rgba (int32)
+    Where cov1-6 are the upper triangular elements of the covariance matrix."""
+
+
+@dataclasses.dataclass
 class GetRenderRequestMessage(Message):
     """Message from server->client requesting a render of the current viewport."""
 

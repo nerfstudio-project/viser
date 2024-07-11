@@ -6,7 +6,6 @@ import React, { useContext } from "react";
 import { ViewerContext } from "./App";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { Message } from "./WebsocketMessages";
-
 /** Component for handling websocket connections. */
 export function WebsocketMessageProducer() {
   const messageQueueRef = useContext(ViewerContext)!.messageQueueRef;
