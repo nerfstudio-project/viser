@@ -973,11 +973,9 @@ class SceneApi:
 
         # Get cholesky factor of covariance.
         cov_cholesky_triu = (
-            onp.linalg.cholesky(covariances + onp.ones(3) * 1e-7)
+            onp.linalg.cholesky(covariances.astype(onp.float64) + onp.ones(3) * 1e-7)
             .swapaxes(-1, -2)  # tril => triu
             .reshape((-1, 9))[:, onp.array([0, 1, 2, 4, 5, 8])]
-            .astype(onp.float32)
-            .copy()
         )
         buffer = onp.concatenate(
             [
@@ -985,7 +983,7 @@ class SceneApi:
                 centers.astype(onp.float32).view(onp.uint8),
                 onp.zeros((num_gaussians, 4), dtype=onp.uint8),
                 # Second texelFetch.
-                cov_cholesky_triu.astype(onp.float16).view(onp.uint8),
+                cov_cholesky_triu.astype(onp.float16).copy().view(onp.uint8),
                 _colors_to_uint8(rgbs),
                 _colors_to_uint8(opacities),
             ],

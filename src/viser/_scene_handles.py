@@ -202,10 +202,12 @@ class MeshHandle(_ClickableSceneNodeHandle):
     """Handle for mesh objects."""
 
 
+@dataclasses.dataclass
 class GaussianSplatHandle(_ClickableSceneNodeHandle):
     """Handle for Gaussian splatting objects."""
 
 
+@dataclasses.dataclass
 class MeshSkinnedHandle(_ClickableSceneNodeHandle):
     """Handle for skinned mesh objects."""
 

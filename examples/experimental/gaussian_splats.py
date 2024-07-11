@@ -17,13 +17,13 @@ from viser import transforms as tf
 class SplatFile(TypedDict):
     """Data loaded from an antimatter15-style splat file."""
 
-    centers: onpt.NDArray[onp.float32]
+    centers: onpt.NDArray[onp.floating]
     """(N, 3)."""
-    rgbs: onpt.NDArray[onp.float32]
+    rgbs: onpt.NDArray[onp.floating]
     """(N, 3). Range [0, 1]."""
-    opacities: onpt.NDArray[onp.float32]
+    opacities: onpt.NDArray[onp.floating]
     """(N, 1). Range [0, 1]."""
-    covariances: onpt.NDArray[onp.float32]
+    covariances: onpt.NDArray[onp.floating]
     """(N, 3, 3)."""
 
 
