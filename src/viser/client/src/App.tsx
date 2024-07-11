@@ -247,11 +247,14 @@ function ViewerContents() {
               <ViewerCanvas>
                 <FrameSynchronizedMessageHandler />
               </ViewerCanvas>
-              {viewer.useGui((state) => state.theme.show_logo) ? (
+              {viewer.useGui((state) => state.theme.show_logo) &&
+              viewer.messageSource == "websocket" ? (
                 <ViserLogo />
               ) : null}
             </Box>
-            <ControlPanel control_layout={control_layout} />
+            {viewer.messageSource == "websocket" ? (
+              <ControlPanel control_layout={control_layout} />
+            ) : null}
           </Box>
         </Box>
       </MantineProvider>

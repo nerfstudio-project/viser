@@ -44,14 +44,21 @@ class RecordHandle:
 
     Handle for recording outgoing messages. Useful for logging + debugging."""
 
-    def __init__(self, handler: WebsockMessageHandler):
+    def __init__(
+        self, handler: WebsockMessageHandler, filter: Callable[[Message], bool]
+    ):
         self._handler = handler
+        self._filter = filter
         self._loop_start_index: int | None = None
         self._time: float = 0.0
         self._messages: list[tuple[float, dict[str, Any]]] = []
 
     def _insert_message(self, message: Message) -> None:
         """Insert a message into the recorded file."""
+
+        # Exclude GUI messages. This is hacky.
+        if not filter(message):
+            return
         self._messages.append((self._time, message.as_serializable_dict()))
 
     def insert_sleep(self, duration: float) -> None:
@@ -94,11 +101,11 @@ class WebsockMessageHandler:
         # Set to None if not recording.
         self._record_handle: RecordHandle | None = None
 
-    def start_recording(self) -> RecordHandle:
+    def start_recording(self, filter: Callable[[Message], bool]) -> RecordHandle:
         """Start recording messages that are sent. Sent messages will be
         serialized and can be used for playback."""
         assert self._record_handle is None, "Already recording."
-        self._record_handle = RecordHandle(self)
+        self._record_handle = RecordHandle(self, filter)
         return self._record_handle
 
     def register_handler(
@@ -132,8 +139,7 @@ class WebsockMessageHandler:
                 cb(client_id, message)
 
     @abc.abstractmethod
-    def unsafe_send_message(self, message: Message) -> None:
-        ...
+    def unsafe_send_message(self, message: Message) -> None: ...
 
     def queue_message(self, message: Message) -> None:
         """Wrapped method for sending messages safely."""

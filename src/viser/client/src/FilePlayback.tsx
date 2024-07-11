@@ -1,6 +1,6 @@
 import { unpack } from "msgpackr";
 import { Message } from "./WebsocketMessages";
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { ViewerContext } from "./App";
 
 interface SerializedMessages {
@@ -46,18 +46,36 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   const viewer = useContext(ViewerContext)!;
   const messageQueueRef = viewer.messageQueueRef;
 
-  const state = React.useRef<{
-    loaded: SerializedMessages;
-    index: number;
-    startTimeSeconds: number;
-  } | null>(null);
+  useEffect(() => {
+    deserializeMsgpackFile<SerializedMessages>(fileUrl).then((recording) => {
+      let messageIndex = 0;
 
-  deserializeMsgpackFile<SerializedMessages>(fileUrl).then((loaded) => {
-    state.current = {
-      loaded: loaded,
-      index: 0,
-      startTimeSeconds: Date.now() / 1000.0,
-    };
+      function continuePlayback() {
+        const currentTimeSeconds = recording.messages[messageIndex][0];
+        while (currentTimeSeconds >= recording.messages[messageIndex][0]) {
+          messageQueueRef.current.push(recording.messages[messageIndex][1]);
+          messageIndex += 1;
+
+          // Either finish playback or loop.
+          if (messageIndex === recording.messages.length) {
+            if (recording.loopStartIndex === null) return;
+            messageIndex = recording.loopStartIndex;
+            setTimeout(
+              continuePlayback,
+              (recording.durationSeconds - currentTimeSeconds) * 1000.0,
+            );
+            return;
+          }
+        }
+
+        // Handle next set of frames.
+        setTimeout(
+          continuePlayback,
+          (recording.messages[messageIndex][0] - currentTimeSeconds) * 1000.0,
+        );
+      }
+      setTimeout(continuePlayback, recording.messages[0][0] * 1000.0);
+    });
   });
 
   // useFrame(() => {

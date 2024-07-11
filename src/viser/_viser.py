@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import dataclasses
 import io
 import mimetypes
@@ -8,7 +7,7 @@ import threading
 import time
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ContextManager, Generator
+from typing import TYPE_CHECKING, Any, Callable, ContextManager
 
 import imageio.v3 as iio
 import numpy as onp
@@ -692,6 +691,13 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         for client in self.get_clients().values():
             client.send_file_download(filename, content, chunk_size)
 
-    def _start_recording(self) -> RecordHandle:
-        """**Experimental.** Start recording outgoing messages."""
-        return self._websock_server.start_recording()
+    def _start_scene_recording(self) -> RecordHandle:
+        """Start recording outgoing messages for playback or
+        embedding. Includes only the scene.
+
+        **Experimental.** This API may be removed or changed.
+        """
+        return self._websock_server.start_recording(
+            # Don't record GUI messages. This feels brittle.
+            filter=lambda message: "Gui" not in type(message).__name__
+        )
