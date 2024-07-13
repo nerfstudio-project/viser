@@ -18,6 +18,6 @@ repos:
       # Run the formatter.
       - id: ruff-format
   - repo: https://github.com/psf/black
-    rev: "23.3.0"
+    rev: "24.4.2"
     hooks:
       - id: black

@@ -135,6 +135,38 @@ function useMessageHandler() {
         return;
       }
 
+      // Add a notification.
+      case "NotificationMessage": {
+        notifications.show({
+          id: message.id,
+          title: message.title,
+          message: message.body,
+          withCloseButton: message.with_close_button,
+          loading: message.loading,
+          autoClose: message.auto_close,
+          });
+        return;
+      }
+
+      // Remove a specific notification.
+      case "RemoveNotificationMessage": {
+        notifications.hide(message.id);
+        return;
+      }
+
+      // Update a specific notification.
+      case "UpdateNotificationMessage": {
+        notifications.update({
+          id: message.id,
+          title: message.title,
+          message: message.body,
+          loading: message.loading, 
+          withCloseButton: message.with_close_button,
+          autoClose: message.auto_close,
+        });
+        return;
+      }
+
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.

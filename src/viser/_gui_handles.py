@@ -7,7 +7,7 @@ import urllib.parse
 import uuid
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Literal, TypeVar
 
 import imageio.v3 as iio
 import numpy as onp
@@ -15,7 +15,15 @@ from typing_extensions import Protocol
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
-from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
+from ._messages import (
+    RemoveNotificationMessage,
+    GuiCloseModalMessage,
+    GuiRemoveMessage,
+    GuiUpdateMessage,
+    Message,
+    NotificationMessage,
+    UpdateNotificationMessage,
+)
 from ._scene_api import _encode_image_base64
 from .infra import ClientId
 
@@ -295,6 +303,47 @@ class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
     def disabled(self, disabled: bool) -> None:
         """Button groups cannot be disabled."""
         assert not disabled, "Button groups cannot be disabled."
+
+
+@dataclasses.dataclass
+class GuiNotificationHandle:
+    """Handle for a notification in our visualizer."""
+
+    _gui_api: GuiApi
+    _id: str
+    _parent_container_id: str
+    _order: float
+    _title: str
+    _body: str
+    _loading: bool = False
+    _with_close_button: bool = True
+    _auto_close: int | Literal[False] = False
+
+    def __post_init__(self) -> None:
+        """We need to register ourself after construction for callbacks to work."""
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._id] = self
+    
+    @property
+    def loading(self) -> bool:
+        """Whether notification shows loading through a progress icon."""
+        return self._loading
+
+    @loading.setter
+    def loading(self, loading: bool) -> None:
+        if loading == self.loading:
+            return
+        
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(self._id, {"loading": loading})
+        )
+        self._loading = loading
+
+    def remove(self) -> None:
+        self._gui_api._websock_interface.queue_message(RemoveNotificationMessage(self._id))
+
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)
 
 
 @dataclasses.dataclass
