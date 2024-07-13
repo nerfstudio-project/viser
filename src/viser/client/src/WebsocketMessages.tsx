@@ -16,19 +16,21 @@ export interface RunJavascriptMessage {
  */
 export interface NotificationMessage {
   type: "NotificationMessage";
+  order: number;
   id: string;
+  container_id: string;
   title: string;
   body: string;
   loading: boolean;
   with_close_button: boolean;
   auto_close: number | false;
 }
-/** Clear a specific notification.
+/** Remove a specific notification.
  *
  * (automatically generated)
  */
-export interface ClearNotificationMessage {
-  type: "ClearNotificationMessage";
+export interface RemoveNotificationMessage {
+  type: "RemoveNotificationMessage";
   id: string;
 }
 /** Update a specific notification.
@@ -43,13 +45,6 @@ export interface UpdateNotificationMessage {
   loading: boolean;
   with_close_button: boolean;
   auto_close: number | false;
-}
-/** Clear all open notification messages.
- *
- * (automatically generated)
- */
-export interface ClearAllNotificationMessage {
-  type: "ClearAllNotificationMessage";
 }
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
@@ -433,7 +428,7 @@ export interface _GuiAddInputBase {
   visible: boolean;
   disabled: boolean;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_html: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_html: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -465,7 +460,7 @@ export interface GuiAddButtonMessage {
     | null;
   icon_html: string | null;
 }
-/** GuiAddUploadButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_html: 'Optional[str]', mime_type: 'str')
+/** GuiAddUploadButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_html: 'Optional[str]', mime_type: 'str')
  *
  * (automatically generated)
  */
@@ -881,9 +876,8 @@ export interface SetGuiPanelLabelMessage {
 export type Message =
   | RunJavascriptMessage
   | NotificationMessage
-  | ClearNotificationMessage
+  | RemoveNotificationMessage
   | UpdateNotificationMessage
-  | ClearAllNotificationMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage

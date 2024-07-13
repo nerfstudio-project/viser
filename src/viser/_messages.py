@@ -84,7 +84,9 @@ class RunJavascriptMessage(Message):
 class NotificationMessage(Message):
     """Notification message."""
 
+    order: float
     id: str
+    container_id: str
     title: str
     body: str
     loading: bool
@@ -93,8 +95,8 @@ class NotificationMessage(Message):
 
 
 @dataclasses.dataclass
-class ClearNotificationMessage(Message):
-    """Clear a specific notification."""
+class RemoveNotificationMessage(Message):
+    """Remove a specific notification."""
 
     id: str
 
@@ -109,11 +111,6 @@ class UpdateNotificationMessage(Message):
     loading: bool
     with_close_button: bool
     auto_close: Union[int, Literal[False]]
-
-
-@dataclasses.dataclass
-class ClearAllNotificationMessage(Message):
-    """Clear all open notification messages."""
 
 
 @dataclasses.dataclass

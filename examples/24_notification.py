@@ -17,8 +17,7 @@ def main() -> None:
     controlled_notif_button = server.gui.add_button("Show controlled notification")
     loading_notif_button = server.gui.add_button("Show loading notification")
 
-    close_controlled_notif = server.gui.add_button("Clear controlled notification")
-    clear_all_notif = server.gui.add_button("Clear all notifications")
+    remove_controlled_notif = server.gui.add_button("Remove controlled notification")
 
     @persistent_notif_button.on_click
     def _(_) -> None:
@@ -53,10 +52,10 @@ def main() -> None:
             auto_close=False,
         )
 
-        @close_controlled_notif.on_click
+        @remove_controlled_notif.on_click
         def _(_) -> None:
-            """Clear controlled notification."""
-            controlled_notif.clear()
+            """Remove controlled notification."""
+            controlled_notif.remove()
 
     @loading_notif_button.on_click
     def _(_) -> None:
@@ -64,20 +63,16 @@ def main() -> None:
         loading_notif = server.gui.add_notification(
             title="Loading notification",
             body="This indicates that some action is in progress!",
-            loading=False,
+            loading=True,
             with_close_button=True,
             auto_close=False,
         )
 
         time.sleep(3.0)
-        loading_notif.update(
-            title="Update notification", body="This notification was updated!"
-        )
-
-    @clear_all_notif.on_click
-    def _(_) -> None:
-        """Clear all open notifications."""
-        server.gui.clear_all_notification()
+        loading_notif.loading = False
+        # loading_notif.update(
+        #     title="Update notification", body="This notification was updated!"
+        # )
 
     while True:
         time.sleep(1.0)

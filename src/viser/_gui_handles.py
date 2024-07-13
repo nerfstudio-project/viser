@@ -16,7 +16,7 @@ from typing_extensions import Protocol
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._messages import (
-    ClearNotificationMessage,
+    RemoveNotificationMessage,
     GuiCloseModalMessage,
     GuiRemoveMessage,
     GuiUpdateMessage,
@@ -310,33 +310,41 @@ class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
 class GuiNotificationHandle:
     """Handle for a notification in our visualizer."""
 
-    _notification: NotificationMessage
-    _send_msg_fn: Callable[[Message], None]
+    _gui_api: GuiApi
+    _id: str
+    _parent_container_id: str
+    _order: float
+    _title: str
+    _body: str
+    _loading: bool = False
+    _with_close_button: bool = True
+    _auto_close: int | Literal[False] = False
 
     def __post_init__(self) -> None:
-        self._send_msg_fn(self._notification)
+        """We need to register ourself after construction for callbacks to work."""
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._id] = self
+    
+    @property
+    def loading(self) -> bool:
+        """Whether notification shows loading through a progress icon."""
+        return self._loading
 
-    def clear(self) -> None:
-        self._send_msg_fn(ClearNotificationMessage(self._notification.id))
-
-    def update(
-        self,
-        title: str,
-        body: str,
-        loading: bool = False,
-        with_close_button: bool = True,
-        auto_close: int | Literal[False] = False,
-    ) -> None:
-        self._send_msg_fn(
-            UpdateNotificationMessage(
-                self._notification.id,
-                title,
-                body,
-                loading,
-                with_close_button,
-                auto_close,
-            )
+    @loading.setter
+    def loading(self, loading: bool) -> None:
+        if loading == self.loading:
+            return
+        
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(self._id, {"loading": loading})
         )
+        self._loading = loading
+
+    def remove(self) -> None:
+        self._gui_api._websock_interface.queue_message(RemoveNotificationMessage(self._id))
+
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)
 
 
 @dataclasses.dataclass
