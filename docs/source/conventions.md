@@ -12,8 +12,9 @@ If we add a coordinate frame called `/base_link/shoulder/wrist`, it signifies
 three nodes: the `wrist` is a child of the `shoulder` which is a child of the
 `base_link`.
 
-If we set the transformation of a given node like `/shoulder`, both it and all
-of its children will move. Its parent, `/base_link`, will be unaffected.
+If we set the transformation of a given node like `/base_link/shoulder`, both
+it and its child `/base_link/shoulder/wrist` will move. Its parent,
+`/base_link`, will be unaffected.
 
 ## Poses
 
@@ -29,12 +30,13 @@ parent frame:
 
 .. math::
 
-   p_\mathrm{parent} = \begin{bmatrix} R \mid t \end{bmatrix}p_\mathrm{local}
+   p_\mathrm{parent} = \begin{bmatrix} R & t \end{bmatrix}\begin{bmatrix}p_\mathrm{local} \\ 1\end{bmatrix}
 
 <!-- prettier-ignore-end -->
 
 where `wxyz` is the quaternion form of the :math:`\mathrm{SO}(3)` matrix
-:math:`R` and `position` is the translation term :math:`t`.
+:math:`R` and `position` is the :math:`\mathbb{R}^3` translation term
+:math:`t`.
 
 ## World coordinates
 
@@ -44,8 +46,8 @@ overridden with :func:`viser.ViserServer.set_up_direction()` or
 
 ## Cameras
 
-All camera parameters exposed to the Python API use the COLMAP/OpenCV
-convention:
+In `viser`, all camera parameters exposed to the Python API use the
+COLMAP/OpenCV convention:
 
 - Forward: +Z
 - Up: -Y
@@ -58,5 +60,4 @@ convention:
 - Up: +Y
 - Right: +X
 
-Note that conversion between the two is a simple 180 degree rotation around the
-X-axis.
+Conversion between the two is a simple 180 degree rotation around the local X-axis.

@@ -7,7 +7,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Sequence, Tuple, TypeVar, Union, cast, overload
+from typing import TYPE_CHECKING, Any, Sequence, Tuple, TypeVar, cast, overload
 
 import numpy as onp
 from typing_extensions import (
@@ -15,8 +15,6 @@ from typing_extensions import (
     LiteralString,
     TypeAlias,
     TypedDict,
-    get_args,
-    get_origin,
     get_type_hints,
 )
 
@@ -128,49 +126,6 @@ def get_type_hints_cached(cls: type[Any]) -> dict[str, Any]:
     return get_type_hints(cls)  # type: ignore
 
 
-def cast_value(tp, value):
-    """Cast a value to a type, or raise a TypeError if it cannot be cast."""
-    origin = get_origin(tp)
-
-    if (origin is tuple or tp is tuple) and isinstance(value, list):
-        return cast_value(tp, tuple(value))
-
-    if origin is Literal:
-        for val in get_args(tp):
-            try:
-                value_casted = cast_value(type(val), value)
-                if val == value_casted:
-                    return value_casted
-            except ValueError:
-                pass
-            except TypeError:
-                pass
-        raise TypeError(f"Value {value} is not in {get_args(tp)}")
-
-    if origin is Union:
-        for t in get_args(tp):
-            try:
-                return cast_value(t, value)
-            except ValueError:
-                pass
-            except TypeError:
-                pass
-        raise TypeError(f"Value {value} is not in {tp}")
-
-    if tp in {int, float, bool, str}:
-        return tp(value)
-
-    if dataclasses.is_dataclass(tp):
-        return tp(
-            **{k: cast_value(v, value[k]) for k, v in get_type_hints_cached(tp).items()}
-        )
-
-    if isinstance(value, tp):
-        return value
-
-    raise TypeError(f"Cannot cast value {value} to type {tp}")
-
-
 class _FileUploadState(TypedDict):
     filename: str
     mime_type: str
@@ -243,10 +198,19 @@ class GuiApi:
             assert hasattr(handle_state, prop_name)
             current_value = getattr(handle_state, prop_name)
 
-            # Do some type casting. This is brittle, but necessary when we
-            # expect floats but the Javascript side gives us integers.
+            # Do some type casting. This is brittle, but necessary (1) when we
+            # expect floats but the Javascript side gives us integers or (2)
+            # when we expect tuples but the Javascript side gives us lists.
             if prop_name == "value":
-                prop_value = cast_value(handle_state.typ, prop_value)
+                if isinstance(handle_state.value, tuple):
+                    # We currently assume all tuple types have length >0, and
+                    # contents are all the same type.
+                    assert len(handle_state.value) > 0
+                    typ = type(handle_state.value[0])
+                    assert all([type(x) == typ for x in handle_state.value])
+                    prop_value = tuple([typ(new) for new in prop_value])
+                else:
+                    prop_value = type(handle_state.value)(prop_value)
 
             # Update handle property.
             if current_value != prop_value:
@@ -1532,7 +1496,6 @@ class GuiApi:
         handle_state = _GuiHandleState(
             label=message.label,
             message_type=type(message),
-            typ=type(value),
             gui_api=self,
             value=value,
             update_timestamp=time.time(),

@@ -58,7 +58,6 @@ class _GuiHandleState(Generic[T]):
     """Internal API for GUI elements."""
 
     label: str
-    typ: type[T]
     gui_api: GuiApi
     value: T
     update_timestamp: float

@@ -23,6 +23,7 @@ from . import transforms as tf
 from ._gui_api import GuiApi
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
+from .infra._infra import RecordHandle
 
 
 class _BackwardsCompatibilityShim:
@@ -356,9 +357,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             chunk_size: Number of bytes to send at a time.
         """
         mime_type = mimetypes.guess_type(filename, strict=False)[0]
-        assert (
-            mime_type is not None
-        ), f"Could not guess MIME type from filename {filename}!"
+        if mime_type is None:
+            mime_type = "application/octet-stream"
 
         from ._gui_api import _make_unique_id
 
@@ -690,3 +690,14 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         """
         for client in self.get_clients().values():
             client.send_file_download(filename, content, chunk_size)
+
+    def _start_scene_recording(self) -> RecordHandle:
+        """Start recording outgoing messages for playback or
+        embedding. Includes only the scene.
+
+        **Work-in-progress.** This API may be changed or removed.
+        """
+        return self._websock_server.start_recording(
+            # Don't record GUI messages. This feels brittle.
+            filter=lambda message: "Gui" not in type(message).__name__
+        )
