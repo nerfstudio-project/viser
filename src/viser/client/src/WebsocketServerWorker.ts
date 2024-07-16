@@ -77,7 +77,7 @@ export type WsWorkerOutgoing =
       tryConnect();
     } else if (data.type == "close") {
       server = null;
-      ws.close();
+      ws !== null && ws.close();
       self.close();
     } else {
       console.log(
