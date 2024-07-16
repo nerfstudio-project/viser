@@ -12,13 +12,32 @@ export type WsWorkerOutgoing =
   | { type: "closed" }
   | { type: "message_batch"; messages: Message[] };
 
+// Helper function to collect all ArrayBuffer objects. This is used for postMessage() move semantics.
+function collectArrayBuffers(obj: any, buffers: Set<ArrayBuffer>) {
+  if (obj instanceof ArrayBuffer) {
+    buffers.add(obj);
+  } else if (obj instanceof Uint8Array) {
+    buffers.add(obj.buffer);
+  } else if (obj && typeof obj === "object") {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        collectArrayBuffers(obj[key], buffers);
+      }
+    }
+  }
+  return buffers;
+}
 {
   let server: string | null = null;
   let ws: WebSocket | null = null;
   const orderLock = new AwaitLock();
 
-  const postOutgoing = (data: WsWorkerOutgoing) => {
-    self.postMessage(data);
+  const postOutgoing = (
+    data: WsWorkerOutgoing,
+    transferable?: Transferable[],
+  ) => {
+    // @ts-ignore
+    self.postMessage(data, transferable);
   };
 
   const tryConnect = () => {
@@ -60,7 +79,11 @@ export type WsWorkerOutgoing =
       });
       try {
         const messages = await messagePromise;
-        postOutgoing({ type: "message_batch", messages: messages });
+        const arrayBuffers = collectArrayBuffers(messages, new Set());
+        postOutgoing(
+          { type: "message_batch", messages: messages },
+          Array.from(arrayBuffers),
+        );
       } finally {
         orderLock.acquired && orderLock.release();
       }
