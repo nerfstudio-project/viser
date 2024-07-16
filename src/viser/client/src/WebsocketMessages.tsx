@@ -405,6 +405,35 @@ export interface GuiAddMarkdownMessage {
   container_id: string;
   visible: boolean;
 }
+/** GuiAddProgressBarMessage(order: 'float', id: 'str', value: 'float', animated: 'bool', color: 'Optional[Color]', container_id: 'str', visible: 'bool')
+ *
+ * (automatically generated)
+ */
+export interface GuiAddProgressBarMessage {
+  type: "GuiAddProgressBarMessage";
+  order: number;
+  id: string;
+  value: number;
+  animated: boolean;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
+  container_id: string;
+  visible: boolean;
+}
 /** GuiAddPlotlyMessage(order: 'float', id: 'str', plotly_json_str: 'str', aspect: 'float', container_id: 'str', visible: 'bool')
  *
  * (automatically generated)
@@ -447,7 +476,7 @@ export interface _GuiAddInputBase {
   visible: boolean;
   disabled: boolean;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_html: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool', color: 'Optional[Color]', icon_html: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -479,7 +508,7 @@ export interface GuiAddButtonMessage {
     | null;
   icon_html: string | null;
 }
-/** GuiAddUploadButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', color: "Optional[Literal['dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal']]", icon_html: 'Optional[str]', mime_type: 'str')
+/** GuiAddUploadButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', color: 'Optional[Color]', icon_html: 'Optional[str]', mime_type: 'str')
  *
  * (automatically generated)
  */
@@ -936,6 +965,7 @@ export type Message =
   | ResetSceneMessage
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
+  | GuiAddProgressBarMessage
   | GuiAddPlotlyMessage
   | GuiAddTabGroupMessage
   | _GuiAddInputBase
@@ -972,6 +1002,7 @@ export type Message =
 export type GuiAddComponentMessage =
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
+  | GuiAddProgressBarMessage
   | GuiAddPlotlyMessage
   | GuiAddTabGroupMessage
   | GuiAddButtonMessage

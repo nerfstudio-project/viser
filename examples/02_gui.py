@@ -18,7 +18,6 @@ def main() -> None:
             initial_value=0,
             disabled=True,
         )
-
         gui_slider = server.gui.add_slider(
             "Slider",
             min=0,
@@ -27,6 +26,7 @@ def main() -> None:
             initial_value=0,
             disabled=True,
         )
+        gui_progress = server.gui.add_progress_bar(25, animated=True)
 
     with server.gui.add_folder("Editable"):
         gui_vector2 = server.gui.add_vector2(
@@ -107,6 +107,8 @@ def main() -> None:
             position=gui_vector2.value + (0,),
             point_shape="circle",
         )
+
+        gui_progress.value = float((counter % 100))
 
         # We can use `.visible` and `.disabled` to toggle GUI elements.
         gui_text.visible = not gui_checkbox_hide.value

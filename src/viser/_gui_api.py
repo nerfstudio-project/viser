@@ -32,6 +32,7 @@ from ._gui_handles import (
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiPlotlyHandle,
+    GuiProgressBarHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
     SupportsRemoveProtocol,
@@ -57,6 +58,22 @@ TString = TypeVar("TString", bound=str)
 TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 T = TypeVar("T")
 LengthTenStrTuple: TypeAlias = Tuple[str, str, str, str, str, str, str, str, str, str]
+Color: TypeAlias = Literal[
+    "dark",
+    "gray",
+    "red",
+    "pink",
+    "grape",
+    "violet",
+    "indigo",
+    "blue",
+    "cyan",
+    "green",
+    "lime",
+    "yellow",
+    "orange",
+    "teal",
+]
 
 
 def _hex_from_hls(h: float, l: float, s: float) -> str:
@@ -637,23 +654,7 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-        | None = None,
+        color: Color | None = None,
         icon: IconName | None = None,
         order: float | None = None,
     ) -> GuiButtonHandle:
@@ -701,23 +702,7 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-        | None = None,
+        color: Color | None = None,
         icon: IconName | None = None,
         mime_type: str = "*/*",
         order: float | None = None,
@@ -1175,6 +1160,49 @@ class GuiApi:
             )._impl,
             _impl_options=tuple(options),
         )
+
+    def add_progress_bar(
+        self,
+        value: float,
+        visible: bool = True,
+        animated: bool = False,
+        color: Color | None = None,
+        order: float | None = None,
+    ) -> GuiProgressBarHandle:
+        """Add a progress bar to the GUI.
+
+        Args:
+            value: Value of the progress bar. (0 - 100)
+            visible: Whether the progress bar is visible.
+            animated: Whether the progress bar is in a loading state (animated, striped).
+            color: The color of the progress bar.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        assert value >= 0 and value <= 100
+        handle = GuiProgressBarHandle(
+            _gui_api=self,
+            _id=_make_unique_id(),
+            _visible=visible,
+            _animated=animated,
+            _parent_container_id=self._get_container_id(),
+            _order=_apply_default_order(order),
+            _value=value,
+        )
+        self._websock_interface.queue_message(
+            _messages.GuiAddProgressBarMessage(
+                order=handle._order,
+                id=handle._id,
+                value=value,
+                animated=animated,
+                color=color,
+                container_id=handle._parent_container_id,
+                visible=visible,
+            )
+        )
+        return handle
 
     def add_slider(
         self,

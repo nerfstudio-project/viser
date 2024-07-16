@@ -25,6 +25,22 @@ from typing_extensions import Annotated, Literal, NotRequired, TypedDict, overri
 from . import infra, theme
 
 GuiSliderMark = TypedDict("GuiSliderMark", {"value": float, "label": NotRequired[str]})
+Color = Literal[
+    "dark",
+    "gray",
+    "red",
+    "pink",
+    "grape",
+    "violet",
+    "indigo",
+    "blue",
+    "cyan",
+    "green",
+    "lime",
+    "yellow",
+    "orange",
+    "teal",
+]
 
 
 class Message(infra.Message):
@@ -485,6 +501,18 @@ class GuiAddMarkdownMessage(Message):
 
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
+class GuiAddProgressBarMessage(Message):
+    order: float
+    id: str
+    value: float
+    animated: bool
+    color: Optional[Color]
+    container_id: str
+    visible: bool
+
+
+@tag_class("GuiAddComponentMessage")
+@dataclasses.dataclass
 class GuiAddPlotlyMessage(Message):
     order: float
     id: str
@@ -538,48 +566,14 @@ class GuiAddButtonMessage(_GuiAddInputBase):
     # All GUI elements currently need an `value` field.
     # This makes our job on the frontend easier.
     value: bool
-    color: Optional[
-        Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-    ]
+    color: Optional[Color]
     icon_html: Optional[str]
 
 
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddUploadButtonMessage(_GuiAddInputBase):
-    color: Optional[
-        Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-    ]
+    color: Optional[Color]
     icon_html: Optional[str]
     mime_type: str
 
