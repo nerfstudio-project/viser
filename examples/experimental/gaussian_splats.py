@@ -126,7 +126,7 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     }
 
 
-def main(splat_paths: tuple[Path, ...], test_multisplat: bool = False) -> None:
+def main(splat_paths: tuple[Path, ...]) -> None:
     server = viser.ViserServer(share=True)
     server.gui.configure_theme(dark_mode=True)
     gui_reset_up = server.gui.add_button(

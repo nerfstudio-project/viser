@@ -1,5 +1,5 @@
 import { ViewerContext } from "../App";
-import { makeThrottledMessageSender } from "../WebsocketFunctions";
+import { useThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiComponentContext } from "./GuiComponentContext";
 
 import { Box } from "@mantine/core";
@@ -31,7 +31,7 @@ export default function GeneratedGuiContainer({
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
-  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
+  const messageSender = useThrottledMessageSender(50);
 
   function setValue(id: string, value: NonNullable<unknown>) {
     updateGuiProps(id, { value: value });

@@ -38,7 +38,6 @@ import BottomPanel from "./BottomPanel";
 import FloatingPanel from "./FloatingPanel";
 import { ThemeConfigurationMessage } from "../WebsocketMessages";
 import SidebarPanel from "./SidebarPanel";
-import { sendWebsocketMessage } from "../WebsocketFunctions";
 
 // Must match constant in Python.
 const ROOT_CONTAINER_ID = "root";
@@ -270,7 +269,7 @@ function ShareButton() {
                 <Button
                   fullWidth
                   onClick={() => {
-                    sendWebsocketMessage(viewer.websocketRef, {
+                    viewer.sendMessageRef.current({
                       type: "ShareUrlRequest",
                     });
                     setDoingSomething(true); // Loader state will help with debouncing.
@@ -316,7 +315,7 @@ function ShareButton() {
                   <Button
                     color="red"
                     onClick={() => {
-                      sendWebsocketMessage(viewer.websocketRef, {
+                      viewer.sendMessageRef.current({
                         type: "ShareUrlDisconnect",
                       });
                       setShareUrl(null);

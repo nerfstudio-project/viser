@@ -40,7 +40,7 @@ import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
-import { makeThrottledMessageSender } from "./WebsocketFunctions";
+import { useThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
@@ -57,7 +57,7 @@ export type ViewerContextContents = {
   // Useful references.
   // TODO: there's really no reason these all need to be their own ref objects.
   // We could have just one ref to a global mutable struct.
-  websocketRef: React.MutableRefObject<WebSocket | null>;
+  sendMessageRef: React.MutableRefObject<(message: Message) => void>;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
@@ -142,7 +142,11 @@ function ViewerRoot() {
     messageSource: playbackPath === null ? "websocket" : "file_playback",
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
-    websocketRef: React.useRef(null),
+    sendMessageRef: React.useRef((message) =>
+      console.log(
+        `Tried to send ${message.type} but websocket is not connected!`,
+      ),
+    ),
     canvasRef: React.useRef(null),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
@@ -206,7 +210,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
         })}
         forceColorScheme={darkMode ? "dark" : "light"}
       >
-        { children }
+        {children}
         <Notifications
           position="top-left"
           containerWidth="20em"
@@ -271,10 +275,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
 
 function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
-  const sendClickThrottled = makeThrottledMessageSender(
-    viewer.websocketRef,
-    20,
-  );
+  const sendClickThrottled = useThrottledMessageSender(20);
   const theme = useMantineTheme();
 
   return (

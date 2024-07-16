@@ -22,11 +22,7 @@ import {
   Message,
 } from "./WebsocketMessages";
 import { PivotControls } from "@react-three/drei";
-import {
-  isTexture,
-  makeThrottledMessageSender,
-  sendWebsocketMessage,
-} from "./WebsocketFunctions";
+import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
@@ -559,10 +555,7 @@ function useMessageHandler() {
       }
       case "TransformControlsMessage": {
         const name = message.name;
-        const sendDragMessage = makeThrottledMessageSender(
-          viewer.websocketRef,
-          50,
-        );
+        const sendDragMessage = makeThrottledMessageSender(viewer, 50);
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
             message.name,
@@ -1175,7 +1168,7 @@ export function FrameSynchronizedMessageHandler() {
             return;
           }
           const payload = new Uint8Array(await blob.arrayBuffer());
-          sendWebsocketMessage(viewer.websocketRef, {
+          viewer.sendMessageRef.current({
             type: "GetRenderResponseMessage",
             payload: payload,
           });

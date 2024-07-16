@@ -4,7 +4,7 @@ import React from "react";
 import * as THREE from "three";
 
 import { ViewerContext } from "./App";
-import { makeThrottledMessageSender } from "./WebsocketFunctions";
+import { useThrottledMessageSender } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
 import { immerable } from "immer";
 import { useSceneTreeState } from "./SceneTreeState";
@@ -265,10 +265,7 @@ export function SceneNodeThreeObject(props: {
   });
 
   // Clicking logic.
-  const sendClicksThrottled = makeThrottledMessageSender(
-    viewer.websocketRef,
-    50,
-  );
+  const sendClicksThrottled = useThrottledMessageSender(50);
   const [hovered, setHovered] = React.useState(false);
   useCursor(hovered);
   const hoveredRef = React.useRef(false);

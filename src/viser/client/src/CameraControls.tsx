@@ -1,5 +1,4 @@
 import { ViewerContext } from "./App";
-import { makeThrottledMessageSender } from "./WebsocketFunctions";
 import { CameraControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import * as holdEvent from "hold-event";
@@ -7,15 +6,13 @@ import React, { useContext, useRef } from "react";
 import { PerspectiveCamera } from "three";
 import * as THREE from "three";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
+import { useThrottledMessageSender } from "./WebsocketFunctions";
 
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
   const camera = useThree((state) => state.camera as PerspectiveCamera);
 
-  const sendCameraThrottled = makeThrottledMessageSender(
-    viewer.websocketRef,
-    20,
-  );
+  const sendCameraThrottled = useThrottledMessageSender(20);
 
   // Helper for resetting camera poses.
   const initialCameraRef = useRef<{
