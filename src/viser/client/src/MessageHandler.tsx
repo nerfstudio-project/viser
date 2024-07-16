@@ -22,11 +22,7 @@ import {
   Message,
 } from "./WebsocketMessages";
 import { PivotControls } from "@react-three/drei";
-import {
-  isTexture,
-  makeThrottledMessageSender,
-  sendWebsocketMessage,
-} from "./WebsocketFunctions";
+import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
@@ -234,16 +230,20 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
+                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                      : message.plane == "yx"
+                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                        : message.plane == "yz"
+                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                          : message.plane == "zx"
+                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                            : message.plane == "zy"
+                              ? new THREE.Euler(
+                                  -Math.PI / 2.0,
+                                  0.0,
+                                  -Math.PI / 2.0,
+                                )
+                              : undefined
                 }
               />
             </group>
@@ -331,16 +331,16 @@ function useMessageHandler() {
           message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(3),
-                ...standardArgs,
-              })
-            : message.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.material);
+              ? new THREE.MeshToonMaterial({
+                  gradientMap: generateGradientMap(3),
+                  ...standardArgs,
+                })
+              : message.material == "toon5"
+                ? new THREE.MeshToonMaterial({
+                    gradientMap: generateGradientMap(5),
+                    ...standardArgs,
+                  })
+                : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(
@@ -559,10 +559,7 @@ function useMessageHandler() {
       }
       case "TransformControlsMessage": {
         const name = message.name;
-        const sendDragMessage = makeThrottledMessageSender(
-          viewer.websocketRef,
-          50,
-        );
+        const sendDragMessage = makeThrottledMessageSender(viewer, 50);
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
             message.name,
@@ -1175,7 +1172,7 @@ export function FrameSynchronizedMessageHandler() {
             return;
           }
           const payload = new Uint8Array(await blob.arrayBuffer());
-          sendWebsocketMessage(viewer.websocketRef, {
+          viewer.sendMessageRef.current({
             type: "GetRenderResponseMessage",
             payload: payload,
           });
