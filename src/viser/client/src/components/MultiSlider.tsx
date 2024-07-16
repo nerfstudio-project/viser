@@ -27,7 +27,6 @@ export default function MultiSliderComponent({
         id={id}
         className={marks === null ? sliderDefaultMarks : undefined}
         size="xs"
-        thumbSize={0}
         radius="xs"
         styles={(theme) => ({
           thumb: {
