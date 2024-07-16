@@ -177,25 +177,26 @@ function ViewerRoot() {
 
   return (
     <ViewerContext.Provider value={viewer}>
-      {viewer.messageSource === "websocket" ? (
-        <WebsocketMessageProducer />
-      ) : null}
-      {viewer.messageSource === "file_playback" ? (
-        <PlaybackFromFile fileUrl={playbackPath!} />
-      ) : null}
-      <ViewerContents />
+      <ViewerContents>
+        {viewer.messageSource === "websocket" ? (
+          <WebsocketMessageProducer />
+        ) : null}
+        {viewer.messageSource === "file_playback" ? (
+          <PlaybackFromFile fileUrl={playbackPath!} />
+        ) : null}
+      </ViewerContents>
     </ViewerContext.Provider>
   );
 }
 
-function ViewerContents() {
+function ViewerContents({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
-  const dark_mode = viewer.useGui((state) => state.theme.dark_mode);
+  const darkMode = viewer.useGui((state) => state.theme.dark_mode);
   const colors = viewer.useGui((state) => state.theme.colors);
-  const control_layout = viewer.useGui((state) => state.theme.control_layout);
+  const controlLayout = viewer.useGui((state) => state.theme.control_layout);
   return (
     <>
-      <ColorSchemeScript forceColorScheme={dark_mode ? "dark" : "light"} />
+      <ColorSchemeScript forceColorScheme={darkMode ? "dark" : "light"} />
       <MantineProvider
         theme={createTheme({
           ...theme,
@@ -203,8 +204,9 @@ function ViewerContents() {
             ? {}
             : { colors: { custom: colors }, primaryColor: "custom" }),
         })}
-        forceColorScheme={dark_mode ? "dark" : "light"}
+        forceColorScheme={darkMode ? "dark" : "light"}
       >
+        { children }
         <Notifications
           position="top-left"
           containerWidth="20em"
@@ -238,7 +240,7 @@ function ViewerContents() {
           >
             <Box
               style={(theme) => ({
-                backgroundColor: dark_mode ? theme.colors.dark[9] : "#fff",
+                backgroundColor: darkMode ? theme.colors.dark[9] : "#fff",
                 flexGrow: 1,
                 overflow: "hidden",
                 height: "100%",
@@ -258,7 +260,7 @@ function ViewerContents() {
               ) : null}
             </Box>
             {viewer.messageSource == "websocket" ? (
-              <ControlPanel control_layout={control_layout} />
+              <ControlPanel control_layout={controlLayout} />
             ) : null}
           </Box>
         </Box>

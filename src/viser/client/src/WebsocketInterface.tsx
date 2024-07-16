@@ -1,5 +1,5 @@
 import AwaitLock from "await-lock";
-import { unpack } from "msgpackr";
+import { decode } from "@msgpack/msgpack";
 
 import React, { useContext } from "react";
 
@@ -55,7 +55,7 @@ export function WebsocketMessageProducer() {
         // Reduce websocket backpressure.
         const messagePromise = new Promise<Message[]>((resolve) => {
           (event.data.arrayBuffer() as Promise<ArrayBuffer>).then((buffer) => {
-            resolve(unpack(new Uint8Array(buffer)) as Message[]);
+            resolve(decode(new Uint8Array(buffer)) as Message[]);
           });
         });
 
