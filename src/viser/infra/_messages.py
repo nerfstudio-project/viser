@@ -8,7 +8,7 @@ import functools
 import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast
 
-import msgpack
+import msgspec
 import numpy as onp
 from typing_extensions import get_args, get_origin, get_type_hints
 
@@ -127,13 +127,19 @@ class Message(abc.ABC):
     @classmethod
     def deserialize(cls, message: bytes) -> Message:
         """Convert bytes into a Python Message object."""
-        mapping = msgpack.unpackb(message)
+        mapping = msgspec.msgpack.decode(message)
 
         # msgpack deserializes to lists by default, but all of our annotations use
         # tuples.
-        mapping = {
-            k: tuple(v) if isinstance(v, list) else v for k, v in mapping.items()
-        }
+        def lists_to_tuple(obj: Any) -> Any:
+            if isinstance(obj, list):
+                return tuple(lists_to_tuple(x) for x in obj)
+            elif isinstance(obj, dict):
+                return {k: lists_to_tuple(v) for k, v in obj.items()}
+            else:
+                return obj
+
+        mapping = lists_to_tuple(mapping)
         message_type = cls._subclass_from_type_string()[cast(str, mapping.pop("type"))]
         message_kwargs = message_type._from_serializable_dict(mapping)
         return message_type(**message_kwargs)
