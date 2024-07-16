@@ -1,7 +1,7 @@
 import { MutableRefObject } from "react";
 import * as THREE from "three";
 import { Message } from "./WebsocketMessages";
-import { pack } from "msgpackr";
+import { encode } from "@msgpack/msgpack";
 
 /** Send message over websocket. */
 export function sendWebsocketMessage(
@@ -9,7 +9,7 @@ export function sendWebsocketMessage(
   message: Message,
 ) {
   if (websocketRef.current === null) return;
-  websocketRef.current.send(pack(message));
+  websocketRef.current.send(encode(message));
 }
 
 /** Returns a function for sending messages, with automatic throttling. */
@@ -25,7 +25,7 @@ export function makeThrottledMessageSender(
     if (websocketRef.current === null) return;
     latestMessage = message;
     if (readyToSend) {
-      websocketRef.current.send(pack(message));
+      websocketRef.current.send(encode(message));
       stale = false;
       readyToSend = false;
 

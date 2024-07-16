@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 
-import msgpack
+import msgspec
 import rich
 import websockets.connection
 import websockets.datastructures
@@ -74,7 +74,7 @@ class RecordHandle:
     def end_and_serialize(self) -> bytes:
         """End the recording and serialize contents. Returns the recording as
         bytes, which should generally be written to a file."""
-        packed_bytes = msgpack.packb(
+        packed_bytes = msgspec.msgpack.encode(
             {
                 "loopStartIndex": self._loop_start_index,
                 "durationSeconds": self._time,
@@ -497,14 +497,14 @@ async def _message_producer(
     while not buffer.done:
         outgoing = await window_generator.__anext__()
         if client_api_version == 1:
-            serialized = msgpack.packb(
+            serialized = msgspec.msgpack.encode(
                 tuple(message.as_serializable_dict() for message in outgoing)
             )
             assert isinstance(serialized, bytes)
             await websocket.send(serialized)
         elif client_api_version == 0:
             for msg in outgoing:
-                serialized = msgpack.packb(msg.as_serializable_dict())
+                serialized = msgspec.msgpack.encode(msg.as_serializable_dict())
                 assert isinstance(serialized, bytes)
                 await websocket.send(serialized)
         else:

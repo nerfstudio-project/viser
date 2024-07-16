@@ -5,7 +5,7 @@ import { Box, Progress } from "@mantine/core";
 import { Button } from "@mantine/core";
 import React, { useContext } from "react";
 import { ViewerContext, ViewerContextContents } from "../App";
-import { pack } from "msgpackr";
+import { encode } from "@msgpack/msgpack";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
@@ -137,8 +137,8 @@ function useFileUpload({
     const transferUuid = uuid();
     const notificationId = "upload-" + transferUuid;
 
-    const send = (message: Parameters<typeof pack>[0]) =>
-      websocketRef.current?.send(pack(message));
+    const send = (message: Parameters<typeof encode>[0]) =>
+      websocketRef.current?.send(encode(message));
 
     // Begin upload by setting initial state
     updateUploadState({
