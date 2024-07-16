@@ -478,6 +478,11 @@ class ResetSceneMessage(Message):
     """Reset scene."""
 
 
+@dataclasses.dataclass
+class ResetGuiMessage(Message):
+    """Reset GUI."""
+
+
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddFolderMessage(Message):

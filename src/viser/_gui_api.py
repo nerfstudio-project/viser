@@ -342,6 +342,10 @@ class GuiApi:
         """Set container ID associated with the current thread."""
         self._target_container_from_thread_id[threading.get_ident()] = container_id
 
+    def reset(self) -> None:
+        """Reset the GUI."""
+        self._websock_interface.queue_message(_messages.ResetGuiMessage())
+
     def set_panel_label(self, label: str | None) -> None:
         """Set the main label that appears in the GUI panel.
 
