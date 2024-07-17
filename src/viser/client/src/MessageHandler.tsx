@@ -464,6 +464,12 @@ function useMessageHandler() {
                     geometry={geometry}
                     material={material}
                     skeleton={skeleton}
+                    // TODO: leaving culling on (default) sometimes causes the
+                    // mesh to randomly disappear, as of r3f==8.16.2.
+                    //
+                    // Probably this is because we don't update the bounding
+                    // sphere after the bone transforms change.
+                    frustumCulled={false}
                   >
                     <OutlinesIfHovered alwaysMounted />
                   </skinnedMesh>
