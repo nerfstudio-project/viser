@@ -44,20 +44,20 @@ def _prepare_for_deserialization(value: Any, annotation: Type) -> Any:
     return value
 
 
-def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
+def _prepare_for_serialization(value: Any, annotation: object) -> Any:
     """Prepare any special types for serialization."""
     if annotation is Any:
         annotation = type(value)
 
     # Coerce some scalar types: if we've annotated as float / int but we get an
     # onp.float32 / onp.int64, for example, we should cast automatically.
-    if annotation is float:
+    if annotation is float or isinstance(value, onp.floating):
         return float(value)
-    if annotation is int:
+    if annotation is int or isinstance(value, onp.integer):
         return int(value)
 
     # Recursively handle tuples.
-    if get_origin(annotation) is tuple:
+    if isinstance(value, tuple):
         if isinstance(value, onp.ndarray):
             assert False, (
                 "Expected a tuple, but got an array... missing a cast somewhere?"
@@ -65,12 +65,15 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
             )
 
         out = []
-        args = get_args(annotation)
-        if len(args) >= 2 and args[1] == ...:
-            args = (args[0],) * len(value)
-        elif len(value) != len(args):
-            warnings.warn(f"[viser] {value} does not match annotation {annotation}")
-            return value
+        if get_origin(annotation) is tuple:
+            args = get_args(annotation)
+            if len(args) >= 2 and args[1] == ...:
+                args = (args[0],) * len(value)
+            elif len(value) != len(args):
+                warnings.warn(f"[viser] {value} does not match annotation {annotation}")
+                return value
+        else:
+            args = [Any] * len(value)
 
         for i, v in enumerate(value):
             out.append(
@@ -84,6 +87,9 @@ def _prepare_for_serialization(value: Any, annotation: Type) -> Any:
     # reading using the correct dtype.
     if isinstance(value, onp.ndarray):
         return value.data if value.data.c_contiguous else value.copy().data
+
+    if isinstance(value, dict):
+        return {k: _prepare_for_serialization(v, Any) for k, v in value.items()}  # type: ignore
 
     return value
 

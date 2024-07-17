@@ -132,20 +132,22 @@ function ViewerRoot() {
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
 
   // Playback mode for embedding viser.
-  const playbackPath = new URLSearchParams(window.location.search).get(
-    "playbackPath",
-  );
-  console.log(playbackPath);
+  const searchParams = new URLSearchParams(window.location.search);
+  const playbackPath = searchParams.get("playbackPath");
+  const darkMode = searchParams.get("darkMode") !== null;
 
   // Values that can be globally accessed by components in a viewer.
   const viewer: ViewerContextContents = {
     messageSource: playbackPath === null ? "websocket" : "file_playback",
     useSceneTree: useSceneTreeState(),
     useGui: useGuiState(initialServer),
-    sendMessageRef: React.useRef((message) =>
-      console.log(
-        `Tried to send ${message.type} but websocket is not connected!`,
-      ),
+    sendMessageRef: React.useRef(
+      playbackPath == null
+        ? (message) =>
+            console.log(
+              `Tried to send ${message.type} but websocket is not connected!`,
+            )
+        : () => null,
     ),
     canvasRef: React.useRef(null),
     sceneRef: React.useRef(null),
@@ -178,6 +180,9 @@ function ViewerRoot() {
     canvas2dRef: React.useRef(null),
     skinnedMeshState: React.useRef({}),
   };
+
+  // Set dark default if specified in URL.
+  if (darkMode) viewer.useGui.getState().theme.dark_mode = darkMode;
 
   return (
     <ViewerContext.Provider value={viewer}>
@@ -441,7 +446,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SceneContextSetter />
       <SynchronizedCameraControls />
       <SceneNodeThreeObject name="" parent={null} />
-      <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
+      <Environment path="hdri/" files="potsdamer_platz_1k.hdr" />
       <directionalLight color={0xffffff} intensity={1.0} position={[0, 1, 0]} />
       <directionalLight
         color={0xffffff}

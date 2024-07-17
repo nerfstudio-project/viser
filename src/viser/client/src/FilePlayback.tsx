@@ -134,7 +134,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       <Progress
         value={(status.downloaded / status.total) * 100.0}
         radius={0}
-        transitionDuration={100}
+        transitionDuration={0}
       />
     </div>
   );
