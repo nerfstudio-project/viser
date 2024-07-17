@@ -135,9 +135,12 @@ export function useGuiState(initialServer: string) {
           }),
         resetGui: () =>
           set((state) => {
+            // No need to overwrite the theme or label. The former especially
+            // can be jarring.
+            // state.theme = cleanGuiState.theme;
+            // state.label = cleanGuiState.label;
+
             // This feels brittle, could be cleaned up...
-            state.theme = cleanGuiState.theme;
-            state.label = cleanGuiState.label;
             state.shareUrl = null;
             state.guiIdSetFromContainerId = {};
             state.modals = [];

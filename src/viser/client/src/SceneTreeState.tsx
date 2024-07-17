@@ -99,8 +99,8 @@ export function useSceneTreeState() {
                 if (key !== "" && key !== "/WorldAxes")
                   delete state.nodeFromName[key];
               }
-              state.nodeFromName[""]!.children = ["/WorldAxes"];
-              state.nodeFromName["/WorldAxes"]!.children = [];
+              state.nodeFromName[""] = rootNodeTemplate;
+              state.nodeFromName["/WorldAxes"] = rootAxesNode;
             }),
           setLabelVisibility: (name, labelVisibility) =>
             set((state) => {
