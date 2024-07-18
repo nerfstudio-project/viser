@@ -24,50 +24,37 @@ async function deserializeGzippedMsgpackFile<T>(
   }
   return new Promise<T>((resolve) => {
     const gzipTotalLength = parseInt(response.headers.get("Content-Length")!);
-
-    if (!DecompressionStream) {
-      // Implementation without streaming.
-      console.log(
-        "DecompressionStream is unavailable. Falling back to approach without streams.",
-      );
-      setStatus({ downloaded: gzipTotalLength * 0.0, total: gzipTotalLength });
+    if (typeof DecompressionStream === "undefined") {
+      // Implementation without DecompressionStream.
+      console.log("DecompressionStream is unavailable. Using fallback.");
+      setStatus({ downloaded: 0.1 * gzipTotalLength, total: gzipTotalLength });
       response.arrayBuffer().then((buffer) => {
-        // Down downloading.
         setStatus({
-          downloaded: gzipTotalLength * 0.8,
+          downloaded: 0.8 * gzipTotalLength,
           total: gzipTotalLength,
         });
         decompress(new Uint8Array(buffer), (error, result) => {
-          // Done decompressing, time to unpack.
           setStatus({
-            downloaded: gzipTotalLength * 0.9,
+            downloaded: 1.0 * gzipTotalLength,
             total: gzipTotalLength,
           });
           resolve(decode(result) as T);
-          setStatus({
-            downloaded: gzipTotalLength,
-            total: gzipTotalLength,
-          });
         });
       });
     } else {
-      // Counters for processed bytes, both before and after compression.
-      let gzipReceived = 0;
-
       // Stream: fetch -> gzip -> msgpack.
+      let gzipReceived = 0;
+      const progressStream = // Count number of (compressed) bytes.
+        new TransformStream({
+          transform(chunk, controller) {
+            gzipReceived += chunk.length;
+            setStatus({ downloaded: gzipReceived, total: gzipTotalLength });
+            controller.enqueue(chunk);
+          },
+        });
       decodeAsync(
         response
-          .body!.pipeThrough(
-            // Count number of (compressed) bytes.
-            new TransformStream({
-              transform(chunk, controller) {
-                gzipReceived += chunk.length;
-                setStatus({ downloaded: gzipReceived, total: gzipTotalLength });
-                controller.enqueue(chunk);
-                // return new Promise((resolve) => setTimeout(resolve, 100));
-              },
-            }),
-          )
+          .body!.pipeThrough(progressStream)
           .pipeThrough(new DecompressionStream("gzip")),
       ).then((val) => resolve(val as T));
     }
