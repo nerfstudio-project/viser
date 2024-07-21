@@ -50,8 +50,10 @@ import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 
 //WebXR
-import { VRButton, ARButton, XR, Controllers, Hands, Interactive,XRInteractionEvent } from '@react-three/xr'
+import {XR, createXRStore } from '@react-three/xr'
+
 import { Html } from '@react-three/drei';
+const store = createXRStore()
 
 
 export type ViewerContextContents = {
@@ -271,6 +273,7 @@ function ViewerContents() {
     </>
   );
 }
+import { useState } from 'react'
 
 function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
@@ -279,10 +282,11 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     20,
   );
   const theme = useMantineTheme();
-
+  const [red, setRed] = useState(false)
   return (
     <>
-    <VRButton/>
+    <button onClick={() => store.enterVR()}>Enter VR</button>
+    <button onClick={() => store.enterAR()}>Enter AR</button>
 
     <Canvas
       camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
@@ -451,20 +455,14 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
 				>
 					<h1 style={{ background: "red" }}>Hello World</h1>
 				</Html> */}
-       <XR>
-          <Controllers />
-        {/*
-          <RayGrab onSelect={handleSelect}>
-            <Box args={[0.2, 0.2, 0.2]} position={[0, 0, -0.5]}>
-              <meshStandardMaterial color="orange" />
-            </Box>
-          </RayGrab> */}
-
-          <Hands />
-        {/*<FloatingPanel position={[0, 2, -3]} /> */}
-    
-          <SmoothLocomotion hand="left" />
+       <XR store={store}>
+          {/*<SmoothLocomotion hand="left" />
           <SnapRotation hand="right" />
+          */}
+        <mesh pointerEventsType={{ deny: 'grab' }} onClick={() => setRed(!red)} position={[0, 1, -1]}>
+          <boxGeometry />
+          <meshBasicMaterial color={red ? 'red' : 'blue'} />
+        </mesh>
         </XR>
       {children}
       <BackgroundImage />
@@ -764,7 +762,7 @@ function ViserLogo() {
 
 
 //Locomotion code from mattrossman/react-xr-smooth-locomotion
-
+{/*
 import { useController, useXR } from '@react-three/xr'
 import { Vector2, Vector3 } from 'three'
 
@@ -799,6 +797,7 @@ function SmoothLocomotion({ hand = 'left' }) {
   return null
 }
 
+
 import { useRef } from 'react'
 
 function SnapRotation({ hand = 'right', increment = Math.PI / 4, threshold = 0.6 }) {
@@ -822,3 +821,4 @@ function SnapRotation({ hand = 'right', increment = Math.PI / 4, threshold = 0.6
   //}
   return null
 }
+  */}
