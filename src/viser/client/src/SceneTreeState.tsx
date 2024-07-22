@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { MakeObject, SceneNode } from "./SceneTree";
 import { CoordinateFrame } from "./ThreeAssets";
 import * as THREE from "three";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { ViewerContext } from "./App";
 
 interface SceneTreeState {
   nodeFromName: { [name: string]: undefined | SceneNode };
@@ -37,6 +38,7 @@ rootNodeTemplate.children.push("/WorldAxes");
 /** Declare a scene state, and return a hook for accessing it. Note that we put
 effort into avoiding a global state! */
 export function useSceneTreeState() {
+  const viewer = useContext(ViewerContext)!;
   return React.useState(() =>
     create(
       subscribeWithSelector(
@@ -51,8 +53,10 @@ export function useSceneTreeState() {
           addSceneNode: (node) =>
             set((state) => {
               const existingNode = state.nodeFromName[node.name];
-              if (existingNode) {
+              if (existingNode !== undefined) {
                 // Node already exists.
+                delete viewer.nodeRefFromName.current[node.name];
+                existingNode.cleanup && existingNode.cleanup(); // Free resources.
                 state.nodeFromName[node.name] = {
                   ...node,
                   children: existingNode.children,
@@ -83,7 +87,10 @@ export function useSceneTreeState() {
               findChildrenRecursive(name);
 
               removeNames.forEach((removeName) => {
+                const node = state.nodeFromName[removeName]!;
+                node.cleanup && node.cleanup(); // Free resources.
                 delete state.nodeFromName[removeName];
+                delete viewer.nodeRefFromName.current[removeName];
               });
 
               // Remove node from parent's children list.
@@ -99,6 +106,11 @@ export function useSceneTreeState() {
                 if (key !== "" && key !== "/WorldAxes")
                   delete state.nodeFromName[key];
               }
+              Object.values(state.nodeFromName).forEach((node) => {
+                // Free resources.
+                if (node === undefined || node.cleanup === undefined) return;
+                node.cleanup();
+              });
               state.nodeFromName[""] = rootNodeTemplate;
               state.nodeFromName["/WorldAxes"] = rootAxesNode;
             }),

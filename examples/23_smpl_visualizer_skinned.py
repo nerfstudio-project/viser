@@ -134,8 +134,6 @@ def main(model_path: Path) -> None:
         # Match transform control gizmos to joint positions.
         for i, control in enumerate(gui_elements.transform_controls):
             control.position = smpl_outputs.T_parent_joint[i, :3, 3]
-            print(control.position)
-
             skinned_handle.bones[i].wxyz = tf.SO3.from_matrix(
                 smpl_outputs.T_world_joint[i, :3, :3]
             ).wxyz
