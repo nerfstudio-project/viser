@@ -476,9 +476,6 @@ function useMessageHandler() {
                 );
               },
               () => {
-                bones.forEach((bone) => {
-                  bone.remove();
-                });
                 skeleton.dispose();
                 cleanupMesh();
               },

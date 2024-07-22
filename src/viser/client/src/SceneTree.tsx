@@ -131,9 +131,6 @@ export function SceneNodeThreeObject(props: {
   const makeObject = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.makeObject,
   );
-  const cleanup = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.cleanup,
-  );
   const unmountWhenInvisible = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.unmountWhenInvisible,
   );
@@ -254,14 +251,6 @@ export function SceneNodeThreeObject(props: {
       if (!obj.matrixAutoUpdate) obj.updateMatrix();
       if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
     }
-  });
-
-  // Clean up when done.
-  React.useEffect(() => {
-    return () => {
-      cleanup && cleanup();
-      delete viewer.nodeRefFromName.current[props.name];
-    };
   });
 
   // Clicking logic.
