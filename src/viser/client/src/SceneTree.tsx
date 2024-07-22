@@ -156,7 +156,6 @@ export function SceneNodeThreeObject(props: {
   // PivotControls.
   const objNode = React.useMemo(() => {
     if (makeObject === undefined) return null;
-    console.log("make object");
 
     // Pose will need to be updated.
     const attrs = viewer.nodeAttributesFromName.current;
