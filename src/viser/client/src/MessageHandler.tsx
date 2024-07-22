@@ -476,6 +476,7 @@ function useMessageHandler() {
                 );
               },
               () => {
+                delete viewer.skinnedMeshState.current[message.name];
                 skeleton.dispose();
                 cleanupMesh();
               },

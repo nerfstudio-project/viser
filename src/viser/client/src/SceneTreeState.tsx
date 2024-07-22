@@ -1,11 +1,10 @@
-import React, { useContext } from "react";
+import React from "react";
 import { MakeObject, SceneNode } from "./SceneTree";
 import { CoordinateFrame } from "./ThreeAssets";
 import * as THREE from "three";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-import { ViewerContext } from "./App";
 
 interface SceneTreeState {
   nodeFromName: { [name: string]: undefined | SceneNode };
@@ -37,8 +36,11 @@ rootNodeTemplate.children.push("/WorldAxes");
 
 /** Declare a scene state, and return a hook for accessing it. Note that we put
 effort into avoiding a global state! */
-export function useSceneTreeState() {
-  const viewer = useContext(ViewerContext)!;
+export function useSceneTreeState(
+  nodeRefFromName: React.MutableRefObject<{
+    [name: string]: undefined | THREE.Object3D;
+  }>,
+) {
   return React.useState(() =>
     create(
       subscribeWithSelector(
@@ -55,7 +57,7 @@ export function useSceneTreeState() {
               const existingNode = state.nodeFromName[node.name];
               if (existingNode !== undefined) {
                 // Node already exists.
-                delete viewer.nodeRefFromName.current[node.name];
+                delete nodeRefFromName.current[node.name];
                 existingNode.cleanup && existingNode.cleanup(); // Free resources.
                 state.nodeFromName[node.name] = {
                   ...node,
@@ -90,7 +92,7 @@ export function useSceneTreeState() {
                 const node = state.nodeFromName[removeName]!;
                 node.cleanup && node.cleanup(); // Free resources.
                 delete state.nodeFromName[removeName];
-                delete viewer.nodeRefFromName.current[removeName];
+                delete nodeRefFromName.current[removeName];
               });
 
               // Remove node from parent's children list.

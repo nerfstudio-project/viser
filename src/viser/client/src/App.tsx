@@ -137,9 +137,12 @@ function ViewerRoot() {
   const darkMode = searchParams.get("darkMode") !== null;
 
   // Values that can be globally accessed by components in a viewer.
+  const nodeRefFromName = React.useRef<{
+    [name: string]: undefined | THREE.Object3D;
+  }>({});
   const viewer: ViewerContextContents = {
     messageSource: playbackPath === null ? "websocket" : "file_playback",
-    useSceneTree: useSceneTreeState(),
+    useSceneTree: useSceneTreeState(nodeRefFromName),
     useGui: useGuiState(initialServer),
     sendMessageRef: React.useRef(
       playbackPath == null
@@ -167,7 +170,7 @@ function ViewerRoot() {
         })(),
       },
     }),
-    nodeRefFromName: React.useRef({}),
+    nodeRefFromName: nodeRefFromName,
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
