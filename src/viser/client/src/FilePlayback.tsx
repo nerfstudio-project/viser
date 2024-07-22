@@ -6,7 +6,6 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ViewerContext } from "./App";
 import {
   ActionIcon,
-  Code,
   NumberInput,
   Paper,
   Progress,
