@@ -194,13 +194,13 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         shadow="0.1em 0 1em 0 rgba(0,0,0,0.1)"
         style={{
           position: "fixed",
-          bottom: "0.625em",
+          bottom: "0.75em",
           left: "50%",
           transform: "translateX(-50%)",
           width: "20em",
           maxWidth: "95%",
           zIndex: 1,
-          padding: "0.25em",
+          padding: "0.5em",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -222,7 +222,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           styles={{
             wrapper: {
               width:
-                (recording.durationSeconds.toFixed(1).length * 0.7).toString() +
+                (recording.durationSeconds.toFixed(1).length * 0.8).toString() +
                 "em",
             },
             input: {
