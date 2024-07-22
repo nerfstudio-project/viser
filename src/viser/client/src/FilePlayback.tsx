@@ -157,7 +157,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     (value: number) => {
       if (value < playbackMutable.current.currentTime) {
         // Going backwards is more expensive...
-        playbackMutable.current.currentIndex = 0; //recording!.loopStartIndex!;
+        playbackMutable.current.currentIndex = recording!.loopStartIndex!;
       }
       playbackMutable.current.currentTime = value;
       setCurrentTime(value);
