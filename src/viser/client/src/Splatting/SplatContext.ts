@@ -18,7 +18,7 @@ export function useGaussianSplatStore() {
       },
       removeBuffer: (name) => {
         return set((state) => {
-          // eslint-disable-next-line no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [name]: _, ...buffers } = state.groupBufferFromName;
           return { groupBufferFromName: buffers };
         });
