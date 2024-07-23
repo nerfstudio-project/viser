@@ -208,9 +208,17 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       >
         <ActionIcon size="md" variant="subtle">
           {paused ? (
-            <IconPlayerPlayFilled onClick={() => setPaused(false)} />
+            <IconPlayerPlayFilled
+              onClick={() => setPaused(false)}
+              height="1.125em"
+              width="1.125em"
+            />
           ) : (
-            <IconPlayerPauseFilled onClick={() => setPaused(true)} />
+            <IconPlayerPauseFilled
+              onClick={() => setPaused(true)}
+              height="1.125em"
+              width="1.125em"
+            />
           )}
         </ActionIcon>
         <NumberInput

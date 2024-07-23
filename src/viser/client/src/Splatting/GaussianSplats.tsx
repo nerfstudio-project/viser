@@ -75,18 +75,20 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   }
 
   void main () {
-    // Any early return will discard the fragment.
-    gl_Position = vec4(0.0, 0.0, 2000.0, 1.0);
-
     // Get position + scale from float buffer.
     ivec2 texSize = textureSize(bufferTexture, 0);
     ivec2 texPos0 = ivec2((sortedIndex * 2u) % uint(texSize.x), (sortedIndex * 2u) / uint(texSize.x));
-    uvec4 floatBufferData = texelFetch(bufferTexture, texPos0, 0);
-    vec3 center = uintBitsToFloat(floatBufferData.xyz);
+    ivec2 texPos1 = ivec2((sortedIndex * 2u + 1u) % uint(texSize.x), (sortedIndex * 2u + 1u) / uint(texSize.x));
 
+    // Fech from textures.
+    uvec4 floatBufferData = texelFetch(bufferTexture, texPos0, 0);
     mat4 groupTransform = getGroupTransform(groupIndex);
 
+    // Any early return will discard the fragment.
+    gl_Position = vec4(0.0, 0.0, 2000.0, 1.0);
+
     // Get center wrt camera. modelViewMatrix is T_cam_world.
+    vec3 center = uintBitsToFloat(floatBufferData.xyz);
     vec4 c_cam = modelViewMatrix * groupTransform * vec4(center, 1);
     if (-c_cam.z < near || -c_cam.z > far)
       return;
@@ -95,16 +97,18 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     if (pos2d.x < -clip || pos2d.x > clip || pos2d.y < -clip || pos2d.y > clip)
       return;
 
-    float perGaussianShift = 1.0 - (float(numGaussians * 2u) - float(sortedIndex)) / float(numGaussians * 2u);
-    float cov_scale = max(0.0, transitionInState - perGaussianShift) / (1.0 - perGaussianShift);
+    // Read covariance terms.
+    uvec4 intBufferData = texelFetch(bufferTexture, texPos1, 0);
 
     // Get covariance terms from int buffer.
-    ivec2 texPos1 = ivec2((sortedIndex * 2u + 1u) % uint(texSize.x), (sortedIndex * 2u + 1u) / uint(texSize.x));
-    uvec4 intBufferData = texelFetch(bufferTexture, texPos1, 0);
     uint rgbaUint32 = intBufferData.w;
     vec2 chol01 = unpackHalf2x16(intBufferData.x);
     vec2 chol23 = unpackHalf2x16(intBufferData.y);
     vec2 chol45 = unpackHalf2x16(intBufferData.z);
+
+    // Transition in.
+    float perGaussianShift = 1.0 - (float(numGaussians * 2u) - float(sortedIndex)) / float(numGaussians * 2u);
+    float cov_scale = max(0.0, transitionInState - perGaussianShift) / (1.0 - perGaussianShift);
 
     // Do the actual splatting.
     mat3 chol = mat3(
@@ -410,6 +414,20 @@ export default function GlobalGaussianSplats() {
           .transpose()
           .elements.slice(0, 12);
         tmpGroupTransformBuffer.set(rowMajorElements, groupIndex * 12);
+
+        // If a group is not visible, we'll throw it off the screen with some
+        // Big Numbers.
+        let visible = node.visible && node.parent !== null;
+        if (visible) {
+          node.traverseAncestors((ancestor) => {
+            visible = visible && ancestor.visible;
+          });
+        }
+        if (!visible) {
+          tmpGroupTransformBuffer[groupIndex * 12 + 3] = 1e10;
+          tmpGroupTransformBuffer[groupIndex * 12 + 7] = 1e10;
+          tmpGroupTransformBuffer[groupIndex * 12 + 11] = 1e10;
+        }
       }
       groupsMoved = !groupTransformBuffer.every(
         (v, i) => v === tmpGroupTransformBuffer[i],
@@ -417,11 +435,17 @@ export default function GlobalGaussianSplats() {
       if (groupsMoved) {
         groupTransformBuffer.set(tmpGroupTransformBuffer);
         groupTransformTextureRef.current.needsUpdate = true;
-        sortWorker.postMessage({ setT_world_groups: groupTransformBuffer });
+        sortWorker.postMessage({
+          // Big values will break the counting sort precision. We just
+          // zero them out for now.
+          setT_world_groups: groupTransformBuffer.map((x) =>
+            x >= 1e10 ? 0.0 : x,
+          ),
+        });
       }
     }
 
-    // If changed, use projection matrix to sort Gaussians.
+    // Sort Gaussians.
     if (
       !isSortingRef.current &&
       (prevT_camera_world === undefined ||

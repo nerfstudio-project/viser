@@ -31,7 +31,11 @@ export function BrowserWarning() {
       )
         notifications.show({
           title: "Unsuppported browser",
-          message: `Your browser (${browser.name.slice(0, 1).toUpperCase() + browser.name.slice(1)}/${browser.version}) is outdated, which may cause problems. Consider updating.`,
+          message: `Your browser (${
+            browser.name.slice(0, 1).toUpperCase() + browser.name.slice(1)
+          }/${
+            browser.version
+          }) is outdated, which may cause problems. Consider updating.`,
           autoClose: false,
           color: "red",
         });
