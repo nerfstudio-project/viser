@@ -9,12 +9,11 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
   let T_world_groups: Float32Array | null = null;
   let sortRunning = false;
   const throttledSort = () => {
-    if (sorter === null) {
+    if (sorter === null || T_camera_world === null || T_world_groups === null) {
       setTimeout(throttledSort, 1);
       return;
     }
-    if (T_camera_world === null || sortRunning || T_world_groups === null)
-      return;
+    if (sortRunning) return;
 
     sortRunning = true;
     const lastView = T_camera_world;

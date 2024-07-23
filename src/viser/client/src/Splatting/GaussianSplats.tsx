@@ -236,7 +236,9 @@ export default function GlobalGaussianSplats() {
   // flexible than the declarative version (particularly for operations like
   // dynamic updates to buffers and shader uniforms).
   React.useEffect(() => {
-    if (numGaussians == 0) return;
+    if (numGaussians == 0) {
+      return;
+    }
 
     const geometry = new THREE.InstancedBufferGeometry();
     geometry.instanceCount = numGaussians;
@@ -283,6 +285,7 @@ export default function GlobalGaussianSplats() {
       THREE.UnsignedIntType,
     );
     bufferTexture.internalFormat = "RGBA32UI";
+    bufferTexture.needsUpdate = true;
 
     const groupTransformTexture = new THREE.DataTexture(
       groupTransformBuffer,
@@ -291,8 +294,9 @@ export default function GlobalGaussianSplats() {
       THREE.RGBAFormat,
       THREE.FloatType,
     );
-    groupTransformTextureRef.current = groupTransformTexture;
     groupTransformTexture.internalFormat = "RGBA32F";
+    groupTransformTextureRef.current = groupTransformTexture;
+    groupTransformTexture.needsUpdate = true;
 
     const material = new GaussianSplatMaterial({
       // @ts-ignore
@@ -343,9 +347,12 @@ export default function GlobalGaussianSplats() {
 
     return () => {
       bufferTexture.dispose();
+      groupTransformTexture.dispose();
+      groupTransformTextureRef.current = null;
       geometry.dispose();
       if (material !== undefined) material.dispose();
       sortWorker.postMessage({ close: true });
+      splatSortWorkerRef.current = null;
     };
   }, [numGaussians, gaussianBuffer, groupIndices]);
 
@@ -364,7 +371,12 @@ export default function GlobalGaussianSplats() {
   useFrame((state, delta) => {
     const mesh = meshRef.current;
     const sortWorker = splatSortWorkerRef.current;
-    if (mesh === null || sortWorker === null) return;
+    if (
+      mesh === null ||
+      sortWorker === null ||
+      groupTransformTextureRef.current == null
+    )
+      return;
 
     // Update camera parameter uniforms.
     const dpr = state.viewport.dpr;
