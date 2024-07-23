@@ -45,9 +45,13 @@ import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
 import { theme } from "./AppTheme";
-import { GaussianSplatsContext } from "./Splatting/GaussianSplats";
+import {
+  GaussianSplatsContext,
+  useGaussianSplatStore,
+} from "./Splatting/SplatContext";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
+import GlobalGaussianSplats from "./Splatting/GaussianSplats";
 
 export type ViewerContextContents = {
   messageSource: "websocket" | "file_playback";
@@ -259,10 +263,9 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
               })}
             >
               <Viewer2DCanvas />
-              <GaussianSplatsContext.Provider
-                value={React.useRef({ numSorting: 0, sortUpdateCallbacks: [] })}
-              >
+              <GaussianSplatsContext.Provider value={useGaussianSplatStore()}>
                 <ViewerCanvas>
+                  <GlobalGaussianSplats />
                   <FrameSynchronizedMessageHandler />
                 </ViewerCanvas>
               </GaussianSplatsContext.Provider>

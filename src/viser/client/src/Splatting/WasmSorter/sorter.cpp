@@ -2,20 +2,23 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <wasm_simd128.h>
 
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
 class Sorter {
-    std::vector<std::array<float, 3>> unsorted_centers;
-    std::vector<uint32_t> sorted_indices;
-    float min_visible_depth;
+    std::vector<std::array<float, 4>> unsorted_centers;
+    std::vector<uint32_t> group_indices;
 
   public:
-    Sorter(const emscripten::val &buffer) {
+    Sorter(
+        const emscripten::val &buffer, const emscripten::val &group_indices_val
+    ) {
         const std::vector<uint32_t> bufferVec =
             emscripten::convertJSArrayToNumberVector<uint32_t>(buffer);
         const int num_gaussians = bufferVec.size() / 8;
+
         unsorted_centers.resize(num_gaussians);
         for (int i = 0; i < num_gaussians; i++) {
             unsorted_centers[i][0] =
@@ -24,7 +27,11 @@ class Sorter {
                 reinterpret_cast<const float &>(bufferVec[i * 8 + 1]);
             unsorted_centers[i][2] =
                 reinterpret_cast<const float &>(bufferVec[i * 8 + 2]);
+            unsorted_centers[i][3] = 1.0;
         }
+        group_indices =
+            emscripten::convertJSArrayToNumberVector<uint32_t>(group_indices_val
+            );
     };
 
     // Run sorting using the newest view projection matrix. Mutates internal
@@ -38,8 +45,11 @@ class Sorter {
         const float view_proj_2,
         const float view_proj_6,
         const float view_proj_10,
-        const float view_proj_14
+        const float view_proj_14,
+        const emscripten::val &T_world_objs_val
     ) {
+        const auto T_world_objs =
+            emscripten::convertJSArrayToNumberVector<float>(T_world_objs_val);
         const int num_gaussians = unsorted_centers.size();
 
         // We do a 16-bit counting sort. This is mostly translated from Kevin
@@ -52,21 +62,42 @@ class Sorter {
         std::vector<int> counts0(256 * 256, 0);
         std::vector<int> starts0(256 * 256, 0);
 
+        // Put view_proj into a wasm v128 register.
+        v128_t view_proj = wasm_f32x4_make(
+            view_proj_2, view_proj_6, view_proj_10, view_proj_14
+        );
+
         int min_z;
         int max_z;
-        min_visible_depth = 100000.0;
         for (int i = 0; i < num_gaussians; i++) {
-            const float cam_z = view_proj_2 * unsorted_centers[i][0] +
-                                view_proj_6 * unsorted_centers[i][1] +
-                                view_proj_10 * unsorted_centers[i][2] +
-                                view_proj_14;
+            const uint32_t group_index = group_indices[i];
+
+            // This buffer is row-major.
+            v128_t row0 = wasm_v128_load(&T_world_objs[group_index * 12]);
+            v128_t row1 = wasm_v128_load(&T_world_objs[group_index * 12] + 4);
+            v128_t row2 = wasm_v128_load(&T_world_objs[group_index * 12] + 8);
+            v128_t point = wasm_v128_load(&unsorted_centers[i][0]);
+
+            const auto dot_product = [](v128_t a, v128_t b) -> float {
+                v128_t product = wasm_f32x4_mul(a, b);
+                v128_t temp = wasm_f32x4_add(
+                    product, wasm_i32x4_shuffle(product, product, 1, 0, 3, 2)
+                );
+                temp = wasm_f32x4_add(
+                    temp, wasm_i32x4_shuffle(temp, temp, 2, 3, 0, 1)
+                );
+                return wasm_f32x4_extract_lane(temp, 0);
+            };
+
+            const float world_x = dot_product(row0, point);
+            const float world_y = dot_product(row1, point);
+            const float world_z = dot_product(row2, point);
+            const float cam_z = dot_product(
+                view_proj, wasm_f32x4_make(world_x, world_y, world_z, 1.0)
+            );
 
             // OpenGL camera convention: -Z is forward.
             const float depth = -cam_z;
-            if (depth > 1e-4 && depth < min_visible_depth) {
-                min_visible_depth = depth;
-            }
-
             const int z_int = cam_z * 4096.0;
             gaussian_zs[i] = z_int;
 
@@ -87,7 +118,7 @@ class Sorter {
         }
 
         // Update and return sorted indices.
-        sorted_indices.resize(num_gaussians);
+        auto sorted_indices = std::vector<uint32_t>(num_gaussians);
         for (int i = 0; i < num_gaussians; i++)
             sorted_indices[starts0[gaussian_zs[i]]++] = i;
 
@@ -95,13 +126,10 @@ class Sorter {
             sorted_indices.size(), &(sorted_indices[0])
         ));
     }
-
-    float getMinDepth() { return min_visible_depth; }
 };
 
 EMSCRIPTEN_BINDINGS(c) {
     emscripten::class_<Sorter>("Sorter")
-        .constructor<emscripten::val>()
-        .function("sort", &Sorter::sort, emscripten::allow_raw_pointers())
-        .function("getMinDepth", &Sorter::getMinDepth);
+        .constructor<emscripten::val, emscripten::val>()
+        .function("sort", &Sorter::sort, emscripten::allow_raw_pointers());
 };
