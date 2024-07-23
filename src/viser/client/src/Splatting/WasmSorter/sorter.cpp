@@ -7,6 +7,16 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
+/** SIMD dot product between two 4D vectors. */
+__attribute__((always_inline)) inline float dot_f32x4(v128_t a, v128_t b) {
+    v128_t product = wasm_f32x4_mul(a, b);
+    v128_t temp = wasm_f32x4_add(
+        product, wasm_i32x4_shuffle(product, product, 1, 0, 3, 2)
+    );
+    temp = wasm_f32x4_add(temp, wasm_i32x4_shuffle(temp, temp, 2, 3, 0, 1));
+    return wasm_f32x4_extract_lane(temp, 0);
+}
+
 class Sorter {
     std::vector<std::array<float, 4>> unsorted_centers;
     std::vector<uint32_t> group_indices;
@@ -78,21 +88,10 @@ class Sorter {
             v128_t row2 = wasm_v128_load(&T_world_groups[group_index * 12] + 8);
             v128_t point = wasm_v128_load(&unsorted_centers[i][0]);
 
-            const auto dot_product = [](v128_t a, v128_t b) -> float {
-                v128_t product = wasm_f32x4_mul(a, b);
-                v128_t temp = wasm_f32x4_add(
-                    product, wasm_i32x4_shuffle(product, product, 1, 0, 3, 2)
-                );
-                temp = wasm_f32x4_add(
-                    temp, wasm_i32x4_shuffle(temp, temp, 2, 3, 0, 1)
-                );
-                return wasm_f32x4_extract_lane(temp, 0);
-            };
-
-            const float world_x = dot_product(row0, point);
-            const float world_y = dot_product(row1, point);
-            const float world_z = dot_product(row2, point);
-            const float cam_z = dot_product(
+            const float world_x = dot_f32x4(row0, point);
+            const float world_y = dot_f32x4(row1, point);
+            const float world_z = dot_f32x4(row2, point);
+            const float cam_z = dot_f32x4(
                 view_proj, wasm_f32x4_make(world_x, world_y, world_z, 1.0)
             );
 
