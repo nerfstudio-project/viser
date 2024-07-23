@@ -52,6 +52,7 @@ import {
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
 import GlobalGaussianSplats from "./Splatting/GaussianSplats";
+import { BrowserWarning } from "./BrowserWarning";
 
 export type ViewerContextContents = {
   messageSource: "websocket" | "file_playback";
@@ -232,6 +233,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
             },
           }}
         />
+        <BrowserWarning />
         <ViserModal />
         <Box
           style={{
