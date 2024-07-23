@@ -970,16 +970,6 @@ function useMessageHandler() {
         return;
       }
       case "GaussianSplatsMessage": {
-        // <GaussianSplats
-        //   buffers={{
-        //     buffer: new Uint32Array(
-        //       message.buffer.buffer.slice(
-        //         message.buffer.byteOffset,
-        //         message.buffer.byteOffset + message.buffer.byteLength,
-        //       ),
-        //     ),
-        //   }}
-        // />
         setGaussianBuffer(
           message.name,
           new Uint32Array(

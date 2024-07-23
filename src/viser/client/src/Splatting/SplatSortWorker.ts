@@ -6,14 +6,15 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
 {
   let sorter: any = null;
   let T_camera_world: number[] | null = null;
-  let T_world_objs: Float32Array | null = null;
+  let T_world_groups: Float32Array | null = null;
   let sortRunning = false;
   const throttledSort = () => {
     if (sorter === null) {
       setTimeout(throttledSort, 1);
       return;
     }
-    if (T_camera_world === null || sortRunning) return;
+    if (T_camera_world === null || sortRunning || T_world_groups === null)
+      return;
 
     sortRunning = true;
     const lastView = T_camera_world;
@@ -22,7 +23,7 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
       T_camera_world[6],
       T_camera_world[10],
       T_camera_world[14],
-      T_world_objs,
+      T_world_groups,
     );
     self.postMessage({
       sortedIndices: sortedIndices,
@@ -45,7 +46,7 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
           setGroupIndices: Uint32Array;
         }
       | {
-          setT_world_objs: Float32Array;
+          setT_world_groups: Float32Array;
         }
       | {
           setT_camera_world: number[];
@@ -58,9 +59,9 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
         data.setBuffer,
         data.setGroupIndices,
       );
-    } else if ("setT_world_objs" in data) {
+    } else if ("setT_world_groups" in data) {
       // Update object transforms.
-      T_world_objs = data.setT_world_objs;
+      T_world_groups = data.setT_world_groups;
     } else if ("setT_camera_world" in data) {
       // Update view projection matrix.
       T_camera_world = data.setT_camera_world;

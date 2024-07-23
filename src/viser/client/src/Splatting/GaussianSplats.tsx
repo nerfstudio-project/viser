@@ -25,11 +25,16 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
   // Index from the splat sorter.
   attribute uint sortedIndex;
+
+  // Which group transform should be applied to each Gaussian.
   attribute uint groupIndex;
 
   // Buffers for splat data; each Gaussian gets 4 floats and 4 int32s. We just
   // copy quadjr for this.
   uniform usampler2D bufferTexture;
+
+  // Buffer containing SE(3) transforms, which will be independently applied to
+  // Gaussians. This enables multiple fast rigid "objects".
   uniform sampler2D groupTransformTexture;
 
   // Various other uniforms...
@@ -53,22 +58,19 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 	}
 
   // Function to fetch and construct the i-th transform matrix using texelFetch
-  mat4 getTransform(uint i) {
-    // Calculate the base index for the i-th transform
+  mat4 getGroupTransform(uint i) {
+    // Calculate the base index for the i-th transform.
     uint baseIndex = i * 3u;
 
-    // Fetch the texels that represent the first 3 rows of the transform
+    // Fetch the texels that represent the first 3 rows of the transform. We
+    // choose to use row-major here, since it lets us exclude the fourth row of
+    // the matrix.
     vec4 row0 = texelFetch(groupTransformTexture, ivec2(baseIndex + 0u, 0), 0);
     vec4 row1 = texelFetch(groupTransformTexture, ivec2(baseIndex + 1u, 0), 0);
     vec4 row2 = texelFetch(groupTransformTexture, ivec2(baseIndex + 2u, 0), 0);
 
-    // Construct the mat4 with the fetched rows
-    mat4 transform = mat4(
-      row0,                 // First row
-      row1,                 // Second row
-      row2,                 // Third row
-      vec4(0.0, 0.0, 0.0, 1.0)  // Fourth row is [0, 0, 0, 1] for SE(3)
-    );
+    // Construct the mat4 with the fetched rows.
+    mat4 transform = mat4(row0, row1, row2, vec4(0.0, 0.0, 0.0, 1.0));
     return transpose(transform);
   }
 
@@ -82,10 +84,10 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     uvec4 floatBufferData = texelFetch(bufferTexture, texPos0, 0);
     vec3 center = uintBitsToFloat(floatBufferData.xyz);
 
-    mat4 objectTransform = getTransform(groupIndex);
+    mat4 groupTransform = getGroupTransform(groupIndex);
 
     // Get center wrt camera. modelViewMatrix is T_cam_world.
-    vec4 c_cam = modelViewMatrix * objectTransform * vec4(center, 1);
+    vec4 c_cam = modelViewMatrix * groupTransform * vec4(center, 1);
     if (-c_cam.z < near || -c_cam.z > far)
       return;
     vec4 pos2d = projectionMatrix * c_cam;
@@ -117,7 +119,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
         0., focal.y / c_cam.z, 0.0,
         -(focal.x * c_cam.x) / (c_cam.z * c_cam.z), -(focal.y * c_cam.y) / (c_cam.z * c_cam.z), 0.
     );
-    mat3 A = J * mat3(modelViewMatrix) * mat3(objectTransform);
+    mat3 A = J * mat3(modelViewMatrix) * mat3(groupTransform);
     mat3 cov_proj = A * cov3d * transpose(A);
     float diag1 = cov_proj[0][0] + 0.3;
     float offDiag = cov_proj[0][1];
@@ -178,12 +180,16 @@ export default function GlobalGaussianSplats() {
   const splatSortWorkerRef = React.useRef<Worker | null>(null);
   const maxTextureSize = useThree((state) => state.gl).capabilities
     .maxTextureSize;
-  const initializedTextures = React.useRef<boolean>(false);
+  const initializedBufferTexture = React.useRef<boolean>(false);
+  const groupTransformTextureRef = React.useRef<THREE.DataTexture | null>(null);
 
   const viewer = React.useContext(ViewerContext)!;
   const splatContext = React.useContext(GaussianSplatsContext)!;
-  const allBuffers = splatContext((state) => state.bufferFromName);
+  const groupBufferFromName = splatContext(
+    (state) => state.groupBufferFromName,
+  );
 
+  // Pre-compute some buffers we need for rendering.
   const [
     numGaussians,
     gaussianBuffer,
@@ -193,7 +199,7 @@ export default function GlobalGaussianSplats() {
   ] = React.useMemo(() => {
     // Create geometry. Each Gaussian will be rendered as a quad.
     let totalBufferLength = 0;
-    for (const buffer of Object.values(allBuffers)) {
+    for (const buffer of Object.values(groupBufferFromName)) {
       totalBufferLength += buffer.length;
     }
     const numGaussians = totalBufferLength / 8;
@@ -202,7 +208,7 @@ export default function GlobalGaussianSplats() {
 
     let offset = 0;
     for (const [groupIndex, groupBuffer] of Object.values(
-      allBuffers,
+      groupBufferFromName,
     ).entries()) {
       groupIndices.fill(
         groupIndex,
@@ -213,7 +219,7 @@ export default function GlobalGaussianSplats() {
       offset += groupBuffer.length;
     }
 
-    const numGroups = Object.keys(allBuffers).length;
+    const numGroups = Object.keys(groupBufferFromName).length;
     const groupTransformBuffer = new Float32Array(numGroups * 12);
     return [
       numGaussians,
@@ -222,10 +228,10 @@ export default function GlobalGaussianSplats() {
       groupIndices,
       groupTransformBuffer,
     ];
-  }, [allBuffers]);
+  }, [groupBufferFromName]);
 
-  const groupTransformTextureRef = React.useRef<THREE.DataTexture | null>(null);
-
+  // Primary setup.
+  //
   // We'll use the vanilla three.js API, which for our use case is more
   // flexible than the declarative version (particularly for operations like
   // dynamic updates to buffers and shader uniforms).
@@ -320,10 +326,10 @@ export default function GlobalGaussianSplats() {
       meshRef.current!.renderOrder = 1000.0;
 
       // Trigger initial render.
-      if (!initializedTextures.current) {
+      if (!initializedBufferTexture.current) {
         material.uniforms.numGaussians.value = numGaussians;
         bufferTexture.needsUpdate = true;
-        initializedTextures.current = true;
+        initializedBufferTexture.current = true;
       }
     };
     sortWorker.postMessage({
@@ -343,12 +349,18 @@ export default function GlobalGaussianSplats() {
     };
   }, [numGaussians, gaussianBuffer, groupIndices]);
 
+  // Per-frame updates. This is in charge of synchronizing transforms and
+  // triggering sorting.
+  //
   // Synchronize view projection matrix with sort worker. We pre-allocate some
   // matrices to make life easier for the garbage collector.
   const meshRef = React.useRef<THREE.Mesh>(null);
   const isSortingRef = React.useRef(false);
   const [prevT_camera_world] = React.useState(new THREE.Matrix4());
-
+  const tmpGroupTransformBuffer = React.useMemo(
+    () => new Float32Array(numGroups * 12),
+    [numGroups],
+  );
   useFrame((state, delta) => {
     const mesh = meshRef.current;
     const sortWorker = splatSortWorkerRef.current;
@@ -374,31 +386,35 @@ export default function GlobalGaussianSplats() {
     uniforms.far.value = state.camera.far;
     uniforms.viewport.value = [state.size.width * dpr, state.size.height * dpr];
 
-    // Compute view projection matrix.
-    // T_camera_world = T_cam_world * T_world_obj.
     const T_camera_world = state.camera.matrixWorldInverse;
-    // T_camera_world.copy(state.camera.matrixWorldInverse).multiply(
-    //   mesh.matrixWorld,
-    // );
-
+    let groupsMoved = false;
     if (groupTransformTextureRef.current !== null) {
-      for (const [groupIndex, name] of Object.keys(allBuffers).entries()) {
+      for (const [groupIndex, name] of Object.keys(
+        groupBufferFromName,
+      ).entries()) {
         const node = viewer.nodeRefFromName.current[name];
         if (node === undefined) continue;
         const rowMajorElements = node.matrixWorld
           .transpose()
           .elements.slice(0, 12);
-        groupTransformBuffer.set(rowMajorElements, groupIndex * 12);
+        tmpGroupTransformBuffer.set(rowMajorElements, groupIndex * 12);
       }
-      groupTransformTextureRef.current.needsUpdate = true;
-      sortWorker.postMessage({ setT_world_objs: groupTransformBuffer });
+      groupsMoved = !groupTransformBuffer.every(
+        (v, i) => v === tmpGroupTransformBuffer[i],
+      );
+      if (groupsMoved) {
+        groupTransformBuffer.set(tmpGroupTransformBuffer);
+        groupTransformTextureRef.current.needsUpdate = true;
+        sortWorker.postMessage({ setT_world_groups: groupTransformBuffer });
+      }
     }
 
     // If changed, use projection matrix to sort Gaussians.
     if (
       !isSortingRef.current &&
       (prevT_camera_world === undefined ||
-        !T_camera_world.equals(prevT_camera_world))
+        !T_camera_world.equals(prevT_camera_world) ||
+        groupsMoved)
     ) {
       sortWorker.postMessage({ setT_camera_world: T_camera_world.elements });
       isSortingRef.current = true;

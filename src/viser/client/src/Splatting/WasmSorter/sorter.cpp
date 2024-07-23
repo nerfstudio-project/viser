@@ -46,10 +46,10 @@ class Sorter {
         const float view_proj_6,
         const float view_proj_10,
         const float view_proj_14,
-        const emscripten::val &T_world_objs_val
+        const emscripten::val &T_world_groups_val
     ) {
-        const auto T_world_objs =
-            emscripten::convertJSArrayToNumberVector<float>(T_world_objs_val);
+        const auto T_world_groups =
+            emscripten::convertJSArrayToNumberVector<float>(T_world_groups_val);
         const int num_gaussians = unsorted_centers.size();
 
         // We do a 16-bit counting sort. This is mostly translated from Kevin
@@ -73,9 +73,9 @@ class Sorter {
             const uint32_t group_index = group_indices[i];
 
             // This buffer is row-major.
-            v128_t row0 = wasm_v128_load(&T_world_objs[group_index * 12]);
-            v128_t row1 = wasm_v128_load(&T_world_objs[group_index * 12] + 4);
-            v128_t row2 = wasm_v128_load(&T_world_objs[group_index * 12] + 8);
+            v128_t row0 = wasm_v128_load(&T_world_groups[group_index * 12]);
+            v128_t row1 = wasm_v128_load(&T_world_groups[group_index * 12] + 4);
+            v128_t row2 = wasm_v128_load(&T_world_groups[group_index * 12] + 8);
             v128_t point = wasm_v128_load(&unsorted_centers[i][0]);
 
             const auto dot_product = [](v128_t a, v128_t b) -> float {
