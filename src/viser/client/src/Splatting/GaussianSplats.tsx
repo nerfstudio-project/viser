@@ -39,7 +39,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   uniform usampler2D bufferTexture;
 
   // Various other uniforms...
-  uniform mat4 T_camera_groups[128];  // We support up to 128 groups for now.
+  // We support up to 32 groups for now. The uniform limit seems to vary by
+  // hardware; if we bump this to 128 it breaks on some phones.
+  uniform mat4 T_camera_groups[32];
   uniform uint numGaussians;
   uniform vec2 focal;
   uniform vec2 viewport;
@@ -52,10 +54,10 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   out vec4 vRgba;
   out vec2 vPosition;
 
-	float hash2D( vec2 value ) {
+	float hash2D(vec2 value) {
 		return fract( 1.0e4 * sin( 17.0 * value.x + 0.1 * value.y ) * ( 0.1 + abs( sin( 13.0 * value.y + value.x ) ) ) );
 	}
-	float hash3D( vec3 value ) {
+	float hash3D(vec3 value) {
 		return hash2D( vec2( hash2D( value.xy ), value.z ) );
 	}
 
@@ -324,10 +326,6 @@ export default function GlobalGaussianSplats() {
   const meshRef = React.useRef<THREE.Mesh>(null);
   const [prevT_camera_world] = React.useState(new THREE.Matrix4());
   const [tmpT_camera_group] = React.useState(new THREE.Matrix4());
-  // const T_camera_groups = React.useMemo(
-  //   () => [...Array(numGroups)].map(() => new THREE.Matrix4()),
-  //   [numGroups],
-  // );
   const T_camera_groups = React.useMemo(
     () => new Float32Array(numGroups * 16),
     [numGroups],
