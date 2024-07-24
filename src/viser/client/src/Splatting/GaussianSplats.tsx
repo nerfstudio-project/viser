@@ -7,7 +7,7 @@ import { GaussianSplatsContext } from "./SplatContext";
 import { ViewerContext } from "../App";
 import { SorterWorkerIncoming } from "./SplatSortWorker";
 
-function postToWorker(worker: SplatSortWorker, message: SorterWorkerIncoming) {
+function postToWorker(worker: Worker, message: SorterWorkerIncoming) {
   worker.postMessage(message);
 }
 
