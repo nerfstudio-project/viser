@@ -48,18 +48,7 @@ class Sorter {
 
     // Run sorting using the newest view projection matrix. Mutates internal
     // buffers.
-    emscripten::val sort(
-        // column-major matrix ordering:
-        // 0 4 8  12
-        // 1 5 9  13
-        // 2 6 10 14
-        // 3 7 11 15
-        // const float view_proj_2,
-        // const float view_proj_6,
-        // const float view_proj_10,
-        // const float view_proj_14,
-        const emscripten::val &Tz_cam_groups_val
-    ) {
+    emscripten::val sort(const emscripten::val &Tz_cam_groups_val) {
         const auto Tz_cam_groups_buffer =
             emscripten::convertJSArrayToNumberVector<float>(Tz_cam_groups_val);
         const int num_gaussians = unsorted_centers.size();
@@ -74,7 +63,6 @@ class Sorter {
         std::vector<int> counts0(256 * 256, 0);
         std::vector<int> starts0(256 * 256, 0);
 
-        // Put view_proj into a wasm v128 register.
         int min_z;
         int max_z;
 
@@ -88,11 +76,10 @@ class Sorter {
         }
 
         for (int i = 0; i < num_gaussians; i++) {
-            const uint32_t group_index = group_indices[i];
-
-            // This buffer is row-major.
-            v128_t point = wasm_v128_load(&unsorted_centers[i][0]);
-            const float cam_z = dot_f32x4(Tz_cam_groups[group_index], point);
+            const float cam_z = dot_f32x4(
+                Tz_cam_groups[group_indices[i]],
+                wasm_v128_load(&unsorted_centers[i][0])
+            );
 
             // OpenGL camera convention: -Z is forward.
             const float depth = -cam_z;
