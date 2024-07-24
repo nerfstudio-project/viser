@@ -78,9 +78,8 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     // Get position + scale from float buffer.
     ivec2 texSize = textureSize(bufferTexture, 0);
     ivec2 texPos0 = ivec2((sortedIndex * 2u) % uint(texSize.x), (sortedIndex * 2u) / uint(texSize.x));
-    ivec2 texPos1 = ivec2((sortedIndex * 2u + 1u) % uint(texSize.x), (sortedIndex * 2u + 1u) / uint(texSize.x));
 
-    // Fech from textures.
+    // Fetch from textures.
     uvec4 floatBufferData = texelFetch(bufferTexture, texPos0, 0);
     mat4 groupTransform = getGroupTransform(groupIndex);
 
@@ -89,7 +88,8 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // Get center wrt camera. modelViewMatrix is T_cam_world.
     vec3 center = uintBitsToFloat(floatBufferData.xyz);
-    vec4 c_cam = modelViewMatrix * groupTransform * vec4(center, 1);
+    mat4 T_world_group = modelViewMatrix * groupTransform;
+    vec4 c_cam = T_world_group * vec4(center, 1);
     if (-c_cam.z < near || -c_cam.z > far)
       return;
     vec4 pos2d = projectionMatrix * c_cam;
@@ -98,6 +98,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
       return;
 
     // Read covariance terms.
+    ivec2 texPos1 = ivec2((sortedIndex * 2u + 1u) % uint(texSize.x), (sortedIndex * 2u + 1u) / uint(texSize.x));
     uvec4 intBufferData = texelFetch(bufferTexture, texPos1, 0);
 
     // Get covariance terms from int buffer.
@@ -123,7 +124,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
         0., focal.y / c_cam.z, 0.0,
         -(focal.x * c_cam.x) / (c_cam.z * c_cam.z), -(focal.y * c_cam.y) / (c_cam.z * c_cam.z), 0.
     );
-    mat3 A = J * mat3(modelViewMatrix) * mat3(groupTransform);
+    mat3 A = J * mat3(T_world_group);
     mat3 cov_proj = A * cov3d * transpose(A);
     float diag1 = cov_proj[0][0] + 0.3;
     float offDiag = cov_proj[0][1];
