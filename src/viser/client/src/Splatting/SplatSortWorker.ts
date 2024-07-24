@@ -12,14 +12,14 @@ export type SorterWorkerIncoming =
       setT_world_groups: Float32Array;
     }
   | {
-      setT_camera_world: number[];
+      setTz_camera_world: number[];
     }
   | { triggerSort: true }
   | { close: true };
 
 {
   let sorter: any = null;
-  let T_camera_world: number[] | null = null;
+  let Tz_camera_world: number[] | null = null;
   let T_world_groups: Float32Array | null = null;
   let Tz_cam_groups: Float32Array | null = null;
   let groupIndices: Uint32Array | null = null;
@@ -28,7 +28,7 @@ export type SorterWorkerIncoming =
   const throttledSort = () => {
     if (
       sorter === null ||
-      T_camera_world === null ||
+      Tz_camera_world === null ||
       T_world_groups === null ||
       Tz_cam_groups === null ||
       groupIndices === null ||
@@ -47,26 +47,26 @@ export type SorterWorkerIncoming =
     const numGroups = T_world_groups.length / 12;
     for (let i = 0; i < numGroups; i++) {
       Tz_cam_groups[i * 4 + 0] =
-        T_camera_world[2] * T_world_groups[i * 12 + 0] +
-        T_camera_world[6] * T_world_groups[i * 12 + 4] +
-        T_camera_world[10] * T_world_groups[i * 12 + 8];
+        Tz_camera_world[0] * T_world_groups[i * 12 + 0] +
+        Tz_camera_world[1] * T_world_groups[i * 12 + 4] +
+        Tz_camera_world[2] * T_world_groups[i * 12 + 8];
       Tz_cam_groups[i * 4 + 1] =
-        T_camera_world[2] * T_world_groups[i * 12 + 1] +
-        T_camera_world[6] * T_world_groups[i * 12 + 5] +
-        T_camera_world[10] * T_world_groups[i * 12 + 9];
+        Tz_camera_world[0] * T_world_groups[i * 12 + 1] +
+        Tz_camera_world[1] * T_world_groups[i * 12 + 5] +
+        Tz_camera_world[2] * T_world_groups[i * 12 + 9];
       Tz_cam_groups[i * 4 + 2] =
-        T_camera_world[2] * T_world_groups[i * 12 + 2] +
-        T_camera_world[6] * T_world_groups[i * 12 + 6] +
-        T_camera_world[10] * T_world_groups[i * 12 + 10];
+        Tz_camera_world[0] * T_world_groups[i * 12 + 2] +
+        Tz_camera_world[1] * T_world_groups[i * 12 + 6] +
+        Tz_camera_world[2] * T_world_groups[i * 12 + 10];
       Tz_cam_groups[i * 4 + 3] =
-        T_camera_world[2] * T_world_groups[i * 12 + 3] +
-        T_camera_world[6] * T_world_groups[i * 12 + 7] +
-        T_camera_world[10] * T_world_groups[i * 12 + 11] +
-        T_camera_world[14];
+        Tz_camera_world[0] * T_world_groups[i * 12 + 3] +
+        Tz_camera_world[1] * T_world_groups[i * 12 + 7] +
+        Tz_camera_world[2] * T_world_groups[i * 12 + 11] +
+        Tz_camera_world[3];
     }
 
     sortRunning = true;
-    const lastView = T_camera_world;
+    const lastView = Tz_camera_world;
     const sortedIndices = sorter.sort(Tz_cam_groups);
 
     if (numGroups >= 2) {
@@ -86,7 +86,7 @@ export type SorterWorkerIncoming =
 
     setTimeout(() => {
       sortRunning = false;
-      if (lastView !== T_camera_world) {
+      if (lastView !== Tz_camera_world) {
         throttledSort();
       }
     }, 0);
@@ -108,9 +108,9 @@ export type SorterWorkerIncoming =
       // Update object transforms.
       T_world_groups = data.setT_world_groups;
       Tz_cam_groups = new Float32Array((T_world_groups.length / 12) * 4);
-    } else if ("setT_camera_world" in data) {
+    } else if ("setTz_camera_world" in data) {
       // Update view projection matrix.
-      T_camera_world = data.setT_camera_world;
+      Tz_camera_world = data.setTz_camera_world;
     } else if ("triggerSort" in data) {
       throttledSort();
     } else if ("close" in data) {

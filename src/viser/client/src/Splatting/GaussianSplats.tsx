@@ -374,6 +374,7 @@ export default function GlobalGaussianSplats() {
     () => new Float32Array(numGroups * 12),
     [numGroups],
   );
+  const staleSort = React.useRef(false);
   useFrame((state, delta) => {
     const mesh = meshRef.current;
     const sortWorker = splatSortWorkerRef.current;
@@ -405,7 +406,6 @@ export default function GlobalGaussianSplats() {
     uniforms.viewport.value = [state.size.width * dpr, state.size.height * dpr];
 
     // Update group transforms.
-    let groupsMoved = false;
     if (groupTransformTextureRef.current !== null) {
       for (const [groupIndex, name] of Object.keys(
         groupBufferFromName,
@@ -431,10 +431,10 @@ export default function GlobalGaussianSplats() {
           tmpGroupTransformBuffer[groupIndex * 12 + 11] = 1e10;
         }
       }
-      groupsMoved = !groupTransformBuffer.every(
-        (v, i) => v === tmpGroupTransformBuffer[i],
-      );
-      if (groupsMoved) {
+      if (
+        !groupTransformBuffer.every((v, i) => v === tmpGroupTransformBuffer[i])
+      ) {
+        staleSort.current = true;
         groupTransformBuffer.set(tmpGroupTransformBuffer);
         groupTransformTextureRef.current.needsUpdate = true;
         postToWorker(sortWorker, {
@@ -449,16 +449,23 @@ export default function GlobalGaussianSplats() {
 
     // Update camera transform.
     const T_camera_world = state.camera.matrixWorldInverse;
-    const cameraMoved = !T_camera_world.equals(prevT_camera_world);
-    if (cameraMoved) {
+
+    if (!T_camera_world.equals(prevT_camera_world)) {
+      staleSort.current = true;
       postToWorker(sortWorker, {
-        setT_camera_world: T_camera_world.elements,
+        setTz_camera_world: [
+          T_camera_world.elements[2],
+          T_camera_world.elements[6],
+          T_camera_world.elements[10],
+          T_camera_world.elements[14],
+        ],
       });
       prevT_camera_world.copy(T_camera_world);
     }
 
     // Sort Gaussians.
-    if (groupsMoved || cameraMoved) {
+    if (staleSort.current) {
+      staleSort.current = false;
       postToWorker(sortWorker, {
         triggerSort: true,
       });
