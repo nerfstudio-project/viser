@@ -946,8 +946,10 @@ class SceneApi:
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GaussianSplatHandle:
-        """Add a model to render using Gaussian Splatting. Does not yet support
-        spherical harmonics.
+        """Add a model to render using Gaussian Splatting.
+
+        Limitations: (i) does not yet support spherical harmonics, and (ii) our
+        shader supports a limited nmber of splat objects (currently 64).
 
         **Work-in-progress.** This feature is experimental and still under
         development. It may be changed or removed.

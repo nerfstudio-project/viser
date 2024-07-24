@@ -39,9 +39,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   uniform usampler2D bufferTexture;
 
   // Various other uniforms...
-  // We support up to 32 groups for now. The uniform limit seems to vary by
+  // We support up to 64 groups for now. The uniform limit seems to vary by
   // hardware; if we bump this to 128 it breaks on some phones.
-  uniform mat4 T_camera_groups[32];
+  uniform mat4 T_camera_groups[64];
   uniform uint numGaussians;
   uniform vec2 focal;
   uniform vec2 viewport;
