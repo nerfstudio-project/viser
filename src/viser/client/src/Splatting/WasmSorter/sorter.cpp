@@ -7,14 +7,17 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-/** SIMD dot product between two 4D vectors. */
-__attribute__((always_inline)) inline float dot_f32x4(v128_t a, v128_t b) {
+/** SIMD dot product between two 4D vectors. Dot product will be in lane 0 of
+ * the output vector, which can be retrieved with wasm_f32x4_extract_lane. */
+__attribute__((always_inline)) inline float
+dot_f32x4(const v128_t &a, const v128_t &b) {
     v128_t product = wasm_f32x4_mul(a, b);
     v128_t temp = wasm_f32x4_add(
         product, wasm_i32x4_shuffle(product, product, 1, 0, 3, 2)
     );
-    temp = wasm_f32x4_add(temp, wasm_i32x4_shuffle(temp, temp, 2, 3, 0, 1));
-    return wasm_f32x4_extract_lane(temp, 0);
+    v128_t tmp =
+        wasm_f32x4_add(temp, wasm_i32x4_shuffle(temp, temp, 2, 3, 0, 1));
+    return wasm_f32x4_extract_lane(tmp, 0);
 }
 
 class Sorter {
@@ -27,16 +30,15 @@ class Sorter {
     ) {
         const std::vector<uint32_t> bufferVec =
             emscripten::convertJSArrayToNumberVector<uint32_t>(buffer);
+        const float *floatBuffer =
+            reinterpret_cast<const float *>(bufferVec.data());
         const int num_gaussians = bufferVec.size() / 8;
 
         unsorted_centers.resize(num_gaussians);
         for (int i = 0; i < num_gaussians; i++) {
-            unsorted_centers[i][0] =
-                reinterpret_cast<const float &>(bufferVec[i * 8 + 0]);
-            unsorted_centers[i][1] =
-                reinterpret_cast<const float &>(bufferVec[i * 8 + 1]);
-            unsorted_centers[i][2] =
-                reinterpret_cast<const float &>(bufferVec[i * 8 + 2]);
+            unsorted_centers[i][0] = floatBuffer[i * 8 + 0];
+            unsorted_centers[i][1] = floatBuffer[i * 8 + 1];
+            unsorted_centers[i][2] = floatBuffer[i * 8 + 2];
             unsorted_centers[i][3] = 1.0;
         }
         group_indices =
@@ -52,14 +54,14 @@ class Sorter {
         // 1 5 9  13
         // 2 6 10 14
         // 3 7 11 15
-        const float view_proj_2,
-        const float view_proj_6,
-        const float view_proj_10,
-        const float view_proj_14,
-        const emscripten::val &T_world_groups_val
+        // const float view_proj_2,
+        // const float view_proj_6,
+        // const float view_proj_10,
+        // const float view_proj_14,
+        const emscripten::val &Tz_cam_groups_val
     ) {
-        const auto T_world_groups =
-            emscripten::convertJSArrayToNumberVector<float>(T_world_groups_val);
+        const auto Tz_cam_groups_buffer =
+            emscripten::convertJSArrayToNumberVector<float>(Tz_cam_groups_val);
         const int num_gaussians = unsorted_centers.size();
 
         // We do a 16-bit counting sort. This is mostly translated from Kevin
@@ -73,27 +75,24 @@ class Sorter {
         std::vector<int> starts0(256 * 256, 0);
 
         // Put view_proj into a wasm v128 register.
-        v128_t view_proj = wasm_f32x4_make(
-            view_proj_2, view_proj_6, view_proj_10, view_proj_14
-        );
-
         int min_z;
         int max_z;
+
+        const int num_groups = Tz_cam_groups_buffer.size() / 4;
+        auto Tz_cam_groups = std::vector<v128_t>();
+
+        v128_t row3 = wasm_f32x4_make(0.0, 0.0, 0.0, 1.0);
+        for (int i = 0; i < num_groups; i++) {
+            Tz_cam_groups.push_back(wasm_v128_load(&Tz_cam_groups_buffer[i * 4])
+            );
+        }
+
         for (int i = 0; i < num_gaussians; i++) {
             const uint32_t group_index = group_indices[i];
 
             // This buffer is row-major.
-            v128_t row0 = wasm_v128_load(&T_world_groups[group_index * 12]);
-            v128_t row1 = wasm_v128_load(&T_world_groups[group_index * 12] + 4);
-            v128_t row2 = wasm_v128_load(&T_world_groups[group_index * 12] + 8);
             v128_t point = wasm_v128_load(&unsorted_centers[i][0]);
-
-            const float world_x = dot_f32x4(row0, point);
-            const float world_y = dot_f32x4(row1, point);
-            const float world_z = dot_f32x4(row2, point);
-            const float cam_z = dot_f32x4(
-                view_proj, wasm_f32x4_make(world_x, world_y, world_z, 1.0)
-            );
+            const float cam_z = dot_f32x4(Tz_cam_groups[group_index], point);
 
             // OpenGL camera convention: -Z is forward.
             const float depth = -cam_z;

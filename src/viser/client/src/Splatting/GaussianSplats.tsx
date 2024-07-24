@@ -5,6 +5,11 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { shaderMaterial } from "@react-three/drei";
 import { GaussianSplatsContext } from "./SplatContext";
 import { ViewerContext } from "../App";
+import { SorterWorkerIncoming } from "./SplatSortWorker";
+
+function postToWorker(worker: SplatSortWorker, message: SorterWorkerIncoming) {
+  worker.postMessage(message);
+}
 
 const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   {
@@ -317,16 +322,19 @@ export default function GlobalGaussianSplats() {
 
     // Create sorting worker.
     const sortWorker = new SplatSortWorker();
-    sortWorker.onmessage = (e) => {
-      // Update the group + order index attributes.
-      const sortedIndices = e.data.sortedIndices as Uint32Array;
-      for (const [index, sortedIndex] of sortedIndices.entries()) {
-        groupIndexAttribute.array[index] = groupIndices[sortedIndex];
-      }
-      sortedIndexAttribute.set(sortedIndices);
 
-      groupIndexAttribute.needsUpdate = true;
+    sortWorker.onmessage = (e) => {
+      // Update rendering order.
+      const sortedIndices = e.data.sortedIndices as Uint32Array;
+      sortedIndexAttribute.set(sortedIndices);
       sortedIndexAttribute.needsUpdate = true;
+
+      // Update group indices if needed.
+      if (numGroups >= 2) {
+        const sortedGroupIndices = e.data.sortedGroupIndices as Uint32Array;
+        groupIndexAttribute.set(sortedGroupIndices);
+        groupIndexAttribute.needsUpdate = true;
+      }
 
       // Done sorting!
       isSortingRef.current = false;
@@ -341,7 +349,7 @@ export default function GlobalGaussianSplats() {
         initializedBufferTexture.current = true;
       }
     };
-    sortWorker.postMessage({
+    postToWorker(sortWorker, {
       setBuffer: gaussianBuffer,
       setGroupIndices: groupIndices,
     });
@@ -356,7 +364,7 @@ export default function GlobalGaussianSplats() {
       groupTransformTextureRef.current = null;
       geometry.dispose();
       if (material !== undefined) material.dispose();
-      sortWorker.postMessage({ close: true });
+      postToWorker(sortWorker, { close: true });
       splatSortWorkerRef.current = null;
     };
   }, [numGaussians, gaussianBuffer, groupIndices]);
@@ -403,59 +411,68 @@ export default function GlobalGaussianSplats() {
     uniforms.far.value = state.camera.far;
     uniforms.viewport.value = [state.size.width * dpr, state.size.height * dpr];
 
-    const T_camera_world = state.camera.matrixWorldInverse;
-    let groupsMoved = false;
-    if (groupTransformTextureRef.current !== null) {
-      for (const [groupIndex, name] of Object.keys(
-        groupBufferFromName,
-      ).entries()) {
-        const node = viewer.nodeRefFromName.current[name];
-        if (node === undefined) continue;
-        const rowMajorElements = node.matrixWorld
-          .transpose()
-          .elements.slice(0, 12);
-        tmpGroupTransformBuffer.set(rowMajorElements, groupIndex * 12);
+    // If we're not currently sorting...
+    if (!isSortingRef.current) {
+      // Update group transforms.
+      let groupsMoved = false;
+      if (groupTransformTextureRef.current !== null) {
+        for (const [groupIndex, name] of Object.keys(
+          groupBufferFromName,
+        ).entries()) {
+          const node = viewer.nodeRefFromName.current[name];
+          if (node === undefined) continue;
+          const rowMajorElements = node.matrixWorld
+            .transpose()
+            .elements.slice(0, 12);
+          tmpGroupTransformBuffer.set(rowMajorElements, groupIndex * 12);
 
-        // If a group is not visible, we'll throw it off the screen with some
-        // Big Numbers.
-        let visible = node.visible && node.parent !== null;
-        if (visible) {
-          node.traverseAncestors((ancestor) => {
-            visible = visible && ancestor.visible;
+          // If a group is not visible, we'll throw it off the screen with some
+          // Big Numbers.
+          let visible = node.visible && node.parent !== null;
+          if (visible) {
+            node.traverseAncestors((ancestor) => {
+              visible = visible && ancestor.visible;
+            });
+          }
+          if (!visible) {
+            tmpGroupTransformBuffer[groupIndex * 12 + 3] = 1e10;
+            tmpGroupTransformBuffer[groupIndex * 12 + 7] = 1e10;
+            tmpGroupTransformBuffer[groupIndex * 12 + 11] = 1e10;
+          }
+        }
+        groupsMoved = !groupTransformBuffer.every(
+          (v, i) => v === tmpGroupTransformBuffer[i],
+        );
+        if (groupsMoved) {
+          groupTransformBuffer.set(tmpGroupTransformBuffer);
+          groupTransformTextureRef.current.needsUpdate = true;
+          postToWorker(sortWorker, {
+            // Big values will break the counting sort precision. We just
+            // zero them out for now.
+            setT_world_groups: groupTransformBuffer.map((x) =>
+              x >= 1e10 ? 0.0 : x,
+            ),
           });
         }
-        if (!visible) {
-          tmpGroupTransformBuffer[groupIndex * 12 + 3] = 1e10;
-          tmpGroupTransformBuffer[groupIndex * 12 + 7] = 1e10;
-          tmpGroupTransformBuffer[groupIndex * 12 + 11] = 1e10;
-        }
       }
-      groupsMoved = !groupTransformBuffer.every(
-        (v, i) => v === tmpGroupTransformBuffer[i],
-      );
-      if (groupsMoved) {
-        groupTransformBuffer.set(tmpGroupTransformBuffer);
-        groupTransformTextureRef.current.needsUpdate = true;
-        sortWorker.postMessage({
-          // Big values will break the counting sort precision. We just
-          // zero them out for now.
-          setT_world_groups: groupTransformBuffer.map((x) =>
-            x >= 1e10 ? 0.0 : x,
-          ),
+
+      // Update camera transform.
+      const T_camera_world = state.camera.matrixWorldInverse;
+      const cameraMoved = !T_camera_world.equals(prevT_camera_world);
+      if (cameraMoved) {
+        postToWorker(sortWorker, {
+          setT_camera_world: T_camera_world.elements,
+        });
+        isSortingRef.current = true;
+        prevT_camera_world.copy(T_camera_world);
+      }
+
+      // Sort Gaussians.
+      if (groupsMoved || cameraMoved) {
+        postToWorker(sortWorker, {
+          triggerSort: true,
         });
       }
-    }
-
-    // Sort Gaussians.
-    if (
-      !isSortingRef.current &&
-      (prevT_camera_world === undefined ||
-        !T_camera_world.equals(prevT_camera_world) ||
-        groupsMoved)
-    ) {
-      sortWorker.postMessage({ setT_camera_world: T_camera_world.elements });
-      isSortingRef.current = true;
-      prevT_camera_world.copy(T_camera_world);
     }
   });
 
