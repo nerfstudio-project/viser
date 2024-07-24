@@ -9,28 +9,21 @@ export type SorterWorkerIncoming =
       setGroupIndices: Uint32Array;
     }
   | {
-      setT_world_groups: Float32Array;
-    }
-  | {
-      setTz_camera_world: number[];
+      setTz_camera_groups: Float32Array;
     }
   | { triggerSort: true }
   | { close: true };
 
 {
   let sorter: any = null;
-  let Tz_camera_world: number[] | null = null;
-  let T_world_groups: Float32Array | null = null;
-  let Tz_cam_groups: Float32Array | null = null;
+  let Tz_camera_groups: Float32Array | null = null;
   let groupIndices: Uint32Array | null = null;
   let sortedGroupIndices: Uint32Array | null = null;
   let sortRunning = false;
   const throttledSort = () => {
     if (
       sorter === null ||
-      Tz_camera_world === null ||
-      T_world_groups === null ||
-      Tz_cam_groups === null ||
+      Tz_camera_groups === null ||
       groupIndices === null ||
       sortedGroupIndices === null
     ) {
@@ -39,36 +32,11 @@ export type SorterWorkerIncoming =
     }
     if (sortRunning) return;
 
-    // Compute Tz_cam_groups.
-    //
-    // This is equivalent to getting the third row of `T_cam_world @
-    // T_world_group`; it's a projection from a 3D point to a camera-frame
-    // depth value (Z coordinate).
-    const numGroups = T_world_groups.length / 12;
-    for (let i = 0; i < numGroups; i++) {
-      Tz_cam_groups[i * 4 + 0] =
-        Tz_camera_world[0] * T_world_groups[i * 12 + 0] +
-        Tz_camera_world[1] * T_world_groups[i * 12 + 4] +
-        Tz_camera_world[2] * T_world_groups[i * 12 + 8];
-      Tz_cam_groups[i * 4 + 1] =
-        Tz_camera_world[0] * T_world_groups[i * 12 + 1] +
-        Tz_camera_world[1] * T_world_groups[i * 12 + 5] +
-        Tz_camera_world[2] * T_world_groups[i * 12 + 9];
-      Tz_cam_groups[i * 4 + 2] =
-        Tz_camera_world[0] * T_world_groups[i * 12 + 2] +
-        Tz_camera_world[1] * T_world_groups[i * 12 + 6] +
-        Tz_camera_world[2] * T_world_groups[i * 12 + 10];
-      Tz_cam_groups[i * 4 + 3] =
-        Tz_camera_world[0] * T_world_groups[i * 12 + 3] +
-        Tz_camera_world[1] * T_world_groups[i * 12 + 7] +
-        Tz_camera_world[2] * T_world_groups[i * 12 + 11] +
-        Tz_camera_world[3];
-    }
-
     sortRunning = true;
-    const lastView = Tz_camera_world;
-    const sortedIndices = sorter.sort(Tz_cam_groups);
+    const lastView = Tz_camera_groups;
+    const sortedIndices = sorter.sort(Tz_camera_groups);
 
+    const numGroups = Tz_camera_groups.length / 4;
     if (numGroups >= 2) {
       // Multiple groups: we need to update the per-Gaussian group indices.
       for (const [index, sortedIndex] of sortedIndices.entries()) {
@@ -86,7 +54,10 @@ export type SorterWorkerIncoming =
 
     setTimeout(() => {
       sortRunning = false;
-      if (lastView !== Tz_camera_world) {
+      if (
+        Tz_camera_groups !== null &&
+        !lastView.every((val, i) => val == Tz_camera_groups[i])
+      ) {
         throttledSort();
       }
     }, 0);
@@ -104,13 +75,9 @@ export type SorterWorkerIncoming =
       );
       groupIndices = data.setGroupIndices;
       sortedGroupIndices = groupIndices.slice();
-    } else if ("setT_world_groups" in data) {
+    } else if ("setTz_camera_groups" in data) {
       // Update object transforms.
-      T_world_groups = data.setT_world_groups;
-      Tz_cam_groups = new Float32Array((T_world_groups.length / 12) * 4);
-    } else if ("setTz_camera_world" in data) {
-      // Update view projection matrix.
-      Tz_camera_world = data.setTz_camera_world;
+      Tz_camera_groups = data.setTz_camera_groups;
     } else if ("triggerSort" in data) {
       throttledSort();
     } else if ("close" in data) {
