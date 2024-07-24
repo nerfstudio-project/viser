@@ -336,12 +336,6 @@ export default function GlobalGaussianSplats() {
         groupIndexAttribute.needsUpdate = true;
       }
 
-      // Done sorting!
-      isSortingRef.current = false;
-
-      // Render Gaussians last.
-      meshRef.current!.renderOrder = 1000.0;
-
       // Trigger initial render.
       if (!initializedBufferTexture.current) {
         material.uniforms.numGaussians.value = numGaussians;
@@ -375,7 +369,6 @@ export default function GlobalGaussianSplats() {
   // Synchronize view projection matrix with sort worker. We pre-allocate some
   // matrices to make life easier for the garbage collector.
   const meshRef = React.useRef<THREE.Mesh>(null);
-  const isSortingRef = React.useRef(false);
   const [prevT_camera_world] = React.useState(new THREE.Matrix4());
   const tmpGroupTransformBuffer = React.useMemo(
     () => new Float32Array(numGroups * 12),
@@ -411,70 +404,73 @@ export default function GlobalGaussianSplats() {
     uniforms.far.value = state.camera.far;
     uniforms.viewport.value = [state.size.width * dpr, state.size.height * dpr];
 
-    // If we're not currently sorting...
-    if (!isSortingRef.current) {
-      // Update group transforms.
-      let groupsMoved = false;
-      if (groupTransformTextureRef.current !== null) {
-        for (const [groupIndex, name] of Object.keys(
-          groupBufferFromName,
-        ).entries()) {
-          const node = viewer.nodeRefFromName.current[name];
-          if (node === undefined) continue;
-          const rowMajorElements = node.matrixWorld
-            .transpose()
-            .elements.slice(0, 12);
-          tmpGroupTransformBuffer.set(rowMajorElements, groupIndex * 12);
+    // Update group transforms.
+    let groupsMoved = false;
+    if (groupTransformTextureRef.current !== null) {
+      for (const [groupIndex, name] of Object.keys(
+        groupBufferFromName,
+      ).entries()) {
+        const node = viewer.nodeRefFromName.current[name];
+        if (node === undefined) continue;
+        const rowMajorElements = node.matrixWorld
+          .transpose()
+          .elements.slice(0, 12);
+        tmpGroupTransformBuffer.set(rowMajorElements, groupIndex * 12);
 
-          // If a group is not visible, we'll throw it off the screen with some
-          // Big Numbers.
-          let visible = node.visible && node.parent !== null;
-          if (visible) {
-            node.traverseAncestors((ancestor) => {
-              visible = visible && ancestor.visible;
-            });
-          }
-          if (!visible) {
-            tmpGroupTransformBuffer[groupIndex * 12 + 3] = 1e10;
-            tmpGroupTransformBuffer[groupIndex * 12 + 7] = 1e10;
-            tmpGroupTransformBuffer[groupIndex * 12 + 11] = 1e10;
-          }
-        }
-        groupsMoved = !groupTransformBuffer.every(
-          (v, i) => v === tmpGroupTransformBuffer[i],
-        );
-        if (groupsMoved) {
-          groupTransformBuffer.set(tmpGroupTransformBuffer);
-          groupTransformTextureRef.current.needsUpdate = true;
-          postToWorker(sortWorker, {
-            // Big values will break the counting sort precision. We just
-            // zero them out for now.
-            setT_world_groups: groupTransformBuffer.map((x) =>
-              x >= 1e10 ? 0.0 : x,
-            ),
+        // If a group is not visible, we'll throw it off the screen with some
+        // Big Numbers.
+        let visible = node.visible && node.parent !== null;
+        if (visible) {
+          node.traverseAncestors((ancestor) => {
+            visible = visible && ancestor.visible;
           });
         }
+        if (!visible) {
+          tmpGroupTransformBuffer[groupIndex * 12 + 3] = 1e10;
+          tmpGroupTransformBuffer[groupIndex * 12 + 7] = 1e10;
+          tmpGroupTransformBuffer[groupIndex * 12 + 11] = 1e10;
+        }
       }
-
-      // Update camera transform.
-      const T_camera_world = state.camera.matrixWorldInverse;
-      const cameraMoved = !T_camera_world.equals(prevT_camera_world);
-      if (cameraMoved) {
+      groupsMoved = !groupTransformBuffer.every(
+        (v, i) => v === tmpGroupTransformBuffer[i],
+      );
+      if (groupsMoved) {
+        groupTransformBuffer.set(tmpGroupTransformBuffer);
+        groupTransformTextureRef.current.needsUpdate = true;
         postToWorker(sortWorker, {
-          setT_camera_world: T_camera_world.elements,
-        });
-        isSortingRef.current = true;
-        prevT_camera_world.copy(T_camera_world);
-      }
-
-      // Sort Gaussians.
-      if (groupsMoved || cameraMoved) {
-        postToWorker(sortWorker, {
-          triggerSort: true,
+          // Big values will break the counting sort precision. We just
+          // zero them out for now.
+          setT_world_groups: groupTransformBuffer.map((x) =>
+            x >= 1e10 ? 0.0 : x,
+          ),
         });
       }
     }
+
+    // Update camera transform.
+    const T_camera_world = state.camera.matrixWorldInverse;
+    const cameraMoved = !T_camera_world.equals(prevT_camera_world);
+    if (cameraMoved) {
+      postToWorker(sortWorker, {
+        setT_camera_world: T_camera_world.elements,
+      });
+      prevT_camera_world.copy(T_camera_world);
+    }
+
+    // Sort Gaussians.
+    if (groupsMoved || cameraMoved) {
+      postToWorker(sortWorker, {
+        triggerSort: true,
+      });
+    }
   });
 
-  return <mesh ref={meshRef} geometry={geometry} material={material} />;
+  return (
+    <mesh
+      ref={meshRef}
+      geometry={geometry}
+      material={material}
+      renderOrder={10000.0 /*Generally, we want to render last.*/}
+    />
+  );
 }
