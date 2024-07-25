@@ -948,9 +948,6 @@ class SceneApi:
     ) -> GaussianSplatHandle:
         """Add a model to render using Gaussian Splatting.
 
-        Limitations: (i) does not yet support spherical harmonics, and (ii) our
-        shader supports a limited nmber of splat objects (currently 32).
-
         **Work-in-progress.** This feature is experimental and still under
         development. It may be changed or removed.
 

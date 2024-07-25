@@ -21,8 +21,8 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     depthTest: true,
     depthWrite: false,
     transparent: true,
-    bufferTexture: null,
-    T_camera_groups: new Float32Array(1),
+    textureBuffer: null,
+    textureT_camera_groups: null,
     transitionInState: 0.0,
   },
   `precision highp usampler2D; // Most important: ints must be 32-bit.
@@ -36,12 +36,13 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
   // Buffers for splat data; each Gaussian gets 4 floats and 4 int32s. We just
   // copy quadjr for this.
-  uniform usampler2D bufferTexture;
+  uniform usampler2D textureBuffer;
+
+  // We could also use a uniform to store transforms, but this would be more
+  // limiting in terms of the # of groups we can have.
+  uniform sampler2D textureT_camera_groups;
 
   // Various other uniforms...
-  // We support up to 32 groups for now. The uniform limit seems to vary by
-  // hardware; if we bump this to 128 it breaks on some phones.
-  uniform mat4 T_camera_groups[32];
   uniform uint numGaussians;
   uniform vec2 focal;
   uniform vec2 viewport;
@@ -57,26 +58,43 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 	float hash2D(vec2 value) {
 		return fract( 1.0e4 * sin( 17.0 * value.x + 0.1 * value.y ) * ( 0.1 + abs( sin( 13.0 * value.y + value.x ) ) ) );
 	}
+
 	float hash3D(vec3 value) {
 		return hash2D( vec2( hash2D( value.xy ), value.z ) );
 	}
 
+  // Function to fetch and construct the i-th transform matrix using texelFetch
+  mat4 getGroupTransform(uint i) {
+    // Calculate the base index for the i-th transform.
+    uint baseIndex = i * 3u;
+
+    // Fetch the texels that represent the first 3 rows of the transform. We
+    // choose to use row-major here, since it lets us exclude the fourth row of
+    // the matrix.
+    vec4 row0 = texelFetch(textureT_camera_groups, ivec2(baseIndex + 0u, 0), 0);
+    vec4 row1 = texelFetch(textureT_camera_groups, ivec2(baseIndex + 1u, 0), 0);
+    vec4 row2 = texelFetch(textureT_camera_groups, ivec2(baseIndex + 2u, 0), 0);
+
+    // Construct the mat4 with the fetched rows.
+    mat4 transform = mat4(row0, row1, row2, vec4(0.0, 0.0, 0.0, 1.0));
+    return transpose(transform);
+  }
+
   void main () {
     // Get position + scale from float buffer.
-    ivec2 texSize = textureSize(bufferTexture, 0);
+    ivec2 texSize = textureSize(textureBuffer, 0);
     ivec2 texPos0 = ivec2((sortedIndex * 2u) % uint(texSize.x), (sortedIndex * 2u) / uint(texSize.x));
 
     // Fetch from textures.
-    uvec4 floatBufferData = texelFetch(bufferTexture, texPos0, 0);
-    mat4 groupTransform = T_camera_groups[groupIndex];
+    uvec4 floatBufferData = texelFetch(textureBuffer, texPos0, 0);
+    mat4 T_camera_group = getGroupTransform(groupIndex);
 
     // Any early return will discard the fragment.
     gl_Position = vec4(0.0, 0.0, 2000.0, 1.0);
 
     // Get center wrt camera. modelViewMatrix is T_cam_world.
     vec3 center = uintBitsToFloat(floatBufferData.xyz);
-    mat4 T_world_group = groupTransform;
-    vec4 c_cam = T_world_group * vec4(center, 1);
+    vec4 c_cam = T_camera_group * vec4(center, 1);
     if (-c_cam.z < near || -c_cam.z > far)
       return;
     vec4 pos2d = projectionMatrix * c_cam;
@@ -86,7 +104,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // Read covariance terms.
     ivec2 texPos1 = ivec2((sortedIndex * 2u + 1u) % uint(texSize.x), (sortedIndex * 2u + 1u) / uint(texSize.x));
-    uvec4 intBufferData = texelFetch(bufferTexture, texPos1, 0);
+    uvec4 intBufferData = texelFetch(textureBuffer, texPos1, 0);
 
     // Get covariance terms from int buffer.
     uint rgbaUint32 = intBufferData.w;
@@ -111,7 +129,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
         0., focal.y / c_cam.z, 0.0,
         -(focal.x * c_cam.x) / (c_cam.z * c_cam.z), -(focal.y * c_cam.y) / (c_cam.z * c_cam.z), 0.
     );
-    mat3 A = J * mat3(T_world_group);
+    mat3 A = J * mat3(T_camera_group);
     mat3 cov_proj = A * cov3d * transpose(A);
     float diag1 = cov_proj[0][0] + 0.3;
     float offDiag = cov_proj[0][1];
@@ -179,6 +197,7 @@ export default function GlobalGaussianSplats() {
   const meshProps = useGaussianMeshProps(
     merged.gaussianBuffer,
     merged.groupIndices,
+    merged.numGroups,
   );
 
   // Create sorting worker.
@@ -200,7 +219,7 @@ export default function GlobalGaussianSplats() {
     // Trigger initial render.
     if (!initializedBufferTexture) {
       meshProps.material.uniforms.numGaussians.value = merged.numGaussians;
-      meshProps.bufferTexture.needsUpdate = true;
+      meshProps.textureBuffer.needsUpdate = true;
       initializedBufferTexture = true;
     }
   };
@@ -212,7 +231,7 @@ export default function GlobalGaussianSplats() {
   // Cleanup.
   React.useEffect(() => {
     return () => {
-      meshProps.bufferTexture.dispose();
+      meshProps.textureBuffer.dispose();
       meshProps.geometry.dispose();
       meshProps.material.dispose();
       postToWorker(sortWorker, { close: true });
@@ -225,10 +244,10 @@ export default function GlobalGaussianSplats() {
   // We pre-allocate matrices to make life easier for the garbage collector.
   const meshRef = React.useRef<THREE.Mesh>(null);
   const tmpT_camera_group = new THREE.Matrix4();
-  const T_camera_groups = new Float32Array(merged.numGroups * 16);
   const Tz_camera_groups = new Float32Array(merged.numGroups * 4);
-  const prevTz_camera_groups = new Float32Array(merged.numGroups * 4);
-  let staleSort = false;
+  const prevRowMajorT_camera_groups = meshProps.rowMajorT_camera_groups
+    .slice()
+    .fill(0);
   useFrame((state, delta) => {
     const mesh = meshRef.current;
     if (mesh === null || sortWorker === null) return;
@@ -262,7 +281,6 @@ export default function GlobalGaussianSplats() {
       if (node === undefined) continue;
       tmpT_camera_group.copy(T_camera_world).multiply(node.matrixWorld);
       const colMajorElements = tmpT_camera_group.elements;
-      T_camera_groups.set(colMajorElements, groupIndex * 16);
       Tz_camera_groups.set(
         [
           colMajorElements[2],
@@ -271,6 +289,11 @@ export default function GlobalGaussianSplats() {
           colMajorElements[14],
         ],
         groupIndex * 4,
+      );
+      const rowMajorElements = tmpT_camera_group.transpose().elements;
+      meshProps.rowMajorT_camera_groups.set(
+        rowMajorElements.slice(0, 12),
+        groupIndex * 12,
       );
 
       // If a group is not visible, we'll throw it off the screen with some
@@ -282,25 +305,26 @@ export default function GlobalGaussianSplats() {
         });
       }
       if (!visible) {
-        T_camera_groups[groupIndex * 16 + 12] = 1e10;
-        T_camera_groups[groupIndex * 16 + 13] = 1e10;
-        T_camera_groups[groupIndex * 16 + 14] = 1e10;
+        meshProps.rowMajorT_camera_groups[groupIndex * 12 + 3] = 1e10;
+        meshProps.rowMajorT_camera_groups[groupIndex * 12 + 7] = 1e10;
+        meshProps.rowMajorT_camera_groups[groupIndex * 12 + 11] = 1e10;
       }
     }
-    if (!Tz_camera_groups.every((v, i) => v === prevTz_camera_groups[i])) {
-      prevTz_camera_groups.set(Tz_camera_groups);
-      staleSort = true;
-      uniforms.T_camera_groups.value = T_camera_groups;
+
+    if (
+      !meshProps.rowMajorT_camera_groups.every(
+        (v, i) => v === prevRowMajorT_camera_groups[i],
+      )
+    ) {
+      prevRowMajorT_camera_groups.set(meshProps.rowMajorT_camera_groups);
+      meshProps.textureT_camera_groups.needsUpdate = true;
       postToWorker(sortWorker, {
         // Big values will break the counting sort precision. We just
         // zero them out for now.
         setTz_camera_groups: Tz_camera_groups,
       });
-    }
 
-    // Sort Gaussians.
-    if (staleSort) {
-      staleSort = false;
+      // Sort Gaussians.
       postToWorker(sortWorker, {
         triggerSort: true,
       });
@@ -352,6 +376,7 @@ function mergeGaussianGroups(groupBufferFromName: {
 function useGaussianMeshProps(
   gaussianBuffer: Uint32Array,
   groupIndices: Uint32Array,
+  numGroups: number,
 ) {
   const numGaussians = groupIndices.length;
   const maxTextureSize = useThree((state) => state.gl).capabilities
@@ -392,19 +417,31 @@ function useGaussianMeshProps(
   const textureHeight = Math.ceil((numGaussians * 2) / textureWidth);
   const bufferPadded = new Uint32Array(textureWidth * textureHeight * 4);
   bufferPadded.set(gaussianBuffer);
-  const bufferTexture = new THREE.DataTexture(
+  const textureBuffer = new THREE.DataTexture(
     bufferPadded,
     textureWidth,
     textureHeight,
     THREE.RGBAIntegerFormat,
     THREE.UnsignedIntType,
   );
-  bufferTexture.internalFormat = "RGBA32UI";
-  bufferTexture.needsUpdate = true;
+  textureBuffer.internalFormat = "RGBA32UI";
+  textureBuffer.needsUpdate = true;
+
+  const rowMajorT_camera_groups = new Float32Array(numGroups * 12);
+  const textureT_camera_groups = new THREE.DataTexture(
+    rowMajorT_camera_groups,
+    (numGroups * 12) / 4,
+    1,
+    THREE.RGBAFormat,
+    THREE.FloatType,
+  );
+  textureT_camera_groups.internalFormat = "RGBA32F";
+  textureT_camera_groups.needsUpdate = true;
 
   const material = new GaussianSplatMaterial({
     // @ts-ignore
-    bufferTexture: bufferTexture,
+    textureBuffer: textureBuffer,
+    textureT_camera_groups: textureT_camera_groups,
     numGaussians: 0,
     transitionInState: 0.0,
   });
@@ -412,8 +449,10 @@ function useGaussianMeshProps(
   return {
     geometry,
     material,
-    bufferTexture,
+    textureBuffer,
     sortedIndexAttribute,
     groupIndexAttribute,
+    textureT_camera_groups,
+    rowMajorT_camera_groups,
   };
 }
