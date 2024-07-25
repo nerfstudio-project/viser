@@ -193,10 +193,10 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         shadow="0.1em 0 1em 0 rgba(0,0,0,0.1)"
         style={{
           position: "fixed",
-          bottom: "0.75em",
+          bottom: "1em",
           left: "50%",
           transform: "translateX(-50%)",
-          width: "20em",
+          width: "25em",
           maxWidth: "95%",
           zIndex: 1,
           padding: "0.5em",
@@ -206,11 +206,19 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           gap: "0.375em",
         }}
       >
-        <ActionIcon size="xs" variant="subtle">
+        <ActionIcon size="md" variant="subtle">
           {paused ? (
-            <IconPlayerPlayFilled onClick={() => setPaused(false)} />
+            <IconPlayerPlayFilled
+              onClick={() => setPaused(false)}
+              height="1.125em"
+              width="1.125em"
+            />
           ) : (
-            <IconPlayerPauseFilled onClick={() => setPaused(true)} />
+            <IconPlayerPauseFilled
+              onClick={() => setPaused(true)}
+              height="1.125em"
+              width="1.125em"
+            />
           )}
         </ActionIcon>
         <NumberInput
@@ -220,15 +228,12 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           step={0.01}
           styles={{
             wrapper: {
-              width:
-                (recording.durationSeconds.toFixed(1).length * 0.8).toString() +
-                "em",
+              width: "3.1em",
             },
             input: {
+              padding: "0.2em",
               fontFamily: theme.fontFamilyMonospace,
-              padding: "0.5em",
-              minHeight: "1.25rem",
-              height: "1.25rem",
+              textAlign: "center",
             },
           }}
           onChange={(value) =>
@@ -257,11 +262,6 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
             data={["0.5x", "1x", "2x", "4x", "8x"]}
             styles={{
               wrapper: { width: "3.25em" },
-              input: {
-                padding: "0.5em",
-                minHeight: "1.25rem",
-                height: "1.25rem",
-              },
             }}
             comboboxProps={{ zIndex: 5, width: "5.25em" }}
           />

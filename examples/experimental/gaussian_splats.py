@@ -11,6 +11,7 @@ import numpy.typing as onpt
 import tyro
 import viser
 from plyfile import PlyData
+from tqdm import tqdm
 from viser import transforms as tf
 
 
@@ -72,49 +73,43 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
 def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     plydata = PlyData.read(ply_file_path)
     vert = plydata["vertex"]
-    sorted_indices = onp.argsort(
-        -onp.exp(vert["scale_0"] + vert["scale_1"] + vert["scale_2"])
-        / (1 + onp.exp(-vert["opacity"]))
-    )
-    numgaussians = len(vert)
-    print("Number of gaussians to render: ", numgaussians)
-    colors = onp.zeros((numgaussians, 3))
-    opacities = onp.zeros((numgaussians, 1))
-    positions = onp.zeros((numgaussians, 3))
-    wxyzs = onp.zeros((numgaussians, 4))
-    scales = onp.zeros((numgaussians, 3))
-    for idx in sorted_indices:
-        v = plydata["vertex"][idx]
-        position = onp.array([v["x"], v["y"], v["z"]], dtype=onp.float32)
-        scale = onp.exp(
-            onp.array([v["scale_0"], v["scale_1"], v["scale_2"]], dtype=onp.float32)
-        )
+    num_gaussians = len(vert)
+    print("Number of gaussians to render: ", num_gaussians)
+    colors = onp.zeros((num_gaussians, 3))
+    opacities = onp.zeros((num_gaussians, 1))
+    positions = onp.zeros((num_gaussians, 3))
+    wxyzs = onp.zeros((num_gaussians, 4))
+    scales = onp.zeros((num_gaussians, 3))
 
-        rot = onp.array(
-            [v["rot_0"], v["rot_1"], v["rot_2"], v["rot_3"]], dtype=onp.float32
-        )
-        SH_C0 = 0.28209479177387814
-        color = onp.array(
-            [
-                0.5 + SH_C0 * v["f_dc_0"],
-                0.5 + SH_C0 * v["f_dc_1"],
-                0.5 + SH_C0 * v["f_dc_2"],
-            ]
-        )
-        opacity = 1 / (1 + onp.exp(-v["opacity"]))
-        wxyz = rot / onp.linalg.norm(rot)  # normalize
-        scales[idx] = scale
-        colors[idx] = color
-        opacities[idx] = onp.array([opacity])
-        positions[idx] = position
-        wxyzs[idx] = wxyz
+    for i in tqdm(range(num_gaussians)):
+        v = plydata["vertex"][i]
+        positions[i, 0] = v["x"]
+        positions[i, 1] = v["y"]
+        positions[i, 2] = v["z"]
+        scales[i, 0] = v["scale_0"]
+        scales[i, 1] = v["scale_1"]
+        scales[i, 2] = v["scale_2"]
+        wxyzs[i, 0] = v["rot_0"]
+        wxyzs[i, 1] = v["rot_1"]
+        wxyzs[i, 2] = v["rot_2"]
+        wxyzs[i, 3] = v["rot_3"]
+        colors[i, 0] = v["f_dc_0"]
+        colors[i, 1] = v["f_dc_1"]
+        colors[i, 2] = v["f_dc_2"]
+        opacities[i, 0] = v["opacity"]
 
-    Rs = onp.array([tf.SO3(wxyz).as_matrix() for wxyz in wxyzs])
+    SH_C0 = 0.28209479177387814
+    scales = onp.exp(scales)
+    colors = 0.5 + SH_C0 * colors
+    opacities = 1.0 / (1.0 + onp.exp(-opacities))
+
+    Rs = tf.SO3(wxyzs).as_matrix()
     covariances = onp.einsum(
         "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
     )
     if center:
         positions -= onp.mean(positions, axis=0, keepdims=True)
+
     print("PLY file loaded")
     return {
         "centers": positions,
@@ -127,7 +122,7 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
 
 
 def main(splat_paths: tuple[Path, ...]) -> None:
-    server = viser.ViserServer(share=True)
+    server = viser.ViserServer()
     server.gui.configure_theme(dark_mode=True)
     gui_reset_up = server.gui.add_button(
         "Reset up direction",

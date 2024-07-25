@@ -29,7 +29,7 @@ import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
-import GaussianSplats from "./Splatting/GaussianSplats";
+import { GaussianSplatsContext } from "./Splatting/SplatContext";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -50,6 +50,10 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
   const ContextBridge = useContextBridge();
+
+  const splatContext = useContext(GaussianSplatsContext)!;
+  const setGaussianBuffer = splatContext((state) => state.setBuffer);
+  const removeGaussianBuffer = splatContext((state) => state.removeBuffer);
 
   // We could reduce the redundancy here if we wanted to.
   // https://github.com/nerfstudio-project/viser/issues/39
@@ -966,23 +970,25 @@ function useMessageHandler() {
         return;
       }
       case "GaussianSplatsMessage": {
+        setGaussianBuffer(
+          message.name,
+          new Uint32Array(
+            message.buffer.buffer.slice(
+              message.buffer.byteOffset,
+              message.buffer.byteOffset + message.buffer.byteLength,
+            ),
+          ),
+        );
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => {
-            return (
-              <group ref={ref}>
-                <GaussianSplats
-                  buffers={{
-                    buffer: new Uint32Array(
-                      message.buffer.buffer.slice(
-                        message.buffer.byteOffset,
-                        message.buffer.byteOffset + message.buffer.byteLength,
-                      ),
-                    ),
-                  }}
-                />
-              </group>
-            );
-          }),
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => {
+              return <group ref={ref}></group>;
+            },
+            () => {
+              removeGaussianBuffer(message.name);
+            },
+          ),
         );
         return;
       }

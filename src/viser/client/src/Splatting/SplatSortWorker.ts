@@ -3,33 +3,64 @@
 
 import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
 
+export type SorterWorkerIncoming =
+  | {
+      setBuffer: Uint32Array;
+      setGroupIndices: Uint32Array;
+    }
+  | {
+      setTz_camera_groups: Float32Array;
+    }
+  | { triggerSort: true }
+  | { close: true };
+
 {
   let sorter: any = null;
-  let T_camera_obj: number[] | null = null;
+  let Tz_camera_groups: Float32Array | null = null;
+  let groupIndices: Uint32Array | null = null;
+  let sortedGroupIndices: Uint32Array | null = null;
   let sortRunning = false;
   const throttledSort = () => {
-    if (sorter === null) {
+    if (
+      sorter === null ||
+      Tz_camera_groups === null ||
+      groupIndices === null ||
+      sortedGroupIndices === null
+    ) {
       setTimeout(throttledSort, 1);
       return;
     }
-    if (T_camera_obj === null || sortRunning) return;
+    if (sortRunning) return;
 
     sortRunning = true;
-    const lastView = T_camera_obj;
-    const sortedIndices = sorter.sort(
-      T_camera_obj[2],
-      T_camera_obj[6],
-      T_camera_obj[10],
-      T_camera_obj[14],
-    );
-    self.postMessage({
-      sortedIndices: sortedIndices,
-      minDepth: sorter.getMinDepth(),
-    });
+    const lastView = Tz_camera_groups;
+    const sortedIndices = sorter.sort(Tz_camera_groups);
+
+    const numGroups = Tz_camera_groups.length / 4;
+    if (numGroups >= 2) {
+      // Multiple groups: we need to update the per-Gaussian group indices.
+      for (const [index, sortedIndex] of sortedIndices.entries()) {
+        sortedGroupIndices[index] = groupIndices[sortedIndex];
+      }
+      self.postMessage({
+        sortedIndices: sortedIndices,
+        sortedGroupIndices: sortedGroupIndices,
+      });
+    } else {
+      self.postMessage({
+        sortedIndices: sortedIndices,
+      });
+    }
 
     setTimeout(() => {
       sortRunning = false;
-      if (lastView !== T_camera_obj) {
+      if (Tz_camera_groups === null) return;
+      if (
+        !lastView.every(
+          // Cast is needed because of closure...
+          (val, i) => val === (Tz_camera_groups as Float32Array)[i],
+        )
+      ) {
         throttledSort();
       }
     }, 0);
@@ -38,21 +69,19 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
   const SorterModulePromise = MakeSorterModulePromise();
 
   self.onmessage = async (e) => {
-    const data = e.data as
-      | {
-          setBuffer: Float32Array;
-        }
-      | {
-          setT_camera_obj: number[];
-        }
-      | { close: true };
-
+    const data = e.data as SorterWorkerIncoming;
     if ("setBuffer" in data) {
       // Instantiate sorter with buffers populated.
-      sorter = new (await SorterModulePromise).Sorter(data.setBuffer);
-    } else if ("setT_camera_obj" in data) {
-      // Update view projection matrix.
-      T_camera_obj = data.setT_camera_obj;
+      sorter = new (await SorterModulePromise).Sorter(
+        data.setBuffer,
+        data.setGroupIndices,
+      );
+      groupIndices = data.setGroupIndices;
+      sortedGroupIndices = groupIndices.slice();
+    } else if ("setTz_camera_groups" in data) {
+      // Update object transforms.
+      Tz_camera_groups = data.setTz_camera_groups;
+    } else if ("triggerSort" in data) {
       throttledSort();
     } else if ("close" in data) {
       // Done!

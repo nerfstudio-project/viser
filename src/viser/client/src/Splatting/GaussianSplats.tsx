@@ -3,16 +3,13 @@ import * as THREE from "three";
 import SplatSortWorker from "./SplatSortWorker?worker";
 import { useFrame, useThree } from "@react-three/fiber";
 import { shaderMaterial } from "@react-three/drei";
+import { GaussianSplatsContext } from "./SplatContext";
+import { ViewerContext } from "../App";
+import { SorterWorkerIncoming } from "./SplatSortWorker";
 
-export const GaussianSplatsContext =
-  React.createContext<null | React.MutableRefObject<{
-    numSorting: number;
-    sortUpdateCallbacks: (() => void)[];
-  }>>(null);
-
-export type GaussianBuffers = {
-  buffer: Uint32Array;
-};
+function postToWorker(worker: Worker, message: SorterWorkerIncoming) {
+  worker.postMessage(message);
+}
 
 const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   {
@@ -22,10 +19,10 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     near: 1.0,
     far: 100.0,
     depthTest: true,
-    depthWrite: true,
+    depthWrite: false,
     transparent: true,
-    bufferTexture: null,
-    sortSynchronizedModelViewMatrix: new THREE.Matrix4(),
+    textureBuffer: null,
+    textureT_camera_groups: null,
     transitionInState: 0.0,
   },
   `precision highp usampler2D; // Most important: ints must be 32-bit.
@@ -34,9 +31,16 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   // Index from the splat sorter.
   attribute uint sortedIndex;
 
+  // Which group transform should be applied to each Gaussian.
+  attribute uint sortedGroupIndex;
+
   // Buffers for splat data; each Gaussian gets 4 floats and 4 int32s. We just
   // copy quadjr for this.
-  uniform usampler2D bufferTexture;
+  uniform usampler2D textureBuffer;
+
+  // We could also use a uniform to store transforms, but this would be more
+  // limiting in terms of the # of groups we can have.
+  uniform sampler2D textureT_camera_groups;
 
   // Various other uniforms...
   uniform uint numGaussians;
@@ -45,37 +49,52 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   uniform float near;
   uniform float far;
 
-  // Depth testing is useful for compositing multiple splat objects, but causes
-  // artifacts when closer Gaussians are rendered before further ones.
-  // Synchronizing the modelViewMatrix updates used for depth computation with
-  // the splat sorter mitigates this for Gaussians within the same object.
-  uniform mat4 sortSynchronizedModelViewMatrix;
-
   // Fade in state between [0, 1].
   uniform float transitionInState;
 
   out vec4 vRgba;
   out vec2 vPosition;
 
-	float hash2D( vec2 value ) {
+	float hash2D(vec2 value) {
 		return fract( 1.0e4 * sin( 17.0 * value.x + 0.1 * value.y ) * ( 0.1 + abs( sin( 13.0 * value.y + value.x ) ) ) );
 	}
-	float hash3D( vec3 value ) {
+
+	float hash3D(vec3 value) {
 		return hash2D( vec2( hash2D( value.xy ), value.z ) );
 	}
 
+  // Function to fetch and construct the i-th transform matrix using texelFetch
+  mat4 getGroupTransform(uint i) {
+    // Calculate the base index for the i-th transform.
+    uint baseIndex = i * 3u;
+
+    // Fetch the texels that represent the first 3 rows of the transform. We
+    // choose to use row-major here, since it lets us exclude the fourth row of
+    // the matrix.
+    vec4 row0 = texelFetch(textureT_camera_groups, ivec2(baseIndex + 0u, 0), 0);
+    vec4 row1 = texelFetch(textureT_camera_groups, ivec2(baseIndex + 1u, 0), 0);
+    vec4 row2 = texelFetch(textureT_camera_groups, ivec2(baseIndex + 2u, 0), 0);
+
+    // Construct the mat4 with the fetched rows.
+    mat4 transform = mat4(row0, row1, row2, vec4(0.0, 0.0, 0.0, 1.0));
+    return transpose(transform);
+  }
+
   void main () {
+    // Get position + scale from float buffer.
+    ivec2 texSize = textureSize(textureBuffer, 0);
+    ivec2 texPos0 = ivec2((sortedIndex * 2u) % uint(texSize.x), (sortedIndex * 2u) / uint(texSize.x));
+
+    // Fetch from textures.
+    uvec4 floatBufferData = texelFetch(textureBuffer, texPos0, 0);
+    mat4 T_camera_group = getGroupTransform(sortedGroupIndex);
+
     // Any early return will discard the fragment.
     gl_Position = vec4(0.0, 0.0, 2000.0, 1.0);
 
-    // Get position + scale from float buffer.
-    ivec2 texSize = textureSize(bufferTexture, 0);
-    ivec2 texPos0 = ivec2((sortedIndex * 2u) % uint(texSize.x), (sortedIndex * 2u) / uint(texSize.x));
-    uvec4 floatBufferData = texelFetch(bufferTexture, texPos0, 0);
-    vec3 center = uintBitsToFloat(floatBufferData.xyz);
-
     // Get center wrt camera. modelViewMatrix is T_cam_world.
-    vec4 c_cam = modelViewMatrix * vec4(center, 1);
+    vec3 center = uintBitsToFloat(floatBufferData.xyz);
+    vec4 c_cam = T_camera_group * vec4(center, 1);
     if (-c_cam.z < near || -c_cam.z > far)
       return;
     vec4 pos2d = projectionMatrix * c_cam;
@@ -83,19 +102,19 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     if (pos2d.x < -clip || pos2d.x > clip || pos2d.y < -clip || pos2d.y > clip)
       return;
 
-    vec4 c_camstable = sortSynchronizedModelViewMatrix * vec4(center, 1);
-    vec4 stablePos2d = projectionMatrix * c_camstable;
-
-    float perGaussianShift = 1.0 - (float(numGaussians * 2u) - float(sortedIndex)) / float(numGaussians * 2u);
-    float cov_scale = max(0.0, transitionInState - perGaussianShift) / (1.0 - perGaussianShift);
+    // Read covariance terms.
+    ivec2 texPos1 = ivec2((sortedIndex * 2u + 1u) % uint(texSize.x), (sortedIndex * 2u + 1u) / uint(texSize.x));
+    uvec4 intBufferData = texelFetch(textureBuffer, texPos1, 0);
 
     // Get covariance terms from int buffer.
-    ivec2 texPos1 = ivec2((sortedIndex * 2u + 1u) % uint(texSize.x), (sortedIndex * 2u + 1u) / uint(texSize.x));
-    uvec4 intBufferData = texelFetch(bufferTexture, texPos1, 0);
     uint rgbaUint32 = intBufferData.w;
     vec2 chol01 = unpackHalf2x16(intBufferData.x);
     vec2 chol23 = unpackHalf2x16(intBufferData.y);
     vec2 chol45 = unpackHalf2x16(intBufferData.z);
+
+    // Transition in.
+    float perGaussianShift = 1.0 - (float(numGaussians * 2u) - float(sortedIndex)) / float(numGaussians * 2u);
+    float cov_scale = max(0.0, transitionInState - perGaussianShift) / (1.0 - perGaussianShift);
 
     // Do the actual splatting.
     mat3 chol = mat3(
@@ -110,7 +129,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
         0., focal.y / c_cam.z, 0.0,
         -(focal.x * c_cam.x) / (c_cam.z * c_cam.z), -(focal.y * c_cam.y) / (c_cam.z * c_cam.z), 0.
     );
-    mat3 A = J * mat3(modelViewMatrix);
+    mat3 A = J * mat3(T_camera_group);
     mat3 cov_proj = A * cov3d * transpose(A);
     float diag1 = cov_proj[0][0] + 0.3;
     float offDiag = cov_proj[0][1];
@@ -138,14 +157,15 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
     if (weightedDeterminant < 0.1)
       return;
-    if (weightedDeterminant < 1.0 && hash3D(center) < weightedDeterminant)  // This is not principled. It just makes things faster.
+    // This is not principled. It just makes things faster.
+    if (weightedDeterminant < 1.0 && hash3D(center) < weightedDeterminant)
       return;
     vPosition = position.xy;
 
     gl_Position = vec4(
         vec2(pos2d) / pos2d.w
             + position.x * v1 / viewport * 2.0
-            + position.y * v2 / viewport * 2.0, stablePos2d.z / stablePos2d.w, 1.);
+            + position.y * v2 / viewport * 2.0, pos2d.z / pos2d.w, 1.);
   }
 `,
   `precision mediump float;
@@ -160,153 +180,77 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     float A = -dot(vPosition, vPosition);
     if (A < -4.0) discard;
     float B = exp(A) * vRgba.a;
-    if (B < 0.03) discard;  // alphaTest.
+    if (B < 0.01) discard;  // alphaTest.
     gl_FragColor = vec4(vRgba.rgb, B);
   }`,
 );
 
-export default function GaussianSplats({
-  buffers,
-}: {
-  buffers: GaussianBuffers;
-}) {
-  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
-  const [material, setMaterial] = React.useState<THREE.ShaderMaterial>();
-  const splatSortWorkerRef = React.useRef<Worker | null>(null);
-  const maxTextureSize = useThree((state) => state.gl).capabilities
-    .maxTextureSize;
-  const initializedTextures = React.useRef<boolean>(false);
-  const [sortSynchronizedModelViewMatrix] = React.useState(new THREE.Matrix4());
+/** External interface. Component should be added to the root of canvas.  */
+export default function GlobalGaussianSplats() {
+  const viewer = React.useContext(ViewerContext)!;
+  const splatContext = React.useContext(GaussianSplatsContext)!;
+  const groupBufferFromName = splatContext(
+    (state) => state.groupBufferFromName,
+  );
 
-  const splatContext = React.useContext(GaussianSplatsContext)!.current;
+  // Consolidate Gaussian groups into a single buffer.
+  const merged = mergeGaussianGroups(groupBufferFromName);
+  const meshProps = useGaussianMeshProps(
+    merged.gaussianBuffer,
+    merged.groupIndices,
+    merged.numGroups,
+  );
 
-  // We'll use the vanilla three.js API, which for our use case is more
-  // flexible than the declarative version (particularly for operations like
-  // dynamic updates to buffers and shader uniforms).
+  // Create sorting worker.
+  const sortWorker = new SplatSortWorker();
+  let initializedBufferTexture = false;
+  sortWorker.onmessage = (e) => {
+    // Update rendering order.
+    const sortedIndices = e.data.sortedIndices as Uint32Array;
+    meshProps.sortedIndexAttribute.set(sortedIndices);
+    meshProps.sortedIndexAttribute.needsUpdate = true;
+
+    // Update group indices if needed.
+    if (merged.numGroups >= 2) {
+      const sortedGroupIndices = e.data.sortedGroupIndices as Uint32Array;
+      meshProps.sortedGroupIndexAttribute.set(sortedGroupIndices);
+      meshProps.sortedGroupIndexAttribute.needsUpdate = true;
+    }
+
+    // Trigger initial render.
+    if (!initializedBufferTexture) {
+      meshProps.material.uniforms.numGaussians.value = merged.numGaussians;
+      meshProps.textureBuffer.needsUpdate = true;
+      initializedBufferTexture = true;
+    }
+  };
+  postToWorker(sortWorker, {
+    setBuffer: merged.gaussianBuffer,
+    setGroupIndices: merged.groupIndices,
+  });
+
+  // Cleanup.
   React.useEffect(() => {
-    // Create geometry. Each Gaussian will be rendered as a quad.
-    const geometry = new THREE.InstancedBufferGeometry();
-    const numGaussians = buffers.buffer.length / 8;
-    geometry.instanceCount = numGaussians;
-
-    // Quad geometry.
-    geometry.setIndex(
-      new THREE.BufferAttribute(new Uint32Array([0, 2, 1, 0, 3, 2]), 1),
-    );
-    geometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(
-        new Float32Array([-2, -2, 2, -2, 2, 2, -2, 2]),
-        2,
-      ),
-    );
-
-    // Rendering order for Gaussians.
-    const sortedIndexAttribute = new THREE.InstancedBufferAttribute(
-      new Uint32Array(numGaussians),
-      1,
-    );
-    sortedIndexAttribute.setUsage(THREE.DynamicDrawUsage);
-    geometry.setAttribute("sortedIndex", sortedIndexAttribute);
-
-    // Create texture buffers.
-    const textureWidth = Math.min(numGaussians * 2, maxTextureSize);
-    const textureHeight = Math.ceil((numGaussians * 2) / textureWidth);
-
-    const bufferPadded = new Uint32Array(textureWidth * textureHeight * 4);
-    bufferPadded.set(buffers.buffer);
-
-    const bufferTexture = new THREE.DataTexture(
-      bufferPadded,
-      textureWidth,
-      textureHeight,
-      THREE.RGBAIntegerFormat,
-      THREE.UnsignedIntType,
-    );
-    bufferTexture.internalFormat = "RGBA32UI";
-
-    const material = new GaussianSplatMaterial({
-      // @ts-ignore
-      bufferTexture: bufferTexture,
-      numGaussians: 0,
-      transitionInState: 0.0,
-      sortSynchronizedModelViewMatrix: new THREE.Matrix4(),
-    });
-
-    // Update component state.
-    setGeometry(geometry);
-    setMaterial(material);
-
-    // Create sorting worker.
-    const sortWorker = new SplatSortWorker();
-    sortWorker.onmessage = (e) => {
-      sortedIndexAttribute.set(e.data.sortedIndices as Int32Array);
-      const synchronizedSortUpdateCallback = () => {
-        isSortingRef.current = false;
-
-        // Wait for onmessage  to be triggered for all Gaussians.
-        sortedIndexAttribute.needsUpdate = true;
-        material.uniforms.sortSynchronizedModelViewMatrix.value.copy(
-          sortSynchronizedModelViewMatrix,
-        );
-        // A simple but reasonably effective heuristic for render ordering.
-        //
-        // To minimize artifacts:
-        // - When there are multiple splat objects, we want to render the closest
-        //   ones *last*. This improves the likelihood of correct alpha
-        //   compositing and reduces reliance on alpha testing.
-        // - We generally want to render other objects like meshes *before*
-        //   Gaussians. They're usually opaque.
-        meshRef.current!.renderOrder = (-e.data.minDepth as number) + 1000.0;
-
-        // Trigger initial render.
-        if (!initializedTextures.current) {
-          material.uniforms.numGaussians.value = numGaussians;
-          bufferTexture.needsUpdate = true;
-          initializedTextures.current = true;
-        }
-      };
-
-      // Synchronize sort updates across multiple Gaussian splats. This
-      // prevents z-fighting.
-      splatContext.numSorting -= 1;
-      if (splatContext.numSorting === 0) {
-        synchronizedSortUpdateCallback();
-        console.log(splatContext.sortUpdateCallbacks.length);
-        for (const callback of splatContext.sortUpdateCallbacks) {
-          callback();
-        }
-        splatContext.sortUpdateCallbacks.length = 0;
-      } else {
-        splatContext.sortUpdateCallbacks.push(synchronizedSortUpdateCallback);
-      }
-    };
-    sortWorker.postMessage({
-      setBuffer: buffers.buffer,
-    });
-    splatSortWorkerRef.current = sortWorker;
-
-    // We should always re-send view projection when buffers are replaced.
-    prevT_camera_obj.identity();
-
     return () => {
-      bufferTexture.dispose();
-      geometry.dispose();
-      if (material !== undefined) material.dispose();
-      sortWorker.postMessage({ close: true });
+      meshProps.textureBuffer.dispose();
+      meshProps.geometry.dispose();
+      meshProps.material.dispose();
+      postToWorker(sortWorker, { close: true });
     };
-  }, [buffers]);
+  });
 
-  // Synchronize view projection matrix with sort worker. We pre-allocate some
-  // matrices to make life easier for the garbage collector.
+  // Per-frame updates. This is in charge of synchronizing transforms and
+  // triggering sorting.
+  //
+  // We pre-allocate matrices to make life easier for the garbage collector.
   const meshRef = React.useRef<THREE.Mesh>(null);
-  const isSortingRef = React.useRef(false);
-  const [prevT_camera_obj] = React.useState(new THREE.Matrix4());
-  const [T_camera_obj] = React.useState(new THREE.Matrix4());
-
+  const tmpT_camera_group = new THREE.Matrix4();
+  const Tz_camera_groups = new Float32Array(merged.numGroups * 4);
+  const prevRowMajorT_camera_groups = meshProps.rowMajorT_camera_groups
+    .slice()
+    .fill(0);
   useFrame((state, delta) => {
     const mesh = meshRef.current;
-    const sortWorker = splatSortWorkerRef.current;
     if (mesh === null || sortWorker === null) return;
 
     // Update camera parameter uniforms.
@@ -317,9 +261,9 @@ export default function GaussianSplats({
     const fy = (dpr * state.size.height) / (2 * Math.tan(fovY / 2));
     const fx = (dpr * state.size.width) / (2 * Math.tan(fovX / 2));
 
-    if (material === undefined) return;
+    if (meshProps.material === undefined) return;
 
-    const uniforms = material.uniforms;
+    const uniforms = meshProps.material.uniforms;
     uniforms.transitionInState.value = Math.min(
       uniforms.transitionInState.value + delta * 2.0,
       1.0,
@@ -329,24 +273,187 @@ export default function GaussianSplats({
     uniforms.far.value = state.camera.far;
     uniforms.viewport.value = [state.size.width * dpr, state.size.height * dpr];
 
-    // Compute view projection matrix.
-    // T_camera_obj = T_cam_world * T_world_obj.
-    T_camera_obj.copy(state.camera.matrixWorldInverse).multiply(
-      mesh.matrixWorld,
-    );
+    // Update group transforms.
+    const T_camera_world = state.camera.matrixWorldInverse;
+    for (const [sortedGroupIndex, name] of Object.keys(
+      groupBufferFromName,
+    ).entries()) {
+      const node = viewer.nodeRefFromName.current[name];
+      if (node === undefined) continue;
+      tmpT_camera_group.copy(T_camera_world).multiply(node.matrixWorld);
+      const colMajorElements = tmpT_camera_group.elements;
+      Tz_camera_groups.set(
+        [
+          colMajorElements[2],
+          colMajorElements[6],
+          colMajorElements[10],
+          colMajorElements[14],
+        ],
+        sortedGroupIndex * 4,
+      );
+      const rowMajorElements = tmpT_camera_group.transpose().elements;
+      meshProps.rowMajorT_camera_groups.set(
+        rowMajorElements.slice(0, 12),
+        sortedGroupIndex * 12,
+      );
 
-    // If changed, use projection matrix to sort Gaussians.
-    if (
-      !isSortingRef.current &&
-      (prevT_camera_obj === undefined || !T_camera_obj.equals(prevT_camera_obj))
-    ) {
-      sortSynchronizedModelViewMatrix.copy(T_camera_obj);
-      sortWorker.postMessage({ setT_camera_obj: T_camera_obj.elements });
-      splatContext.numSorting += 1;
-      isSortingRef.current = true;
-      prevT_camera_obj.copy(T_camera_obj);
+      // If a group is not visible, we'll throw it off the screen with some
+      // Big Numbers.
+      let visible = node.visible && node.parent !== null;
+      if (visible) {
+        node.traverseAncestors((ancestor) => {
+          visible = visible && ancestor.visible;
+        });
+      }
+      if (!visible) {
+        meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 3] = 1e10;
+        meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 7] = 1e10;
+        meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 11] = 1e10;
+      }
     }
+
+    if (
+      !meshProps.rowMajorT_camera_groups.every(
+        (v, i) => v === prevRowMajorT_camera_groups[i],
+      )
+    ) {
+      prevRowMajorT_camera_groups.set(meshProps.rowMajorT_camera_groups);
+      meshProps.textureT_camera_groups.needsUpdate = true;
+      postToWorker(sortWorker, {
+        // Big values will break the counting sort precision. We just
+        // zero them out for now.
+        setTz_camera_groups: Tz_camera_groups,
+      });
+
+      // Sort Gaussians.
+      postToWorker(sortWorker, {
+        triggerSort: true,
+      });
+    }
+  }, -100 /* This should be called early to reduce group transform artifacts. */);
+
+  return (
+    <mesh
+      ref={meshRef}
+      geometry={meshProps.geometry}
+      material={meshProps.material}
+      renderOrder={10000.0 /*Generally, we want to render last.*/}
+    />
+  );
+}
+
+/**Consolidate groups of Gaussians into a single buffer, to make it possible
+ * for them to be sorted globally.*/
+function mergeGaussianGroups(groupBufferFromName: {
+  [name: string]: Uint32Array;
+}) {
+  // Create geometry. Each Gaussian will be rendered as a quad.
+  let totalBufferLength = 0;
+  for (const buffer of Object.values(groupBufferFromName)) {
+    totalBufferLength += buffer.length;
+  }
+  const numGaussians = totalBufferLength / 8;
+  const gaussianBuffer = new Uint32Array(totalBufferLength);
+  const groupIndices = new Uint32Array(numGaussians);
+
+  let offset = 0;
+  for (const [sortedGroupIndex, groupBuffer] of Object.values(
+    groupBufferFromName,
+  ).entries()) {
+    groupIndices.fill(
+      sortedGroupIndex,
+      offset / 8,
+      (offset + groupBuffer.length) / 8,
+    );
+    gaussianBuffer.set(groupBuffer, offset);
+    offset += groupBuffer.length;
+  }
+
+  const numGroups = Object.keys(groupBufferFromName).length;
+  return { numGaussians, gaussianBuffer, numGroups, groupIndices };
+}
+
+/**Hook to generate properties for rendering Gaussians via a three.js mesh.*/
+function useGaussianMeshProps(
+  gaussianBuffer: Uint32Array,
+  groupIndices: Uint32Array,
+  numGroups: number,
+) {
+  const numGaussians = groupIndices.length;
+  const maxTextureSize = useThree((state) => state.gl).capabilities
+    .maxTextureSize;
+
+  // Create instanced geometry.
+  const geometry = new THREE.InstancedBufferGeometry();
+  geometry.instanceCount = numGaussians;
+  geometry.setIndex(
+    new THREE.BufferAttribute(new Uint32Array([0, 2, 1, 0, 3, 2]), 1),
+  );
+  geometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(
+      new Float32Array([-2, -2, 2, -2, 2, 2, -2, 2]),
+      2,
+    ),
+  );
+
+  // Rendering order for Gaussians.
+  const sortedIndexAttribute = new THREE.InstancedBufferAttribute(
+    new Uint32Array(numGaussians),
+    1,
+  );
+  sortedIndexAttribute.setUsage(THREE.DynamicDrawUsage);
+  geometry.setAttribute("sortedIndex", sortedIndexAttribute);
+
+  // Which group is each Gaussian in?
+  const sortedGroupIndexAttribute = new THREE.InstancedBufferAttribute(
+    groupIndices.slice(), // Copies the array.
+    1,
+  );
+  sortedGroupIndexAttribute.setUsage(THREE.StaticDrawUsage);
+  geometry.setAttribute("sortedGroupIndex", sortedGroupIndexAttribute);
+
+  // Create texture buffers.
+  const textureWidth = Math.min(numGaussians * 2, maxTextureSize);
+  const textureHeight = Math.ceil((numGaussians * 2) / textureWidth);
+  const bufferPadded = new Uint32Array(textureWidth * textureHeight * 4);
+  bufferPadded.set(gaussianBuffer);
+  const textureBuffer = new THREE.DataTexture(
+    bufferPadded,
+    textureWidth,
+    textureHeight,
+    THREE.RGBAIntegerFormat,
+    THREE.UnsignedIntType,
+  );
+  textureBuffer.internalFormat = "RGBA32UI";
+  textureBuffer.needsUpdate = true;
+
+  const rowMajorT_camera_groups = new Float32Array(numGroups * 12);
+  const textureT_camera_groups = new THREE.DataTexture(
+    rowMajorT_camera_groups,
+    (numGroups * 12) / 4,
+    1,
+    THREE.RGBAFormat,
+    THREE.FloatType,
+  );
+  textureT_camera_groups.internalFormat = "RGBA32F";
+  textureT_camera_groups.needsUpdate = true;
+
+  const material = new GaussianSplatMaterial({
+    // @ts-ignore
+    textureBuffer: textureBuffer,
+    textureT_camera_groups: textureT_camera_groups,
+    numGaussians: 0,
+    transitionInState: 0.0,
   });
 
-  return <mesh ref={meshRef} geometry={geometry} material={material} />;
+  return {
+    geometry,
+    material,
+    textureBuffer,
+    sortedIndexAttribute,
+    sortedGroupIndexAttribute,
+    textureT_camera_groups,
+    rowMajorT_camera_groups,
+  };
 }

@@ -115,7 +115,7 @@ class SceneApi:
     """Interface for adding 3D primitives to the scene.
 
     Used by both our global server object, for sharing the same GUI elements
-    with all clients, and by invidividual client handles."""
+    with all clients, and by individual client handles."""
 
     def __init__(
         self,
@@ -946,8 +946,7 @@ class SceneApi:
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GaussianSplatHandle:
-        """Add a model to render using Gaussian Splatting. Does not yet support
-        spherical harmonics.
+        """Add a model to render using Gaussian Splatting.
 
         **Work-in-progress.** This feature is experimental and still under
         development. It may be changed or removed.
@@ -971,7 +970,8 @@ class SceneApi:
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
 
-        # Get cholesky factor of covariance.
+        # Get cholesky factor of covariance. This helps retain precision when
+        # we convert to float16.
         cov_cholesky_triu = (
             onp.linalg.cholesky(covariances.astype(onp.float64) + onp.ones(3) * 1e-7)
             .swapaxes(-1, -2)  # tril => triu
