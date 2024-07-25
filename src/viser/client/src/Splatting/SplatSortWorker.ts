@@ -54,9 +54,12 @@ export type SorterWorkerIncoming =
 
     setTimeout(() => {
       sortRunning = false;
+      if (Tz_camera_groups === null) return;
       if (
-        Tz_camera_groups !== null &&
-        !lastView.every((val, i) => val == Tz_camera_groups[i])
+        !lastView.every(
+          // Cast is needed because of closure...
+          (val, i) => val === (Tz_camera_groups as Float32Array)[i],
+        )
       ) {
         throttledSort();
       }
