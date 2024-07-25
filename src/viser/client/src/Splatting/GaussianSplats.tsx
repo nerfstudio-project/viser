@@ -32,7 +32,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   attribute uint sortedIndex;
 
   // Which group transform should be applied to each Gaussian.
-  attribute uint groupIndex;
+  attribute uint sortedGroupIndex;
 
   // Buffers for splat data; each Gaussian gets 4 floats and 4 int32s. We just
   // copy quadjr for this.
@@ -87,7 +87,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // Fetch from textures.
     uvec4 floatBufferData = texelFetch(textureBuffer, texPos0, 0);
-    mat4 T_camera_group = getGroupTransform(groupIndex);
+    mat4 T_camera_group = getGroupTransform(sortedGroupIndex);
 
     // Any early return will discard the fragment.
     gl_Position = vec4(0.0, 0.0, 2000.0, 1.0);
@@ -212,8 +212,8 @@ export default function GlobalGaussianSplats() {
     // Update group indices if needed.
     if (merged.numGroups >= 2) {
       const sortedGroupIndices = e.data.sortedGroupIndices as Uint32Array;
-      meshProps.groupIndexAttribute.set(sortedGroupIndices);
-      meshProps.groupIndexAttribute.needsUpdate = true;
+      meshProps.sortedGroupIndexAttribute.set(sortedGroupIndices);
+      meshProps.sortedGroupIndexAttribute.needsUpdate = true;
     }
 
     // Trigger initial render.
@@ -274,7 +274,7 @@ export default function GlobalGaussianSplats() {
 
     // Update group transforms.
     const T_camera_world = state.camera.matrixWorldInverse;
-    for (const [groupIndex, name] of Object.keys(
+    for (const [sortedGroupIndex, name] of Object.keys(
       groupBufferFromName,
     ).entries()) {
       const node = viewer.nodeRefFromName.current[name];
@@ -288,12 +288,12 @@ export default function GlobalGaussianSplats() {
           colMajorElements[10],
           colMajorElements[14],
         ],
-        groupIndex * 4,
+        sortedGroupIndex * 4,
       );
       const rowMajorElements = tmpT_camera_group.transpose().elements;
       meshProps.rowMajorT_camera_groups.set(
         rowMajorElements.slice(0, 12),
-        groupIndex * 12,
+        sortedGroupIndex * 12,
       );
 
       // If a group is not visible, we'll throw it off the screen with some
@@ -305,9 +305,9 @@ export default function GlobalGaussianSplats() {
         });
       }
       if (!visible) {
-        meshProps.rowMajorT_camera_groups[groupIndex * 12 + 3] = 1e10;
-        meshProps.rowMajorT_camera_groups[groupIndex * 12 + 7] = 1e10;
-        meshProps.rowMajorT_camera_groups[groupIndex * 12 + 11] = 1e10;
+        meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 3] = 1e10;
+        meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 7] = 1e10;
+        meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 11] = 1e10;
       }
     }
 
@@ -356,11 +356,11 @@ function mergeGaussianGroups(groupBufferFromName: {
   const groupIndices = new Uint32Array(numGaussians);
 
   let offset = 0;
-  for (const [groupIndex, groupBuffer] of Object.values(
+  for (const [sortedGroupIndex, groupBuffer] of Object.values(
     groupBufferFromName,
   ).entries()) {
     groupIndices.fill(
-      groupIndex,
+      sortedGroupIndex,
       offset / 8,
       (offset + groupBuffer.length) / 8,
     );
@@ -405,12 +405,12 @@ function useGaussianMeshProps(
   geometry.setAttribute("sortedIndex", sortedIndexAttribute);
 
   // Which group is each Gaussian in?
-  const groupIndexAttribute = new THREE.InstancedBufferAttribute(
+  const sortedGroupIndexAttribute = new THREE.InstancedBufferAttribute(
     groupIndices.slice(), // Copies the array.
     1,
   );
-  groupIndexAttribute.setUsage(THREE.StaticDrawUsage);
-  geometry.setAttribute("groupIndex", groupIndexAttribute);
+  sortedGroupIndexAttribute.setUsage(THREE.StaticDrawUsage);
+  geometry.setAttribute("sortedGroupIndex", sortedGroupIndexAttribute);
 
   // Create texture buffers.
   const textureWidth = Math.min(numGaussians * 2, maxTextureSize);
@@ -451,7 +451,7 @@ function useGaussianMeshProps(
     material,
     textureBuffer,
     sortedIndexAttribute,
-    groupIndexAttribute,
+    sortedGroupIndexAttribute,
     textureT_camera_groups,
     rowMajorT_camera_groups,
   };
