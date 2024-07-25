@@ -115,7 +115,7 @@ class SceneApi:
     """Interface for adding 3D primitives to the scene.
 
     Used by both our global server object, for sharing the same GUI elements
-    with all clients, and by invidividual client handles."""
+    with all clients, and by individual client handles."""
 
     def __init__(
         self,
