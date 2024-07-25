@@ -157,7 +157,8 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
     if (weightedDeterminant < 0.1)
       return;
-    if (weightedDeterminant < 1.0 && hash3D(center) < weightedDeterminant)  // This is not principled. It just makes things faster.
+    // This is not principled. It just makes things faster.
+    if (weightedDeterminant < 1.0 && hash3D(center) < weightedDeterminant)
       return;
     vPosition = position.xy;
 

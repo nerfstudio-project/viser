@@ -970,7 +970,8 @@ class SceneApi:
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
 
-        # Get cholesky factor of covariance.
+        # Get cholesky factor of covariance. This helps retain precision when
+        # we convert to float16.
         cov_cholesky_triu = (
             onp.linalg.cholesky(covariances.astype(onp.float64) + onp.ones(3) * 1e-7)
             .swapaxes(-1, -2)  # tril => triu

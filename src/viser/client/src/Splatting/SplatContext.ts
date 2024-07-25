@@ -13,7 +13,7 @@ export function useGaussianSplatStore() {
       groupBufferFromName: {},
       setBuffer: (name, buffer) => {
         return set((state) => ({
-          groupBufferFromName: { [name]: buffer, ...state.groupBufferFromName },
+          groupBufferFromName: { ...state.groupBufferFromName, [name]: buffer },
         }));
       },
       removeBuffer: (name) => {
