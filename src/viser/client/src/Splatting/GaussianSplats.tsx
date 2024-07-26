@@ -249,6 +249,7 @@ export default function GlobalGaussianSplats() {
   const prevRowMajorT_camera_groups = meshProps.rowMajorT_camera_groups
     .slice()
     .fill(0);
+  let prevVisible = false;
   useFrame((state, delta) => {
     const mesh = meshRef.current;
     if (mesh === null || sortWorker === null) return;
@@ -305,11 +306,17 @@ export default function GlobalGaussianSplats() {
           visible = visible && ancestor.visible;
         });
       }
-      if (!visible) {
+      if (!(visible && prevVisible)) {
         meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 3] = 1e10;
         meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 7] = 1e10;
         meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 11] = 1e10;
       }
+
+      // If the parent has unmountWhenInvisible=true, the first frame after
+      // showing a hidden parent can have visible=true with an incorrect
+      // matrixWorld transform. There might be a better fix, but `prevVisible`
+      // is an easy workaround for this.
+      prevVisible = visible;
     }
 
     if (
