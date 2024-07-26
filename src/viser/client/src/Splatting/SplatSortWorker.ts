@@ -11,7 +11,6 @@ export type SorterWorkerIncoming =
   | {
       setTz_camera_groups: Float32Array;
     }
-  | { triggerSort: true }
   | { close: true };
 
 {
@@ -81,7 +80,6 @@ export type SorterWorkerIncoming =
     } else if ("setTz_camera_groups" in data) {
       // Update object transforms.
       Tz_camera_groups = data.setTz_camera_groups;
-    } else if ("triggerSort" in data) {
       throttledSort();
     } else if ("close" in data) {
       // Done!

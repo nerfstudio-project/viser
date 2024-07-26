@@ -249,7 +249,7 @@ export default function GlobalGaussianSplats() {
   const prevRowMajorT_camera_groups = meshProps.rowMajorT_camera_groups
     .slice()
     .fill(0);
-  let prevVisible = false;
+  const prevVisibles: boolean[] = [];
   useFrame((state, delta) => {
     const mesh = meshRef.current;
     if (mesh === null || sortWorker === null) return;
@@ -276,6 +276,8 @@ export default function GlobalGaussianSplats() {
 
     // Update group transforms.
     const T_camera_world = state.camera.matrixWorldInverse;
+    const groupVisibles: boolean[] = [];
+    let visibilitiesChanged = false;
     for (const [sortedGroupIndex, name] of Object.keys(
       groupBufferFromName,
     ).entries()) {
@@ -298,44 +300,48 @@ export default function GlobalGaussianSplats() {
         sortedGroupIndex * 12,
       );
 
-      // If a group is not visible, we'll throw it off the screen with some
-      // Big Numbers.
-      let visible = node.visible && node.parent !== null;
-      if (visible) {
+      // Determine visibility. If the parent has unmountWhenInvisible=true, the
+      // first frame after showing a hidden parent can have visible=true with
+      // an incorrect matrixWorld transform. There might be a better fix, but
+      // `prevVisible` is an easy workaround for this.
+      let visibleNow = node.visible && node.parent !== null;
+      if (visibleNow) {
         node.traverseAncestors((ancestor) => {
-          visible = visible && ancestor.visible;
+          visibleNow = visibleNow && ancestor.visible;
         });
       }
-      if (!(visible && prevVisible)) {
-        meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 3] = 1e10;
-        meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 7] = 1e10;
-        meshProps.rowMajorT_camera_groups[sortedGroupIndex * 12 + 11] = 1e10;
+      groupVisibles.push(visibleNow && prevVisibles[sortedGroupIndex] === true);
+      if (prevVisibles[sortedGroupIndex] !== visibleNow) {
+        prevVisibles[sortedGroupIndex] = visibleNow;
+        visibilitiesChanged = true;
       }
-
-      // If the parent has unmountWhenInvisible=true, the first frame after
-      // showing a hidden parent can have visible=true with an incorrect
-      // matrixWorld transform. There might be a better fix, but `prevVisible`
-      // is an easy workaround for this.
-      prevVisible = visible;
     }
 
-    if (
-      !meshProps.rowMajorT_camera_groups.every(
-        (v, i) => v === prevRowMajorT_camera_groups[i],
-      )
-    ) {
-      prevRowMajorT_camera_groups.set(meshProps.rowMajorT_camera_groups);
-      meshProps.textureT_camera_groups.needsUpdate = true;
+    const groupsMovedWrtCam = !meshProps.rowMajorT_camera_groups.every(
+      (v, i) => v === prevRowMajorT_camera_groups[i],
+    );
+
+    if (groupsMovedWrtCam) {
+      // Gaussians need to be re-sorted.
       postToWorker(sortWorker, {
-        // Big values will break the counting sort precision. We just
-        // zero them out for now.
         setTz_camera_groups: Tz_camera_groups,
       });
-
-      // Sort Gaussians.
-      postToWorker(sortWorker, {
-        triggerSort: true,
-      });
+    }
+    if (groupsMovedWrtCam || visibilitiesChanged) {
+      // If a group is not visible, we'll throw it off the screen with some Big
+      // Numbers. It's important that this only impacts the coordinates used
+      // for the shader and not for the sorter; that way when we "show" a group
+      // of Gaussians the correct rendering order is immediately available.
+      for (const [i, visible] of groupVisibles.entries()) {
+        console.log(i, visible);
+        if (!visible) {
+          meshProps.rowMajorT_camera_groups[i * 12 + 3] = 1e10;
+          meshProps.rowMajorT_camera_groups[i * 12 + 7] = 1e10;
+          meshProps.rowMajorT_camera_groups[i * 12 + 11] = 1e10;
+        }
+      }
+      prevRowMajorT_camera_groups.set(meshProps.rowMajorT_camera_groups);
+      meshProps.textureT_camera_groups.needsUpdate = true;
     }
   }, -100 /* This should be called early to reduce group transform artifacts. */);
 
