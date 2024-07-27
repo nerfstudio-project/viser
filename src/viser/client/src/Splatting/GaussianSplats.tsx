@@ -423,7 +423,7 @@ function useGaussianMeshProps(
     groupIndices.slice(), // Copies the array.
     1,
   );
-  sortedGroupIndexAttribute.setUsage(THREE.StaticDrawUsage);
+  sortedGroupIndexAttribute.setUsage(THREE.DynamicDrawUsage);
   geometry.setAttribute("sortedGroupIndex", sortedGroupIndexAttribute);
 
   // Create texture buffers.
