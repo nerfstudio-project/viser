@@ -980,10 +980,14 @@ class SceneApi:
         buffer = onp.concatenate(
             [
                 # First texelFetch.
+                # - xyz (96 bits): centers.
                 centers.astype(onp.float32).view(onp.uint8),
+                # - w (32 bits): this is reserved for use by the renderer.
                 onp.zeros((num_gaussians, 4), dtype=onp.uint8),
                 # Second texelFetch.
+                # - xyz (96 bits): upper-triangular Cholesky factor of covariance.
                 cov_cholesky_triu.astype(onp.float16).copy().view(onp.uint8),
+                # - w (32 bits): rgba.
                 _colors_to_uint8(rgbs),
                 _colors_to_uint8(opacities),
             ],

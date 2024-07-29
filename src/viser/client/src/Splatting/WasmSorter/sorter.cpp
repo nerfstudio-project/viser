@@ -1,11 +1,11 @@
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
+#include <wasm_simd128.h>
+
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <wasm_simd128.h>
-
-#include <emscripten/bind.h>
-#include <emscripten/val.h>
 
 /** SIMD dot product between two 4D vectors. */
 __attribute__((always_inline)) inline float
@@ -41,6 +41,7 @@ __attribute__((always_inline)) inline int32_t max_i32x4(v128_t vector) {
 class Sorter {
     std::vector<v128_t> centers_homog; // Centers as homogeneous coordinates.
     std::vector<uint32_t> group_indices;
+    std::vector<uint32_t> sorted_indices;
 
   public:
     Sorter(
@@ -51,7 +52,7 @@ class Sorter {
         const float *floatBuffer =
             reinterpret_cast<const float *>(bufferVec.data());
         const int32_t num_gaussians = bufferVec.size() / 8;
-
+        sorted_indices.resize(num_gaussians);
         centers_homog.resize(num_gaussians);
         for (int32_t i = 0; i < num_gaussians; i++) {
             centers_homog[i] = wasm_f32x4_make(
@@ -173,7 +174,6 @@ class Sorter {
         }
 
         // Update and return sorted indices.
-        std::vector<uint32_t> sorted_indices(num_gaussians);
         for (int32_t i = 0; i < num_gaussians; i++)
             sorted_indices[starts0[((int32_t *)&gaussian_zs[0])[i]]++] = i;
         return emscripten::val(emscripten::typed_memory_view(
