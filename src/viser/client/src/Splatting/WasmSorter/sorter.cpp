@@ -1,11 +1,11 @@
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
+#include <wasm_simd128.h>
+
 #include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <wasm_simd128.h>
-
-#include <emscripten/bind.h>
-#include <emscripten/val.h>
 
 /** SIMD dot product between two 4D vectors. */
 __attribute__((always_inline)) inline float
@@ -53,7 +53,6 @@ class Sorter {
             reinterpret_cast<const float *>(bufferVec.data());
         const int32_t num_gaussians = bufferVec.size() / 8;
         sorted_indices.resize(num_gaussians);
-
         centers_homog.resize(num_gaussians);
         for (int32_t i = 0; i < num_gaussians; i++) {
             centers_homog[i] = wasm_f32x4_make(
