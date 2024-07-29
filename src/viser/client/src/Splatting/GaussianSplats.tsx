@@ -31,9 +31,6 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   // Index from the splat sorter.
   attribute uint sortedIndex;
 
-  // Which group transform should be applied to each Gaussian.
-  attribute uint sortedGroupIndex;
-
   // Buffers for splat data; each Gaussian gets 4 floats and 4 int32s. We just
   // copy quadjr for this.
   uniform usampler2D textureBuffer;
@@ -87,7 +84,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // Fetch from textures.
     uvec4 floatBufferData = texelFetch(textureBuffer, texPos0, 0);
-    mat4 T_camera_group = getGroupTransform(sortedGroupIndex);
+    mat4 T_camera_group = getGroupTransform(floatBufferData.w);
 
     // Any early return will discard the fragment.
     gl_Position = vec4(0.0, 0.0, 2000.0, 1.0);
@@ -197,7 +194,6 @@ export default function GlobalGaussianSplats() {
   const merged = mergeGaussianGroups(groupBufferFromName);
   const meshProps = useGaussianMeshProps(
     merged.gaussianBuffer,
-    merged.groupIndices,
     merged.numGroups,
   );
 
@@ -209,13 +205,6 @@ export default function GlobalGaussianSplats() {
     const sortedIndices = e.data.sortedIndices as Uint32Array;
     meshProps.sortedIndexAttribute.set(sortedIndices);
     meshProps.sortedIndexAttribute.needsUpdate = true;
-
-    // Update group indices if needed.
-    if (merged.numGroups >= 2) {
-      const sortedGroupIndices = e.data.sortedGroupIndices as Uint32Array;
-      meshProps.sortedGroupIndexAttribute.set(sortedGroupIndices);
-      meshProps.sortedGroupIndexAttribute.needsUpdate = true;
-    }
 
     // Trigger initial render.
     if (!initializedBufferTexture) {
@@ -278,7 +267,7 @@ export default function GlobalGaussianSplats() {
     const T_camera_world = state.camera.matrixWorldInverse;
     const groupVisibles: boolean[] = [];
     let visibilitiesChanged = false;
-    for (const [sortedGroupIndex, name] of Object.keys(
+    for (const [groupIndex, name] of Object.keys(
       groupBufferFromName,
     ).entries()) {
       const node = viewer.nodeRefFromName.current[name];
@@ -292,12 +281,12 @@ export default function GlobalGaussianSplats() {
           colMajorElements[10],
           colMajorElements[14],
         ],
-        sortedGroupIndex * 4,
+        groupIndex * 4,
       );
       const rowMajorElements = tmpT_camera_group.transpose().elements;
       meshProps.rowMajorT_camera_groups.set(
         rowMajorElements.slice(0, 12),
-        sortedGroupIndex * 12,
+        groupIndex * 12,
       );
 
       // Determine visibility. If the parent has unmountWhenInvisible=true, the
@@ -310,9 +299,9 @@ export default function GlobalGaussianSplats() {
           visibleNow = visibleNow && ancestor.visible;
         });
       }
-      groupVisibles.push(visibleNow && prevVisibles[sortedGroupIndex] === true);
-      if (prevVisibles[sortedGroupIndex] !== visibleNow) {
-        prevVisibles[sortedGroupIndex] = visibleNow;
+      groupVisibles.push(visibleNow && prevVisibles[groupIndex] === true);
+      if (prevVisibles[groupIndex] !== visibleNow) {
+        prevVisibles[groupIndex] = visibleNow;
         visibilitiesChanged = true;
       }
     }
@@ -333,7 +322,6 @@ export default function GlobalGaussianSplats() {
       // for the shader and not for the sorter; that way when we "show" a group
       // of Gaussians the correct rendering order is immediately available.
       for (const [i, visible] of groupVisibles.entries()) {
-        console.log(i, visible);
         if (!visible) {
           meshProps.rowMajorT_camera_groups[i * 12 + 3] = 1e10;
           meshProps.rowMajorT_camera_groups[i * 12 + 7] = 1e10;
@@ -370,15 +358,25 @@ function mergeGaussianGroups(groupBufferFromName: {
   const groupIndices = new Uint32Array(numGaussians);
 
   let offset = 0;
-  for (const [sortedGroupIndex, groupBuffer] of Object.values(
+  for (const [groupIndex, groupBuffer] of Object.values(
     groupBufferFromName,
   ).entries()) {
     groupIndices.fill(
-      sortedGroupIndex,
+      groupIndex,
       offset / 8,
       (offset + groupBuffer.length) / 8,
     );
     gaussianBuffer.set(groupBuffer, offset);
+
+    // Each Gaussian is allocated
+    // - 12 bytes for center x, y, z (float32)
+    // - 4 bytes for group index (uint32); we're filling this in now
+    //
+    // - 12 bytes for covariance (6 terms, float16)
+    // - 4 bytes for RGBA (uint8)
+    for (let i = 0; i < groupBuffer.length; i += 8) {
+      gaussianBuffer[offset + i + 3] = groupIndex;
+    }
     offset += groupBuffer.length;
   }
 
@@ -387,12 +385,8 @@ function mergeGaussianGroups(groupBufferFromName: {
 }
 
 /**Hook to generate properties for rendering Gaussians via a three.js mesh.*/
-function useGaussianMeshProps(
-  gaussianBuffer: Uint32Array,
-  groupIndices: Uint32Array,
-  numGroups: number,
-) {
-  const numGaussians = groupIndices.length;
+function useGaussianMeshProps(gaussianBuffer: Uint32Array, numGroups: number) {
+  const numGaussians = gaussianBuffer.length / 8;
   const maxTextureSize = useThree((state) => state.gl).capabilities
     .maxTextureSize;
 
@@ -417,14 +411,6 @@ function useGaussianMeshProps(
   );
   sortedIndexAttribute.setUsage(THREE.DynamicDrawUsage);
   geometry.setAttribute("sortedIndex", sortedIndexAttribute);
-
-  // Which group is each Gaussian in?
-  const sortedGroupIndexAttribute = new THREE.InstancedBufferAttribute(
-    groupIndices.slice(), // Copies the array.
-    1,
-  );
-  sortedGroupIndexAttribute.setUsage(THREE.DynamicDrawUsage);
-  geometry.setAttribute("sortedGroupIndex", sortedGroupIndexAttribute);
 
   // Create texture buffers.
   const textureWidth = Math.min(numGaussians * 2, maxTextureSize);
@@ -465,7 +451,6 @@ function useGaussianMeshProps(
     material,
     textureBuffer,
     sortedIndexAttribute,
-    sortedGroupIndexAttribute,
     textureT_camera_groups,
     rowMajorT_camera_groups,
   };

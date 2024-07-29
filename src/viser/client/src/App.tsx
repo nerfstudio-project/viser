@@ -6,10 +6,9 @@ import "./App.css";
 import { Notifications } from "@mantine/notifications";
 
 import {
-  AdaptiveDpr,
-  AdaptiveEvents,
   CameraControls,
   Environment,
+  PerformanceMonitor,
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
@@ -301,7 +300,6 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         width: "100%",
         height: "100%",
       }}
-      performance={{ min: 0.95 }}
       ref={viewer.canvasRef}
       // Handle scene click events (onPointerDown, onPointerMove, onPointerUp)
       onPointerDown={(e) => {
@@ -449,8 +447,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     >
       {children}
       <BackgroundImage />
-      <AdaptiveDpr pixelated />
-      <AdaptiveEvents />
+      <AdaptiveDpr />
       <SceneContextSetter />
       <SynchronizedCameraControls />
       <SceneNodeThreeObject name="" parent={null} />
@@ -462,6 +459,25 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         position={[0, -1, 0]}
       />
     </Canvas>
+  );
+}
+
+function AdaptiveDpr() {
+  const setDpr = useThree((state) => state.setDpr);
+  return (
+    <PerformanceMonitor
+      factor={0.5}
+      ms={100}
+      iterations={2}
+      step={0.1}
+      onChange={({ factor, fps, refreshrate }) => {
+        const dpr = window.devicePixelRatio * (0.2 + 0.8 * factor);
+        console.log(
+          `[Performance] Setting DPR to ${dpr}; FPS=${fps}/${refreshrate}`,
+        );
+        setDpr(dpr);
+      }}
+    />
   );
 }
 

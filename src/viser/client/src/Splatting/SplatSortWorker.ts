@@ -16,16 +16,9 @@ export type SorterWorkerIncoming =
 {
   let sorter: any = null;
   let Tz_camera_groups: Float32Array | null = null;
-  let groupIndices: Uint32Array | null = null;
-  let sortedGroupIndices: Uint32Array | null = null;
   let sortRunning = false;
   const throttledSort = () => {
-    if (
-      sorter === null ||
-      Tz_camera_groups === null ||
-      groupIndices === null ||
-      sortedGroupIndices === null
-    ) {
+    if (sorter === null || Tz_camera_groups === null) {
       setTimeout(throttledSort, 1);
       return;
     }
@@ -33,23 +26,16 @@ export type SorterWorkerIncoming =
 
     sortRunning = true;
     const lastView = Tz_camera_groups;
-    const sortedIndices = sorter.sort(Tz_camera_groups);
 
-    const numGroups = Tz_camera_groups.length / 4;
-    if (numGroups >= 2) {
-      // Multiple groups: we need to update the per-Gaussian group indices.
-      for (const [index, sortedIndex] of sortedIndices.entries()) {
-        sortedGroupIndices[index] = groupIndices[sortedIndex];
-      }
-      self.postMessage({
-        sortedIndices: sortedIndices,
-        sortedGroupIndices: sortedGroupIndices,
-      });
-    } else {
-      self.postMessage({
-        sortedIndices: sortedIndices,
-      });
-    }
+    // Important: we clone the output so we can transfer the buffer to the main
+    // thread. Compared to relying on postMessage for copying, this reduces
+    // backlog artifacts.
+    const sortedIndices = (
+      sorter.sort(Tz_camera_groups) as Uint32Array
+    ).slice();
+
+    // @ts-ignore
+    self.postMessage({ sortedIndices: sortedIndices }, [sortedIndices.buffer]);
 
     setTimeout(() => {
       sortRunning = false;
@@ -75,8 +61,6 @@ export type SorterWorkerIncoming =
         data.setBuffer,
         data.setGroupIndices,
       );
-      groupIndices = data.setGroupIndices;
-      sortedGroupIndices = groupIndices.slice();
     } else if ("setTz_camera_groups" in data) {
       // Update object transforms.
       Tz_camera_groups = data.setTz_camera_groups;
