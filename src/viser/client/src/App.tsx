@@ -9,6 +9,7 @@ import {
   CameraControls,
   Environment,
   PerformanceMonitor,
+  Stats,
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
@@ -139,6 +140,7 @@ function ViewerRoot() {
   const searchParams = new URLSearchParams(window.location.search);
   const playbackPath = searchParams.get("playbackPath");
   const darkMode = searchParams.get("darkMode") !== null;
+  const showStats = searchParams.get("showStats") !== null;
 
   // Values that can be globally accessed by components in a viewer.
   const nodeRefFromName = React.useRef<{
@@ -200,6 +202,7 @@ function ViewerRoot() {
         {viewer.messageSource === "file_playback" ? (
           <PlaybackFromFile fileUrl={playbackPath!} />
         ) : null}
+        {showStats ? <Stats className="stats-panel" /> : null}
       </ViewerContents>
     </ViewerContext.Provider>
   );
@@ -468,8 +471,9 @@ function AdaptiveDpr() {
     <PerformanceMonitor
       factor={0.5}
       ms={100}
-      iterations={2}
-      step={0.1}
+      iterations={5}
+      step={0.2}
+      bounds={(refreshrate) => (refreshrate > 90 ? [40, 80] : [40, 50])}
       onChange={({ factor, fps, refreshrate }) => {
         const dpr = window.devicePixelRatio * (0.2 + 0.8 * factor);
         console.log(

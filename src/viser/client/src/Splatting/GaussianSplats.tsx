@@ -110,8 +110,8 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 chol45 = unpackHalf2x16(intBufferData.z);
 
     // Transition in.
-    float perGaussianShift = 1.0 - (float(numGaussians * 2u) - float(sortedIndex)) / float(numGaussians * 2u);
-    float cov_scale = max(0.0, transitionInState - perGaussianShift) / (1.0 - perGaussianShift);
+    float startTime = 0.8 * float(sortedIndex) / float(numGaussians);
+    float cov_scale = clamp((transitionInState - startTime) / 0.2f, 0.0f, 1.0f);  // min() can freeze here. Not sure why...
 
     // Do the actual splatting.
     mat3 chol = mat3(

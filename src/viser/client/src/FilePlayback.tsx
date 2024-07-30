@@ -113,7 +113,10 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       messageQueueRef.current.push(message);
     }
 
-    if (mutable.currentTime >= recording.durationSeconds) {
+    if (
+      mutable.currentTime >= recording.durationSeconds &&
+      recording.loopStartIndex !== null
+    ) {
       mutable.currentIndex = recording.loopStartIndex!;
       mutable.currentTime = recording.messages[recording.loopStartIndex!][0];
     }
@@ -127,6 +130,12 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         playbackMutable.current.currentTime +=
           (1.0 / 120.0) * playbackMultiplier;
         updatePlayback();
+        if (
+          playbackMutable.current.currentIndex === recording.messages.length &&
+          recording.loopStartIndex === null
+        ) {
+          clearInterval(interval);
+        }
       }, 1000.0 / 120.0);
       return () => clearInterval(interval);
     }
@@ -200,7 +209,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           maxWidth: "95%",
           zIndex: 1,
           padding: "0.5em",
-          display: "flex",
+          display: recording.durationSeconds === 0.0 ? "none" : "flex",
           alignItems: "center",
           justifyContent: "space-between",
           gap: "0.375em",
