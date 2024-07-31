@@ -129,13 +129,20 @@ def main(splat_paths: tuple[Path, ...]) -> None:
             raise SystemExit("Please provide a filepath to a .splat or .ply file.")
 
         server.scene.add_transform_controls(f"/{i}")
-        server.scene._add_gaussian_splats(
+        gs_handle = server.scene._add_gaussian_splats(
             f"/{i}/gaussian_splats",
             centers=splat_data["centers"],
             rgbs=splat_data["rgbs"],
             opacities=splat_data["opacities"],
             covariances=splat_data["covariances"],
         )
+
+        remove_button = server.gui.add_button(f"Remove splat object {i}")
+
+        @remove_button.on_click
+        def _(_, gs_handle=gs_handle) -> None:
+            gs_handle.remove()
+            remove_button.remove()
 
     while True:
         time.sleep(10.0)
