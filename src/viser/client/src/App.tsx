@@ -45,13 +45,9 @@ import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
 import { theme } from "./AppTheme";
-import {
-  GaussianSplatsContext,
-  useGaussianSplatStore,
-} from "./Splatting/SplatContext";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
-import GlobalGaussianSplats from "./Splatting/GaussianSplats";
+import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 
 export type ViewerContextContents = {
@@ -267,12 +263,9 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
               })}
             >
               <Viewer2DCanvas />
-              <GaussianSplatsContext.Provider value={useGaussianSplatStore()}>
-                <ViewerCanvas>
-                  <GlobalGaussianSplats />
-                  <FrameSynchronizedMessageHandler />
-                </ViewerCanvas>
-              </GaussianSplatsContext.Provider>
+              <ViewerCanvas>
+                <FrameSynchronizedMessageHandler />
+              </ViewerCanvas>
               {viewer.useGui((state) => state.theme.show_logo) &&
               viewer.messageSource == "websocket" ? (
                 <ViserLogo />
@@ -453,7 +446,9 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <AdaptiveDpr />
       <SceneContextSetter />
       <SynchronizedCameraControls />
-      <SceneNodeThreeObject name="" parent={null} />
+      <SplatRenderContext>
+        <SceneNodeThreeObject name="" parent={null} />
+      </SplatRenderContext>
       <Environment path="hdri/" files="potsdamer_platz_1k.hdr" />
       <directionalLight color={0xffffff} intensity={1.0} position={[0, 1, 0]} />
       <directionalLight
@@ -473,7 +468,7 @@ function AdaptiveDpr() {
       ms={100}
       iterations={5}
       step={0.2}
-      bounds={(refreshrate) => (refreshrate > 90 ? [40, 80] : [40, 50])}
+      bounds={(refreshrate) => (refreshrate > 90 ? [80, 90] : [50, 60])}
       onChange={({ factor, fps, refreshrate }) => {
         const dpr = window.devicePixelRatio * (0.2 + 0.8 * factor);
         console.log(
