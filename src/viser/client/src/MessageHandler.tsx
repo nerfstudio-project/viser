@@ -531,13 +531,18 @@ function useMessageHandler() {
       }
       // Add a camera frustum.
       case "CameraFrustumMessage": {
-        const texture =
+        let texture = undefined;
+        if (
           message.image_media_type !== null &&
-          message.image_base64_data !== null
-            ? new TextureLoader().load(
-                `data:${message.image_media_type};base64,${message.image_base64_data}`,
-              )
-            : undefined;
+          message.image_binary !== null
+        ) {
+          const image_url = URL.createObjectURL(
+            new Blob([message.image_binary]),
+          );
+          texture = new TextureLoader().load(image_url, () =>
+            URL.revokeObjectURL(image_url),
+          );
+        }
 
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
@@ -709,34 +714,40 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
-        new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_rgb}`,
-          (texture) => {
-            const oldBackgroundTexture =
-              viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
-            viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
-              texture;
-            if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
-
-            viewer.useGui.setState({ backgroundAvailable: true });
-          },
+        const rgb_url = URL.createObjectURL(
+          new Blob([message.rgb_bytes], {
+            type: message.media_type,
+          }),
         );
+        new TextureLoader().load(rgb_url, (texture) => {
+          URL.revokeObjectURL(rgb_url);
+          const oldBackgroundTexture =
+            viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
+          viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
+            texture;
+          if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
+
+          viewer.useGui.setState({ backgroundAvailable: true });
+        });
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
         viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
-          message.base64_depth !== null;
+          message.depth_bytes !== null;
 
-        if (message.base64_depth !== null) {
+        if (message.depth_bytes !== null) {
           // If depth is available set the texture
-          new TextureLoader().load(
-            `data:image/png;base64,${message.base64_depth}`,
-            (texture) => {
-              const oldDepthTexture =
-                viewer.backgroundMaterialRef.current?.uniforms.depthMap.value;
-              viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
-                texture;
-              if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
-            },
+          const depth_url = URL.createObjectURL(
+            new Blob([message.depth_bytes], {
+              type: message.media_type,
+            }),
           );
+          new TextureLoader().load(depth_url, (texture) => {
+            URL.revokeObjectURL(depth_url);
+            const oldDepthTexture =
+              viewer.backgroundMaterialRef.current?.uniforms.depthMap.value;
+            viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
+              texture;
+            if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
+          });
         }
         return;
       }
@@ -831,8 +842,14 @@ function useMessageHandler() {
         // `addSceneNodeMakeParents` needs to be called immediately: it
         // overwrites position/wxyz attributes, and we don't want this to
         // happen after later messages are received.
+        const image_url = URL.createObjectURL(
+          new Blob([message.data], {
+            type: message.media_type,
+          }),
+        );
         const texture = new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_data}`,
+          image_url,
+          () => URL.revokeObjectURL(image_url), // Revoke URL on load.
         );
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(

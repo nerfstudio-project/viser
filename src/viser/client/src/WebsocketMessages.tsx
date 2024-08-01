@@ -61,7 +61,7 @@ export interface CameraFrustumMessage {
   scale: number;
   color: number;
   image_media_type: "image/jpeg" | "image/png" | null;
-  image_base64_data: string | null;
+  image_binary: Uint8Array | null;
 }
 /** GlTF Message
  *
@@ -322,8 +322,8 @@ export interface TransformControlsUpdateMessage {
 export interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
   media_type: "image/jpeg" | "image/png";
-  base64_rgb: string;
-  base64_depth: string | null;
+  rgb_bytes: Uint8Array;
+  depth_bytes: Uint8Array | null;
 }
 /** Message for rendering 2D images.
  *
@@ -333,7 +333,7 @@ export interface ImageMessage {
   type: "ImageMessage";
   name: string;
   media_type: "image/jpeg" | "image/png";
-  base64_data: string;
+  data: Uint8Array;
   render_width: number;
   render_height: number;
 }

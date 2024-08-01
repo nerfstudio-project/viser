@@ -153,7 +153,7 @@ class CameraFrustumMessage(Message):
     scale: float
     color: int
     image_media_type: Optional[Literal["image/jpeg", "image/png"]]
-    image_base64_data: Optional[str]
+    image_binary: Optional[bytes]
 
 
 @dataclasses.dataclass
@@ -426,8 +426,8 @@ class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
     media_type: Literal["image/jpeg", "image/png"]
-    base64_rgb: str
-    base64_depth: Optional[str]
+    rgb_bytes: bytes
+    depth_bytes: Optional[bytes]
 
 
 @dataclasses.dataclass
@@ -436,7 +436,7 @@ class ImageMessage(Message):
 
     name: str
     media_type: Literal["image/jpeg", "image/png"]
-    base64_data: str
+    data: bytes
     render_width: float
     render_height: float
 

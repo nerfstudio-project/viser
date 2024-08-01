@@ -464,11 +464,11 @@ function AdaptiveDpr() {
   const setDpr = useThree((state) => state.setDpr);
   return (
     <PerformanceMonitor
-      factor={0.5}
+      factor={1.0}
       ms={100}
       iterations={5}
-      step={0.2}
-      bounds={(refreshrate) => (refreshrate > 90 ? [80, 90] : [50, 60])}
+      step={0.1}
+      bounds={(refreshrate) => (refreshrate > 90 ? [40, 85] : [40, 55])}
       onChange={({ factor, fps, refreshrate }) => {
         const dpr = window.devicePixelRatio * (0.2 + 0.8 * factor);
         console.log(

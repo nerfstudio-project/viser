@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import base64
 import dataclasses
 import re
 import time
-import urllib.parse
 import uuid
 import warnings
 from pathlib import Path
@@ -16,7 +16,7 @@ from typing_extensions import Protocol
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
-from ._scene_api import _encode_image_base64
+from ._scene_api import _encode_image_binary
 from .infra import ClientId
 
 if TYPE_CHECKING:
@@ -537,9 +537,9 @@ def _get_data_url(url: str, image_root: Path | None) -> str:
         image_root = Path(__file__).parent
     try:
         image = iio.imread(image_root / url)
-        data_uri = _encode_image_base64(image, "png")
-        url = urllib.parse.quote(f"{data_uri[1]}")
-        return f"data:{data_uri[0]};base64,{url}"
+        media_type, binary = _encode_image_binary(image, "png")
+        url = base64.b64encode(binary).decode("utf-8")
+        return f"data:{media_type};base64,{url}"
     except (IOError, FileNotFoundError):
         warnings.warn(
             f"Failed to read image {url}, with image_root set to {image_root}.",
