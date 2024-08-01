@@ -294,7 +294,7 @@ class SkinnedMeshMessage(MeshMessage):
 
     bone_wxyzs: Tuple[Tuple[float, float, float, float], ...]
     bone_positions: Tuple[Tuple[float, float, float], ...]
-    skin_indices: onpt.NDArray[onp.uint32]
+    skin_indices: onpt.NDArray[onp.uint16]
     skin_weights: onpt.NDArray[onp.float32]
 
     def __post_init__(self):
