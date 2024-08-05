@@ -140,7 +140,7 @@ def main(splat_paths: tuple[Path, ...]) -> None:
         remove_button = server.gui.add_button(f"Remove splat object {i}")
 
         @remove_button.on_click
-        def _(_, gs_handle=gs_handle) -> None:
+        def _(_, gs_handle=gs_handle, remove_button=remove_button) -> None:
             gs_handle.remove()
             remove_button.remove()
 
