@@ -51,7 +51,7 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     )
     scales = splat_uint8[:, 12:24].copy().view(onp.float32)
     wxyzs = splat_uint8[:, 28:32] / 255.0 * 2.0 - 1.0
-    Rs = onp.array([tf.SO3(wxyz).as_matrix() for wxyz in wxyzs])
+    Rs = tf.SO3(wxyzs).as_matrix()
     covariances = onp.einsum(
         "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
     )
