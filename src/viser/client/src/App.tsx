@@ -450,12 +450,12 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         <SceneNodeThreeObject name="" parent={null} />
       </SplatRenderContext>
       <Environment path="hdri/" files="potsdamer_platz_1k.hdr" />
-      <directionalLight color={0xffffff} intensity={1.0} position={[0, 1, 0]} />
+      {/* <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
       <directionalLight
-        color={0xffffff}
+        color={0x00ff00}
         intensity={0.2}
         position={[0, -1, 0]}
-      />
+      /> */}
     </Canvas>
   );
 }
