@@ -468,7 +468,11 @@ function AdaptiveDpr() {
       ms={100}
       iterations={5}
       step={0.1}
-      bounds={(refreshrate) => (refreshrate > 90 ? [40, 85] : [40, 55])}
+      bounds={(refreshrate) => {
+        const max = Math.min(refreshrate * 0.9, 85);
+        const min = Math.max(max * 0.5, 38);
+        return [min, max];
+      }}
       onChange={({ factor, fps, refreshrate }) => {
         const dpr = window.devicePixelRatio * (0.2 + 0.8 * factor);
         console.log(

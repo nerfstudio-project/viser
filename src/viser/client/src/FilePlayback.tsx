@@ -126,9 +126,13 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   useEffect(() => {
     const playbackMultiplier = parseFloat(playbackSpeed); // '0.5x' -> 0.5
     if (recording !== null && !paused) {
+      let lastUpdate = Date.now();
       const interval = setInterval(() => {
+        const now = Date.now();
         playbackMutable.current.currentTime +=
-          (1.0 / 120.0) * playbackMultiplier;
+          ((now - lastUpdate) / 1000.0) * playbackMultiplier;
+        lastUpdate = now;
+
         updatePlayback();
         if (
           playbackMutable.current.currentIndex === recording.messages.length &&
