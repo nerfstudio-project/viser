@@ -30,7 +30,7 @@ class ScenePointerEvent:
     """Origin of 3D ray corresponding to this click, in world coordinates."""
     ray_direction: tuple[float, float, float] | None
     """Direction of 3D ray corresponding to this click, in world coordinates."""
-    screen_pos: list[tuple[float, float]]
+    screen_pos: tuple[tuple[float, float], ...]
     """Screen position of the click on the screen (OpenCV image coordinates, 0 to 1).
     (0, 0) is the upper-left corner, (1, 1) is the bottom-right corner.
     For a box selection, this includes the min- and max- corners of the box."""
@@ -159,6 +159,11 @@ class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
     """Origin of 3D ray corresponding to this click, in world coordinates."""
     ray_direction: tuple[float, float, float]
     """Direction of 3D ray corresponding to this click, in world coordinates."""
+    screen_pos: tuple[float, float]
+    """Screen position of the click on the screen (OpenCV image coordinates, 0 to 1).
+    (0, 0) is the upper-left corner, (1, 1) is the bottom-right corner."""
+    instance_index: int | None
+    """Instance ID of the clicked object, if applicable. Currently this is `None` for all objects except for the output of :meth:`SceneApi.add_batched_axes()`."""
 
 
 @dataclasses.dataclass
