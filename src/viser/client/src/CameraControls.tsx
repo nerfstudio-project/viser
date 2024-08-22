@@ -5,19 +5,17 @@ import { useThree } from "@react-three/fiber";
 import React, { useContext, useEffect, useRef, useCallback, useState } from "react";
 import * as THREE from "three";
 
-interface SynchronizedCameraControlsProps {
-  useFirstPersonControls: boolean;
-}
+
 
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
   const [isFirstPerson, setIsFirstPerson] = useState(false);
 
 
-  const { camera, gl, scene } = useThree();
+  const { camera, gl } = useThree();
   const controlsRef = useRef(null);
   const orbitControlsRef = useRef(null);
-  var speed = 0.03;
+  const speed = 0.03;
 
   const sendCameraThrottled = makeThrottledMessageSender(
     viewer,
