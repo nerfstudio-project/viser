@@ -1,110 +1,71 @@
 import { ViewerContext } from "./App";
-import { CameraControls } from "@react-three/drei";
+import { makeThrottledMessageSender } from "./WebsocketFunctions";
+import { PointerLockControls, OrbitControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
-import * as holdEvent from "hold-event";
-import React, { useContext, useRef } from "react";
-import { PerspectiveCamera } from "three";
+import React, { useContext, useEffect, useRef, useCallback, useState } from "react";
 import * as THREE from "three";
-import { computeT_threeworld_world } from "./WorldTransformUtils";
-import { useThrottledMessageSender } from "./WebsocketFunctions";
+
+interface SynchronizedCameraControlsProps {
+  useFirstPersonControls: boolean;
+}
 
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
-  const camera = useThree((state) => state.camera as PerspectiveCamera);
+  const [isFirstPerson, setIsFirstPerson] = useState(false);
 
-  const sendCameraThrottled = useThrottledMessageSender(20);
 
-  // Helper for resetting camera poses.
+  const { camera, gl, scene } = useThree();
+  const controlsRef = useRef(null);
+  const orbitControlsRef = useRef(null);
+  var speed = 0.03;
+
+  const sendCameraThrottled = makeThrottledMessageSender(
+    viewer,
+    20,
+  );
+
+  // helper for resetting camera poses.
   const initialCameraRef = useRef<{
-    camera: PerspectiveCamera;
-    lookAt: THREE.Vector3;
+    position: THREE.Vector3;
+    rotation: THREE.Euler;
   } | null>(null);
 
   viewer.resetCameraViewRef.current = () => {
-    viewer.cameraControlRef.current!.setLookAt(
-      initialCameraRef.current!.camera.position.x,
-      initialCameraRef.current!.camera.position.y,
-      initialCameraRef.current!.camera.position.z,
-      initialCameraRef.current!.lookAt.x,
-      initialCameraRef.current!.lookAt.y,
-      initialCameraRef.current!.lookAt.z,
-      true,
-    );
-    viewer.cameraRef.current!.up.set(
-      initialCameraRef.current!.camera.up.x,
-      initialCameraRef.current!.camera.up.y,
-      initialCameraRef.current!.camera.up.z,
-    );
-    viewer.cameraControlRef.current!.updateCameraUp();
+    if (initialCameraRef.current) {
+      camera.position.copy(initialCameraRef.current.position);
+      camera.rotation.copy(initialCameraRef.current.rotation);
+    }
   };
 
   // Callback for sending cameras.
-  // It makes the code more chaotic, but we preallocate a bunch of things to
-  // minimize garbage collection!
-  const R_threecam_cam = new THREE.Quaternion().setFromEuler(
-    new THREE.Euler(Math.PI, 0.0, 0.0),
-  );
-  const R_world_threeworld = new THREE.Quaternion();
-  const tmpMatrix4 = new THREE.Matrix4();
-  const lookAt = new THREE.Vector3();
-  const R_world_camera = new THREE.Quaternion();
-  const t_world_camera = new THREE.Vector3();
-  const scale = new THREE.Vector3();
-  const sendCamera = React.useCallback(() => {
-    const three_camera = camera;
-    const camera_control = viewer.cameraControlRef.current;
+  const sendCamera = useCallback(() => {
+    if (!controlsRef.current && !orbitControlsRef.current) return;
 
-    if (camera_control === null) {
-      // Camera controls not yet ready, let's re-try later.
-      setTimeout(sendCamera, 10);
-      return;
-    }
+    const { position, quaternion } = camera;
+    const rotation = new THREE.Euler().setFromQuaternion(quaternion);
 
-    // We put Z up to match the scene tree, and convert threejs camera convention
-    // to the OpenCV one.
-    const T_world_threeworld = computeT_threeworld_world(viewer).invert();
-    const T_world_camera = T_world_threeworld.clone()
-      .multiply(
-        tmpMatrix4
-          .makeRotationFromQuaternion(three_camera.quaternion)
-          .setPosition(three_camera.position),
-      )
-      .multiply(tmpMatrix4.makeRotationFromQuaternion(R_threecam_cam));
-    R_world_threeworld.setFromRotationMatrix(T_world_threeworld);
-
-    camera_control.getTarget(lookAt).applyQuaternion(R_world_threeworld);
-    const up = three_camera.up.clone().applyQuaternion(R_world_threeworld);
-
-    //Store initial camera values
+    // Store initial camera values
     if (initialCameraRef.current === null) {
       initialCameraRef.current = {
-        camera: three_camera.clone(),
-        lookAt: camera_control.getTarget(new THREE.Vector3()),
+        position: position.clone(),
+        rotation: rotation.clone(),
       };
     }
 
-    T_world_camera.decompose(t_world_camera, R_world_camera, scale);
-
     sendCameraThrottled({
       type: "ViewerCameraMessage",
-      wxyz: [
-        R_world_camera.w,
-        R_world_camera.x,
-        R_world_camera.y,
-        R_world_camera.z,
-      ],
-      position: t_world_camera.toArray(),
-      aspect: three_camera.aspect,
-      fov: (three_camera.fov * Math.PI) / 180.0,
-      look_at: [lookAt.x, lookAt.y, lookAt.z],
-      up_direction: [up.x, up.y, up.z],
+      wxyz: [quaternion.w, quaternion.x, quaternion.y, quaternion.z],
+      position: position.toArray(),
+      aspect: (camera as THREE.PerspectiveCamera).aspect || 1,
+      fov: ((camera as THREE.PerspectiveCamera).fov * Math.PI) / 180.0 || 0,
+      look_at: [0, 0, 0], // Not used in first-person view
+      up_direction: [camera.up.x, camera.up.y, camera.up.z],
     });
   }, [camera, sendCameraThrottled]);
 
-  // Send camera for new connections.
-  // We add a small delay to give the server time to add a callback.
+  // new connections.
   const connected = viewer.useGui((state) => state.websocketConnected);
-  React.useEffect(() => {
+  useEffect(() => {
     viewer.sendCameraRef.current = sendCamera;
     if (!connected) return;
     setTimeout(() => sendCamera(), 50);
@@ -112,100 +73,93 @@ export function SynchronizedCameraControls() {
 
   // Send camera for 3D viewport changes.
   const canvas = viewer.canvasRef.current!; // R3F canvas.
-  React.useEffect(() => {
+  useEffect(() => {
     // Create a resize observer to resize the CSS canvas when the window is resized.
     const resizeObserver = new ResizeObserver(() => {
       sendCamera();
     });
     resizeObserver.observe(canvas);
 
-    // Cleanup.
+    // clean up .
     return () => resizeObserver.disconnect();
   }, [canvas]);
 
-  // Keyboard controls.
-  React.useEffect(() => {
-    const cameraControls = viewer.cameraControlRef.current!;
+  // state for the for camera velocity
+  const [velocity, setVelocity] = useState(new THREE.Vector3());
 
-    const wKey = new holdEvent.KeyboardKeyHold("KeyW", 20);
-    const aKey = new holdEvent.KeyboardKeyHold("KeyA", 20);
-    const sKey = new holdEvent.KeyboardKeyHold("KeyS", 20);
-    const dKey = new holdEvent.KeyboardKeyHold("KeyD", 20);
-    const qKey = new holdEvent.KeyboardKeyHold("KeyQ", 20);
-    const eKey = new holdEvent.KeyboardKeyHold("KeyE", 20);
+  // Apply velocity to the camera
+  useEffect(() => {
+    const applyVelocity = () => {
+      camera.translateX(velocity.x);
+      camera.translateY(velocity.y);
+      camera.translateZ(velocity.z);
+      sendCamera();
 
-    // TODO: these event listeners are currently never removed, even if this
-    // component gets unmounted.
-    aKey.addEventListener("holding", (event) => {
-      cameraControls.truck(-0.002 * event?.deltaTime, 0, true);
-    });
-    dKey.addEventListener("holding", (event) => {
-      cameraControls.truck(0.002 * event?.deltaTime, 0, true);
-    });
-    wKey.addEventListener("holding", (event) => {
-      cameraControls.forward(0.002 * event?.deltaTime, true);
-    });
-    sKey.addEventListener("holding", (event) => {
-      cameraControls.forward(-0.002 * event?.deltaTime, true);
-    });
-    qKey.addEventListener("holding", (event) => {
-      cameraControls.elevate(-0.002 * event?.deltaTime, true);
-    });
-    eKey.addEventListener("holding", (event) => {
-      cameraControls.elevate(0.002 * event?.deltaTime, true);
-    });
+      // ~apply damping to simulate inertia
+      velocity.multiplyScalar(0.9);
 
-    const leftKey = new holdEvent.KeyboardKeyHold("ArrowLeft", 20);
-    const rightKey = new holdEvent.KeyboardKeyHold("ArrowRight", 20);
-    const upKey = new holdEvent.KeyboardKeyHold("ArrowUp", 20);
-    const downKey = new holdEvent.KeyboardKeyHold("ArrowDown", 20);
-    leftKey.addEventListener("holding", (event) => {
-      cameraControls.rotate(
-        -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        0,
-        true,
-      );
-    });
-    rightKey.addEventListener("holding", (event) => {
-      cameraControls.rotate(
-        0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        0,
-        true,
-      );
-    });
-    upKey.addEventListener("holding", (event) => {
-      cameraControls.rotate(
-        0,
-        -0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true,
-      );
-    });
-    downKey.addEventListener("holding", (event) => {
-      cameraControls.rotate(
-        0,
-        0.05 * THREE.MathUtils.DEG2RAD * event?.deltaTime,
-        true,
-      );
-    });
-
-    // TODO: we currently don't remove any event listeners. This is a bit messy
-    // because KeyboardKeyHold attaches listeners directly to the
-    // document/window; it's unclear if we can remove these.
-    return () => {
-      return;
+      // Stop the loop if velocity is very small
+      if (velocity.length() > 0.001) {
+        requestAnimationFrame(applyVelocity);
+      }
     };
-  }, [CameraControls]);
+
+    applyVelocity();
+  }, [velocity, camera, sendCamera]);
+
+  // Keyboard controls for movement.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const newVelocity = velocity.clone();
+      switch (event.key) {
+        case 'w':
+          newVelocity.z -= speed;
+          break;
+        case 's':
+          newVelocity.z += speed;
+          break;
+        case 'a':
+          newVelocity.x -= speed;
+          break;
+        case 'd':
+          newVelocity.x += speed;
+          break;
+        case 'q':
+          newVelocity.y -= speed;
+          break;
+        case 'e':
+          newVelocity.y += speed;
+          break;
+        case 'p':
+        
+          setIsFirstPerson(prev => {
+            if (prev) {
+              // If switching from first-person to orbit, release the pointer lock
+              document.exitPointerLock();
+            }
+            return !prev;});
+        break;
+        default:
+          break;
+      }
+      setVelocity(newVelocity);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [velocity]);
 
   return (
-    <CameraControls
-      ref={viewer.cameraControlRef}
-      minDistance={0.1}
-      maxDistance={200.0}
-      dollySpeed={0.3}
-      smoothTime={0.05}
-      draggingSmoothTime={0.0}
-      onChange={sendCamera}
-      makeDefault
-    />
+    <>
+    {isFirstPerson ? (
+      <PointerLockControls ref={controlsRef} args={[camera, gl.domElement]} />
+    ) : (
+      <OrbitControls ref={orbitControlsRef} args={[camera, gl.domElement]} />
+    )}
+  </>
   );
 }
