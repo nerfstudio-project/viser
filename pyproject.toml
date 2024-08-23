@@ -71,6 +71,13 @@ examples = [
 viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/**/*", "client/**/.*"]
 # </>
 
+[tool.setuptools.exclude-package-data]
+# We exclude node_modules to prevent long build times for wheels when
+# installing from source, eg via `pip install .`.
+#
+# https://github.com/nerfstudio-project/viser/issues/271
+viser = ["**/node_modules/**"]
+
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
 
