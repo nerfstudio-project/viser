@@ -15,8 +15,7 @@ from typing_extensions import Protocol
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
-from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message, RemoveNotificationMessage
-from ._scene_api import _encode_image_base64
+from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message, RemoveNotificationMessage, UpdateNotificationMessage
 from .infra import ClientId
 
 if TYPE_CHECKING:
@@ -325,9 +324,14 @@ class GuiNotificationHandle:
     def loading(self, loading: bool) -> None:
         if loading == self.loading:
             return
-        
+
         self._gui_api._websock_interface.queue_message(
-            GuiUpdateMessage(self._id, {"loading": loading})
+            UpdateNotificationMessage(self._id, 
+                                      self._title, 
+                                      self._body, 
+                                      loading, 
+                                      self._with_close_button,
+                                      self._auto_close)
         )
         self._loading = loading
 
