@@ -41,8 +41,7 @@ where `wxyz` is the quaternion form of the :math:`\mathrm{SO}(3)` matrix
 ## World coordinates
 
 In the world coordinate space, +Z points upward by default. This can be
-overridden with :func:`viser.ViserServer.set_up_direction()` or
-:func:`viser.ClientHandle.set_up_direction()`.
+overridden with :func:`viser.SceneApi.set_up_direction()`.
 
 ## Cameras
 

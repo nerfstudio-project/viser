@@ -533,6 +533,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             self.request_share_url()
 
         self.scene.reset()
+        self.gui.reset()
         self.gui.set_panel_label(label)
 
     def get_host(self) -> str:
@@ -697,7 +698,11 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
 
         **Work-in-progress.** This API may be changed or removed.
         """
-        return self._websock_server.start_recording(
+        recorder = self._websock_server.start_recording(
             # Don't record GUI messages. This feels brittle.
             filter=lambda message: "Gui" not in type(message).__name__
         )
+        # Insert current scene state.
+        for message in self._websock_server._broadcast_buffer.message_from_id.values():
+            recorder._insert_message(message)
+        return recorder

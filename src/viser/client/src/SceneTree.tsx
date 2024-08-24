@@ -4,7 +4,7 @@ import React from "react";
 import * as THREE from "three";
 
 import { ViewerContext } from "./App";
-import { makeThrottledMessageSender } from "./WebsocketFunctions";
+import { useThrottledMessageSender } from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
 import { immerable } from "immer";
 import { useSceneTreeState } from "./SceneTreeState";
@@ -131,9 +131,6 @@ export function SceneNodeThreeObject(props: {
   const makeObject = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.makeObject,
   );
-  const cleanup = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.cleanup,
-  );
   const unmountWhenInvisible = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.unmountWhenInvisible,
   );
@@ -208,67 +205,62 @@ export function SceneNodeThreeObject(props: {
 
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
-  useFrame(() => {
-    const attrs = viewer.nodeAttributesFromName.current[props.name];
-    everyFrameCallback && everyFrameCallback();
+  useFrame(
+    () => {
+      const attrs = viewer.nodeAttributesFromName.current[props.name];
+      everyFrameCallback && everyFrameCallback();
 
-    // Unmount when invisible.
-    // Examples: <Html /> components, PivotControls.
-    //
-    // This is a workaround for situations where just setting `visible` doesn't
-    // work (like <Html />), or to prevent invisible elements from being
-    // interacted with (<PivotControls />).
-    //
-    // https://github.com/pmndrs/drei/issues/1323
-    if (unmountWhenInvisible) {
-      const displayed = isDisplayed();
-      if (displayed && unmount) {
-        setUnmount(false);
-      }
-      if (!displayed && !unmount) {
-        setUnmount(true);
-      }
-    }
-
-    if (obj === null) return;
-    if (attrs === undefined) return;
-
-    const visibility =
-      (attrs?.overrideVisibility === undefined
-        ? attrs?.visibility
-        : attrs.overrideVisibility) ?? true;
-    obj.visible = visibility;
-
-    if (attrs.poseUpdateState == "needsUpdate") {
-      attrs.poseUpdateState = "updated";
-      const wxyz = attrs.wxyz;
-      if (wxyz !== undefined) {
-        obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-      }
-      const position = attrs.position;
-      if (position !== undefined) {
-        obj.position.set(position[0], position[1], position[2]);
+      // Unmount when invisible.
+      // Examples: <Html /> components, PivotControls.
+      //
+      // This is a workaround for situations where just setting `visible` doesn't
+      // work (like <Html />), or to prevent invisible elements from being
+      // interacted with (<PivotControls />).
+      //
+      // https://github.com/pmndrs/drei/issues/1323
+      if (unmountWhenInvisible) {
+        const displayed = isDisplayed();
+        if (displayed && unmount) {
+          if (obj !== null) obj.visible = false;
+          setUnmount(false);
+        }
+        if (!displayed && !unmount) {
+          setUnmount(true);
+        }
       }
 
-      // Update matrices if necessary. This is necessary for PivotControls.
-      if (!obj.matrixAutoUpdate) obj.updateMatrix();
-      if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
-    }
-  });
+      if (obj === null) return;
+      if (attrs === undefined) return;
 
-  // Clean up when done.
-  React.useEffect(() => {
-    return () => {
-      cleanup && cleanup();
-      delete viewer.nodeRefFromName.current[props.name];
-    };
-  });
+      const visibility =
+        (attrs?.overrideVisibility === undefined
+          ? attrs?.visibility
+          : attrs.overrideVisibility) ?? true;
+      obj.visible = visibility;
+
+      if (attrs.poseUpdateState == "needsUpdate") {
+        attrs.poseUpdateState = "updated";
+        const wxyz = attrs.wxyz;
+        if (wxyz !== undefined) {
+          obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        }
+        const position = attrs.position;
+        if (position !== undefined) {
+          obj.position.set(position[0], position[1], position[2]);
+        }
+
+        // Update matrices if necessary. This is necessary for PivotControls.
+        if (!obj.matrixAutoUpdate) obj.updateMatrix();
+        if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
+      }
+    },
+    // Other useFrame hooks may depend on transforms + visibility. So it's best
+    // to call this hook early.
+    -10000,
+  );
 
   // Clicking logic.
-  const sendClicksThrottled = makeThrottledMessageSender(
-    viewer.websocketRef,
-    50,
-  );
+  const sendClicksThrottled = useThrottledMessageSender(50);
   const [hovered, setHovered] = React.useState(false);
   useCursor(hovered);
   const hoveredRef = React.useRef(false);

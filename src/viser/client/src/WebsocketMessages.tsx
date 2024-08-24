@@ -97,7 +97,7 @@ export interface CameraFrustumMessage {
   scale: number;
   color: number;
   image_media_type: "image/jpeg" | "image/png" | null;
-  image_base64_data: string | null;
+  image_binary: Uint8Array | null;
 }
 /** GlTF message.
  *
@@ -358,8 +358,8 @@ export interface TransformControlsUpdateMessage {
 export interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
   media_type: "image/jpeg" | "image/png";
-  base64_rgb: string;
-  base64_depth: string | null;
+  rgb_bytes: Uint8Array;
+  depth_bytes: Uint8Array | null;
 }
 /** Message for rendering 2D images.
  *
@@ -369,7 +369,7 @@ export interface ImageMessage {
   type: "ImageMessage";
   name: string;
   media_type: "image/jpeg" | "image/png";
-  base64_data: string;
+  data: Uint8Array;
   render_width: number;
   render_height: number;
 }
@@ -416,6 +416,13 @@ export interface SceneNodeClickMessage {
 export interface ResetSceneMessage {
   type: "ResetSceneMessage";
 }
+/** Reset GUI.
+ *
+ * (automatically generated)
+ */
+export interface ResetGuiMessage {
+  type: "ResetGuiMessage";
+}
 /** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', expand_by_default: 'bool', visible: 'bool')
  *
  * (automatically generated)
@@ -438,6 +445,35 @@ export interface GuiAddMarkdownMessage {
   order: number;
   id: string;
   markdown: string;
+  container_id: string;
+  visible: boolean;
+}
+/** GuiAddProgressBarMessage(order: 'float', id: 'str', value: 'float', animated: 'bool', color: 'Optional[Color]', container_id: 'str', visible: 'bool')
+ *
+ * (automatically generated)
+ */
+export interface GuiAddProgressBarMessage {
+  type: "GuiAddProgressBarMessage";
+  order: number;
+  id: string;
+  value: number;
+  animated: boolean;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
   container_id: string;
   visible: boolean;
 }
@@ -483,7 +519,7 @@ export interface _GuiAddInputBase {
   visible: boolean;
   disabled: boolean;
 }
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_html: 'Optional[str]')
+/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool', color: 'Optional[Color]', icon_html: 'Optional[str]')
  *
  * (automatically generated)
  */
@@ -515,7 +551,7 @@ export interface GuiAddButtonMessage {
     | null;
   icon_html: string | null;
 }
-/** GuiAddUploadButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', color: "Optional[Literal[('dark', 'gray', 'red', 'pink', 'grape', 'violet', 'indigo', 'blue', 'cyan', 'green', 'lime', 'yellow', 'orange', 'teal')]]", icon_html: 'Optional[str]', mime_type: 'str')
+/** GuiAddUploadButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', color: 'Optional[Color]', icon_html: 'Optional[str]', mime_type: 'str')
  *
  * (automatically generated)
  */
@@ -973,8 +1009,10 @@ export type Message =
   | SetSceneNodeClickableMessage
   | SceneNodeClickMessage
   | ResetSceneMessage
+  | ResetGuiMessage
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
+  | GuiAddProgressBarMessage
   | GuiAddPlotlyMessage
   | GuiAddTabGroupMessage
   | _GuiAddInputBase
@@ -1011,6 +1049,7 @@ export type Message =
 export type GuiAddComponentMessage =
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage
+  | GuiAddProgressBarMessage
   | GuiAddPlotlyMessage
   | GuiAddTabGroupMessage
   | GuiAddButtonMessage

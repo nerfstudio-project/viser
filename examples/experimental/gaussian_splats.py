@@ -29,6 +29,7 @@ class SplatFile(TypedDict):
 
 def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     """Load an antimatter15-style splat file."""
+    start_time = time.time()
     splat_buffer = splat_path.read_bytes()
     bytes_per_gaussian = (
         # Each Gaussian is serialized as:
@@ -43,7 +44,6 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     )
     assert len(splat_buffer) % bytes_per_gaussian == 0
     num_gaussians = len(splat_buffer) // bytes_per_gaussian
-    print("Number of gaussians to render: ", f"{num_gaussians=}")
 
     # Reinterpret cast to dtypes that we want to extract.
     splat_uint8 = onp.frombuffer(splat_buffer, dtype=onp.uint8).reshape(
@@ -51,14 +51,16 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
     )
     scales = splat_uint8[:, 12:24].copy().view(onp.float32)
     wxyzs = splat_uint8[:, 28:32] / 255.0 * 2.0 - 1.0
-    Rs = onp.array([tf.SO3(wxyz).as_matrix() for wxyz in wxyzs])
+    Rs = tf.SO3(wxyzs).as_matrix()
     covariances = onp.einsum(
         "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
     )
     centers = splat_uint8[:, 0:12].copy().view(onp.float32)
     if center:
         centers -= onp.mean(centers, axis=0, keepdims=True)
-    print("Splat file loaded")
+    print(
+        f"Splat file with {num_gaussians=} loaded in {time.time() - start_time} seconds"
+    )
     return {
         "centers": centers,
         # Colors should have shape (N, 3).
@@ -70,64 +72,40 @@ def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
 
 
 def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
+    """Load Gaussians stored in a PLY file."""
+    start_time = time.time()
+
+    SH_C0 = 0.28209479177387814
+
     plydata = PlyData.read(ply_file_path)
-    vert = plydata["vertex"]
-    sorted_indices = onp.argsort(
-        -onp.exp(vert["scale_0"] + vert["scale_1"] + vert["scale_2"])
-        / (1 + onp.exp(-vert["opacity"]))
-    )
-    numgaussians = len(vert)
-    print("Number of gaussians to render: ", numgaussians)
-    colors = onp.zeros((numgaussians, 3))
-    opacities = onp.zeros((numgaussians, 1))
-    positions = onp.zeros((numgaussians, 3))
-    wxyzs = onp.zeros((numgaussians, 4))
-    scales = onp.zeros((numgaussians, 3))
-    for idx in sorted_indices:
-        v = plydata["vertex"][idx]
-        position = onp.array([v["x"], v["y"], v["z"]], dtype=onp.float32)
-        scale = onp.exp(
-            onp.array([v["scale_0"], v["scale_1"], v["scale_2"]], dtype=onp.float32)
-        )
+    v = plydata["vertex"]
+    positions = onp.stack([v["x"], v["y"], v["z"]], axis=-1)
+    scales = onp.exp(onp.stack([v["scale_0"], v["scale_1"], v["scale_2"]], axis=-1))
+    wxyzs = onp.stack([v["rot_0"], v["rot_1"], v["rot_2"], v["rot_3"]], axis=1)
+    colors = 0.5 + SH_C0 * onp.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
+    opacities = 1.0 / (1.0 + onp.exp(-v["opacity"][:, None]))
 
-        rot = onp.array(
-            [v["rot_0"], v["rot_1"], v["rot_2"], v["rot_3"]], dtype=onp.float32
-        )
-        SH_C0 = 0.28209479177387814
-        color = onp.array(
-            [
-                0.5 + SH_C0 * v["f_dc_0"],
-                0.5 + SH_C0 * v["f_dc_1"],
-                0.5 + SH_C0 * v["f_dc_2"],
-            ]
-        )
-        opacity = 1 / (1 + onp.exp(-v["opacity"]))
-        wxyz = rot / onp.linalg.norm(rot)  # normalize
-        scales[idx] = scale
-        colors[idx] = color
-        opacities[idx] = onp.array([opacity])
-        positions[idx] = position
-        wxyzs[idx] = wxyz
-
-    Rs = onp.array([tf.SO3(wxyz).as_matrix() for wxyz in wxyzs])
+    Rs = tf.SO3(wxyzs).as_matrix()
     covariances = onp.einsum(
         "nij,njk,nlk->nil", Rs, onp.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
     )
     if center:
         positions -= onp.mean(positions, axis=0, keepdims=True)
-    print("PLY file loaded")
+
+    num_gaussians = len(v)
+    print(
+        f"PLY file with {num_gaussians=} loaded in {time.time() - start_time} seconds"
+    )
     return {
         "centers": positions,
-        # Colors should have shape (N, 3).
         "rgbs": colors,
         "opacities": opacities,
-        # Covariances should have shape (N, 3, 3).
         "covariances": covariances,
     }
 
 
-def main(splat_paths: tuple[Path, ...], test_multisplat: bool = False) -> None:
-    server = viser.ViserServer(share=True)
+def main(splat_paths: tuple[Path, ...]) -> None:
+    server = viser.ViserServer()
     server.gui.configure_theme(dark_mode=True)
     gui_reset_up = server.gui.add_button(
         "Reset up direction",
@@ -151,13 +129,20 @@ def main(splat_paths: tuple[Path, ...], test_multisplat: bool = False) -> None:
             raise SystemExit("Please provide a filepath to a .splat or .ply file.")
 
         server.scene.add_transform_controls(f"/{i}")
-        server.scene._add_gaussian_splats(
+        gs_handle = server.scene._add_gaussian_splats(
             f"/{i}/gaussian_splats",
             centers=splat_data["centers"],
             rgbs=splat_data["rgbs"],
             opacities=splat_data["opacities"],
             covariances=splat_data["covariances"],
         )
+
+        remove_button = server.gui.add_button(f"Remove splat object {i}")
+
+        @remove_button.on_click
+        def _(_, gs_handle=gs_handle, remove_button=remove_button) -> None:
+            gs_handle.remove()
+            remove_button.remove()
 
     while True:
         time.sleep(10.0)

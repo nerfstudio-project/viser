@@ -27,7 +27,7 @@ class AsyncMessageBuffer:
     buffer_lock: threading.Lock = dataclasses.field(default_factory=threading.Lock)
     """Lock to prevent race conditions when pushing messages from different threads."""
 
-    max_window_size: int = 1024
+    max_window_size: int = 128
     window_duration_sec: float = 1.0 / 60.0
     done: bool = False
 

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import base64
 import dataclasses
 import re
 import time
-import urllib.parse
 import uuid
 import warnings
 from pathlib import Path
@@ -15,15 +15,7 @@ from typing_extensions import Protocol
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
-from ._messages import (
-    RemoveNotificationMessage,
-    GuiCloseModalMessage,
-    GuiRemoveMessage,
-    GuiUpdateMessage,
-    Message,
-    NotificationMessage,
-    UpdateNotificationMessage,
-)
+from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message, RemoveNotificationMessage
 from ._scene_api import _encode_image_base64
 from .infra import ClientId
 
@@ -586,9 +578,9 @@ def _get_data_url(url: str, image_root: Path | None) -> str:
         image_root = Path(__file__).parent
     try:
         image = iio.imread(image_root / url)
-        data_uri = _encode_image_base64(image, "png")
-        url = urllib.parse.quote(f"{data_uri[1]}")
-        return f"data:{data_uri[0]};base64,{url}"
+        media_type, binary = _encode_image_binary(image, "png")
+        url = base64.b64encode(binary).decode("utf-8")
+        return f"data:{media_type};base64,{url}"
     except (IOError, FileNotFoundError):
         warnings.warn(
             f"Failed to read image {url}, with image_root set to {image_root}.",
@@ -609,13 +601,91 @@ def _parse_markdown(markdown: str, image_root: Path | None) -> str:
 
 
 @dataclasses.dataclass
+class GuiProgressBarHandle:
+    """Use to remove markdown."""
+
+    _gui_api: GuiApi
+    _id: str
+    _visible: bool
+    _animated: bool
+    _parent_container_id: str
+    _order: float
+    _value: float
+
+    @property
+    def value(self) -> float:
+        """Current content of this progress bar element, 0 - 100. Synchronized
+        automatically when assigned."""
+        return self._value
+
+    @value.setter
+    def value(self, value: float) -> None:
+        assert value >= 0 and value <= 100
+        self._value = value
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(
+                self._id,
+                {"value": value},
+            )
+        )
+
+    @property
+    def animated(self) -> bool:
+        """Show this progress bar as loading (animated, striped)."""
+        return self._animated
+
+    @animated.setter
+    def animated(self, animated: bool) -> None:
+        self._animated = animated
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(
+                self._id,
+                {"animated": animated},
+            )
+        )
+
+    @property
+    def order(self) -> float:
+        """Read-only order value, which dictates the position of the GUI element."""
+        return self._order
+
+    @property
+    def visible(self) -> bool:
+        """Temporarily show or hide this GUI element from the visualizer. Synchronized
+        automatically when assigned."""
+        return self._visible
+
+    @visible.setter
+    def visible(self, visible: bool) -> None:
+        if visible == self.visible:
+            return
+
+        self._gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(self._id, {"visible": visible})
+        )
+        self._visible = visible
+
+    def __post_init__(self) -> None:
+        """We need to register ourself after construction for callbacks to work."""
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children[self._id] = self
+
+    def remove(self) -> None:
+        """Permanently remove this progress bar from the visualizer."""
+        self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
+
+        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
+        parent._children.pop(self._id)
+
+
+@dataclasses.dataclass
 class GuiMarkdownHandle:
     """Use to remove markdown."""
 
     _gui_api: GuiApi
     _id: str
     _visible: bool
-    _parent_container_id: str  # Parent.
+    _parent_container_id: str
     _order: float
     _image_root: Path | None
     _content: str | None
@@ -677,7 +747,7 @@ class GuiPlotlyHandle:
     _gui_api: GuiApi
     _id: str
     _visible: bool
-    _parent_container_id: str  # Parent.
+    _parent_container_id: str
     _order: float
     _figure: go.Figure | None
     _aspect: float | None
@@ -745,7 +815,7 @@ class GuiPlotlyHandle:
         parent._children[self._id] = self
 
     def remove(self) -> None:
-        """Permanently remove this markdown from the visualizer."""
+        """Permanently remove this figure from the visualizer."""
         self._gui_api._websock_interface.queue_message(GuiRemoveMessage(self._id))
         parent = self._gui_api._container_handle_from_id[self._parent_container_id]
         parent._children.pop(self._id)

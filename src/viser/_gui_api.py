@@ -33,6 +33,7 @@ from ._gui_handles import (
     GuiModalHandle,
     GuiNotificationHandle,
     GuiPlotlyHandle,
+    GuiProgressBarHandle,
     GuiTabGroupHandle,
     GuiUploadButtonHandle,
     SupportsRemoveProtocol,
@@ -58,6 +59,22 @@ TString = TypeVar("TString", bound=str)
 TLiteralString = TypeVar("TLiteralString", bound=LiteralString)
 T = TypeVar("T")
 LengthTenStrTuple: TypeAlias = Tuple[str, str, str, str, str, str, str, str, str, str]
+Color: TypeAlias = Literal[
+    "dark",
+    "gray",
+    "red",
+    "pink",
+    "grape",
+    "violet",
+    "indigo",
+    "blue",
+    "cyan",
+    "green",
+    "lime",
+    "yellow",
+    "orange",
+    "teal",
+]
 
 
 def _hex_from_hls(h: float, l: float, s: float) -> str:
@@ -140,7 +157,7 @@ class GuiApi:
     """Interface for working with the 2D GUI in viser.
 
     Used by both our global server object, for sharing the same GUI elements
-    with all clients, and by invidividual client handles."""
+    with all clients, and by individual client handles."""
 
     _target_container_from_thread_id: dict[int, str] = {}
     """ID of container to put GUI elements into."""
@@ -325,6 +342,10 @@ class GuiApi:
     def _set_container_id(self, container_id: str) -> None:
         """Set container ID associated with the current thread."""
         self._target_container_from_thread_id[threading.get_ident()] = container_id
+
+    def reset(self) -> None:
+        """Reset the GUI."""
+        self._websock_interface.queue_message(_messages.ResetGuiMessage())
 
     def set_panel_label(self, label: str | None) -> None:
         """Set the main label that appears in the GUI panel.
@@ -638,25 +659,7 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: (
-            Literal[
-                "dark",
-                "gray",
-                "red",
-                "pink",
-                "grape",
-                "violet",
-                "indigo",
-                "blue",
-                "cyan",
-                "green",
-                "lime",
-                "yellow",
-                "orange",
-                "teal",
-            ]
-            | None
-        ) = None,
+        color: Color | None = None,
         icon: IconName | None = None,
         order: float | None = None,
     ) -> GuiButtonHandle:
@@ -704,25 +707,7 @@ class GuiApi:
         disabled: bool = False,
         visible: bool = True,
         hint: str | None = None,
-        color: (
-            Literal[
-                "dark",
-                "gray",
-                "red",
-                "pink",
-                "grape",
-                "violet",
-                "indigo",
-                "blue",
-                "cyan",
-                "green",
-                "lime",
-                "yellow",
-                "orange",
-                "teal",
-            ]
-            | None
-        ) = None,
+        color: Color | None = None,
         icon: IconName | None = None,
         mime_type: str = "*/*",
         order: float | None = None,
@@ -1228,6 +1213,49 @@ class GuiApi:
             )._impl,
             _impl_options=tuple(options),
         )
+
+    def add_progress_bar(
+        self,
+        value: float,
+        visible: bool = True,
+        animated: bool = False,
+        color: Color | None = None,
+        order: float | None = None,
+    ) -> GuiProgressBarHandle:
+        """Add a progress bar to the GUI.
+
+        Args:
+            value: Value of the progress bar. (0 - 100)
+            visible: Whether the progress bar is visible.
+            animated: Whether the progress bar is in a loading state (animated, striped).
+            color: The color of the progress bar.
+            order: Optional ordering, smallest values will be displayed first.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        assert value >= 0 and value <= 100
+        handle = GuiProgressBarHandle(
+            _gui_api=self,
+            _id=_make_unique_id(),
+            _visible=visible,
+            _animated=animated,
+            _parent_container_id=self._get_container_id(),
+            _order=_apply_default_order(order),
+            _value=value,
+        )
+        self._websock_interface.queue_message(
+            _messages.GuiAddProgressBarMessage(
+                order=handle._order,
+                id=handle._id,
+                value=value,
+                animated=animated,
+                color=color,
+                container_id=handle._parent_container_id,
+                visible=visible,
+            )
+        )
+        return handle
 
     def add_slider(
         self,

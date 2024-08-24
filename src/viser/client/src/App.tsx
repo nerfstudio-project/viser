@@ -6,10 +6,10 @@ import "./App.css";
 import { Notifications } from "@mantine/notifications";
 
 import {
-  AdaptiveDpr,
-  AdaptiveEvents,
   CameraControls,
   Environment,
+  PerformanceMonitor,
+  Stats,
 } from "@react-three/drei";
 import * as THREE from "three";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
@@ -40,14 +40,15 @@ import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
 import { GetRenderRequestMessage, Message } from "./WebsocketMessages";
-import { makeThrottledMessageSender } from "./WebsocketFunctions";
+import { useThrottledMessageSender } from "./WebsocketFunctions";
 import { useDisclosure } from "@mantine/hooks";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
 import { theme } from "./AppTheme";
-import { GaussianSplatsContext } from "./Splatting/GaussianSplats";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
+import { SplatRenderContext } from "./Splatting/GaussianSplats";
+import { BrowserWarning } from "./BrowserWarning";
 
 export type ViewerContextContents = {
   messageSource: "websocket" | "file_playback";
@@ -57,7 +58,7 @@ export type ViewerContextContents = {
   // Useful references.
   // TODO: there's really no reason these all need to be their own ref objects.
   // We could have just one ref to a global mutable struct.
-  websocketRef: React.MutableRefObject<WebSocket | null>;
+  sendMessageRef: React.MutableRefObject<(message: Message) => void>;
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   sceneRef: React.MutableRefObject<THREE.Scene | null>;
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
@@ -132,17 +133,27 @@ function ViewerRoot() {
     servers.length >= 1 ? servers[0] : getDefaultServerFromUrl();
 
   // Playback mode for embedding viser.
-  const playbackPath = new URLSearchParams(window.location.search).get(
-    "playbackPath",
-  );
-  console.log(playbackPath);
+  const searchParams = new URLSearchParams(window.location.search);
+  const playbackPath = searchParams.get("playbackPath");
+  const darkMode = searchParams.get("darkMode") !== null;
+  const showStats = searchParams.get("showStats") !== null;
 
   // Values that can be globally accessed by components in a viewer.
+  const nodeRefFromName = React.useRef<{
+    [name: string]: undefined | THREE.Object3D;
+  }>({});
   const viewer: ViewerContextContents = {
     messageSource: playbackPath === null ? "websocket" : "file_playback",
-    useSceneTree: useSceneTreeState(),
+    useSceneTree: useSceneTreeState(nodeRefFromName),
     useGui: useGuiState(initialServer),
-    websocketRef: React.useRef(null),
+    sendMessageRef: React.useRef(
+      playbackPath == null
+        ? (message) =>
+            console.log(
+              `Tried to send ${message.type} but websocket is not connected!`,
+            )
+        : () => null,
+    ),
     canvasRef: React.useRef(null),
     sceneRef: React.useRef(null),
     cameraRef: React.useRef(null),
@@ -161,7 +172,7 @@ function ViewerRoot() {
         })(),
       },
     }),
-    nodeRefFromName: React.useRef({}),
+    nodeRefFromName: nodeRefFromName,
     messageQueueRef: React.useRef([]),
     getRenderRequestState: React.useRef("ready"),
     getRenderRequest: React.useRef(null),
@@ -175,27 +186,32 @@ function ViewerRoot() {
     skinnedMeshState: React.useRef({}),
   };
 
+  // Set dark default if specified in URL.
+  if (darkMode) viewer.useGui.getState().theme.dark_mode = darkMode;
+
   return (
     <ViewerContext.Provider value={viewer}>
-      {viewer.messageSource === "websocket" ? (
-        <WebsocketMessageProducer />
-      ) : null}
-      {viewer.messageSource === "file_playback" ? (
-        <PlaybackFromFile fileUrl={playbackPath!} />
-      ) : null}
-      <ViewerContents />
+      <ViewerContents>
+        {viewer.messageSource === "websocket" ? (
+          <WebsocketMessageProducer />
+        ) : null}
+        {viewer.messageSource === "file_playback" ? (
+          <PlaybackFromFile fileUrl={playbackPath!} />
+        ) : null}
+        {showStats ? <Stats className="stats-panel" /> : null}
+      </ViewerContents>
     </ViewerContext.Provider>
   );
 }
 
-function ViewerContents() {
+function ViewerContents({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
-  const dark_mode = viewer.useGui((state) => state.theme.dark_mode);
+  const darkMode = viewer.useGui((state) => state.theme.dark_mode);
   const colors = viewer.useGui((state) => state.theme.colors);
-  const control_layout = viewer.useGui((state) => state.theme.control_layout);
+  const controlLayout = viewer.useGui((state) => state.theme.control_layout);
   return (
     <>
-      <ColorSchemeScript forceColorScheme={dark_mode ? "dark" : "light"} />
+      <ColorSchemeScript forceColorScheme={darkMode ? "dark" : "light"} />
       <MantineProvider
         theme={createTheme({
           ...theme,
@@ -203,8 +219,9 @@ function ViewerContents() {
             ? {}
             : { colors: { custom: colors }, primaryColor: "custom" }),
         })}
-        forceColorScheme={dark_mode ? "dark" : "light"}
+        forceColorScheme={darkMode ? "dark" : "light"}
       >
+        {children}
         <Notifications
           position="top-left"
           containerWidth="20em"
@@ -214,6 +231,7 @@ function ViewerContents() {
             },
           }}
         />
+        <BrowserWarning />
         <ViserModal />
         <Box
           style={{
@@ -238,27 +256,23 @@ function ViewerContents() {
           >
             <Box
               style={(theme) => ({
-                backgroundColor: dark_mode ? theme.colors.dark[9] : "#fff",
+                backgroundColor: darkMode ? theme.colors.dark[9] : "#fff",
                 flexGrow: 1,
                 overflow: "hidden",
                 height: "100%",
               })}
             >
               <Viewer2DCanvas />
-              <GaussianSplatsContext.Provider
-                value={React.useRef({ numSorting: 0, sortUpdateCallbacks: [] })}
-              >
-                <ViewerCanvas>
-                  <FrameSynchronizedMessageHandler />
-                </ViewerCanvas>
-              </GaussianSplatsContext.Provider>
+              <ViewerCanvas>
+                <FrameSynchronizedMessageHandler />
+              </ViewerCanvas>
               {viewer.useGui((state) => state.theme.show_logo) &&
               viewer.messageSource == "websocket" ? (
                 <ViserLogo />
               ) : null}
             </Box>
             {viewer.messageSource == "websocket" ? (
-              <ControlPanel control_layout={control_layout} />
+              <ControlPanel control_layout={controlLayout} />
             ) : null}
           </Box>
         </Box>
@@ -269,10 +283,7 @@ function ViewerContents() {
 
 function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
-  const sendClickThrottled = makeThrottledMessageSender(
-    viewer.websocketRef,
-    20,
-  );
+  const sendClickThrottled = useThrottledMessageSender(20);
   const theme = useMantineTheme();
 
   return (
@@ -285,7 +296,6 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         width: "100%",
         height: "100%",
       }}
-      performance={{ min: 0.95 }}
       ref={viewer.canvasRef}
       // Handle scene click events (onPointerDown, onPointerMove, onPointerUp)
       onPointerDown={(e) => {
@@ -433,12 +443,13 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     >
       {children}
       <BackgroundImage />
-      <AdaptiveDpr pixelated />
-      <AdaptiveEvents />
+      <AdaptiveDpr />
       <SceneContextSetter />
       <SynchronizedCameraControls />
-      <SceneNodeThreeObject name="" parent={null} />
-      <Environment path="/hdri/" files="potsdamer_platz_1k.hdr" />
+      <SplatRenderContext>
+        <SceneNodeThreeObject name="" parent={null} />
+      </SplatRenderContext>
+      <Environment path="hdri/" files="potsdamer_platz_1k.hdr" />
       <directionalLight color={0xffffff} intensity={1.0} position={[0, 1, 0]} />
       <directionalLight
         color={0xffffff}
@@ -446,6 +457,30 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         position={[0, -1, 0]}
       />
     </Canvas>
+  );
+}
+
+function AdaptiveDpr() {
+  const setDpr = useThree((state) => state.setDpr);
+  return (
+    <PerformanceMonitor
+      factor={1.0}
+      ms={100}
+      iterations={5}
+      step={0.1}
+      bounds={(refreshrate) => {
+        const max = Math.min(refreshrate * 0.9, 85);
+        const min = Math.max(max * 0.5, 38);
+        return [min, max];
+      }}
+      onChange={({ factor, fps, refreshrate }) => {
+        const dpr = window.devicePixelRatio * (0.2 + 0.8 * factor);
+        console.log(
+          `[Performance] Setting DPR to ${dpr}; FPS=${fps}/${refreshrate}`,
+        );
+        setDpr(dpr);
+      }}
+    />
   );
 }
 

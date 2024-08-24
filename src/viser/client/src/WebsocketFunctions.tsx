@@ -1,20 +1,17 @@
-import { MutableRefObject } from "react";
+import React from "react";
 import * as THREE from "three";
 import { Message } from "./WebsocketMessages";
-import { pack } from "msgpackr";
+import { ViewerContext, ViewerContextContents } from "./App";
 
-/** Send message over websocket. */
-export function sendWebsocketMessage(
-  websocketRef: MutableRefObject<WebSocket | null>,
-  message: Message,
-) {
-  if (websocketRef.current === null) return;
-  websocketRef.current.send(pack(message));
+/** Easier, hook version of makeThrottledMessageSender. */
+export function useThrottledMessageSender(throttleMilliseconds: number) {
+  const viewer = React.useContext(ViewerContext)!;
+  return makeThrottledMessageSender(viewer, throttleMilliseconds);
 }
 
 /** Returns a function for sending messages, with automatic throttling. */
 export function makeThrottledMessageSender(
-  websocketRef: MutableRefObject<WebSocket | null>,
+  viewer: ViewerContextContents,
   throttleMilliseconds: number,
 ) {
   let readyToSend = true;
@@ -22,10 +19,10 @@ export function makeThrottledMessageSender(
   let latestMessage: Message | null = null;
 
   function send(message: Message) {
-    if (websocketRef.current === null) return;
+    if (viewer.sendMessageRef.current === null) return;
     latestMessage = message;
     if (readyToSend) {
-      websocketRef.current.send(pack(message));
+      viewer.sendMessageRef.current(message);
       stale = false;
       readyToSend = false;
 

@@ -50,7 +50,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   function setOverrideVisibility(name: string, visible: boolean | undefined) {
     const attr = viewer.nodeAttributesFromName.current;
     attr[name]!.overrideVisibility = visible;
-    console.log(name, visible);
     rerenderTable();
   }
   const setLabelVisibility = viewer.useSceneTree(

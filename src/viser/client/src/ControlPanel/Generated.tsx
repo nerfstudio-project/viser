@@ -1,5 +1,5 @@
 import { ViewerContext } from "../App";
-import { makeThrottledMessageSender } from "../WebsocketFunctions";
+import { useThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiComponentContext } from "./GuiComponentContext";
 
 import { Box } from "@mantine/core";
@@ -21,6 +21,7 @@ import TabGroupComponent from "../components/TabGroup";
 import FolderComponent from "../components/Folder";
 import MultiSliderComponent from "../components/MultiSlider";
 import UploadButtonComponent from "../components/UploadButton";
+import ProgressBarComponent from "../components/ProgressBar";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -30,7 +31,7 @@ export default function GeneratedGuiContainer({
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
-  const messageSender = makeThrottledMessageSender(viewer.websocketRef, 50);
+  const messageSender = useThrottledMessageSender(50);
 
   function setValue(id: string, value: NonNullable<unknown>) {
     updateGuiProps(id, { value: value });
@@ -119,6 +120,8 @@ function GeneratedInput(props: { guiId: string }) {
       return <RgbaComponent {...conf} />;
     case "GuiAddButtonGroupMessage":
       return <ButtonGroupComponent {...conf} />;
+    case "GuiAddProgressBarMessage":
+      return <ProgressBarComponent {...conf} />;
     default:
       assertNeverType(conf);
   }

@@ -5,7 +5,6 @@ import { Box, Progress } from "@mantine/core";
 import { Button } from "@mantine/core";
 import React, { useContext } from "react";
 import { ViewerContext, ViewerContextContents } from "../App";
-import { pack } from "msgpackr";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
@@ -69,7 +68,6 @@ function useFileUpload({
   componentId: string;
   viewer: ViewerContextContents;
 }) {
-  const websocketRef = viewer.websocketRef;
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
   const uploadState = viewer.useGui(
     (state) => state.uploadsInProgress[componentId],
@@ -137,9 +135,6 @@ function useFileUpload({
     const transferUuid = uuid();
     const notificationId = "upload-" + transferUuid;
 
-    const send = (message: Parameters<typeof pack>[0]) =>
-      websocketRef.current?.send(pack(message));
-
     // Begin upload by setting initial state
     updateUploadState({
       componentId: componentId,
@@ -149,7 +144,7 @@ function useFileUpload({
       notificationId,
     });
 
-    send({
+    viewer.sendMessageRef.current({
       type: "FileTransferStart",
       source_component_id: componentId,
       transfer_uuid: transferUuid,
@@ -165,7 +160,7 @@ function useFileUpload({
       const chunk = file.slice(start, end);
       const buffer = await chunk.arrayBuffer();
 
-      send({
+      viewer.sendMessageRef.current({
         type: "FileTransferPart",
         source_component_id: componentId,
         transfer_uuid: transferUuid,

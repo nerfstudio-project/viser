@@ -29,8 +29,6 @@ pip install viser[examples]
 After an example script is running, you can connect by navigating to the printed
 URL (default: `http://localhost:8080`).
 
-See also: our [development docs](https://viser.studio/development/).
-
 <!-- prettier-ignore-start -->
 
 .. toctree::

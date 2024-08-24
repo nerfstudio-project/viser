@@ -25,6 +25,22 @@ from typing_extensions import Annotated, Literal, NotRequired, TypedDict, overri
 from . import infra, theme
 
 GuiSliderMark = TypedDict("GuiSliderMark", {"value": float, "label": NotRequired[str]})
+Color = Literal[
+    "dark",
+    "gray",
+    "red",
+    "pink",
+    "grape",
+    "violet",
+    "indigo",
+    "blue",
+    "cyan",
+    "green",
+    "lime",
+    "yellow",
+    "orange",
+    "teal",
+]
 
 
 class Message(infra.Message):
@@ -170,7 +186,7 @@ class CameraFrustumMessage(Message):
     scale: float
     color: int
     image_media_type: Optional[Literal["image/jpeg", "image/png"]]
-    image_base64_data: Optional[str]
+    image_binary: Optional[bytes]
 
 
 @dataclasses.dataclass
@@ -311,7 +327,7 @@ class SkinnedMeshMessage(MeshMessage):
 
     bone_wxyzs: Tuple[Tuple[float, float, float, float], ...]
     bone_positions: Tuple[Tuple[float, float, float], ...]
-    skin_indices: onpt.NDArray[onp.uint32]
+    skin_indices: onpt.NDArray[onp.uint16]
     skin_weights: onpt.NDArray[onp.float32]
 
     def __post_init__(self):
@@ -443,8 +459,8 @@ class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
     media_type: Literal["image/jpeg", "image/png"]
-    base64_rgb: str
-    base64_depth: Optional[str]
+    rgb_bytes: bytes
+    depth_bytes: Optional[bytes]
 
 
 @dataclasses.dataclass
@@ -453,7 +469,7 @@ class ImageMessage(Message):
 
     name: str
     media_type: Literal["image/jpeg", "image/png"]
-    base64_data: str
+    data: bytes
     render_width: float
     render_height: float
 
@@ -495,6 +511,11 @@ class ResetSceneMessage(Message):
     """Reset scene."""
 
 
+@dataclasses.dataclass
+class ResetGuiMessage(Message):
+    """Reset GUI."""
+
+
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddFolderMessage(Message):
@@ -512,6 +533,18 @@ class GuiAddMarkdownMessage(Message):
     order: float
     id: str
     markdown: str
+    container_id: str
+    visible: bool
+
+
+@tag_class("GuiAddComponentMessage")
+@dataclasses.dataclass
+class GuiAddProgressBarMessage(Message):
+    order: float
+    id: str
+    value: float
+    animated: bool
+    color: Optional[Color]
     container_id: str
     visible: bool
 
@@ -571,48 +604,14 @@ class GuiAddButtonMessage(_GuiAddInputBase):
     # All GUI elements currently need an `value` field.
     # This makes our job on the frontend easier.
     value: bool
-    color: Optional[
-        Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-    ]
+    color: Optional[Color]
     icon_html: Optional[str]
 
 
 @tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
 class GuiAddUploadButtonMessage(_GuiAddInputBase):
-    color: Optional[
-        Literal[
-            "dark",
-            "gray",
-            "red",
-            "pink",
-            "grape",
-            "violet",
-            "indigo",
-            "blue",
-            "cyan",
-            "green",
-            "lime",
-            "yellow",
-            "orange",
-            "teal",
-        ]
-    ]
+    color: Optional[Color]
     icon_html: Optional[str]
     mime_type: str
 

@@ -22,18 +22,14 @@ import {
   Message,
 } from "./WebsocketMessages";
 import { PivotControls } from "@react-three/drei";
-import {
-  isTexture,
-  makeThrottledMessageSender,
-  sendWebsocketMessage,
-} from "./WebsocketFunctions";
+import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
 import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Paper, Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
-import GaussianSplats from "./Splatting/GaussianSplats";
+import { SplatObject } from "./Splatting/GaussianSplats";
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
@@ -60,6 +56,7 @@ function useMessageHandler() {
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
+  const resetGui = viewer.useGui((state) => state.resetGui);
   const setTheme = viewer.useGui((state) => state.setTheme);
   const setShareUrl = viewer.useGui((state) => state.setShareUrl);
   const addGui = viewer.useGui((state) => state.addGui);
@@ -499,15 +496,19 @@ function useMessageHandler() {
                     geometry={geometry}
                     material={material}
                     skeleton={skeleton}
+                    // TODO: leaving culling on (default) sometimes causes the
+                    // mesh to randomly disappear, as of r3f==8.16.2.
+                    //
+                    // Probably this is because we don't update the bounding
+                    // sphere after the bone transforms change.
+                    frustumCulled={false}
                   >
                     <OutlinesIfHovered alwaysMounted />
                   </skinnedMesh>
                 );
               },
               () => {
-                bones.forEach((bone) => {
-                  bone.remove();
-                });
+                delete viewer.skinnedMeshState.current[message.name];
                 skeleton.dispose();
                 cleanupMesh();
               },
@@ -562,13 +563,18 @@ function useMessageHandler() {
       }
       // Add a camera frustum.
       case "CameraFrustumMessage": {
-        const texture =
+        let texture = undefined;
+        if (
           message.image_media_type !== null &&
-          message.image_base64_data !== null
-            ? new TextureLoader().load(
-                `data:${message.image_media_type};base64,${message.image_base64_data}`,
-              )
-            : undefined;
+          message.image_binary !== null
+        ) {
+          const image_url = URL.createObjectURL(
+            new Blob([message.image_binary]),
+          );
+          texture = new TextureLoader().load(image_url, () =>
+            URL.revokeObjectURL(image_url),
+          );
+        }
 
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
@@ -590,10 +596,7 @@ function useMessageHandler() {
       }
       case "TransformControlsMessage": {
         const name = message.name;
-        const sendDragMessage = makeThrottledMessageSender(
-          viewer.websocketRef,
-          50,
-        );
+        const sendDragMessage = makeThrottledMessageSender(viewer, 50);
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
             message.name,
@@ -743,34 +746,40 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
-        new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_rgb}`,
-          (texture) => {
-            const oldBackgroundTexture =
-              viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
-            viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
-              texture;
-            if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
-
-            viewer.useGui.setState({ backgroundAvailable: true });
-          },
+        const rgb_url = URL.createObjectURL(
+          new Blob([message.rgb_bytes], {
+            type: message.media_type,
+          }),
         );
+        new TextureLoader().load(rgb_url, (texture) => {
+          URL.revokeObjectURL(rgb_url);
+          const oldBackgroundTexture =
+            viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
+          viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
+            texture;
+          if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
+
+          viewer.useGui.setState({ backgroundAvailable: true });
+        });
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
         viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
-          message.base64_depth !== null;
+          message.depth_bytes !== null;
 
-        if (message.base64_depth !== null) {
+        if (message.depth_bytes !== null) {
           // If depth is available set the texture
-          new TextureLoader().load(
-            `data:image/png;base64,${message.base64_depth}`,
-            (texture) => {
-              const oldDepthTexture =
-                viewer.backgroundMaterialRef.current?.uniforms.depthMap.value;
-              viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
-                texture;
-              if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
-            },
+          const depth_url = URL.createObjectURL(
+            new Blob([message.depth_bytes], {
+              type: message.media_type,
+            }),
           );
+          new TextureLoader().load(depth_url, (texture) => {
+            URL.revokeObjectURL(depth_url);
+            const oldDepthTexture =
+              viewer.backgroundMaterialRef.current?.uniforms.depthMap.value;
+            viewer.backgroundMaterialRef.current!.uniforms.depthMap.value =
+              texture;
+            if (isTexture(oldDepthTexture)) oldDepthTexture.dispose();
+          });
         }
         return;
       }
@@ -865,8 +874,14 @@ function useMessageHandler() {
         // `addSceneNodeMakeParents` needs to be called immediately: it
         // overwrites position/wxyz attributes, and we don't want this to
         // happen after later messages are received.
+        const image_url = URL.createObjectURL(
+          new Blob([message.data], {
+            type: message.media_type,
+          }),
+        );
         const texture = new TextureLoader().load(
-          `data:${message.media_type};base64,${message.base64_data}`,
+          image_url,
+          () => URL.revokeObjectURL(image_url), // Revoke URL on load.
         );
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(
@@ -922,6 +937,11 @@ function useMessageHandler() {
         viewer.useGui.setState({ backgroundAvailable: false });
         // Disable the depth texture rendering
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
+        return;
+      }
+      // Reset the GUI state.
+      case "ResetGuiMessage": {
+        resetGui();
         return;
       }
       // Update props of a GUI component
@@ -998,18 +1018,17 @@ function useMessageHandler() {
         addSceneNodeMakeParents(
           new SceneNode<THREE.Group>(message.name, (ref) => {
             return (
-              <group ref={ref}>
-                <GaussianSplats
-                  buffers={{
-                    buffer: new Uint32Array(
-                      message.buffer.buffer.slice(
-                        message.buffer.byteOffset,
-                        message.buffer.byteOffset + message.buffer.byteLength,
-                      ),
+              <SplatObject
+                ref={ref}
+                buffer={
+                  new Uint32Array(
+                    message.buffer.buffer.slice(
+                      message.buffer.byteOffset,
+                      message.buffer.byteOffset + message.buffer.byteLength,
                     ),
-                  }}
-                />
-              </group>
+                  )
+                }
+              />
             );
           }),
         );
@@ -1201,7 +1220,7 @@ export function FrameSynchronizedMessageHandler() {
             return;
           }
           const payload = new Uint8Array(await blob.arrayBuffer());
-          sendWebsocketMessage(viewer.websocketRef, {
+          viewer.sendMessageRef.current({
             type: "GetRenderResponseMessage",
             payload: payload,
           });

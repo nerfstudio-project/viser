@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 import io
 import time
 import warnings
@@ -73,11 +72,11 @@ def _encode_rgb(rgb: RgbTupleOrArray) -> int:
     return int(rgb_fixed[0] * (256**2) + rgb_fixed[1] * 256 + rgb_fixed[2])
 
 
-def _encode_image_base64(
+def _encode_image_binary(
     image: onp.ndarray,
     format: Literal["png", "jpeg"],
     jpeg_quality: int | None = None,
-) -> tuple[Literal["image/png", "image/jpeg"], str]:
+) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
     media_type: Literal["image/png", "image/jpeg"]
     image = _colors_to_uint8(image)
     with io.BytesIO() as data_buffer:
@@ -94,10 +93,8 @@ def _encode_image_base64(
             )
         else:
             assert_never(format)
-
-        base64_data = base64.b64encode(data_buffer.getvalue()).decode("ascii")
-
-    return media_type, base64_data
+        binary = data_buffer.getvalue()
+    return media_type, binary
 
 
 TVector = TypeVar("TVector", bound=tuple)
@@ -115,7 +112,7 @@ class SceneApi:
     """Interface for adding 3D primitives to the scene.
 
     Used by both our global server object, for sharing the same GUI elements
-    with all clients, and by invidividual client handles."""
+    with all clients, and by individual client handles."""
 
     def __init__(
         self,
@@ -444,12 +441,12 @@ class SceneApi:
         """
 
         if image is not None:
-            media_type, base64_data = _encode_image_base64(
+            media_type, binary = _encode_image_binary(
                 image, format, jpeg_quality=jpeg_quality
             )
         else:
             media_type = None
-            base64_data = None
+            binary = None
 
         self._websock_interface.queue_message(
             _messages.CameraFrustumMessage(
@@ -460,7 +457,7 @@ class SceneApi:
                 # (255, 255, 255) => 0xffffff, etc
                 color=_encode_rgb(color),
                 image_media_type=media_type,
-                image_base64_data=base64_data,
+                image_binary=binary,
             )
         )
         return CameraFrustumHandle._make(self, name, wxyz, position, visible)
@@ -946,8 +943,7 @@ class SceneApi:
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GaussianSplatHandle:
-        """Add a model to render using Gaussian Splatting. Does not yet support
-        spherical harmonics.
+        """Add a model to render using Gaussian Splatting.
 
         **Work-in-progress.** This feature is experimental and still under
         development. It may be changed or removed.
@@ -971,7 +967,8 @@ class SceneApi:
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
 
-        # Get cholesky factor of covariance.
+        # Get cholesky factor of covariance. This helps retain precision when
+        # we convert to float16.
         cov_cholesky_triu = (
             onp.linalg.cholesky(covariances.astype(onp.float64) + onp.ones(3) * 1e-7)
             .swapaxes(-1, -2)  # tril => triu
@@ -980,10 +977,14 @@ class SceneApi:
         buffer = onp.concatenate(
             [
                 # First texelFetch.
+                # - xyz (96 bits): centers.
                 centers.astype(onp.float32).view(onp.uint8),
+                # - w (32 bits): this is reserved for use by the renderer.
                 onp.zeros((num_gaussians, 4), dtype=onp.uint8),
                 # Second texelFetch.
+                # - xyz (96 bits): upper-triangular Cholesky factor of covariance.
                 cov_cholesky_triu.astype(onp.float16).copy().view(onp.uint8),
+                # - w (32 bits): rgba.
                 _colors_to_uint8(rgbs),
                 _colors_to_uint8(opacities),
             ],
@@ -1095,13 +1096,13 @@ class SceneApi:
             jpeg_quality: Quality of the jpeg image (if jpeg format is used).
             depth: Optional depth image to use to composite background with scene elements.
         """
-        media_type, base64_data = _encode_image_base64(
+        media_type, rgb_bytes = _encode_image_binary(
             image, format, jpeg_quality=jpeg_quality
         )
 
         # Encode depth if provided. We use a 3-channel PNG to represent a fixed point
         # depth at each pixel.
-        depth_base64data = None
+        depth_bytes = None
         if depth is not None:
             # Convert to fixed-point.
             # We'll support from 0 -> (2^24 - 1) / 100_000.
@@ -1116,15 +1117,13 @@ class SceneApi:
             assert intdepth.shape == (*depth.shape[:2], 4)
             with io.BytesIO() as data_buffer:
                 iio.imwrite(data_buffer, intdepth[:, :, :3], extension=".png")
-                depth_base64data = base64.b64encode(data_buffer.getvalue()).decode(
-                    "ascii"
-                )
+                depth_bytes = data_buffer.getvalue()
 
         self._websock_interface.queue_message(
             _messages.BackgroundImageMessage(
                 media_type=media_type,
-                base64_rgb=base64_data,
-                base64_depth=depth_base64data,
+                rgb_bytes=rgb_bytes,
+                depth_bytes=depth_bytes,
             )
         )
 
@@ -1158,14 +1157,14 @@ class SceneApi:
             Handle for manipulating scene node.
         """
 
-        media_type, base64_data = _encode_image_base64(
+        media_type, binary = _encode_image_binary(
             image, format, jpeg_quality=jpeg_quality
         )
         self._websock_interface.queue_message(
             _messages.ImageMessage(
                 name=name,
                 media_type=media_type,
-                base64_data=base64_data,
+                data=binary,
                 render_width=render_width,
                 render_height=render_height,
             )
