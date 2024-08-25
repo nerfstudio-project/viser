@@ -122,11 +122,11 @@ class UpdateNotificationMessage(Message):
     """Update a specific notification."""
 
     id: str
-    title: Optional[str]
-    body: Optional[str]
-    loading: Optional[bool]
-    with_close_button: Optional[bool]
-    auto_close: Optional[Union[int, Literal[False]]]
+    title: str
+    body: str
+    loading: bool
+    with_close_button: bool
+    auto_close: Union[int, Literal[False]]
 
 
 @dataclasses.dataclass

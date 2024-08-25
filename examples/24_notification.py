@@ -62,17 +62,18 @@ def main() -> None:
         """Show loading notification when the button is clicked."""
         loading_notif = server.gui.add_notification(
             title="Loading notification",
-            body="This indicates that some action is in progress!",
+            body="This indicates that some action is in progress! It will be updated in 3 seconds.",
             loading=True,
-            with_close_button=True,
+            with_close_button=False,
             auto_close=False,
         )
 
         time.sleep(3.0)
+        loading_notif.title = "Updated notification"
+        loading_notif.body = "This notification has been updated!"
         loading_notif.loading = False
-        # loading_notif.update(
-        #     title="Update notification", body="This notification was updated!"
-        # )
+        loading_notif.with_close_button = True
+        loading_notif.auto_close = 5000
 
     while True:
         time.sleep(1.0)
