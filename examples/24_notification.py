@@ -1,6 +1,8 @@
 """Notifications
 
-Examples of adding notifications in Viser."""
+Examples of adding notifications in Viser.
+
+Note: we recommend using per-client notification to prevent broadcasting notifications to every user."""
 
 import time
 
@@ -20,9 +22,12 @@ def main() -> None:
     remove_controlled_notif = server.gui.add_button("Remove controlled notification")
 
     @persistent_notif_button.on_click
-    def _(_) -> None:
+    def _(event: viser.GuiEvent) -> None:
         """Show persistent notification when the button is clicked."""
-        server.gui.add_notification(
+        client = event.client
+        assert client is not None
+
+        client.gui.add_notification(
             title="Persistent notification",
             body="This can be closed manually and does not disappear on its own!",
             loading=False,
@@ -31,9 +36,12 @@ def main() -> None:
         )
 
     @timed_notif_button.on_click
-    def _(_) -> None:
+    def _(event: viser.GuiEvent) -> None:
         """Show timed notification when the button is clicked."""
-        server.gui.add_notification(
+        client = event.client
+        assert client is not None
+
+        client.gui.add_notification(
             title="Timed notification",
             body="This disappears automatically after 5 seconds!",
             loading=False,
@@ -42,9 +50,12 @@ def main() -> None:
         )
 
     @controlled_notif_button.on_click
-    def _(_) -> None:
+    def _(event: viser.GuiEvent) -> None:
         """Show controlled notification when the button is clicked."""
-        controlled_notif = server.gui.add_notification(
+        client = event.client
+        assert client is not None
+
+        controlled_notif = client.gui.add_notification(
             title="Controlled notification",
             body="This cannot be closed by the user and is controlled in code only!",
             loading=False,
@@ -58,9 +69,12 @@ def main() -> None:
             controlled_notif.remove()
 
     @loading_notif_button.on_click
-    def _(_) -> None:
+    def _(event: viser.GuiEvent) -> None:
         """Show loading notification when the button is clicked."""
-        loading_notif = server.gui.add_notification(
+        client = event.client
+        assert client is not None
+
+        loading_notif = client.gui.add_notification(
             title="Loading notification",
             body="This indicates that some action is in progress! It will be updated in 3 seconds.",
             loading=True,
