@@ -20,7 +20,7 @@ from typing_extensions import Literal
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
-from ._gui_api import _apply_default_order, _make_unique_id, GuiApi
+from ._gui_api import GuiApi, _apply_default_order, _make_unique_id
 from ._gui_handles import GuiNotificationHandle
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
