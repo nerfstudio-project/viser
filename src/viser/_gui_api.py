@@ -819,7 +819,7 @@ class GuiApi:
                 ),
             )._impl,
         )
-    
+
     def add_checkbox(
         self,
         label: str,

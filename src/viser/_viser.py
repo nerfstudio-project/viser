@@ -387,7 +387,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
                 )
             )
             self.flush()
-        
+
     def add_notification(
         self,
         title: str,
@@ -411,7 +411,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             A handle that can be used to interact with the GUI element.
         """
         handle = GuiNotificationHandle(
-            _gui_api=self, 
+            _gui_api=self,
             _id=_make_unique_id(),
             _parent_container_id=self._get_container_id(),
             _order=_apply_default_order(order),
