@@ -1,8 +1,6 @@
 """Notifications
 
-Examples of adding notifications in Viser.
-
-Note: we recommend using per-client notification to prevent broadcasting notifications to every user."""
+Examples of adding notifications per client in Viser."""
 
 import time
 
@@ -27,7 +25,7 @@ def main() -> None:
         client = event.client
         assert client is not None
 
-        client.gui.add_notification(
+        client.add_notification(
             title="Persistent notification",
             body="This can be closed manually and does not disappear on its own!",
             loading=False,
@@ -41,7 +39,7 @@ def main() -> None:
         client = event.client
         assert client is not None
 
-        client.gui.add_notification(
+        client.add_notification(
             title="Timed notification",
             body="This disappears automatically after 5 seconds!",
             loading=False,
@@ -55,7 +53,7 @@ def main() -> None:
         client = event.client
         assert client is not None
 
-        controlled_notif = client.gui.add_notification(
+        controlled_notif = client.add_notification(
             title="Controlled notification",
             body="This cannot be closed by the user and is controlled in code only!",
             loading=False,
@@ -74,7 +72,7 @@ def main() -> None:
         client = event.client
         assert client is not None
 
-        loading_notif = client.gui.add_notification(
+        loading_notif = client.add_notification(
             title="Loading notification",
             body="This indicates that some action is in progress! It will be updated in 3 seconds.",
             loading=True,

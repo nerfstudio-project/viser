@@ -31,7 +31,6 @@ from ._gui_handles import (
     GuiInputHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
-    GuiNotificationHandle,
     GuiPlotlyHandle,
     GuiProgressBarHandle,
     GuiTabGroupHandle,
@@ -820,55 +819,7 @@ class GuiApi:
                 ),
             )._impl,
         )
-
-    def add_notification(
-        self,
-        title: str,
-        body: str,
-        loading: bool = False,
-        with_close_button: bool = True,
-        auto_close: int | Literal[False] = False,
-        order: float | None = None,
-    ) -> GuiNotificationHandle:
-        """Add a notification, which can be toggled on/off in the GUI.
-
-        Args:
-            title: Title to display on the notification.
-            body: Message to display on the notification body.
-            loading: Whether the notification shows loading icon.
-            with_close_button: Whether the notification can be manually closed.
-            auto_close: Time in ms before the notification automatically closes;
-                        otherwise False such that the notification never closes on its own.
-
-        Returns:
-            A handle that can be used to interact with the GUI element.
-        """
-        handle = GuiNotificationHandle(
-            _gui_api=self, 
-            _id=_make_unique_id(),
-            _parent_container_id=self._get_container_id(),
-            _order=_apply_default_order(order),
-            _title=title,
-            _body=body,
-            _loading=loading,
-            _with_close_button=with_close_button,
-            _auto_close=auto_close,
-        )
-        self._websock_interface.queue_message(
-            _messages.NotificationMessage(
-                order=handle._order,
-                id=handle._id,
-                container_id=handle._parent_container_id,
-                title=title,
-                body=body,
-                loading=loading,
-                with_close_button=with_close_button,
-                auto_close=auto_close,
-            )
-        )
-        return handle
     
-
     def add_checkbox(
         self,
         label: str,

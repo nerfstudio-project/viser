@@ -20,7 +20,8 @@ from typing_extensions import Literal
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
-from ._gui_api import GuiApi
+from ._gui_api import _apply_default_order, _make_unique_id, GuiApi
+from ._gui_handles import GuiNotificationHandle
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
 from .infra._infra import RecordHandle
@@ -360,8 +361,6 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         if mime_type is None:
             mime_type = "application/octet-stream"
 
-        from ._gui_api import _make_unique_id
-
         parts = [
             content[i * chunk_size : (i + 1) * chunk_size]
             for i in range(int(onp.ceil(len(content) / chunk_size)))
@@ -388,6 +387,53 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
                 )
             )
             self.flush()
+        
+    def add_notification(
+        self,
+        title: str,
+        body: str,
+        loading: bool = False,
+        with_close_button: bool = True,
+        auto_close: int | Literal[False] = False,
+        order: float | None = None,
+    ) -> GuiNotificationHandle:
+        """Add a notification, which can be toggled on/off in the GUI.
+
+        Args:
+            title: Title to display on the notification.
+            body: Message to display on the notification body.
+            loading: Whether the notification shows loading icon.
+            with_close_button: Whether the notification can be manually closed.
+            auto_close: Time in ms before the notification automatically closes;
+                        otherwise False such that the notification never closes on its own.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        handle = GuiNotificationHandle(
+            _gui_api=self, 
+            _id=_make_unique_id(),
+            _parent_container_id=self._get_container_id(),
+            _order=_apply_default_order(order),
+            _title=title,
+            _body=body,
+            _loading=loading,
+            _with_close_button=with_close_button,
+            _auto_close=auto_close,
+        )
+        self._websock_interface.queue_message(
+            _messages.NotificationMessage(
+                order=handle._order,
+                id=handle._id,
+                container_id=handle._parent_container_id,
+                title=title,
+                body=body,
+                loading=loading,
+                with_close_button=with_close_button,
+                auto_close=auto_close,
+            )
+        )
+        return handle
 
 
 class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
