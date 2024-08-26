@@ -18,6 +18,7 @@ export interface NotificationMessage {
   type: "NotificationMessage";
   order: number;
   id: string;
+  container_id: string;
   title: string;
   body: string;
   loading: boolean;
