@@ -411,9 +411,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             A handle that can be used to interact with the GUI element.
         """
         handle = GuiNotificationHandle(
-            _gui_api=self,
+            _gui_api=self.gui,
             _id=_make_unique_id(),
-            _parent_container_id=self._get_container_id(),
             _order=_apply_default_order(order),
             _title=title,
             _body=body,
@@ -421,11 +420,10 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             _with_close_button=with_close_button,
             _auto_close=auto_close,
         )
-        self._websock_interface.queue_message(
+        self.gui._websock_interface.queue_message(
             _messages.NotificationMessage(
                 order=handle._order,
                 id=handle._id,
-                container_id=handle._parent_container_id,
                 title=title,
                 body=body,
                 loading=loading,

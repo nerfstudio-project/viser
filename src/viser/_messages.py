@@ -102,7 +102,6 @@ class NotificationMessage(Message):
 
     order: float
     id: str
-    container_id: str
     title: str
     body: str
     loading: bool
