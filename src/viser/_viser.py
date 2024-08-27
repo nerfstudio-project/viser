@@ -20,7 +20,7 @@ from typing_extensions import Literal
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
-from ._gui_api import GuiApi, _apply_default_order, _make_unique_id
+from ._gui_api import GuiApi, _make_unique_id
 from ._gui_handles import GuiNotificationHandle
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
@@ -413,8 +413,6 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         handle = GuiNotificationHandle(
             _gui_api=self.gui,
             _id=_make_unique_id(),
-            _parent_container_id=self.gui._get_container_id(),
-            _order=_apply_default_order(order),
             _title=title,
             _body=body,
             _loading=loading,
@@ -423,9 +421,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         )
         self.gui._websock_interface.queue_message(
             _messages.NotificationMessage(
-                order=handle._order,
                 id=handle._id,
-                container_id=handle._parent_container_id,
                 title=title,
                 body=body,
                 loading=loading,

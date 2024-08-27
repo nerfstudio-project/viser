@@ -7,15 +7,7 @@ import time
 import uuid
 import warnings
 from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Generic,
-    Iterable,
-    Literal,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Any, Callable, Generic, Iterable, Literal, TypeVar
 
 import imageio.v3 as iio
 import numpy as onp
@@ -318,18 +310,11 @@ class GuiNotificationHandle:
 
     _gui_api: GuiApi
     _id: str
-    _parent_container_id: str
-    _order: float
     _title: str
     _body: str
     _loading: bool = False
     _with_close_button: bool = True
     _auto_close: int | Literal[False] = False
-
-    def __post_init__(self) -> None:
-        """We need to register ourself after construction for callbacks to work."""
-        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
-        parent._children[self._id] = self
 
     def _update_notification(self) -> None:
         m = UpdateNotificationMessage(
@@ -412,9 +397,6 @@ class GuiNotificationHandle:
         self._gui_api._websock_interface.queue_message(
             RemoveNotificationMessage(self._id)
         )
-
-        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
-        parent._children.pop(self._id)
 
 
 @dataclasses.dataclass

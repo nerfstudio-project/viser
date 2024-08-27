@@ -100,9 +100,7 @@ class RunJavascriptMessage(Message):
 class NotificationMessage(Message):
     """Notification message."""
 
-    order: float
     id: str
-    container_id: str
     title: str
     body: str
     loading: bool
