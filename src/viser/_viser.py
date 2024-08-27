@@ -21,7 +21,7 @@ from typing_extensions import Literal
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
 from ._gui_api import GuiApi, _make_unique_id
-from ._gui_handles import GuiNotificationHandle
+from ._notification_handle import NotificationHandle
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
 from .infra._infra import RecordHandle
@@ -395,8 +395,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         loading: bool = False,
         with_close_button: bool = True,
         auto_close: int | Literal[False] = False,
-        order: float | None = None,
-    ) -> GuiNotificationHandle:
+    ) -> NotificationHandle:
         """Add a notification, which can be toggled on/off in the GUI.
 
         Args:
@@ -410,8 +409,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         Returns:
             A handle that can be used to interact with the GUI element.
         """
-        handle = GuiNotificationHandle(
-            _gui_api=self.gui,
+        handle = NotificationHandle(
+            _websock_interface=self._websock_connection,
             _id=_make_unique_id(),
             _title=title,
             _body=body,
