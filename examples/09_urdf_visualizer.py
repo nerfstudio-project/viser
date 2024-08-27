@@ -14,8 +14,9 @@ import time
 
 import numpy as onp
 import tyro
-import viser
 from robot_descriptions.loaders.yourdfpy import load_robot_description
+
+import viser
 from viser.extras import ViserUrdf
 
 # A subset of robots available in the robot_descriptions package.
