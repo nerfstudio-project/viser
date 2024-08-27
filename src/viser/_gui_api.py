@@ -1277,18 +1277,16 @@ class GuiApi:
                 precision=_compute_precision_digits(step),
                 visible=visible,
                 disabled=disabled,
-                marks=(
-                    tuple(
-                        (
-                            {"value": float(x[0]), "label": x[1]}
-                            if isinstance(x, tuple)
-                            else {"value": float(x)}
-                        )
-                        for x in marks
+                marks=tuple(
+                    (
+                        {"value": float(x[0]), "label": x[1]}
+                        if isinstance(x, tuple)
+                        else {"value": float(x)}
                     )
-                    if marks is not None
-                    else None
-                ),
+                    for x in marks
+                )
+                if marks is not None
+                else None,
             ),
             is_button=False,
         )
@@ -1365,18 +1363,16 @@ class GuiApi:
                 disabled=disabled,
                 fixed_endpoints=fixed_endpoints,
                 precision=_compute_precision_digits(step),
-                marks=(
-                    tuple(
-                        (
-                            {"value": float(x[0]), "label": x[1]}
-                            if isinstance(x, tuple)
-                            else {"value": float(x)}
-                        )
-                        for x in marks
+                marks=tuple(
+                    (
+                        {"value": float(x[0]), "label": x[1]}
+                        if isinstance(x, tuple)
+                        else {"value": float(x)}
                     )
-                    if marks is not None
-                    else None
-                ),
+                    for x in marks
+                )
+                if marks is not None
+                else None,
             ),
             is_button=False,
         )
