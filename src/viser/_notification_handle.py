@@ -3,8 +3,9 @@ from __future__ import annotations
 import dataclasses
 from typing import Literal
 
-from viser._messages import RemoveNotificationMessage, UpdateNotificationMessage
-from viser.infra._infra import WebsockClientConnection
+from ._gui_api import Color
+from ._messages import NotificationMessage, RemoveNotificationMessage
+from .infra._infra import WebsockClientConnection
 
 
 @dataclasses.dataclass
@@ -16,6 +17,7 @@ class _NotificationHandleState:
     loading: bool
     with_close_button: bool
     auto_close: int | Literal[False]
+    color: Color | None
 
 
 @dataclasses.dataclass
@@ -24,14 +26,16 @@ class NotificationHandle:
 
     _impl: _NotificationHandleState
 
-    def _update_notification(self) -> None:
-        m = UpdateNotificationMessage(
+    def _sync_with_client(self, first: bool = False) -> None:
+        m = NotificationMessage(
+            "show" if first else "update",
             self._impl.id,
             self._impl.title,
             self._impl.body,
             self._impl.loading,
             self._impl.with_close_button,
             self._impl.auto_close,
+            self._impl.color,
         )
         self._impl.websock_interface.queue_message(m)
 
@@ -46,7 +50,7 @@ class NotificationHandle:
             return
 
         self._impl.title = title
-        self._update_notification()
+        self._sync_with_client()
 
     @property
     def body(self) -> str:
@@ -59,7 +63,7 @@ class NotificationHandle:
             return
 
         self._impl.body = body
-        self._update_notification()
+        self._sync_with_client()
 
     @property
     def loading(self) -> bool:
@@ -72,7 +76,7 @@ class NotificationHandle:
             return
 
         self._impl.loading = loading
-        self._update_notification()
+        self._sync_with_client()
 
     @property
     def with_close_button(self) -> bool:
@@ -85,7 +89,7 @@ class NotificationHandle:
             return
 
         self._impl.with_close_button = with_close_button
-        self._update_notification()
+        self._sync_with_client()
 
     @property
     def auto_close(self) -> int | Literal[False]:
@@ -99,7 +103,20 @@ class NotificationHandle:
             return
 
         self._impl.auto_close = auto_close
-        self._update_notification()
+        self._sync_with_client()
+
+    @property
+    def color(self) -> Color:
+        """Color of the notification."""
+        return self._impl.color
+
+    @color.setter
+    def color(self, color: Color) -> None:
+        if color == self._impl.color:
+            return
+
+        self._impl.color = color
+        self._sync_with_client()
 
     def remove(self) -> None:
         self._impl.websock_interface.queue_message(

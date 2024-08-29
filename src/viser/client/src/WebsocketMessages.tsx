@@ -16,12 +16,29 @@ export interface RunJavascriptMessage {
  */
 export interface NotificationMessage {
   type: "NotificationMessage";
+  mode: "show" | "update";
   id: string;
   title: string;
   body: string;
   loading: boolean;
   with_close_button: boolean;
   auto_close: number | false;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
 }
 /** Remove a specific notification.
  *
@@ -30,19 +47,6 @@ export interface NotificationMessage {
 export interface RemoveNotificationMessage {
   type: "RemoveNotificationMessage";
   id: string;
-}
-/** Update a specific notification.
- *
- * (automatically generated)
- */
-export interface UpdateNotificationMessage {
-  type: "UpdateNotificationMessage";
-  id: string;
-  title: string;
-  body: string;
-  loading: boolean;
-  with_close_button: boolean;
-  auto_close: number | false;
 }
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
@@ -977,7 +981,6 @@ export type Message =
   | RunJavascriptMessage
   | NotificationMessage
   | RemoveNotificationMessage
-  | UpdateNotificationMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage

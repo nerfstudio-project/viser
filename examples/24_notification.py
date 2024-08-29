@@ -81,11 +81,13 @@ def main() -> None:
         )
 
         time.sleep(3.0)
+
         loading_notif.title = "Updated notification"
         loading_notif.body = "This notification has been updated!"
         loading_notif.loading = False
         loading_notif.with_close_button = True
         loading_notif.auto_close = 5000
+        loading_notif.color = "green"
 
     while True:
         time.sleep(1.0)

@@ -20,7 +20,7 @@ from typing_extensions import Literal
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
-from ._gui_api import GuiApi, _make_unique_id
+from ._gui_api import Color, GuiApi, _make_unique_id
 from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
@@ -395,6 +395,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         loading: bool = False,
         with_close_button: bool = True,
         auto_close: int | Literal[False] = False,
+        color: Color | None = None,
     ) -> NotificationHandle:
         """Add a notification to the client's interface.
 
@@ -422,18 +423,10 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
                 loading=loading,
                 with_close_button=with_close_button,
                 auto_close=auto_close,
+                color=color,
             )
         )
-        self.gui._websock_interface.queue_message(
-            _messages.NotificationMessage(
-                id=handle._impl.id,
-                title=title,
-                body=body,
-                loading=loading,
-                with_close_button=with_close_button,
-                auto_close=auto_close,
-            )
-        )
+        handle._sync_with_client(first=True)
         return handle
 
 

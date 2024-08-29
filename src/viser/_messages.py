@@ -99,12 +99,14 @@ class RunJavascriptMessage(Message):
 class NotificationMessage(Message):
     """Notification message."""
 
+    mode: Literal["show", "update"]
     id: str
     title: str
     body: str
     loading: bool
     with_close_button: bool
     auto_close: Union[int, Literal[False]]
+    color: Optional[Color]
 
 
 @dataclasses.dataclass
@@ -112,18 +114,6 @@ class RemoveNotificationMessage(Message):
     """Remove a specific notification."""
 
     id: str
-
-
-@dataclasses.dataclass
-class UpdateNotificationMessage(Message):
-    """Update a specific notification."""
-
-    id: str
-    title: str
-    body: str
-    loading: bool
-    with_close_button: bool
-    auto_close: Union[int, Literal[False]]
 
 
 @dataclasses.dataclass
