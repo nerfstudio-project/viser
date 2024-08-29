@@ -60,7 +60,7 @@ class Message(infra.Message):
         if node_name is not None:
             parts.append(node_name)
 
-        # GUI messages all have an "id" field.
+        # GUI and notification messages all have an "id" field.
         node_name = getattr(self, "id", None)
         if node_name is not None:
             parts.append(node_name)

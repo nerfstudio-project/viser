@@ -15,12 +15,7 @@ from typing_extensions import Protocol
 
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
-from ._messages import (
-    GuiCloseModalMessage,
-    GuiRemoveMessage,
-    GuiUpdateMessage,
-    Message,
-)
+from ._messages import GuiCloseModalMessage, GuiRemoveMessage, GuiUpdateMessage, Message
 from ._scene_api import _encode_image_binary
 from .infra import ClientId
 

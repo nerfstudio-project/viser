@@ -21,7 +21,7 @@ from typing_extensions import Literal
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
 from ._gui_api import GuiApi, _make_unique_id
-from ._notification_handle import NotificationHandle
+from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
 from .infra._infra import RecordHandle
@@ -396,7 +396,11 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         with_close_button: bool = True,
         auto_close: int | Literal[False] = False,
     ) -> NotificationHandle:
-        """Add a notification, which can be toggled on/off in the GUI.
+        """Add a notification to the client's interface.
+
+        This method creates a new notification that will be displayed at the
+        top left corner of the client's viewer. Notifications are useful for
+        providing alerts or status updates to users.
 
         Args:
             title: Title to display on the notification.
@@ -410,17 +414,19 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             A handle that can be used to interact with the GUI element.
         """
         handle = NotificationHandle(
-            _websock_interface=self._websock_connection,
-            _id=_make_unique_id(),
-            _title=title,
-            _body=body,
-            _loading=loading,
-            _with_close_button=with_close_button,
-            _auto_close=auto_close,
+            _NotificationHandleState(
+                websock_interface=self._websock_connection,
+                id=_make_unique_id(),
+                title=title,
+                body=body,
+                loading=loading,
+                with_close_button=with_close_button,
+                auto_close=auto_close,
+            )
         )
         self.gui._websock_interface.queue_message(
             _messages.NotificationMessage(
-                id=handle._id,
+                id=handle._impl.id,
                 title=title,
                 body=body,
                 loading=loading,
