@@ -9,8 +9,9 @@ from typing import TypedDict
 import numpy as onp
 import numpy.typing as onpt
 import tyro
-import viser
 from plyfile import PlyData
+
+import viser
 from viser import transforms as tf
 
 

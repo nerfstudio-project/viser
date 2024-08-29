@@ -7,4 +7,9 @@
    :undoc-members:
    :inherited-members:
 
+.. autoclass:: viser.NotificationHandle
+   :members:
+   :undoc-members:
+   :inherited-members:
+
 <!-- prettier-ignore-end -->

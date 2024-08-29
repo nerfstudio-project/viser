@@ -40,7 +40,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pyright>=1.1.308",
-    "ruff==0.4.6",
+    "ruff==0.6.2",
     "pre-commit==3.3.2",
 ]
 examples = [
@@ -110,5 +110,6 @@ lint.ignore = [
     "PLR0912",  # Too many branches.
     "PLW0603",  # Globa statement updates are discouraged.
     "PLW2901",  # For loop variable overwritten.
+    "PLW0642",  # Reassigned self in instance method.
 ]
 exclude = [ ".nodeenv" ]

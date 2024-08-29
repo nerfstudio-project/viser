@@ -132,6 +132,37 @@ function useMessageHandler() {
         return;
       }
 
+      // Add a notification.
+      case "NotificationMessage": {
+        if (message.mode === "show") {
+          notifications.show({
+            id: message.id,
+            title: message.title,
+            message: message.body,
+            withCloseButton: message.with_close_button,
+            loading: message.loading,
+            autoClose: message.auto_close,
+            color: message.color ?? undefined,
+          });
+        } else if (message.mode === "update") {
+          notifications.update({
+            id: message.id,
+            title: message.title,
+            message: message.body,
+            withCloseButton: message.with_close_button,
+            loading: message.loading,
+            autoClose: message.auto_close,
+            color: message.color ?? undefined,
+          });
+        }
+        return;
+      }
+
+      // Remove a specific notification.
+      case "RemoveNotificationMessage": {
+        notifications.hide(message.id);
+        return;
+      }
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.

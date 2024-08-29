@@ -60,7 +60,7 @@ class Message(infra.Message):
         if node_name is not None:
             parts.append(node_name)
 
-        # GUI messages all have an "id" field.
+        # GUI and notification messages all have an "id" field.
         node_name = getattr(self, "id", None)
         if node_name is not None:
             parts.append(node_name)
@@ -93,6 +93,27 @@ class RunJavascriptMessage(Message):
     def redundancy_key(self) -> str:
         # Never cull these messages.
         return str(uuid.uuid4())
+
+
+@dataclasses.dataclass
+class NotificationMessage(Message):
+    """Notification message."""
+
+    mode: Literal["show", "update"]
+    id: str
+    title: str
+    body: str
+    loading: bool
+    with_close_button: bool
+    auto_close: Union[int, Literal[False]]
+    color: Optional[Color]
+
+
+@dataclasses.dataclass
+class RemoveNotificationMessage(Message):
+    """Remove a specific notification."""
+
+    id: str
 
 
 @dataclasses.dataclass
@@ -157,7 +178,7 @@ class CameraFrustumMessage(Message):
 
 @dataclasses.dataclass
 class GlbMessage(Message):
-    """GlTF Message"""
+    """GlTF message."""
 
     name: str
     glb_data: bytes

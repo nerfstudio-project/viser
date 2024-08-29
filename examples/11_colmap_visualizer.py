@@ -10,9 +10,10 @@ from pathlib import Path
 import imageio.v3 as iio
 import numpy as onp
 import tyro
+from tqdm.auto import tqdm
+
 import viser
 import viser.transforms as tf
-from tqdm.auto import tqdm
 from viser.extras.colmap import (
     read_cameras_binary,
     read_images_binary,

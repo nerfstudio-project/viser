@@ -7,9 +7,10 @@ from typing import Literal
 
 import numpy as onp
 import trimesh.creation
+from typing_extensions import assert_never
+
 import viser
 import viser.transforms as tf
-from typing_extensions import assert_never
 
 
 def main() -> None:

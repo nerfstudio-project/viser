@@ -20,7 +20,8 @@ from typing_extensions import Literal
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
-from ._gui_api import GuiApi
+from ._gui_api import Color, GuiApi, _make_unique_id
+from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
 from .infra._infra import RecordHandle
@@ -360,8 +361,6 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         if mime_type is None:
             mime_type = "application/octet-stream"
 
-        from ._gui_api import _make_unique_id
-
         parts = [
             content[i * chunk_size : (i + 1) * chunk_size]
             for i in range(int(onp.ceil(len(content) / chunk_size)))
@@ -388,6 +387,47 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
                 )
             )
             self.flush()
+
+    def add_notification(
+        self,
+        title: str,
+        body: str,
+        loading: bool = False,
+        with_close_button: bool = True,
+        auto_close: int | Literal[False] = False,
+        color: Color | None = None,
+    ) -> NotificationHandle:
+        """Add a notification to the client's interface.
+
+        This method creates a new notification that will be displayed at the
+        top left corner of the client's viewer. Notifications are useful for
+        providing alerts or status updates to users.
+
+        Args:
+            title: Title to display on the notification.
+            body: Message to display on the notification body.
+            loading: Whether the notification shows loading icon.
+            with_close_button: Whether the notification can be manually closed.
+            auto_close: Time in ms before the notification automatically closes;
+                        otherwise False such that the notification never closes on its own.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        handle = NotificationHandle(
+            _NotificationHandleState(
+                websock_interface=self._websock_connection,
+                id=_make_unique_id(),
+                title=title,
+                body=body,
+                loading=loading,
+                with_close_button=with_close_button,
+                auto_close=auto_close,
+                color=color,
+            )
+        )
+        handle._sync_with_client(first=True)
+        return handle
 
 
 class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):

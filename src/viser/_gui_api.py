@@ -1242,8 +1242,7 @@ class GuiApi:
         """
         value: IntOrFloat = initial_value
         assert max >= min
-        if step > max - min:
-            step = max - min
+        step = __builtins__.min(step, max - min)
         assert max >= value >= min
 
         # GUI callbacks cast incoming values to match the type of the initial value. If
@@ -1326,8 +1325,7 @@ class GuiApi:
             A handle that can be used to interact with the GUI element.
         """
         assert max >= min
-        if step > max - min:
-            step = max - min
+        step = __builtins__.min(step, max - min)
         assert all(max >= x >= min for x in initial_value)
 
         # GUI callbacks cast incoming values to match the type of the initial value. If
