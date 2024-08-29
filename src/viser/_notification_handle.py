@@ -106,12 +106,12 @@ class NotificationHandle:
         self._sync_with_client()
 
     @property
-    def color(self) -> Color:
+    def color(self) -> Color | None:
         """Color of the notification."""
         return self._impl.color
 
     @color.setter
-    def color(self, color: Color) -> None:
+    def color(self, color: Color | None) -> None:
         if color == self._impl.color:
             return
 
