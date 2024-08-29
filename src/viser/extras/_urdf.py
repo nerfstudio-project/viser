@@ -65,6 +65,7 @@ class ViserUrdf:
             )
 
         # Add the URDF's meshes/geometry to viser.
+        self._meshes: List[viser.SceneNodeHandle] = []
         for link_name, mesh in urdf.scene.geometry.items():
             assert isinstance(mesh, trimesh.Trimesh)
             T_parent_child = urdf.get_transform(
@@ -82,21 +83,25 @@ class ViserUrdf:
             mesh.apply_transform(T_parent_child)
 
             if mesh_color_override is None:
-                target.scene.add_mesh_trimesh(name, mesh)
+                self._meshes.append(target.scene.add_mesh_trimesh(name, mesh))
             else:
-                target.scene.add_mesh_simple(
-                    name,
-                    mesh.vertices,
-                    mesh.faces,
-                    color=mesh_color_override,
+                self._meshes.append(
+                    target.scene.add_mesh_simple(
+                        name,
+                        mesh.vertices,
+                        mesh.faces,
+                        color=mesh_color_override,
+                    )
                 )
 
     def remove(self) -> None:
         """Remove URDF from scene."""
-        # Remove all frames from the scene. Meshes are children, so they will
-        # be deleted automatically.
+        # Some of this will be redundant, since children are removed when
+        # parents are removed.
         for frame in self._joint_frames:
             frame.remove()
+        for mesh in self._meshes:
+            mesh.remove()
 
     def update_cfg(self, configuration: onp.ndarray) -> None:
         """Update the joint angles of the visualized URDF."""

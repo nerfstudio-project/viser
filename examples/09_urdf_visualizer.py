@@ -67,16 +67,15 @@ class ControllableViserRobot:
             self._slider_handles,
             self._initial_angles,
         ) = self._create_gui_elements(server, self._viser_urdf)
-
-        self.update_cfg(onp.array([slider.value for slider in self._slider_handles]))
+        self._viser_urdf.update_cfg(onp.array(self._initial_angles))
 
     def update_cfg(self, configuration: onp.ndarray) -> None:
         """Update the configuration, both the GUI handles and the visualized
         robot."""
+        # Should be updated automatically by the sliders' on_update() callback.
         assert len(configuration) == len(self._slider_handles)
         for i, slider in enumerate(self._slider_handles):
             slider.value = configuration[i]
-        # self._viser_urdf.update_cfg(configuration)
 
     def reset_joints(self) -> None:
         """Reset all of the joints."""
