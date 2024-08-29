@@ -10,7 +10,6 @@ from typing import (
     Callable,
     ClassVar,
     Dict,
-    List,
     Optional,
     Tuple,
     Type,
@@ -155,7 +154,7 @@ class ScenePointerMessage(Message):
     event_type: ScenePointerEventType
     ray_origin: Optional[Tuple[float, float, float]]
     ray_direction: Optional[Tuple[float, float, float]]
-    screen_pos: List[Tuple[float, float]]
+    screen_pos: Tuple[Tuple[float, float], ...]
 
 
 @dataclasses.dataclass
@@ -500,8 +499,11 @@ class SceneNodeClickMessage(Message):
     """Message for clicked objects."""
 
     name: str
+    instance_index: Optional[int]
+    """Instance index. Currently only used for batched axes."""
     ray_origin: Tuple[float, float, float]
     ray_direction: Tuple[float, float, float]
+    screen_pos: Tuple[float, float]
 
 
 @dataclasses.dataclass

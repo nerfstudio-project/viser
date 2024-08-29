@@ -404,8 +404,10 @@ export interface SetSceneNodeClickableMessage {
 export interface SceneNodeClickMessage {
   type: "SceneNodeClickMessage";
   name: string;
+  instance_index: number | null;
   ray_origin: [number, number, number];
   ray_direction: [number, number, number];
+  screen_pos: [number, number];
 }
 /** Reset scene.
  *

@@ -481,8 +481,8 @@ class SceneApi:
 
         For cases where we want to visualize many coordinate frames, like
         trajectories containing thousands or tens of thousands of frames,
-        batching and calling `add_batched_axes()` may be a better choice than calling
-        `add_frame()` in a loop.
+        batching and calling :meth:`add_batched_axes()` may be a better choice
+        than calling :meth:`add_frame()` in a loop.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -524,10 +524,11 @@ class SceneApi:
     ) -> BatchedAxesHandle:
         """Visualize batched sets of coordinate frame axes.
 
-        The functionality of `add_batched_axes()` overlaps significantly with
-        `add_frame()` when `show_axes=True`. The primary difference is that
-        `add_batched_axes()` supports multiple axes via the `wxyzs_batched`
-        (shape Nx4) and `positions_batched` (shape Nx3) arguments.
+        The functionality of :meth:`add_batched_axes()` overlaps significantly
+        with :meth:`add_frame()` when `show_axes=True`. The primary difference
+        is that :meth:`add_batched_axes()` supports multiple axes via the
+        `wxyzs_batched` (shape Nx4) and `positions_batched` (shape Nx3)
+        arguments.
 
         Axes that are batched and rendered via a single call to
         `add_batched_axes()` are instanced on the client; this will be much
@@ -1323,6 +1324,8 @@ class SceneApi:
                 target=handle,
                 ray_origin=message.ray_origin,
                 ray_direction=message.ray_direction,
+                screen_pos=message.screen_pos,
+                instance_index=message.instance_index,
             )
             cb(event)  # type: ignore
 

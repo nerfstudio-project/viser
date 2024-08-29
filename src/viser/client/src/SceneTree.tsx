@@ -11,6 +11,7 @@ import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
 import { HoverableContext } from "./ThreeAssets";
+import { opencvXyFromPointerXy } from "./ClickUtils";
 
 export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
   ref: React.Ref<T>,
@@ -34,6 +35,10 @@ export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
      */
     public readonly unmountWhenInvisible?: boolean,
     public readonly everyFrameCallback?: () => void,
+    /** For click events on instanced nodes, like batched axes, we want to keep track of which. */
+    public readonly computeClickInstanceIndexFromInstanceId?: (
+      instanceId: number | undefined,
+    ) => number | null,
   ) {
     this.children = [];
     this.clickable = false;
@@ -136,6 +141,10 @@ export function SceneNodeThreeObject(props: {
   );
   const everyFrameCallback = viewer.useSceneTree(
     (state) => state.nodeFromName[props.name]?.everyFrameCallback,
+  );
+  const computeClickInstanceIndexFromInstanceId = viewer.useSceneTree(
+    (state) =>
+      state.nodeFromName[props.name]?.computeClickInstanceIndexFromInstanceId,
   );
   const [unmount, setUnmount] = React.useState(false);
   const clickable =
@@ -326,9 +335,22 @@ export function SceneNodeThreeObject(props: {
               if (state.dragging) return;
               // Convert ray to viser coordinates.
               const ray = rayToViserCoords(viewer, e.ray);
+
+              // Send OpenCV image coordinates to the server (normalized).
+              const canvasBbox =
+                viewer.canvasRef.current!.getBoundingClientRect();
+              const mouseVectorOpenCV = opencvXyFromPointerXy(viewer, [
+                e.clientX - canvasBbox.left,
+                e.clientY - canvasBbox.top,
+              ]);
+
               sendClicksThrottled({
                 type: "SceneNodeClickMessage",
                 name: props.name,
+                instance_index:
+                  computeClickInstanceIndexFromInstanceId === undefined
+                    ? null
+                    : computeClickInstanceIndexFromInstanceId(e.instanceId),
                 // Note that the threejs up is +Y, but we expose a +Z up.
                 ray_origin: [ray.origin.x, ray.origin.y, ray.origin.z],
                 ray_direction: [
@@ -336,6 +358,7 @@ export function SceneNodeThreeObject(props: {
                   ray.direction.y,
                   ray.direction.z,
                 ],
+                screen_pos: [mouseVectorOpenCV.x, mouseVectorOpenCV.y],
               });
             }}
             onPointerOver={(e) => {
