@@ -8,6 +8,7 @@ import { Notifications } from "@mantine/notifications";
 import {
   CameraControls,
   Environment,
+  EnvironmentProps,
   PerformanceMonitor,
   Stats,
 } from "@react-three/drei";
@@ -26,7 +27,7 @@ import {
   createTheme,
   useMantineTheme,
 } from "@mantine/core";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 
 import "./index.css";
@@ -35,7 +36,6 @@ import ControlPanel from "./ControlPanel/ControlPanel";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 import { WebsocketMessageProducer } from "./WebsocketInterface";
-
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
@@ -184,6 +184,7 @@ function ViewerRoot() {
     }),
     canvas2dRef: React.useRef(null),
     skinnedMeshState: React.useRef({}),
+
   };
 
   // Set dark default if specified in URL.
@@ -449,15 +450,26 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SplatRenderContext>
         <SceneNodeThreeObject name="" parent={null} />
       </SplatRenderContext>
-      <Environment path="hdri/" files="potsdamer_platz_1k.hdr" />
-      {/* <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
-      <directionalLight
-        color={0x00ff00}
-        intensity={0.2}
-        position={[0, -1, 0]}
-      /> */}
+      <DefaultLights></DefaultLights>
     </Canvas>
   );
+}
+
+
+
+function DefaultLights() {
+  const viewer = React.useContext(ViewerContext)!;
+  const lightsEnabled = viewer.useSceneTree((state) => state.lightEnabled);
+  if (lightsEnabled) {
+    return (
+      <>
+      <Environment path="hdri/" files="potsdamer_platz_1k.hdr" />
+      <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
+      <directionalLight color={0x00ff00} intensity={0.2} position={[0, -1, 0]} />
+      </>
+    );
+  }
+  return <></>
 }
 
 function AdaptiveDpr() {

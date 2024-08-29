@@ -255,6 +255,98 @@ class PointCloudMessage(Message):
 
 
 @dataclasses.dataclass
+class DirectionalLightMessage(Message):
+    """Directional light message."""
+
+    name: str
+    position: Tuple[float, float, float]
+    intensity: float
+    color: int
+    castShadow: bool
+
+
+@dataclasses.dataclass
+class AmbientLightMessage(Message):
+    """Ambient light message."""
+
+    name: str
+    intensity: float
+    color: int
+
+
+@dataclasses.dataclass
+class HemisphereLightMessage(Message):
+    """Hemisphere light message."""
+
+    name: str
+    position: Tuple[float, float, float]
+    intensity: float
+    skyColor: int
+    groundColor: int
+
+
+@dataclasses.dataclass
+class PointLightMessage(Message):
+    """Point light message."""
+
+    name: str
+    position: Tuple[float, float, float]
+    intensity: float
+    color: int
+    castShadow: bool
+    distance: float
+    decay: float
+    power: float
+
+
+@dataclasses.dataclass
+class RectAreaLightMessage(Message):
+    """Rectangular Area light message."""
+
+    name: str
+    position: Tuple[float, float, float]
+    intensity: float
+    color: int
+    width: float
+    height: float
+    power: float
+
+
+@dataclasses.dataclass
+class SpotLightMessage(Message):
+    """Spot light message."""
+
+    name: str
+    position: Tuple[float, float, float]
+    intensity: float
+    color: int
+    distance: float
+    angle: float
+    penumbra: float
+    decay: float
+    castShadow: bool
+
+    def __post_init__(self):
+        assert self.angle <= onp.pi / 2
+        assert self.angle >= 0
+
+
+@dataclasses.dataclass
+class EnvironmentMapMessage(Message):
+    """Environment Map message."""
+
+    name: str
+    hdri: str | None
+
+
+@dataclasses.dataclass
+class EnableLightsMessage(Message):
+    """Spot light message."""
+
+    enabled: bool
+
+
+@dataclasses.dataclass
 class MeshBoneMessage(Message):
     """Message for a bone of a skinned mesh."""
 

@@ -10,6 +10,7 @@ interface SceneTreeState {
   nodeFromName: { [name: string]: undefined | SceneNode };
   // Putting this into SceneNode makes the scene tree table much harder to implement.
   labelVisibleFromName: { [name: string]: boolean };
+  lightEnabled: boolean
 }
 export interface SceneTreeActions extends SceneTreeState {
   setClickable(name: string, clickable: boolean): void;
@@ -47,6 +48,7 @@ export function useSceneTreeState(
         immer<SceneTreeState & SceneTreeActions>((set) => ({
           nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
           labelVisibleFromName: {},
+          lightEnabled: true,
           setClickable: (name, clickable) =>
             set((state) => {
               const node = state.nodeFromName[name];

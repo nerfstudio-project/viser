@@ -155,6 +155,102 @@ export interface PointCloudMessage {
   point_size: number;
   point_ball_norm: number;
 }
+/** Directional light message.
+ *
+ * (automatically generated)
+ */
+export interface DirectionalLightMessage {
+  type: "DirectionalLightMessage";
+  name: string;
+  position: [number, number, number];
+  intensity: number;
+  color: number;
+  castShadow: boolean;
+}
+/** Ambient light message.
+ *
+ * (automatically generated)
+ */
+export interface AmbientLightMessage {
+  type: "AmbientLightMessage";
+  name: string;
+  intensity: number;
+  color: number;
+}
+/** Hemisphere light message.
+ *
+ * (automatically generated)
+ */
+export interface HemisphereLightMessage {
+  type: "HemisphereLightMessage";
+  name: string;
+  position: [number, number, number];
+  intensity: number;
+  skyColor: number;
+  groundColor: number;
+}
+/** Point light message.
+ *
+ * (automatically generated)
+ */
+export interface PointLightMessage {
+  type: "PointLightMessage";
+  name: string;
+  position: [number, number, number];
+  intensity: number;
+  color: number;
+  castShadow: boolean;
+  distance: number;
+  decay: number;
+  power: number;
+}
+/** Rectangular Area light message.
+ *
+ * (automatically generated)
+ */
+export interface RectAreaLightMessage {
+  type: "RectAreaLightMessage";
+  name: string;
+  position: [number, number, number];
+  intensity: number;
+  color: number;
+  width: number;
+  height: number;
+  power: number;
+}
+/** Environment Map message.
+ *
+ * (automatically generated)
+ */
+export interface EnvironmentMapMessage {
+  type: "EnvironmentMapMessage";
+  name: string;
+  hdri: Uint8Array;
+}
+/** Spot light message.
+ *
+ * (automatically generated)
+ */
+export interface SpotLightMessage {
+  type: "SpotLightMessage";
+  name: string;
+  position: [number, number, number];
+  intensity: number;
+  color: number;
+  distance: number;
+  angle: number;
+  penumbra: number;
+  decay: number;
+  castShadow: boolean;
+}
+/** Spot light message.
+ *
+ * (automatically generated)
+ */
+export interface EnableLightsMessage {
+  type: "EnableLightsMessage";
+  enabled: boolean;
+}
 /** Message for a bone of a skinned mesh.
  *
  * (automatically generated)
@@ -950,6 +1046,14 @@ export type Message =
   | LabelMessage
   | Gui3DMessage
   | PointCloudMessage
+  | DirectionalLightMessage
+  | AmbientLightMessage
+  | HemisphereLightMessage
+  | PointLightMessage
+  | RectAreaLightMessage
+  | EnvironmentMapMessage
+  | SpotLightMessage
+  | EnableLightsMessage
   | MeshBoneMessage
   | MeshMessage
   | SkinnedMeshMessage

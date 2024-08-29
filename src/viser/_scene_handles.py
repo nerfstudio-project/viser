@@ -183,6 +183,11 @@ class CameraFrustumHandle(_ClickableSceneNodeHandle):
 
 
 @dataclasses.dataclass
+class LightHandle(_ClickableSceneNodeHandle):
+    """Handle for light objects."""
+
+
+@dataclasses.dataclass
 class PointCloudHandle(SceneNodeHandle):
     """Handle for point clouds. Does not support click events."""
 

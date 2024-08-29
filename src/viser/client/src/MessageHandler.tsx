@@ -17,6 +17,9 @@ import {
   PointCloud,
 } from "./ThreeAssets";
 import {
+  Environment
+}  from "@react-three/drei";
+import {
   FileTransferPart,
   FileTransferStart,
   Message,
@@ -230,21 +233,144 @@ function useMessageHandler() {
                   message.plane == "xz"
                     ? new THREE.Euler(0.0, 0.0, 0.0)
                     : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
+                      ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                      : message.plane == "yx"
+                        ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                        : message.plane == "yz"
+                          ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                          : message.plane == "zx"
+                            ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                            : message.plane == "zy"
+                              ? new THREE.Euler(
+                                  -Math.PI / 2.0,
+                                  0.0,
+                                  -Math.PI / 2.0,
+                                )
+                              : undefined
                 }
               />
             </group>
           )),
         );
+        return;
+      }
+
+      // Add a directional light
+      case "DirectionalLightMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.DirectionalLight>(message.name, (ref) => (
+            <directionalLight
+              ref={ref}
+              position={message.position}
+              intensity={message.intensity}
+              color={message.color}
+              castShadow={message.castShadow}
+            />
+          )),
+        );
+        return;
+      }
+
+      // Add an ambient light
+      case "AmbientLightMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.AmbientLight>(message.name, (ref) => (
+            <ambientLight
+              ref= {ref}
+              intensity={message.intensity}
+              color={message.color}
+            />
+          )),
+        );
+        return;
+      }
+
+      // Add a hemisphere light
+      case "HemisphereLightMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.HemisphereLight>(message.name, (ref) => (
+            <hemisphereLight
+              ref={ref}
+              position={message.position}
+              intensity={message.intensity}
+              color={message.skyColor}
+              groundColor={message.groundColor}
+            />
+          )),
+        );
+        return;
+      }
+
+      // Add a point light
+      case "PointLightMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.PointLight>(message.name, (ref) => (
+            <pointLight
+              ref={ref}
+              position={message.position}
+              intensity={message.intensity}
+              color={message.color}
+              castShadow={message.castShadow}
+              distance={message.distance}
+              decay={message.decay}
+              power={message.power}
+            />
+          )),
+        );
+        return;
+      }
+      // Add a rectangular area light
+      case "RectAreaLightMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.RectAreaLight>(message.name, (ref) => (
+            <rectAreaLight
+              ref={ref}
+              position={message.position}
+              intensity={message.intensity}
+              color={message.color}
+              width={message.width}
+              height={message.height}
+              power={message.power}
+            />
+          )),
+        );
+        return;
+      }
+
+      // Add a spot light
+      case "SpotLightMessage": {
+        addSceneNodeMakeParents(
+          new SceneNode<THREE.SpotLight>(message.name, (ref) => (
+            <spotLight
+              ref={ref}
+              position={message.position}
+              intensity={message.intensity}
+              color={message.color}
+              distance={message.distance}
+              decay={message.decay}
+              angle={message.angle}
+              penumbra={message.penumbra}
+              castShadow={message.castShadow}
+            />
+          )),
+        );
+        return;
+      }
+
+      // Add an environment map
+      case "EnvironmentMapMessage": {
+        // remove the current environment map
+        viewer.useSceneTree.setState({lightEnabled: false});
+        if (message.hdri) {
+          // if not null, replace with the current environment map
+
+        }
+        return;
+      }
+
+      // Disable/enable default lighting
+      case "EnableLightsMessage": {
+          viewer.useSceneTree.setState({lightEnabled: message.enabled});
         return;
       }
 
@@ -327,16 +453,16 @@ function useMessageHandler() {
           message.material == "standard" || message.wireframe
             ? new THREE.MeshStandardMaterial(standardArgs)
             : message.material == "toon3"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(3),
-                ...standardArgs,
-              })
-            : message.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.material);
+              ? new THREE.MeshToonMaterial({
+                  gradientMap: generateGradientMap(3),
+                  ...standardArgs,
+                })
+              : message.material == "toon5"
+                ? new THREE.MeshToonMaterial({
+                    gradientMap: generateGradientMap(5),
+                    ...standardArgs,
+                  })
+                : assertUnreachable(message.material);
         geometry.setAttribute(
           "position",
           new THREE.Float32BufferAttribute(

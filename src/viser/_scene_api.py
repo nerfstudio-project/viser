@@ -23,6 +23,7 @@ from ._scene_handles import (
     Gui3dContainerHandle,
     ImageHandle,
     LabelHandle,
+    LightHandle,
     MeshHandle,
     MeshSkinnedBoneHandle,
     MeshSkinnedHandle,
@@ -253,6 +254,274 @@ class SceneApi:
         self._websock_interface.queue_message(
             _messages.SetSceneNodeVisibilityMessage("", visible)
         )
+
+    def add_light_directional(
+        self,
+        name: str,
+        color: int = 0xFFFFFF,
+        castShadow: bool = False,
+        intensity: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> LightHandle:
+        """
+        Add a directional light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: hexadecimal color of the light. Default is 0xffffff (white).
+            castShadow: If set to true light will cast dynamic shadows.
+                Warning: This is expensive and requires tweaking to get shadows looking right.
+                The default is false.
+            intensity: numeric value of the light's strength/intensity. Default is 1.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        self._websock_interface.queue_message(
+            _messages.DirectionalLightMessage(
+                name, position, intensity, color, castShadow
+            )
+        )
+        return LightHandle._make(self, name, wxyz, position, visible)
+
+    def add_light_ambient(
+        self,
+        name: str,
+        color: int = 0xFFFFFF,
+        intensity: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> LightHandle:
+        """
+        Add an ambient light to the scene. This light cannot be used to cast shadows as
+        it does not have a direction.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: hexadecimal color of the light. Default is 0xffffff (white).
+            intensity: numeric value of the light's strength/intensity. Default is 1.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        self._websock_interface.queue_message(
+            _messages.AmbientLightMessage(name, intensity, color)
+        )
+        return LightHandle._make(self, name, wxyz, position, visible)
+
+    def add_light_hemisphere(
+        self,
+        name: str,
+        skyColor: int = 0xFFFFFF,
+        groundColor: int = 0xFFFFFF,
+        intensity: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> LightHandle:
+        """
+        Add a hemisphere light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            skyColor: The light's sky color, as passed in the constructor.
+                Default is a new Color set to white (0xffffff).
+            groundColor: The light's ground color, as passed in the constructor.
+                Default is a new Color set to white (0xffffff).
+            intensity: numeric value of the light's strength/intensity. Default is 1.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        self._websock_interface.queue_message(
+            _messages.HemisphereLightMessage(
+                name, position, intensity, skyColor, groundColor
+            )
+        )
+        return LightHandle._make(self, name, wxyz, position, visible)
+
+    def add_light_point(
+        self,
+        name: str,
+        color: int = 0xFFFFFF,
+        castShadow: bool = False,
+        intensity: float = 1.0,
+        distance: float = 0.0,
+        decay: float = 2.0,
+        power: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> LightHandle:
+        """
+        Add a point light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: hexadecimal color of the light. Default is 0xffffff (white).
+            castShadow: If set to true light will cast dynamic shadows.
+                Warning: This is expensive and requires tweaking to get shadows looking right.
+                The default is false.
+            intensity: numeric value of the light's strength/intensity. Default is 1.
+            distance: When distance is zero, light will attenuate according to inverse-square law
+                to infinite distance. When distance is non-zero, light will attenuate according to
+                inverse-square law until near the distance cutoff, where it will then attenuate quickly
+                and smoothly to 0. Inherently, cutoffs are not physically correct.
+            decay: The amount the light dims along the distance of the light. Default is 2.
+                In context of physically-correct rendering the default value should not be changed.
+            power: The light's power. Power is the luminous power of the light measured in lumens (lm).
+                Changing the power will also change the light's intensity.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        self._websock_interface.queue_message(
+            _messages.PointLightMessage(
+                name, position, intensity, color, castShadow, distance, decay, power
+            )
+        )
+        return LightHandle._make(self, name, wxyz, position, visible)
+
+    def add_light_rectarea(
+        self,
+        name: str,
+        color: int = 0xFFFFFF,
+        intensity: float = 1.0,
+        width: float = 10.0,
+        height: float = 10.0,
+        power: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> LightHandle:
+        """
+        Add a rectangular area light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: hexadecimal color of the light. Default is 0xffffff (white).
+            intensity: numeric value of the light's strength/intensity. Default is 1.
+            width: THe width of the light.
+            height: The height of the light.
+            power: The light's power. Power is the luminous power of the light measured in lumens (lm).
+                Changing the power will also change the light's intensity.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        self._websock_interface.queue_message(
+            _messages.RectAreaLightMessage(
+                name, position, intensity, color, width, height, power
+            )
+        )
+        return LightHandle._make(self, name, wxyz, position, visible)
+
+    def add_light_spot(
+        self,
+        name: str,
+        color: int = 0xFFFFFF,
+        distance: float = 0.0,
+        angle: float = onp.pi / 3,
+        penumbra: float = 0.0,
+        decay: float = 2.0,
+        castShadow: bool = False,
+        intensity: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> LightHandle:
+        """
+        Add a spot light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: hexadecimal color of the light. Default is 0xffffff (white).
+            distance: When distance is zero, light will attenuate according to inverse-square
+                law to infinite distance. When distance is non-zero, light will attenuate according
+                to inverse-square law until near the distance cutoff, where it will then attenuate
+                quickly and smoothly to 0. Inherently, cutoffs are not physically correct.
+            angle: Maximum extent of the spotlight, in radians, from its direction.
+                Should be no more than Math.PI/2.
+            penumbra: Percent of the spotlight cone that is attenuated due to penumbra.
+                Takes values between zero and 1.
+            decay: The amount the light dims along the distance of the light. Default is 2.
+                In context of physically-correct rendering the default value should not be changed.
+            castShadow: If set to true light will cast dynamic shadows.
+                Warning: This is expensive and requires tweaking to get shadows looking right.
+                The default is false.
+            intensity: numeric value of the light's strength/intensity. Default is 1.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        self._websock_interface.queue_message(
+            _messages.SpotLightMessage(
+                name,
+                position,
+                intensity,
+                color,
+                distance,
+                angle,
+                penumbra,
+                decay,
+                castShadow,
+            )
+        )
+        return LightHandle._make(self, name, wxyz, position, visible)
+
+    def set_environment_map(self, name, hdri: str | None) -> None:
+        """
+        TODO: fill this out
+
+        Args:
+            hdri: the environemnt map filepath byotch
+
+        """
+        self._websock_interface.queue_message(
+            _messages.EnvironmentMapMessage(name, hdri)
+        )
+
+    def enable_default_lights(self, enabled: bool = True) -> None:
+        """
+        Enable/disable the default lighting to the scene. If not otherwise specified, default lighting will be enabled.
+
+        Args:
+            enabled: True if user wants default lighting. False is user does not want default lighting.
+        """
+        self._websock_interface.queue_message(_messages.EnableLightsMessage(enabled))
 
     def add_glb(
         self,
