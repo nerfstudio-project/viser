@@ -1,4 +1,4 @@
-"""Get Renders
+"""Get renders
 
 Example for getting renders from a client's viewport to the Python API."""
 

@@ -91,6 +91,13 @@ class ViserUrdf:
                     color=mesh_color_override,
                 )
 
+    def remove(self) -> None:
+        """Remove URDF from scene."""
+        # Remove all frames from the scene. Meshes are children, so they will
+        # be deleted automatically.
+        for frame in self._joint_frames:
+            frame.remove()
+
     def update_cfg(self, configuration: onp.ndarray) -> None:
         """Update the joint angles of the visualized URDF."""
         self._urdf.update_cfg(configuration)

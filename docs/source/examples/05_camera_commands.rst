@@ -17,6 +17,7 @@ corresponding client automatically.
         import time
 
         import numpy as onp
+
         import viser
         import viser.transforms as tf
 

@@ -1,4 +1,4 @@
-"""Plotly.
+"""Plotly
 
 Examples of visualizing plotly plots in Viser."""
 

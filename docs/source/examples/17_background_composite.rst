@@ -19,6 +19,7 @@ be useful when we want a 2D image to occlude 3D geometry, such as for NeRF rende
         import numpy as onp
         import trimesh
         import trimesh.creation
+
         import viser
 
         server = viser.ViserServer()

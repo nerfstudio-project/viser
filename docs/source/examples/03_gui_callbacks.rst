@@ -17,8 +17,9 @@ we get updates.
         import time
 
         import numpy as onp
-        import viser
         from typing_extensions import assert_never
+
+        import viser
 
 
         def main() -> None:

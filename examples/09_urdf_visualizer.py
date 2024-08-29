@@ -13,7 +13,7 @@ from __future__ import annotations
 import time
 
 import numpy as onp
-import tyro
+import yourdfpy
 from robot_descriptions.loaders.yourdfpy import load_robot_description
 
 import viser
@@ -41,38 +41,67 @@ ROBOT_MODEL_LIST = (
 )
 
 
-def main() -> None:
-    # Start viser server.
-    server = viser.ViserServer()
+class ControllableViserRobot:
+    """Helper class that creates a robot + GUI elements for controlling it."""
 
-    # Logic for updating the visualized robot.
-    gui_joints: list[viser.GuiInputHandle[float]] = []
-    initial_angles: list[float] = []
-
-    def update_robot_model(robot_name: str) -> None:
-        server.scene.reset()
-
+    def __init__(
+        self,
+        urdf: yourdfpy.URDF,
+        server: viser.ViserServer,
+    ):
         loading_modal = server.gui.add_modal("Loading URDF...")
         with loading_modal:
             server.gui.add_markdown("See terminal for progress!")
 
         # Create a helper for adding URDFs to Viser. This just adds meshes to the scene,
         # helps us set the joint angles, etc.
-        urdf = ViserUrdf(
+        self._viser_urdf = ViserUrdf(
             server,
             # This can also be set to a path to a local URDF file.
-            urdf_or_path=load_robot_description(robot_name),
+            urdf_or_path=urdf,
         )
         loading_modal.close()
 
-        for gui_joint in gui_joints:
-            gui_joint.remove()
-        gui_joints.clear()
+        # Create sliders in GUI to control robot.
+        (
+            self._slider_handles,
+            self._initial_angles,
+        ) = self._create_gui_elements(server, self._viser_urdf)
 
-        for joint_name, (lower, upper) in urdf.get_actuated_joint_limits().items():
+        self.update_cfg(onp.array([slider.value for slider in self._slider_handles]))
+
+    def update_cfg(self, configuration: onp.ndarray) -> None:
+        """Update the configuration, both the GUI handles and the visualized
+        robot."""
+        assert len(configuration) == len(self._slider_handles)
+        for i, slider in enumerate(self._slider_handles):
+            slider.value = configuration[i]
+        # self._viser_urdf.update_cfg(configuration)
+
+    def reset_joints(self) -> None:
+        """Reset all of the joints."""
+        for g, initial_angle in zip(self._slider_handles, self._initial_angles):
+            g.value = initial_angle
+
+    def remove(self) -> None:
+        """Remove the URDF and all GUI elements."""
+        self._viser_urdf.remove()
+        for slider in self._slider_handles:
+            slider.remove()
+
+    @staticmethod
+    def _create_gui_elements(
+        server: viser.ViserServer, viser_urdf: ViserUrdf
+    ) -> tuple[list[viser.GuiInputHandle[float]], list[float]]:
+        """Crfeate slider for each joint of the robot."""
+        slider_handles: list[viser.GuiInputHandle[float]] = []
+        initial_angles: list[float] = []
+        for joint_name, (
+            lower,
+            upper,
+        ) in viser_urdf.get_actuated_joint_limits().items():
             lower = lower if lower is not None else -onp.pi
             upper = upper if upper is not None else onp.pi
-
             initial_angle = 0.0 if lower < 0 and upper > 0 else (lower + upper) / 2.0
             slider = server.gui.add_slider(
                 label=joint_name,
@@ -82,29 +111,45 @@ def main() -> None:
                 initial_value=initial_angle,
             )
             slider.on_update(  # When sliders move, we update the URDF configuration.
-                lambda _: urdf.update_cfg(onp.array([gui.value for gui in gui_joints]))
+                lambda _: viser_urdf.update_cfg(
+                    onp.array([slider.value for slider in slider_handles])
+                )
             )
-
-            gui_joints.append(slider)
+            slider_handles.append(slider)
             initial_angles.append(initial_angle)
+        return slider_handles, initial_angles
 
-        # Apply initial joint angles.
-        urdf.update_cfg(onp.array([gui.value for gui in gui_joints]))
 
+def main() -> None:
+    # Start viser server.
+    server = viser.ViserServer()
+
+    # We use a dropdown to select the robot.
     robot_model_name = server.gui.add_dropdown("Robot model", ROBOT_MODEL_LIST)
-    robot_model_name.on_update(lambda _: update_robot_model(robot_model_name.value))
+    robot = ControllableViserRobot(
+        load_robot_description(robot_model_name.value), server
+    )
+
+    # Remove the old robot and add a new one whenever the dropdown changes.
+    @robot_model_name.on_update
+    def _(_) -> None:
+        nonlocal robot
+        robot.remove()
+        robot = ControllableViserRobot(
+            load_robot_description(robot_model_name.value), server
+        )
 
     # Create joint reset button.
     reset_button = server.gui.add_button("Reset")
 
     @reset_button.on_click
     def _(_):
-        for g, initial_angle in zip(gui_joints, initial_angles):
-            g.value = initial_angle
+        robot.reset_joints()
 
+    # Sleep forever.
     while True:
         time.sleep(10.0)
 
 
 if __name__ == "__main__":
-    tyro.cli(main)
+    main()

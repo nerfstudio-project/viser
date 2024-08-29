@@ -1,4 +1,4 @@
-"""Markdown Demonstration
+"""Markdown demonstration
 
 Viser GUI has MDX 2 support.
 """

@@ -1,4 +1,4 @@
-"""3D GUI Elements
+"""3D GUI elements
 
 `add_3d_gui_container()` allows standard GUI elements to be incorporated directly into a
 3D scene. In this example, we click on coordinate frames to show actions that can be
