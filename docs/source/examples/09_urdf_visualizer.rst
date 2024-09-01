@@ -64,7 +64,7 @@ and viser. It can also take a path to a local URDF file as input.
 
 
         def main(
-            urdf_path_or_name: Literal[
+            robot_type: Literal[
                 "panda",
                 "ur10",
                 "cassie",
@@ -82,13 +82,20 @@ and viser. It can also take a path to a local URDF file as input.
             server = viser.ViserServer()
 
             # Load URDF.
+            #
+            # This takes either a yourdfpy.URDF object or a path to a .urdf file.
             viser_urdf = ViserUrdf(
                 server,
-                # We could also pass in a Path object to a URDF file here.
-                urdf_or_path=load_robot_description(urdf_path_or_name + "_description"),
+                urdf_or_path=load_robot_description(robot_type + "_description"),
             )
 
-            (slider_handles, initial_config) = create_robot_control_sliders(server, viser_urdf)
+            # Create sliders in GUI that help us move the robot joints.
+            with server.gui.add_folder("Joint position control"):
+                (slider_handles, initial_config) = create_robot_control_sliders(
+                    server, viser_urdf
+                )
+
+            # Set initial robot configuration.
             viser_urdf.update_cfg(onp.array(initial_config))
 
             # Create joint reset button.
