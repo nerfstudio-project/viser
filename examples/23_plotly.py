@@ -7,8 +7,9 @@ import time
 import numpy as onp
 import plotly.express as px
 import plotly.graph_objects as go
-import viser
 from PIL import Image
+
+import viser
 
 
 def create_sinusoidal_wave(t: float) -> go.Figure:

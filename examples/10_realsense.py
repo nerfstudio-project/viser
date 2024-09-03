@@ -11,8 +11,9 @@ import contextlib
 import numpy as np
 import numpy.typing as npt
 import pyrealsense2 as rs  # type: ignore
-import viser
 from tqdm.auto import tqdm
+
+import viser
 
 
 @contextlib.contextmanager

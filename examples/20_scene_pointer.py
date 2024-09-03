@@ -16,6 +16,7 @@ import numpy as onp
 import trimesh
 import trimesh.creation
 import trimesh.ray
+
 import viser
 import viser.transforms as tf
 from viser.theme import TitlebarConfig
