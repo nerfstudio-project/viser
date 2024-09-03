@@ -17,9 +17,6 @@ import {
   PointCloud,
 } from "./ThreeAssets";
 import {
-  Environment
-}  from "@react-three/drei";
-import {
   FileTransferPart,
   FileTransferStart,
   Message,
@@ -359,11 +356,8 @@ function useMessageHandler() {
 
       // Add an environment map
       case "EnvironmentMapMessage": {
-        // remove the current environment map
-        viewer.useSceneTree.setState({lightEnabled: false});
         if (message.hdri) {
-          // if not null, replace with the current environment map
-
+          viewer.useSceneTree.setState({fpEnvironmentMap: message.hdri});
         }
         return;
       }

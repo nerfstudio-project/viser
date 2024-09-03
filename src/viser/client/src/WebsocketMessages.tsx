@@ -218,15 +218,6 @@ export interface RectAreaLightMessage {
   height: number;
   power: number;
 }
-/** Environment Map message.
- *
- * (automatically generated)
- */
-export interface EnvironmentMapMessage {
-  type: "EnvironmentMapMessage";
-  name: string;
-  hdri: Uint8Array;
-}
 /** Spot light message.
  *
  * (automatically generated)
@@ -242,6 +233,17 @@ export interface SpotLightMessage {
   penumbra: number;
   decay: number;
   castShadow: boolean;
+}
+/** Environment Map message.
+ *
+ * (automatically generated)
+ */
+export interface EnvironmentMapMessage {
+  type: "EnvironmentMapMessage";
+  name: string;
+  hdri: string;
+  background: boolean;
+  backgroundBlurriness: number;
 }
 /** Spot light message.
  *
@@ -1051,8 +1053,8 @@ export type Message =
   | HemisphereLightMessage
   | PointLightMessage
   | RectAreaLightMessage
-  | EnvironmentMapMessage
   | SpotLightMessage
+  | EnvironmentMapMessage
   | EnableLightsMessage
   | MeshBoneMessage
   | MeshMessage

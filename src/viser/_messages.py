@@ -336,7 +336,9 @@ class EnvironmentMapMessage(Message):
     """Environment Map message."""
 
     name: str
-    hdri: str | None
+    hdri: str
+    background: bool
+    backgroundBlurriness: float
 
 
 @dataclasses.dataclass

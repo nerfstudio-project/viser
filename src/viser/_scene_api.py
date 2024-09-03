@@ -502,16 +502,25 @@ class SceneApi:
         )
         return LightHandle._make(self, name, wxyz, position, visible)
 
-    def set_environment_map(self, name, hdri: str | None) -> None:
+    def set_environment_map(
+        self,
+        name: str,
+        hdri: str = "",
+        background: bool = False,
+        backgroundBlurriness: float = 0.2,
+    ) -> None:
         """
-        TODO: fill this out
-
+        Add an environment light to the scene
         Args:
-            hdri: the environemnt map filepath byotch
-
+            hdri: path to the environment map's .hdri file
+            background: show or hide the environment map in the background
+            backgroundBlurriness: blur factor of the environment map.
+                Takes values between 0 (no blur) and 1 (max blur)
         """
         self._websock_interface.queue_message(
-            _messages.EnvironmentMapMessage(name, hdri)
+            _messages.EnvironmentMapMessage(
+                name, hdri, background, backgroundBlurriness
+            )
         )
 
     def enable_default_lights(self, enabled: bool = True) -> None:

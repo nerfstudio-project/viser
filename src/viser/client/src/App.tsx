@@ -8,7 +8,6 @@ import { Notifications } from "@mantine/notifications";
 import {
   CameraControls,
   Environment,
-  EnvironmentProps,
   PerformanceMonitor,
   Stats,
 } from "@react-three/drei";
@@ -27,7 +26,7 @@ import {
   createTheme,
   useMantineTheme,
 } from "@mantine/core";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 
 import "./index.css";
@@ -450,7 +449,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SplatRenderContext>
         <SceneNodeThreeObject name="" parent={null} />
       </SplatRenderContext>
-      <DefaultLights></DefaultLights>
+      <DefaultLights/>
     </Canvas>
   );
 }
@@ -460,17 +459,29 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
 function DefaultLights() {
   const viewer = React.useContext(ViewerContext)!;
   const lightsEnabled = viewer.useSceneTree((state) => state.lightEnabled);
+  const fpEnvironmentMap = viewer.useSceneTree((state) => state.fpEnvironmentMap);
   if (lightsEnabled) {
+    if (fpEnvironmentMap != "") { //user specified light
     return (
       <>
-      <Environment path="hdri/" files="potsdamer_platz_1k.hdr" />
+      <Environment files={fpEnvironmentMap} />
       <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
       <directionalLight color={0x00ff00} intensity={0.2} position={[0, -1, 0]} />
       </>
     );
-  }
+  } else { // default light
+      return (
+      <>
+        <Environment files="hdri/potsdamer_platz_1k.hdr"/>
+        <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
+        <directionalLight color={0x00ff00} intensity={0.2} position={[0, -1, 0]} />
+      </>
+      );
+    }
+  } 
   return <></>
 }
+
 
 function AdaptiveDpr() {
   const setDpr = useThree((state) => state.setDpr);
