@@ -505,7 +505,7 @@ class SceneApi:
     def set_environment_map(
         self,
         name: str,
-        hdri: str = "",
+        hdri: str = "" | bytes,
         background: bool = False,
         backgroundBlurriness: float = 0.2,
     ) -> None:
@@ -517,9 +517,14 @@ class SceneApi:
             backgroundBlurriness: blur factor of the environment map.
                 Takes values between 0 (no blur) and 1 (max blur)
         """
+        if isinstance(hdri, str):
+            # check if the filepath exists then get byte data
+            hdribytes = open(hdri, "rb")
+        else:
+            hdribytes = hdri
         self._websock_interface.queue_message(
             _messages.EnvironmentMapMessage(
-                name, hdri, background, backgroundBlurriness
+                name, hdribytes, background, backgroundBlurriness
             )
         )
 
