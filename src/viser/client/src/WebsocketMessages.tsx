@@ -10,6 +10,44 @@ export interface RunJavascriptMessage {
   type: "RunJavascriptMessage";
   source: string;
 }
+/** Notification message.
+ *
+ * (automatically generated)
+ */
+export interface NotificationMessage {
+  type: "NotificationMessage";
+  mode: "show" | "update";
+  id: string;
+  title: string;
+  body: string;
+  loading: boolean;
+  with_close_button: boolean;
+  auto_close: number | false;
+  color:
+    | "dark"
+    | "gray"
+    | "red"
+    | "pink"
+    | "grape"
+    | "violet"
+    | "indigo"
+    | "blue"
+    | "cyan"
+    | "green"
+    | "lime"
+    | "yellow"
+    | "orange"
+    | "teal"
+    | null;
+}
+/** Remove a specific notification.
+ *
+ * (automatically generated)
+ */
+export interface RemoveNotificationMessage {
+  type: "RemoveNotificationMessage";
+  id: string;
+}
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
  *
@@ -63,7 +101,7 @@ export interface CameraFrustumMessage {
   image_media_type: "image/jpeg" | "image/png" | null;
   image_binary: Uint8Array | null;
 }
-/** GlTF Message
+/** GlTF message.
  *
  * (automatically generated)
  */
@@ -468,8 +506,10 @@ export interface SetSceneNodeClickableMessage {
 export interface SceneNodeClickMessage {
   type: "SceneNodeClickMessage";
   name: string;
+  instance_index: number | null;
   ray_origin: [number, number, number];
   ray_direction: [number, number, number];
+  screen_pos: [number, number];
 }
 /** Reset scene.
  *
@@ -1037,6 +1077,8 @@ export interface SetGuiPanelLabelMessage {
 
 export type Message =
   | RunJavascriptMessage
+  | NotificationMessage
+  | RemoveNotificationMessage
   | ViewerCameraMessage
   | ScenePointerMessage
   | ScenePointerEnableMessage

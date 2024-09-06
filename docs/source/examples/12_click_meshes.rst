@@ -16,6 +16,7 @@ Click on meshes to select them. The index of the last clicked mesh is displayed 
         import time
 
         import matplotlib
+
         import viser
 
 

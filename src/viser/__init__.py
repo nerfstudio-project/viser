@@ -11,6 +11,7 @@ from ._gui_handles import GuiTabGroupHandle as GuiTabGroupHandle
 from ._gui_handles import GuiTabHandle as GuiTabHandle
 from ._icons_enum import Icon as Icon
 from ._icons_enum import IconName as IconName
+from ._notification_handle import NotificationHandle as NotificationHandle
 from ._scene_api import SceneApi as SceneApi
 from ._scene_handles import BatchedAxesHandle as BatchedAxesHandle
 from ._scene_handles import CameraFrustumHandle as CameraFrustumHandle

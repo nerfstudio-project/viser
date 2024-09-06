@@ -72,7 +72,7 @@ def _(client: viser.ClientHandle) -> None:
             client.scene.remove_pointer_callback()
 
             # Get the first hit position (based on distance from the ray origin).
-            hit_pos = min(hit_pos, key=lambda x: onp.linalg.norm(x - origin))
+            hit_pos = hit_pos[onp.argmin(onp.sum((hit_pos - origin) ** 2, axis=-1))]
 
             # Create a sphere at the hit location.
             hit_pos_mesh = trimesh.creation.icosphere(radius=0.1)

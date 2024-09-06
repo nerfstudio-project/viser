@@ -3,7 +3,9 @@
 # Asymmetric properties are supported in Pyright, but not yet in mypy.
 # - https://github.com/python/mypy/issues/3004
 # - https://github.com/python/mypy/pull/11643
-"""Visualizer for SMPL human body models. Requires a .npz model file.
+"""SMPL visualizer (Skinned Mesh)
+
+Requires a .npz model file.
 
 See here for download instructions:
     https://github.com/vchoutas/smplx?tab=readme-ov-file#downloading-the-model

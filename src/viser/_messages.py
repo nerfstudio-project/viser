@@ -10,7 +10,6 @@ from typing import (
     Callable,
     ClassVar,
     Dict,
-    List,
     Optional,
     Tuple,
     Type,
@@ -61,7 +60,7 @@ class Message(infra.Message):
         if node_name is not None:
             parts.append(node_name)
 
-        # GUI messages all have an "id" field.
+        # GUI and notification messages all have an "id" field.
         node_name = getattr(self, "id", None)
         if node_name is not None:
             parts.append(node_name)
@@ -97,6 +96,27 @@ class RunJavascriptMessage(Message):
 
 
 @dataclasses.dataclass
+class NotificationMessage(Message):
+    """Notification message."""
+
+    mode: Literal["show", "update"]
+    id: str
+    title: str
+    body: str
+    loading: bool
+    with_close_button: bool
+    auto_close: Union[int, Literal[False]]
+    color: Optional[Color]
+
+
+@dataclasses.dataclass
+class RemoveNotificationMessage(Message):
+    """Remove a specific notification."""
+
+    id: str
+
+
+@dataclasses.dataclass
 class ViewerCameraMessage(Message):
     """Message for a posed viewer camera.
     Pose is in the form T_world_camera, OpenCV convention, +Z forward."""
@@ -124,7 +144,7 @@ class ScenePointerMessage(Message):
     event_type: ScenePointerEventType
     ray_origin: Optional[Tuple[float, float, float]]
     ray_direction: Optional[Tuple[float, float, float]]
-    screen_pos: List[Tuple[float, float]]
+    screen_pos: Tuple[Tuple[float, float], ...]
 
 
 @dataclasses.dataclass
@@ -158,7 +178,7 @@ class CameraFrustumMessage(Message):
 
 @dataclasses.dataclass
 class GlbMessage(Message):
-    """GlTF Message"""
+    """GlTF message."""
 
     name: str
     glb_data: bytes
@@ -563,8 +583,11 @@ class SceneNodeClickMessage(Message):
     """Message for clicked objects."""
 
     name: str
+    instance_index: Optional[int]
+    """Instance index. Currently only used for batched axes."""
     ray_origin: Tuple[float, float, float]
     ray_direction: Tuple[float, float, float]
+    screen_pos: Tuple[float, float]
 
 
 @dataclasses.dataclass

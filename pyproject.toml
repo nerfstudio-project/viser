@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viser"
-version = "0.2.3"
+version = "0.2.7"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -40,7 +40,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pyright>=1.1.308",
-    "ruff==0.4.6",
+    "ruff==0.6.2",
     "pre-commit==3.3.2",
 ]
 examples = [
@@ -70,6 +70,13 @@ examples = [
 [tool.setuptools.package-data]
 viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/**/*", "client/**/.*"]
 # </>
+
+[tool.setuptools.exclude-package-data]
+# We exclude node_modules to prevent long build times for wheels when
+# installing from source, eg via `pip install .`.
+#
+# https://github.com/nerfstudio-project/viser/issues/271
+viser = ["**/node_modules/**"]
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
@@ -103,5 +110,6 @@ lint.ignore = [
     "PLR0912",  # Too many branches.
     "PLW0603",  # Globa statement updates are discouraged.
     "PLW2901",  # For loop variable overwritten.
+    "PLW0642",  # Reassigned self in instance method.
 ]
 exclude = [ ".nodeenv" ]

@@ -224,6 +224,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
         {children}
         <Notifications
           position="top-left"
+          limit={10}
           containerWidth="20em"
           styles={{
             root: {

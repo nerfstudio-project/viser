@@ -132,6 +132,37 @@ function useMessageHandler() {
         return;
       }
 
+      // Add a notification.
+      case "NotificationMessage": {
+        if (message.mode === "show") {
+          notifications.show({
+            id: message.id,
+            title: message.title,
+            message: message.body,
+            withCloseButton: message.with_close_button,
+            loading: message.loading,
+            autoClose: message.auto_close,
+            color: message.color ?? undefined,
+          });
+        } else if (message.mode === "update") {
+          notifications.update({
+            id: message.id,
+            title: message.title,
+            message: message.body,
+            withCloseButton: message.with_close_button,
+            loading: message.loading,
+            autoClose: message.auto_close,
+            color: message.color ?? undefined,
+          });
+        }
+        return;
+      }
+
+      // Remove a specific notification.
+      case "RemoveNotificationMessage": {
+        notifications.hide(message.id);
+        return;
+      }
       // Enable/disable whether scene pointer events are sent.
       case "ScenePointerEnableMessage": {
         // Update scene click enable state.
@@ -165,34 +196,43 @@ function useMessageHandler() {
       // Add axes to visualize.
       case "BatchedAxesMessage": {
         addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => (
-            // Minor naming discrepancy: I think "batched" will be clearer to
-            // folks on the Python side, but instanced is somewhat more
-            // precise.
-            <InstancedAxes
-              ref={ref}
-              wxyzsBatched={
-                new Float32Array(
-                  message.wxyzs_batched.buffer.slice(
-                    message.wxyzs_batched.byteOffset,
-                    message.wxyzs_batched.byteOffset +
-                      message.wxyzs_batched.byteLength,
-                  ),
-                )
-              }
-              positionsBatched={
-                new Float32Array(
-                  message.positions_batched.buffer.slice(
-                    message.positions_batched.byteOffset,
-                    message.positions_batched.byteOffset +
-                      message.positions_batched.byteLength,
-                  ),
-                )
-              }
-              axes_length={message.axes_length}
-              axes_radius={message.axes_radius}
-            />
-          )),
+          new SceneNode<THREE.Group>(
+            message.name,
+            (ref) => (
+              // Minor naming discrepancy: I think "batched" will be clearer to
+              // folks on the Python side, but instanced is somewhat more
+              // precise.
+              <InstancedAxes
+                ref={ref}
+                wxyzsBatched={
+                  new Float32Array(
+                    message.wxyzs_batched.buffer.slice(
+                      message.wxyzs_batched.byteOffset,
+                      message.wxyzs_batched.byteOffset +
+                        message.wxyzs_batched.byteLength,
+                    ),
+                  )
+                }
+                positionsBatched={
+                  new Float32Array(
+                    message.positions_batched.buffer.slice(
+                      message.positions_batched.byteOffset,
+                      message.positions_batched.byteOffset +
+                        message.positions_batched.byteLength,
+                    ),
+                  )
+                }
+                axes_length={message.axes_length}
+                axes_radius={message.axes_radius}
+              />
+            ),
+            undefined,
+            undefined,
+            undefined,
+            // Compute click instance index from instance ID. Each visualized
+            // frame has 1 instance for each of 3 line segments.
+            (instanceId) => Math.floor(instanceId! / 3),
+          ),
         );
         return;
       }

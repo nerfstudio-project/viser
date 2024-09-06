@@ -1,4 +1,4 @@
-"""Set Up Direction
+"""Set up direction
 
 `.set_up_direction()` can help us set the global up direction."""
 
