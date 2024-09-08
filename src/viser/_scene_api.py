@@ -504,36 +504,59 @@ class SceneApi:
 
     def set_environment_map(
         self,
-        name: str,
-        hdri: str = "" | bytes,
+        hdri: None
+        | Literal[
+            "apartment",
+            "city",
+            "dawn",
+            "forest",
+            "lobby",
+            "night",
+            "park",
+            "studio",
+            "sunset",
+            "warehouse",
+        ] = "warehouse",
         background: bool = False,
-        backgroundBlurriness: float = 0.2,
+        background_blurriness: float = 0.0,
+        background_intensity: float = 1.0,
+        background_rotation: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        environment_intensity: float = 1.0,
+        environment_rotation: tuple[float, float, float] = (0.0, 0.0, 0.0),
     ) -> None:
-        """
-        Add an environment light to the scene
+        """Set the environment map for the scene. This will set some lights and background.
+
         Args:
-            hdri: path to the environment map's .hdri file
-            background: show or hide the environment map in the background
-            backgroundBlurriness: blur factor of the environment map.
-                Takes values between 0 (no blur) and 1 (max blur)
+            hdri: Preset HDRI environment to use.
+            background: Show or hide the environment map in the background.
+            background_blurriness: Blur factor of the environment map background (0-1).
+            background_intensity: Intensity of the background.
+            background_rotation: Rotation of the background in radians.
+            environment_intensity: Intensity of the environment lighting.
+            environment_rotation: Rotation of the environment lighting in radians.
         """
-        if isinstance(hdri, str):
-            # check if the filepath exists then get byte data
-            hdribytes = open(hdri, "rb")
-        else:
-            hdribytes = hdri
         self._websock_interface.queue_message(
             _messages.EnvironmentMapMessage(
-                name, hdribytes, background, backgroundBlurriness
+                hdri=hdri,
+                background=background,
+                background_blurriness=background_blurriness,
+                background_intensity=background_intensity,
+                background_rotation=background_rotation,
+                environment_intensity=environment_intensity,
+                environment_rotation=environment_rotation,
             )
         )
 
     def enable_default_lights(self, enabled: bool = True) -> None:
-        """
-        Enable/disable the default lighting to the scene. If not otherwise specified, default lighting will be enabled.
+        """Enable/disable the default lights in the scene. If not otherwise
+        specified, default lighting will be enabled.
+
+        This does not affect lighting from the environment map. To turn these off,
+        see :meth:`SceneApi.set_environment_map()`.
 
         Args:
-            enabled: True if user wants default lighting. False is user does not want default lighting.
+            enabled: True if user wants default lighting. False is user does
+                not want default lighting.
         """
         self._websock_interface.queue_message(_messages.EnableLightsMessage(enabled))
 

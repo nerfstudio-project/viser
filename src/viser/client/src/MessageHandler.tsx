@@ -313,7 +313,7 @@ function useMessageHandler() {
         addSceneNodeMakeParents(
           new SceneNode<THREE.AmbientLight>(message.name, (ref) => (
             <ambientLight
-              ref= {ref}
+              ref={ref}
               intensity={message.intensity}
               color={message.color}
             />
@@ -396,15 +396,13 @@ function useMessageHandler() {
 
       // Add an environment map
       case "EnvironmentMapMessage": {
-        if (message.hdri) {
-          viewer.useSceneTree.setState({fpEnvironmentMap: message.hdri});
-        }
+        viewer.useSceneTree.setState({ environmentMap: message });
         return;
       }
 
       // Disable/enable default lighting
       case "EnableLightsMessage": {
-          viewer.useSceneTree.setState({lightEnabled: message.enabled});
+        viewer.useSceneTree.setState({ enableDefaultLights: message.enabled });
         return;
       }
 

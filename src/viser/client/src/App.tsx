@@ -183,7 +183,6 @@ function ViewerRoot() {
     }),
     canvas2dRef: React.useRef(null),
     skinnedMeshState: React.useRef({}),
-
   };
 
   // Set dark default if specified in URL.
@@ -450,39 +449,64 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SplatRenderContext>
         <SceneNodeThreeObject name="" parent={null} />
       </SplatRenderContext>
-      <DefaultLights/>
+      <DefaultLights />
     </Canvas>
   );
 }
 
-
-
 function DefaultLights() {
   const viewer = React.useContext(ViewerContext)!;
-  const lightsEnabled = viewer.useSceneTree((state) => state.lightEnabled);
-  const fpEnvironmentMap = viewer.useSceneTree((state) => state.fpEnvironmentMap);
-  if (lightsEnabled) {
-    if (fpEnvironmentMap != "") { //user specified light
+  const enableDefaultLights = viewer.useSceneTree(
+    (state) => state.enableDefaultLights,
+  );
+  const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
+
+  let envMapNode;
+  if (environmentMap.hdri === null) {
+    envMapNode = null;
+  } else {
+    const presetsObj = {
+      apartment: "lebombo_1k.hdr",
+      city: "potsdamer_platz_1k.hdr",
+      dawn: "kiara_1_dawn_1k.hdr",
+      forest: "forest_slope_1k.hdr",
+      lobby: "st_fagans_interior_1k.hdr",
+      night: "dikhololo_night_1k.hdr",
+      park: "rooitou_park_1k.hdr",
+      studio: "studio_small_03_1k.hdr",
+      sunset: "venice_sunset_1k.hdr",
+      warehouse: "empty_warehouse_01_1k.hdr",
+    };
+    envMapNode = (
+      <Environment
+        files={`hdri/${presetsObj[environmentMap.hdri]}`}
+        background={environmentMap.background}
+        backgroundBlurriness={environmentMap.background_blurriness}
+        backgroundIntensity={environmentMap.background_intensity}
+        backgroundRotation={environmentMap.background_rotation}
+        environmentIntensity={environmentMap.environment_intensity}
+        environmentRotation={environmentMap.environment_rotation}
+      />
+    );
+  }
+  if (enableDefaultLights)
     return (
       <>
-      <Environment files={fpEnvironmentMap} />
-      <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
-      <directionalLight color={0x00ff00} intensity={0.2} position={[0, -1, 0]} />
+        {envMapNode}
+        <directionalLight
+          color={0x0000ff}
+          intensity={1.0}
+          position={[0, 1, 0]}
+        />
+        <directionalLight
+          color={0x00ff00}
+          intensity={0.2}
+          position={[0, -1, 0]}
+        />
       </>
     );
-  } else { // default light
-      return (
-      <>
-        <Environment files="hdri/potsdamer_platz_1k.hdr"/>
-        <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
-        <directionalLight color={0x00ff00} intensity={0.2} position={[0, -1, 0]} />
-      </>
-      );
-    }
-  } 
-  return <></>
+  else return envMapNode;
 }
-
 
 function AdaptiveDpr() {
   const setDpr = useThree((state) => state.setDpr);

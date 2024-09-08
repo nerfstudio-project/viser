@@ -5,17 +5,7 @@ from __future__ import annotations
 
 import dataclasses
 import uuid
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as onp
 import numpy.typing as onpt
@@ -355,10 +345,26 @@ class SpotLightMessage(Message):
 class EnvironmentMapMessage(Message):
     """Environment Map message."""
 
-    name: str
-    hdri: str
+    hdri: Optional[
+        Literal[
+            "apartment",
+            "city",
+            "dawn",
+            "forest",
+            "lobby",
+            "night",
+            "park",
+            "studio",
+            "sunset",
+            "warehouse",
+        ]
+    ]
     background: bool
-    backgroundBlurriness: float
+    background_blurriness: float
+    background_intensity: float
+    background_rotation: tuple[float, float, float]
+    environment_intensity: float
+    environment_rotation: tuple[float, float, float]
 
 
 @dataclasses.dataclass
