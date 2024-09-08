@@ -193,14 +193,6 @@ export interface PointCloudMessage {
   point_size: number;
   point_ball_norm: number;
 }
-/** Message for a bone of a skinned mesh.
- *
- * (automatically generated)
- */
-export interface MeshBoneMessage {
-  type: "MeshBoneMessage";
-  name: string;
-}
 /** Mesh message.
  *
  * Vertices are internally canonicalized to float32, faces to uint32.
@@ -992,7 +984,6 @@ export type Message =
   | LabelMessage
   | Gui3DMessage
   | PointCloudMessage
-  | MeshBoneMessage
   | MeshMessage
   | SkinnedMeshMessage
   | SetBoneOrientationMessage
@@ -1049,6 +1040,21 @@ export type Message =
   | ShareUrlUpdated
   | ShareUrlDisconnect
   | SetGuiPanelLabelMessage;
+export type SceneNodeMessage =
+  | CameraFrustumMessage
+  | GlbMessage
+  | FrameMessage
+  | BatchedAxesMessage
+  | GridMessage
+  | LabelMessage
+  | Gui3DMessage
+  | PointCloudMessage
+  | MeshMessage
+  | SkinnedMeshMessage
+  | ImageMessage
+  | CatmullRomSplineMessage
+  | CubicBezierSplineMessage
+  | GaussianSplatsMessage;
 export type GuiAddComponentMessage =
   | GuiAddFolderMessage
   | GuiAddMarkdownMessage

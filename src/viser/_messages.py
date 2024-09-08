@@ -5,17 +5,7 @@ from __future__ import annotations
 
 import dataclasses
 import uuid
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as onp
 import numpy.typing as onpt
@@ -67,18 +57,17 @@ class Message(infra.Message):
 
         return "_".join(parts)
 
+    @classmethod
+    def __init_subclass__(
+        cls, tag: Literal[None, "GuiAddComponentMessage", "SceneNodeMessage"] = None
+    ):
+        """Tag will be used to create a union type in TypeScript."""
+        super().__init_subclass__()
+        if tag is not None:
+            cls._tags = cls._tags + (tag,)
+
 
 T = TypeVar("T", bound=Type[Message])
-
-
-def tag_class(tag: str) -> Callable[[T], T]:
-    """Decorator for tagging a class with a `type` field."""
-
-    def wrapper(cls: T) -> T:
-        cls._tags = (cls._tags or ()) + (tag,)
-        return cls
-
-    return wrapper
 
 
 @dataclasses.dataclass
@@ -162,7 +151,7 @@ class ScenePointerEnableMessage(Message):
 
 
 @dataclasses.dataclass
-class CameraFrustumMessage(Message):
+class CameraFrustumMessage(Message, tag="SceneNodeMessage"):
     """Variant of CameraMessage used for visualizing camera frustums.
 
     OpenCV convention, +Z forward."""
@@ -177,7 +166,7 @@ class CameraFrustumMessage(Message):
 
 
 @dataclasses.dataclass
-class GlbMessage(Message):
+class GlbMessage(Message, tag="SceneNodeMessage"):
     """GlTF message."""
 
     name: str
@@ -186,7 +175,7 @@ class GlbMessage(Message):
 
 
 @dataclasses.dataclass
-class FrameMessage(Message):
+class FrameMessage(Message, tag="SceneNodeMessage"):
     """Coordinate frame message."""
 
     name: str
@@ -197,7 +186,7 @@ class FrameMessage(Message):
 
 
 @dataclasses.dataclass
-class BatchedAxesMessage(Message):
+class BatchedAxesMessage(Message, tag="SceneNodeMessage"):
     """Batched axes message.
 
     Positions and orientations should follow a `T_parent_local` convention, which
@@ -211,7 +200,7 @@ class BatchedAxesMessage(Message):
 
 
 @dataclasses.dataclass
-class GridMessage(Message):
+class GridMessage(Message, tag="SceneNodeMessage"):
     """Grid message. Helpful for visualizing things like ground planes."""
 
     name: str
@@ -233,7 +222,7 @@ class GridMessage(Message):
 
 
 @dataclasses.dataclass
-class LabelMessage(Message):
+class LabelMessage(Message, tag="SceneNodeMessage"):
     """Add a 2D label to the scene."""
 
     name: str
@@ -241,7 +230,7 @@ class LabelMessage(Message):
 
 
 @dataclasses.dataclass
-class Gui3DMessage(Message):
+class Gui3DMessage(Message, tag="SceneNodeMessage"):
     """Add a 3D gui element to the scene."""
 
     order: float
@@ -250,7 +239,7 @@ class Gui3DMessage(Message):
 
 
 @dataclasses.dataclass
-class PointCloudMessage(Message):
+class PointCloudMessage(Message, tag="SceneNodeMessage"):
     """Point cloud message.
 
     Positions are internally canonicalized to float32, colors to uint8.
@@ -275,14 +264,7 @@ class PointCloudMessage(Message):
 
 
 @dataclasses.dataclass
-class MeshBoneMessage(Message):
-    """Message for a bone of a skinned mesh."""
-
-    name: str
-
-
-@dataclasses.dataclass
-class MeshMessage(Message):
+class MeshMessage(Message, tag="SceneNodeMessage"):
     """Mesh message.
 
     Vertices are internally canonicalized to float32, faces to uint32."""
@@ -451,7 +433,7 @@ class BackgroundImageMessage(Message):
 
 
 @dataclasses.dataclass
-class ImageMessage(Message):
+class ImageMessage(Message, tag="SceneNodeMessage"):
     """Message for rendering 2D images."""
 
     name: str
@@ -506,9 +488,9 @@ class ResetGuiMessage(Message):
     """Reset GUI."""
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddFolderMessage(Message):
+class GuiAddFolderMessage(Message, tag="GuiAddComponentMessage"):
+    order: float
     order: float
     id: str
     label: str
@@ -517,9 +499,9 @@ class GuiAddFolderMessage(Message):
     visible: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddMarkdownMessage(Message):
+class GuiAddMarkdownMessage(Message, tag="GuiAddComponentMessage"):
+    order: float
     order: float
     id: str
     markdown: str
@@ -527,9 +509,9 @@ class GuiAddMarkdownMessage(Message):
     visible: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddProgressBarMessage(Message):
+class GuiAddProgressBarMessage(Message, tag="GuiAddComponentMessage"):
+    order: float
     order: float
     id: str
     value: float
@@ -539,9 +521,9 @@ class GuiAddProgressBarMessage(Message):
     visible: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddPlotlyMessage(Message):
+class GuiAddPlotlyMessage(Message, tag="GuiAddComponentMessage"):
+    order: float
     order: float
     id: str
     plotly_json_str: str
@@ -550,9 +532,9 @@ class GuiAddPlotlyMessage(Message):
     visible: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddTabGroupMessage(Message):
+class GuiAddTabGroupMessage(Message, tag="GuiAddComponentMessage"):
+    order: float
     order: float
     id: str
     container_id: str
@@ -588,9 +570,9 @@ class GuiCloseModalMessage(Message):
     id: str
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddButtonMessage(_GuiAddInputBase):
+class GuiAddButtonMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    # All GUI elements currently need an `value` field.
     # All GUI elements currently need an `value` field.
     # This makes our job on the frontend easier.
     value: bool
@@ -598,17 +580,17 @@ class GuiAddButtonMessage(_GuiAddInputBase):
     icon_html: Optional[str]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddUploadButtonMessage(_GuiAddInputBase):
+class GuiAddUploadButtonMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    color: Optional[Color]
     color: Optional[Color]
     icon_html: Optional[str]
     mime_type: str
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddSliderMessage(_GuiAddInputBase):
+class GuiAddSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    min: float
     min: float
     max: float
     step: Optional[float]
@@ -617,9 +599,9 @@ class GuiAddSliderMessage(_GuiAddInputBase):
     marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddMultiSliderMessage(_GuiAddInputBase):
+class GuiAddMultiSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    min: float
     min: float
     max: float
     step: Optional[float]
@@ -629,9 +611,9 @@ class GuiAddMultiSliderMessage(_GuiAddInputBase):
     marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddNumberMessage(_GuiAddInputBase):
+class GuiAddNumberMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    value: float
     value: float
     precision: int
     step: float
@@ -639,27 +621,27 @@ class GuiAddNumberMessage(_GuiAddInputBase):
     max: Optional[float]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddRgbMessage(_GuiAddInputBase):
+class GuiAddRgbMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    value: Tuple[int, int, int]
     value: Tuple[int, int, int]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddRgbaMessage(_GuiAddInputBase):
+class GuiAddRgbaMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    value: Tuple[int, int, int, int]
     value: Tuple[int, int, int, int]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddCheckboxMessage(_GuiAddInputBase):
+class GuiAddCheckboxMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    value: bool
     value: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddVector2Message(_GuiAddInputBase):
+class GuiAddVector2Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    value: Tuple[float, float]
     value: Tuple[float, float]
     min: Optional[Tuple[float, float]]
     max: Optional[Tuple[float, float]]
@@ -667,9 +649,9 @@ class GuiAddVector2Message(_GuiAddInputBase):
     precision: int
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddVector3Message(_GuiAddInputBase):
+class GuiAddVector3Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    value: Tuple[float, float, float]
     value: Tuple[float, float, float]
     min: Optional[Tuple[float, float, float]]
     max: Optional[Tuple[float, float, float]]
@@ -677,22 +659,22 @@ class GuiAddVector3Message(_GuiAddInputBase):
     precision: int
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddTextMessage(_GuiAddInputBase):
+class GuiAddTextMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    value: str
     value: str
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddDropdownMessage(_GuiAddInputBase):
+class GuiAddDropdownMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    value: str
     value: str
     options: Tuple[str, ...]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddButtonGroupMessage(_GuiAddInputBase):
+class GuiAddButtonGroupMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+    value: str
     value: str
     options: Tuple[str, ...]
 
@@ -740,7 +722,7 @@ class ThemeConfigurationMessage(Message):
 
 
 @dataclasses.dataclass
-class CatmullRomSplineMessage(Message):
+class CatmullRomSplineMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying Catmull-Rom spline information."""
 
     name: str
@@ -754,7 +736,7 @@ class CatmullRomSplineMessage(Message):
 
 
 @dataclasses.dataclass
-class CubicBezierSplineMessage(Message):
+class CubicBezierSplineMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying Cubic Bezier spline information."""
 
     name: str
@@ -766,7 +748,7 @@ class CubicBezierSplineMessage(Message):
 
 
 @dataclasses.dataclass
-class GaussianSplatsMessage(Message):
+class GaussianSplatsMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying splattable Gaussians."""
 
     name: str
