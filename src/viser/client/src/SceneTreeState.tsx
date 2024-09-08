@@ -5,13 +5,14 @@ import * as THREE from "three";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { EnvironmentMapMessage } from "./WebsocketMessages";
 
 interface SceneTreeState {
   nodeFromName: { [name: string]: undefined | SceneNode };
   // Putting this into SceneNode makes the scene tree table much harder to implement.
   labelVisibleFromName: { [name: string]: boolean };
-  lightEnabled: boolean,
-  fpEnvironmentMap: string
+  enableDefaultLights: boolean;
+  environmentMap: EnvironmentMapMessage;
 }
 export interface SceneTreeActions extends SceneTreeState {
   setClickable(name: string, clickable: boolean): void;
@@ -49,8 +50,17 @@ export function useSceneTreeState(
         immer<SceneTreeState & SceneTreeActions>((set) => ({
           nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
           labelVisibleFromName: {},
-          lightEnabled: true,
-          fpEnvironmentMap: "hdri/default.hdr",
+          enableDefaultLights: true,
+          environmentMap: {
+            type: "EnvironmentMapMessage",
+            hdri: "city",
+            background: false,
+            background_blurriness: 0,
+            background_intensity: 1,
+            background_rotation: [0, 0, 0],
+            environment_intensity: 1,
+            environment_rotation: [0, 0, 0],
+          },
           setClickable: (name, clickable) =>
             set((state) => {
               const node = state.nodeFromName[name];

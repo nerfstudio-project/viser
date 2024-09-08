@@ -278,10 +278,24 @@ export interface SpotLightMessage {
  */
 export interface EnvironmentMapMessage {
   type: "EnvironmentMapMessage";
-  name: string;
-  hdri: string;
+  hdri:
+    | "apartment"
+    | "city"
+    | "dawn"
+    | "forest"
+    | "lobby"
+    | "night"
+    | "park"
+    | "studio"
+    | "sunset"
+    | "warehouse"
+    | null;
   background: boolean;
-  backgroundBlurriness: number;
+  background_blurriness: number;
+  background_intensity: number;
+  background_rotation: [number, number, number];
+  environment_intensity: number;
+  environment_rotation: [number, number, number];
 }
 /** Spot light message.
  *
