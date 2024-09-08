@@ -50,7 +50,7 @@ export function useSceneTreeState(
           nodeFromName: { "": rootNodeTemplate, "/WorldAxes": rootAxesNode },
           labelVisibleFromName: {},
           lightEnabled: true,
-          fpEnvironmentMap: "",
+          fpEnvironmentMap: "hdri/default.hdr",
           setClickable: (name, clickable) =>
             set((state) => {
               const node = state.nodeFromName[name];

@@ -461,26 +461,33 @@ function DefaultLights() {
   const viewer = React.useContext(ViewerContext)!;
   const lightsEnabled = viewer.useSceneTree((state) => state.lightEnabled);
   const fpEnvironmentMap = viewer.useSceneTree((state) => state.fpEnvironmentMap);
+
   if (lightsEnabled) {
-    if (fpEnvironmentMap != "") { //user specified light
-    return (
-      <>
-      <Environment files={fpEnvironmentMap} />
-      <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
-      <directionalLight color={0x00ff00} intensity={0.2} position={[0, -1, 0]} />
-      </>
-    );
-  } else { // default light
+    if (fpEnvironmentMap == null) {
       return (
-      <>
-        <Environment files="hdri/potsdamer_platz_1k.hdr"/>
+        <> 
         <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
         <directionalLight color={0x00ff00} intensity={0.2} position={[0, -1, 0]} />
-      </>
-      );
+        </>
+      ) ;
+    } else {
+      return (
+        <>
+        <Environment files={fpEnvironmentMap} /> 
+        <directionalLight color={0x0000ff} intensity={1.0} position={[0, 1, 0]} />
+        <directionalLight color={0x00ff00} intensity={0.2} position={[0, -1, 0]} />
+        </>
+      ) ;
     }
-  } 
-  return <></>
+  } else {
+    if (fpEnvironmentMap != null && fpEnvironmentMap != "hdri/default.hdr") { //user specified light
+      return (
+        <Environment files={fpEnvironmentMap} />
+      )
+    }
+    return <></>
+  }
+  
 }
 
 
