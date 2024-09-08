@@ -259,7 +259,7 @@ class SceneApi:
         self,
         name: str,
         color: int = 0xFFFFFF,
-        castShadow: bool = False,
+        cast_shadow: bool = False,
         intensity: float = 1.0,
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
@@ -272,7 +272,7 @@ class SceneApi:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
             color: hexadecimal color of the light. Default is 0xffffff (white).
-            castShadow: If set to true light will cast dynamic shadows.
+            cast_shadow: If set to true light will cast dynamic shadows.
                 Warning: This is expensive and requires tweaking to get shadows looking right.
                 The default is false.
             intensity: numeric value of the light's strength/intensity. Default is 1.
@@ -286,7 +286,7 @@ class SceneApi:
 
         self._websock_interface.queue_message(
             _messages.DirectionalLightMessage(
-                name, position, intensity, color, castShadow
+                name, position, intensity, color, cast_shadow
             )
         )
         return LightHandle._make(self, name, wxyz, position, visible)
@@ -362,7 +362,7 @@ class SceneApi:
         self,
         name: str,
         color: int = 0xFFFFFF,
-        castShadow: bool = False,
+        cast_shadow: bool = False,
         intensity: float = 1.0,
         distance: float = 0.0,
         decay: float = 2.0,
@@ -378,7 +378,7 @@ class SceneApi:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
             color: hexadecimal color of the light. Default is 0xffffff (white).
-            castShadow: If set to true light will cast dynamic shadows.
+            cast_shadow: If set to true light will cast dynamic shadows.
                 Warning: This is expensive and requires tweaking to get shadows looking right.
                 The default is false.
             intensity: numeric value of the light's strength/intensity. Default is 1.
@@ -400,7 +400,7 @@ class SceneApi:
 
         self._websock_interface.queue_message(
             _messages.PointLightMessage(
-                name, position, intensity, color, castShadow, distance, decay, power
+                name, position, intensity, color, cast_shadow, distance, decay, power
             )
         )
         return LightHandle._make(self, name, wxyz, position, visible)
@@ -452,7 +452,7 @@ class SceneApi:
         angle: float = onp.pi / 3,
         penumbra: float = 0.0,
         decay: float = 2.0,
-        castShadow: bool = False,
+        cast_shadow: bool = False,
         intensity: float = 1.0,
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
@@ -475,7 +475,7 @@ class SceneApi:
                 Takes values between zero and 1.
             decay: The amount the light dims along the distance of the light. Default is 2.
                 In context of physically-correct rendering the default value should not be changed.
-            castShadow: If set to true light will cast dynamic shadows.
+            cast_shadow: If set to true light will cast dynamic shadows.
                 Warning: This is expensive and requires tweaking to get shadows looking right.
                 The default is false.
             intensity: numeric value of the light's strength/intensity. Default is 1.
@@ -497,7 +497,7 @@ class SceneApi:
                 angle,
                 penumbra,
                 decay,
-                castShadow,
+                cast_shadow,
             )
         )
         return LightHandle._make(self, name, wxyz, position, visible)
@@ -564,7 +564,7 @@ class SceneApi:
         self,
         name: str,
         glb_data: bytes,
-        scale=1.0,
+        scale: float = 1.0,
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
