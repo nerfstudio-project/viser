@@ -39,6 +39,20 @@ def main() -> None:
         position=(0.0, 5.0, 0.0),
     )
 
+    # adding controls to custom lights in the scene
+    server.scene.add_transform_controls("/light_control")
+    server.scene.add_light_directional(
+        name="/light_control/directionallight", color=0xAA3355
+    )
+    server.scene.add_transform_controls("/light_control2")
+    server.scene.add_light_spot(
+        name="/light_control2/spotlight",
+        color=0xDDFFEE,
+        distance=5,
+        angle=onp.pi / 2.5,
+        intensity=3,
+    )
+
     # Create default light toggle.
     gui_default_lights = server.gui.add_checkbox("Default lights", initial_value=True)
     gui_default_lights.on_update(
