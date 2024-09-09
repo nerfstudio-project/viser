@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     # Write to file.
     target_path = pathlib.Path(__file__).parent / pathlib.Path(
-        "src/viser/client/src/WebsocketMessages.tsx"
+        "src/viser/client/src/WebsocketMessages.ts"
     )
     assert target_path.exists()
     target_path.write_text(defs)

@@ -158,7 +158,17 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
             out_lines.append(f"  | {cls_name}")
         out_lines[-1] = out_lines[-1] + ";"
 
-    interfaces = "\n".join(out_lines) + "\n"
+    for tag, cls_names in tag_map.items():
+        out_lines.extend(
+            [
+                f"const typeSet{tag} = new Set(['" + "', '".join(cls_names) + "']);"
+                f"export function is{tag}(message: Message): message is {tag}" + " {",
+                f"    return typeSet{tag}.has(message.type);",
+                "}",
+            ]
+        )
+
+    generated_typescript = "\n".join(out_lines) + "\n"
 
     # Add header and return.
     return (
@@ -172,5 +182,5 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
                 "",
             ]
         )
-        + interfaces
+        + generated_typescript
     )

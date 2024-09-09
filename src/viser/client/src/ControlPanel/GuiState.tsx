@@ -7,10 +7,6 @@ import { immer } from "zustand/middleware/immer";
 
 export type GuiConfig = Messages.GuiAddComponentMessage;
 
-export function isGuiConfig(message: Messages.Message): message is GuiConfig {
-  return message.type.startsWith("GuiAdd");
-}
-
 interface GuiState {
   theme: Messages.ThemeConfigurationMessage;
   label: string;

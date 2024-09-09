@@ -10,9 +10,10 @@ import {
   FileTransferStart,
   Message,
   SceneNodeMessage,
+  isGuiAddComponentMessage,
+  isSceneNodeMessage,
 } from "./WebsocketMessages";
 import { isTexture } from "./WebsocketFunctions";
-import { isGuiConfig } from "./ControlPanel/GuiState";
 import { useFrame } from "@react-three/fiber";
 import { Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
@@ -64,8 +65,30 @@ function useMessageHandler() {
 
   // Return message handler.
   return (message: Message) => {
-    if (isGuiConfig(message)) {
+    if (isGuiAddComponentMessage(message)) {
       addGui(message);
+      return;
+    }
+
+    if (isSceneNodeMessage(message)) {
+      // Initialize skinned mesh state.
+      if (message.type === "SkinnedMeshMessage") {
+        viewer.skinnedMeshState.current[message.name] = {
+          initialized: false,
+          poses: [],
+        };
+        for (let i = 0; i < message.bone_wxyzs!.length; i++) {
+          const wxyz = message.bone_wxyzs[i];
+          const position = message.bone_positions[i];
+          viewer.skinnedMeshState.current[message.name].poses.push({
+            wxyz: wxyz,
+            position: position,
+          });
+        }
+      }
+
+      // Add scene node.
+      addSceneNodeMakeParents(message);
       return;
     }
 
@@ -347,41 +370,6 @@ function useMessageHandler() {
         return;
       }
 
-      // Initialize skinned mesh state.
-      case "SkinnedMeshMessage": {
-        viewer.skinnedMeshState.current[message.name] = {
-          initialized: false,
-          poses: [],
-        };
-        for (let i = 0; i < message.bone_wxyzs!.length; i++) {
-          const wxyz = message.bone_wxyzs[i];
-          const position = message.bone_positions[i];
-          viewer.skinnedMeshState.current[message.name].poses.push({
-            wxyz: wxyz,
-            position: position,
-          });
-        }
-        addSceneNodeMakeParents(message);
-        return;
-      }
-
-      case "FrameMessage":
-      case "BatchedAxesMessage":
-      case "GridMessage":
-      case "PointCloudMessage":
-      case "MeshMessage":
-      case "CameraFrustumMessage":
-      case "TransformControlsMessage":
-      case "LabelMessage":
-      case "Gui3DMessage":
-      case "ImageMessage":
-      case "GlbMessage":
-      case "CatmullRomSplineMessage":
-      case "CubicBezierSplineMessage":
-      case "GaussianSplatsMessage": {
-        addSceneNodeMakeParents(message);
-        return;
-      }
       case "FileTransferStart":
       case "FileTransferPart": {
         fileDownloadHandler(message);

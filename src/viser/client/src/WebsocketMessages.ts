@@ -1075,3 +1075,50 @@ export type GuiAddComponentMessage =
   | GuiAddTextMessage
   | GuiAddDropdownMessage
   | GuiAddButtonGroupMessage;
+const typeSetSceneNodeMessage = new Set([
+  "CameraFrustumMessage",
+  "GlbMessage",
+  "FrameMessage",
+  "BatchedAxesMessage",
+  "GridMessage",
+  "LabelMessage",
+  "Gui3DMessage",
+  "PointCloudMessage",
+  "MeshMessage",
+  "SkinnedMeshMessage",
+  "TransformControlsMessage",
+  "ImageMessage",
+  "CatmullRomSplineMessage",
+  "CubicBezierSplineMessage",
+  "GaussianSplatsMessage",
+]);
+export function isSceneNodeMessage(
+  message: Message,
+): message is SceneNodeMessage {
+  return typeSetSceneNodeMessage.has(message.type);
+}
+const typeSetGuiAddComponentMessage = new Set([
+  "GuiAddFolderMessage",
+  "GuiAddMarkdownMessage",
+  "GuiAddProgressBarMessage",
+  "GuiAddPlotlyMessage",
+  "GuiAddTabGroupMessage",
+  "GuiAddButtonMessage",
+  "GuiAddUploadButtonMessage",
+  "GuiAddSliderMessage",
+  "GuiAddMultiSliderMessage",
+  "GuiAddNumberMessage",
+  "GuiAddRgbMessage",
+  "GuiAddRgbaMessage",
+  "GuiAddCheckboxMessage",
+  "GuiAddVector2Message",
+  "GuiAddVector3Message",
+  "GuiAddTextMessage",
+  "GuiAddDropdownMessage",
+  "GuiAddButtonGroupMessage",
+]);
+export function isGuiAddComponentMessage(
+  message: Message,
+): message is GuiAddComponentMessage {
+  return typeSetGuiAddComponentMessage.has(message.type);
+}
