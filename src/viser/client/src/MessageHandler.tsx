@@ -306,6 +306,9 @@ function useMessageHandler() {
         removeSceneNode(message.name);
         const attrs = viewer.nodeAttributesFromName.current;
         delete attrs[message.name];
+
+        if (viewer.skinnedMeshState.current[message.name] !== undefined)
+          delete viewer.skinnedMeshState.current[message.name];
         return;
       }
       // Set the clickability of a particular scene node.

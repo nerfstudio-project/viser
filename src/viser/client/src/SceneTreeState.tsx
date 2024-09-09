@@ -40,7 +40,7 @@ const worldAxesNodeTemplate: SceneNode = {
   message: {
     type: "FrameMessage",
     name: "/WorldAxes",
-    show_axes: false,
+    show_axes: true,
     axes_length: 0.5,
     axes_radius: 0.0125,
     origin_radius: 0.025,
