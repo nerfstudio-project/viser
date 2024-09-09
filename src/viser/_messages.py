@@ -342,7 +342,7 @@ class SetBonePositionMessage(Message):
 
 
 @dataclasses.dataclass
-class TransformControlsMessage(Message):
+class TransformControlsMessage(Message, tag="SceneNodeMessage"):
     """Message for transform gizmos."""
 
     name: str

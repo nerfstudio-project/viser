@@ -1,49 +1,39 @@
-import { useCursor } from "@react-three/drei";
+import {
+  CatmullRomLine,
+  CubicBezierLine,
+  Grid,
+  PivotControls,
+  useCursor,
+} from "@react-three/drei";
+import { useContextBridge } from "its-fine";
 import { createPortal, useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
 import { ViewerContext } from "./App";
-import { useThrottledMessageSender } from "./WebsocketFunctions";
+import {
+  makeThrottledMessageSender,
+  useThrottledMessageSender,
+} from "./WebsocketFunctions";
 import { Html } from "@react-three/drei";
-import { immerable } from "immer";
 import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
-import { HoverableContext } from "./ThreeAssets";
+import {
+  CameraFrustum,
+  CoordinateFrame,
+  GlbAsset,
+  HoverableContext,
+  InstancedAxes,
+  PointCloud,
+  ViserImage,
+  ViserMesh,
+} from "./ThreeAssets";
 import { opencvXyFromPointerXy } from "./ClickUtils";
-
-export type MakeObject<T extends THREE.Object3D = THREE.Object3D> = (
-  ref: React.Ref<T>,
-) => React.ReactNode;
-
-/** Scenes will consist of nodes, which form a tree. */
-export class SceneNode<T extends THREE.Object3D = THREE.Object3D> {
-  [immerable] = true;
-
-  public children: string[];
-  public clickable: boolean;
-
-  constructor(
-    public readonly name: string,
-    public readonly makeObject: MakeObject<T>,
-    public readonly cleanup?: () => void,
-    /** unmountWhenInvisible is used to unmount <Html /> components when they
-     * should be hidden.
-     *
-     * https://github.com/pmndrs/drei/issues/1323
-     */
-    public readonly unmountWhenInvisible?: boolean,
-    public readonly everyFrameCallback?: () => void,
-    /** For click events on instanced nodes, like batched axes, we want to keep track of which. */
-    public readonly computeClickInstanceIndexFromInstanceId?: (
-      instanceId: number | undefined,
-    ) => number | null,
-  ) {
-    this.children = [];
-    this.clickable = false;
-  }
-}
+import { SceneNodeMessage } from "./WebsocketMessages";
+import { SplatObject } from "./Splatting/GaussianSplats";
+import { Paper } from "@mantine/core";
+import GeneratedGuiContainer from "./ControlPanel/Generated";
 
 /** Type corresponding to a zustand-style useSceneTree hook. */
 export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
@@ -127,25 +117,400 @@ function SceneNodeLabel(props: { name: string }) {
   ) : null;
 }
 
+export type MakeObject = (ref: React.Ref<any>) => React.ReactNode;
+
+function useObjectFactory(message: SceneNodeMessage | undefined): {
+  makeObject: MakeObject;
+  unmountWhenInvisible?: boolean;
+  computeClickInstanceIndexFromInstanceId?: (
+    instanceId: number | undefined,
+  ) => number | null;
+} {
+  const viewer = React.useContext(ViewerContext)!;
+  const ContextBridge = useContextBridge();
+
+  if (message === undefined) return { makeObject: () => null };
+
+  switch (message.type) {
+    // Add a coordinate frame.
+    case "FrameMessage": {
+      return {
+        makeObject: (ref) => (
+          <CoordinateFrame
+            ref={ref}
+            showAxes={message.show_axes}
+            axesLength={message.axes_length}
+            axesRadius={message.axes_radius}
+            originRadius={message.origin_radius}
+          />
+        ),
+      };
+    }
+
+    // Add axes to visualize.
+    case "BatchedAxesMessage": {
+      return {
+        makeObject: (ref) => (
+          // Minor naming discrepancy: I think "batched" will be clearer to
+          // folks on the Python side, but instanced is somewhat more
+          // precise.
+          <InstancedAxes
+            ref={ref}
+            wxyzsBatched={
+              new Float32Array(
+                message.wxyzs_batched.buffer.slice(
+                  message.wxyzs_batched.byteOffset,
+                  message.wxyzs_batched.byteOffset +
+                    message.wxyzs_batched.byteLength,
+                ),
+              )
+            }
+            positionsBatched={
+              new Float32Array(
+                message.positions_batched.buffer.slice(
+                  message.positions_batched.byteOffset,
+                  message.positions_batched.byteOffset +
+                    message.positions_batched.byteLength,
+                ),
+              )
+            }
+            axes_length={message.axes_length}
+            axes_radius={message.axes_radius}
+          />
+        ),
+        // Compute click instance index from instance ID. Each visualized
+        // frame has 1 instance for each of 3 line segments.
+        computeClickInstanceIndexFromInstanceId: (instanceId) =>
+          Math.floor(instanceId! / 3),
+      };
+    }
+
+    case "GridMessage": {
+      return {
+        makeObject: (ref) => (
+          <group ref={ref}>
+            <Grid
+              args={[
+                message.width,
+                message.height,
+                message.width_segments,
+                message.height_segments,
+              ]}
+              side={THREE.DoubleSide}
+              cellColor={message.cell_color}
+              cellThickness={message.cell_thickness}
+              cellSize={message.cell_size}
+              sectionColor={message.section_color}
+              sectionThickness={message.section_thickness}
+              sectionSize={message.section_size}
+              rotation={
+                // There's redundancy here when we set the side to
+                // THREE.DoubleSide, where xy and yx should be the same.
+                //
+                // But it makes sense to keep this parameterization because
+                // specifying planes by xy seems more natural than the normal
+                // direction (z, +z, or -z), and it opens the possibility of
+                // rendering only FrontSide or BackSide grids in the future.
+                //
+                // If we add support for FrontSide or BackSide, we should
+                // double-check that the normal directions from each of these
+                // rotations match the right-hand rule!
+                message.plane == "xz"
+                  ? new THREE.Euler(0.0, 0.0, 0.0)
+                  : message.plane == "xy"
+                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                    : message.plane == "yx"
+                      ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                      : message.plane == "yz"
+                        ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                        : message.plane == "zx"
+                          ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                          : message.plane == "zy"
+                            ? new THREE.Euler(
+                                -Math.PI / 2.0,
+                                0.0,
+                                -Math.PI / 2.0,
+                              )
+                            : undefined
+              }
+            />
+          </group>
+        ),
+      };
+    }
+
+    // Add a point cloud.
+    case "PointCloudMessage": {
+      return {
+        makeObject: (ref) => (
+          <PointCloud
+            ref={ref}
+            pointSize={message.point_size}
+            pointBallNorm={message.point_ball_norm}
+            points={
+              new Float32Array(
+                message.points.buffer.slice(
+                  message.points.byteOffset,
+                  message.points.byteOffset + message.points.byteLength,
+                ),
+              )
+            }
+            colors={new Float32Array(message.colors).map((val) => val / 255.0)}
+          />
+        ),
+      };
+    }
+
+    // Add mesh
+    case "SkinnedMeshMessage":
+    case "MeshMessage": {
+      return { makeObject: (ref) => <ViserMesh ref={ref} {...message} /> };
+    }
+    // Add a camera frustum.
+    case "CameraFrustumMessage": {
+      return {
+        makeObject: (ref) => (
+          <CameraFrustum
+            ref={ref}
+            fov={message.fov}
+            aspect={message.aspect}
+            scale={message.scale}
+            color={message.color}
+            imageBinary={message.image_binary}
+            imageMediaType={message.image_media_type}
+          />
+        ),
+      };
+    }
+    case "TransformControlsMessage": {
+      const name = message.name;
+      const sendDragMessage = makeThrottledMessageSender(viewer, 50);
+      return {
+        makeObject: (ref) => (
+          <group onClick={(e) => e.stopPropagation()}>
+            <PivotControls
+              ref={ref}
+              scale={message.scale}
+              lineWidth={message.line_width}
+              fixed={message.fixed}
+              autoTransform={message.auto_transform}
+              activeAxes={message.active_axes}
+              disableAxes={message.disable_axes}
+              disableSliders={message.disable_sliders}
+              disableRotations={message.disable_rotations}
+              disableScaling={true}
+              translationLimits={message.translation_limits}
+              rotationLimits={message.rotation_limits}
+              depthTest={message.depth_test}
+              opacity={message.opacity}
+              onDrag={(l) => {
+                const attrs = viewer.nodeAttributesFromName.current;
+                if (attrs[message.name] === undefined) {
+                  attrs[message.name] = {};
+                }
+
+                const wxyz = new THREE.Quaternion();
+                wxyz.setFromRotationMatrix(l);
+                const position = new THREE.Vector3().setFromMatrixPosition(l);
+
+                const nodeAttributes = attrs[message.name]!;
+                nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
+                nodeAttributes.position = position.toArray();
+                sendDragMessage({
+                  type: "TransformControlsUpdateMessage",
+                  name: name,
+                  wxyz: nodeAttributes.wxyz,
+                  position: nodeAttributes.position,
+                });
+              }}
+            />
+          </group>
+        ),
+        unmountWhenInvisible: true,
+      };
+    }
+    // Add a 2D label.
+    case "LabelMessage": {
+      return {
+        makeObject: (ref) => (
+          // We wrap with <group /> because Html doesn't implement THREE.Object3D.
+          <group ref={ref}>
+            <Html>
+              <div
+                style={{
+                  width: "10em",
+                  fontSize: "0.8em",
+                  transform: "translateX(0.1em) translateY(0.5em)",
+                }}
+              >
+                <span
+                  style={{
+                    background: "#fff",
+                    border: "1px solid #777",
+                    borderRadius: "0.2em",
+                    color: "#333",
+                    padding: "0.2em",
+                  }}
+                >
+                  {message.text}
+                </span>
+              </div>
+            </Html>
+          </group>
+        ),
+        unmountWhenInvisible: true,
+      };
+    }
+    case "Gui3DMessage": {
+      return {
+        makeObject: (ref) => {
+          // We wrap with <group /> because Html doesn't implement
+          // THREE.Object3D. The initial position is intended to be
+          // off-screen; it will be overwritten with the actual position
+          // after the component is mounted.
+          return (
+            <group ref={ref} position={new THREE.Vector3(1e8, 1e8, 1e8)}>
+              <Html>
+                <ContextBridge>
+                  <Paper
+                    style={{
+                      width: "18em",
+                      fontSize: "0.875em",
+                      marginLeft: "0.5em",
+                      marginTop: "0.5em",
+                    }}
+                    shadow="0 0 0.8em 0 rgba(0,0,0,0.1)"
+                    pb="0.25em"
+                    onPointerDown={(evt) => {
+                      evt.stopPropagation();
+                    }}
+                  >
+                    <GeneratedGuiContainer containerId={message.container_id} />
+                  </Paper>
+                </ContextBridge>
+              </Html>
+            </group>
+          );
+        },
+        unmountWhenInvisible: true,
+      };
+    }
+    // Add an image.
+    case "ImageMessage": {
+      return {
+        makeObject: (ref) => <ViserImage ref={ref} {...message} />,
+      };
+    }
+    // Add a glTF/GLB asset.
+    case "GlbMessage": {
+      return {
+        makeObject: (ref) => (
+          <GlbAsset
+            ref={ref}
+            glb_data={new Uint8Array(message.glb_data)}
+            scale={message.scale}
+          />
+        ),
+      };
+    }
+    case "CatmullRomSplineMessage": {
+      return {
+        makeObject: (ref) => {
+          return (
+            <group ref={ref}>
+              <CatmullRomLine
+                points={message.positions}
+                closed={message.closed}
+                curveType={message.curve_type}
+                tension={message.tension}
+                lineWidth={message.line_width}
+                color={message.color}
+                // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
+                segments={(message.segments ?? undefined) as undefined}
+              />
+            </group>
+          );
+        },
+      };
+    }
+    case "CubicBezierSplineMessage": {
+      return {
+        makeObject: (ref) => (
+          <group ref={ref}>
+            {[...Array(message.positions.length - 1).keys()].map((i) => (
+              <CubicBezierLine
+                key={i}
+                start={message.positions[i]}
+                end={message.positions[i + 1]}
+                midA={message.control_points[2 * i]}
+                midB={message.control_points[2 * i + 1]}
+                lineWidth={message.line_width}
+                color={message.color}
+                // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
+                segments={(message.segments ?? undefined) as undefined}
+              ></CubicBezierLine>
+            ))}
+          </group>
+        ),
+      };
+    }
+    case "GaussianSplatsMessage": {
+      return {
+        makeObject: (ref) => (
+          <SplatObject
+            ref={ref}
+            buffer={
+              new Uint32Array(
+                message.buffer.buffer.slice(
+                  message.buffer.byteOffset,
+                  message.buffer.byteOffset + message.buffer.byteLength,
+                ),
+              )
+            }
+          />
+        ),
+      };
+    }
+  }
+}
+
 /** Component containing the three.js object and children for a particular scene node. */
+// export function SceneNodeThreeObject(props: {
+//   name: string;
+//   parent: THREE.Object3D | null;
+// }) {
+//   const viewer = React.useContext(ViewerContext)!;
+//   const message = viewer.useSceneTree(
+//     (state) => state.nodeFromName[props.name].message,
+//   );
+//   // const clickable = viewer.useSceneTree(
+//   //   (state) => state.nodeFromName[props.name].clickable,
+//   // );
+//   //
+//
+//   const unmountTypes: (typeof message.type)[] = [
+//     "TransformControlsMessage",
+//     "LabelMessage",
+//     "Gui3DMessage",
+//   ];
+//   const unmountWhenInvisible = message.type in unmountTypes;
+//   return null;
+// }
+
 export function SceneNodeThreeObject(props: {
   name: string;
   parent: THREE.Object3D | null;
 }) {
   const viewer = React.useContext(ViewerContext)!;
-  const makeObject = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.makeObject,
+  const message = viewer.useSceneTree(
+    (state) => state.nodeFromName[props.name]?.message,
   );
-  const unmountWhenInvisible = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.unmountWhenInvisible,
-  );
-  const everyFrameCallback = viewer.useSceneTree(
-    (state) => state.nodeFromName[props.name]?.everyFrameCallback,
-  );
-  const computeClickInstanceIndexFromInstanceId = viewer.useSceneTree(
-    (state) =>
-      state.nodeFromName[props.name]?.computeClickInstanceIndexFromInstanceId,
-  );
+  const {
+    makeObject,
+    unmountWhenInvisible,
+    computeClickInstanceIndexFromInstanceId,
+  } = useObjectFactory(message);
+
   const [unmount, setUnmount] = React.useState(false);
   const clickable =
     viewer.useSceneTree((state) => state.nodeFromName[props.name]?.clickable) ??
@@ -217,7 +582,6 @@ export function SceneNodeThreeObject(props: {
   useFrame(
     () => {
       const attrs = viewer.nodeAttributesFromName.current[props.name];
-      everyFrameCallback && everyFrameCallback();
 
       // Unmount when invisible.
       // Examples: <Html /> components, PivotControls.

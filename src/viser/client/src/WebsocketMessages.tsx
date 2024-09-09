@@ -1051,6 +1051,7 @@ export type SceneNodeMessage =
   | PointCloudMessage
   | MeshMessage
   | SkinnedMeshMessage
+  | TransformControlsMessage
   | ImageMessage
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
