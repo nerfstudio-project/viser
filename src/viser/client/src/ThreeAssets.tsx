@@ -523,10 +523,6 @@ export const ViserMesh = React.forwardRef<
         bones.push(new THREE.Bone());
       }
       const boneInverses: THREE.Matrix4[] = [];
-      viewer.skinnedMeshState.current[props.name] = {
-        initialized: false,
-        poses: [],
-      };
       bones.forEach((bone, i) => {
         const wxyz = props.bone_wxyzs[i];
         const position = props.bone_positions[i];
@@ -542,11 +538,6 @@ export const ViserMesh = React.forwardRef<
         bone.position.set(position[0], position[1], position[2]);
         bone.matrixAutoUpdate = false;
         bone.matrixWorldAutoUpdate = false;
-
-        viewer.skinnedMeshState.current[props.name].poses.push({
-          wxyz: wxyz,
-          position: position,
-        });
       });
       const skeleton = new THREE.Skeleton(bones, boneInverses);
       setSkeleton(skeleton);
@@ -585,10 +576,7 @@ export const ViserMesh = React.forwardRef<
       // disposal.
       geometry.dispose();
       material.dispose();
-      if (props.type === "SkinnedMeshMessage") {
-        delete viewer.skinnedMeshState.current[props.name];
-        skeleton !== undefined && skeleton.dispose();
-      }
+      skeleton !== undefined && skeleton.dispose();
     };
   }, [props]);
 

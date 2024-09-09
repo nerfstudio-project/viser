@@ -64,7 +64,6 @@ function useMessageHandler() {
 
   // Return message handler.
   return (message: Message) => {
-    console.log(message.type);
     if (isGuiConfig(message)) {
       addGui(message);
       return;
@@ -158,13 +157,13 @@ function useMessageHandler() {
 
       // Set the bone poses.
       case "SetBoneOrientationMessage": {
-        const bonePoses = viewer.skinnedMeshState.current;
-        bonePoses[message.name].poses[message.bone_index].wxyz = message.wxyz;
+        const state = viewer.skinnedMeshState.current;
+        state[message.name].poses[message.bone_index].wxyz = message.wxyz;
         break;
       }
       case "SetBonePositionMessage": {
-        const bonePoses = viewer.skinnedMeshState.current;
-        bonePoses[message.name].poses[message.bone_index].position =
+        const state = viewer.skinnedMeshState.current;
+        state[message.name].poses[message.bone_index].position =
           message.position;
         break;
       }
@@ -345,11 +344,28 @@ function useMessageHandler() {
         return;
       }
 
+      // Initialize skinned mesh state.
+      case "SkinnedMeshMessage": {
+        viewer.skinnedMeshState.current[message.name] = {
+          initialized: false,
+          poses: [],
+        };
+        for (let i = 0; i < message.bone_wxyzs!.length; i++) {
+          const wxyz = message.bone_wxyzs[i];
+          const position = message.bone_positions[i];
+          viewer.skinnedMeshState.current[message.name].poses.push({
+            wxyz: wxyz,
+            position: position,
+          });
+        }
+        addSceneNodeMakeParents(message);
+        return;
+      }
+
       case "FrameMessage":
       case "BatchedAxesMessage":
       case "GridMessage":
       case "PointCloudMessage":
-      case "SkinnedMeshMessage":
       case "MeshMessage":
       case "CameraFrustumMessage":
       case "TransformControlsMessage":
