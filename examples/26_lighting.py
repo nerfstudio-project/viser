@@ -42,12 +42,12 @@ def main() -> None:
     # adding controls to custom lights in the scene
     server.scene.add_transform_controls("/light_control")
     server.scene.add_light_directional(
-        name="/light_control/directionallight", color=0xAA3355
+        name="/light_control/directionallight", color=0xDEADBE
     )
     server.scene.add_transform_controls("/light_control2")
     server.scene.add_light_spot(
         name="/light_control2/spotlight",
-        color=0xDDFFEE,
+        color=0xC0FFEE,
         distance=5,
         angle=onp.pi / 2.5,
         intensity=3,
