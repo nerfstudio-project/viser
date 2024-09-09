@@ -297,7 +297,6 @@ function useMessageHandler() {
               position={message.position}
               intensity={message.intensity}
               color={message.color}
-              castShadow={message.castShadow}
             />
           )),
         );
@@ -343,10 +342,8 @@ function useMessageHandler() {
               position={message.position}
               intensity={message.intensity}
               color={message.color}
-              castShadow={message.castShadow}
               distance={message.distance}
               decay={message.decay}
-              power={message.power}
             />
           )),
         );
@@ -380,10 +377,9 @@ function useMessageHandler() {
               intensity={message.intensity}
               color={message.color}
               distance={message.distance}
-              decay={message.decay}
               angle={message.angle}
               penumbra={message.penumbra}
-              castShadow={message.castShadow}
+              decay={message.decay}
             />
           )),
         );

@@ -281,9 +281,7 @@ class SceneApi:
         """
 
         self._websock_interface.queue_message(
-            _messages.DirectionalLightMessage(
-                name, position, intensity, color, 
-            )
+            _messages.DirectionalLightMessage(name, position, intensity, color)
         )
         return LightHandle._make(self, name, wxyz, position, visible)
 
@@ -476,14 +474,7 @@ class SceneApi:
 
         self._websock_interface.queue_message(
             _messages.SpotLightMessage(
-                name,
-                position,
-                intensity,
-                color,
-                distance,
-                angle,
-                penumbra,
-                decay,
+                name, position, intensity, color, distance, angle, penumbra, decay
             )
         )
         return LightHandle._make(self, name, wxyz, position, visible)

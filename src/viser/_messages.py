@@ -272,7 +272,6 @@ class DirectionalLightMessage(Message):
     position: Tuple[float, float, float]
     intensity: float
     color: int
-    castShadow: bool
 
 
 @dataclasses.dataclass
@@ -303,7 +302,6 @@ class PointLightMessage(Message):
     position: Tuple[float, float, float]
     intensity: float
     color: int
-    castShadow: bool
     distance: float
     decay: float
     power: float
@@ -334,7 +332,6 @@ class SpotLightMessage(Message):
     angle: float
     penumbra: float
     decay: float
-    castShadow: bool
 
     def __post_init__(self):
         assert self.angle <= onp.pi / 2
