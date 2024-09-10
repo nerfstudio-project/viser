@@ -475,16 +475,16 @@ export const ViserMesh = React.forwardRef<
       message.props.material == "standard" || message.props.wireframe
         ? new THREE.MeshStandardMaterial(standardArgs)
         : message.props.material == "toon3"
-          ? new THREE.MeshToonMaterial({
-              gradientMap: generateGradientMap(3),
-              ...standardArgs,
-            })
-          : message.props.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.props.material);
+        ? new THREE.MeshToonMaterial({
+            gradientMap: generateGradientMap(3),
+            ...standardArgs,
+          })
+        : message.props.material == "toon5"
+        ? new THREE.MeshToonMaterial({
+            gradientMap: generateGradientMap(5),
+            ...standardArgs,
+          })
+        : assertUnreachable(message.props.material);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
