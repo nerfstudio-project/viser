@@ -50,6 +50,9 @@ type AllPossibleThreeJSMaterials =
   | LineBasicMaterial
   | LineDashedMaterial;
 
+export function rgbToInt(rgb: [number, number, number]): number {
+  return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+}
 const originGeom = new THREE.SphereGeometry(1.0);
 const originMaterial = new THREE.MeshBasicMaterial({ color: 0xecec00 });
 
@@ -443,7 +446,8 @@ export const ViserMesh = React.forwardRef<
     return texture;
   };
   const standardArgs = {
-    color: message.props.color ?? undefined,
+    color:
+      message.props.color === null ? undefined : rgbToInt(message.props.color),
     vertexColors: message.props.vertex_colors !== null,
     wireframe: message.props.wireframe,
     transparent: message.props.opacity !== null,

@@ -28,6 +28,7 @@ import {
   PointCloud,
   ViserImage,
   ViserMesh,
+  rgbToInt,
 } from "./ThreeAssets";
 import { opencvXyFromPointerXy } from "./ClickUtils";
 import { SceneNodeMessage } from "./WebsocketMessages";
@@ -37,10 +38,6 @@ import GeneratedGuiContainer from "./ControlPanel/Generated";
 
 /** Type corresponding to a zustand-style useSceneTree hook. */
 export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
-
-function rgbToInt(rgb: [number, number, number]): number {
-  return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
-}
 
 function SceneNodeThreeChildren(props: {
   name: string;
@@ -222,16 +219,20 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 message.props.plane == "xz"
                   ? new THREE.Euler(0.0, 0.0, 0.0)
                   : message.props.plane == "xy"
-                  ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                  : message.props.plane == "yx"
-                  ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                  : message.props.plane == "yz"
-                  ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                  : message.props.plane == "zx"
-                  ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                  : message.props.plane == "zy"
-                  ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                  : undefined
+                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                    : message.props.plane == "yx"
+                      ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                      : message.props.plane == "yz"
+                        ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                        : message.props.plane == "zx"
+                          ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                          : message.props.plane == "zy"
+                            ? new THREE.Euler(
+                                -Math.PI / 2.0,
+                                0.0,
+                                -Math.PI / 2.0,
+                              )
+                            : undefined
               }
             />
           </group>
