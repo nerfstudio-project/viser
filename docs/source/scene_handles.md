@@ -41,6 +41,10 @@ methods like :func:`viser.ViserServer.add_frame()` or
 
 .. autoclass:: viser.PointCloudHandle
 
+.. autoclass:: viser.SplineCatmullRomHandle
+
+.. autoclass:: viser.SplineCubicBezierHandle
+
 .. autoclass:: viser.TransformControlsHandle
 
 .. autoclass:: viser.GaussianSplatHandle

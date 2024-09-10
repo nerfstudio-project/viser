@@ -389,6 +389,33 @@ class MeshSkinnedBoneHandle:
         )
 
 
+class GridHandle(
+    SceneNodeHandle,
+    _messages.GridProps,
+    _OverridablePropApi,
+    PropClass=_messages.GridProps,
+):
+    """Handle for grid objects."""
+
+
+class SplineCatmullRomHandle(
+    SceneNodeHandle,
+    _messages.CatmullRomSplineProps,
+    _OverridablePropApi,
+    PropClass=_messages.CatmullRomSplineProps,
+):
+    """Handle for Catmull-Rom splines."""
+
+
+class SplineCubicBezierHandle(
+    SceneNodeHandle,
+    _messages.CubicBezierSplineProps,
+    _OverridablePropApi,
+    PropClass=_messages.CubicBezierSplineProps,
+):
+    """Handle for cubic Bezier splines."""
+
+
 class GlbHandle(
     _ClickableSceneNodeHandle,
     _messages.GlbProps,

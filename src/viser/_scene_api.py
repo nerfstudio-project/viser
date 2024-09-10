@@ -19,6 +19,7 @@ from ._scene_handles import (
     FrameHandle,
     GaussianSplatHandle,
     GlbHandle,
+    GridHandle,
     Gui3dContainerHandle,
     ImageHandle,
     LabelHandle,
@@ -29,6 +30,8 @@ from ._scene_handles import (
     SceneNodeHandle,
     SceneNodePointerEvent,
     ScenePointerEvent,
+    SplineCatmullRomHandle,
+    SplineCubicBezierHandle,
     TransformControlsHandle,
     _TransformControlsState,
     colors_to_uint8,
@@ -282,7 +285,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> SplineCatmullRomHandle:
         """Add a spline to the scene using Catmull-Rom interpolation.
 
         This method creates a spline based on a set of positions and interpolates
@@ -322,20 +325,22 @@ class SceneApi:
                 segments=segments,
             ),
         )
-        return SceneNodeHandle._make(self, message, name, wxyz, position, visible)
+        return SplineCatmullRomHandle._make(
+            self, message, name, wxyz, position, visible
+        )
 
     def add_spline_cubic_bezier(
         self,
         name: str,
         positions: tuple[tuple[float, float, float], ...] | onp.ndarray,
         control_points: tuple[tuple[float, float, float], ...] | onp.ndarray,
-        line_width: float = 1,
+        line_width: float = 1.0,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> SplineCubicBezierHandle:
         """Add a spline to the scene using Cubic Bezier interpolation.
 
         This method allows for the creation of a cubic Bezier spline based on given
@@ -378,7 +383,9 @@ class SceneApi:
                 segments=segments,
             ),
         )
-        return SceneNodeHandle._make(self, message, name, wxyz, position, visible)
+        return SplineCubicBezierHandle._make(
+            self, message, name, wxyz, position, visible
+        )
 
     def add_camera_frustum(
         self,
@@ -565,7 +572,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> SceneNodeHandle:
+    ) -> GridHandle:
         """Add a 2D grid to the scene.
 
         This can be useful as a size, orientation, or ground plane reference.
@@ -606,7 +613,7 @@ class SceneApi:
                 section_size=section_size,
             ),
         )
-        return SceneNodeHandle._make(self, message, name, wxyz, position, visible)
+        return GridHandle._make(self, message, name, wxyz, position, visible)
 
     def add_label(
         self,
