@@ -31,7 +31,6 @@ from ._scene_handles import (
     SceneNodePointerEvent,
     ScenePointerEvent,
     TransformControlsHandle,
-    _SceneNodeHandleState,
     _TransformControlsState,
 )
 
@@ -131,20 +130,6 @@ class SceneApi:
         )
         """Interface for sending and listening to messages."""
 
-        self.world_axes: FrameHandle = FrameHandle(
-            _SceneNodeHandleState(
-                "/WorldAxes",
-                self,
-                wxyz=onp.array([1.0, 0.0, 0.0, 0.0]),
-                position=onp.zeros(3),
-            )
-        )
-        """Handle for the world axes, which are created by default."""
-
-        # Hide world axes on initialization.
-        if isinstance(owner, ViserServer):
-            self.world_axes.visible = False
-
         self._handle_from_transform_controls_name: dict[
             str, TransformControlsHandle
         ] = {}
@@ -153,6 +138,15 @@ class SceneApi:
         self._scene_pointer_cb: Callable[[ScenePointerEvent], None] | None = None
         self._scene_pointer_done_cb: Callable[[], None] = lambda: None
         self._scene_pointer_event_type: _messages.ScenePointerEventType | None = None
+
+        # Set up world axes handle.
+        self.world_axes: FrameHandle = self.add_frame(
+            "/WorldAxes",
+            axes_radius=0.0125,
+        )
+        """Handle for the world axes, which are created by default."""
+        if isinstance(owner, ViserServer):
+            self.world_axes.visible = False
 
         self._websock_interface.register_handler(
             _messages.TransformControlsUpdateMessage,
@@ -283,10 +277,8 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        self._websock_interface.queue_message(
-            _messages.GlbMessage(name, glb_data, scale)
-        )
-        return GlbHandle._make(self, name, wxyz, position, visible)
+        message = _messages.GlbMessage(name, _messages.GlbProps(glb_data, scale))
+        return GlbHandle._make(self, message, name, wxyz, position, visible)
 
     def add_spline_catmull_rom(
         self,
@@ -329,9 +321,9 @@ class SceneApi:
             positions = tuple(map(tuple, positions))  # type: ignore
         assert len(positions[0]) == 3
         assert isinstance(positions, tuple)
-        self._websock_interface.queue_message(
-            _messages.CatmullRomSplineMessage(
-                name,
+        message = _messages.CatmullRomSplineMessage(
+            name,
+            _messages.CatmullRomSplineProps(
                 positions,
                 curve_type,
                 tension,
@@ -339,9 +331,9 @@ class SceneApi:
                 line_width,
                 _encode_rgb(color),
                 segments=segments,
-            )
+            ),
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return SceneNodeHandle._make(self, message, name, wxyz, position, visible)
 
     def add_spline_cubic_bezier(
         self,
@@ -387,17 +379,17 @@ class SceneApi:
         assert isinstance(positions, tuple)
         assert isinstance(control_points, tuple)
         assert len(control_points) == (2 * len(positions) - 2)
-        self._websock_interface.queue_message(
-            _messages.CubicBezierSplineMessage(
-                name,
+        message = _messages.CubicBezierSplineMessage(
+            name,
+            _messages.CubicBezierSplineProps(
                 positions,
                 control_points,
                 line_width,
                 _encode_rgb(color),
                 segments=segments,
-            )
+            ),
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return SceneNodeHandle._make(self, message, name, wxyz, position, visible)
 
     def add_camera_frustum(
         self,
@@ -448,19 +440,18 @@ class SceneApi:
             media_type = None
             binary = None
 
-        self._websock_interface.queue_message(
-            _messages.CameraFrustumMessage(
-                name=name,
+        message = _messages.CameraFrustumMessage(
+            name=name,
+            props=_messages.CameraFrustumProps(
                 fov=fov,
                 aspect=aspect,
                 scale=scale,
-                # (255, 255, 255) => 0xffffff, etc
                 color=_encode_rgb(color),
                 image_media_type=media_type,
                 image_binary=binary,
-            )
+            ),
         )
-        return CameraFrustumHandle._make(self, name, wxyz, position, visible)
+        return CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
 
     def add_frame(
         self,
@@ -500,16 +491,16 @@ class SceneApi:
         """
         if origin_radius is None:
             origin_radius = axes_radius * 2
-        self._websock_interface.queue_message(
-            _messages.FrameMessage(
-                name=name,
+        message = _messages.FrameMessage(
+            name=name,
+            props=_messages.FrameProps(
                 show_axes=show_axes,
                 axes_length=axes_length,
                 axes_radius=axes_radius,
                 origin_radius=origin_radius,
-            )
+            ),
         )
-        return FrameHandle._make(self, name, wxyz, position, visible)
+        return FrameHandle._make(self, message, name, wxyz, position, visible)
 
     def add_batched_axes(
         self,
@@ -556,16 +547,17 @@ class SceneApi:
         num_axes = batched_wxyzs.shape[0]
         assert batched_wxyzs.shape == (num_axes, 4)
         assert batched_positions.shape == (num_axes, 3)
-        self._websock_interface.queue_message(
-            _messages.BatchedAxesMessage(
-                name=name,
-                wxyzs_batched=batched_wxyzs.astype(onp.float32),
-                positions_batched=batched_positions.astype(onp.float32),
-                axes_length=axes_length,
-                axes_radius=axes_radius,
-            )
+        props = _messages.BatchedAxesProps(
+            wxyzs_batched=batched_wxyzs.astype(onp.float32),
+            positions_batched=batched_positions.astype(onp.float32),
+            axes_length=axes_length,
+            axes_radius=axes_radius,
         )
-        return BatchedAxesHandle._make(self, name, wxyz, position, visible)
+        message = _messages.BatchedAxesMessage(
+            name=name,
+            props=props,
+        )
+        return BatchedAxesHandle._make(self, message, name, wxyz, position, visible)
 
     def add_grid(
         self,
@@ -609,9 +601,9 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        self._websock_interface.queue_message(
-            _messages.GridMessage(
-                name=name,
+        message = _messages.GridMessage(
+            name=name,
+            props=_messages.GridProps(
                 width=width,
                 height=height,
                 width_segments=width_segments,
@@ -623,9 +615,9 @@ class SceneApi:
                 section_color=_encode_rgb(section_color),
                 section_thickness=section_thickness,
                 section_size=section_size,
-            )
+            ),
         )
-        return SceneNodeHandle._make(self, name, wxyz, position, visible)
+        return SceneNodeHandle._make(self, message, name, wxyz, position, visible)
 
     def add_label(
         self,
@@ -650,8 +642,8 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        self._websock_interface.queue_message(_messages.LabelMessage(name, text))
-        return LabelHandle._make(self, name, wxyz, position, visible=visible)
+        message = _messages.LabelMessage(name, _messages.LabelProps(text))
+        return LabelHandle._make(self, message, name, wxyz, position, visible=visible)
 
     def add_point_cloud(
         self,
@@ -693,9 +685,9 @@ class SceneApi:
         if colors_cast.shape == (3,):
             colors_cast = onp.tile(colors_cast[None, :], reps=(points.shape[0], 1))
 
-        self._websock_interface.queue_message(
-            _messages.PointCloudMessage(
-                name=name,
+        message = _messages.PointCloudMessage(
+            name=name,
+            props=_messages.PointCloudProps(
                 points=points.astype(onp.float32),
                 colors=colors_cast,
                 point_size=point_size,
@@ -706,9 +698,9 @@ class SceneApi:
                     "rounded": 3.0,
                     "sparkle": 0.6,
                 }[point_shape],
-            )
+            ),
         )
-        return PointCloudHandle._make(self, name, wxyz, position, visible)
+        return PointCloudHandle._make(self, message, name, wxyz, position, visible)
 
     def add_mesh_skinned(
         self,
@@ -784,12 +776,11 @@ class SceneApi:
         bone_positions = onp.asarray(bone_positions)
         assert bone_wxyzs.shape == (num_bones, 4)
         assert bone_positions.shape == (num_bones, 3)
-        self._websock_interface.queue_message(
-            _messages.SkinnedMeshMessage(
-                name,
-                vertices.astype(onp.float32),
-                faces.astype(onp.uint32),
-                # (255, 255, 255) => 0xffffff, etc
+        message = _messages.SkinnedMeshMessage(
+            name=name,
+            props=_messages.SkinnedMeshProps(
+                vertices=vertices.astype(onp.float32),
+                faces=faces.astype(onp.uint32),
                 color=_encode_rgb(color),
                 vertex_colors=None,
                 wireframe=wireframe,
@@ -812,9 +803,9 @@ class SceneApi:
                 ),
                 skin_indices=top4_skin_indices.astype(onp.uint16),
                 skin_weights=top4_skin_weights.astype(onp.float32),
-            )
+            ),
         )
-        handle = MeshHandle._make(self, name, wxyz, position, visible)
+        handle = MeshHandle._make(self, message, name, wxyz, position, visible)
         return MeshSkinnedHandle(
             handle._impl,
             bones=tuple(
@@ -879,13 +870,11 @@ class SceneApi:
                 f"Invalid combination of {wireframe=} and {flat_shading=}. Flat shading argument will be ignored.",
                 stacklevel=2,
             )
-
-        self._websock_interface.queue_message(
-            _messages.MeshMessage(
-                name,
-                vertices.astype(onp.float32),
-                faces.astype(onp.uint32),
-                # (255, 255, 255) => 0xffffff, etc
+        message = _messages.MeshMessage(
+            name=name,
+            props=_messages.MeshProps(
+                vertices=vertices.astype(onp.float32),
+                faces=faces.astype(onp.uint32),
                 color=_encode_rgb(color),
                 vertex_colors=None,
                 wireframe=wireframe,
@@ -893,9 +882,9 @@ class SceneApi:
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
-            )
+            ),
         )
-        return MeshHandle._make(self, name, wxyz, position, visible)
+        return MeshHandle._make(self, message, name, wxyz, position, visible)
 
     def add_mesh_trimesh(
         self,
@@ -993,13 +982,15 @@ class SceneApi:
         ).view(onp.uint32)
         assert buffer.shape == (num_gaussians, 8)
 
-        self._websock_interface.queue_message(
-            _messages.GaussianSplatsMessage(
-                name=name,
+        message = _messages.GaussianSplatsMessage(
+            name=name,
+            props=_messages.GaussianSplatsProps(
                 buffer=buffer,
-            )
+            ),
         )
-        node_handle = GaussianSplatHandle._make(self, name, wxyz, position, visible)
+        node_handle = GaussianSplatHandle._make(
+            self, message, name, wxyz, position, visible
+        )
         return node_handle
 
     def add_box(
@@ -1157,20 +1148,19 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-
         media_type, binary = _encode_image_binary(
             image, format, jpeg_quality=jpeg_quality
         )
-        self._websock_interface.queue_message(
-            _messages.ImageMessage(
-                name=name,
+        message = _messages.ImageMessage(
+            name=name,
+            props=_messages.ImageProps(
                 media_type=media_type,
                 data=binary,
                 render_width=render_width,
                 render_height=render_height,
-            )
+            ),
         )
-        return ImageHandle._make(self, name, wxyz, position, visible)
+        return ImageHandle._make(self, message, name, wxyz, position, visible)
 
     def add_transform_controls(
         self,
@@ -1222,9 +1212,9 @@ class SceneApi:
         Returns:
             Handle for manipulating (and reading state of) scene node.
         """
-        self._websock_interface.queue_message(
-            _messages.TransformControlsMessage(
-                name=name,
+        message = _messages.TransformControlsMessage(
+            name=name,
+            props=_messages.TransformControlsProps(
                 scale=scale,
                 line_width=line_width,
                 fixed=fixed,
@@ -1237,7 +1227,7 @@ class SceneApi:
                 rotation_limits=rotation_limits,
                 depth_test=depth_test,
                 opacity=opacity,
-            )
+            ),
         )
 
         def sync_cb(client_id: ClientId, state: TransformControlsHandle) -> None:
@@ -1255,7 +1245,9 @@ class SceneApi:
             message_position.excluded_self_client = client_id
             self._websock_interface.queue_message(message_position)
 
-        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible)
+        node_handle = SceneNodeHandle._make(
+            self, message, name, wxyz, position, visible
+        )
         state_aux = _TransformControlsState(
             last_updated=time.time(),
             update_cb=[],
@@ -1477,12 +1469,14 @@ class SceneApi:
             self._handle_from_node_name[name].remove()
 
         container_id = _make_unique_id()
-        self._websock_interface.queue_message(
-            _messages.Gui3DMessage(
+        message = _messages.Gui3DMessage(
+            name=name,
+            props=_messages.Gui3DProps(
                 order=time.time(),
-                name=name,
                 container_id=container_id,
-            )
+            ),
         )
-        node_handle = SceneNodeHandle._make(self, name, wxyz, position, visible=visible)
+        node_handle = SceneNodeHandle._make(
+            self, message, name, wxyz, position, visible=visible
+        )
         return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)

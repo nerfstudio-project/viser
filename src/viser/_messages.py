@@ -9,11 +9,17 @@ from typing import Any, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Annotated, Literal, NotRequired, TypedDict, override
+from typing_extensions import Annotated, Literal, override
 
 from . import infra, theme
 
-GuiSliderMark = TypedDict("GuiSliderMark", {"value": float, "label": NotRequired[str]})
+
+@dataclasses.dataclass
+class GuiSliderMark:
+    value: float
+    label: Optional[str]
+
+
 Color = Literal[
     "dark",
     "gray",
@@ -40,8 +46,8 @@ class Message(infra.Message):
         """Returns a unique key for this message, used for detecting redundant
         messages.
 
-        For example: if we send 1000 GuiSetValue messages for the same GUI element, we
-        should only keep the latest messages.
+        For example: if we send 1000 GUI value updates for the same GUI
+        element, we should only keep the latest message.
         """
         parts = [type(self).__name__]
 
@@ -157,6 +163,11 @@ class CameraFrustumMessage(Message, tag="SceneNodeMessage"):
     OpenCV convention, +Z forward."""
 
     name: str
+    props: CameraFrustumProps
+
+
+@dataclasses.dataclass
+class CameraFrustumProps:
     fov: float
     aspect: float
     scale: float
@@ -170,6 +181,11 @@ class GlbMessage(Message, tag="SceneNodeMessage"):
     """GlTF message."""
 
     name: str
+    props: GlbProps
+
+
+@dataclasses.dataclass
+class GlbProps:
     glb_data: bytes
     scale: float
 
@@ -179,6 +195,11 @@ class FrameMessage(Message, tag="SceneNodeMessage"):
     """Coordinate frame message."""
 
     name: str
+    props: FrameProps
+
+
+@dataclasses.dataclass
+class FrameProps:
     show_axes: bool
     axes_length: float
     axes_radius: float
@@ -193,6 +214,11 @@ class BatchedAxesMessage(Message, tag="SceneNodeMessage"):
     corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`."""
 
     name: str
+    props: BatchedAxesProps
+
+
+@dataclasses.dataclass
+class BatchedAxesProps:
     wxyzs_batched: onpt.NDArray[onp.float32]
     positions_batched: onpt.NDArray[onp.float32]
     axes_length: float
@@ -204,18 +230,19 @@ class GridMessage(Message, tag="SceneNodeMessage"):
     """Grid message. Helpful for visualizing things like ground planes."""
 
     name: str
+    props: GridProps
 
+
+@dataclasses.dataclass
+class GridProps:
     width: float
     height: float
     width_segments: int
     height_segments: int
-
     plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"]
-
     cell_color: int
     cell_thickness: float
     cell_size: float
-
     section_color: int
     section_thickness: float
     section_size: float
@@ -226,6 +253,11 @@ class LabelMessage(Message, tag="SceneNodeMessage"):
     """Add a 2D label to the scene."""
 
     name: str
+    props: LabelProps
+
+
+@dataclasses.dataclass
+class LabelProps:
     text: str
 
 
@@ -233,8 +265,13 @@ class LabelMessage(Message, tag="SceneNodeMessage"):
 class Gui3DMessage(Message, tag="SceneNodeMessage"):
     """Add a 3D gui element to the scene."""
 
-    order: float
     name: str
+    props: Gui3DProps
+
+
+@dataclasses.dataclass
+class Gui3DProps:
+    order: float
     container_id: str
 
 
@@ -248,6 +285,11 @@ class PointCloudMessage(Message, tag="SceneNodeMessage"):
     range [0,255]."""
 
     name: str
+    props: PointCloudProps
+
+
+@dataclasses.dataclass
+class PointCloudProps:
     points: onpt.NDArray[onp.float32]
     colors: onpt.NDArray[onp.uint8]
     point_size: float
@@ -270,12 +312,15 @@ class MeshMessage(Message, tag="SceneNodeMessage"):
     Vertices are internally canonicalized to float32, faces to uint32."""
 
     name: str
+    props: MeshProps
+
+
+@dataclasses.dataclass
+class MeshProps:
     vertices: onpt.NDArray[onp.float32]
     faces: onpt.NDArray[onp.uint32]
-
     color: Optional[int]
     vertex_colors: Optional[onpt.NDArray[onp.uint8]]
-
     wireframe: bool
     opacity: Optional[float]
     flat_shading: bool
@@ -289,7 +334,15 @@ class MeshMessage(Message, tag="SceneNodeMessage"):
 
 
 @dataclasses.dataclass
-class SkinnedMeshMessage(MeshMessage):
+class SkinnedMeshMessage(Message, tag="SceneNodeMessage"):
+    """Skinned mesh message."""
+
+    name: str
+    props: SkinnedMeshProps
+
+
+@dataclasses.dataclass
+class SkinnedMeshProps(MeshProps):
     """Mesh message.
 
     Vertices are internally canonicalized to float32, faces to uint32."""
@@ -346,6 +399,11 @@ class TransformControlsMessage(Message, tag="SceneNodeMessage"):
     """Message for transform gizmos."""
 
     name: str
+    props: TransformControlsProps
+
+
+@dataclasses.dataclass
+class TransformControlsProps:
     scale: float
     line_width: float
     fixed: bool
@@ -437,6 +495,11 @@ class ImageMessage(Message, tag="SceneNodeMessage"):
     """Message for rendering 2D images."""
 
     name: str
+    props: ImageProps
+
+
+@dataclasses.dataclass
+class ImageProps:
     media_type: Literal["image/jpeg", "image/png"]
     data: bytes
     render_width: float
@@ -709,6 +772,28 @@ class GuiUpdateMessage(Message):
 
 
 @dataclasses.dataclass
+class SceneNodeUpdateMessage(Message):
+    """Sent client<->server when any property of a GUI component is changed."""
+
+    name: str
+    updates: Annotated[
+        Dict[str, Any],
+        infra.TypeScriptAnnotationOverride("{[key: string]: any}"),
+    ]
+    """Mapping from property name to new value."""
+
+    @override
+    def redundancy_key(self) -> str:
+        return (
+            type(self).__name__
+            + "-"
+            + self.name
+            + "-"
+            + ",".join(list(self.updates.keys()))
+        )
+
+
+@dataclasses.dataclass
 class ThemeConfigurationMessage(Message):
     """Message from server->client to configure parts of the GUI."""
 
@@ -726,6 +811,11 @@ class CatmullRomSplineMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying Catmull-Rom spline information."""
 
     name: str
+    props: CatmullRomSplineProps
+
+
+@dataclasses.dataclass
+class CatmullRomSplineProps:
     positions: Tuple[Tuple[float, float, float], ...]
     curve_type: Literal["centripetal", "chordal", "catmullrom"]
     tension: float
@@ -740,6 +830,11 @@ class CubicBezierSplineMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying Cubic Bezier spline information."""
 
     name: str
+    props: CubicBezierSplineProps
+
+
+@dataclasses.dataclass
+class CubicBezierSplineProps:
     positions: Tuple[Tuple[float, float, float], ...]
     control_points: Tuple[Tuple[float, float, float], ...]
     line_width: float
@@ -752,7 +847,11 @@ class GaussianSplatsMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying splattable Gaussians."""
 
     name: str
+    props: GaussianSplatsProps
 
+
+@dataclasses.dataclass
+class GaussianSplatsProps:
     # Memory layout is borrowed from:
     # https://github.com/antimatter15/splat
     buffer: onpt.NDArray[onp.uint32]

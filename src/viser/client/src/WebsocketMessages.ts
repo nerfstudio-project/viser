@@ -94,12 +94,14 @@ export interface ScenePointerEnableMessage {
 export interface CameraFrustumMessage {
   type: "CameraFrustumMessage";
   name: string;
-  fov: number;
-  aspect: number;
-  scale: number;
-  color: number;
-  image_media_type: "image/jpeg" | "image/png" | null;
-  image_binary: Uint8Array | null;
+  props: {
+    fov: number;
+    aspect: number;
+    scale: number;
+    color: number;
+    image_media_type: "image/jpeg" | "image/png" | null;
+    image_binary: Uint8Array | null;
+  };
 }
 /** GlTF message.
  *
@@ -108,8 +110,7 @@ export interface CameraFrustumMessage {
 export interface GlbMessage {
   type: "GlbMessage";
   name: string;
-  glb_data: Uint8Array;
-  scale: number;
+  props: { glb_data: Uint8Array; scale: number };
 }
 /** Coordinate frame message.
  *
@@ -118,10 +119,12 @@ export interface GlbMessage {
 export interface FrameMessage {
   type: "FrameMessage";
   name: string;
-  show_axes: boolean;
-  axes_length: number;
-  axes_radius: number;
-  origin_radius: number;
+  props: {
+    show_axes: boolean;
+    axes_length: number;
+    axes_radius: number;
+    origin_radius: number;
+  };
 }
 /** Batched axes message.
  *
@@ -133,10 +136,12 @@ export interface FrameMessage {
 export interface BatchedAxesMessage {
   type: "BatchedAxesMessage";
   name: string;
-  wxyzs_batched: Uint8Array;
-  positions_batched: Uint8Array;
-  axes_length: number;
-  axes_radius: number;
+  props: {
+    wxyzs_batched: Uint8Array;
+    positions_batched: Uint8Array;
+    axes_length: number;
+    axes_radius: number;
+  };
 }
 /** Grid message. Helpful for visualizing things like ground planes.
  *
@@ -145,17 +150,19 @@ export interface BatchedAxesMessage {
 export interface GridMessage {
   type: "GridMessage";
   name: string;
-  width: number;
-  height: number;
-  width_segments: number;
-  height_segments: number;
-  plane: "xz" | "xy" | "yx" | "yz" | "zx" | "zy";
-  cell_color: number;
-  cell_thickness: number;
-  cell_size: number;
-  section_color: number;
-  section_thickness: number;
-  section_size: number;
+  props: {
+    width: number;
+    height: number;
+    width_segments: number;
+    height_segments: number;
+    plane: "xz" | "xy" | "yx" | "yz" | "zx" | "zy";
+    cell_color: number;
+    cell_thickness: number;
+    cell_size: number;
+    section_color: number;
+    section_thickness: number;
+    section_size: number;
+  };
 }
 /** Add a 2D label to the scene.
  *
@@ -164,7 +171,7 @@ export interface GridMessage {
 export interface LabelMessage {
   type: "LabelMessage";
   name: string;
-  text: string;
+  props: { text: string };
 }
 /** Add a 3D gui element to the scene.
  *
@@ -172,9 +179,8 @@ export interface LabelMessage {
  */
 export interface Gui3DMessage {
   type: "Gui3DMessage";
-  order: number;
   name: string;
-  container_id: string;
+  props: { order: number; container_id: string };
 }
 /** Point cloud message.
  *
@@ -188,10 +194,12 @@ export interface Gui3DMessage {
 export interface PointCloudMessage {
   type: "PointCloudMessage";
   name: string;
-  points: Uint8Array;
-  colors: Uint8Array;
-  point_size: number;
-  point_ball_norm: number;
+  props: {
+    points: Uint8Array;
+    colors: Uint8Array;
+    point_size: number;
+    point_ball_norm: number;
+  };
 }
 /** Mesh message.
  *
@@ -202,38 +210,40 @@ export interface PointCloudMessage {
 export interface MeshMessage {
   type: "MeshMessage";
   name: string;
-  vertices: Uint8Array;
-  faces: Uint8Array;
-  color: number | null;
-  vertex_colors: Uint8Array | null;
-  wireframe: boolean;
-  opacity: number | null;
-  flat_shading: boolean;
-  side: "front" | "back" | "double";
-  material: "standard" | "toon3" | "toon5";
+  props: {
+    vertices: Uint8Array;
+    faces: Uint8Array;
+    color: number | null;
+    vertex_colors: Uint8Array | null;
+    wireframe: boolean;
+    opacity: number | null;
+    flat_shading: boolean;
+    side: "front" | "back" | "double";
+    material: "standard" | "toon3" | "toon5";
+  };
 }
-/** Mesh message.
- *
- * Vertices are internally canonicalized to float32, faces to uint32.
+/** Skinned mesh message.
  *
  * (automatically generated)
  */
 export interface SkinnedMeshMessage {
   type: "SkinnedMeshMessage";
   name: string;
-  vertices: Uint8Array;
-  faces: Uint8Array;
-  color: number | null;
-  vertex_colors: Uint8Array | null;
-  wireframe: boolean;
-  opacity: number | null;
-  flat_shading: boolean;
-  side: "front" | "back" | "double";
-  material: "standard" | "toon3" | "toon5";
-  bone_wxyzs: [number, number, number, number][];
-  bone_positions: [number, number, number][];
-  skin_indices: Uint8Array;
-  skin_weights: Uint8Array;
+  props: {
+    vertices: Uint8Array;
+    faces: Uint8Array;
+    color: number | null;
+    vertex_colors: Uint8Array | null;
+    wireframe: boolean;
+    opacity: number | null;
+    flat_shading: boolean;
+    side: "front" | "back" | "double";
+    material: "standard" | "toon3" | "toon5";
+    bone_wxyzs: [number, number, number, number][];
+    bone_positions: [number, number, number][];
+    skin_indices: Uint8Array;
+    skin_weights: Uint8Array;
+  };
 }
 /** Server -> client message to set a skinned mesh bone's orientation.
  *
@@ -266,18 +276,20 @@ export interface SetBonePositionMessage {
 export interface TransformControlsMessage {
   type: "TransformControlsMessage";
   name: string;
-  scale: number;
-  line_width: number;
-  fixed: boolean;
-  auto_transform: boolean;
-  active_axes: [boolean, boolean, boolean];
-  disable_axes: boolean;
-  disable_sliders: boolean;
-  disable_rotations: boolean;
-  translation_limits: [[number, number], [number, number], [number, number]];
-  rotation_limits: [[number, number], [number, number], [number, number]];
-  depth_test: boolean;
-  opacity: number;
+  props: {
+    scale: number;
+    line_width: number;
+    fixed: boolean;
+    auto_transform: boolean;
+    active_axes: [boolean, boolean, boolean];
+    disable_axes: boolean;
+    disable_sliders: boolean;
+    disable_rotations: boolean;
+    translation_limits: [[number, number], [number, number], [number, number]];
+    rotation_limits: [[number, number], [number, number], [number, number]];
+    depth_test: boolean;
+    opacity: number;
+  };
 }
 /** Server -> client message to set the camera's position.
  *
@@ -362,10 +374,12 @@ export interface BackgroundImageMessage {
 export interface ImageMessage {
   type: "ImageMessage";
   name: string;
-  media_type: "image/jpeg" | "image/png";
-  data: Uint8Array;
-  render_width: number;
-  render_height: number;
+  props: {
+    media_type: "image/jpeg" | "image/png";
+    data: Uint8Array;
+    render_width: number;
+    render_height: number;
+  };
 }
 /** Remove a particular node from the scene.
  *
@@ -598,7 +612,7 @@ export interface GuiAddSliderMessage {
   max: number;
   step: number | null;
   precision: number;
-  marks: { value: number; label?: string }[] | null;
+  marks: { value: number; label: string | null }[] | null;
 }
 /** GuiAddMultiSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
  *
@@ -620,7 +634,7 @@ export interface GuiAddMultiSliderMessage {
   min_range: number | null;
   precision: number;
   fixed_endpoints: boolean;
-  marks: { value: number; label?: string }[] | null;
+  marks: { value: number; label: string | null }[] | null;
 }
 /** GuiAddNumberMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'float', visible: 'bool', disabled: 'bool', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
  *
@@ -806,6 +820,15 @@ export interface GuiUpdateMessage {
   id: string;
   updates: Partial<GuiAddComponentMessage>;
 }
+/** Sent client<->server when any property of a GUI component is changed.
+ *
+ * (automatically generated)
+ */
+export interface SceneNodeUpdateMessage {
+  type: "SceneNodeUpdateMessage";
+  name: string;
+  updates: { [key: string]: any };
+}
 /** Message from server->client to configure parts of the GUI.
  *
  * (automatically generated)
@@ -854,13 +877,15 @@ export interface ThemeConfigurationMessage {
 export interface CatmullRomSplineMessage {
   type: "CatmullRomSplineMessage";
   name: string;
-  positions: [number, number, number][];
-  curve_type: "centripetal" | "chordal" | "catmullrom";
-  tension: number;
-  closed: boolean;
-  line_width: number;
-  color: number;
-  segments: number | null;
+  props: {
+    positions: [number, number, number][];
+    curve_type: "centripetal" | "chordal" | "catmullrom";
+    tension: number;
+    closed: boolean;
+    line_width: number;
+    color: number;
+    segments: number | null;
+  };
 }
 /** Message from server->client carrying Cubic Bezier spline information.
  *
@@ -869,11 +894,13 @@ export interface CatmullRomSplineMessage {
 export interface CubicBezierSplineMessage {
   type: "CubicBezierSplineMessage";
   name: string;
-  positions: [number, number, number][];
-  control_points: [number, number, number][];
-  line_width: number;
-  color: number;
-  segments: number | null;
+  props: {
+    positions: [number, number, number][];
+    control_points: [number, number, number][];
+    line_width: number;
+    color: number;
+    segments: number | null;
+  };
 }
 /** Message from server->client carrying splattable Gaussians.
  *
@@ -882,7 +909,7 @@ export interface CubicBezierSplineMessage {
 export interface GaussianSplatsMessage {
   type: "GaussianSplatsMessage";
   name: string;
-  buffer: Uint8Array;
+  props: { buffer: Uint8Array };
 }
 /** Message from server->client requesting a render of the current viewport.
  *
@@ -1027,6 +1054,7 @@ export type Message =
   | GuiCloseModalMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
+  | SceneNodeUpdateMessage
   | ThemeConfigurationMessage
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage

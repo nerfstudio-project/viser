@@ -19,6 +19,7 @@ type SceneTreeActions = {
   setClickable(name: string, clickable: boolean): void;
   addSceneNode(message: SceneNodeMessage): void;
   removeSceneNode(name: string): void;
+  updateSceneNode(name: string, updates: { [key: string]: any }): void;
   resetScene(): void;
   setLabelVisibility(name: string, labelVisibility: boolean): void;
 };
@@ -28,10 +29,12 @@ export const rootNodeTemplate: SceneNode = {
   message: {
     type: "FrameMessage",
     name: "",
-    show_axes: false,
-    axes_length: 0.5,
-    axes_radius: 0.0125,
-    origin_radius: 0.025,
+    props: {
+      show_axes: false,
+      axes_length: 0.5,
+      axes_radius: 0.0125,
+      origin_radius: 0.025,
+    },
   },
   children: ["/WorldAxes"],
   clickable: false,
@@ -40,10 +43,12 @@ const worldAxesNodeTemplate: SceneNode = {
   message: {
     type: "FrameMessage",
     name: "/WorldAxes",
-    show_axes: true,
-    axes_length: 0.5,
-    axes_radius: 0.0125,
-    origin_radius: 0.025,
+    props: {
+      show_axes: true,
+      axes_length: 0.5,
+      axes_radius: 0.0125,
+      origin_radius: 0.025,
+    },
   },
   children: [],
   clickable: false,
@@ -118,6 +123,13 @@ export function useSceneTreeState(
             state.nodeFromName[parent_name]!.children = state.nodeFromName[
               parent_name
             ]!.children.filter((child_name) => child_name !== name);
+          }),
+        updateSceneNode: (name, updates) =>
+          set((state) => {
+            state.nodeFromName[name]!.message.props = {
+              ...state.nodeFromName[name]!.message.props,
+              ...updates,
+            };
           }),
         resetScene: () =>
           set((state) => {

@@ -26,6 +26,7 @@ function useMessageHandler() {
 
   // We could reduce the redundancy here if we wanted to.
   // https://github.com/nerfstudio-project/viser/issues/39
+  const updateSceneNode = viewer.useSceneTree((state) => state.updateSceneNode);
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
@@ -48,6 +49,9 @@ function useMessageHandler() {
     attrs[message.name] = {
       overrideVisibility: attrs[message.name]?.overrideVisibility,
     };
+
+    // Don't update the pose of the object until we've made a new one!
+    attrs[message.name]!.poseUpdateState = "waitForMakeObject";
 
     // Make sure parents exists.
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
@@ -77,9 +81,9 @@ function useMessageHandler() {
           initialized: false,
           poses: [],
         };
-        for (let i = 0; i < message.bone_wxyzs!.length; i++) {
-          const wxyz = message.bone_wxyzs[i];
-          const position = message.bone_positions[i];
+        for (let i = 0; i < message.props.bone_wxyzs!.length; i++) {
+          const wxyz = message.props.bone_wxyzs[i];
+          const position = message.props.bone_positions[i];
           viewer.skinnedMeshState.current[message.name].poses.push({
             wxyz: wxyz,
             position: position,
@@ -93,6 +97,10 @@ function useMessageHandler() {
     }
 
     switch (message.type) {
+      case "SceneNodeUpdateMessage": {
+        updateSceneNode(message.name, message.updates);
+        return;
+      }
       // Set the share URL.
       case "ShareUrlUpdated": {
         setShareUrl(message.share_url);
@@ -268,14 +276,16 @@ function useMessageHandler() {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.wxyz = message.wxyz;
-        attr[message.name]!.poseUpdateState = "needsUpdate";
+        if (attr[message.name]!.poseUpdateState == "updated")
+          attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
       case "SetPositionMessage": {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.position = message.position;
-        attr[message.name]!.poseUpdateState = "needsUpdate";
+        if (attr[message.name]!.poseUpdateState == "updated")
+          attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
       case "SetSceneNodeVisibilityMessage": {

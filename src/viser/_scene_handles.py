@@ -1,7 +1,18 @@
 from __future__ import annotations
 
+import copy
 import dataclasses
-from typing import TYPE_CHECKING, Callable, Generic, Literal, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Generic,
+    Literal,
+    Protocol,
+    TypeVar,
+    cast,
+)
 
 import numpy as onp
 
@@ -10,10 +21,40 @@ from .infra._infra import WebsockClientConnection, WebsockServer
 
 if TYPE_CHECKING:
     from ._gui_api import GuiApi
-    from ._gui_handles import SupportsRemoveProtocol
     from ._scene_api import SceneApi
     from ._viser import ClientHandle
     from .infra import ClientId
+
+
+class _OverridablePropApi:
+    """Mixin that allows reading/assigning properties defined in each scene node message."""
+
+    _PropClass: ClassVar[type]
+
+    def __init__(self) -> None:
+        assert False
+
+    def __init_subclass__(cls, PropClass: type):
+        cls._PropClass = PropClass
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        handle = cast(SceneNodeHandle, self)
+        # Get the value of the T TypeVar.
+        if name in self._PropClass.__annotations__:
+            setattr(handle._impl.props, name, value)
+            handle._impl.api._websock_interface.queue_message(
+                _messages.SceneNodeUpdateMessage(handle.name, {name: value})
+            )
+        else:
+            return object.__setattr__(self, name, value)
+
+    def __getattr__(self, name: str) -> Any:
+        if name in self._PropClass.__annotations__:
+            return getattr(self._impl.props, name)
+        else:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
+            )
 
 
 @dataclasses.dataclass(frozen=True)
@@ -47,6 +88,9 @@ TSceneNodeHandle = TypeVar("TSceneNodeHandle", bound="SceneNodeHandle")
 @dataclasses.dataclass
 class _SceneNodeHandleState:
     name: str
+    props: Any  # _messages.*Prop object.
+    """Message containing properties of this scene node that are sent to the
+    client."""
     api: SceneApi
     wxyz: onp.ndarray = dataclasses.field(
         default_factory=lambda: onp.array([1.0, 0.0, 0.0, 0.0])
@@ -61,22 +105,39 @@ class _SceneNodeHandleState:
     )
 
 
-@dataclasses.dataclass
+class _SceneNodeMessage(Protocol):
+    name: str
+    props: Any
+
+
 class SceneNodeHandle:
     """Handle base class for interacting with scene nodes."""
 
-    _impl: _SceneNodeHandleState
+    def __init__(self, impl: _SceneNodeHandleState) -> None:
+        self._impl = impl
+
+    @property
+    def name(self) -> str:
+        """Read-only name of the scene node."""
+        return self._impl.name
 
     @classmethod
     def _make(
         cls: type[TSceneNodeHandle],
         api: SceneApi,
+        message: _SceneNodeMessage,
         name: str,
         wxyz: tuple[float, float, float, float] | onp.ndarray,
         position: tuple[float, float, float] | onp.ndarray,
         visible: bool,
     ) -> TSceneNodeHandle:
-        out = cls(_SceneNodeHandleState(name, api))
+        """Create scene node: send state to client(s) and set up
+        server-side state."""
+        # Send message.
+        assert isinstance(message, _messages.Message)
+        api._websock_interface.queue_message(message)
+
+        out = cls(_SceneNodeHandleState(name, copy.copy(message.props), api))
         api._handle_from_node_name[name] = out
 
         out.wxyz = wxyz
@@ -166,7 +227,6 @@ class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
     """Instance ID of the clicked object, if applicable. Currently this is `None` for all objects except for the output of :meth:`SceneApi.add_batched_axes()`."""
 
 
-@dataclasses.dataclass
 class _ClickableSceneNodeHandle(SceneNodeHandle):
     def on_click(
         self: TSceneNodeHandle,
@@ -182,46 +242,76 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
         return func
 
 
-@dataclasses.dataclass
-class CameraFrustumHandle(_ClickableSceneNodeHandle):
+class CameraFrustumHandle(
+    _ClickableSceneNodeHandle,
+    _messages.CameraFrustumProps,
+    _OverridablePropApi,
+    PropClass=_messages.CameraFrustumProps,
+):
     """Handle for camera frustums."""
 
 
-@dataclasses.dataclass
-class PointCloudHandle(SceneNodeHandle):
+class PointCloudHandle(
+    SceneNodeHandle,
+    _messages.PointCloudProps,
+    _OverridablePropApi,
+    PropClass=_messages.PointCloudProps,
+):
     """Handle for point clouds. Does not support click events."""
 
 
-@dataclasses.dataclass
-class BatchedAxesHandle(_ClickableSceneNodeHandle):
+class BatchedAxesHandle(
+    _ClickableSceneNodeHandle,
+    _messages.BatchedAxesProps,
+    _OverridablePropApi,
+    PropClass=_messages.BatchedAxesProps,
+):
     """Handle for batched coordinate frames."""
 
 
-@dataclasses.dataclass
-class FrameHandle(_ClickableSceneNodeHandle):
+class FrameHandle(
+    _ClickableSceneNodeHandle,
+    _messages.FrameProps,
+    _OverridablePropApi,
+    PropClass=_messages.FrameProps,
+):
     """Handle for coordinate frames."""
 
 
-@dataclasses.dataclass
-class MeshHandle(_ClickableSceneNodeHandle):
+class MeshHandle(
+    _ClickableSceneNodeHandle,
+    _messages.MeshProps,
+    _OverridablePropApi,
+    PropClass=_messages.MeshProps,
+):
     """Handle for mesh objects."""
 
 
-@dataclasses.dataclass
-class GaussianSplatHandle(_ClickableSceneNodeHandle):
+class GaussianSplatHandle(
+    _ClickableSceneNodeHandle,
+    _messages.GaussianSplatsProps,
+    _OverridablePropApi,
+    PropClass=_messages.GaussianSplatsProps,
+):
     """Handle for Gaussian splatting objects.
 
     **Work-in-progress.** Gaussian rendering is still under development.
     """
 
 
-@dataclasses.dataclass
-class MeshSkinnedHandle(_ClickableSceneNodeHandle):
+class MeshSkinnedHandle(
+    _ClickableSceneNodeHandle,
+    _messages.SkinnedMeshProps,
+    _OverridablePropApi,
+    PropClass=_messages.SkinnedMeshProps,
+):
     """Handle for skinned mesh objects."""
 
-    bones: tuple[MeshSkinnedBoneHandle, ...]
-    """Bones of the skinned mesh. These handles can be used for reading and
-    writing poses, which are defined relative to the mesh root."""
+    def __init__(
+        self, impl: _SceneNodeHandleState, bones: tuple[MeshSkinnedBoneHandle, ...]
+    ):
+        super().__init__(impl)
+        self.bones = bones
 
 
 @dataclasses.dataclass
@@ -278,18 +368,30 @@ class MeshSkinnedBoneHandle:
         )
 
 
-@dataclasses.dataclass
-class GlbHandle(_ClickableSceneNodeHandle):
+class GlbHandle(
+    _ClickableSceneNodeHandle,
+    _messages.GlbProps,
+    _OverridablePropApi,
+    PropClass=_messages.GlbProps,
+):
     """Handle for GLB objects."""
 
 
-@dataclasses.dataclass
-class ImageHandle(_ClickableSceneNodeHandle):
+class ImageHandle(
+    _ClickableSceneNodeHandle,
+    _messages.ImageProps,
+    _OverridablePropApi,
+    PropClass=_messages.ImageProps,
+):
     """Handle for 2D images, rendered in 3D."""
 
 
-@dataclasses.dataclass
-class LabelHandle(SceneNodeHandle):
+class LabelHandle(
+    SceneNodeHandle,
+    _messages.LabelProps,
+    _OverridablePropApi,
+    PropClass=_messages.LabelProps,
+):
     """Handle for 2D label objects. Does not support click events."""
 
 
@@ -300,11 +402,17 @@ class _TransformControlsState:
     sync_cb: None | Callable[[ClientId, TransformControlsHandle], None] = None
 
 
-@dataclasses.dataclass
-class TransformControlsHandle(_ClickableSceneNodeHandle):
+class TransformControlsHandle(
+    _ClickableSceneNodeHandle,
+    _messages.TransformControlsProps,
+    _OverridablePropApi,
+    PropClass=_messages.TransformControlsProps,
+):
     """Handle for interacting with transform control gizmos."""
 
-    _impl_aux: _TransformControlsState
+    def __init__(self, impl: _SceneNodeHandleState, impl_aux: _TransformControlsState):
+        super().__init__(impl)
+        self._impl_aux = impl_aux
 
     @property
     def update_timestamp(self) -> float:
@@ -318,16 +426,20 @@ class TransformControlsHandle(_ClickableSceneNodeHandle):
         return func
 
 
-@dataclasses.dataclass
-class Gui3dContainerHandle(SceneNodeHandle):
+class Gui3dContainerHandle(
+    SceneNodeHandle,
+    _messages.Gui3DProps,
+    _OverridablePropApi,
+    PropClass=_messages.Gui3DProps,
+):
     """Use as a context to place GUI elements into a 3D GUI container."""
 
-    _gui_api: GuiApi
-    _container_id: str
-    _container_id_restore: str | None = None
-    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
-        default_factory=dict
-    )
+    def __init__(self, impl: _SceneNodeHandleState, gui_api: GuiApi, container_id: str):
+        super().__init__(impl)
+        self._gui_api = gui_api
+        self._container_id = container_id
+        self._container_id_restore = None
+        self._children = {}
 
     def __enter__(self) -> Gui3dContainerHandle:
         self._container_id_restore = self._gui_api._get_container_id()

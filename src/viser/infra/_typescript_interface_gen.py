@@ -83,14 +83,14 @@ def _get_ts_type(typ: Type[Any]) -> str:
         args = get_args(typ)
         assert len(args) == 2
         return "{ [key: " + _get_ts_type(args[0]) + "]: " + _get_ts_type(args[1]) + " }"
-    elif is_typeddict(typ):
+    elif is_typeddict(typ) or dataclasses.is_dataclass(typ):
         hints = get_type_hints(typ)
         optional_keys = getattr(typ, "__optional_keys__", [])
 
         def fmt(key):
             val = hints[key]
             optional = key in optional_keys
-            if get_origin(val) is NotRequired:
+            if is_typeddict(typ) and get_origin(val) is NotRequired:
                 val = get_args(val)[0]
             ret = f"'{key}'{'?' if optional else ''}" + ": " + _get_ts_type(val)
             return ret

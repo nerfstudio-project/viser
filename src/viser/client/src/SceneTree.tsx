@@ -138,10 +138,10 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         makeObject: (ref) => (
           <CoordinateFrame
             ref={ref}
-            showAxes={message.show_axes}
-            axesLength={message.axes_length}
-            axesRadius={message.axes_radius}
-            originRadius={message.origin_radius}
+            showAxes={message.props.show_axes}
+            axesLength={message.props.axes_length}
+            axesRadius={message.props.axes_radius}
+            originRadius={message.props.origin_radius}
           />
         ),
       };
@@ -158,24 +158,24 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             ref={ref}
             wxyzsBatched={
               new Float32Array(
-                message.wxyzs_batched.buffer.slice(
-                  message.wxyzs_batched.byteOffset,
-                  message.wxyzs_batched.byteOffset +
-                    message.wxyzs_batched.byteLength,
+                message.props.wxyzs_batched.buffer.slice(
+                  message.props.wxyzs_batched.byteOffset,
+                  message.props.wxyzs_batched.byteOffset +
+                    message.props.wxyzs_batched.byteLength,
                 ),
               )
             }
             positionsBatched={
               new Float32Array(
-                message.positions_batched.buffer.slice(
-                  message.positions_batched.byteOffset,
-                  message.positions_batched.byteOffset +
-                    message.positions_batched.byteLength,
+                message.props.positions_batched.buffer.slice(
+                  message.props.positions_batched.byteOffset,
+                  message.props.positions_batched.byteOffset +
+                    message.props.positions_batched.byteLength,
                 ),
               )
             }
-            axes_length={message.axes_length}
-            axes_radius={message.axes_radius}
+            axes_length={message.props.axes_length}
+            axes_radius={message.props.axes_radius}
           />
         ),
         // Compute click instance index from instance ID. Each visualized
@@ -191,18 +191,18 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
           <group ref={ref}>
             <Grid
               args={[
-                message.width,
-                message.height,
-                message.width_segments,
-                message.height_segments,
+                message.props.width,
+                message.props.height,
+                message.props.width_segments,
+                message.props.height_segments,
               ]}
               side={THREE.DoubleSide}
-              cellColor={message.cell_color}
-              cellThickness={message.cell_thickness}
-              cellSize={message.cell_size}
-              sectionColor={message.section_color}
-              sectionThickness={message.section_thickness}
-              sectionSize={message.section_size}
+              cellColor={message.props.cell_color}
+              cellThickness={message.props.cell_thickness}
+              cellSize={message.props.cell_size}
+              sectionColor={message.props.section_color}
+              sectionThickness={message.props.section_thickness}
+              sectionSize={message.props.section_size}
               rotation={
                 // There's redundancy here when we set the side to
                 // THREE.DoubleSide, where xy and yx should be the same.
@@ -215,17 +215,17 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 // If we add support for FrontSide or BackSide, we should
                 // double-check that the normal directions from each of these
                 // rotations match the right-hand rule!
-                message.plane == "xz"
+                message.props.plane == "xz"
                   ? new THREE.Euler(0.0, 0.0, 0.0)
-                  : message.plane == "xy"
+                  : message.props.plane == "xy"
                     ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
+                    : message.props.plane == "yx"
                       ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                      : message.plane == "yz"
+                      : message.props.plane == "yz"
                         ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                        : message.plane == "zx"
+                        : message.props.plane == "zx"
                           ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                          : message.plane == "zy"
+                          : message.props.plane == "zy"
                             ? new THREE.Euler(
                                 -Math.PI / 2.0,
                                 0.0,
@@ -245,17 +245,20 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         makeObject: (ref) => (
           <PointCloud
             ref={ref}
-            pointSize={message.point_size}
-            pointBallNorm={message.point_ball_norm}
+            pointSize={message.props.point_size}
+            pointBallNorm={message.props.point_ball_norm}
             points={
               new Float32Array(
-                message.points.buffer.slice(
-                  message.points.byteOffset,
-                  message.points.byteOffset + message.points.byteLength,
+                message.props.points.buffer.slice(
+                  message.props.points.byteOffset,
+                  message.props.points.byteOffset +
+                    message.props.points.byteLength,
                 ),
               )
             }
-            colors={new Float32Array(message.colors).map((val) => val / 255.0)}
+            colors={new Float32Array(message.props.colors).map(
+              (val) => val / 255.0,
+            )}
           />
         ),
       };
@@ -272,12 +275,12 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         makeObject: (ref) => (
           <CameraFrustum
             ref={ref}
-            fov={message.fov}
-            aspect={message.aspect}
-            scale={message.scale}
-            color={message.color}
-            imageBinary={message.image_binary}
-            imageMediaType={message.image_media_type}
+            fov={message.props.fov}
+            aspect={message.props.aspect}
+            scale={message.props.scale}
+            color={message.props.color}
+            imageBinary={message.props.image_binary}
+            imageMediaType={message.props.image_media_type}
           />
         ),
       };
@@ -290,19 +293,19 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
           <group onClick={(e) => e.stopPropagation()}>
             <PivotControls
               ref={ref}
-              scale={message.scale}
-              lineWidth={message.line_width}
-              fixed={message.fixed}
-              autoTransform={message.auto_transform}
-              activeAxes={message.active_axes}
-              disableAxes={message.disable_axes}
-              disableSliders={message.disable_sliders}
-              disableRotations={message.disable_rotations}
+              scale={message.props.scale}
+              lineWidth={message.props.line_width}
+              fixed={message.props.fixed}
+              autoTransform={message.props.auto_transform}
+              activeAxes={message.props.active_axes}
+              disableAxes={message.props.disable_axes}
+              disableSliders={message.props.disable_sliders}
+              disableRotations={message.props.disable_rotations}
               disableScaling={true}
-              translationLimits={message.translation_limits}
-              rotationLimits={message.rotation_limits}
-              depthTest={message.depth_test}
-              opacity={message.opacity}
+              translationLimits={message.props.translation_limits}
+              rotationLimits={message.props.rotation_limits}
+              depthTest={message.props.depth_test}
+              opacity={message.props.opacity}
               onDrag={(l) => {
                 const attrs = viewer.nodeAttributesFromName.current;
                 if (attrs[message.name] === undefined) {
@@ -352,7 +355,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                     padding: "0.2em",
                   }}
                 >
-                  {message.text}
+                  {message.props.text}
                 </span>
               </div>
             </Html>
@@ -385,7 +388,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                       evt.stopPropagation();
                     }}
                   >
-                    <GeneratedGuiContainer containerId={message.container_id} />
+                    <GeneratedGuiContainer
+                      containerId={message.props.container_id}
+                    />
                   </Paper>
                 </ContextBridge>
               </Html>
@@ -407,8 +412,8 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         makeObject: (ref) => (
           <GlbAsset
             ref={ref}
-            glb_data={new Uint8Array(message.glb_data)}
-            scale={message.scale}
+            glb_data={new Uint8Array(message.props.glb_data)}
+            scale={message.props.scale}
           />
         ),
       };
@@ -419,14 +424,14 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
           return (
             <group ref={ref}>
               <CatmullRomLine
-                points={message.positions}
-                closed={message.closed}
-                curveType={message.curve_type}
-                tension={message.tension}
-                lineWidth={message.line_width}
-                color={message.color}
+                points={message.props.positions}
+                closed={message.props.closed}
+                curveType={message.props.curve_type}
+                tension={message.props.tension}
+                lineWidth={message.props.line_width}
+                color={message.props.color}
                 // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
-                segments={(message.segments ?? undefined) as undefined}
+                segments={(message.props.segments ?? undefined) as undefined}
               />
             </group>
           );
@@ -437,17 +442,17 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
       return {
         makeObject: (ref) => (
           <group ref={ref}>
-            {[...Array(message.positions.length - 1).keys()].map((i) => (
+            {[...Array(message.props.positions.length - 1).keys()].map((i) => (
               <CubicBezierLine
                 key={i}
-                start={message.positions[i]}
-                end={message.positions[i + 1]}
-                midA={message.control_points[2 * i]}
-                midB={message.control_points[2 * i + 1]}
-                lineWidth={message.line_width}
-                color={message.color}
+                start={message.props.positions[i]}
+                end={message.props.positions[i + 1]}
+                midA={message.props.control_points[2 * i]}
+                midB={message.props.control_points[2 * i + 1]}
+                lineWidth={message.props.line_width}
+                color={message.props.color}
                 // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
-                segments={(message.segments ?? undefined) as undefined}
+                segments={(message.props.segments ?? undefined) as undefined}
               ></CubicBezierLine>
             ))}
           </group>
@@ -461,9 +466,10 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             ref={ref}
             buffer={
               new Uint32Array(
-                message.buffer.buffer.slice(
-                  message.buffer.byteOffset,
-                  message.buffer.byteOffset + message.buffer.byteLength,
+                message.props.buffer.buffer.slice(
+                  message.props.buffer.byteOffset,
+                  message.props.buffer.byteOffset +
+                    message.props.buffer.byteLength,
                 ),
               )
             }
@@ -471,31 +477,12 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         ),
       };
     }
+    default: {
+      console.log("Received message did not match any known types:", message);
+      return { makeObject: () => null };
+    }
   }
 }
-
-/** Component containing the three.js object and children for a particular scene node. */
-// export function SceneNodeThreeObject(props: {
-//   name: string;
-//   parent: THREE.Object3D | null;
-// }) {
-//   const viewer = React.useContext(ViewerContext)!;
-//   const message = viewer.useSceneTree(
-//     (state) => state.nodeFromName[props.name].message,
-//   );
-//   // const clickable = viewer.useSceneTree(
-//   //   (state) => state.nodeFromName[props.name].clickable,
-//   // );
-//   //
-//
-//   const unmountTypes: (typeof message.type)[] = [
-//     "TransformControlsMessage",
-//     "LabelMessage",
-//     "Gui3DMessage",
-//   ];
-//   const unmountWhenInvisible = message.type in unmountTypes;
-//   return null;
-// }
 
 export function SceneNodeThreeObject(props: {
   name: string;

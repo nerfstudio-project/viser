@@ -421,7 +421,7 @@ function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
 export const ViserMesh = React.forwardRef<
   THREE.Mesh | THREE.SkinnedMesh,
   MeshMessage | SkinnedMeshMessage
->(function ViserMesh(props, ref) {
+>(function ViserMesh(message, ref) {
   const viewer = React.useContext(ViewerContext)!;
 
   const generateGradientMap = (shades: 3 | 5) => {
@@ -443,18 +443,18 @@ export const ViserMesh = React.forwardRef<
     return texture;
   };
   const standardArgs = {
-    color: props.color ?? undefined,
-    vertexColors: props.vertex_colors !== null,
-    wireframe: props.wireframe,
-    transparent: props.opacity !== null,
-    opacity: props.opacity ?? 1.0,
+    color: message.props.color ?? undefined,
+    vertexColors: message.props.vertex_colors !== null,
+    wireframe: message.props.wireframe,
+    transparent: message.props.opacity !== null,
+    opacity: message.props.opacity ?? 1.0,
     // Flat shading only makes sense for non-wireframe materials.
-    flatShading: props.flat_shading && !props.wireframe,
+    flatShading: message.props.flat_shading && !message.props.wireframe,
     side: {
       front: THREE.FrontSide,
       back: THREE.BackSide,
       double: THREE.DoubleSide,
-    }[props.side],
+    }[message.props.side],
   };
   const assertUnreachable = (x: never): never => {
     throw new Error(`Should never get here! ${x}`);
@@ -468,45 +468,46 @@ export const ViserMesh = React.forwardRef<
   const xyzw_quat = React.useMemo(() => new THREE.Quaternion(), []);
   React.useEffect(() => {
     const material =
-      props.material == "standard" || props.wireframe
+      message.props.material == "standard" || message.props.wireframe
         ? new THREE.MeshStandardMaterial(standardArgs)
-        : props.material == "toon3"
+        : message.props.material == "toon3"
           ? new THREE.MeshToonMaterial({
               gradientMap: generateGradientMap(3),
               ...standardArgs,
             })
-          : props.material == "toon5"
+          : message.props.material == "toon5"
             ? new THREE.MeshToonMaterial({
                 gradientMap: generateGradientMap(5),
                 ...standardArgs,
               })
-            : assertUnreachable(props.material);
+            : assertUnreachable(message.props.material);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
       new THREE.Float32BufferAttribute(
         new Float32Array(
-          props.vertices.buffer.slice(
-            props.vertices.byteOffset,
-            props.vertices.byteOffset + props.vertices.byteLength,
+          message.props.vertices.buffer.slice(
+            message.props.vertices.byteOffset,
+            message.props.vertices.byteOffset +
+              message.props.vertices.byteLength,
           ),
         ),
         3,
       ),
     );
-    if (props.vertex_colors !== null) {
+    if (message.props.vertex_colors !== null) {
       geometry.setAttribute(
         "color",
-        threeColorBufferFromUint8Buffer(props.vertex_colors),
+        threeColorBufferFromUint8Buffer(message.props.vertex_colors),
       );
     }
 
     geometry.setIndex(
       new THREE.Uint32BufferAttribute(
         new Uint32Array(
-          props.faces.buffer.slice(
-            props.faces.byteOffset,
-            props.faces.byteOffset + props.faces.byteLength,
+          message.props.faces.buffer.slice(
+            message.props.faces.byteOffset,
+            message.props.faces.byteOffset + message.props.faces.byteLength,
           ),
         ),
         1,
@@ -515,17 +516,18 @@ export const ViserMesh = React.forwardRef<
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
 
-    if (props.type === "SkinnedMeshMessage") {
+    let skeleton = undefined;
+    if (message.type === "SkinnedMeshMessage") {
       // Skinned mesh.
       const bones: THREE.Bone[] = [];
       bonesRef.current = bones;
-      for (let i = 0; i < props.bone_wxyzs!.length; i++) {
+      for (let i = 0; i < message.props.bone_wxyzs!.length; i++) {
         bones.push(new THREE.Bone());
       }
       const boneInverses: THREE.Matrix4[] = [];
       bones.forEach((bone, i) => {
-        const wxyz = props.bone_wxyzs[i];
-        const position = props.bone_positions[i];
+        const wxyz = message.props.bone_wxyzs[i];
+        const position = message.props.bone_positions[i];
         xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
 
         const boneInverse = new THREE.Matrix4();
@@ -539,16 +541,16 @@ export const ViserMesh = React.forwardRef<
         bone.matrixAutoUpdate = false;
         bone.matrixWorldAutoUpdate = false;
       });
-      const skeleton = new THREE.Skeleton(bones, boneInverses);
-      setSkeleton(skeleton);
+      skeleton = new THREE.Skeleton(bones, boneInverses);
 
       geometry.setAttribute(
         "skinIndex",
         new THREE.Uint16BufferAttribute(
           new Uint16Array(
-            props.skin_indices.buffer.slice(
-              props.skin_indices.byteOffset,
-              props.skin_indices.byteOffset + props.skin_indices.byteLength,
+            message.props.skin_indices.buffer.slice(
+              message.props.skin_indices.byteOffset,
+              message.props.skin_indices.byteOffset +
+                message.props.skin_indices.byteLength,
             ),
           ),
           4,
@@ -558,9 +560,10 @@ export const ViserMesh = React.forwardRef<
         "skinWeight",
         new THREE.Float32BufferAttribute(
           new Float32Array(
-            props.skin_weights!.buffer.slice(
-              props.skin_weights!.byteOffset,
-              props.skin_weights!.byteOffset + props.skin_weights!.byteLength,
+            message.props.skin_weights!.buffer.slice(
+              message.props.skin_weights!.byteOffset,
+              message.props.skin_weights!.byteOffset +
+                message.props.skin_weights!.byteLength,
             ),
           ),
           4,
@@ -570,6 +573,7 @@ export const ViserMesh = React.forwardRef<
 
     setMaterial(material);
     setGeometry(geometry);
+    setSkeleton(skeleton);
     return () => {
       // TODO: we can switch to the react-three-fiber <bufferGeometry />,
       // <meshStandardMaterial />, etc components to avoid manual
@@ -577,17 +581,20 @@ export const ViserMesh = React.forwardRef<
       geometry.dispose();
       material.dispose();
       skeleton !== undefined && skeleton.dispose();
+
+      const state = viewer.skinnedMeshState.current[message.name];
+      state.initialized = false;
     };
-  }, [props]);
+  }, [message]);
 
   // Update bone transforms for skinned meshes.
   useFrame(() => {
-    if (props.type !== "SkinnedMeshMessage") return;
+    if (message.type !== "SkinnedMeshMessage") return;
 
-    const parentNode = viewer.nodeRefFromName.current[props.name];
+    const parentNode = viewer.nodeRefFromName.current[message.name];
     if (parentNode === undefined) return;
 
-    const state = viewer.skinnedMeshState.current[props.name];
+    const state = viewer.skinnedMeshState.current[message.name];
     const bones = bonesRef.current;
     if (bones !== undefined) {
       bones.forEach((bone, i) => {
@@ -596,10 +603,10 @@ export const ViserMesh = React.forwardRef<
         }
         const wxyz = state.initialized
           ? state.poses[i].wxyz
-          : props.bone_wxyzs[i];
+          : message.props.bone_wxyzs[i];
         const position = state.initialized
           ? state.poses[i].position
-          : props.bone_positions[i];
+          : message.props.bone_positions[i];
 
         xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
         bone.matrix.makeRotationFromQuaternion(xyzw_quat);
@@ -615,7 +622,7 @@ export const ViserMesh = React.forwardRef<
 
   if (geometry === undefined || material === undefined) {
     return;
-  } else if (props.type === "SkinnedMeshMessage") {
+  } else if (message.type === "SkinnedMeshMessage") {
     return (
       <skinnedMesh
         ref={ref as React.ForwardedRef<THREE.SkinnedMesh>}
@@ -647,25 +654,25 @@ export const ViserMesh = React.forwardRef<
 });
 
 export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
-  function ViserImage(props, ref) {
+  function ViserImage(message, ref) {
     const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
 
     React.useEffect(() => {
-      if (props.media_type !== null && props.data !== null) {
-        const image_url = URL.createObjectURL(new Blob([props.data]));
+      if (message.props.media_type !== null && message.props.data !== null) {
+        const image_url = URL.createObjectURL(new Blob([message.props.data]));
         new THREE.TextureLoader().load(image_url, (texture) => {
           setImageTexture(texture);
           URL.revokeObjectURL(image_url);
         });
       }
-    }, [props.media_type, props.data]);
+    }, [message.props.media_type, message.props.data]);
     return (
       <group ref={ref}>
         <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
           <OutlinesIfHovered />
           <planeGeometry
             attach="geometry"
-            args={[props.render_width, props.render_height]}
+            args={[message.props.render_width, message.props.render_height]}
           />
           <meshBasicMaterial
             attach="material"
