@@ -11,8 +11,8 @@ connected clients. When a scene node is added to a client (for example, via
 The most common attributes to read and write here are
 :attr:`viser.SceneNodeHandle.wxyz` and :attr:`viser.SceneNodeHandle.position`.
 Each node type also has type-specific attributes that we can read and write.
-Note that many of these are lower-level than their equivalent arguments in
-factory methods like :func:`viser.ViserServer.add_frame()` or
+Many of these are lower-level than their equivalent arguments in factory
+methods like :func:`viser.ViserServer.add_frame()` or
 :func:`viser.ViserServer.add_image()`.
 
 <!-- prettier-ignore-start -->

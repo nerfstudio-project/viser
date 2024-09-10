@@ -38,6 +38,10 @@ import GeneratedGuiContainer from "./ControlPanel/Generated";
 /** Type corresponding to a zustand-style useSceneTree hook. */
 export type UseSceneTree = ReturnType<typeof useSceneTreeState>;
 
+function rgbToInt(rgb: [number, number, number]): number {
+  return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+}
+
 function SceneNodeThreeChildren(props: {
   name: string;
   parent: THREE.Object3D;
@@ -197,10 +201,10 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 message.props.height_segments,
               ]}
               side={THREE.DoubleSide}
-              cellColor={message.props.cell_color}
+              cellColor={rgbToInt(message.props.cell_color)}
               cellThickness={message.props.cell_thickness}
               cellSize={message.props.cell_size}
-              sectionColor={message.props.section_color}
+              sectionColor={rgbToInt(message.props.section_color)}
               sectionThickness={message.props.section_thickness}
               sectionSize={message.props.section_size}
               rotation={
@@ -274,7 +278,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             fov={message.props.fov}
             aspect={message.props.aspect}
             scale={message.props.scale}
-            color={message.props.color}
+            color={rgbToInt(message.props.color)}
             imageBinary={message.props.image_binary}
             imageMediaType={message.props.image_media_type}
           />
@@ -425,7 +429,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 curveType={message.props.curve_type}
                 tension={message.props.tension}
                 lineWidth={message.props.line_width}
-                color={message.props.color}
+                color={rgbToInt(message.props.color)}
                 // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
                 segments={(message.props.segments ?? undefined) as undefined}
               />
@@ -446,7 +450,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 midA={message.props.control_points[2 * i]}
                 midB={message.props.control_points[2 * i + 1]}
                 lineWidth={message.props.line_width}
-                color={message.props.color}
+                color={rgbToInt(message.props.color)}
                 // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
                 segments={(message.props.segments ?? undefined) as undefined}
               ></CubicBezierLine>

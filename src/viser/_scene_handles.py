@@ -7,6 +7,7 @@ from typing import (
     Any,
     Callable,
     ClassVar,
+    Dict,
     Generic,
     Literal,
     Protocol,
@@ -15,6 +16,8 @@ from typing import (
 )
 
 import numpy as onp
+import numpy.typing as onpt
+from typing_extensions import get_type_hints
 
 from . import _messages
 from .infra._infra import WebsockClientConnection, WebsockServer
@@ -26,21 +29,39 @@ if TYPE_CHECKING:
     from .infra import ClientId
 
 
+def colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
+    """Convert intensity values to uint8. We assume the range [0,1] for floats, and
+    [0,255] for integers. Accepts any shape."""
+    if colors.dtype != onp.uint8:
+        if onp.issubdtype(colors.dtype, onp.floating):
+            colors = onp.clip(colors * 255.0, 0, 255).astype(onp.uint8)
+        if onp.issubdtype(colors.dtype, onp.integer):
+            colors = onp.clip(colors, 0, 255).astype(onp.uint8)
+    return colors
+
+
 class _OverridablePropApi:
     """Mixin that allows reading/assigning properties defined in each scene node message."""
 
-    _PropClass: ClassVar[type]
+    _PropHints: ClassVar[Dict[str, type]]
 
     def __init__(self) -> None:
         assert False
 
     def __init_subclass__(cls, PropClass: type):
-        cls._PropClass = PropClass
+        cls._PropHints = get_type_hints(PropClass)
 
     def __setattr__(self, name: str, value: Any) -> None:
         handle = cast(SceneNodeHandle, self)
         # Get the value of the T TypeVar.
-        if name in self._PropClass.__annotations__:
+        if name in self._PropHints:
+            # Help the user with some casting...
+            hint = self._PropHints[name]
+            if hint == onpt.NDArray[onp.float32]:
+                value = value.astype(onp.float32)
+            elif hint == onpt.NDArray[onp.uint8] and "color" in name:
+                value = colors_to_uint8(value)
+
             setattr(handle._impl.props, name, value)
             handle._impl.api._websock_interface.queue_message(
                 _messages.SceneNodeUpdateMessage(handle.name, {name: value})
@@ -49,7 +70,7 @@ class _OverridablePropApi:
             return object.__setattr__(self, name, value)
 
     def __getattr__(self, name: str) -> Any:
-        if name in self._PropClass.__annotations__:
+        if name in self._PropClass:
             return getattr(self._impl.props, name)
         else:
             raise AttributeError(

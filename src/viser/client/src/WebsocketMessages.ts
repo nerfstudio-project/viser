@@ -98,7 +98,7 @@ export interface CameraFrustumMessage {
     fov: number;
     aspect: number;
     scale: number;
-    color: number;
+    color: [number, number, number];
     image_media_type: "image/jpeg" | "image/png" | null;
     image_binary: Uint8Array | null;
   };
@@ -156,10 +156,10 @@ export interface GridMessage {
     width_segments: number;
     height_segments: number;
     plane: "xz" | "xy" | "yx" | "yz" | "zx" | "zy";
-    cell_color: number;
+    cell_color: [number, number, number];
     cell_thickness: number;
     cell_size: number;
-    section_color: number;
+    section_color: [number, number, number];
     section_thickness: number;
     section_size: number;
   };
@@ -213,7 +213,7 @@ export interface MeshMessage {
   props: {
     vertices: Uint8Array;
     faces: Uint8Array;
-    color: number | null;
+    color: [number, number, number] | null;
     vertex_colors: Uint8Array | null;
     wireframe: boolean;
     opacity: number | null;
@@ -232,7 +232,7 @@ export interface SkinnedMeshMessage {
   props: {
     vertices: Uint8Array;
     faces: Uint8Array;
-    color: number | null;
+    color: [number, number, number] | null;
     vertex_colors: Uint8Array | null;
     wireframe: boolean;
     opacity: number | null;
@@ -883,7 +883,7 @@ export interface CatmullRomSplineMessage {
     tension: number;
     closed: boolean;
     line_width: number;
-    color: number;
+    color: [number, number, number];
     segments: number | null;
   };
 }
@@ -898,7 +898,7 @@ export interface CubicBezierSplineMessage {
     positions: [number, number, number][];
     control_points: [number, number, number][];
     line_width: number;
-    color: number;
+    color: [number, number, number];
     segments: number | null;
   };
 }

@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Callable, Tuple, TypeVar, Union, cast, get_arg
 
 import imageio.v3 as iio
 import numpy as onp
-import numpy.typing as onpt
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages
@@ -32,6 +31,7 @@ from ._scene_handles import (
     ScenePointerEvent,
     TransformControlsHandle,
     _TransformControlsState,
+    colors_to_uint8,
 )
 
 if TYPE_CHECKING:
@@ -44,31 +44,20 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 
 
-def _colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
-    """Convert intensity values to uint8. We assume the range [0,1] for floats, and
-    [0,255] for integers. Accepts any shape."""
-    if colors.dtype != onp.uint8:
-        if onp.issubdtype(colors.dtype, onp.floating):
-            colors = onp.clip(colors * 255.0, 0, 255).astype(onp.uint8)
-        if onp.issubdtype(colors.dtype, onp.integer):
-            colors = onp.clip(colors, 0, 255).astype(onp.uint8)
-    return colors
-
-
 RgbTupleOrArray: TypeAlias = Union[
     Tuple[int, int, int], Tuple[float, float, float], onp.ndarray
 ]
 
 
-def _encode_rgb(rgb: RgbTupleOrArray) -> int:
+def _encode_rgb(rgb: RgbTupleOrArray) -> tuple[int, int, int]:
     if isinstance(rgb, onp.ndarray):
         assert rgb.shape == (3,)
     rgb_fixed = tuple(
-        value if onp.issubdtype(type(value), onp.integer) else int(value * 255)
+        int(value) if onp.issubdtype(type(value), onp.integer) else int(value * 255)
         for value in rgb
     )
     assert len(rgb_fixed) == 3
-    return int(rgb_fixed[0] * (256**2) + rgb_fixed[1] * 256 + rgb_fixed[2])
+    return rgb_fixed  # type: ignore
 
 
 def _encode_image_binary(
@@ -77,7 +66,7 @@ def _encode_image_binary(
     jpeg_quality: int | None = None,
 ) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
     media_type: Literal["image/png", "image/jpeg"]
-    image = _colors_to_uint8(image)
+    image = colors_to_uint8(image)
     with io.BytesIO() as data_buffer:
         if format == "png":
             media_type = "image/png"
@@ -673,7 +662,7 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        colors_cast = _colors_to_uint8(onp.asarray(colors))
+        colors_cast = colors_to_uint8(onp.asarray(colors))
         assert (
             len(points.shape) == 2 and points.shape[-1] == 3
         ), "Shape of points should be (N, 3)."
@@ -975,8 +964,8 @@ class SceneApi:
                 # - xyz (96 bits): upper-triangular Cholesky factor of covariance.
                 cov_cholesky_triu.astype(onp.float16).copy().view(onp.uint8),
                 # - w (32 bits): rgba.
-                _colors_to_uint8(rgbs),
-                _colors_to_uint8(opacities),
+                colors_to_uint8(rgbs),
+                colors_to_uint8(opacities),
             ],
             axis=-1,
         ).view(onp.uint32)

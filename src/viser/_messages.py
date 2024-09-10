@@ -174,8 +174,8 @@ class CameraFrustumProps:
     """Aspect ratio of the camera (width over height). For handles, synchronized automatically when assigned."""
     scale: float
     """Scale factor for the size of the frustum. For handles, synchronized automatically when assigned."""
-    color: int
-    """Color of the frustum as an RGB integer. For handles, synchronized automatically when assigned."""
+    color: Tuple[int, int, int]
+    """Color of the frustum as RGB integers. For handles, synchronized automatically when assigned."""
     image_media_type: Optional[Literal["image/jpeg", "image/png"]]
     """Format of the provided image ('image/jpeg' or 'image/png'). For handles, synchronized automatically when assigned."""
     image_binary: Optional[bytes]
@@ -261,14 +261,14 @@ class GridProps:
     """Number of segments along the height. For handles, synchronized automatically when assigned."""
     plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"]
     """The plane in which the grid is oriented. For handles, synchronized automatically when assigned."""
-    cell_color: int
-    """Color of the grid cells as an RGB integer. For handles, synchronized automatically when assigned."""
+    cell_color: Tuple[int, int, int]
+    """Color of the grid cells as RGB integers. For handles, synchronized automatically when assigned."""
     cell_thickness: float
     """Thickness of the grid lines. For handles, synchronized automatically when assigned."""
     cell_size: float
     """Size of each cell in the grid. For handles, synchronized automatically when assigned."""
-    section_color: int
-    """Color of the grid sections as an RGB integer. For handles, synchronized automatically when assigned."""
+    section_color: Tuple[int, int, int]
+    """Color of the grid sections as RGB integers. For handles, synchronized automatically when assigned."""
     section_thickness: float
     """Thickness of the section lines. For handles, synchronized automatically when assigned."""
     section_size: float
@@ -355,8 +355,8 @@ class MeshProps:
     """A numpy array of vertex positions. Should have shape (V, 3). For handles, synchronized automatically when assigned."""
     faces: onpt.NDArray[onp.uint32]
     """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). For handles, synchronized automatically when assigned."""
-    color: Optional[int]
-    """Color of the mesh as an RGB integer. For handles, synchronized automatically when assigned."""
+    color: Optional[Tuple[int, int, int]]
+    """Color of the mesh as RGB integers. For handles, synchronized automatically when assigned."""
     vertex_colors: Optional[onpt.NDArray[onp.uint8]]
     """Optional array of vertex colors. For handles, synchronized automatically when assigned."""
     wireframe: bool
@@ -871,8 +871,8 @@ class CatmullRomSplineProps:
     """Boolean indicating if the spline is closed (forms a loop). For handles, synchronized automatically when assigned."""
     line_width: float
     """Width of the spline line. For handles, synchronized automatically when assigned."""
-    color: int
-    """Color of the spline as an RGB integer. For handles, synchronized automatically when assigned."""
+    color: Tuple[int, int, int]
+    """Color of the spline as RGB integers. For handles, synchronized automatically when assigned."""
     segments: Optional[int]
     """Number of segments to divide the spline into. For handles, synchronized automatically when assigned."""
 
@@ -893,8 +893,8 @@ class CubicBezierSplineProps:
     """A tuple of control points for Bezier curve shaping. For handles, synchronized automatically when assigned."""
     line_width: float
     """Width of the spline line. For handles, synchronized automatically when assigned."""
-    color: int
-    """Color of the spline as an RGB integer. For handles, synchronized automatically when assigned."""
+    color: Tuple[int, int, int]
+    """Color of the spline as RGB integers. For handles, synchronized automatically when assigned."""
     segments: Optional[int]
     """Number of segments to divide the spline into. For handles, synchronized automatically when assigned."""
 
