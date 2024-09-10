@@ -276,6 +276,60 @@ class CameraFrustumHandle(
     """Handle for camera frustums."""
 
 
+class DirectionalLightHandle(
+    SceneNodeHandle,
+    _messages.DirectionalLightProps,
+    _OverridablePropApi,
+    PropClass=_messages.DirectionalLightProps,
+):
+    """Handle for directional lights."""
+
+
+class AmbientLightHandle(
+    SceneNodeHandle,
+    _messages.AmbientLightProps,
+    _OverridablePropApi,
+    PropClass=_messages.AmbientLightProps,
+):
+    """Handle for ambient lights."""
+
+
+class HemisphereLightHandle(
+    SceneNodeHandle,
+    _messages.HemisphereLightProps,
+    _OverridablePropApi,
+    PropClass=_messages.HemisphereLightProps,
+):
+    """Handle for hemisphere lights."""
+
+
+class PointLightHandle(
+    SceneNodeHandle,
+    _messages.PointLightProps,
+    _OverridablePropApi,
+    PropClass=_messages.PointLightProps,
+):
+    """Handle for point lights."""
+
+
+class RectAreaLightHandle(
+    SceneNodeHandle,
+    _messages.RectAreaLightProps,
+    _OverridablePropApi,
+    PropClass=_messages.RectAreaLightProps,
+):
+    """Handle for rectangular area lights."""
+
+
+class SpotLightHandle(
+    SceneNodeHandle,
+    _messages.SpotLightProps,
+    _OverridablePropApi,
+    PropClass=_messages.SpotLightProps,
+):
+    """Handle for spot lights."""
+
+
 class PointCloudHandle(
     SceneNodeHandle,
     _messages.PointCloudProps,

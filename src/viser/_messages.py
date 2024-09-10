@@ -340,6 +340,158 @@ class PointCloudProps:
 
 
 @dataclasses.dataclass
+@dataclasses.dataclass
+class DirectionalLightMessage(Message, tag="SceneNodeMessage"):
+    """Directional light message."""
+
+    name: str
+    props: DirectionalLightProps
+
+
+@dataclasses.dataclass
+class DirectionalLightProps:
+    color: Tuple[int, int, int]
+    """Color of the directional light. For handles, synchronized automatically when assigned."""
+    intensity: float
+    """Intensity of the directional light. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class AmbientLightMessage(Message, tag="SceneNodeMessage"):
+    """Ambient light message."""
+
+    name: str
+    props: AmbientLightProps
+
+
+@dataclasses.dataclass
+class AmbientLightProps:
+    color: Tuple[int, int, int]
+    """Color of the ambient light. For handles, synchronized automatically when assigned."""
+    intensity: float
+    """Intensity of the ambient light. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class HemisphereLightMessage(Message, tag="SceneNodeMessage"):
+    """Hemisphere light message."""
+
+    name: str
+    props: HemisphereLightProps
+
+
+@dataclasses.dataclass
+class HemisphereLightProps:
+    sky_color: Tuple[int, int, int]
+    """Sky color of the hemisphere light. For handles, synchronized automatically when assigned."""
+    ground_color: Tuple[int, int, int]
+    """Ground color of the hemisphere light. For handles, synchronized automatically when assigned."""
+    intensity: float
+    """Intensity of the hemisphere light. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class PointLightMessage(Message, tag="SceneNodeMessage"):
+    """Point light message."""
+
+    name: str
+    props: PointLightProps
+
+
+@dataclasses.dataclass
+class PointLightProps:
+    color: Tuple[int, int, int]
+    """Color of the point light. For handles, synchronized automatically when assigned."""
+    intensity: float
+    """Intensity of the point light. For handles, synchronized automatically when assigned."""
+    distance: float
+    """Distance of the point light. For handles, synchronized automatically when assigned."""
+    decay: float
+    """Decay of the point light. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class RectAreaLightMessage(Message, tag="SceneNodeMessage"):
+    """Rectangular Area light message."""
+
+    name: str
+    props: RectAreaLightProps
+
+
+@dataclasses.dataclass
+class RectAreaLightProps:
+    color: Tuple[int, int, int]
+    """Color of the rectangular area light. For handles, synchronized automatically when assigned."""
+    intensity: float
+    """Intensity of the rectangular area light. For handles, synchronized automatically when assigned."""
+    width: float
+    """Width of the rectangular area light. For handles, synchronized automatically when assigned."""
+    height: float
+    """Height of the rectangular area light. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class SpotLightMessage(Message, tag="SceneNodeMessage"):
+    """Spot light message."""
+
+    name: str
+    props: SpotLightProps
+
+
+@dataclasses.dataclass
+class SpotLightProps:
+    color: Tuple[int, int, int]
+    """Color of the spot light. For handles, synchronized automatically when assigned."""
+    intensity: float
+    """Intensity of the spot light. For handles, synchronized automatically when assigned."""
+    distance: float
+    """Distance of the spot light. For handles, synchronized automatically when assigned."""
+    angle: float
+    """Angle of the spot light. For handles, synchronized automatically when assigned."""
+    penumbra: float
+    """Penumbra of the spot light. For handles, synchronized automatically when assigned."""
+    decay: float
+    """Decay of the spot light. For handles, synchronized automatically when assigned."""
+
+    def __post_init__(self):
+        assert self.angle <= onp.pi / 2
+        assert self.angle >= 0
+
+
+@dataclasses.dataclass
+class EnvironmentMapMessage(Message):
+    """Environment Map message."""
+
+    hdri: Optional[
+        Literal[
+            "apartment",
+            "city",
+            "dawn",
+            "forest",
+            "lobby",
+            "night",
+            "park",
+            "studio",
+            "sunset",
+            "warehouse",
+        ]
+    ]
+    background: bool
+    background_blurriness: float
+    background_intensity: float
+    background_rotation: tuple[float, float, float]
+    environment_intensity: float
+    environment_rotation: tuple[float, float, float]
+
+
+@dataclasses.dataclass
+class EnableLightsMessage(Message):
+    """Spot light message."""
+
+    enabled: bool
+
+
+@dataclasses.dataclass
 class MeshMessage(Message, tag="SceneNodeMessage"):
     """Mesh message.
 

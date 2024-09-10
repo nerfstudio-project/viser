@@ -477,6 +477,92 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
         ),
       };
     }
+
+    // Add a directional light
+    case "DirectionalLightMessage": {
+      return {
+        makeObject: (ref) => (
+          <directionalLight
+            ref={ref}
+            intensity={message.props.intensity}
+            color={rgbToInt(message.props.color)}
+          />
+        ),
+      };
+    }
+
+    // Add an ambient light
+    case "AmbientLightMessage": {
+      return {
+        makeObject: (ref) => (
+          <ambientLight
+            ref={ref}
+            intensity={message.props.intensity}
+            color={rgbToInt(message.props.color)}
+          />
+        ),
+      };
+    }
+
+    // Add a hemisphere light
+    case "HemisphereLightMessage": {
+      return {
+        makeObject: (ref) => (
+          <hemisphereLight
+            ref={ref}
+            intensity={message.props.intensity}
+            color={rgbToInt(message.props.sky_color)}
+            groundColor={rgbToInt(message.props.ground_color)}
+          />
+        ),
+      };
+    }
+
+    // Add a point light
+    case "PointLightMessage": {
+      return {
+        makeObject: (ref) => (
+          <pointLight
+            ref={ref}
+            intensity={message.props.intensity}
+            color={rgbToInt(message.props.color)}
+            distance={message.props.distance}
+            decay={message.props.decay}
+          />
+        ),
+      };
+    }
+    // Add a rectangular area light
+    case "RectAreaLightMessage": {
+      return {
+        makeObject: (ref) => (
+          <rectAreaLight
+            ref={ref}
+            intensity={message.props.intensity}
+            color={rgbToInt(message.props.color)}
+            width={message.props.width}
+            height={message.props.height}
+          />
+        ),
+      };
+    }
+
+    // Add a spot light
+    case "SpotLightMessage": {
+      return {
+        makeObject: (ref) => (
+          <spotLight
+            ref={ref}
+            intensity={message.props.intensity}
+            color={rgbToInt(message.props.color)}
+            distance={message.props.distance}
+            angle={message.props.angle}
+            penumbra={message.props.penumbra}
+            decay={message.props.decay}
+          />
+        ),
+      };
+    }
     default: {
       console.log("Received message did not match any known types:", message);
       return { makeObject: () => null };

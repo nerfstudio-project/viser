@@ -49,4 +49,16 @@ methods like :func:`viser.ViserServer.add_frame()` or
 
 .. autoclass:: viser.GaussianSplatHandle
 
+.. autoclass:: viser.DirectionalLightHandle
+
+.. autoclass:: viser.AmbientLightHandle
+
+.. autoclass:: viser.HemisphereLightHandle
+
+.. autoclass:: viser.PointLightHandle
+
+.. autoclass:: viser.RectAreaLightHandle
+
+.. autoclass:: viser.SpotLightHandle
+
 <!-- prettier-ignore-end -->

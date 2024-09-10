@@ -13,25 +13,31 @@ from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 from . import _messages
 from . import transforms as tf
 from ._scene_handles import (
+    AmbientLightHandle,
     BatchedAxesHandle,
     BoneState,
     CameraFrustumHandle,
+    DirectionalLightHandle,
     FrameHandle,
     GaussianSplatHandle,
     GlbHandle,
     GridHandle,
     Gui3dContainerHandle,
+    HemisphereLightHandle,
     ImageHandle,
     LabelHandle,
     MeshHandle,
     MeshSkinnedBoneHandle,
     MeshSkinnedHandle,
     PointCloudHandle,
+    PointLightHandle,
+    RectAreaLightHandle,
     SceneNodeHandle,
     SceneNodePointerEvent,
     ScenePointerEvent,
     SplineCatmullRomHandle,
     SplineCubicBezierHandle,
+    SpotLightHandle,
     TransformControlsHandle,
     _TransformControlsState,
     colors_to_uint8,
@@ -240,11 +246,286 @@ class SceneApi:
             _messages.SetSceneNodeVisibilityMessage("", visible)
         )
 
+    def add_light_directional(
+        self,
+        name: str,
+        color: Tuple[int, int, int] = (255, 255, 255),
+        intensity: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> DirectionalLightHandle:
+        """
+        Add a directional light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: Color of the light.
+            intensity: Light's strength/intensity.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        message = _messages.DirectionalLightMessage(
+            name, _messages.DirectionalLightProps(color, intensity)
+        )
+        return DirectionalLightHandle._make(
+            self, message, name, wxyz, position, visible
+        )
+
+    def add_light_ambient(
+        self,
+        name: str,
+        color: Tuple[int, int, int] = (255, 255, 255),
+        intensity: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> AmbientLightHandle:
+        """
+        Add an ambient light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: Color of the light.
+            intensity: Light's strength/intensity.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        message = _messages.AmbientLightMessage(
+            name, _messages.AmbientLightProps(color, intensity)
+        )
+        return AmbientLightHandle._make(self, message, name, wxyz, position, visible)
+
+    def add_light_hemisphere(
+        self,
+        name: str,
+        sky_color: Tuple[int, int, int] = (255, 255, 255),
+        ground_color: Tuple[int, int, int] = (255, 255, 255),
+        intensity: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> HemisphereLightHandle:
+        """
+        Add a hemisphere light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            skyColor: The light's sky color.
+            groundColor: The light's ground color.
+            intensity: Light's strength/intensity.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        message = _messages.HemisphereLightMessage(
+            name, _messages.HemisphereLightProps(sky_color, ground_color, intensity)
+        )
+        return HemisphereLightHandle._make(self, message, name, wxyz, position, visible)
+
+    def add_light_point(
+        self,
+        name: str,
+        color: Tuple[int, int, int] = (255, 255, 255),
+        intensity: float = 1.0,
+        distance: float = 0.0,
+        decay: float = 2.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> PointLightHandle:
+        """
+        Add a point light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: Color of the light.
+            intensity: Light's strength/intensity.
+            distance: Maximum distance of light.
+            decay: The amount the light dims along the distance of the light.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        message = _messages.PointLightMessage(
+            name,
+            _messages.PointLightProps(
+                color=color,
+                intensity=intensity,
+                distance=distance,
+                decay=decay,
+            ),
+        )
+        return PointLightHandle._make(self, message, name, wxyz, position, visible)
+
+    def add_light_rectarea(
+        self,
+        name: str,
+        color: Tuple[int, int, int] = (255, 255, 255),
+        intensity: float = 1.0,
+        width: float = 10.0,
+        height: float = 10.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> RectAreaLightHandle:
+        """
+        Add a rectangular area light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: Color of the light.
+            intensity: Light's strength/intensity.
+            width: THe width of the light.
+            height: The height of the light.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        message = _messages.RectAreaLightMessage(
+            name=name,
+            props=_messages.RectAreaLightProps(
+                color=color,
+                intensity=intensity,
+                width=width,
+                height=height,
+            ),
+        )
+        return RectAreaLightHandle._make(self, message, name, wxyz, position, visible)
+
+    def add_light_spot(
+        self,
+        name: str,
+        color: Tuple[int, int, int] = (255, 255, 255),
+        distance: float = 0.0,
+        angle: float = onp.pi / 3,
+        penumbra: float = 0.0,
+        decay: float = 2.0,
+        intensity: float = 1.0,
+        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> SpotLightHandle:
+        """
+        Add a spot light to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            color: Color of the light.
+            distance: Maximum distance of light.
+            angle: Maximum extent of the spotlight, in radians, from its direction.
+                Should be no more than Math.PI/2.
+            penumbra: Percent of the spotlight cone that is attenuated due to penumbra.
+                Between 0 and 1.
+            decay: The amount the light dims along the distance of the light.
+            intensity: Light's strength/intensity.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+
+        message = _messages.SpotLightMessage(
+            name,
+            _messages.SpotLightProps(
+                color, intensity, distance, angle, penumbra, decay
+            ),
+        )
+        return SpotLightHandle._make(self, message, name, wxyz, position, visible)
+
+    def set_environment_map(
+        self,
+        hdri: None
+        | Literal[
+            "apartment",
+            "city",
+            "dawn",
+            "forest",
+            "lobby",
+            "night",
+            "park",
+            "studio",
+            "sunset",
+            "warehouse",
+        ] = "warehouse",
+        background: bool = False,
+        background_blurriness: float = 0.0,
+        background_intensity: float = 1.0,
+        background_rotation: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        environment_intensity: float = 1.0,
+        environment_rotation: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    ) -> None:
+        """Set the environment map for the scene. This will set some lights and background.
+
+        Args:
+            hdri: Preset HDRI environment to use.
+            background: Show or hide the environment map in the background.
+            background_blurriness: Blur factor of the environment map background (0-1).
+            background_intensity: Intensity of the background.
+            background_rotation: Rotation of the background in radians.
+            environment_intensity: Intensity of the environment lighting.
+            environment_rotation: Rotation of the environment lighting in radians.
+        """
+        self._websock_interface.queue_message(
+            _messages.EnvironmentMapMessage(
+                hdri=hdri,
+                background=background,
+                background_blurriness=background_blurriness,
+                background_intensity=background_intensity,
+                background_rotation=background_rotation,
+                environment_intensity=environment_intensity,
+                environment_rotation=environment_rotation,
+            )
+        )
+
+    def enable_default_lights(self, enabled: bool = True) -> None:
+        """Enable/disable the default lights in the scene. If not otherwise
+        specified, default lighting will be enabled.
+
+        This does not affect lighting from the environment map. To turn these off,
+        see :meth:`SceneApi.set_environment_map()`.
+
+        Args:
+            enabled: True if user wants default lighting. False is user does
+                not want default lighting.
+        """
+        self._websock_interface.queue_message(_messages.EnableLightsMessage(enabled))
+
     def add_glb(
         self,
         name: str,
         glb_data: bytes,
-        scale=1.0,
+        scale: float = 1.0,
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,

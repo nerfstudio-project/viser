@@ -35,7 +35,6 @@ import ControlPanel from "./ControlPanel/ControlPanel";
 import { UseGui, useGuiState } from "./ControlPanel/GuiState";
 import { searchParamKey } from "./SearchParamsUtils";
 import { WebsocketMessageProducer } from "./WebsocketInterface";
-
 import { Titlebar } from "./Titlebar";
 import { ViserModal } from "./Modal";
 import { useSceneTreeState } from "./SceneTreeState";
@@ -450,15 +449,64 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <SplatRenderContext>
         <SceneNodeThreeObject name="" parent={null} />
       </SplatRenderContext>
-      <Environment path="hdri/" files="potsdamer_platz_1k.hdr" />
-      <directionalLight color={0xffffff} intensity={1.0} position={[0, 1, 0]} />
-      <directionalLight
-        color={0xffffff}
-        intensity={0.2}
-        position={[0, -1, 0]}
-      />
+      <DefaultLights />
     </Canvas>
   );
+}
+
+function DefaultLights() {
+  const viewer = React.useContext(ViewerContext)!;
+  const enableDefaultLights = viewer.useSceneTree(
+    (state) => state.enableDefaultLights,
+  );
+  const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
+
+  let envMapNode;
+  if (environmentMap.hdri === null) {
+    envMapNode = null;
+  } else {
+    const presetsObj = {
+      apartment: "lebombo_1k.hdr",
+      city: "potsdamer_platz_1k.hdr",
+      dawn: "kiara_1_dawn_1k.hdr",
+      forest: "forest_slope_1k.hdr",
+      lobby: "st_fagans_interior_1k.hdr",
+      night: "dikhololo_night_1k.hdr",
+      park: "rooitou_park_1k.hdr",
+      studio: "studio_small_03_1k.hdr",
+      sunset: "venice_sunset_1k.hdr",
+      warehouse: "empty_warehouse_01_1k.hdr",
+    };
+    console.log(environmentMap.environment_intensity);
+    envMapNode = (
+      <Environment
+        files={`hdri/${presetsObj[environmentMap.hdri]}`}
+        background={environmentMap.background}
+        backgroundBlurriness={environmentMap.background_blurriness}
+        backgroundIntensity={environmentMap.background_intensity}
+        backgroundRotation={environmentMap.background_rotation}
+        environmentIntensity={environmentMap.environment_intensity}
+        environmentRotation={environmentMap.environment_rotation}
+      />
+    );
+  }
+  if (enableDefaultLights)
+    return (
+      <>
+        {envMapNode}
+        <directionalLight
+          color={0x0000ff}
+          intensity={1.0}
+          position={[0, 1, 0]}
+        />
+        <directionalLight
+          color={0x00ff00}
+          intensity={0.2}
+          position={[0, -1, 0]}
+        />
+      </>
+    );
+  else return envMapNode;
 }
 
 function AdaptiveDpr() {

@@ -176,6 +176,18 @@ function useMessageHandler() {
         return;
       }
 
+      // Add an environment map
+      case "EnvironmentMapMessage": {
+        viewer.useSceneTree.setState({ environmentMap: message });
+        return;
+      }
+
+      // Disable/enable default lighting
+      case "EnableLightsMessage": {
+        viewer.useSceneTree.setState({ enableDefaultLights: message.enabled });
+        return;
+      }
+
       case "GuiModalMessage": {
         addModal(message);
         return;

@@ -201,6 +201,114 @@ export interface PointCloudMessage {
     point_ball_norm: number;
   };
 }
+/** Directional light message.
+ *
+ * (automatically generated)
+ */
+export interface DirectionalLightMessage {
+  type: "DirectionalLightMessage";
+  name: string;
+  props: { color: [number, number, number]; intensity: number };
+}
+/** Ambient light message.
+ *
+ * (automatically generated)
+ */
+export interface AmbientLightMessage {
+  type: "AmbientLightMessage";
+  name: string;
+  props: { color: [number, number, number]; intensity: number };
+}
+/** Hemisphere light message.
+ *
+ * (automatically generated)
+ */
+export interface HemisphereLightMessage {
+  type: "HemisphereLightMessage";
+  name: string;
+  props: {
+    sky_color: [number, number, number];
+    ground_color: [number, number, number];
+    intensity: number;
+  };
+}
+/** Point light message.
+ *
+ * (automatically generated)
+ */
+export interface PointLightMessage {
+  type: "PointLightMessage";
+  name: string;
+  props: {
+    color: [number, number, number];
+    intensity: number;
+    distance: number;
+    decay: number;
+  };
+}
+/** Rectangular Area light message.
+ *
+ * (automatically generated)
+ */
+export interface RectAreaLightMessage {
+  type: "RectAreaLightMessage";
+  name: string;
+  props: {
+    color: [number, number, number];
+    intensity: number;
+    width: number;
+    height: number;
+  };
+}
+/** Spot light message.
+ *
+ * (automatically generated)
+ */
+export interface SpotLightMessage {
+  type: "SpotLightMessage";
+  name: string;
+  props: {
+    color: [number, number, number];
+    intensity: number;
+    distance: number;
+    angle: number;
+    penumbra: number;
+    decay: number;
+  };
+}
+/** Environment Map message.
+ *
+ * (automatically generated)
+ */
+export interface EnvironmentMapMessage {
+  type: "EnvironmentMapMessage";
+  hdri:
+    | "apartment"
+    | "city"
+    | "dawn"
+    | "forest"
+    | "lobby"
+    | "night"
+    | "park"
+    | "studio"
+    | "sunset"
+    | "warehouse"
+    | null;
+  background: boolean;
+  background_blurriness: number;
+  background_intensity: number;
+  background_rotation: [number, number, number];
+  environment_intensity: number;
+  environment_rotation: [number, number, number];
+}
+/** Spot light message.
+ *
+ * (automatically generated)
+ */
+export interface EnableLightsMessage {
+  type: "EnableLightsMessage";
+  enabled: boolean;
+}
 /** Mesh message.
  *
  * Vertices are internally canonicalized to float32, faces to uint32.
@@ -1011,6 +1119,14 @@ export type Message =
   | LabelMessage
   | Gui3DMessage
   | PointCloudMessage
+  | DirectionalLightMessage
+  | AmbientLightMessage
+  | HemisphereLightMessage
+  | PointLightMessage
+  | RectAreaLightMessage
+  | SpotLightMessage
+  | EnvironmentMapMessage
+  | EnableLightsMessage
   | MeshMessage
   | SkinnedMeshMessage
   | SetBoneOrientationMessage
@@ -1077,6 +1193,12 @@ export type SceneNodeMessage =
   | LabelMessage
   | Gui3DMessage
   | PointCloudMessage
+  | DirectionalLightMessage
+  | AmbientLightMessage
+  | HemisphereLightMessage
+  | PointLightMessage
+  | RectAreaLightMessage
+  | SpotLightMessage
   | MeshMessage
   | SkinnedMeshMessage
   | TransformControlsMessage
@@ -1112,6 +1234,12 @@ const typeSetSceneNodeMessage = new Set([
   "LabelMessage",
   "Gui3DMessage",
   "PointCloudMessage",
+  "DirectionalLightMessage",
+  "AmbientLightMessage",
+  "HemisphereLightMessage",
+  "PointLightMessage",
+  "RectAreaLightMessage",
+  "SpotLightMessage",
   "MeshMessage",
   "SkinnedMeshMessage",
   "TransformControlsMessage",

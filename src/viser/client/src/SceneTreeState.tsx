@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { SceneNodeMessage } from "./WebsocketMessages";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
+import { EnvironmentMapMessage } from "./WebsocketMessages";
 
 export type SceneNode = {
   message: SceneNodeMessage;
@@ -13,6 +14,8 @@ export type SceneNode = {
 type SceneTreeState = {
   nodeFromName: { [name: string]: SceneNode | undefined };
   labelVisibleFromName: { [name: string]: boolean };
+  enableDefaultLights: boolean;
+  environmentMap: EnvironmentMapMessage;
 };
 
 type SceneTreeActions = {
@@ -69,6 +72,17 @@ export function useSceneTreeState(
           "/WorldAxes": worldAxesNodeTemplate,
         },
         labelVisibleFromName: {},
+        enableDefaultLights: true,
+        environmentMap: {
+          type: "EnvironmentMapMessage",
+          hdri: "city",
+          background: false,
+          background_blurriness: 0,
+          background_intensity: 1,
+          background_rotation: [0, 0, 0],
+          environment_intensity: 1,
+          environment_rotation: [0, 0, 0],
+        },
         setClickable: (name, clickable) =>
           set((state) => {
             const node = state.nodeFromName[name];
