@@ -28,13 +28,16 @@ import {
   PointCloud,
   ViserImage,
   ViserMesh,
-  rgbToInt,
 } from "./ThreeAssets";
 import { opencvXyFromPointerXy } from "./ClickUtils";
 import { SceneNodeMessage } from "./WebsocketMessages";
 import { SplatObject } from "./Splatting/GaussianSplats";
 import { Paper } from "@mantine/core";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
+
+function rgbToInt(rgb: [number, number, number]): number {
+  return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+}
 
 /** Type corresponding to a zustand-style useSceneTree hook. */
 export type UseSceneTree = ReturnType<typeof useSceneTreeState>;

@@ -50,7 +50,7 @@ type AllPossibleThreeJSMaterials =
   | LineBasicMaterial
   | LineDashedMaterial;
 
-export function rgbToInt(rgb: [number, number, number]): number {
+function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
 }
 const originGeom = new THREE.SphereGeometry(1.0);
