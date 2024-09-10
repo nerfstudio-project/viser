@@ -213,7 +213,7 @@ class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
     """
 
     def on_update(
-        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], Any]
     ) -> Callable[[GuiEvent[TGuiHandle]], None]:
         """Attach a function to call when a GUI input is updated. Happens in a thread."""
         self._impl.update_cb.append(func)

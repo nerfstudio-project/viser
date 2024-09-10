@@ -16,6 +16,7 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
         import random
         import time
         from pathlib import Path
+        from typing import List
 
         import imageio.v3 as iio
         import numpy as onp
@@ -77,26 +78,30 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                 step=1,
                 initial_value=min(len(images), 100),
             )
-            gui_point_size = server.gui.add_number("Point size", initial_value=0.05)
+            gui_point_size = server.gui.add_slider(
+                "Point size", min=0.01, max=0.1, step=0.001, initial_value=0.05
+            )
 
-            def visualize_colmap() -> None:
+            points = onp.array([points3d[p_id].xyz for p_id in points3d])
+            colors = onp.array([points3d[p_id].rgb for p_id in points3d])
+
+            point_mask = onp.random.choice(points.shape[0], gui_points.value, replace=False)
+            point_cloud = server.scene.add_point_cloud(
+                name="/colmap/pcd",
+                points=points[point_mask],
+                colors=colors[point_mask],
+                point_size=gui_point_size.value,
+            )
+            frames: List[viser.FrameHandle] = []
+
+            def visualize_frames() -> None:
                 """Send all COLMAP elements to viser for visualization. This could be optimized
                 a ton!"""
-                # Set the point cloud.
-                points = onp.array([points3d[p_id].xyz for p_id in points3d])
-                colors = onp.array([points3d[p_id].rgb for p_id in points3d])
-                points_selection = onp.random.choice(
-                    points.shape[0], gui_points.value, replace=False
-                )
-                points = points[points_selection]
-                colors = colors[points_selection]
 
-                server.scene.add_point_cloud(
-                    name="/colmap/pcd",
-                    points=points,
-                    colors=colors,
-                    point_size=gui_point_size.value,
-                )
+                # Remove existing image frames.
+                for frame in frames:
+                    frame.remove()
+                frames.clear()
 
                 # Interpret the images and cameras.
                 img_ids = [im.id for im in images.values()]
@@ -131,6 +136,7 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
                         axes_length=0.1,
                         axes_radius=0.005,
                     )
+                    frames.append(frame)
 
                     # For pinhole cameras, cam.params will be (fx, fy, cx, cy).
                     if cam.model != "PINHOLE":
@@ -153,8 +159,9 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
 
             @gui_points.on_update
             def _(_) -> None:
-                nonlocal need_update
-                need_update = True
+                point_mask = onp.random.choice(points.shape[0], gui_points.value, replace=False)
+                point_cloud.points = points[point_mask]
+                point_cloud.colors = colors[point_mask]
 
             @gui_frames.on_update
             def _(_) -> None:
@@ -163,15 +170,12 @@ Visualize COLMAP sparse reconstruction outputs. To get demo data, see ``./assets
 
             @gui_point_size.on_update
             def _(_) -> None:
-                nonlocal need_update
-                need_update = True
+                point_cloud.point_size = gui_point_size.value
 
             while True:
                 if need_update:
                     need_update = False
-
-                    server.scene.reset()
-                    visualize_colmap()
+                    visualize_frames()
 
                 time.sleep(1e-3)
 

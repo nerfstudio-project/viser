@@ -40,16 +40,18 @@ def main() -> None:
     )
 
     # adding controls to custom lights in the scene
-    server.scene.add_transform_controls("/light_control")
-    server.scene.add_transform_controls("/light_control2")
-    server.scene.add_light_directional(
-        name="/light_control/directionallight",
+    server.scene.add_transform_controls("/control0")
+    server.scene.add_label("/control0/label", "Directional")
+    server.scene.add_transform_controls("/control1")
+    server.scene.add_label("/control1/label", "Point")
+
+    directional_light = server.scene.add_light_directional(
+        name="/control0/directional_light",
         color=(186, 219, 173),
     )
-    server.scene.add_light_spot(
-        name="/light_control2/spotlight",
+    point_light = server.scene.add_light_point(
+        name="/control1/point_light",
         color=(192, 255, 238),
-        angle=onp.pi / 2.5,
         intensity=3.0,
     )
 
@@ -58,6 +60,45 @@ def main() -> None:
     gui_default_lights.on_update(
         lambda _: server.scene.enable_default_lights(gui_default_lights.value)
     )
+
+    # Create light control inputs.
+    with server.gui.add_folder("Directional light"):
+        gui_directional_color = server.gui.add_rgb(
+            "Color", initial_value=directional_light.color
+        )
+        gui_directional_intensity = server.gui.add_slider(
+            "Intensity",
+            min=0.0,
+            max=20.0,
+            step=0.01,
+            initial_value=directional_light.intensity,
+        )
+
+        @gui_directional_color.on_update
+        def _(_) -> None:
+            directional_light.color = gui_directional_color.value
+
+        @gui_directional_intensity.on_update
+        def _(_) -> None:
+            directional_light.intensity = gui_directional_intensity.value
+
+    with server.gui.add_folder("Point light"):
+        gui_point_color = server.gui.add_rgb("Color", initial_value=point_light.color)
+        gui_point_intensity = server.gui.add_slider(
+            "Intensity",
+            min=0.0,
+            max=20.0,
+            step=0.01,
+            initial_value=point_light.intensity,
+        )
+
+        @gui_point_color.on_update
+        def _(_) -> None:
+            point_light.color = gui_point_color.value
+
+        @gui_point_intensity.on_update
+        def _(_) -> None:
+            point_light.intensity = gui_point_intensity.value
 
     # Create GUI elements for controlling environment map.
     with server.gui.add_folder("Environment map"):

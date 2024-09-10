@@ -13,26 +13,31 @@ from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 from . import _messages
 from . import transforms as tf
 from ._scene_handles import (
+    AmbientLightHandle,
     BatchedAxesHandle,
     BoneState,
     CameraFrustumHandle,
+    DirectionalLightHandle,
     FrameHandle,
     GaussianSplatHandle,
     GlbHandle,
     GridHandle,
     Gui3dContainerHandle,
+    HemisphereLightHandle,
     ImageHandle,
     LabelHandle,
-    LightHandle,
     MeshHandle,
     MeshSkinnedBoneHandle,
     MeshSkinnedHandle,
     PointCloudHandle,
+    PointLightHandle,
+    RectAreaLightHandle,
     SceneNodeHandle,
     SceneNodePointerEvent,
     ScenePointerEvent,
     SplineCatmullRomHandle,
     SplineCubicBezierHandle,
+    SpotLightHandle,
     TransformControlsHandle,
     _TransformControlsState,
     colors_to_uint8,
@@ -249,7 +254,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> LightHandle:
+    ) -> DirectionalLightHandle:
         """
         Add a directional light to the scene.
 
@@ -269,7 +274,9 @@ class SceneApi:
         message = _messages.DirectionalLightMessage(
             name, _messages.DirectionalLightProps(color, intensity)
         )
-        return LightHandle._make(self, message, name, wxyz, position, visible)
+        return DirectionalLightHandle._make(
+            self, message, name, wxyz, position, visible
+        )
 
     def add_light_ambient(
         self,
@@ -279,7 +286,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> LightHandle:
+    ) -> AmbientLightHandle:
         """
         Add an ambient light to the scene.
 
@@ -299,7 +306,7 @@ class SceneApi:
         message = _messages.AmbientLightMessage(
             name, _messages.AmbientLightProps(color, intensity)
         )
-        return LightHandle._make(self, message, name, wxyz, position, visible)
+        return AmbientLightHandle._make(self, message, name, wxyz, position, visible)
 
     def add_light_hemisphere(
         self,
@@ -310,7 +317,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> LightHandle:
+    ) -> HemisphereLightHandle:
         """
         Add a hemisphere light to the scene.
 
@@ -331,7 +338,7 @@ class SceneApi:
         message = _messages.HemisphereLightMessage(
             name, _messages.HemisphereLightProps(sky_color, ground_color, intensity)
         )
-        return LightHandle._make(self, message, name, wxyz, position, visible)
+        return HemisphereLightHandle._make(self, message, name, wxyz, position, visible)
 
     def add_light_point(
         self,
@@ -343,7 +350,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> LightHandle:
+    ) -> PointLightHandle:
         """
         Add a point light to the scene.
 
@@ -371,7 +378,7 @@ class SceneApi:
                 decay=decay,
             ),
         )
-        return LightHandle._make(self, message, name, wxyz, position, visible)
+        return PointLightHandle._make(self, message, name, wxyz, position, visible)
 
     def add_light_rectarea(
         self,
@@ -383,7 +390,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> LightHandle:
+    ) -> RectAreaLightHandle:
         """
         Add a rectangular area light to the scene.
 
@@ -411,7 +418,7 @@ class SceneApi:
                 height=height,
             ),
         )
-        return LightHandle._make(self, message, name, wxyz, position, visible)
+        return RectAreaLightHandle._make(self, message, name, wxyz, position, visible)
 
     def add_light_spot(
         self,
@@ -425,7 +432,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> LightHandle:
+    ) -> SpotLightHandle:
         """
         Add a spot light to the scene.
 
@@ -454,7 +461,7 @@ class SceneApi:
                 color, intensity, distance, angle, penumbra, decay
             ),
         )
-        return LightHandle._make(self, message, name, wxyz, position, visible)
+        return SpotLightHandle._make(self, message, name, wxyz, position, visible)
 
     def set_environment_map(
         self,
