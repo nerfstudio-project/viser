@@ -44,7 +44,7 @@ from ._gui_handles import (
 )
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
-from ._messages import FileTransferPartAck
+from ._messages import FileTransferPartAck, GuiSliderMark
 from ._scene_api import cast_vector
 
 if TYPE_CHECKING:
@@ -1278,9 +1278,9 @@ class GuiApi:
                 visible=visible,
                 disabled=disabled,
                 marks=tuple(
-                    {"value": float(x[0]), "label": x[1]}
+                    GuiSliderMark(value=float(x[0]), label=x[1])
                     if isinstance(x, tuple)
-                    else {"value": float(x)}
+                    else GuiSliderMark(value=x, label=None)
                     for x in marks
                 )
                 if marks is not None
@@ -1361,9 +1361,9 @@ class GuiApi:
                 fixed_endpoints=fixed_endpoints,
                 precision=_compute_precision_digits(step),
                 marks=tuple(
-                    {"value": float(x[0]), "label": x[1]}
+                    GuiSliderMark(value=float(x[0]), label=x[1])
                     if isinstance(x, tuple)
-                    else {"value": float(x)}
+                    else GuiSliderMark(value=x, label=None)
                     for x in marks
                 )
                 if marks is not None

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import abc
+import dataclasses
 import functools
 import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast
@@ -55,6 +56,9 @@ def _prepare_for_serialization(value: Any, annotation: object) -> Any:
         return float(value)
     if annotation is int or isinstance(value, onp.integer):
         return int(value)
+
+    if dataclasses.is_dataclass(annotation):
+        return _prepare_for_serialization(vars(value), dict)
 
     # Recursively handle tuples.
     if isinstance(value, tuple):

@@ -5,25 +5,21 @@ from __future__ import annotations
 
 import dataclasses
 import uuid
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Annotated, Literal, NotRequired, TypedDict, override
+from typing_extensions import Annotated, Literal, override
 
 from . import infra, theme
 
-GuiSliderMark = TypedDict("GuiSliderMark", {"value": float, "label": NotRequired[str]})
+
+@dataclasses.dataclass
+class GuiSliderMark:
+    value: float
+    label: Optional[str]
+
+
 Color = Literal[
     "dark",
     "gray",
@@ -50,8 +46,8 @@ class Message(infra.Message):
         """Returns a unique key for this message, used for detecting redundant
         messages.
 
-        For example: if we send 1000 GuiSetValue messages for the same GUI element, we
-        should only keep the latest messages.
+        For example: if we send 1000 GUI value updates for the same GUI
+        element, we should only keep the latest message.
         """
         parts = [type(self).__name__]
 
@@ -67,18 +63,17 @@ class Message(infra.Message):
 
         return "_".join(parts)
 
+    @classmethod
+    def __init_subclass__(
+        cls, tag: Literal[None, "GuiAddComponentMessage", "SceneNodeMessage"] = None
+    ):
+        """Tag will be used to create a union type in TypeScript."""
+        super().__init_subclass__()
+        if tag is not None:
+            cls._tags = cls._tags + (tag,)
+
 
 T = TypeVar("T", bound=Type[Message])
-
-
-def tag_class(tag: str) -> Callable[[T], T]:
-    """Decorator for tagging a class with a `type` field."""
-
-    def wrapper(cls: T) -> T:
-        cls._tags = (cls._tags or ()) + (tag,)
-        return cls
-
-    return wrapper
 
 
 @dataclasses.dataclass
@@ -162,95 +157,156 @@ class ScenePointerEnableMessage(Message):
 
 
 @dataclasses.dataclass
-class CameraFrustumMessage(Message):
+class CameraFrustumMessage(Message, tag="SceneNodeMessage"):
     """Variant of CameraMessage used for visualizing camera frustums.
 
     OpenCV convention, +Z forward."""
 
     name: str
-    fov: float
-    aspect: float
-    scale: float
-    color: int
-    image_media_type: Optional[Literal["image/jpeg", "image/png"]]
-    image_binary: Optional[bytes]
+    props: CameraFrustumProps
 
 
 @dataclasses.dataclass
-class GlbMessage(Message):
+class CameraFrustumProps:
+    fov: float
+    """Field of view of the camera (in radians). For handles, synchronized automatically when assigned."""
+    aspect: float
+    """Aspect ratio of the camera (width over height). For handles, synchronized automatically when assigned."""
+    scale: float
+    """Scale factor for the size of the frustum. For handles, synchronized automatically when assigned."""
+    color: Tuple[int, int, int]
+    """Color of the frustum as RGB integers. For handles, synchronized automatically when assigned."""
+    image_media_type: Optional[Literal["image/jpeg", "image/png"]]
+    """Format of the provided image ('image/jpeg' or 'image/png'). For handles, synchronized automatically when assigned."""
+    image_binary: Optional[bytes]
+    """Optional image to be displayed on the frustum. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class GlbMessage(Message, tag="SceneNodeMessage"):
     """GlTF message."""
 
     name: str
-    glb_data: bytes
-    scale: float
+    props: GlbProps
 
 
 @dataclasses.dataclass
-class FrameMessage(Message):
+class GlbProps:
+    glb_data: bytes
+    """A binary payload containing the GLB data. For handles, synchronized automatically when assigned."""
+    scale: float
+    """A scale for resizing the GLB asset. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class FrameMessage(Message, tag="SceneNodeMessage"):
     """Coordinate frame message."""
 
     name: str
-    show_axes: bool
-    axes_length: float
-    axes_radius: float
-    origin_radius: float
+    props: FrameProps
 
 
 @dataclasses.dataclass
-class BatchedAxesMessage(Message):
+class FrameProps:
+    show_axes: bool
+    """Boolean to indicate whether to show the frame as a set of axes + origin sphere. For handles, synchronized automatically when assigned."""
+    axes_length: float
+    """Length of each axis. For handles, synchronized automatically when assigned."""
+    axes_radius: float
+    """Radius of each axis. For handles, synchronized automatically when assigned."""
+    origin_radius: float
+    """Radius of the origin sphere. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class BatchedAxesMessage(Message, tag="SceneNodeMessage"):
     """Batched axes message.
 
     Positions and orientations should follow a `T_parent_local` convention, which
     corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`."""
 
     name: str
-    wxyzs_batched: onpt.NDArray[onp.float32]
-    positions_batched: onpt.NDArray[onp.float32]
-    axes_length: float
-    axes_radius: float
+    props: BatchedAxesProps
 
 
 @dataclasses.dataclass
-class GridMessage(Message):
+class BatchedAxesProps:
+    wxyzs_batched: onpt.NDArray[onp.float32]
+    """Float array of shape (N,4) representing quaternion rotations. For handles, synchronized automatically when assigned."""
+    positions_batched: onpt.NDArray[onp.float32]
+    """Float array of shape (N,3) representing positions. For handles, synchronized automatically when assigned."""
+    axes_length: float
+    """Length of each axis. For handles, synchronized automatically when assigned."""
+    axes_radius: float
+    """Radius of each axis. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class GridMessage(Message, tag="SceneNodeMessage"):
     """Grid message. Helpful for visualizing things like ground planes."""
 
     name: str
-
-    width: float
-    height: float
-    width_segments: int
-    height_segments: int
-
-    plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"]
-
-    cell_color: int
-    cell_thickness: float
-    cell_size: float
-
-    section_color: int
-    section_thickness: float
-    section_size: float
+    props: GridProps
 
 
 @dataclasses.dataclass
-class LabelMessage(Message):
+class GridProps:
+    width: float
+    """Width of the grid. For handles, synchronized automatically when assigned."""
+    height: float
+    """Height of the grid. For handles, synchronized automatically when assigned."""
+    width_segments: int
+    """Number of segments along the width. For handles, synchronized automatically when assigned."""
+    height_segments: int
+    """Number of segments along the height. For handles, synchronized automatically when assigned."""
+    plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"]
+    """The plane in which the grid is oriented. For handles, synchronized automatically when assigned."""
+    cell_color: Tuple[int, int, int]
+    """Color of the grid cells as RGB integers. For handles, synchronized automatically when assigned."""
+    cell_thickness: float
+    """Thickness of the grid lines. For handles, synchronized automatically when assigned."""
+    cell_size: float
+    """Size of each cell in the grid. For handles, synchronized automatically when assigned."""
+    section_color: Tuple[int, int, int]
+    """Color of the grid sections as RGB integers. For handles, synchronized automatically when assigned."""
+    section_thickness: float
+    """Thickness of the section lines. For handles, synchronized automatically when assigned."""
+    section_size: float
+    """Size of each section in the grid. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class LabelMessage(Message, tag="SceneNodeMessage"):
     """Add a 2D label to the scene."""
 
     name: str
-    text: str
+    props: LabelProps
 
 
 @dataclasses.dataclass
-class Gui3DMessage(Message):
+class LabelProps:
+    text: str
+    """Text content of the label. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class Gui3DMessage(Message, tag="SceneNodeMessage"):
     """Add a 3D gui element to the scene."""
 
-    order: float
     name: str
-    container_id: str
+    props: Gui3DProps
 
 
 @dataclasses.dataclass
-class PointCloudMessage(Message):
+class Gui3DProps:
+    order: float
+    """Order value for arranging GUI elements. For handles, synchronized automatically when assigned."""
+    container_id: str
+    """Identifier for the container. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class PointCloudMessage(Message, tag="SceneNodeMessage"):
     """Point cloud message.
 
     Positions are internally canonicalized to float32, colors to uint8.
@@ -259,10 +315,19 @@ class PointCloudMessage(Message):
     range [0,255]."""
 
     name: str
+    props: PointCloudProps
+
+
+@dataclasses.dataclass
+class PointCloudProps:
     points: onpt.NDArray[onp.float32]
+    """Location of points. Should have shape (N, 3). For handles, synchronized automatically when assigned."""
     colors: onpt.NDArray[onp.uint8]
+    """Colors of points. Should have shape (N, 3) or (3,). For handles, synchronized automatically when assigned."""
     point_size: float
+    """Size of each point. For handles, synchronized automatically when assigned."""
     point_ball_norm: float
+    """Norm value determining the shape of each point. For handles, synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -275,30 +340,35 @@ class PointCloudMessage(Message):
 
 
 @dataclasses.dataclass
-class MeshBoneMessage(Message):
-    """Message for a bone of a skinned mesh."""
-
-    name: str
-
-
-@dataclasses.dataclass
-class MeshMessage(Message):
+class MeshMessage(Message, tag="SceneNodeMessage"):
     """Mesh message.
 
     Vertices are internally canonicalized to float32, faces to uint32."""
 
     name: str
+    props: MeshProps
+
+
+@dataclasses.dataclass
+class MeshProps:
     vertices: onpt.NDArray[onp.float32]
+    """A numpy array of vertex positions. Should have shape (V, 3). For handles, synchronized automatically when assigned."""
     faces: onpt.NDArray[onp.uint32]
-
-    color: Optional[int]
+    """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). For handles, synchronized automatically when assigned."""
+    color: Optional[Tuple[int, int, int]]
+    """Color of the mesh as RGB integers. For handles, synchronized automatically when assigned."""
     vertex_colors: Optional[onpt.NDArray[onp.uint8]]
-
+    """Optional array of vertex colors. For handles, synchronized automatically when assigned."""
     wireframe: bool
+    """Boolean indicating if the mesh should be rendered as a wireframe. For handles, synchronized automatically when assigned."""
     opacity: Optional[float]
+    """Opacity of the mesh. None means opaque. For handles, synchronized automatically when assigned."""
     flat_shading: bool
+    """Whether to do flat shading. For handles, synchronized automatically when assigned."""
     side: Literal["front", "back", "double"]
+    """Side of the surface to render. For handles, synchronized automatically when assigned."""
     material: Literal["standard", "toon3", "toon5"]
+    """Material type of the mesh. For handles, synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -307,15 +377,27 @@ class MeshMessage(Message):
 
 
 @dataclasses.dataclass
-class SkinnedMeshMessage(MeshMessage):
+class SkinnedMeshMessage(Message, tag="SceneNodeMessage"):
+    """Skinned mesh message."""
+
+    name: str
+    props: SkinnedMeshProps
+
+
+@dataclasses.dataclass
+class SkinnedMeshProps(MeshProps):
     """Mesh message.
 
     Vertices are internally canonicalized to float32, faces to uint32."""
 
     bone_wxyzs: Tuple[Tuple[float, float, float, float], ...]
+    """Tuple of quaternions representing bone orientations. For handles, synchronized automatically when assigned."""
     bone_positions: Tuple[Tuple[float, float, float], ...]
+    """Tuple of positions representing bone positions. For handles, synchronized automatically when assigned."""
     skin_indices: onpt.NDArray[onp.uint16]
+    """Array of skin indices. Should have shape (V, 4). For handles, synchronized automatically when assigned."""
     skin_weights: onpt.NDArray[onp.float32]
+    """Array of skin weights. Should have shape (V, 4). For handles, synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -360,26 +442,43 @@ class SetBonePositionMessage(Message):
 
 
 @dataclasses.dataclass
-class TransformControlsMessage(Message):
+class TransformControlsMessage(Message, tag="SceneNodeMessage"):
     """Message for transform gizmos."""
 
     name: str
+    props: TransformControlsProps
+
+
+@dataclasses.dataclass
+class TransformControlsProps:
     scale: float
+    """Scale of the transform controls. For handles, synchronized automatically when assigned."""
     line_width: float
+    """Width of the lines used in the gizmo. For handles, synchronized automatically when assigned."""
     fixed: bool
+    """Boolean indicating if the gizmo should be fixed in position. For handles, synchronized automatically when assigned."""
     auto_transform: bool
+    """Whether the transform should be applied automatically. For handles, synchronized automatically when assigned."""
     active_axes: Tuple[bool, bool, bool]
+    """Tuple of booleans indicating active axes. For handles, synchronized automatically when assigned."""
     disable_axes: bool
+    """Boolean to disable axes interaction. For handles, synchronized automatically when assigned."""
     disable_sliders: bool
+    """Boolean to disable slider interaction. For handles, synchronized automatically when assigned."""
     disable_rotations: bool
+    """Boolean to disable rotation interaction. For handles, synchronized automatically when assigned."""
     translation_limits: Tuple[
         Tuple[float, float], Tuple[float, float], Tuple[float, float]
     ]
+    """Limits for translation. For handles, synchronized automatically when assigned."""
     rotation_limits: Tuple[
         Tuple[float, float], Tuple[float, float], Tuple[float, float]
     ]
+    """Limits for rotation. For handles, synchronized automatically when assigned."""
     depth_test: bool
+    """Boolean indicating if depth testing should be used when rendering. For handles, synchronized automatically when assigned."""
     opacity: float
+    """Opacity of the gizmo. For handles, synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -451,14 +550,23 @@ class BackgroundImageMessage(Message):
 
 
 @dataclasses.dataclass
-class ImageMessage(Message):
+class ImageMessage(Message, tag="SceneNodeMessage"):
     """Message for rendering 2D images."""
 
     name: str
+    props: ImageProps
+
+
+@dataclasses.dataclass
+class ImageProps:
     media_type: Literal["image/jpeg", "image/png"]
+    """Format of the provided image ('image/jpeg' or 'image/png'). For handles, synchronized automatically when assigned."""
     data: bytes
+    """Binary data of the image. For handles, synchronized automatically when assigned."""
     render_width: float
+    """Width at which the image should be rendered in the scene. For handles, synchronized automatically when assigned."""
     render_height: float
+    """Height at which the image should be rendered in the scene. For handles, synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -506,9 +614,8 @@ class ResetGuiMessage(Message):
     """Reset GUI."""
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddFolderMessage(Message):
+class GuiAddFolderMessage(Message, tag="GuiAddComponentMessage"):
     order: float
     id: str
     label: str
@@ -517,9 +624,8 @@ class GuiAddFolderMessage(Message):
     visible: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddMarkdownMessage(Message):
+class GuiAddMarkdownMessage(Message, tag="GuiAddComponentMessage"):
     order: float
     id: str
     markdown: str
@@ -527,9 +633,8 @@ class GuiAddMarkdownMessage(Message):
     visible: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddProgressBarMessage(Message):
+class GuiAddProgressBarMessage(Message, tag="GuiAddComponentMessage"):
     order: float
     id: str
     value: float
@@ -539,9 +644,8 @@ class GuiAddProgressBarMessage(Message):
     visible: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddPlotlyMessage(Message):
+class GuiAddPlotlyMessage(Message, tag="GuiAddComponentMessage"):
     order: float
     id: str
     plotly_json_str: str
@@ -550,9 +654,8 @@ class GuiAddPlotlyMessage(Message):
     visible: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddTabGroupMessage(Message):
+class GuiAddTabGroupMessage(Message, tag="GuiAddComponentMessage"):
     order: float
     id: str
     container_id: str
@@ -588,9 +691,8 @@ class GuiCloseModalMessage(Message):
     id: str
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddButtonMessage(_GuiAddInputBase):
+class GuiAddButtonMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     # All GUI elements currently need an `value` field.
     # This makes our job on the frontend easier.
     value: bool
@@ -598,17 +700,15 @@ class GuiAddButtonMessage(_GuiAddInputBase):
     icon_html: Optional[str]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddUploadButtonMessage(_GuiAddInputBase):
+class GuiAddUploadButtonMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     color: Optional[Color]
     icon_html: Optional[str]
     mime_type: str
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddSliderMessage(_GuiAddInputBase):
+class GuiAddSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     min: float
     max: float
     step: Optional[float]
@@ -617,9 +717,8 @@ class GuiAddSliderMessage(_GuiAddInputBase):
     marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddMultiSliderMessage(_GuiAddInputBase):
+class GuiAddMultiSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     min: float
     max: float
     step: Optional[float]
@@ -629,9 +728,8 @@ class GuiAddMultiSliderMessage(_GuiAddInputBase):
     marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddNumberMessage(_GuiAddInputBase):
+class GuiAddNumberMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: float
     precision: int
     step: float
@@ -639,27 +737,23 @@ class GuiAddNumberMessage(_GuiAddInputBase):
     max: Optional[float]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddRgbMessage(_GuiAddInputBase):
+class GuiAddRgbMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: Tuple[int, int, int]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddRgbaMessage(_GuiAddInputBase):
+class GuiAddRgbaMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: Tuple[int, int, int, int]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddCheckboxMessage(_GuiAddInputBase):
+class GuiAddCheckboxMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: bool
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddVector2Message(_GuiAddInputBase):
+class GuiAddVector2Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: Tuple[float, float]
     min: Optional[Tuple[float, float]]
     max: Optional[Tuple[float, float]]
@@ -667,9 +761,8 @@ class GuiAddVector2Message(_GuiAddInputBase):
     precision: int
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddVector3Message(_GuiAddInputBase):
+class GuiAddVector3Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: Tuple[float, float, float]
     min: Optional[Tuple[float, float, float]]
     max: Optional[Tuple[float, float, float]]
@@ -677,22 +770,19 @@ class GuiAddVector3Message(_GuiAddInputBase):
     precision: int
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddTextMessage(_GuiAddInputBase):
+class GuiAddTextMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: str
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddDropdownMessage(_GuiAddInputBase):
+class GuiAddDropdownMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: str
     options: Tuple[str, ...]
 
 
-@tag_class("GuiAddComponentMessage")
 @dataclasses.dataclass
-class GuiAddButtonGroupMessage(_GuiAddInputBase):
+class GuiAddButtonGroupMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: str
     options: Tuple[str, ...]
 
@@ -727,6 +817,28 @@ class GuiUpdateMessage(Message):
 
 
 @dataclasses.dataclass
+class SceneNodeUpdateMessage(Message):
+    """Sent client<->server when any property of a GUI component is changed."""
+
+    name: str
+    updates: Annotated[
+        Dict[str, Any],
+        infra.TypeScriptAnnotationOverride("{[key: string]: any}"),
+    ]
+    """Mapping from property name to new value."""
+
+    @override
+    def redundancy_key(self) -> str:
+        return (
+            type(self).__name__
+            + "-"
+            + self.name
+            + "-"
+            + ",".join(list(self.updates.keys()))
+        )
+
+
+@dataclasses.dataclass
 class ThemeConfigurationMessage(Message):
     """Message from server->client to configure parts of the GUI."""
 
@@ -740,37 +852,63 @@ class ThemeConfigurationMessage(Message):
 
 
 @dataclasses.dataclass
-class CatmullRomSplineMessage(Message):
+class CatmullRomSplineMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying Catmull-Rom spline information."""
 
     name: str
-    positions: Tuple[Tuple[float, float, float], ...]
-    curve_type: Literal["centripetal", "chordal", "catmullrom"]
-    tension: float
-    closed: bool
-    line_width: float
-    color: int
-    segments: Optional[int]
+    props: CatmullRomSplineProps
 
 
 @dataclasses.dataclass
-class CubicBezierSplineMessage(Message):
+class CatmullRomSplineProps:
+    positions: Tuple[Tuple[float, float, float], ...]
+    """A tuple of 3D positions (x, y, z) defining the spline's path. For handles, synchronized automatically when assigned."""
+    curve_type: Literal["centripetal", "chordal", "catmullrom"]
+    """Type of the curve ('centripetal', 'chordal', 'catmullrom'). For handles, synchronized automatically when assigned."""
+    tension: float
+    """Tension of the curve. Affects the tightness of the curve. For handles, synchronized automatically when assigned."""
+    closed: bool
+    """Boolean indicating if the spline is closed (forms a loop). For handles, synchronized automatically when assigned."""
+    line_width: float
+    """Width of the spline line. For handles, synchronized automatically when assigned."""
+    color: Tuple[int, int, int]
+    """Color of the spline as RGB integers. For handles, synchronized automatically when assigned."""
+    segments: Optional[int]
+    """Number of segments to divide the spline into. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class CubicBezierSplineMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying Cubic Bezier spline information."""
 
     name: str
-    positions: Tuple[Tuple[float, float, float], ...]
-    control_points: Tuple[Tuple[float, float, float], ...]
-    line_width: float
-    color: int
-    segments: Optional[int]
+    props: CubicBezierSplineProps
 
 
 @dataclasses.dataclass
-class GaussianSplatsMessage(Message):
+class CubicBezierSplineProps:
+    positions: Tuple[Tuple[float, float, float], ...]
+    """A tuple of 3D positions (x, y, z) defining the spline's key points. For handles, synchronized automatically when assigned."""
+    control_points: Tuple[Tuple[float, float, float], ...]
+    """A tuple of control points for Bezier curve shaping. For handles, synchronized automatically when assigned."""
+    line_width: float
+    """Width of the spline line. For handles, synchronized automatically when assigned."""
+    color: Tuple[int, int, int]
+    """Color of the spline as RGB integers. For handles, synchronized automatically when assigned."""
+    segments: Optional[int]
+    """Number of segments to divide the spline into. For handles, synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class GaussianSplatsMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying splattable Gaussians."""
 
     name: str
+    props: GaussianSplatsProps
 
+
+@dataclasses.dataclass
+class GaussianSplatsProps:
     # Memory layout is borrowed from:
     # https://github.com/antimatter15/splat
     buffer: onpt.NDArray[onp.uint32]
@@ -779,11 +917,13 @@ class GaussianSplatsMessage(Message):
     - y as f32
     - z as f32
     - (unused)
-    - cov1 (f16), cov2 (f16)
-    - cov3 (f16), cov4 (f16)
-    - cov5 (f16), cov6 (f16)
+    - chol1 (f16), chol2 (f16)
+    - chol3 (f16), chol4 (f16)
+    - chol5 (f16), chol6 (f16)
     - rgba (int32)
-    Where cov1-6 are the upper triangular elements of the covariance matrix."""
+
+    Where chol1-6 are the terms of the upper-triangular Cholesky
+    factor of covariance matrices."""
 
 
 @dataclasses.dataclass
