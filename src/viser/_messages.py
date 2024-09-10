@@ -617,7 +617,6 @@ class ResetGuiMessage(Message):
 @dataclasses.dataclass
 class GuiAddFolderMessage(Message, tag="GuiAddComponentMessage"):
     order: float
-    order: float
     id: str
     label: str
     container_id: str
@@ -628,7 +627,6 @@ class GuiAddFolderMessage(Message, tag="GuiAddComponentMessage"):
 @dataclasses.dataclass
 class GuiAddMarkdownMessage(Message, tag="GuiAddComponentMessage"):
     order: float
-    order: float
     id: str
     markdown: str
     container_id: str
@@ -637,7 +635,6 @@ class GuiAddMarkdownMessage(Message, tag="GuiAddComponentMessage"):
 
 @dataclasses.dataclass
 class GuiAddProgressBarMessage(Message, tag="GuiAddComponentMessage"):
-    order: float
     order: float
     id: str
     value: float
@@ -650,7 +647,6 @@ class GuiAddProgressBarMessage(Message, tag="GuiAddComponentMessage"):
 @dataclasses.dataclass
 class GuiAddPlotlyMessage(Message, tag="GuiAddComponentMessage"):
     order: float
-    order: float
     id: str
     plotly_json_str: str
     aspect: float
@@ -660,7 +656,6 @@ class GuiAddPlotlyMessage(Message, tag="GuiAddComponentMessage"):
 
 @dataclasses.dataclass
 class GuiAddTabGroupMessage(Message, tag="GuiAddComponentMessage"):
-    order: float
     order: float
     id: str
     container_id: str
@@ -699,7 +694,6 @@ class GuiCloseModalMessage(Message):
 @dataclasses.dataclass
 class GuiAddButtonMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     # All GUI elements currently need an `value` field.
-    # All GUI elements currently need an `value` field.
     # This makes our job on the frontend easier.
     value: bool
     color: Optional[Color]
@@ -709,14 +703,12 @@ class GuiAddButtonMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 @dataclasses.dataclass
 class GuiAddUploadButtonMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     color: Optional[Color]
-    color: Optional[Color]
     icon_html: Optional[str]
     mime_type: str
 
 
 @dataclasses.dataclass
 class GuiAddSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    min: float
     min: float
     max: float
     step: Optional[float]
@@ -727,7 +719,6 @@ class GuiAddSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 
 @dataclasses.dataclass
 class GuiAddMultiSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    min: float
     min: float
     max: float
     step: Optional[float]
@@ -740,7 +731,6 @@ class GuiAddMultiSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 @dataclasses.dataclass
 class GuiAddNumberMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: float
-    value: float
     precision: int
     step: float
     min: Optional[float]
@@ -750,24 +740,20 @@ class GuiAddNumberMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 @dataclasses.dataclass
 class GuiAddRgbMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: Tuple[int, int, int]
-    value: Tuple[int, int, int]
 
 
 @dataclasses.dataclass
 class GuiAddRgbaMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    value: Tuple[int, int, int, int]
     value: Tuple[int, int, int, int]
 
 
 @dataclasses.dataclass
 class GuiAddCheckboxMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: bool
-    value: bool
 
 
 @dataclasses.dataclass
 class GuiAddVector2Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    value: Tuple[float, float]
     value: Tuple[float, float]
     min: Optional[Tuple[float, float]]
     max: Optional[Tuple[float, float]]
@@ -778,7 +764,6 @@ class GuiAddVector2Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 @dataclasses.dataclass
 class GuiAddVector3Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: Tuple[float, float, float]
-    value: Tuple[float, float, float]
     min: Optional[Tuple[float, float, float]]
     max: Optional[Tuple[float, float, float]]
     step: float
@@ -788,19 +773,16 @@ class GuiAddVector3Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 @dataclasses.dataclass
 class GuiAddTextMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
     value: str
-    value: str
 
 
 @dataclasses.dataclass
 class GuiAddDropdownMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    value: str
     value: str
     options: Tuple[str, ...]
 
 
 @dataclasses.dataclass
 class GuiAddButtonGroupMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    value: str
     value: str
     options: Tuple[str, ...]
 
