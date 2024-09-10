@@ -17,7 +17,7 @@
     "@types/node": "^20.11.30",
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",
-    "@types/three": "^0.162.0",
+    "@types/three": "^0.167.0",
     "@vanilla-extract/css": "^1.14.1",
     "@vitejs/plugin-react": "^4.0.1",
     "await-lock": "^2.2.2",
