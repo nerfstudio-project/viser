@@ -517,7 +517,7 @@ function AdaptiveDpr() {
       iterations={5}
       step={0.1}
       bounds={(refreshrate) => {
-        const max = Math.min(refreshrate * 0.9, 85);
+        const max = Math.min(refreshrate * 0.75, 85);
         const min = Math.max(max * 0.5, 38);
         return [min, max];
       }}

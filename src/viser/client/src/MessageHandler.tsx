@@ -1,5 +1,3 @@
-import { CatmullRomLine, CubicBezierLine, Grid, Html } from "@react-three/drei";
-import { useContextBridge } from "its-fine";
 import { notifications } from "@mantine/notifications";
 
 import React, { useContext } from "react";
@@ -7,52 +5,28 @@ import * as THREE from "three";
 import { TextureLoader } from "three";
 
 import { ViewerContext } from "./App";
-import { SceneNode } from "./SceneTree";
-import {
-  CameraFrustum,
-  CoordinateFrame,
-  InstancedAxes,
-  GlbAsset,
-  OutlinesIfHovered,
-  PointCloud,
-} from "./ThreeAssets";
 import {
   FileTransferPart,
   FileTransferStart,
   Message,
+  SceneNodeMessage,
+  isGuiAddComponentMessage,
+  isSceneNodeMessage,
 } from "./WebsocketMessages";
-import { PivotControls } from "@react-three/drei";
-import { isTexture, makeThrottledMessageSender } from "./WebsocketFunctions";
-import { isGuiConfig } from "./ControlPanel/GuiState";
+import { isTexture } from "./WebsocketFunctions";
 import { useFrame } from "@react-three/fiber";
-import GeneratedGuiContainer from "./ControlPanel/Generated";
-import { Paper, Progress } from "@mantine/core";
+import { Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
-import { SplatObject } from "./Splatting/GaussianSplats";
-
-/** Convert raw RGB color buffers to linear color buffers. **/
-function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
-  return new THREE.Float32BufferAttribute(
-    new Float32Array(new Uint8Array(colors)).map((value) => {
-      value = value / 255.0;
-      if (value <= 0.04045) {
-        return value / 12.92;
-      } else {
-        return Math.pow((value + 0.055) / 1.055, 2.4);
-      }
-    }),
-    3,
-  );
-}
+import { rootNodeTemplate } from "./SceneTreeState";
 
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
-  const ContextBridge = useContextBridge();
 
   // We could reduce the redundancy here if we wanted to.
   // https://github.com/nerfstudio-project/viser/issues/39
+  const updateSceneNode = viewer.useSceneTree((state) => state.updateSceneNode);
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
   const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
@@ -69,39 +43,64 @@ function useMessageHandler() {
 
   // Same as addSceneNode, but make a parent in the form of a dummy coordinate
   // frame if it doesn't exist yet.
-  function addSceneNodeMakeParents(node: SceneNode<any>) {
+  function addSceneNodeMakeParents(message: SceneNodeMessage) {
     // Make sure scene node is in attributes.
     const attrs = viewer.nodeAttributesFromName.current;
-    attrs[node.name] = {
-      overrideVisibility: attrs[node.name]?.overrideVisibility,
+    attrs[message.name] = {
+      overrideVisibility: attrs[message.name]?.overrideVisibility,
     };
 
     // Don't update the pose of the object until we've made a new one!
-    attrs[node.name]!.poseUpdateState = "waitForMakeObject";
+    attrs[message.name]!.poseUpdateState = "waitForMakeObject";
 
     // Make sure parents exists.
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
-    const parentName = node.name.split("/").slice(0, -1).join("/");
+    const parentName = message.name.split("/").slice(0, -1).join("/");
     if (!(parentName in nodeFromName)) {
-      addSceneNodeMakeParents(
-        new SceneNode<THREE.Group>(parentName, (ref) => (
-          <CoordinateFrame ref={ref} showAxes={false} />
-        )),
-      );
+      addSceneNodeMakeParents({
+        ...rootNodeTemplate.message,
+        name: parentName,
+      });
     }
-    addSceneNode(node);
+    addSceneNode(message);
   }
 
   const fileDownloadHandler = useFileDownloadHandler();
 
   // Return message handler.
   return (message: Message) => {
-    if (isGuiConfig(message)) {
+    if (isGuiAddComponentMessage(message)) {
       addGui(message);
       return;
     }
 
+    if (isSceneNodeMessage(message)) {
+      // Initialize skinned mesh state.
+      if (message.type === "SkinnedMeshMessage") {
+        viewer.skinnedMeshState.current[message.name] = {
+          initialized: false,
+          poses: [],
+        };
+        for (let i = 0; i < message.props.bone_wxyzs!.length; i++) {
+          const wxyz = message.props.bone_wxyzs[i];
+          const position = message.props.bone_positions[i];
+          viewer.skinnedMeshState.current[message.name].poses.push({
+            wxyz: wxyz,
+            position: position,
+          });
+        }
+      }
+
+      // Add scene node.
+      addSceneNodeMakeParents(message);
+      return;
+    }
+
     switch (message.type) {
+      case "SceneNodeUpdateMessage": {
+        updateSceneNode(message.name, message.updates);
+        return;
+      }
       // Set the share URL.
       case "ShareUrlUpdated": {
         setShareUrl(message.share_url);
@@ -177,215 +176,6 @@ function useMessageHandler() {
         return;
       }
 
-      // Add a coordinate frame.
-      case "FrameMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => (
-            <CoordinateFrame
-              ref={ref}
-              showAxes={message.show_axes}
-              axesLength={message.axes_length}
-              axesRadius={message.axes_radius}
-              originRadius={message.origin_radius}
-            />
-          )),
-        );
-        return;
-      }
-
-      // Add axes to visualize.
-      case "BatchedAxesMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(
-            message.name,
-            (ref) => (
-              // Minor naming discrepancy: I think "batched" will be clearer to
-              // folks on the Python side, but instanced is somewhat more
-              // precise.
-              <InstancedAxes
-                ref={ref}
-                wxyzsBatched={
-                  new Float32Array(
-                    message.wxyzs_batched.buffer.slice(
-                      message.wxyzs_batched.byteOffset,
-                      message.wxyzs_batched.byteOffset +
-                        message.wxyzs_batched.byteLength,
-                    ),
-                  )
-                }
-                positionsBatched={
-                  new Float32Array(
-                    message.positions_batched.buffer.slice(
-                      message.positions_batched.byteOffset,
-                      message.positions_batched.byteOffset +
-                        message.positions_batched.byteLength,
-                    ),
-                  )
-                }
-                axes_length={message.axes_length}
-                axes_radius={message.axes_radius}
-              />
-            ),
-            undefined,
-            undefined,
-            undefined,
-            // Compute click instance index from instance ID. Each visualized
-            // frame has 1 instance for each of 3 line segments.
-            (instanceId) => Math.floor(instanceId! / 3),
-          ),
-        );
-        return;
-      }
-
-      case "GridMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => (
-            <group ref={ref}>
-              <Grid
-                args={[
-                  message.width,
-                  message.height,
-                  message.width_segments,
-                  message.height_segments,
-                ]}
-                side={THREE.DoubleSide}
-                cellColor={message.cell_color}
-                cellThickness={message.cell_thickness}
-                cellSize={message.cell_size}
-                sectionColor={message.section_color}
-                sectionThickness={message.section_thickness}
-                sectionSize={message.section_size}
-                rotation={
-                  // There's redundancy here when we set the side to
-                  // THREE.DoubleSide, where xy and yx should be the same.
-                  //
-                  // But it makes sense to keep this parameterization because
-                  // specifying planes by xy seems more natural than the normal
-                  // direction (z, +z, or -z), and it opens the possibility of
-                  // rendering only FrontSide or BackSide grids in the future.
-                  //
-                  // If we add support for FrontSide or BackSide, we should
-                  // double-check that the normal directions from each of these
-                  // rotations match the right-hand rule!
-                  message.plane == "xz"
-                    ? new THREE.Euler(0.0, 0.0, 0.0)
-                    : message.plane == "xy"
-                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                    : message.plane == "yx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                    : message.plane == "yz"
-                    ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                    : message.plane == "zx"
-                    ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                    : message.plane == "zy"
-                    ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                    : undefined
-                }
-              />
-            </group>
-          )),
-        );
-        return;
-      }
-
-      // Add a directional light
-      case "DirectionalLightMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.DirectionalLight>(message.name, (ref) => (
-            <directionalLight
-              ref={ref}
-              position={message.position}
-              intensity={message.intensity}
-              color={message.color}
-            />
-          )),
-        );
-        return;
-      }
-
-      // Add an ambient light
-      case "AmbientLightMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.AmbientLight>(message.name, (ref) => (
-            <ambientLight
-              ref={ref}
-              intensity={message.intensity}
-              color={message.color}
-            />
-          )),
-        );
-        return;
-      }
-
-      // Add a hemisphere light
-      case "HemisphereLightMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.HemisphereLight>(message.name, (ref) => (
-            <hemisphereLight
-              ref={ref}
-              position={message.position}
-              intensity={message.intensity}
-              color={message.skyColor}
-              groundColor={message.groundColor}
-            />
-          )),
-        );
-        return;
-      }
-
-      // Add a point light
-      case "PointLightMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.PointLight>(message.name, (ref) => (
-            <pointLight
-              ref={ref}
-              position={message.position}
-              intensity={message.intensity}
-              color={message.color}
-              distance={message.distance}
-              decay={message.decay}
-            />
-          )),
-        );
-        return;
-      }
-      // Add a rectangular area light
-      case "RectAreaLightMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.RectAreaLight>(message.name, (ref) => (
-            <rectAreaLight
-              ref={ref}
-              position={message.position}
-              intensity={message.intensity}
-              color={message.color}
-              width={message.width}
-              height={message.height}
-              power={message.power}
-            />
-          )),
-        );
-        return;
-      }
-
-      // Add a spot light
-      case "SpotLightMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.SpotLight>(message.name, (ref) => (
-            <spotLight
-              ref={ref}
-              position={message.position}
-              intensity={message.intensity}
-              color={message.color}
-              distance={message.distance}
-              angle={message.angle}
-              penumbra={message.penumbra}
-              decay={message.decay}
-            />
-          )),
-        );
-        return;
-      }
-
       // Add an environment map
       case "EnvironmentMapMessage": {
         viewer.useSceneTree.setState({ environmentMap: message });
@@ -395,31 +185,6 @@ function useMessageHandler() {
       // Disable/enable default lighting
       case "EnableLightsMessage": {
         viewer.useSceneTree.setState({ enableDefaultLights: message.enabled });
-        return;
-      }
-
-      // Add a point cloud.
-      case "PointCloudMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Points>(message.name, (ref) => (
-            <PointCloud
-              ref={ref}
-              pointSize={message.point_size}
-              pointBallNorm={message.point_ball_norm}
-              points={
-                new Float32Array(
-                  message.points.buffer.slice(
-                    message.points.byteOffset,
-                    message.points.byteOffset + message.points.byteLength,
-                  ),
-                )
-              }
-              colors={new Float32Array(message.colors).map(
-                (val) => val / 255.0,
-              )}
-            />
-          )),
-        );
         return;
       }
 
@@ -433,338 +198,17 @@ function useMessageHandler() {
         return;
       }
 
-      // Add mesh
-      case "SkinnedMeshMessage":
-      case "MeshMessage": {
-        const geometry = new THREE.BufferGeometry();
-
-        const generateGradientMap = (shades: 3 | 5) => {
-          const texture = new THREE.DataTexture(
-            Uint8Array.from(
-              shades == 3
-                ? [0, 0, 0, 255, 128, 128, 128, 255, 255, 255, 255, 255]
-                : [
-                    0, 0, 0, 255, 64, 64, 64, 255, 128, 128, 128, 255, 192, 192,
-                    192, 255, 255, 255, 255, 255,
-                  ],
-            ),
-            shades,
-            1,
-            THREE.RGBAFormat,
-          );
-
-          texture.needsUpdate = true;
-          return texture;
-        };
-        const standardArgs = {
-          color: message.color ?? undefined,
-          vertexColors: message.vertex_colors !== null,
-          wireframe: message.wireframe,
-          transparent: message.opacity !== null,
-          opacity: message.opacity ?? 1.0,
-          // Flat shading only makes sense for non-wireframe materials.
-          flatShading: message.flat_shading && !message.wireframe,
-          side: {
-            front: THREE.FrontSide,
-            back: THREE.BackSide,
-            double: THREE.DoubleSide,
-          }[message.side],
-        };
-        const assertUnreachable = (x: never): never => {
-          throw new Error(`Should never get here! ${x}`);
-        };
-        const material =
-          message.material == "standard" || message.wireframe
-            ? new THREE.MeshStandardMaterial(standardArgs)
-            : message.material == "toon3"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(3),
-                ...standardArgs,
-              })
-            : message.material == "toon5"
-            ? new THREE.MeshToonMaterial({
-                gradientMap: generateGradientMap(5),
-                ...standardArgs,
-              })
-            : assertUnreachable(message.material);
-        geometry.setAttribute(
-          "position",
-          new THREE.Float32BufferAttribute(
-            new Float32Array(
-              message.vertices.buffer.slice(
-                message.vertices.byteOffset,
-                message.vertices.byteOffset + message.vertices.byteLength,
-              ),
-            ),
-            3,
-          ),
-        );
-        if (message.vertex_colors !== null) {
-          geometry.setAttribute(
-            "color",
-            threeColorBufferFromUint8Buffer(message.vertex_colors),
-          );
-        }
-
-        geometry.setIndex(
-          new THREE.Uint32BufferAttribute(
-            new Uint32Array(
-              message.faces.buffer.slice(
-                message.faces.byteOffset,
-                message.faces.byteOffset + message.faces.byteLength,
-              ),
-            ),
-            1,
-          ),
-        );
-        geometry.computeVertexNormals();
-        geometry.computeBoundingSphere();
-        const cleanupMesh = () => {
-          // TODO: we can switch to the react-three-fiber <bufferGeometry />,
-          // <meshStandardMaterial />, etc components to avoid manual
-          // disposal.
-          geometry.dispose();
-          material.dispose();
-        };
-        if (message.type === "MeshMessage")
-          // Normal mesh.
-          addSceneNodeMakeParents(
-            new SceneNode<THREE.Mesh>(
-              message.name,
-              (ref) => {
-                return (
-                  <mesh ref={ref} geometry={geometry} material={material}>
-                    <OutlinesIfHovered alwaysMounted />
-                  </mesh>
-                );
-              },
-              cleanupMesh,
-            ),
-          );
-        else if (message.type === "SkinnedMeshMessage") {
-          // Skinned mesh.
-          const bones: THREE.Bone[] = [];
-          for (let i = 0; i < message.bone_wxyzs!.length; i++) {
-            bones.push(new THREE.Bone());
-          }
-
-          const xyzw_quat = new THREE.Quaternion();
-          const boneInverses: THREE.Matrix4[] = [];
-          viewer.skinnedMeshState.current[message.name] = {
-            initialized: false,
-            poses: [],
-          };
-          bones.forEach((bone, i) => {
-            const wxyz = message.bone_wxyzs[i];
-            const position = message.bone_positions[i];
-            xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-
-            const boneInverse = new THREE.Matrix4();
-            boneInverse.makeRotationFromQuaternion(xyzw_quat);
-            boneInverse.setPosition(position[0], position[1], position[2]);
-            boneInverse.invert();
-            boneInverses.push(boneInverse);
-
-            bone.quaternion.copy(xyzw_quat);
-            bone.position.set(position[0], position[1], position[2]);
-            bone.matrixAutoUpdate = false;
-            bone.matrixWorldAutoUpdate = false;
-
-            viewer.skinnedMeshState.current[message.name].poses.push({
-              wxyz: wxyz,
-              position: position,
-            });
-          });
-          const skeleton = new THREE.Skeleton(bones, boneInverses);
-
-          geometry.setAttribute(
-            "skinIndex",
-            new THREE.Uint16BufferAttribute(
-              new Uint16Array(
-                message.skin_indices.buffer.slice(
-                  message.skin_indices.byteOffset,
-                  message.skin_indices.byteOffset +
-                    message.skin_indices.byteLength,
-                ),
-              ),
-              4,
-            ),
-          );
-          geometry.setAttribute(
-            "skinWeight",
-            new THREE.Float32BufferAttribute(
-              new Float32Array(
-                message.skin_weights!.buffer.slice(
-                  message.skin_weights!.byteOffset,
-                  message.skin_weights!.byteOffset +
-                    message.skin_weights!.byteLength,
-                ),
-              ),
-              4,
-            ),
-          );
-
-          addSceneNodeMakeParents(
-            new SceneNode<THREE.SkinnedMesh>(
-              message.name,
-              (ref) => {
-                return (
-                  <skinnedMesh
-                    ref={ref}
-                    geometry={geometry}
-                    material={material}
-                    skeleton={skeleton}
-                    // TODO: leaving culling on (default) sometimes causes the
-                    // mesh to randomly disappear, as of r3f==8.16.2.
-                    //
-                    // Probably this is because we don't update the bounding
-                    // sphere after the bone transforms change.
-                    frustumCulled={false}
-                  >
-                    <OutlinesIfHovered alwaysMounted />
-                  </skinnedMesh>
-                );
-              },
-              () => {
-                delete viewer.skinnedMeshState.current[message.name];
-                skeleton.dispose();
-                cleanupMesh();
-              },
-              false,
-              // everyFrameCallback: update bone transforms.
-              () => {
-                const parentNode = viewer.nodeRefFromName.current[message.name];
-                if (parentNode === undefined) return;
-
-                const state = viewer.skinnedMeshState.current[message.name];
-                bones.forEach((bone, i) => {
-                  if (!state.initialized) {
-                    parentNode.add(bone);
-                  }
-                  const wxyz = state.initialized
-                    ? state.poses[i].wxyz
-                    : message.bone_wxyzs[i];
-                  const position = state.initialized
-                    ? state.poses[i].position
-                    : message.bone_positions[i];
-
-                  xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-                  bone.matrix.makeRotationFromQuaternion(xyzw_quat);
-                  bone.matrix.setPosition(
-                    position[0],
-                    position[1],
-                    position[2],
-                  );
-                  bone.updateMatrixWorld();
-                });
-
-                if (!state.initialized) {
-                  state.initialized = true;
-                }
-              },
-            ),
-          );
-        }
-        return;
-      }
       // Set the bone poses.
       case "SetBoneOrientationMessage": {
-        const bonePoses = viewer.skinnedMeshState.current;
-        bonePoses[message.name].poses[message.bone_index].wxyz = message.wxyz;
+        const state = viewer.skinnedMeshState.current;
+        state[message.name].poses[message.bone_index].wxyz = message.wxyz;
         break;
       }
       case "SetBonePositionMessage": {
-        const bonePoses = viewer.skinnedMeshState.current;
-        bonePoses[message.name].poses[message.bone_index].position =
+        const state = viewer.skinnedMeshState.current;
+        state[message.name].poses[message.bone_index].position =
           message.position;
         break;
-      }
-      // Add a camera frustum.
-      case "CameraFrustumMessage": {
-        let texture = undefined;
-        if (
-          message.image_media_type !== null &&
-          message.image_binary !== null
-        ) {
-          const image_url = URL.createObjectURL(
-            new Blob([message.image_binary]),
-          );
-          texture = new TextureLoader().load(image_url, () =>
-            URL.revokeObjectURL(image_url),
-          );
-        }
-
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(
-            message.name,
-            (ref) => (
-              <CameraFrustum
-                ref={ref}
-                fov={message.fov}
-                aspect={message.aspect}
-                scale={message.scale}
-                color={message.color}
-                image={texture}
-              />
-            ),
-            () => texture?.dispose(),
-          ),
-        );
-        return;
-      }
-      case "TransformControlsMessage": {
-        const name = message.name;
-        const sendDragMessage = makeThrottledMessageSender(viewer, 50);
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(
-            message.name,
-            (ref) => (
-              <group onClick={(e) => e.stopPropagation()}>
-                <PivotControls
-                  ref={ref}
-                  scale={message.scale}
-                  lineWidth={message.line_width}
-                  fixed={message.fixed}
-                  autoTransform={message.auto_transform}
-                  activeAxes={message.active_axes}
-                  disableAxes={message.disable_axes}
-                  disableSliders={message.disable_sliders}
-                  disableRotations={message.disable_rotations}
-                  disableScaling={true}
-                  translationLimits={message.translation_limits}
-                  rotationLimits={message.rotation_limits}
-                  depthTest={message.depth_test}
-                  opacity={message.opacity}
-                  onDrag={(l) => {
-                    const attrs = viewer.nodeAttributesFromName.current;
-                    if (attrs[message.name] === undefined) {
-                      attrs[message.name] = {};
-                    }
-
-                    const wxyz = new THREE.Quaternion();
-                    wxyz.setFromRotationMatrix(l);
-                    const position = new THREE.Vector3().setFromMatrixPosition(
-                      l,
-                    );
-
-                    const nodeAttributes = attrs[message.name]!;
-                    nodeAttributes.wxyz = [wxyz.w, wxyz.x, wxyz.y, wxyz.z];
-                    nodeAttributes.position = position.toArray();
-                    sendDragMessage({
-                      type: "TransformControlsUpdateMessage",
-                      name: name,
-                      wxyz: nodeAttributes.wxyz,
-                      position: nodeAttributes.position,
-                    });
-                  }}
-                />
-              </group>
-            ),
-            undefined,
-            true, // unmountWhenInvisible
-          ),
-        );
-        return;
       }
       case "SetCameraLookAtMessage": {
         const cameraControls = viewer.cameraControlRef.current!;
@@ -901,140 +345,15 @@ function useMessageHandler() {
         }
         return;
       }
-      // Add a 2D label.
-      case "LabelMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(
-            message.name,
-            (ref) => {
-              // We wrap with <group /> because Html doesn't implement THREE.Object3D.
-              return (
-                <group ref={ref}>
-                  <Html>
-                    <div
-                      style={{
-                        width: "10em",
-                        fontSize: "0.8em",
-                        transform: "translateX(0.1em) translateY(0.5em)",
-                      }}
-                    >
-                      <span
-                        style={{
-                          background: "#fff",
-                          border: "1px solid #777",
-                          borderRadius: "0.2em",
-                          color: "#333",
-                          padding: "0.2em",
-                        }}
-                      >
-                        {message.text}
-                      </span>
-                    </div>
-                  </Html>
-                </group>
-              );
-            },
-            undefined,
-            true,
-          ),
-        );
-        return;
-      }
-      case "Gui3DMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(
-            message.name,
-            (ref) => {
-              // We wrap with <group /> because Html doesn't implement
-              // THREE.Object3D. The initial position is intended to be
-              // off-screen; it will be overwritten with the actual position
-              // after the component is mounted.
-              return (
-                <group ref={ref} position={new THREE.Vector3(1e8, 1e8, 1e8)}>
-                  <Html>
-                    <ContextBridge>
-                      <Paper
-                        style={{
-                          width: "18em",
-                          fontSize: "0.875em",
-                          marginLeft: "0.5em",
-                          marginTop: "0.5em",
-                        }}
-                        shadow="0 0 0.8em 0 rgba(0,0,0,0.1)"
-                        pb="0.25em"
-                        onPointerDown={(evt) => {
-                          evt.stopPropagation();
-                        }}
-                      >
-                        <ViewerContext.Provider value={viewer}>
-                          <GeneratedGuiContainer
-                            containerId={message.container_id}
-                          />
-                        </ViewerContext.Provider>
-                      </Paper>
-                    </ContextBridge>
-                  </Html>
-                </group>
-              );
-            },
-            undefined,
-            true,
-          ),
-        );
-        return;
-      }
-      // Add an image.
-      case "ImageMessage": {
-        // This current implementation may flicker when the image is updated,
-        // because the texture is not necessarily done loading before the
-        // component is mounted. We could fix this by passing an `onLoad`
-        // callback into `TextureLoader`, but this would require work because
-        // `addSceneNodeMakeParents` needs to be called immediately: it
-        // overwrites position/wxyz attributes, and we don't want this to
-        // happen after later messages are received.
-        const image_url = URL.createObjectURL(
-          new Blob([message.data], {
-            type: message.media_type,
-          }),
-        );
-        const texture = new TextureLoader().load(
-          image_url,
-          () => URL.revokeObjectURL(image_url), // Revoke URL on load.
-        );
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(
-            message.name,
-            (ref) => {
-              return (
-                <group ref={ref}>
-                  <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
-                    <OutlinesIfHovered />
-                    <planeGeometry
-                      attach="geometry"
-                      args={[message.render_width, message.render_height]}
-                    />
-                    <meshBasicMaterial
-                      attach="material"
-                      transparent={true}
-                      side={THREE.DoubleSide}
-                      map={texture}
-                      toneMapped={false}
-                    />
-                  </mesh>
-                </group>
-              );
-            },
-            () => texture.dispose(),
-          ),
-        );
-        return;
-      }
       // Remove a scene node and its children by name.
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         removeSceneNode(message.name);
         const attrs = viewer.nodeAttributesFromName.current;
         delete attrs[message.name];
+
+        if (viewer.skinnedMeshState.current[message.name] !== undefined)
+          delete viewer.skinnedMeshState.current[message.name];
         return;
       }
       // Set the clickability of a particular scene node.
@@ -1072,86 +391,7 @@ function useMessageHandler() {
         removeGui(message.id);
         return;
       }
-      // Add a glTF/GLB asset.
-      case "GlbMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => {
-            return (
-              <GlbAsset
-                ref={ref}
-                glb_data={new Uint8Array(message.glb_data)}
-                scale={message.scale}
-              />
-            );
-          }),
-        );
-        return;
-      }
-      case "CatmullRomSplineMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => {
-            return (
-              <group ref={ref}>
-                <CatmullRomLine
-                  points={message.positions}
-                  closed={message.closed}
-                  curveType={message.curve_type}
-                  tension={message.tension}
-                  lineWidth={message.line_width}
-                  color={message.color}
-                  // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
-                  segments={(message.segments ?? undefined) as undefined}
-                ></CatmullRomLine>
-              </group>
-            );
-          }),
-        );
-        return;
-      }
-      case "CubicBezierSplineMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => {
-            return (
-              <group ref={ref}>
-                {[...Array(message.positions.length - 1).keys()].map((i) => (
-                  <CubicBezierLine
-                    key={i}
-                    start={message.positions[i]}
-                    end={message.positions[i + 1]}
-                    midA={message.control_points[2 * i]}
-                    midB={message.control_points[2 * i + 1]}
-                    lineWidth={message.line_width}
-                    color={message.color}
-                    // Sketchy cast needed due to https://github.com/pmndrs/drei/issues/1476.
-                    segments={(message.segments ?? undefined) as undefined}
-                  ></CubicBezierLine>
-                ))}
-              </group>
-            );
-          }),
-        );
-        return;
-      }
-      case "GaussianSplatsMessage": {
-        addSceneNodeMakeParents(
-          new SceneNode<THREE.Group>(message.name, (ref) => {
-            return (
-              <SplatObject
-                ref={ref}
-                buffer={
-                  new Uint32Array(
-                    message.buffer.buffer.slice(
-                      message.buffer.byteOffset,
-                      message.buffer.byteOffset + message.buffer.byteLength,
-                    ),
-                  )
-                }
-              />
-            );
-          }),
-        );
-        return;
-      }
+
       case "FileTransferStart":
       case "FileTransferPart": {
         fileDownloadHandler(message);

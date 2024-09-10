@@ -24,6 +24,12 @@ import {
   LineDashedMaterial,
 } from "three";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
+import {
+  ImageMessage,
+  MeshMessage,
+  SkinnedMeshMessage,
+} from "./WebsocketMessages";
+import { ViewerContext } from "./App";
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
@@ -44,6 +50,9 @@ type AllPossibleThreeJSMaterials =
   | LineBasicMaterial
   | LineDashedMaterial;
 
+function rgbToInt(rgb: [number, number, number]): number {
+  return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
+}
 const originGeom = new THREE.SphereGeometry(1.0);
 const originMaterial = new THREE.MeshBasicMaterial({ color: 0xecec00 });
 
@@ -397,6 +406,293 @@ export const InstancedAxes = React.forwardRef<
     </group>
   );
 });
+
+/** Convert raw RGB color buffers to linear color buffers. **/
+function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
+  return new THREE.Float32BufferAttribute(
+    new Float32Array(new Uint8Array(colors)).map((value) => {
+      value = value / 255.0;
+      if (value <= 0.04045) {
+        return value / 12.92;
+      } else {
+        return Math.pow((value + 0.055) / 1.055, 2.4);
+      }
+    }),
+    3,
+  );
+}
+export const ViserMesh = React.forwardRef<
+  THREE.Mesh | THREE.SkinnedMesh,
+  MeshMessage | SkinnedMeshMessage
+>(function ViserMesh(message, ref) {
+  const viewer = React.useContext(ViewerContext)!;
+
+  const generateGradientMap = (shades: 3 | 5) => {
+    const texture = new THREE.DataTexture(
+      Uint8Array.from(
+        shades == 3
+          ? [0, 0, 0, 255, 128, 128, 128, 255, 255, 255, 255, 255]
+          : [
+              0, 0, 0, 255, 64, 64, 64, 255, 128, 128, 128, 255, 192, 192, 192,
+              255, 255, 255, 255, 255,
+            ],
+      ),
+      shades,
+      1,
+      THREE.RGBAFormat,
+    );
+
+    texture.needsUpdate = true;
+    return texture;
+  };
+  const standardArgs = {
+    color:
+      message.props.color === null ? undefined : rgbToInt(message.props.color),
+    vertexColors: message.props.vertex_colors !== null,
+    wireframe: message.props.wireframe,
+    transparent: message.props.opacity !== null,
+    opacity: message.props.opacity ?? 1.0,
+    // Flat shading only makes sense for non-wireframe materials.
+    flatShading: message.props.flat_shading && !message.props.wireframe,
+    side: {
+      front: THREE.FrontSide,
+      back: THREE.BackSide,
+      double: THREE.DoubleSide,
+    }[message.props.side],
+  };
+  const assertUnreachable = (x: never): never => {
+    throw new Error(`Should never get here! ${x}`);
+  };
+
+  const [material, setMaterial] = React.useState<THREE.Material>();
+  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
+  const [skeleton, setSkeleton] = React.useState<THREE.Skeleton>();
+  const bonesRef = React.useRef<THREE.Bone[]>();
+
+  const xyzw_quat = React.useMemo(() => new THREE.Quaternion(), []);
+  React.useEffect(() => {
+    const material =
+      message.props.material == "standard" || message.props.wireframe
+        ? new THREE.MeshStandardMaterial(standardArgs)
+        : message.props.material == "toon3"
+        ? new THREE.MeshToonMaterial({
+            gradientMap: generateGradientMap(3),
+            ...standardArgs,
+          })
+        : message.props.material == "toon5"
+        ? new THREE.MeshToonMaterial({
+            gradientMap: generateGradientMap(5),
+            ...standardArgs,
+          })
+        : assertUnreachable(message.props.material);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(
+        new Float32Array(
+          message.props.vertices.buffer.slice(
+            message.props.vertices.byteOffset,
+            message.props.vertices.byteOffset +
+              message.props.vertices.byteLength,
+          ),
+        ),
+        3,
+      ),
+    );
+    if (message.props.vertex_colors !== null) {
+      geometry.setAttribute(
+        "color",
+        threeColorBufferFromUint8Buffer(message.props.vertex_colors),
+      );
+    }
+
+    geometry.setIndex(
+      new THREE.Uint32BufferAttribute(
+        new Uint32Array(
+          message.props.faces.buffer.slice(
+            message.props.faces.byteOffset,
+            message.props.faces.byteOffset + message.props.faces.byteLength,
+          ),
+        ),
+        1,
+      ),
+    );
+    geometry.computeVertexNormals();
+    geometry.computeBoundingSphere();
+
+    let skeleton = undefined;
+    if (message.type === "SkinnedMeshMessage") {
+      // Skinned mesh.
+      const bones: THREE.Bone[] = [];
+      bonesRef.current = bones;
+      for (let i = 0; i < message.props.bone_wxyzs!.length; i++) {
+        bones.push(new THREE.Bone());
+      }
+      const boneInverses: THREE.Matrix4[] = [];
+      bones.forEach((bone, i) => {
+        const wxyz = message.props.bone_wxyzs[i];
+        const position = message.props.bone_positions[i];
+        xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+
+        const boneInverse = new THREE.Matrix4();
+        boneInverse.makeRotationFromQuaternion(xyzw_quat);
+        boneInverse.setPosition(position[0], position[1], position[2]);
+        boneInverse.invert();
+        boneInverses.push(boneInverse);
+
+        bone.quaternion.copy(xyzw_quat);
+        bone.position.set(position[0], position[1], position[2]);
+        bone.matrixAutoUpdate = false;
+        bone.matrixWorldAutoUpdate = false;
+      });
+      skeleton = new THREE.Skeleton(bones, boneInverses);
+
+      geometry.setAttribute(
+        "skinIndex",
+        new THREE.Uint16BufferAttribute(
+          new Uint16Array(
+            message.props.skin_indices.buffer.slice(
+              message.props.skin_indices.byteOffset,
+              message.props.skin_indices.byteOffset +
+                message.props.skin_indices.byteLength,
+            ),
+          ),
+          4,
+        ),
+      );
+      geometry.setAttribute(
+        "skinWeight",
+        new THREE.Float32BufferAttribute(
+          new Float32Array(
+            message.props.skin_weights!.buffer.slice(
+              message.props.skin_weights!.byteOffset,
+              message.props.skin_weights!.byteOffset +
+                message.props.skin_weights!.byteLength,
+            ),
+          ),
+          4,
+        ),
+      );
+    }
+
+    setMaterial(material);
+    setGeometry(geometry);
+    setSkeleton(skeleton);
+    return () => {
+      // TODO: we can switch to the react-three-fiber <bufferGeometry />,
+      // <meshStandardMaterial />, etc components to avoid manual
+      // disposal.
+      geometry.dispose();
+      material.dispose();
+
+      if (message.type === "SkinnedMeshMessage") {
+        skeleton !== undefined && skeleton.dispose();
+        const state = viewer.skinnedMeshState.current[message.name];
+        state.initialized = false;
+      }
+    };
+  }, [message]);
+
+  // Update bone transforms for skinned meshes.
+  useFrame(() => {
+    if (message.type !== "SkinnedMeshMessage") return;
+
+    const parentNode = viewer.nodeRefFromName.current[message.name];
+    if (parentNode === undefined) return;
+
+    const state = viewer.skinnedMeshState.current[message.name];
+    const bones = bonesRef.current;
+    if (bones !== undefined) {
+      bones.forEach((bone, i) => {
+        if (!state.initialized) {
+          parentNode.add(bone);
+        }
+        const wxyz = state.initialized
+          ? state.poses[i].wxyz
+          : message.props.bone_wxyzs[i];
+        const position = state.initialized
+          ? state.poses[i].position
+          : message.props.bone_positions[i];
+
+        xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        bone.matrix.makeRotationFromQuaternion(xyzw_quat);
+        bone.matrix.setPosition(position[0], position[1], position[2]);
+        bone.updateMatrixWorld();
+      });
+
+      if (!state.initialized) {
+        state.initialized = true;
+      }
+    }
+  });
+
+  if (geometry === undefined || material === undefined) {
+    return;
+  } else if (message.type === "SkinnedMeshMessage") {
+    return (
+      <skinnedMesh
+        ref={ref as React.ForwardedRef<THREE.SkinnedMesh>}
+        geometry={geometry}
+        material={material}
+        skeleton={skeleton}
+        // TODO: leaving culling on (default) sometimes causes the
+        // mesh to randomly disappear, as of r3f==8.16.2.
+        //
+        // Probably this is because we don't update the bounding
+        // sphere after the bone transforms change.
+        frustumCulled={false}
+      >
+        <OutlinesIfHovered alwaysMounted />
+      </skinnedMesh>
+    );
+  } else {
+    // Normal mesh.
+    return (
+      <mesh
+        ref={ref as React.ForwardedRef<THREE.Mesh>}
+        geometry={geometry}
+        material={material}
+      >
+        <OutlinesIfHovered alwaysMounted />
+      </mesh>
+    );
+  }
+});
+
+export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
+  function ViserImage(message, ref) {
+    const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
+
+    React.useEffect(() => {
+      if (message.props.media_type !== null && message.props.data !== null) {
+        const image_url = URL.createObjectURL(new Blob([message.props.data]));
+        new THREE.TextureLoader().load(image_url, (texture) => {
+          setImageTexture(texture);
+          URL.revokeObjectURL(image_url);
+        });
+      }
+    }, [message.props.media_type, message.props.data]);
+    return (
+      <group ref={ref}>
+        <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>
+          <OutlinesIfHovered />
+          <planeGeometry
+            attach="geometry"
+            args={[message.props.render_width, message.props.render_height]}
+          />
+          <meshBasicMaterial
+            attach="material"
+            transparent={true}
+            side={THREE.DoubleSide}
+            map={imageTexture}
+            toneMapped={false}
+          />
+        </mesh>
+      </group>
+    );
+  },
+);
+
 /** Helper for visualizing camera frustums. */
 export const CameraFrustum = React.forwardRef<
   THREE.Group,
@@ -405,9 +701,22 @@ export const CameraFrustum = React.forwardRef<
     aspect: number;
     scale: number;
     color: number;
-    image?: THREE.Texture;
+    imageBinary: Uint8Array | null;
+    imageMediaType: string | null;
   }
 >(function CameraFrustum(props, ref) {
+  const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
+
+  React.useEffect(() => {
+    if (props.imageMediaType !== null && props.imageBinary !== null) {
+      const image_url = URL.createObjectURL(new Blob([props.imageBinary]));
+      new THREE.TextureLoader().load(image_url, (texture) => {
+        setImageTexture(texture);
+        URL.revokeObjectURL(image_url);
+      });
+    }
+  }, [props.imageMediaType, props.imageBinary]);
+
   let y = Math.tan(props.fov / 2.0);
   let x = y * props.aspect;
   let z = 1.0;
@@ -466,7 +775,7 @@ export const CameraFrustum = React.forwardRef<
           [0.0, -0.9, 1.0],
         ])}
       </Instances>
-      {props.image && (
+      {imageTexture && (
         <mesh
           position={[0.0, 0.0, props.scale * z]}
           rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
@@ -479,7 +788,7 @@ export const CameraFrustum = React.forwardRef<
             attach="material"
             transparent={true}
             side={THREE.DoubleSide}
-            map={props.image}
+            map={imageTexture}
             toneMapped={false}
           />
         </mesh>

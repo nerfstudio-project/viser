@@ -44,14 +44,13 @@ def main() -> None:
     server.scene.add_transform_controls("/light_control2")
     server.scene.add_light_directional(
         name="/light_control/directionallight",
-        color=0xBADBAD,
+        color=(186, 219, 173),
     )
     server.scene.add_light_spot(
         name="/light_control2/spotlight",
-        color=0xC0FFEE,
-        distance=5,
+        color=(192, 255, 238),
         angle=onp.pi / 2.5,
-        intensity=3,
+        intensity=3.0,
     )
 
     # Create default light toggle.

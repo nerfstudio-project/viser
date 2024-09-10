@@ -83,14 +83,14 @@ def _get_ts_type(typ: Type[Any]) -> str:
         args = get_args(typ)
         assert len(args) == 2
         return "{ [key: " + _get_ts_type(args[0]) + "]: " + _get_ts_type(args[1]) + " }"
-    elif is_typeddict(typ):
+    elif is_typeddict(typ) or dataclasses.is_dataclass(typ):
         hints = get_type_hints(typ)
         optional_keys = getattr(typ, "__optional_keys__", [])
 
         def fmt(key):
             val = hints[key]
             optional = key in optional_keys
-            if get_origin(val) is NotRequired:
+            if is_typeddict(typ) and get_origin(val) is NotRequired:
                 val = get_args(val)[0]
             ret = f"'{key}'{'?' if optional else ''}" + ": " + _get_ts_type(val)
             return ret
@@ -158,7 +158,17 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
             out_lines.append(f"  | {cls_name}")
         out_lines[-1] = out_lines[-1] + ";"
 
-    interfaces = "\n".join(out_lines) + "\n"
+    for tag, cls_names in tag_map.items():
+        out_lines.extend(
+            [
+                f"const typeSet{tag} = new Set(['" + "', '".join(cls_names) + "']);"
+                f"export function is{tag}(message: Message): message is {tag}" + " {",
+                f"    return typeSet{tag}.has(message.type);",
+                "}",
+            ]
+        )
+
+    generated_typescript = "\n".join(out_lines) + "\n"
 
     # Add header and return.
     return (
@@ -172,5 +182,5 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
                 "",
             ]
         )
-        + interfaces
+        + generated_typescript
     )
