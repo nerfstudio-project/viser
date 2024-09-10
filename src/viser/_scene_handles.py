@@ -40,17 +40,7 @@ def colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
     return colors
 
 
-class _OverridablePropApi:
-    """Mixin that allows reading/assigning properties defined in each scene node message."""
-
-    _PropHints: ClassVar[Dict[str, type]]
-
-    def __init__(self) -> None:
-        assert False
-
-    def __init_subclass__(cls, PropClass: type):
-        cls._PropHints = get_type_hints(PropClass)
-
+class _OverridablePropSettersAndGetters:
     def __setattr__(self, name: str, value: Any) -> None:
         handle = cast(SceneNodeHandle, self)
         # Get the value of the T TypeVar.
@@ -70,12 +60,26 @@ class _OverridablePropApi:
             return object.__setattr__(self, name, value)
 
     def __getattr__(self, name: str) -> Any:
-        if name in self._PropClass:
+        if name in self._PropHints:
             return getattr(self._impl.props, name)
         else:
             raise AttributeError(
                 f"'{self.__class__.__name__}' object has no attribute '{name}'"
             )
+
+
+class _OverridablePropApi(
+    _OverridablePropSettersAndGetters if not TYPE_CHECKING else object
+):
+    """Mixin that allows reading/assigning properties defined in each scene node message."""
+
+    _PropHints: ClassVar[Dict[str, type]]
+
+    def __init__(self) -> None:
+        assert False
+
+    def __init_subclass__(cls, PropClass: type):
+        cls._PropHints = get_type_hints(PropClass)
 
 
 @dataclasses.dataclass(frozen=True)

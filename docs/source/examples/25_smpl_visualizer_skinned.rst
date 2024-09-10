@@ -180,6 +180,9 @@ See here for download instructions:
                 gui_rgb = server.gui.add_rgb("Color", initial_value=(90, 200, 255))
                 gui_wireframe = server.gui.add_checkbox("Wireframe", initial_value=False)
                 gui_show_controls = server.gui.add_checkbox("Handles", initial_value=True)
+                gui_control_size = server.gui.add_slider(
+                    "Handle size", min=0.0, max=10.0, step=0.01, initial_value=1.0
+                )
 
                 gui_rgb.on_update(set_changed)
                 gui_wireframe.on_update(set_changed)
@@ -188,6 +191,16 @@ See here for download instructions:
                 def _(_):
                     for control in transform_controls:
                         control.visible = gui_show_controls.value
+
+                @gui_control_size.on_update
+                def _(_):
+                    for control in transform_controls:
+                        prefixed_joint_name = control.name
+                        control.scale = (
+                            0.2
+                            * (0.75 ** prefixed_joint_name.count("/"))
+                            * gui_control_size.value
+                        )
 
             # GUI elements: shape parameters.
             with tab_group.add_tab("Shape", viser.Icon.BOX):
