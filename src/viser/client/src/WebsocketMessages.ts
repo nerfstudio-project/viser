@@ -18,27 +18,29 @@ export interface NotificationMessage {
   type: "NotificationMessage";
   mode: "show" | "update";
   id: string;
-  title: string;
-  body: string;
-  loading: boolean;
-  with_close_button: boolean;
-  auto_close: number | false;
-  color:
-    | "dark"
-    | "gray"
-    | "red"
-    | "pink"
-    | "grape"
-    | "violet"
-    | "indigo"
-    | "blue"
-    | "cyan"
-    | "green"
-    | "lime"
-    | "yellow"
-    | "orange"
-    | "teal"
-    | null;
+  props: {
+    title: string;
+    body: string;
+    loading: boolean;
+    with_close_button: boolean;
+    auto_close: number | false;
+    color:
+      | "dark"
+      | "gray"
+      | "red"
+      | "pink"
+      | "grape"
+      | "violet"
+      | "indigo"
+      | "blue"
+      | "cyan"
+      | "green"
+      | "lime"
+      | "yellow"
+      | "orange"
+      | "teal"
+      | null;
+  };
 }
 /** Remove a specific notification.
  *
@@ -928,7 +930,7 @@ export interface GuiUpdateMessage {
   id: string;
   updates: Partial<GuiAddComponentMessage>;
 }
-/** Sent client<->server when any property of a GUI component is changed.
+/** Sent client<->server when any property of a scene node is changed.
  *
  * (automatically generated)
  */

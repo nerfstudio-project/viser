@@ -133,27 +133,15 @@ function useMessageHandler() {
 
       // Add a notification.
       case "NotificationMessage": {
-        if (message.mode === "show") {
-          notifications.show({
-            id: message.id,
-            title: message.title,
-            message: message.body,
-            withCloseButton: message.with_close_button,
-            loading: message.loading,
-            autoClose: message.auto_close,
-            color: message.color ?? undefined,
-          });
-        } else if (message.mode === "update") {
-          notifications.update({
-            id: message.id,
-            title: message.title,
-            message: message.body,
-            withCloseButton: message.with_close_button,
-            loading: message.loading,
-            autoClose: message.auto_close,
-            color: message.color ?? undefined,
-          });
-        }
+        (message.mode === "show" ? notifications.show : notifications.update)({
+          id: message.id,
+          title: message.props.title,
+          message: message.props.body,
+          withCloseButton: message.props.with_close_button,
+          loading: message.props.loading,
+          autoClose: message.props.auto_close,
+          color: message.props.color ?? undefined,
+        });
         return;
       }
 

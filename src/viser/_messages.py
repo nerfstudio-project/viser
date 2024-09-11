@@ -96,12 +96,23 @@ class NotificationMessage(Message):
 
     mode: Literal["show", "update"]
     id: str
+    props: NotificationProps
+
+
+@dataclasses.dataclass
+class NotificationProps:
     title: str
+    """Title of the notification. For handles, synchronized automatically when assigned."""
     body: str
+    """Body text of the notification. For handles, synchronized automatically when assigned."""
     loading: bool
+    """Whether to show a loading indicator. For handles, synchronized automatically when assigned."""
     with_close_button: bool
+    """Whether to show a close button. For handles, synchronized automatically when assigned."""
     auto_close: Union[int, Literal[False]]
+    """Time in milliseconds after which the notification should auto-close, or False to disable auto-close. For handles, synchronized automatically when assigned."""
     color: Optional[Color]
+    """Color of the notification. For handles, synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -970,7 +981,7 @@ class GuiUpdateMessage(Message):
 
 @dataclasses.dataclass
 class SceneNodeUpdateMessage(Message):
-    """Sent client<->server when any property of a GUI component is changed."""
+    """Sent client<->server when any property of a scene node is changed."""
 
     name: str
     updates: Annotated[
