@@ -50,9 +50,9 @@ Visualize a mesh under different lighting conditions. To get the demo data, see 
             )
 
             # adding controls to custom lights in the scene
-            server.scene.add_transform_controls("/control0")
+            server.scene.add_transform_controls("/control0", position=(0.0, 10.0, 5.0))
             server.scene.add_label("/control0/label", "Directional")
-            server.scene.add_transform_controls("/control1")
+            server.scene.add_transform_controls("/control1", position=(0.0, -5.0, 5.0))
             server.scene.add_label("/control1/label", "Point")
 
             directional_light = server.scene.add_light_directional(
@@ -62,7 +62,7 @@ Visualize a mesh under different lighting conditions. To get the demo data, see 
             point_light = server.scene.add_light_point(
                 name="/control1/point_light",
                 color=(192, 255, 238),
-                intensity=3.0,
+                intensity=30.0,
             )
 
             # Create default light toggle.
@@ -97,7 +97,7 @@ Visualize a mesh under different lighting conditions. To get the demo data, see 
                 gui_point_intensity = server.gui.add_slider(
                     "Intensity",
                     min=0.0,
-                    max=20.0,
+                    max=200.0,
                     step=0.01,
                     initial_value=point_light.intensity,
                 )
@@ -149,7 +149,7 @@ Visualize a mesh under different lighting conditions. To get the demo data, see 
                     min=0.0,
                     max=1.0,
                     step=0.01,
-                    initial_value=1.0,
+                    initial_value=0.1,
                 )
 
             def update_environment_map(_) -> None:
@@ -161,6 +161,7 @@ Visualize a mesh under different lighting conditions. To get the demo data, see 
                     environment_intensity=gui_env_intensity.value,
                 )
 
+            update_environment_map(None)
             gui_env_preset.on_update(update_environment_map)
             gui_background.on_update(update_environment_map)
             gui_bg_blurriness.on_update(update_environment_map)
