@@ -428,7 +428,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
                 ),
             )
         )
-        handle._sync_with_client(first=True)
+        handle._sync_with_client("show")
         return handle
 
 
