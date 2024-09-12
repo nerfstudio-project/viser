@@ -40,7 +40,7 @@ def colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
     return colors
 
 
-class _OverridablePropSettersAndGetters:
+class _OverridablePropScenePropSettersAndGetters:
     def __setattr__(self, name: str, value: Any) -> None:
         handle = cast(SceneNodeHandle, self)
         # Get the value of the T TypeVar.
@@ -68,8 +68,8 @@ class _OverridablePropSettersAndGetters:
             )
 
 
-class _OverridablePropApi(
-    _OverridablePropSettersAndGetters if not TYPE_CHECKING else object
+class _OverridableScenePropApi(
+    _OverridablePropScenePropSettersAndGetters if not TYPE_CHECKING else object
 ):
     """Mixin that allows reading/assigning properties defined in each scene node message."""
 
@@ -270,7 +270,7 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
 class CameraFrustumHandle(
     _ClickableSceneNodeHandle,
     _messages.CameraFrustumProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.CameraFrustumProps,
 ):
     """Handle for camera frustums."""
@@ -279,7 +279,7 @@ class CameraFrustumHandle(
 class DirectionalLightHandle(
     SceneNodeHandle,
     _messages.DirectionalLightProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.DirectionalLightProps,
 ):
     """Handle for directional lights."""
@@ -288,7 +288,7 @@ class DirectionalLightHandle(
 class AmbientLightHandle(
     SceneNodeHandle,
     _messages.AmbientLightProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.AmbientLightProps,
 ):
     """Handle for ambient lights."""
@@ -297,7 +297,7 @@ class AmbientLightHandle(
 class HemisphereLightHandle(
     SceneNodeHandle,
     _messages.HemisphereLightProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.HemisphereLightProps,
 ):
     """Handle for hemisphere lights."""
@@ -306,7 +306,7 @@ class HemisphereLightHandle(
 class PointLightHandle(
     SceneNodeHandle,
     _messages.PointLightProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.PointLightProps,
 ):
     """Handle for point lights."""
@@ -315,7 +315,7 @@ class PointLightHandle(
 class RectAreaLightHandle(
     SceneNodeHandle,
     _messages.RectAreaLightProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.RectAreaLightProps,
 ):
     """Handle for rectangular area lights."""
@@ -324,7 +324,7 @@ class RectAreaLightHandle(
 class SpotLightHandle(
     SceneNodeHandle,
     _messages.SpotLightProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.SpotLightProps,
 ):
     """Handle for spot lights."""
@@ -333,7 +333,7 @@ class SpotLightHandle(
 class PointCloudHandle(
     SceneNodeHandle,
     _messages.PointCloudProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.PointCloudProps,
 ):
     """Handle for point clouds. Does not support click events."""
@@ -342,7 +342,7 @@ class PointCloudHandle(
 class BatchedAxesHandle(
     _ClickableSceneNodeHandle,
     _messages.BatchedAxesProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.BatchedAxesProps,
 ):
     """Handle for batched coordinate frames."""
@@ -351,7 +351,7 @@ class BatchedAxesHandle(
 class FrameHandle(
     _ClickableSceneNodeHandle,
     _messages.FrameProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.FrameProps,
 ):
     """Handle for coordinate frames."""
@@ -360,7 +360,7 @@ class FrameHandle(
 class MeshHandle(
     _ClickableSceneNodeHandle,
     _messages.MeshProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.MeshProps,
 ):
     """Handle for mesh objects."""
@@ -369,7 +369,7 @@ class MeshHandle(
 class GaussianSplatHandle(
     _ClickableSceneNodeHandle,
     _messages.GaussianSplatsProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.GaussianSplatsProps,
 ):
     """Handle for Gaussian splatting objects.
@@ -381,7 +381,7 @@ class GaussianSplatHandle(
 class MeshSkinnedHandle(
     _ClickableSceneNodeHandle,
     _messages.SkinnedMeshProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.SkinnedMeshProps,
 ):
     """Handle for skinned mesh objects."""
@@ -450,7 +450,7 @@ class MeshSkinnedBoneHandle:
 class GridHandle(
     SceneNodeHandle,
     _messages.GridProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.GridProps,
 ):
     """Handle for grid objects."""
@@ -459,7 +459,7 @@ class GridHandle(
 class SplineCatmullRomHandle(
     SceneNodeHandle,
     _messages.CatmullRomSplineProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.CatmullRomSplineProps,
 ):
     """Handle for Catmull-Rom splines."""
@@ -468,7 +468,7 @@ class SplineCatmullRomHandle(
 class SplineCubicBezierHandle(
     SceneNodeHandle,
     _messages.CubicBezierSplineProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.CubicBezierSplineProps,
 ):
     """Handle for cubic Bezier splines."""
@@ -477,7 +477,7 @@ class SplineCubicBezierHandle(
 class GlbHandle(
     _ClickableSceneNodeHandle,
     _messages.GlbProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.GlbProps,
 ):
     """Handle for GLB objects."""
@@ -486,7 +486,7 @@ class GlbHandle(
 class ImageHandle(
     _ClickableSceneNodeHandle,
     _messages.ImageProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.ImageProps,
 ):
     """Handle for 2D images, rendered in 3D."""
@@ -495,7 +495,7 @@ class ImageHandle(
 class LabelHandle(
     SceneNodeHandle,
     _messages.LabelProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.LabelProps,
 ):
     """Handle for 2D label objects. Does not support click events."""
@@ -511,7 +511,7 @@ class _TransformControlsState:
 class TransformControlsHandle(
     _ClickableSceneNodeHandle,
     _messages.TransformControlsProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.TransformControlsProps,
 ):
     """Handle for interacting with transform control gizmos."""
@@ -535,7 +535,7 @@ class TransformControlsHandle(
 class Gui3dContainerHandle(
     SceneNodeHandle,
     _messages.Gui3DProps,
-    _OverridablePropApi,
+    _OverridableScenePropApi,
     PropClass=_messages.Gui3DProps,
 ):
     """Use as a context to place GUI elements into a 3D GUI container."""

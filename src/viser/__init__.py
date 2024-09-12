@@ -33,6 +33,8 @@ from ._scene_handles import RectAreaLightHandle as RectAreaLightHandle
 from ._scene_handles import SceneNodeHandle as SceneNodeHandle
 from ._scene_handles import SceneNodePointerEvent as SceneNodePointerEvent
 from ._scene_handles import ScenePointerEvent as ScenePointerEvent
+from ._scene_handles import SplineCatmullRomHandle as SplineCatmullRomHandle
+from ._scene_handles import SplineCubicBezierHandle as SplineCubicBezierHandle
 from ._scene_handles import SpotLightHandle as SpotLightHandle
 from ._scene_handles import TransformControlsHandle as TransformControlsHandle
 from ._viser import CameraHandle as CameraHandle

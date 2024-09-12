@@ -418,15 +418,17 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             _NotificationHandleState(
                 websock_interface=self._websock_connection,
                 id=_make_unique_id(),
-                title=title,
-                body=body,
-                loading=loading,
-                with_close_button=with_close_button,
-                auto_close=auto_close,
-                color=color,
+                props=_messages.NotificationProps(
+                    title=title,
+                    body=body,
+                    loading=loading,
+                    with_close_button=with_close_button,
+                    auto_close=auto_close,
+                    color=color,
+                ),
             )
         )
-        handle._sync_with_client(first=True)
+        handle._sync_with_client("show")
         return handle
 
 
