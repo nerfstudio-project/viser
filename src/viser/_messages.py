@@ -208,6 +208,8 @@ class FrameMessage(Message, tag="SceneNodeMessage"):
 
 @dataclasses.dataclass
 class FrameProps:
+    name: str
+    """Name of the frame, as inherited from SceneNodeHandle."""
     show_axes: bool
     """Boolean to indicate whether to show the frame as a set of axes + origin sphere. For handles, synchronized automatically when assigned."""
     axes_length: float
