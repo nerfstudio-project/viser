@@ -665,11 +665,7 @@ function BackgroundImage() {
   });
 
   return (
-    <mesh
-      ref={backgroundMesh}
-      material={backgroundMaterial}
-      matrixWorldAutoUpdate={false}
-    >
+    <mesh ref={backgroundMesh} material={backgroundMaterial}>
       <planeGeometry attach="geometry" args={[1, 1]} />
     </mesh>
   );
