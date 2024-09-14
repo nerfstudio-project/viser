@@ -82,8 +82,25 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     positions = onp.stack([v["x"], v["y"], v["z"]], axis=-1)
     scales = onp.exp(onp.stack([v["scale_0"], v["scale_1"], v["scale_2"]], axis=-1))
     wxyzs = onp.stack([v["rot_0"], v["rot_1"], v["rot_2"], v["rot_3"]], axis=1)
-    colors = 0.5 + SH_C0 * onp.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
+    colors = 0.5 + SH_C0 * onp.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1) 
+    # print(v["f_dc_0"].shape) # prints (numGaussians)
+    # print(colors.shape) # prints (numGaussians, 3)
     opacities = 1.0 / (1.0 + onp.exp(-v["opacity"][:, None]))
+    
+    # Load all zero order SH coefficients
+    dc_terms = onp.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
+
+    # Load higher order SH coefficients (f_rest_0, ... f_rest_44), which are either level 1 or higher
+    # Note: .ply file supports maximum SH degree of 3, R = 0 (mod 3), G = 1 (mod 3), B = 2 (mod 3)
+    rest_terms = []
+    i = 0
+    while f"f_rest_{i}" in v:
+        rest_terms.append(v[f"f_rest_{i}"])
+        i += 1
+    if len(rest_terms) > 0: # if we do have higher than zero order SH, we will process them and add them here.
+        sh_coeffs = onp.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]] + rest_terms, axis=1)
+
+    sh_degree = int(onp.sqrt(sh_coeffs.shape[1] // 3) - 1)
 
     Rs = tf.SO3(wxyzs).as_matrix()
     covariances = onp.einsum(
@@ -93,6 +110,10 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
         positions -= onp.mean(positions, axis=0, keepdims=True)
 
     num_gaussians = len(v)
+
+    print(sh_coeffs.shape)
+    print(v["x"].shape)
+
     print(
         f"PLY file with {num_gaussians=} loaded in {time.time() - start_time} seconds"
     )
@@ -101,11 +122,14 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
         "rgbs": colors,
         "opacities": opacities,
         "covariances": covariances,
+        "sh_coeffs": sh_coeffs,
+        "sh_degree": sh_degree,
     }
 
 
 def main(splat_paths: tuple[Path, ...]) -> None:
     server = viser.ViserServer()
+    print(server.request_share_url())
     server.gui.configure_theme(dark_mode=True)
     gui_reset_up = server.gui.add_button(
         "Reset up direction",
