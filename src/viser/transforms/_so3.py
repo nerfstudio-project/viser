@@ -8,7 +8,7 @@ import numpy.typing as onpt
 from typing_extensions import override
 
 from . import _base, hints
-from .utils import broadcast_leading_axes, get_epsilon, register_lie_group
+from .utils import broadcast_leading_axes, get_epsilon
 
 
 @dataclasses.dataclass(frozen=True)
@@ -20,14 +20,14 @@ class RollPitchYaw:
     yaw: onpt.NDArray[onp.floating]
 
 
-@register_lie_group(
+@dataclasses.dataclass(frozen=True)
+class SO3(
+    _base.SOBase,
     matrix_dim=3,
     parameters_dim=4,
     tangent_dim=3,
     space_dim=3,
-)
-@dataclasses.dataclass(frozen=True)
-class SO3(_base.SOBase):
+):
     """Special orthogonal group for 3D rotations. Broadcasting rules are the same as
     for numpy.
 
@@ -173,9 +173,13 @@ class SO3(_base.SOBase):
 
     @classmethod
     @override
-    def identity(cls, batch_axes: Tuple[int, ...] = ()) -> SO3:
+    def identity(
+        cls, batch_axes: Tuple[int, ...] = (), dtype: onpt.DTypeLike = onp.float64
+    ) -> SO3:
         return SO3(
-            wxyz=onp.broadcast_to(onp.array([1.0, 0.0, 0.0, 0.0]), (*batch_axes, 4))
+            wxyz=onp.broadcast_to(
+                onp.array([1.0, 0.0, 0.0, 0.0], dtype=dtype), (*batch_axes, 4)
+            )
         )
 
     @classmethod
@@ -316,7 +320,8 @@ class SO3(_base.SOBase):
 
         # Compute using quaternion multiplys.
         padded_target = onp.concatenate(
-            [onp.zeros((*self.get_batch_axes(), 1)), target], axis=-1
+            [onp.zeros((*self.get_batch_axes(), 1), dtype=target.dtype), target],
+            axis=-1,
         )
         return (self @ SO3(wxyz=padded_target) @ self.inverse()).wxyz[..., 1:]
 

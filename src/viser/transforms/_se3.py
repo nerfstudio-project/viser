@@ -9,7 +9,7 @@ from typing_extensions import override
 
 from . import _base
 from ._so3 import SO3
-from .utils import broadcast_leading_axes, get_epsilon, register_lie_group
+from .utils import broadcast_leading_axes, get_epsilon
 
 
 def _skew(omega: onpt.NDArray[onp.floating]) -> onpt.NDArray[onp.floating]:
@@ -23,14 +23,14 @@ def _skew(omega: onpt.NDArray[onp.floating]) -> onpt.NDArray[onp.floating]:
     ).reshape((*omega.shape[:-1], 3, 3))
 
 
-@register_lie_group(
+@dataclasses.dataclass(frozen=True)
+class SE3(
+    _base.SEBase[SO3],
     matrix_dim=4,
     parameters_dim=7,
     tangent_dim=6,
     space_dim=3,
-)
-@dataclasses.dataclass(frozen=True)
-class SE3(_base.SEBase[SO3]):
+):
     """Special Euclidean group for proper rigid transforms in 3D. Broadcasting
     rules are the same as for numpy.
 
@@ -76,10 +76,13 @@ class SE3(_base.SEBase[SO3]):
 
     @classmethod
     @override
-    def identity(cls, batch_axes: Tuple[int, ...] = ()) -> SE3:
+    def identity(
+        cls, batch_axes: Tuple[int, ...] = (), dtype: onpt.DTypeLike = onp.float64
+    ) -> SE3:
         return SE3(
             wxyz_xyz=onp.broadcast_to(
-                onp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), (*batch_axes, 7)
+                onp.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=dtype),
+                (*batch_axes, 7),
             )
         )
 
@@ -97,7 +100,7 @@ class SE3(_base.SEBase[SO3]):
 
     @override
     def as_matrix(self) -> onpt.NDArray[onp.floating]:
-        out = onp.zeros((*self.get_batch_axes(), 4, 4))
+        out = onp.zeros((*self.get_batch_axes(), 4, 4), dtype=self.wxyz_xyz.dtype)
         out[..., :3, :3] = self.rotation().as_matrix()
         out[..., :3, 3] = self.translation()
         out[..., 3, 3] = 1.0
@@ -212,7 +215,8 @@ class SE3(_base.SEBase[SO3]):
                     axis=-1,
                 ),
                 onp.concatenate(
-                    [onp.zeros((*self.get_batch_axes(), 3, 3)), R], axis=-1
+                    [onp.zeros((*self.get_batch_axes(), 3, 3), dtype=R.dtype), R],
+                    axis=-1,
                 ),
             ],
             axis=-2,

@@ -7,17 +7,17 @@ from typing_extensions import override
 
 from . import _base, hints
 from ._so2 import SO2
-from .utils import broadcast_leading_axes, get_epsilon, register_lie_group
+from .utils import broadcast_leading_axes, get_epsilon
 
 
-@register_lie_group(
+@dataclasses.dataclass(frozen=True)
+class SE2(
+    _base.SEBase[SO2],
     matrix_dim=3,
     parameters_dim=4,
     tangent_dim=3,
-    space_dim=2,
-)
-@dataclasses.dataclass(frozen=True)
-class SE2(_base.SEBase[SO2]):
+    space_dim=3,
+):
     """Special Euclidean group for proper rigid transforms in 2D. Broadcasting
     rules are the same as for numpy.
 
@@ -77,10 +77,12 @@ class SE2(_base.SEBase[SO2]):
 
     @classmethod
     @override
-    def identity(cls, batch_axes: Tuple[int, ...] = ()) -> "SE2":
+    def identity(
+        cls, batch_axes: Tuple[int, ...] = (), dtype: onpt.DTypeLike = onp.float64
+    ) -> "SE2":
         return SE2(
             unit_complex_xy=onp.broadcast_to(
-                onp.array([1.0, 0.0, 0.0, 0.0]), (*batch_axes, 4)
+                onp.array([1.0, 0.0, 0.0, 0.0], dtype=dtype), (*batch_axes, 4)
             )
         )
 
