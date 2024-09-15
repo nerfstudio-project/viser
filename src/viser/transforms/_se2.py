@@ -18,7 +18,7 @@ class SE2(
     matrix_dim=3,
     parameters_dim=4,
     tangent_dim=3,
-    space_dim=3,
+    space_dim=2,
 ):
     """Special Euclidean group for proper rigid transforms in 2D. Broadcasting
     rules are the same as for numpy.
@@ -257,6 +257,6 @@ class SE2(
         dtype: onpt.DTypeLike = onp.float64,
     ) -> SE2:
         return SE2.from_rotation_and_translation(
-            SO2.sample_uniform(rng, batch_axes=batch_axes, dtype=type),
+            SO2.sample_uniform(rng, batch_axes=batch_axes, dtype=dtype),
             rng.uniform(low=-1.0, high=1.0, size=(*batch_axes, 2)).astype(dtype),
         )
