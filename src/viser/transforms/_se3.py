@@ -222,15 +222,17 @@ class SE3(
             axis=-2,
         )
 
-    # @classmethod
-    # @override
-    # def sample_uniform(
-    #     cls, key: onp.ndarray, batch_axes: jdc.Static[Tuple[int, ...]] = ()
-    # ) -> SE3:
-    #     key0, key1 = jax.random.split(key)
-    #     return SE3.from_rotation_and_translation(
-    #         rotation=SO3.sample_uniform(key0, batch_axes=batch_axes),
-    #         translation=jax.random.uniform(
-    #             key=key1, shape=(*batch_axes, 3), minval=-1.0, maxval=1.0
-    #         ),
-    #     )
+    @classmethod
+    @override
+    def sample_uniform(
+        cls,
+        rng: onp.random.Generator,
+        batch_axes: Tuple[int, ...] = (),
+        dtype: onpt.DTypeLike = onp.float64,
+    ) -> SE3:
+        return SE3.from_rotation_and_translation(
+            rotation=SO3.sample_uniform(rng, batch_axes=batch_axes, dtype=dtype),
+            translation=rng.uniform(low=-1.0, high=1.0, size=(*batch_axes, 3)).astype(
+                dtype=dtype
+            ),
+        )

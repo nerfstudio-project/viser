@@ -135,14 +135,16 @@ class SO2(
             / onp.linalg.norm(self.unit_complex, axis=-1, keepdims=True)
         )
 
-    # @classmethod
-    # @override
-    # def sample_uniform(
-    #     cls, key: onp.ndarray, batch_axes: jdc.Static[Tuple[int, ...]] = ()
-    # ) -> SO2:
-    #     out = SO2.from_radians(
-    #         jax.random.uniform(
-    #             key=key, shape=batch_axes, minval=0.0, maxval=2.0 * onp.pi)
-    #     )
-    #     assert out.get_batch_axes() == batch_axes
-    #     return out
+    @classmethod
+    @override
+    def sample_uniform(
+        cls,
+        rng: onp.random.Generator,
+        batch_axes: Tuple[int, ...] = (),
+        dtype: onpt.DTypeLike = onp.float64,
+    ) -> SO2:
+        out = SO2.from_radians(
+            rng.uniform(0.0, 2.0 * onp.pi, size=batch_axes).astype(dtype=dtype)
+        )
+        assert out.get_batch_axes() == batch_axes
+        return out

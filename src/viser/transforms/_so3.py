@@ -434,34 +434,36 @@ class SO3(
     def normalize(self) -> SO3:
         return SO3(wxyz=self.wxyz / onp.linalg.norm(self.wxyz, axis=-1, keepdims=True))
 
-    # @classmethod
-    # @override
-    # def sample_uniform(
-    #     cls, key: onp.ndarray, batch_axes: jdc.Static[Tuple[int, ...]] = ()
-    # ) -> SO3:
-    #     # Uniformly sample over S^3.
-    #     # > Reference: http://planning.cs.uiuc.edu/node198.html
-    #     u1, u2, u3 = onp.moveaxis(
-    #         jax.random.uniform(
-    #             key=key,
-    #             shape=(*batch_axes, 3),
-    #             minval=onp.zeros(3),
-    #             maxval=onp.array([1.0, 2.0 * onp.pi, 2.0 * onp.pi]),
-    #         ),
-    #         -1,
-    #         0,
-    #     )
-    #     a = onp.sqrt(1.0 - u1)
-    #     b = onp.sqrt(u1)
-    #
-    #     return SO3(
-    #         wxyz=onp.stack(
-    #             [
-    #                 a * onp.sin(u2),
-    #                 a * onp.cos(u2),
-    #                 b * onp.sin(u3),
-    #                 b * onp.cos(u3),
-    #             ],
-    #             axis=-1,
-    #         )
-    #     )
+    @classmethod
+    @override
+    def sample_uniform(
+        cls,
+        rng: onp.random.Generator,
+        batch_axes: Tuple[int, ...] = (),
+        dtype: onpt.DTypeLike = onp.float64,
+    ) -> SO3:
+        # Uniformly sample over S^3.
+        # > Reference: http://planning.cs.uiuc.edu/node198.html
+        u1, u2, u3 = onp.moveaxis(
+            rng.uniform(
+                low=onp.zeros(3),
+                high=onp.array([1.0, 2.0 * onp.pi, 2.0 * onp.pi]),
+                size=(*batch_axes, 3),
+            ).astype(dtype=dtype),
+            -1,
+            0,
+        )
+        a = onp.sqrt(1.0 - u1)
+        b = onp.sqrt(u1)
+
+        return SO3(
+            wxyz=onp.stack(
+                [
+                    a * onp.sin(u2),
+                    a * onp.cos(u2),
+                    b * onp.sin(u3),
+                    b * onp.cos(u3),
+                ],
+                axis=-1,
+            )
+        )

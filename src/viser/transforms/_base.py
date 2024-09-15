@@ -185,20 +185,25 @@ class MatrixLieGroup(abc.ABC):
             Normalized group member.
         """
 
-    # @classmethod
-    # @abc.abstractmethod
-    # def sample_uniform(cls, key: onp.ndarray, batch_axes: Tuple[int, ...] = ()) -> Self:
-    #     """Draw a uniform sample from the group. Translations (if applicable) are in the
-    #     range [-1, 1].
-    #
-    #     Args:
-    #         key: PRNG key, as returned by `jax.random.PRNGKey()`.
-    #         batch_axes: Any leading batch axes for the output transforms. Each
-    #             sampled transform will be different.
-    #
-    #     Returns:
-    #         Sampled group member.
-    #     """
+    @classmethod
+    @abc.abstractmethod
+    def sample_uniform(
+        cls,
+        rng: onp.random.Generator,
+        batch_axes: Tuple[int, ...] = (),
+        dtype: onpt.DTypeLike = onp.float64,
+    ) -> Self:
+        """Draw a uniform sample from the group. Translations (if applicable) are in the
+        range [-1, 1].
+
+        Args:
+            rng: numpy generator object.
+            batch_axes: Any leading batch axes for the output transforms. Each
+                sampled transform will be different.
+
+        Returns:
+            Sampled group member.
+        """
 
     @final
     def get_batch_axes(self) -> Tuple[int, ...]:

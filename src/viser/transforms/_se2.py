@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 from typing import Tuple, cast
 
@@ -39,7 +41,7 @@ class SE2(
         return f"{self.__class__.__name__}(unit_complex={unit_complex}, xy={xy})"
 
     @staticmethod
-    def from_xy_theta(x: hints.Scalar, y: hints.Scalar, theta: hints.Scalar) -> "SE2":
+    def from_xy_theta(x: hints.Scalar, y: hints.Scalar, theta: hints.Scalar) -> SE2:
         """Construct a transformation from standard 2D pose parameters.
 
         This is not the same as integrating over a length-3 twist.
@@ -56,7 +58,7 @@ class SE2(
         cls,
         rotation: SO2,
         translation: onpt.NDArray[onp.floating],
-    ) -> "SE2":
+    ) -> SE2:
         assert translation.shape[-1:] == (2,)
         rotation, translation = broadcast_leading_axes((rotation, translation))
         return SE2(
@@ -79,7 +81,7 @@ class SE2(
     @override
     def identity(
         cls, batch_axes: Tuple[int, ...] = (), dtype: onpt.DTypeLike = onp.float64
-    ) -> "SE2":
+    ) -> SE2:
         return SE2(
             unit_complex_xy=onp.broadcast_to(
                 onp.array([1.0, 0.0, 0.0, 0.0], dtype=dtype), (*batch_axes, 4)
@@ -88,7 +90,7 @@ class SE2(
 
     @classmethod
     @override
-    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> "SE2":
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> SE2:
         assert matrix.shape[-2:] == (3, 3) or matrix.shape[-2:] == (2, 3)
         # Currently assumes bottom row is [0, 0, 1].
         return SE2.from_rotation_and_translation(
@@ -125,7 +127,7 @@ class SE2(
 
     @classmethod
     @override
-    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> "SE2":
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> SE2:
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se2.hpp#L558
         # Also see:
@@ -229,7 +231,7 @@ class SE2(
         return tangent
 
     @override
-    def adjoint(self: "SE2") -> onpt.NDArray[onp.floating]:
+    def adjoint(self: SE2) -> onpt.NDArray[onp.floating]:
         cos, sin, x, y = onp.moveaxis(self.unit_complex_xy, -1, 0)
         return onp.stack(
             [
@@ -246,21 +248,15 @@ class SE2(
             axis=-1,
         ).reshape((*self.get_batch_axes(), 3, 3))
 
-    # @classmethod
-    # @override
-    # def sample_uniform(
-    #     cls, key: onp.ndarray, batch_axes: jdc.Static[Tuple[int, ...]] = ()
-    # ) -> "SE2":
-    #     key0, key1 = jax.random.split(key)
-    #     return SE2.from_rotation_and_translation(
-    #         rotation=SO2.sample_uniform(key0, batch_axes=batch_axes),
-    #         translation=jax.random.uniform(
-    #             key=key1,
-    #             shape=(
-    #                 *batch_axes,
-    #                 2,
-    #             ),
-    #             minval=-1.0,
-    #             maxval=1.0,
-    #         ),
-    #     )
+    @classmethod
+    @override
+    def sample_uniform(
+        cls,
+        rng: onp.random.Generator,
+        batch_axes: Tuple[int, ...] = (),
+        dtype: onpt.DTypeLike = onp.float64,
+    ) -> SE2:
+        return SE2.from_rotation_and_translation(
+            SO2.sample_uniform(rng, batch_axes=batch_axes, dtype=type),
+            rng.uniform(low=-1.0, high=1.0, size=(*batch_axes, 2)).astype(dtype),
+        )
