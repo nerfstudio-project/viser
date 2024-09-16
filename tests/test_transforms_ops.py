@@ -4,14 +4,14 @@ from typing import Tuple, Type
 
 import numpy as onp
 import numpy.typing as onpt
-import viser.transforms as vtf
-
 from utils import (
     assert_arrays_close,
     assert_transforms_close,
     general_group_test,
     sample_transform,
 )
+
+import viser.transforms as vtf
 
 
 @general_group_test
@@ -64,7 +64,7 @@ def test_adjoint(
 ):
     """Check adjoint definition."""
     transform = sample_transform(Group, batch_axes, dtype)
-    omega = onp.random.randn(*batch_axes, Group.tangent_dim)
+    omega = onp.random.randn(*batch_axes, Group.tangent_dim).astype(dtype=dtype)
     assert_transforms_close(
         transform @ Group.exp(omega),
         Group.exp(onp.einsum("...ij,...j->...i", transform.adjoint(), omega))

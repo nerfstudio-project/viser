@@ -94,6 +94,7 @@ def test_adjoint(
     """Check adjoint definition."""
     transform = sample_transform(Group, batch_axes, dtype)
     omega = onp.random.randn(*batch_axes, Group.tangent_dim).astype(dtype)
+    assert (transform @ Group.exp(omega)).parameters().dtype == dtype
     assert_transforms_close(
         transform @ Group.exp(omega),
         Group.exp(onp.einsum("...ij,...j->...i", transform.adjoint(), omega))
