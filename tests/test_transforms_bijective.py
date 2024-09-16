@@ -3,6 +3,7 @@
 from typing import Tuple, Type
 
 import numpy as onp
+import numpy.typing as onpt
 import viser.transforms as vtf
 from hypothesis import given, settings
 from hypothesis import strategies as st
@@ -17,10 +18,12 @@ from utils import (
 
 @general_group_test
 def test_sample_uniform_valid(
-    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]
+    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...], dtype: onpt.DTypeLike
 ):
     """Check that sample_uniform() returns valid group members."""
-    T = sample_transform(Group, batch_axes)  # Calls sample_uniform under the hood.
+    T = sample_transform(
+        Group, batch_axes, dtype
+    )  # Calls sample_uniform under the hood.
     assert_transforms_close(T, T.normalize())
 
 
@@ -36,7 +39,7 @@ def test_so2_from_to_radians_bijective(_random_module):
 @given(_random_module=st.random_module())
 def test_so3_xyzw_bijective(_random_module):
     """Check that we can convert between xyzw and wxyz quaternions."""
-    T = sample_transform(vtf.SO3)
+    T = sample_transform(vtf.SO3, (), dtype=onp.float64)
     assert_transforms_close(T, vtf.SO3.from_quaternion_xyzw(T.as_quaternion_xyzw()))
 
 
@@ -44,19 +47,21 @@ def test_so3_xyzw_bijective(_random_module):
 @given(_random_module=st.random_module())
 def test_so3_rpy_bijective(_random_module):
     """Check that we can convert between quaternions and Euler angles."""
-    T = sample_transform(vtf.SO3)
+    T = sample_transform(vtf.SO3, (), dtype=onp.float64)
     rpy = T.as_rpy_radians()
     assert_transforms_close(T, vtf.SO3.from_rpy_radians(rpy.roll, rpy.pitch, rpy.yaw))
 
 
 @general_group_test
 def test_log_exp_bijective(
-    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]
+    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...], dtype: onpt.DTypeLike
 ):
     """Check 1-to-1 mapping for log <=> exp operations."""
-    transform = sample_transform(Group, batch_axes)
+    transform = sample_transform(Group, batch_axes, dtype)
 
+    assert transform.parameters().dtype == dtype
     tangent = transform.log()
+    assert tangent.dtype == dtype
     assert tangent.shape == (*batch_axes, Group.tangent_dim)
 
     exp_transform = Group.exp(tangent)
@@ -66,25 +71,29 @@ def test_log_exp_bijective(
 
 @general_group_test
 def test_inverse_bijective(
-    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]
+    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...], dtype: onpt.DTypeLike
 ):
     """Check inverse of inverse."""
-    transform = sample_transform(Group, batch_axes)
+    transform = sample_transform(Group, batch_axes, dtype)
     assert_transforms_close(transform, transform.inverse().inverse())
 
 
 @general_group_test
-def test_matrix_bijective(Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]):
+def test_matrix_bijective(
+    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...], dtype: onpt.DTypeLike
+):
     """Check that we can convert to and from matrices."""
-    transform = sample_transform(Group, batch_axes)
+    transform = sample_transform(Group, batch_axes, dtype)
     assert_transforms_close(transform, Group.from_matrix(transform.as_matrix()))
 
 
 @general_group_test
-def test_adjoint(Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]):
+def test_adjoint(
+    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...], dtype: onpt.DTypeLike
+):
     """Check adjoint definition."""
-    transform = sample_transform(Group, batch_axes)
-    omega = onp.random.randn(*batch_axes, Group.tangent_dim)
+    transform = sample_transform(Group, batch_axes, dtype)
+    omega = onp.random.randn(*batch_axes, Group.tangent_dim).astype(dtype)
     assert_transforms_close(
         transform @ Group.exp(omega),
         Group.exp(onp.einsum("...ij,...j->...i", transform.adjoint(), omega))
@@ -93,17 +102,21 @@ def test_adjoint(Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]):
 
 
 @general_group_test
-def test_repr(Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]):
+def test_repr(
+    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...], dtype: onpt.DTypeLike
+):
     """Smoke test for __repr__ implementations."""
-    transform = sample_transform(Group, batch_axes)
+    transform = sample_transform(Group, batch_axes, dtype)
     print(transform)
 
 
 @general_group_test
-def test_apply(Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]):
+def test_apply(
+    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...], dtype: onpt.DTypeLike
+):
     """Check group action interfaces."""
-    T_w_b = sample_transform(Group, batch_axes)
-    p_b = onp.random.randn(*batch_axes, Group.space_dim)
+    T_w_b = sample_transform(Group, batch_axes, dtype)
+    p_b = onp.random.randn(*batch_axes, Group.space_dim).astype(dtype)
 
     if Group.matrix_dim == Group.space_dim:
         assert_arrays_close(
@@ -126,16 +139,19 @@ def test_apply(Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]):
 
 
 @general_group_test
-def test_multiply(Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]):
+def test_multiply(
+    Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...], dtype: onpt.DTypeLike
+):
     """Check multiply interfaces."""
-    T_w_b = sample_transform(Group, batch_axes)
-    T_b_a = sample_transform(Group, batch_axes)
+    T_w_b = sample_transform(Group, batch_axes, dtype)
+    T_b_a = sample_transform(Group, batch_axes, dtype)
     assert_arrays_close(
         onp.einsum(
             "...ij,...jk->...ik", T_w_b.as_matrix(), T_w_b.inverse().as_matrix()
         ),
         onp.broadcast_to(
-            onp.eye(Group.matrix_dim), (*batch_axes, Group.matrix_dim, Group.matrix_dim)
+            onp.eye(Group.matrix_dim, dtype=dtype),
+            (*batch_axes, Group.matrix_dim, Group.matrix_dim),
         ),
     )
     assert_arrays_close(
@@ -143,7 +159,8 @@ def test_multiply(Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...]):
             "...ij,...jk->...ik", T_w_b.as_matrix(), onp.linalg.inv(T_w_b.as_matrix())
         ),
         onp.broadcast_to(
-            onp.eye(Group.matrix_dim), (*batch_axes, Group.matrix_dim, Group.matrix_dim)
+            onp.eye(Group.matrix_dim, dtype=dtype),
+            (*batch_axes, Group.matrix_dim, Group.matrix_dim),
         ),
     )
     assert_transforms_close(T_w_b @ T_b_a, Group.multiply(T_w_b, T_b_a))

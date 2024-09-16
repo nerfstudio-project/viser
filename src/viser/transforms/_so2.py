@@ -77,7 +77,7 @@ class SO2(
         out = onp.stack(
             [
                 # [cos, -sin],
-                cos_sin * onp.array([1, -1]),
+                cos_sin * onp.array([1, -1], dtype=cos_sin.dtype),
                 # [sin, cos],
                 cos_sin[..., ::-1],
             ],
@@ -126,7 +126,9 @@ class SO2(
 
     @override
     def inverse(self) -> SO2:
-        return SO2(unit_complex=self.unit_complex * onp.array([1, -1]))
+        unit_complex = self.unit_complex.copy()
+        unit_complex[..., 1] *= -1
+        return SO2(unit_complex)
 
     @override
     def normalize(self) -> SO2:

@@ -264,26 +264,7 @@ class SO3(
             onp.where(cond1[..., None], case0_q, case1_q),
             onp.where(cond2[..., None], case2_q, case3_q),
         )
-
-        # We can also choose to branch, but this is slower.
-        # t, q = jax.lax.cond(
-        #     matrix[2, 2] < 0,
-        #     true_fun=lambda matrix: jax.lax.cond(
-        #         matrix[0, 0] > matrix[1, 1],
-        #         true_fun=case0,
-        #         false_fun=case1,
-        #         operand=matrix,
-        #     ),
-        #     false_fun=lambda matrix: jax.lax.cond(
-        #         matrix[0, 0] < -matrix[1, 1],
-        #         true_fun=case2,
-        #         false_fun=case3,
-        #         operand=matrix,
-        #     ),
-        #     operand=matrix,
-        # )
-
-        return SO3(wxyz=q * 0.5 / onp.sqrt(t[..., None]))
+        return SO3(wxyz=(q * 0.5 / onp.sqrt(t[..., None])).astype(matrix.dtype))
 
     # Accessors.
 
@@ -292,20 +273,24 @@ class SO3(
         norm_sq = onp.sum(onp.square(self.wxyz), axis=-1, keepdims=True)
         q = self.wxyz * onp.sqrt(2.0 / norm_sq)  # (*, 4)
         q_outer = onp.einsum("...i,...j->...ij", q, q)  # (*, 4, 4)
-        return onp.stack(
-            [
-                1.0 - q_outer[..., 2, 2] - q_outer[..., 3, 3],
-                q_outer[..., 1, 2] - q_outer[..., 3, 0],
-                q_outer[..., 1, 3] + q_outer[..., 2, 0],
-                q_outer[..., 1, 2] + q_outer[..., 3, 0],
-                1.0 - q_outer[..., 1, 1] - q_outer[..., 3, 3],
-                q_outer[..., 2, 3] - q_outer[..., 1, 0],
-                q_outer[..., 1, 3] - q_outer[..., 2, 0],
-                q_outer[..., 2, 3] + q_outer[..., 1, 0],
-                1.0 - q_outer[..., 1, 1] - q_outer[..., 2, 2],
-            ],
-            axis=-1,
-        ).reshape(*q.shape[:-1], 3, 3)
+        return (
+            onp.stack(
+                [
+                    1.0 - q_outer[..., 2, 2] - q_outer[..., 3, 3],
+                    q_outer[..., 1, 2] - q_outer[..., 3, 0],
+                    q_outer[..., 1, 3] + q_outer[..., 2, 0],
+                    q_outer[..., 1, 2] + q_outer[..., 3, 0],
+                    1.0 - q_outer[..., 1, 1] - q_outer[..., 3, 3],
+                    q_outer[..., 2, 3] - q_outer[..., 1, 0],
+                    q_outer[..., 1, 3] - q_outer[..., 2, 0],
+                    q_outer[..., 2, 3] + q_outer[..., 1, 0],
+                    1.0 - q_outer[..., 1, 1] - q_outer[..., 2, 2],
+                ],
+                axis=-1,
+            )
+            .reshape(*q.shape[:-1], 3, 3)
+            .astype(self.wxyz.dtype)
+        )
 
     @override
     def parameters(self) -> onpt.NDArray[onp.floating]:
@@ -362,14 +347,16 @@ class SO3(
                 theta_squared,
             )
         )
-        safe_half_theta = 0.5 * safe_theta
 
+        # Fun fact: when safe_theta is a `float32` _scalar_, this
+        # multiplication will promote `safe_half_theta` to `float64`. We'll
+        # cast at the end to make sure our input/output dtypes match.
+        safe_half_theta = 0.5 * safe_theta
         real_factor = onp.where(
             use_taylor,
             1.0 - theta_squared / 8.0 + theta_pow_4 / 384.0,
             onp.cos(safe_half_theta),
         )
-
         imaginary_factor = onp.where(
             use_taylor,
             0.5 - theta_squared / 48.0 + theta_pow_4 / 3840.0,
@@ -383,7 +370,7 @@ class SO3(
                     imaginary_factor[..., None] * tangent,
                 ],
                 axis=-1,
-            )
+            ).astype(tangent.dtype)
         )
 
     @override
@@ -414,12 +401,11 @@ class SO3(
             2.0 / w_safe - 2.0 / 3.0 * norm_sq / w_safe**3,
             onp.where(
                 onp.abs(w) < get_epsilon(w.dtype),
-                onp.where(w > 0, 1.0, -1.0) * onp.pi / norm_safe,
+                onp.where(w > 0, 1.0, -1.0).astype(dtype=w.dtype) * onp.pi / norm_safe,
                 2.0 * atan_n_over_w / norm_safe,
             ),
         )
-
-        return atan_factor[..., None] * self.wxyz[..., 1:]  # type: ignore
+        return (atan_factor[..., None] * self.wxyz[..., 1:]).astype(self.wxyz.dtype)
 
     @override
     def adjoint(self) -> onpt.NDArray[onp.floating]:
@@ -428,7 +414,9 @@ class SO3(
     @override
     def inverse(self) -> SO3:
         # Negate complex terms.
-        return SO3(wxyz=self.wxyz * onp.array([1, -1, -1, -1]))
+        wxyz = self.wxyz.copy()
+        wxyz[..., 1:] *= -1
+        return SO3(wxyz)
 
     @override
     def normalize(self) -> SO3:
@@ -449,7 +437,7 @@ class SO3(
                 low=onp.zeros(3),
                 high=onp.array([1.0, 2.0 * onp.pi, 2.0 * onp.pi]),
                 size=(*batch_axes, 3),
-            ).astype(dtype=dtype),
+            ),
             -1,
             0,
         )
@@ -465,5 +453,5 @@ class SO3(
                     b * onp.cos(u3),
                 ],
                 axis=-1,
-            )
+            ).astype(dtype=dtype)
         )

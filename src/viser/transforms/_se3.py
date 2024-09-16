@@ -157,7 +157,9 @@ class SE3(
 
         return SE3.from_rotation_and_translation(
             rotation=rotation,
-            translation=onp.einsum("...ij,...j->...i", V, tangent[..., :3]),
+            translation=onp.einsum("...ij,...j->...i", V, tangent[..., :3]).astype(
+                tangent.dtype
+            ),
         )
 
     @override
@@ -203,7 +205,7 @@ class SE3(
         )
         return onp.concatenate(
             [onp.einsum("...ij,...j->...i", V_inv, self.translation()), omega], axis=-1
-        )
+        ).astype(self.wxyz_xyz.dtype)
 
     @override
     def adjoint(self) -> onpt.NDArray[onp.floating]:

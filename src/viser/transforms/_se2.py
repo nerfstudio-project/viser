@@ -150,21 +150,15 @@ class SE2(
         )
 
         theta_sq = theta**2
-        sin_over_theta = cast(
-            onp.ndarray,
-            onp.where(
-                use_taylor,
-                1.0 - theta_sq / 6.0,
-                onp.sin(safe_theta) / safe_theta,
-            ),
+        sin_over_theta = onp.where(
+            use_taylor,
+            1.0 - theta_sq / 6.0,
+            onp.sin(safe_theta) / safe_theta,
         )
-        one_minus_cos_over_theta = cast(
-            onp.ndarray,
-            onp.where(
-                use_taylor,
-                0.5 * theta - theta * theta_sq / 24.0,
-                (1.0 - onp.cos(safe_theta)) / safe_theta,
-            ),
+        one_minus_cos_over_theta = onp.where(
+            use_taylor,
+            0.5 * theta - theta * theta_sq / 24.0,
+            (1.0 - onp.cos(safe_theta)) / safe_theta,
         )
 
         V = onp.stack(
@@ -176,9 +170,12 @@ class SE2(
             ],
             axis=-1,
         ).reshape((*tangent.shape[:-1], 2, 2))
+
         return SE2.from_rotation_and_translation(
             rotation=SO2.from_radians(theta),
-            translation=onp.einsum("...ij,...j->...i", V, tangent[..., :2]),
+            translation=onp.einsum("...ij,...j->...i", V, tangent[..., :2]).astype(
+                tangent.dtype
+            ),
         )
 
     @override
@@ -228,7 +225,7 @@ class SE2(
             ],
             axis=-1,
         )
-        return tangent
+        return tangent.astype(self.unit_complex_xy.dtype)
 
     @override
     def adjoint(self: SE2) -> onpt.NDArray[onp.floating]:
