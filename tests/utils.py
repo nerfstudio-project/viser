@@ -51,7 +51,7 @@ def sample_transform(
 
 def general_group_test(
     f: Callable[[Type[vtf.MatrixLieGroup], Tuple[int, ...], onpt.DTypeLike], None],
-    max_examples: int = 3,
+    max_examples: int = 15,
 ) -> Callable[[Type[vtf.MatrixLieGroup], Tuple[int, ...], onpt.DTypeLike, Any], None]:
     """Decorator for defining tests that run on all group types."""
 

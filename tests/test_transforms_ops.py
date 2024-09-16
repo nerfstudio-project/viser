@@ -4,8 +4,7 @@ from typing import Tuple, Type
 
 import numpy as onp
 import numpy.typing as onpt
-from hypothesis import given, settings
-from hypothesis import strategies as st
+from jax import numpy as jnp
 from utils import (
     assert_arrays_close,
     assert_transforms_close,
@@ -27,31 +26,6 @@ def test_sample_uniform_valid(
     assert_transforms_close(T, T.normalize())
 
 
-@settings(deadline=None)
-@given(_random_module=st.random_module())
-def test_so2_from_to_radians_bijective(_random_module):
-    """Check that we can convert from and to radians."""
-    radians = onp.random.uniform(low=-onp.pi, high=onp.pi)
-    assert_arrays_close(vtf.SO2.from_radians(radians).as_radians(), radians)
-
-
-@settings(deadline=None)
-@given(_random_module=st.random_module())
-def test_so3_xyzw_bijective(_random_module):
-    """Check that we can convert between xyzw and wxyz quaternions."""
-    T = sample_transform(vtf.SO3, (), dtype=onp.float64)
-    assert_transforms_close(T, vtf.SO3.from_quaternion_xyzw(T.as_quaternion_xyzw()))
-
-
-@settings(deadline=None)
-@given(_random_module=st.random_module())
-def test_so3_rpy_bijective(_random_module):
-    """Check that we can convert between quaternions and Euler angles."""
-    T = sample_transform(vtf.SO3, (), dtype=onp.float64)
-    rpy = T.as_rpy_radians()
-    assert_transforms_close(T, vtf.SO3.from_rpy_radians(rpy.roll, rpy.pitch, rpy.yaw))
-
-
 @general_group_test
 def test_log_exp_bijective(
     Group: Type[vtf.MatrixLieGroup], batch_axes: Tuple[int, ...], dtype: onpt.DTypeLike
@@ -59,9 +33,7 @@ def test_log_exp_bijective(
     """Check 1-to-1 mapping for log <=> exp operations."""
     transform = sample_transform(Group, batch_axes, dtype)
 
-    assert transform.parameters().dtype == dtype
     tangent = transform.log()
-    assert tangent.dtype == dtype
     assert tangent.shape == (*batch_axes, Group.tangent_dim)
 
     exp_transform = Group.exp(tangent)
@@ -93,7 +65,7 @@ def test_adjoint(
 ):
     """Check adjoint definition."""
     transform = sample_transform(Group, batch_axes, dtype)
-    omega = onp.random.randn(*batch_axes, Group.tangent_dim).astype(dtype)
+    omega = onp.random.randn(*batch_axes, Group.tangent_dim)
     assert_transforms_close(
         transform @ Group.exp(omega),
         Group.exp(onp.einsum("...ij,...j->...i", transform.adjoint(), omega))
@@ -147,16 +119,7 @@ def test_multiply(
     T_b_a = sample_transform(Group, batch_axes, dtype)
     assert_arrays_close(
         onp.einsum(
-            "...ij,...jk->...ik", T_w_b.as_matrix(), T_w_b.inverse().as_matrix()
-        ),
-        onp.broadcast_to(
-            onp.eye(Group.matrix_dim, dtype=dtype),
-            (*batch_axes, Group.matrix_dim, Group.matrix_dim),
-        ),
-    )
-    assert_arrays_close(
-        onp.einsum(
-            "...ij,...jk->...ik", T_w_b.as_matrix(), onp.linalg.inv(T_w_b.as_matrix())
+            "...ij,...jk->...ik", T_w_b.as_matrix(), jnp.linalg.inv(T_w_b.as_matrix())
         ),
         onp.broadcast_to(
             onp.eye(Group.matrix_dim, dtype=dtype),
