@@ -4,15 +4,14 @@ from typing import Tuple, Type
 
 import numpy as onp
 import numpy.typing as onpt
-from jax import numpy as jnp
+import viser.transforms as vtf
+
 from utils import (
     assert_arrays_close,
     assert_transforms_close,
     general_group_test,
     sample_transform,
 )
-
-import viser.transforms as vtf
 
 
 @general_group_test
@@ -119,7 +118,7 @@ def test_multiply(
     T_b_a = sample_transform(Group, batch_axes, dtype)
     assert_arrays_close(
         onp.einsum(
-            "...ij,...jk->...ik", T_w_b.as_matrix(), jnp.linalg.inv(T_w_b.as_matrix())
+            "...ij,...jk->...ik", T_w_b.as_matrix(), onp.linalg.inv(T_w_b.as_matrix())
         ),
         onp.broadcast_to(
             onp.eye(Group.matrix_dim, dtype=dtype),
