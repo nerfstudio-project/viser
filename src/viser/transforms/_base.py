@@ -9,9 +9,6 @@ from typing_extensions import Self, final, get_args, override
 class MatrixLieGroup(abc.ABC):
     """Interface definition for matrix Lie groups."""
 
-    # Class properties.
-    # > These will be set in `_utils.register_lie_group()`.
-
     matrix_dim: ClassVar[int]
     """Dimension of square matrix output from `.as_matrix()`."""
 
@@ -35,6 +32,19 @@ class MatrixLieGroup(abc.ABC):
     ):
         """Construct a group object from its underlying parameters."""
         raise NotImplementedError()
+
+    def __init_subclass__(
+        cls,
+        matrix_dim: int = 0,
+        parameters_dim: int = 0,
+        tangent_dim: int = 0,
+        space_dim: int = 0,
+    ) -> None:
+        """Set class properties for subclasses. We default to dummy values."""
+        cls.matrix_dim = matrix_dim
+        cls.parameters_dim = parameters_dim
+        cls.tangent_dim = tangent_dim
+        cls.space_dim = space_dim
 
     # Shared implementations.
 
@@ -66,11 +76,14 @@ class MatrixLieGroup(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def identity(cls, batch_axes: Tuple[int, ...] = ()) -> Self:
+    def identity(
+        cls, batch_axes: Tuple[int, ...] = (), dtype: onpt.DTypeLike = onp.float64
+    ) -> Self:
         """Returns identity element.
 
         Args:
             batch_axes: Any leading batch axes for the output transform.
+            dtype: Datatype for the output.
 
         Returns:
             Identity element.
@@ -172,20 +185,25 @@ class MatrixLieGroup(abc.ABC):
             Normalized group member.
         """
 
-    # @classmethod
-    # @abc.abstractmethod
-    # def sample_uniform(cls, key: onp.ndarray, batch_axes: Tuple[int, ...] = ()) -> Self:
-    #     """Draw a uniform sample from the group. Translations (if applicable) are in the
-    #     range [-1, 1].
-    #
-    #     Args:
-    #         key: PRNG key, as returned by `jax.random.PRNGKey()`.
-    #         batch_axes: Any leading batch axes for the output transforms. Each
-    #             sampled transform will be different.
-    #
-    #     Returns:
-    #         Sampled group member.
-    #     """
+    @classmethod
+    @abc.abstractmethod
+    def sample_uniform(
+        cls,
+        rng: onp.random.Generator,
+        batch_axes: Tuple[int, ...] = (),
+        dtype: onpt.DTypeLike = onp.float64,
+    ) -> Self:
+        """Draw a uniform sample from the group. Translations (if applicable) are in the
+        range [-1, 1].
+
+        Args:
+            rng: numpy generator object.
+            batch_axes: Any leading batch axes for the output transforms. Each
+                sampled transform will be different.
+
+        Returns:
+            Sampled group member.
+        """
 
     @final
     def get_batch_axes(self) -> Tuple[int, ...]:

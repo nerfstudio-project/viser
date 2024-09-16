@@ -8,17 +8,17 @@ import numpy.typing as onpt
 from typing_extensions import override
 
 from . import _base, hints
-from .utils import broadcast_leading_axes, register_lie_group
+from .utils import broadcast_leading_axes
 
 
-@register_lie_group(
+@dataclasses.dataclass(frozen=True)
+class SO2(
+    _base.SOBase,
     matrix_dim=2,
     parameters_dim=2,
     tangent_dim=1,
     space_dim=2,
-)
-@dataclasses.dataclass(frozen=True)
-class SO2(_base.SOBase):
+):
     """Special orthogonal group for 2D rotations. Broadcasting rules are the
     same as for numpy.
 
@@ -53,10 +53,13 @@ class SO2(_base.SOBase):
 
     @classmethod
     @override
-    def identity(cls, batch_axes: Tuple[int, ...] = ()) -> SO2:
+    def identity(
+        cls, batch_axes: Tuple[int, ...] = (), dtype: onpt.DTypeLike = onp.float64
+    ) -> SO2:
         return SO2(
             unit_complex=onp.stack(
-                [onp.ones(batch_axes), onp.zeros(batch_axes)], axis=-1
+                [onp.ones(batch_axes, dtype=dtype), onp.zeros(batch_axes, dtype=dtype)],
+                axis=-1,
             )
         )
 
@@ -64,7 +67,7 @@ class SO2(_base.SOBase):
     @override
     def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> SO2:
         assert matrix.shape[-2:] == (2, 2)
-        return SO2(unit_complex=onp.asarray(matrix[..., :, 0]))
+        return SO2(unit_complex=onp.array(matrix[..., :, 0]))
 
     # Accessors.
 
@@ -74,7 +77,7 @@ class SO2(_base.SOBase):
         out = onp.stack(
             [
                 # [cos, -sin],
-                cos_sin * onp.array([1, -1]),
+                cos_sin * onp.array([1, -1], dtype=cos_sin.dtype),
                 # [sin, cos],
                 cos_sin[..., ::-1],
             ],
@@ -119,11 +122,13 @@ class SO2(_base.SOBase):
 
     @override
     def adjoint(self) -> onpt.NDArray[onp.floating]:
-        return onp.ones((*self.get_batch_axes(), 1, 1))
+        return onp.ones((*self.get_batch_axes(), 1, 1), dtype=self.unit_complex.dtype)
 
     @override
     def inverse(self) -> SO2:
-        return SO2(unit_complex=self.unit_complex * onp.array([1, -1]))
+        unit_complex = self.unit_complex.copy()
+        unit_complex[..., 1] *= -1
+        return SO2(unit_complex)
 
     @override
     def normalize(self) -> SO2:
@@ -132,14 +137,16 @@ class SO2(_base.SOBase):
             / onp.linalg.norm(self.unit_complex, axis=-1, keepdims=True)
         )
 
-    # @classmethod
-    # @override
-    # def sample_uniform(
-    #     cls, key: onp.ndarray, batch_axes: jdc.Static[Tuple[int, ...]] = ()
-    # ) -> SO2:
-    #     out = SO2.from_radians(
-    #         jax.random.uniform(
-    #             key=key, shape=batch_axes, minval=0.0, maxval=2.0 * onp.pi)
-    #     )
-    #     assert out.get_batch_axes() == batch_axes
-    #     return out
+    @classmethod
+    @override
+    def sample_uniform(
+        cls,
+        rng: onp.random.Generator,
+        batch_axes: Tuple[int, ...] = (),
+        dtype: onpt.DTypeLike = onp.float64,
+    ) -> SO2:
+        out = SO2.from_radians(
+            rng.uniform(0.0, 2.0 * onp.pi, size=batch_axes).astype(dtype=dtype)
+        )
+        assert out.get_batch_axes() == batch_axes
+        return out

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import dataclasses
 from typing import Tuple, cast
 
@@ -7,17 +9,17 @@ from typing_extensions import override
 
 from . import _base, hints
 from ._so2 import SO2
-from .utils import broadcast_leading_axes, get_epsilon, register_lie_group
+from .utils import broadcast_leading_axes, get_epsilon
 
 
-@register_lie_group(
+@dataclasses.dataclass(frozen=True)
+class SE2(
+    _base.SEBase[SO2],
     matrix_dim=3,
     parameters_dim=4,
     tangent_dim=3,
     space_dim=2,
-)
-@dataclasses.dataclass(frozen=True)
-class SE2(_base.SEBase[SO2]):
+):
     """Special Euclidean group for proper rigid transforms in 2D. Broadcasting
     rules are the same as for numpy.
 
@@ -39,7 +41,7 @@ class SE2(_base.SEBase[SO2]):
         return f"{self.__class__.__name__}(unit_complex={unit_complex}, xy={xy})"
 
     @staticmethod
-    def from_xy_theta(x: hints.Scalar, y: hints.Scalar, theta: hints.Scalar) -> "SE2":
+    def from_xy_theta(x: hints.Scalar, y: hints.Scalar, theta: hints.Scalar) -> SE2:
         """Construct a transformation from standard 2D pose parameters.
 
         This is not the same as integrating over a length-3 twist.
@@ -56,7 +58,7 @@ class SE2(_base.SEBase[SO2]):
         cls,
         rotation: SO2,
         translation: onpt.NDArray[onp.floating],
-    ) -> "SE2":
+    ) -> SE2:
         assert translation.shape[-1:] == (2,)
         rotation, translation = broadcast_leading_axes((rotation, translation))
         return SE2(
@@ -77,16 +79,18 @@ class SE2(_base.SEBase[SO2]):
 
     @classmethod
     @override
-    def identity(cls, batch_axes: Tuple[int, ...] = ()) -> "SE2":
+    def identity(
+        cls, batch_axes: Tuple[int, ...] = (), dtype: onpt.DTypeLike = onp.float64
+    ) -> SE2:
         return SE2(
             unit_complex_xy=onp.broadcast_to(
-                onp.array([1.0, 0.0, 0.0, 0.0]), (*batch_axes, 4)
+                onp.array([1.0, 0.0, 0.0, 0.0], dtype=dtype), (*batch_axes, 4)
             )
         )
 
     @classmethod
     @override
-    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> "SE2":
+    def from_matrix(cls, matrix: onpt.NDArray[onp.floating]) -> SE2:
         assert matrix.shape[-2:] == (3, 3) or matrix.shape[-2:] == (2, 3)
         # Currently assumes bottom row is [0, 0, 1].
         return SE2.from_rotation_and_translation(
@@ -123,7 +127,7 @@ class SE2(_base.SEBase[SO2]):
 
     @classmethod
     @override
-    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> "SE2":
+    def exp(cls, tangent: onpt.NDArray[onp.floating]) -> SE2:
         # Reference:
         # > https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se2.hpp#L558
         # Also see:
@@ -146,21 +150,15 @@ class SE2(_base.SEBase[SO2]):
         )
 
         theta_sq = theta**2
-        sin_over_theta = cast(
-            onp.ndarray,
-            onp.where(
-                use_taylor,
-                1.0 - theta_sq / 6.0,
-                onp.sin(safe_theta) / safe_theta,
-            ),
+        sin_over_theta = onp.where(
+            use_taylor,
+            1.0 - theta_sq / 6.0,
+            onp.sin(safe_theta) / safe_theta,
         )
-        one_minus_cos_over_theta = cast(
-            onp.ndarray,
-            onp.where(
-                use_taylor,
-                0.5 * theta - theta * theta_sq / 24.0,
-                (1.0 - onp.cos(safe_theta)) / safe_theta,
-            ),
+        one_minus_cos_over_theta = onp.where(
+            use_taylor,
+            0.5 * theta - theta * theta_sq / 24.0,
+            (1.0 - onp.cos(safe_theta)) / safe_theta,
         )
 
         V = onp.stack(
@@ -172,9 +170,12 @@ class SE2(_base.SEBase[SO2]):
             ],
             axis=-1,
         ).reshape((*tangent.shape[:-1], 2, 2))
+
         return SE2.from_rotation_and_translation(
             rotation=SO2.from_radians(theta),
-            translation=onp.einsum("...ij,...j->...i", V, tangent[..., :2]),
+            translation=onp.einsum("...ij,...j->...i", V, tangent[..., :2]).astype(
+                tangent.dtype
+            ),
         )
 
     @override
@@ -224,10 +225,10 @@ class SE2(_base.SEBase[SO2]):
             ],
             axis=-1,
         )
-        return tangent
+        return tangent.astype(self.unit_complex_xy.dtype)
 
     @override
-    def adjoint(self: "SE2") -> onpt.NDArray[onp.floating]:
+    def adjoint(self: SE2) -> onpt.NDArray[onp.floating]:
         cos, sin, x, y = onp.moveaxis(self.unit_complex_xy, -1, 0)
         return onp.stack(
             [
@@ -244,21 +245,15 @@ class SE2(_base.SEBase[SO2]):
             axis=-1,
         ).reshape((*self.get_batch_axes(), 3, 3))
 
-    # @classmethod
-    # @override
-    # def sample_uniform(
-    #     cls, key: onp.ndarray, batch_axes: jdc.Static[Tuple[int, ...]] = ()
-    # ) -> "SE2":
-    #     key0, key1 = jax.random.split(key)
-    #     return SE2.from_rotation_and_translation(
-    #         rotation=SO2.sample_uniform(key0, batch_axes=batch_axes),
-    #         translation=jax.random.uniform(
-    #             key=key1,
-    #             shape=(
-    #                 *batch_axes,
-    #                 2,
-    #             ),
-    #             minval=-1.0,
-    #             maxval=1.0,
-    #         ),
-    #     )
+    @classmethod
+    @override
+    def sample_uniform(
+        cls,
+        rng: onp.random.Generator,
+        batch_axes: Tuple[int, ...] = (),
+        dtype: onpt.DTypeLike = onp.float64,
+    ) -> SE2:
+        return SE2.from_rotation_and_translation(
+            SO2.sample_uniform(rng, batch_axes=batch_axes, dtype=dtype),
+            rng.uniform(low=-1.0, high=1.0, size=(*batch_axes, 2)).astype(dtype),
+        )
