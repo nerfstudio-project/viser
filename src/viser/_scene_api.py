@@ -1209,6 +1209,8 @@ class SceneApi:
         wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        sh_degree: int = 0,
+        sh_coefficients: onp.ndarray = None,
     ) -> GaussianSplatHandle:
         """Add a model to render using Gaussian Splatting.
 
@@ -1257,6 +1259,7 @@ class SceneApi:
             ],
             axis=-1,
         ).view(onp.uint32)
+        breakpoint()
         assert buffer.shape == (num_gaussians, 8)
 
         message = _messages.GaussianSplatsMessage(
