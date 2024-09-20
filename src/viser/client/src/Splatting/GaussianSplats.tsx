@@ -541,7 +541,9 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, numGroups: number) {
     numGaussians: 0,
     transitionInState: 0.0,
   });
-
+  console.log(numGaussians) // 447703
+  console.log(textureWidth, textureWidth) // 16384 16384
+  console.log(gaussianBuffer) // long list of ints
   return {
     geometry,
     material,
