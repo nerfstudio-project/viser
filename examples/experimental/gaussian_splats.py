@@ -99,7 +99,6 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
         i += 1
     if len(rest_terms) > 0: # if we do have higher than zero order SH, we will process them and add them here.
         sh_coeffs = onp.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]] + rest_terms, axis=1)
-
     sh_degree = int(onp.sqrt(sh_coeffs.shape[1] // 3) - 1)
 
     Rs = tf.SO3(wxyzs).as_matrix()
@@ -174,3 +173,7 @@ def main(splat_paths: tuple[Path, ...]) -> None:
 
 if __name__ == "__main__":
     tyro.cli(main)
+
+
+
+print("yapyap")
