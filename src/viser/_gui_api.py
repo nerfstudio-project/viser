@@ -483,14 +483,10 @@ class GuiApi:
         )
         return GuiFolderHandle(
             _GuiHandleState(
+                folder_container_id,
                 self,
                 None,
                 props=props,
-                update_timestamp=0.0,
-                update_cb=[],
-                is_button=False,
-                sync_cb=None,
-                id=folder_container_id,
                 parent_container_id=self._get_container_id(),
             )
         )
@@ -541,27 +537,26 @@ class GuiApi:
         tab_group_id = _make_unique_id()
         order = _apply_default_order(order)
 
-        self._websock_interface.queue_message(
-            _messages.GuiTabGroupMessage(
-                id=tab_group_id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiTabGroupProps(
-                    order=order,
-                    _tab_labels=(),
-                    visible=visible,
-                    _tab_icons_html=(),
-                    _tab_container_ids=(),
-                ),
-            )
+        message = _messages.GuiTabGroupMessage(
+            id=tab_group_id,
+            container_id=self._get_container_id(),
+            props=_messages.GuiTabGroupProps(
+                order=order,
+                _tab_labels=(),
+                visible=visible,
+                _tab_icons_html=(),
+                _tab_container_ids=(),
+            ),
         )
+        self._websock_interface.queue_message(message)
         return GuiTabGroupHandle(
-            _tab_group_id=tab_group_id,
-            _labels=[],
-            _icons_html=[],
-            _tabs=[],
-            _gui_api=self,
-            _parent_container_id=self._get_container_id(),
-            _order=order,
+            _GuiHandleState(
+                message.id,
+                self,
+                value=None,
+                props=message.props,
+                parent_container_id=message.container_id,
+            )
         )
 
     def add_markdown(
@@ -595,14 +590,10 @@ class GuiApi:
 
         handle = GuiMarkdownHandle(
             _GuiHandleState(
+                message.id,
                 self,
                 None,
                 props=message.props,
-                update_timestamp=0.0,
-                update_cb=[],
-                is_button=False,
-                sync_cb=None,
-                id=message.id,
                 parent_container_id=message.container_id,
             ),
             _content=content,
@@ -678,14 +669,10 @@ class GuiApi:
 
         handle = GuiPlotlyHandle(
             _GuiHandleState(
+                message.id,
                 self,
-                None,
+                value=None,
                 props=message.props,
-                update_timestamp=0.0,
-                update_cb=[],
-                is_button=False,
-                sync_cb=None,
-                id=message.id,
                 parent_container_id=message.container_id,
             ),
             _figure=figure,
@@ -1243,14 +1230,10 @@ class GuiApi:
         self._websock_interface.queue_message(message)
         handle = GuiProgressBarHandle(
             _GuiHandleState(
+                message.id,
                 self,
-                value,
+                value=value,
                 props=message.props,
-                update_timestamp=0.0,
-                update_cb=[],
-                is_button=False,
-                sync_cb=None,
-                id=message.id,
                 parent_container_id=message.container_id,
             ),
         )

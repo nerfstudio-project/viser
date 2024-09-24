@@ -87,24 +87,24 @@ class GuiPropsProtocol(Protocol):
 class _GuiHandleState(Generic[T]):
     """Internal API for GUI elements."""
 
+    id: str
     gui_api: GuiApi
     value: T
     props: GuiPropsProtocol
-    update_timestamp: float
-
     parent_container_id: str
     """Container that this GUI input was placed into."""
 
-    update_cb: list[Callable[[GuiEvent], None]]
+    update_timestamp: float = 0.0
+    update_cb: list[Callable[[GuiEvent], None]] = dataclasses.field(
+        default_factory=list
+    )
     """Registered functions to call when this input is updated."""
 
-    is_button: bool
+    is_button: bool = False
     """Indicates a button element, which requires special handling."""
 
-    sync_cb: Callable[[ClientId, dict[str, Any]], None] | None
+    sync_cb: Callable[[ClientId, dict[str, Any]], None] | None = None
     """Callback for synchronizing inputs across clients."""
-
-    id: str
 
 
 class _OverridableGuiPropApi:
