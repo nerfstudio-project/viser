@@ -121,8 +121,8 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
         "rgbs": colors,
         "opacities": opacities,
         "covariances": covariances,
-        "sh_coeffs": sh_coeffs,
         "sh_degree": sh_degree,
+        "sh_coeffs": sh_coeffs,
     }
 
 
@@ -158,6 +158,8 @@ def main(splat_paths: tuple[Path, ...]) -> None:
             rgbs=splat_data["rgbs"],
             opacities=splat_data["opacities"],
             covariances=splat_data["covariances"],
+            sh_degree=splat_data["sh_degree"],
+            sh_coefficients=splat_data["sh_coeffs"],
         )
 
         remove_button = server.gui.add_button(f"Remove splat object {i}")
