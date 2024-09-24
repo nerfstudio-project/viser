@@ -469,7 +469,6 @@ export const ViserMesh = React.forwardRef<
   const [skeleton, setSkeleton] = React.useState<THREE.Skeleton>();
   const bonesRef = React.useRef<THREE.Bone[]>();
 
-  const xyzw_quat = React.useMemo(() => new THREE.Quaternion(), []);
   React.useEffect(() => {
     const material =
       message.props.material == "standard" || message.props.wireframe
@@ -529,6 +528,7 @@ export const ViserMesh = React.forwardRef<
         bones.push(new THREE.Bone());
       }
       const boneInverses: THREE.Matrix4[] = [];
+      const xyzw_quat = new THREE.Quaternion();
       bones.forEach((bone, i) => {
         const wxyz = message.props.bone_wxyzs[i];
         const position = message.props.bone_positions[i];
@@ -542,8 +542,6 @@ export const ViserMesh = React.forwardRef<
 
         bone.quaternion.copy(xyzw_quat);
         bone.position.set(position[0], position[1], position[2]);
-        bone.matrixAutoUpdate = false;
-        bone.matrixWorldAutoUpdate = false;
       });
       skeleton = new THREE.Skeleton(bones, boneInverses);
 
@@ -614,10 +612,8 @@ export const ViserMesh = React.forwardRef<
           ? state.poses[i].position
           : message.props.bone_positions[i];
 
-        xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-        bone.matrix.makeRotationFromQuaternion(xyzw_quat);
-        bone.matrix.setPosition(position[0], position[1], position[2]);
-        bone.updateMatrixWorld();
+        bone.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        bone.position.set(position[0], position[1], position[2]);
       });
 
       if (!state.initialized) {
