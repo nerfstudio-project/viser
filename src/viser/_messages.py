@@ -778,7 +778,7 @@ class ResetGuiMessage(Message):
 
 
 @dataclasses.dataclass
-class GuiBaseProps(Message):
+class GuiBaseProps:
     """Base message type containing fields commonly used by GUI inputs."""
 
     order: float

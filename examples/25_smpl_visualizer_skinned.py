@@ -21,7 +21,6 @@ from typing import List, Tuple
 import numpy as np
 import numpy as onp
 import tyro
-
 import viser
 import viser.transforms as tf
 
@@ -121,6 +120,9 @@ def main(model_path: Path) -> None:
             continue
 
         gui_elements.changed = False
+
+        # Render as wireframe?
+        skinned_handle.wireframe = gui_elements.gui_wireframe.value
 
         # Compute SMPL outputs.
         smpl_outputs = model.get_outputs(
