@@ -870,12 +870,16 @@ class GuiPlotlyMessage(Message, tag="GuiComponentMessage"):
 
 @dataclasses.dataclass
 class GuiTabGroupProps:
-    # Note: for tab groups we currently don't expose properties automatically.
-    tab_labels: Tuple[str, ...]
-    tab_icons_html: Tuple[Union[str, None], ...]
-    tab_container_ids: Tuple[str, ...]
+    _tab_labels: Tuple[str, ...]
+    """(Private) Tuple of labels for each tab. Synchronized automatically when assigned."""
+    _tab_icons_html: Tuple[Union[str, None], ...]
+    """(Private) Tuple of HTML strings for icons of each tab, or None if no icon. Synchronized automatically when assigned."""
+    _tab_container_ids: Tuple[str, ...]
+    """(Private) Tuple of container IDs for each tab. Synchronized automatically when assigned."""
     order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     visible: bool
+    """Visibility state of the tab group. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass

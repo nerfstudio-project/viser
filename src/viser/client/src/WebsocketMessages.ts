@@ -623,9 +623,9 @@ export interface GuiTabGroupMessage {
   id: string;
   container_id: string;
   props: {
-    tab_labels: string[];
-    tab_icons_html: (string | null)[];
-    tab_container_ids: string[];
+    _tab_labels: string[];
+    _tab_icons_html: (string | null)[];
+    _tab_container_ids: string[];
     order: number;
     visible: boolean;
   };

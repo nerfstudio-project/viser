@@ -44,6 +44,7 @@ from ._messages import (
     GuiRgbaProps,
     GuiRgbProps,
     GuiSliderProps,
+    GuiTabGroupProps,
     GuiTextProps,
     GuiUpdateMessage,
     GuiVector2Props,
@@ -172,7 +173,13 @@ class _GuiInputHandle(
 ):
     @property
     def value(self) -> T:
-        """Value of the GUI input. Synchronized automatically when assigned."""
+        """Value of the GUI input. Synchronized automatically when assigned.
+
+        :meta private:
+        """
+        # ^Note: we mark this property as private for Sphinx because I haven't
+        # been able to get it to resolve the TypeVar in a readable way.
+        # For the documentation's sake, we'll be manually adding ::attribute directives below.
         return self._impl.value
 
     @value.setter
@@ -236,34 +243,99 @@ class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
         return func
 
 
-class GuiCheckboxHandle(GuiInputHandle[bool], GuiCheckboxProps): ...
+class GuiCheckboxHandle(GuiInputHandle[bool], GuiCheckboxProps):
+    """Handle for checkbox inputs.
+
+    .. attribute:: value
+       :type: bool
+
+       Value of the input. Synchronized automatically when assigned.
+    """
 
 
-class GuiTextHandle(GuiInputHandle[str], GuiTextProps): ...
+class GuiTextHandle(GuiInputHandle[str], GuiTextProps):
+    """Handle for text inputs.
+
+    .. attribute:: value
+       :type: str
+
+       Value of the input. Synchronized automatically when assigned.
+    """
 
 
 IntOrFloat = TypeVar("IntOrFloat", int, float)
 
 
-class GuiNumberHandle(GuiInputHandle[T], Generic[T], GuiNumberProps): ...
+class GuiNumberHandle(GuiInputHandle[IntOrFloat], Generic[IntOrFloat], GuiNumberProps):
+    """Handle for number inputs.
+
+    .. attribute:: value
+       :type: IntOrFloat
+
+       Value of the input. Synchronized automatically when assigned.
+    """
 
 
-class GuiSliderHandle(GuiInputHandle[T], Generic[T], GuiSliderProps): ...
+class GuiSliderHandle(GuiInputHandle[IntOrFloat], Generic[IntOrFloat], GuiSliderProps):
+    """Handle for slider inputs.
+
+    .. attribute:: value
+       :type: IntOrFloat
+
+       Value of the input. Synchronized automatically when assigned.
+    """
 
 
-class GuiMultiSliderHandle(GuiInputHandle[T], Generic[T], GuiMultiSliderProps): ...
+class GuiMultiSliderHandle(
+    GuiInputHandle[Tuple[IntOrFloat, ...]], Generic[IntOrFloat], GuiMultiSliderProps
+):
+    """Handle for multi-slider inputs.
+
+    .. attribute:: value
+       :type: tuple[IntOrFloat, ...]
+
+       Value of the input. Synchronized automatically when assigned.
+    """
 
 
-class GuiRgbHandle(GuiInputHandle[Tuple[int, int, int]], GuiRgbProps): ...
+class GuiRgbHandle(GuiInputHandle[Tuple[int, int, int]], GuiRgbProps):
+    """Handle for RGB color inputs.
+
+    .. attribute:: value
+       :type: tuple[int, int, int]
+
+       Value of the input. Synchronized automatically when assigned.
+    """
 
 
-class GuiRgbaHandle(GuiInputHandle[Tuple[int, int, int, int]], GuiRgbaProps): ...
+class GuiRgbaHandle(GuiInputHandle[Tuple[int, int, int, int]], GuiRgbaProps):
+    """Handle for RGBA color inputs.
+
+    .. attribute:: value
+       :type: tuple[int, int, int, int]
+
+       Value of the input. Synchronized automatically when assigned.
+    """
 
 
-class GuiVector2Handle(GuiInputHandle[Tuple[float, float]], GuiVector2Props): ...
+class GuiVector2Handle(GuiInputHandle[Tuple[float, float]], GuiVector2Props):
+    """Handle for 2D vector inputs.
+
+    .. attribute:: value
+       :type: tuple[float, float]
+
+       Value of the input. Synchronized automatically when assigned.
+    """
 
 
-class GuiVector3Handle(GuiInputHandle[Tuple[float, float, float]], GuiVector3Props): ...
+class GuiVector3Handle(GuiInputHandle[Tuple[float, float, float]], GuiVector3Props):
+    """Handle for 3D vector inputs.
+
+    .. attribute:: value
+       :type: tuple[float, float, float]
+
+       Value of the input. Synchronized automatically when assigned.
+    """
 
 
 @dataclasses.dataclass(frozen=True)
@@ -283,7 +355,11 @@ class GuiEvent(Generic[TGuiHandle]):
 class GuiButtonHandle(_GuiInputHandle[bool]):
     """Handle for a button input in our visualizer.
 
-    Lets us detect clicks."""
+    .. attribute:: value
+       :type: bool
+
+       Value of the button. Set to `True` when the button is pressed. Can be manually set back to `False`.
+    """
 
     def on_click(
         self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
@@ -307,6 +383,11 @@ class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
     """Handle for an upload file button in our visualizer.
 
     The `.value` attribute will be updated with the contents of uploaded files.
+
+    .. attribute:: value
+       :type: UploadedFile
+
+       Value of the input. Contains information about the uploaded file.
     """
 
     def on_upload(
@@ -320,7 +401,11 @@ class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
 class GuiButtonGroupHandle(_GuiInputHandle[str], GuiButtonGroupProps):
     """Handle for a button group input in our visualizer.
 
-    Lets us detect clicks."""
+    .. attribute:: value
+       :type: str
+
+       Value of the input. Represents the currently selected button in the group.
+    """
 
     def on_click(
         self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
@@ -345,7 +430,11 @@ class GuiDropdownHandle(
 ):
     """Handle for a dropdown-style GUI input in our visualizer.
 
-    Lets us get values, set values, and detect updates."""
+    .. attribute:: value
+       :type: StringType
+
+       Value of the input. Represents the currently selected option in the dropdown.
+    """
 
     @property
     def options(self) -> tuple[StringType, ...]:
@@ -383,22 +472,12 @@ class GuiDropdownHandle(
             )
 
 
-@dataclasses.dataclass(frozen=True)
-class GuiTabGroupHandle:
+class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
     """Handle for a tab group. Call :meth:`add_tab()` to add a tab."""
 
-    _tab_group_id: str
-    _labels: list[str]
-    _icons_html: list[str | None]
-    _tabs: list[GuiTabHandle]
-    _gui_api: GuiApi
-    _parent_container_id: str
-    _order: float
-
-    @property
-    def order(self) -> float:
-        """Read-only order value, which dictates the position of the GUI element."""
-        return self._order
+    def __init__(self, _impl: _GuiHandleState[None]) -> None:
+        super().__init__(_impl=_impl)
+        self._tab_handles: list[GuiTabHandle] = []
 
     def add_tab(self, label: str, icon: IconName | None = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
@@ -408,38 +487,82 @@ class GuiTabGroupHandle:
         # We may want to make this thread-safe in the future.
         out = GuiTabHandle(_parent=self, _id=id)
 
-        self._labels.append(label)
-        self._icons_html.append(None if icon is None else svg_from_icon(icon))
-        self._tabs.append(out)
-
-        self._sync_with_client()
+        self._tab_handles.append(out)
+        self._tab_labels = self._tab_labels + (label,)
+        self._icons_html = self._icons_html + (
+            None if icon is None else svg_from_icon(icon),
+        )
+        self._tab_container_ids = tuple(handle._id for handle in self._tab_handles)
         return out
 
     def __post_init__(self) -> None:
-        parent = self._gui_api._container_handle_from_id[self._parent_container_id]
-        parent._children[self._tab_group_id] = self
+        parent = self._impl.gui_api._container_handle_from_id[
+            self._impl.parent_container_id
+        ]
+        parent._children[self._impl.id] = self
 
     def remove(self) -> None:
         """Remove this tab group and all contained GUI elements."""
-        for tab in tuple(self._tabs):
+        for tab in tuple(self._tab_handles):
             tab.remove()
-        gui_api = self._gui_api
-        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._tab_group_id))
-        parent = gui_api._container_handle_from_id[self._parent_container_id]
-        parent._children.pop(self._tab_group_id)
+        gui_api = self._impl.gui_api
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
+        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
+        parent._children.pop(self._impl.id)
 
-    def _sync_with_client(self) -> None:
-        """Send messages for syncing tab state with the client."""
-        self._gui_api._websock_interface.queue_message(
-            GuiUpdateMessage(
-                self._tab_group_id,
-                {
-                    "tab_labels": tuple(self._labels),
-                    "tab_icons_html": tuple(self._icons_html),
-                    "tab_container_ids": tuple(tab._id for tab in self._tabs),
-                },
-            )
+
+@dataclasses.dataclass
+class GuiTabHandle:
+    """Use as a context to place GUI elements into a tab."""
+
+    _parent: GuiTabGroupHandle
+    _id: str  # Used as container ID of children.
+    _container_id_restore: str | None = None
+    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
+        default_factory=dict
+    )
+
+    def __enter__(self) -> GuiTabHandle:
+        self._container_id_restore = self._parent._impl.gui_api._get_container_id()
+        self._parent._impl.gui_api._set_container_id(self._id)
+        return self
+
+    def __exit__(self, *args) -> None:
+        del args
+        assert self._container_id_restore is not None
+        self._parent._impl.gui_api._set_container_id(self._container_id_restore)
+        self._container_id_restore = None
+
+    def __post_init__(self) -> None:
+        self._parent._impl.gui_api._container_handle_from_id[self._id] = self
+
+    def remove(self) -> None:
+        """Permanently remove this tab and all contained GUI elements from the
+        visualizer."""
+        # We may want to make this thread-safe in the future.
+        found_index = -1
+        for i, tab in enumerate(self._parent._tab_handles):
+            if tab is self:
+                found_index = i
+                break
+        assert found_index != -1, "Tab already removed!"
+
+        self._parent._tab_labels = (
+            self._parent._tab_labels[:found_index]
+            + self._parent._tab_labels[found_index + 1 :]
         )
+        self._parent._icons_html = (
+            self._parent._icons_html[:found_index]
+            + self._parent._icons_html[found_index + 1 :]
+        )
+        self._parent._tab_handles = (
+            self._parent._tab_handles[:found_index]
+            + self._parent._tab_handles[found_index + 1 :]
+        )
+
+        for child in tuple(self._children.values()):
+            child.remove()
+        self._parent._impl.gui_api._container_handle_from_id.pop(self._id)
 
 
 class GuiFolderHandle(_GuiHandle, GuiFolderProps):
@@ -515,51 +638,6 @@ class GuiModalHandle:
         self._gui_api._container_handle_from_id.pop(self._id)
 
 
-@dataclasses.dataclass
-class GuiTabHandle:
-    """Use as a context to place GUI elements into a tab."""
-
-    _parent: GuiTabGroupHandle
-    _id: str  # Used as container ID of children.
-    _container_id_restore: str | None = None
-    _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
-        default_factory=dict
-    )
-
-    def __enter__(self) -> GuiTabHandle:
-        self._container_id_restore = self._parent._gui_api._get_container_id()
-        self._parent._gui_api._set_container_id(self._id)
-        return self
-
-    def __exit__(self, *args) -> None:
-        del args
-        assert self._container_id_restore is not None
-        self._parent._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
-
-    def __post_init__(self) -> None:
-        self._parent._gui_api._container_handle_from_id[self._id] = self
-
-    def remove(self) -> None:
-        """Permanently remove this tab and all contained GUI elements from the
-        visualizer."""
-        # We may want to make this thread-safe in the future.
-        container_index = -1
-        for i, tab in enumerate(self._parent._tabs):
-            if tab is self:
-                container_index = i
-                break
-        assert container_index != -1, "Tab already removed!"
-
-        self._parent._labels.pop(container_index)
-        self._parent._icons_html.pop(container_index)
-        self._parent._tabs.pop(container_index)
-        self._parent._sync_with_client()
-        for child in tuple(self._children.values()):
-            child.remove()
-        self._parent._gui_api._container_handle_from_id.pop(self._id)
-
-
 def _get_data_url(url: str, image_root: Path | None) -> str:
     if not url.startswith("http") and not image_root:
         warnings.warn(
@@ -598,11 +676,11 @@ def _parse_markdown(markdown: str, image_root: Path | None) -> str:
 
 
 class GuiProgressBarHandle(_GuiInputHandle[float], GuiProgressBarProps):
-    """Use to remove markdown."""
+    """Handle for updating and removing progress bars."""
 
 
 class GuiMarkdownHandle(_GuiHandle[None], GuiMarkdownProps):
-    """Use to remove markdown."""
+    """Handling for updating and removing markdown elements."""
 
     def __init__(self, _impl: _GuiHandleState, _content: str, _image_root: Path | None):
         super().__init__(_impl=_impl)
@@ -622,7 +700,7 @@ class GuiMarkdownHandle(_GuiHandle[None], GuiMarkdownProps):
 
 
 class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
-    """Use to update or remove markdown elements."""
+    """Handle for updating and removing Plotly figures."""
 
     def __init__(self, _impl: _GuiHandleState, _figure: go.Figure):
         super().__init__(_impl=_impl)

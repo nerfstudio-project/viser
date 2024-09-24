@@ -547,10 +547,10 @@ class GuiApi:
                 container_id=self._get_container_id(),
                 props=_messages.GuiTabGroupProps(
                     order=order,
-                    tab_labels=(),
+                    _tab_labels=(),
                     visible=visible,
-                    tab_icons_html=(),
-                    tab_container_ids=(),
+                    _tab_icons_html=(),
+                    _tab_container_ids=(),
                 ),
             )
         )
@@ -1354,7 +1354,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiMultiSliderHandle[tuple[IntOrFloat, ...]]:
+    ) -> GuiMultiSliderHandle[IntOrFloat]:
         """Add a multi slider to the GUI. Types of the min, max, step, and initial value should match.
 
         Args:

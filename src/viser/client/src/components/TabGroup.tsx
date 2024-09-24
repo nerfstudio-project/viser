@@ -5,7 +5,12 @@ import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { htmlIconWrapper } from "./ComponentStyles.css";
 
 export default function TabGroupComponent({
-  props: { tab_labels, tab_icons_html, tab_container_ids, visible },
+  props: {
+    _tab_labels: tab_labels,
+    _tab_icons_html: tab_icons_html,
+    _tab_container_ids: tab_container_ids,
+    visible,
+  },
 }: GuiTabGroupMessage) {
   const { GuiContainer } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;

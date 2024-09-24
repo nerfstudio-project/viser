@@ -16,8 +16,10 @@ from ._gui_handles import GuiSliderHandle as GuiSliderHandle
 from ._gui_handles import GuiTabGroupHandle as GuiTabGroupHandle
 from ._gui_handles import GuiTabHandle as GuiTabHandle
 from ._gui_handles import GuiTextHandle as GuiTextHandle
+from ._gui_handles import GuiUploadButtonHandle as GuiUploadButtonHandle
 from ._gui_handles import GuiVector2Handle as GuiVector2Handle
 from ._gui_handles import GuiVector3Handle as GuiVector3Handle
+from ._gui_handles import UploadedFile as UploadedFile
 from ._icons_enum import Icon as Icon
 from ._icons_enum import IconName as IconName
 from ._notification_handle import NotificationHandle as NotificationHandle

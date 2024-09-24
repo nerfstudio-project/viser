@@ -34,6 +34,10 @@
 
 .. autoclass:: viser.GuiTextHandle()
 
+.. autoclass:: viser.GuiUploadButtonHandle()
+
+.. autoclass:: viser.UploadedFile()
+
 .. autoclass:: viser.GuiVector2Handle()
 
 .. autoclass:: viser.GuiVector3Handle()
