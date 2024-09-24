@@ -989,10 +989,12 @@ class SceneApi:
                 # - w (32 bits): rgba.
                 _colors_to_uint8(rgbs),
                 _colors_to_uint8(opacities),
+                # - (1536 bits): spherical harmonics
+                sh_coeffs.astype(np.float16).view(np.uint8),
             ],
             axis=-1,
         ).view(onp.uint32)
-        breakpoint()
+        # breakpoint()
         assert buffer.shape == (num_gaussians, 8)
 
         self._websock_interface.queue_message(
