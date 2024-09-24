@@ -21,6 +21,7 @@ from typing import List, Tuple
 import numpy as np
 import numpy as onp
 import tyro
+
 import viser
 import viser.transforms as tf
 
