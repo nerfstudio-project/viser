@@ -597,8 +597,6 @@ export interface GuiProgressBarMessage {
       | "teal"
       | null;
     visible: boolean;
-    label: string;
-    value: number;
   };
 }
 /** GuiPlotlyMessage(id: 'str', container_id: 'str', props: 'GuiPlotlyProps')

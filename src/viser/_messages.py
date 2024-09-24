@@ -839,10 +839,6 @@ class GuiProgressBarProps:
     """Color of the progress bar. Synchronized automatically when assigned."""
     visible: bool
     """Visibility state of the progress bar. Synchronized automatically when assigned."""
-    label: str
-    """Label text for the progress bar. Synchronized automatically when assigned."""
-    value: float
-    """Current value of the progress bar. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
