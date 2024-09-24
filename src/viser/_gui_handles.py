@@ -554,9 +554,9 @@ class GuiTabHandle:
             self._parent._tab_labels[:found_index]
             + self._parent._tab_labels[found_index + 1 :]
         )
-        self._parent._icons_html = (
-            self._parent._icons_html[:found_index]
-            + self._parent._icons_html[found_index + 1 :]
+        self._parent._tab_icons_html = (
+            self._parent._tab_icons_html[:found_index]
+            + self._parent._tab_icons_html[found_index + 1 :]
         )
         self._parent._tab_handles = (
             self._parent._tab_handles[:found_index]
