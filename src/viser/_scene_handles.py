@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+from functools import cached_property
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    ClassVar,
     Dict,
     Generic,
     Literal,
@@ -40,46 +40,43 @@ def colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
     return colors
 
 
-class _OverridablePropScenePropSettersAndGetters:
-    def __setattr__(self, name: str, value: Any) -> None:
-        handle = cast(SceneNodeHandle, self)
-        # Get the value of the T TypeVar.
-        if name in self._PropHints:
-            # Help the user with some casting...
-            hint = self._PropHints[name]
-            if hint == onpt.NDArray[onp.float32]:
-                value = value.astype(onp.float32)
-            elif hint == onpt.NDArray[onp.uint8] and "color" in name:
-                value = colors_to_uint8(value)
-
-            setattr(handle._impl.props, name, value)
-            handle._impl.api._websock_interface.queue_message(
-                _messages.SceneNodeUpdateMessage(handle.name, {name: value})
-            )
-        else:
-            return object.__setattr__(self, name, value)
-
-    def __getattr__(self, name: str) -> Any:
-        if name in self._PropHints:
-            return getattr(self._impl.props, name)
-        else:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{name}'"
-            )
-
-
-class _OverridableScenePropApi(
-    _OverridablePropScenePropSettersAndGetters if not TYPE_CHECKING else object
-):
+class _OverridableScenePropApi:
     """Mixin that allows reading/assigning properties defined in each scene node message."""
 
-    _PropHints: ClassVar[Dict[str, type]]
+    if not TYPE_CHECKING:
 
-    def __init__(self) -> None:
-        assert False
+        def __setattr__(self, name: str, value: Any) -> None:
+            if name == "_impl":
+                return object.__setattr__(self, name, value)
 
-    def __init_subclass__(cls, PropClass: type):
-        cls._PropHints = get_type_hints(PropClass)
+            handle = cast(SceneNodeHandle, self)
+            # Get the value of the T TypeVar.
+            if name in self._prop_hints:
+                # Help the user with some casting...
+                hint = self._prop_hints[name]
+                if hint == onpt.NDArray[onp.float32]:
+                    value = value.astype(onp.float32)
+                elif hint == onpt.NDArray[onp.uint8] and "color" in name:
+                    value = colors_to_uint8(value)
+
+                setattr(handle._impl.props, name, value)
+                handle._impl.api._websock_interface.queue_message(
+                    _messages.SceneNodeUpdateMessage(handle.name, {name: value})
+                )
+            else:
+                return object.__setattr__(self, name, value)
+
+        def __getattr__(self, name: str) -> Any:
+            if name in self._prop_hints:
+                return getattr(self._impl.props, name)
+            else:
+                raise AttributeError(
+                    f"'{self.__class__.__name__}' object has no attribute '{name}'"
+                )
+
+        @cached_property
+        def _prop_hints(self) -> Dict[str, Any]:
+            return get_type_hints(type(self._impl.props))
 
 
 @dataclasses.dataclass(frozen=True)
@@ -271,7 +268,6 @@ class CameraFrustumHandle(
     _ClickableSceneNodeHandle,
     _messages.CameraFrustumProps,
     _OverridableScenePropApi,
-    PropClass=_messages.CameraFrustumProps,
 ):
     """Handle for camera frustums."""
 
@@ -280,7 +276,6 @@ class DirectionalLightHandle(
     SceneNodeHandle,
     _messages.DirectionalLightProps,
     _OverridableScenePropApi,
-    PropClass=_messages.DirectionalLightProps,
 ):
     """Handle for directional lights."""
 
@@ -289,7 +284,6 @@ class AmbientLightHandle(
     SceneNodeHandle,
     _messages.AmbientLightProps,
     _OverridableScenePropApi,
-    PropClass=_messages.AmbientLightProps,
 ):
     """Handle for ambient lights."""
 
@@ -298,7 +292,6 @@ class HemisphereLightHandle(
     SceneNodeHandle,
     _messages.HemisphereLightProps,
     _OverridableScenePropApi,
-    PropClass=_messages.HemisphereLightProps,
 ):
     """Handle for hemisphere lights."""
 
@@ -307,7 +300,6 @@ class PointLightHandle(
     SceneNodeHandle,
     _messages.PointLightProps,
     _OverridableScenePropApi,
-    PropClass=_messages.PointLightProps,
 ):
     """Handle for point lights."""
 
@@ -316,7 +308,6 @@ class RectAreaLightHandle(
     SceneNodeHandle,
     _messages.RectAreaLightProps,
     _OverridableScenePropApi,
-    PropClass=_messages.RectAreaLightProps,
 ):
     """Handle for rectangular area lights."""
 
@@ -325,7 +316,6 @@ class SpotLightHandle(
     SceneNodeHandle,
     _messages.SpotLightProps,
     _OverridableScenePropApi,
-    PropClass=_messages.SpotLightProps,
 ):
     """Handle for spot lights."""
 
@@ -334,7 +324,6 @@ class PointCloudHandle(
     SceneNodeHandle,
     _messages.PointCloudProps,
     _OverridableScenePropApi,
-    PropClass=_messages.PointCloudProps,
 ):
     """Handle for point clouds. Does not support click events."""
 
@@ -343,7 +332,6 @@ class BatchedAxesHandle(
     _ClickableSceneNodeHandle,
     _messages.BatchedAxesProps,
     _OverridableScenePropApi,
-    PropClass=_messages.BatchedAxesProps,
 ):
     """Handle for batched coordinate frames."""
 
@@ -352,7 +340,6 @@ class FrameHandle(
     _ClickableSceneNodeHandle,
     _messages.FrameProps,
     _OverridableScenePropApi,
-    PropClass=_messages.FrameProps,
 ):
     """Handle for coordinate frames."""
 
@@ -361,7 +348,6 @@ class MeshHandle(
     _ClickableSceneNodeHandle,
     _messages.MeshProps,
     _OverridableScenePropApi,
-    PropClass=_messages.MeshProps,
 ):
     """Handle for mesh objects."""
 
@@ -370,7 +356,6 @@ class GaussianSplatHandle(
     _ClickableSceneNodeHandle,
     _messages.GaussianSplatsProps,
     _OverridableScenePropApi,
-    PropClass=_messages.GaussianSplatsProps,
 ):
     """Handle for Gaussian splatting objects.
 
@@ -382,7 +367,6 @@ class MeshSkinnedHandle(
     _ClickableSceneNodeHandle,
     _messages.SkinnedMeshProps,
     _OverridableScenePropApi,
-    PropClass=_messages.SkinnedMeshProps,
 ):
     """Handle for skinned mesh objects."""
 
@@ -451,7 +435,6 @@ class GridHandle(
     SceneNodeHandle,
     _messages.GridProps,
     _OverridableScenePropApi,
-    PropClass=_messages.GridProps,
 ):
     """Handle for grid objects."""
 
@@ -460,7 +443,6 @@ class SplineCatmullRomHandle(
     SceneNodeHandle,
     _messages.CatmullRomSplineProps,
     _OverridableScenePropApi,
-    PropClass=_messages.CatmullRomSplineProps,
 ):
     """Handle for Catmull-Rom splines."""
 
@@ -469,7 +451,6 @@ class SplineCubicBezierHandle(
     SceneNodeHandle,
     _messages.CubicBezierSplineProps,
     _OverridableScenePropApi,
-    PropClass=_messages.CubicBezierSplineProps,
 ):
     """Handle for cubic Bezier splines."""
 
@@ -478,7 +459,6 @@ class GlbHandle(
     _ClickableSceneNodeHandle,
     _messages.GlbProps,
     _OverridableScenePropApi,
-    PropClass=_messages.GlbProps,
 ):
     """Handle for GLB objects."""
 
@@ -487,7 +467,6 @@ class ImageHandle(
     _ClickableSceneNodeHandle,
     _messages.ImageProps,
     _OverridableScenePropApi,
-    PropClass=_messages.ImageProps,
 ):
     """Handle for 2D images, rendered in 3D."""
 
@@ -496,7 +475,6 @@ class LabelHandle(
     SceneNodeHandle,
     _messages.LabelProps,
     _OverridableScenePropApi,
-    PropClass=_messages.LabelProps,
 ):
     """Handle for 2D label objects. Does not support click events."""
 
@@ -512,7 +490,6 @@ class TransformControlsHandle(
     _ClickableSceneNodeHandle,
     _messages.TransformControlsProps,
     _OverridableScenePropApi,
-    PropClass=_messages.TransformControlsProps,
 ):
     """Handle for interacting with transform control gizmos."""
 
@@ -536,7 +513,6 @@ class Gui3dContainerHandle(
     SceneNodeHandle,
     _messages.Gui3DProps,
     _OverridableScenePropApi,
-    PropClass=_messages.Gui3DProps,
 ):
     """Use as a context to place GUI elements into a 3D GUI container."""
 
