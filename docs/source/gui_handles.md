@@ -22,8 +22,6 @@
 
 .. autoclass:: viser.GuiCheckboxHandle()
 
-.. autoclass:: viser.GuiEvent()
-
 .. autoclass:: viser.GuiMultiSliderHandle()
 
 .. autoclass:: viser.GuiNumberHandle()
