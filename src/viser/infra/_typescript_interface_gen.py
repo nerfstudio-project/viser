@@ -58,6 +58,10 @@ def _get_ts_type(typ: Type[Any]) -> str:
         args = get_args(typ)
         assert len(args) == 1
         return _get_ts_type(args[0]) + "[]"
+    elif origin_typ is dict:
+        args = get_args(typ)
+        assert len(args) == 2
+        return "{[key: " + _get_ts_type(args[0]) + "]: " + _get_ts_type(args[1]) + "}"
     elif origin_typ in (Literal, LiteralAlt):
         return " | ".join(
             map(

@@ -9,7 +9,7 @@ from typing import Any, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as onp
 import numpy.typing as onpt
-from typing_extensions import Annotated, Literal, override
+from typing_extensions import Literal, override
 
 from . import infra, theme
 
@@ -1135,10 +1135,7 @@ class GuiUpdateMessage(Message):
     """Sent client<->server when any property of a GUI component is changed."""
 
     id: str
-    updates: Annotated[
-        Dict[str, Any],
-        infra.TypeScriptAnnotationOverride("{[key: string]: any}"),
-    ]
+    updates: Dict[str, Any]
     """Mapping from property name to new value."""
 
     @override
@@ -1157,10 +1154,7 @@ class SceneNodeUpdateMessage(Message):
     """Sent client<->server when any property of a scene node is changed."""
 
     name: str
-    updates: Annotated[
-        Dict[str, Any],
-        infra.TypeScriptAnnotationOverride("{[key: string]: any}"),
-    ]
+    updates: Dict[str, Any]
     """Mapping from property name to new value."""
 
     @override
