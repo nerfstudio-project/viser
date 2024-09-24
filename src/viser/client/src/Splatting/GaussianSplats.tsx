@@ -92,6 +92,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     depthTest: true,
     depthWrite: false,
     transparent: true,
+    sh_degree: 0,
     textureBuffer: null,
     textureT_camera_groups: null,
     transitionInState: 0.0,
@@ -116,6 +117,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   uniform vec2 viewport;
   uniform float near;
   uniform float far;
+  uniform uint sh_degree;
 
   // Fade in state between [0, 1].
   uniform float transitionInState;
