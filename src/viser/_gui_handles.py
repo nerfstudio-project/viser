@@ -117,6 +117,9 @@ class _OverridableGuiPropApi:
         handle = cast(_GuiInputHandle, self)
         # Get the value of the T TypeVar.
         if name in self._prop_hints:
+            if getattr(handle._impl.props, name) == value:
+                # Do nothing. Assumes equality is defined for the prop value.
+                return
             setattr(handle._impl.props, name, value)
             handle._impl.gui_api._websock_interface.queue_message(
                 _messages.GuiUpdateMessage(handle._impl.id, {name: value})
@@ -489,7 +492,7 @@ class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
 
         self._tab_handles.append(out)
         self._tab_labels = self._tab_labels + (label,)
-        self._icons_html = self._icons_html + (
+        self._tab_icons_html = self._tab_icons_html + (
             None if icon is None else svg_from_icon(icon),
         )
         self._tab_container_ids = tuple(handle._id for handle in self._tab_handles)
@@ -551,9 +554,9 @@ class GuiTabHandle:
             self._parent._tab_labels[:found_index]
             + self._parent._tab_labels[found_index + 1 :]
         )
-        self._parent._icons_html = (
-            self._parent._icons_html[:found_index]
-            + self._parent._icons_html[found_index + 1 :]
+        self._parent._tab_icons_html = (
+            self._parent._tab_icons_html[:found_index]
+            + self._parent._tab_icons_html[found_index + 1 :]
         )
         self._parent._tab_handles = (
             self._parent._tab_handles[:found_index]

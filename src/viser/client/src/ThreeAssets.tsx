@@ -601,24 +601,18 @@ export const ViserMesh = React.forwardRef<
     const state = viewer.skinnedMeshState.current[message.name];
     const bones = bonesRef.current;
     if (bones !== undefined) {
-      bones.forEach((bone, i) => {
-        if (!state.initialized) {
+      if (!state.initialized) {
+        bones.forEach((bone) => {
           parentNode.add(bone);
-        }
-        const wxyz = state.initialized
-          ? state.poses[i].wxyz
-          : message.props.bone_wxyzs[i];
-        const position = state.initialized
-          ? state.poses[i].position
-          : message.props.bone_positions[i];
-
+        });
+        state.initialized = true;
+      }
+      bones.forEach((bone, i) => {
+        const wxyz = state.poses[i].wxyz;
+        const position = state.poses[i].position;
         bone.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
         bone.position.set(position[0], position[1], position[2]);
       });
-
-      if (!state.initialized) {
-        state.initialized = true;
-      }
     }
   });
 

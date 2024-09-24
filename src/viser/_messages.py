@@ -14,7 +14,7 @@ from typing_extensions import Literal, override
 from . import infra, theme
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class GuiSliderMark:
     value: float
     label: Optional[str]
