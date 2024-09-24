@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ContextManager
 
 import imageio.v3 as iio
-import numpy as onp
+import numpy as np
 import numpy.typing as npt
 import rich
 from rich import box, style
@@ -68,12 +68,12 @@ class _CameraHandleState:
     """Information about a client's camera state."""
 
     client: ClientHandle
-    wxyz: npt.NDArray[onp.float64]
-    position: npt.NDArray[onp.float64]
+    wxyz: npt.NDArray[np.float64]
+    position: npt.NDArray[np.float64]
     fov: float
     aspect: float
-    look_at: npt.NDArray[onp.float64]
-    up_direction: npt.NDArray[onp.float64]
+    look_at: npt.NDArray[np.float64]
+    up_direction: npt.NDArray[np.float64]
     update_timestamp: float
     camera_cb: list[Callable[[CameraHandle], None]]
 
@@ -85,12 +85,12 @@ class CameraHandle:
     def __init__(self, client: ClientHandle) -> None:
         self._state = _CameraHandleState(
             client,
-            wxyz=onp.zeros(4),
-            position=onp.zeros(3),
+            wxyz=np.zeros(4),
+            position=np.zeros(3),
             fov=0.0,
             aspect=0.0,
-            look_at=onp.zeros(3),
-            up_direction=onp.zeros(3),
+            look_at=np.zeros(3),
+            up_direction=np.zeros(3),
             update_timestamp=0.0,
             camera_cb=[],
         )
@@ -101,7 +101,7 @@ class CameraHandle:
         return self._state.client
 
     @property
-    def wxyz(self) -> npt.NDArray[onp.float64]:
+    def wxyz(self) -> npt.NDArray[np.float64]:
         """Corresponds to the R in `P_world = [R | t] p_camera`. Synchronized
         automatically when assigned."""
         assert self._state.update_timestamp != 0.0
@@ -111,9 +111,9 @@ class CameraHandle:
     # - https://github.com/python/mypy/issues/3004
     # - https://github.com/python/mypy/pull/11643
     @wxyz.setter
-    def wxyz(self, wxyz: tuple[float, float, float, float] | onp.ndarray) -> None:
-        R_world_camera = tf.SO3(onp.asarray(wxyz)).as_matrix()
-        look_distance = onp.linalg.norm(self.look_at - self.position)
+    def wxyz(self, wxyz: tuple[float, float, float, float] | np.ndarray) -> None:
+        R_world_camera = tf.SO3(np.asarray(wxyz)).as_matrix()
+        look_distance = np.linalg.norm(self.look_at - self.position)
 
         # We're following OpenCV conventions: look_direction is +Z, up_direction is -Y,
         # right_direction is +X.
@@ -141,12 +141,12 @@ class CameraHandle:
 
         # The internal camera orientation should be set in the look_at /
         # up_direction setters. We can uncomment this assert to check this.
-        # assert onp.allclose(self._state.wxyz, wxyz) or onp.allclose(
+        # assert np.allclose(self._state.wxyz, wxyz) or np.allclose(
         #     self._state.wxyz, -wxyz
         # )
 
     @property
-    def position(self) -> npt.NDArray[onp.float64]:
+    def position(self) -> npt.NDArray[np.float64]:
         """Corresponds to the t in `P_world = [R | t] p_camera`. Synchronized
         automatically when assigned.
 
@@ -157,10 +157,10 @@ class CameraHandle:
         return self._state.position
 
     @position.setter
-    def position(self, position: tuple[float, float, float] | onp.ndarray) -> None:
-        offset = onp.asarray(position) - onp.array(self.position)  # type: ignore
-        self._state.position = onp.asarray(position)
-        self.look_at = onp.array(self.look_at) + offset
+    def position(self, position: tuple[float, float, float] | np.ndarray) -> None:
+        offset = np.asarray(position) - np.array(self.position)  # type: ignore
+        self._state.position = np.asarray(position)
+        self.look_at = np.array(self.look_at) + offset
         self._state.update_timestamp = time.time()
         self._state.client._websock_connection.queue_message(
             _messages.SetCameraPositionMessage(cast_vector(position, 3))
@@ -169,12 +169,12 @@ class CameraHandle:
     def _update_wxyz(self) -> None:
         """Compute and update the camera orientation from the internal look_at, position, and up vectors."""
         z = self._state.look_at - self._state.position
-        z /= onp.linalg.norm(z)
-        y = tf.SO3.exp(z * onp.pi) @ self._state.up_direction
-        y = y - onp.dot(z, y) * z
-        y /= onp.linalg.norm(y)
-        x = onp.cross(y, z)
-        self._state.wxyz = tf.SO3.from_matrix(onp.stack([x, y, z], axis=1)).wxyz
+        z /= np.linalg.norm(z)
+        y = tf.SO3.exp(z * np.pi) @ self._state.up_direction
+        y = y - np.dot(z, y) * z
+        y /= np.linalg.norm(y)
+        x = np.cross(y, z)
+        self._state.wxyz = tf.SO3.from_matrix(np.stack([x, y, z], axis=1)).wxyz
 
     @property
     def fov(self) -> float:
@@ -203,14 +203,14 @@ class CameraHandle:
         return self._state.update_timestamp
 
     @property
-    def look_at(self) -> npt.NDArray[onp.float64]:
+    def look_at(self) -> npt.NDArray[np.float64]:
         """Look at point for the camera. Synchronized automatically when set."""
         assert self._state.update_timestamp != 0.0
         return self._state.look_at
 
     @look_at.setter
-    def look_at(self, look_at: tuple[float, float, float] | onp.ndarray) -> None:
-        self._state.look_at = onp.asarray(look_at)
+    def look_at(self, look_at: tuple[float, float, float] | np.ndarray) -> None:
+        self._state.look_at = np.asarray(look_at)
         self._state.update_timestamp = time.time()
         self._update_wxyz()
         self._state.client._websock_connection.queue_message(
@@ -218,16 +218,16 @@ class CameraHandle:
         )
 
     @property
-    def up_direction(self) -> npt.NDArray[onp.float64]:
+    def up_direction(self) -> npt.NDArray[np.float64]:
         """Up direction for the camera. Synchronized automatically when set."""
         assert self._state.update_timestamp != 0.0
         return self._state.up_direction
 
     @up_direction.setter
     def up_direction(
-        self, up_direction: tuple[float, float, float] | onp.ndarray
+        self, up_direction: tuple[float, float, float] | np.ndarray
     ) -> None:
-        self._state.up_direction = onp.asarray(up_direction)
+        self._state.up_direction = np.asarray(up_direction)
         self._update_wxyz()
         self._state.update_timestamp = time.time()
         self._state.client._websock_connection.queue_message(
@@ -243,7 +243,7 @@ class CameraHandle:
 
     def get_render(
         self, height: int, width: int, transport_format: Literal["png", "jpeg"] = "jpeg"
-    ) -> onp.ndarray:
+    ) -> np.ndarray:
         """Request a render from a client, block until it's done and received, then
         return it as a numpy array.
 
@@ -258,7 +258,7 @@ class CameraHandle:
         # Listen for a render reseponse message, which should contain the rendered
         # image.
         render_ready_event = threading.Event()
-        out: onp.ndarray | None = None
+        out: np.ndarray | None = None
 
         connection = self.client._websock_connection
 
@@ -363,7 +363,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
 
         parts = [
             content[i * chunk_size : (i + 1) * chunk_size]
-            for i in range(int(onp.ceil(len(content) / chunk_size)))
+            for i in range(int(np.ceil(len(content) / chunk_size)))
         ]
 
         uuid = _make_unique_id()
@@ -500,12 +500,12 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                 with client.atomic():
                     client.camera._state = _CameraHandleState(
                         client,
-                        onp.array(message.wxyz),
-                        onp.array(message.position),
+                        np.array(message.wxyz),
+                        np.array(message.position),
                         message.fov,
                         message.aspect,
-                        onp.array(message.look_at),
-                        onp.array(message.up_direction),
+                        np.array(message.look_at),
+                        np.array(message.up_direction),
                         time.time(),
                         camera_cb=client.camera._state.camera_cb,
                     )

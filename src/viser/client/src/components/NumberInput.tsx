@@ -1,20 +1,15 @@
 import * as React from "react";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
-import { GuiAddNumberMessage } from "../WebsocketMessages";
+import { GuiNumberMessage } from "../WebsocketMessages";
 import { ViserInputComponent } from "./common";
 import { NumberInput } from "@mantine/core";
 
 export default function NumberInputComponent({
-  visible,
   id,
-  label,
-  hint,
   value,
-  disabled,
-  ...otherProps
-}: GuiAddNumberMessage) {
+  props: { visible, label, hint, disabled, precision, min, max, step },
+}: GuiNumberMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
-  const { precision, min, max, step } = otherProps;
   if (!visible) return <></>;
   return (
     <ViserInputComponent {...{ id, hint, label }}>

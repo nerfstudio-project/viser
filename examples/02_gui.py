@@ -4,7 +4,7 @@ Examples of basic GUI elements that we can create, read from, and write to."""
 
 import time
 
-import numpy as onp
+import numpy as np
 
 import viser
 
@@ -85,8 +85,8 @@ def main() -> None:
         print(file.name, len(file.content), "bytes")
 
     # Pre-generate a point cloud to send.
-    point_positions = onp.random.uniform(low=-1.0, high=1.0, size=(5000, 3))
-    color_coeffs = onp.random.uniform(0.4, 1.0, size=(point_positions.shape[0]))
+    point_positions = np.random.uniform(low=-1.0, high=1.0, size=(5000, 3))
+    color_coeffs = np.random.uniform(0.4, 1.0, size=(point_positions.shape[0]))
 
     counter = 0
     while True:
@@ -100,11 +100,11 @@ def main() -> None:
         # connected clients.
         server.scene.add_point_cloud(
             "/point_cloud",
-            points=point_positions * onp.array(gui_vector3.value, dtype=onp.float32),
+            points=point_positions * np.array(gui_vector3.value, dtype=np.float32),
             colors=(
-                onp.tile(gui_rgb.value, point_positions.shape[0]).reshape((-1, 3))
+                np.tile(gui_rgb.value, point_positions.shape[0]).reshape((-1, 3))
                 * color_coeffs[:, None]
-            ).astype(onp.uint8),
+            ).astype(np.uint8),
             position=gui_vector2.value + (0,),
             point_shape="circle",
         )
@@ -120,8 +120,8 @@ def main() -> None:
 
         # Update the number of handles in the multi-slider.
         if gui_slider_positions.value != len(gui_multi_slider.value):
-            gui_multi_slider.value = onp.linspace(
-                0, 100, gui_slider_positions.value, dtype=onp.int64
+            gui_multi_slider.value = np.linspace(
+                0, 100, gui_slider_positions.value, dtype=np.int64
             )
 
         counter += 1

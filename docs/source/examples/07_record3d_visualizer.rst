@@ -16,7 +16,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
         import time
         from pathlib import Path
 
-        import numpy as onp
+        import numpy as np
         import tyro
         from tqdm.auto import tqdm
 
@@ -96,7 +96,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
             # Load in frames.
             server.scene.add_frame(
                 "/frames",
-                wxyz=tf.SO3.exp(onp.array([onp.pi / 2.0, 0.0, 0.0])).wxyz,
+                wxyz=tf.SO3.exp(np.array([np.pi / 2.0, 0.0, 0.0])).wxyz,
                 position=(0, 0, 0),
                 show_axes=False,
             )
@@ -118,7 +118,7 @@ Parse and stream record3d captures. To get the demo data, see ``./assets/downloa
                 )
 
                 # Place the frustum.
-                fov = 2 * onp.arctan2(frame.rgb.shape[0] / 2, frame.K[0, 0])
+                fov = 2 * np.arctan2(frame.rgb.shape[0] / 2, frame.K[0, 0])
                 aspect = frame.rgb.shape[1] / frame.rgb.shape[0]
                 server.scene.add_camera_frustum(
                     f"/frames/t{i}/frustum",

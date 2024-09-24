@@ -3,16 +3,13 @@ import { ColorInput } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { rgbToHex, hexToRgb } from "./utils";
 import { ViserInputComponent } from "./common";
-import { GuiAddRgbMessage } from "../WebsocketMessages";
+import { GuiRgbMessage } from "../WebsocketMessages";
 
 export default function RgbComponent({
   id,
-  label,
-  hint,
   value,
-  disabled,
-  visible,
-}: GuiAddRgbMessage) {
+  props: { label, hint, disabled, visible },
+}: GuiRgbMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (

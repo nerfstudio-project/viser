@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+from functools import cached_property
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    ClassVar,
     Dict,
     Generic,
     Literal,
@@ -15,7 +15,7 @@ from typing import (
     cast,
 )
 
-import numpy as onp
+import numpy as np
 import numpy.typing as onpt
 from typing_extensions import get_type_hints
 
@@ -29,27 +29,32 @@ if TYPE_CHECKING:
     from .infra import ClientId
 
 
-def colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
+def colors_to_uint8(colors: np.ndarray) -> onpt.NDArray[np.uint8]:
     """Convert intensity values to uint8. We assume the range [0,1] for floats, and
     [0,255] for integers. Accepts any shape."""
-    if colors.dtype != onp.uint8:
-        if onp.issubdtype(colors.dtype, onp.floating):
-            colors = onp.clip(colors * 255.0, 0, 255).astype(onp.uint8)
-        if onp.issubdtype(colors.dtype, onp.integer):
-            colors = onp.clip(colors, 0, 255).astype(onp.uint8)
+    if colors.dtype != np.uint8:
+        if np.issubdtype(colors.dtype, np.floating):
+            colors = np.clip(colors * 255.0, 0, 255).astype(np.uint8)
+        if np.issubdtype(colors.dtype, np.integer):
+            colors = np.clip(colors, 0, 255).astype(np.uint8)
     return colors
 
 
-class _OverridablePropScenePropSettersAndGetters:
+class _OverridableScenePropApi:
+    """Mixin that allows reading/assigning properties defined in each scene node message."""
+
     def __setattr__(self, name: str, value: Any) -> None:
+        if name == "_impl":
+            return object.__setattr__(self, name, value)
+
         handle = cast(SceneNodeHandle, self)
         # Get the value of the T TypeVar.
-        if name in self._PropHints:
+        if name in self._prop_hints:
             # Help the user with some casting...
-            hint = self._PropHints[name]
-            if hint == onpt.NDArray[onp.float32]:
-                value = value.astype(onp.float32)
-            elif hint == onpt.NDArray[onp.uint8] and "color" in name:
+            hint = self._prop_hints[name]
+            if hint == onpt.NDArray[np.float32]:
+                value = value.astype(np.float32)
+            elif hint == onpt.NDArray[np.uint8] and "color" in name:
                 value = colors_to_uint8(value)
 
             setattr(handle._impl.props, name, value)
@@ -60,26 +65,16 @@ class _OverridablePropScenePropSettersAndGetters:
             return object.__setattr__(self, name, value)
 
     def __getattr__(self, name: str) -> Any:
-        if name in self._PropHints:
+        if name in self._prop_hints:
             return getattr(self._impl.props, name)
         else:
             raise AttributeError(
                 f"'{self.__class__.__name__}' object has no attribute '{name}'"
             )
 
-
-class _OverridableScenePropApi(
-    _OverridablePropScenePropSettersAndGetters if not TYPE_CHECKING else object
-):
-    """Mixin that allows reading/assigning properties defined in each scene node message."""
-
-    _PropHints: ClassVar[Dict[str, type]]
-
-    def __init__(self) -> None:
-        assert False
-
-    def __init_subclass__(cls, PropClass: type):
-        cls._PropHints = get_type_hints(PropClass)
+    @cached_property
+    def _prop_hints(self) -> Dict[str, Any]:
+        return get_type_hints(type(self._impl.props))
 
 
 @dataclasses.dataclass(frozen=True)
@@ -117,11 +112,11 @@ class _SceneNodeHandleState:
     """Message containing properties of this scene node that are sent to the
     client."""
     api: SceneApi
-    wxyz: onp.ndarray = dataclasses.field(
-        default_factory=lambda: onp.array([1.0, 0.0, 0.0, 0.0])
+    wxyz: np.ndarray = dataclasses.field(
+        default_factory=lambda: np.array([1.0, 0.0, 0.0, 0.0])
     )
-    position: onp.ndarray = dataclasses.field(
-        default_factory=lambda: onp.array([0.0, 0.0, 0.0])
+    position: np.ndarray = dataclasses.field(
+        default_factory=lambda: np.array([0.0, 0.0, 0.0])
     )
     visible: bool = True
     # TODO: we should remove SceneNodeHandle as an argument here.
@@ -152,8 +147,8 @@ class SceneNodeHandle:
         api: SceneApi,
         message: _SceneNodeMessage,
         name: str,
-        wxyz: tuple[float, float, float, float] | onp.ndarray,
-        position: tuple[float, float, float] | onp.ndarray,
+        wxyz: tuple[float, float, float, float] | np.ndarray,
+        position: tuple[float, float, float] | np.ndarray,
         visible: bool,
     ) -> TSceneNodeHandle:
         """Create scene node: send state to client(s) and set up
@@ -175,35 +170,35 @@ class SceneNodeHandle:
         return out
 
     @property
-    def wxyz(self) -> onp.ndarray:
+    def wxyz(self) -> np.ndarray:
         """Orientation of the scene node. This is the quaternion representation of the R
         in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
         return self._impl.wxyz
 
     @wxyz.setter
-    def wxyz(self, wxyz: tuple[float, float, float, float] | onp.ndarray) -> None:
+    def wxyz(self, wxyz: tuple[float, float, float, float] | np.ndarray) -> None:
         from ._scene_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
-        self._impl.wxyz = onp.asarray(wxyz)
+        self._impl.wxyz = np.asarray(wxyz)
         self._impl.api._websock_interface.queue_message(
             _messages.SetOrientationMessage(self._impl.name, wxyz_cast)
         )
 
     @property
-    def position(self) -> onp.ndarray:
+    def position(self) -> np.ndarray:
         """Position of the scene node. This is equivalent to the t in
         `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
         return self._impl.position
 
     @position.setter
-    def position(self, position: tuple[float, float, float] | onp.ndarray) -> None:
+    def position(self, position: tuple[float, float, float] | np.ndarray) -> None:
         from ._scene_api import cast_vector
 
         position_cast = cast_vector(position, 3)
-        self._impl.position = onp.asarray(position)
+        self._impl.position = np.asarray(position)
         self._impl.api._websock_interface.queue_message(
             _messages.SetPositionMessage(self._impl.name, position_cast)
         )
@@ -270,8 +265,7 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
 class CameraFrustumHandle(
     _ClickableSceneNodeHandle,
     _messages.CameraFrustumProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.CameraFrustumProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for camera frustums."""
 
@@ -279,8 +273,7 @@ class CameraFrustumHandle(
 class DirectionalLightHandle(
     SceneNodeHandle,
     _messages.DirectionalLightProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.DirectionalLightProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for directional lights."""
 
@@ -288,8 +281,7 @@ class DirectionalLightHandle(
 class AmbientLightHandle(
     SceneNodeHandle,
     _messages.AmbientLightProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.AmbientLightProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for ambient lights."""
 
@@ -297,8 +289,7 @@ class AmbientLightHandle(
 class HemisphereLightHandle(
     SceneNodeHandle,
     _messages.HemisphereLightProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.HemisphereLightProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for hemisphere lights."""
 
@@ -306,8 +297,7 @@ class HemisphereLightHandle(
 class PointLightHandle(
     SceneNodeHandle,
     _messages.PointLightProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.PointLightProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for point lights."""
 
@@ -315,8 +305,7 @@ class PointLightHandle(
 class RectAreaLightHandle(
     SceneNodeHandle,
     _messages.RectAreaLightProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.RectAreaLightProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for rectangular area lights."""
 
@@ -324,8 +313,7 @@ class RectAreaLightHandle(
 class SpotLightHandle(
     SceneNodeHandle,
     _messages.SpotLightProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.SpotLightProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for spot lights."""
 
@@ -333,8 +321,7 @@ class SpotLightHandle(
 class PointCloudHandle(
     SceneNodeHandle,
     _messages.PointCloudProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.PointCloudProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for point clouds. Does not support click events."""
 
@@ -342,8 +329,7 @@ class PointCloudHandle(
 class BatchedAxesHandle(
     _ClickableSceneNodeHandle,
     _messages.BatchedAxesProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.BatchedAxesProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for batched coordinate frames."""
 
@@ -351,8 +337,7 @@ class BatchedAxesHandle(
 class FrameHandle(
     _ClickableSceneNodeHandle,
     _messages.FrameProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.FrameProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for coordinate frames."""
 
@@ -360,8 +345,7 @@ class FrameHandle(
 class MeshHandle(
     _ClickableSceneNodeHandle,
     _messages.MeshProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.MeshProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for mesh objects."""
 
@@ -369,8 +353,7 @@ class MeshHandle(
 class GaussianSplatHandle(
     _ClickableSceneNodeHandle,
     _messages.GaussianSplatsProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.GaussianSplatsProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for Gaussian splatting objects.
 
@@ -381,8 +364,7 @@ class GaussianSplatHandle(
 class MeshSkinnedHandle(
     _ClickableSceneNodeHandle,
     _messages.SkinnedMeshProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.SkinnedMeshProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for skinned mesh objects."""
 
@@ -398,8 +380,8 @@ class BoneState:
     name: str
     websock_interface: WebsockServer | WebsockClientConnection
     bone_index: int
-    wxyz: onp.ndarray
-    position: onp.ndarray
+    wxyz: np.ndarray
+    position: np.ndarray
 
 
 @dataclasses.dataclass
@@ -409,18 +391,18 @@ class MeshSkinnedBoneHandle:
     _impl: BoneState
 
     @property
-    def wxyz(self) -> onp.ndarray:
+    def wxyz(self) -> np.ndarray:
         """Orientation of the bone. This is the quaternion representation of the R
         in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
         return self._impl.wxyz
 
     @wxyz.setter
-    def wxyz(self, wxyz: tuple[float, float, float, float] | onp.ndarray) -> None:
+    def wxyz(self, wxyz: tuple[float, float, float, float] | np.ndarray) -> None:
         from ._scene_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
-        self._impl.wxyz = onp.asarray(wxyz)
+        self._impl.wxyz = np.asarray(wxyz)
         self._impl.websock_interface.queue_message(
             _messages.SetBoneOrientationMessage(
                 self._impl.name, self._impl.bone_index, wxyz_cast
@@ -428,18 +410,18 @@ class MeshSkinnedBoneHandle:
         )
 
     @property
-    def position(self) -> onp.ndarray:
+    def position(self) -> np.ndarray:
         """Position of the bone. This is equivalent to the t in
         `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
         return self._impl.position
 
     @position.setter
-    def position(self, position: tuple[float, float, float] | onp.ndarray) -> None:
+    def position(self, position: tuple[float, float, float] | np.ndarray) -> None:
         from ._scene_api import cast_vector
 
         position_cast = cast_vector(position, 3)
-        self._impl.position = onp.asarray(position)
+        self._impl.position = np.asarray(position)
         self._impl.websock_interface.queue_message(
             _messages.SetBonePositionMessage(
                 self._impl.name, self._impl.bone_index, position_cast
@@ -450,8 +432,7 @@ class MeshSkinnedBoneHandle:
 class GridHandle(
     SceneNodeHandle,
     _messages.GridProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.GridProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for grid objects."""
 
@@ -459,8 +440,7 @@ class GridHandle(
 class SplineCatmullRomHandle(
     SceneNodeHandle,
     _messages.CatmullRomSplineProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.CatmullRomSplineProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for Catmull-Rom splines."""
 
@@ -468,8 +448,7 @@ class SplineCatmullRomHandle(
 class SplineCubicBezierHandle(
     SceneNodeHandle,
     _messages.CubicBezierSplineProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.CubicBezierSplineProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for cubic Bezier splines."""
 
@@ -477,8 +456,7 @@ class SplineCubicBezierHandle(
 class GlbHandle(
     _ClickableSceneNodeHandle,
     _messages.GlbProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.GlbProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for GLB objects."""
 
@@ -486,8 +464,7 @@ class GlbHandle(
 class ImageHandle(
     _ClickableSceneNodeHandle,
     _messages.ImageProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.ImageProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for 2D images, rendered in 3D."""
 
@@ -495,8 +472,7 @@ class ImageHandle(
 class LabelHandle(
     SceneNodeHandle,
     _messages.LabelProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.LabelProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for 2D label objects. Does not support click events."""
 
@@ -511,8 +487,7 @@ class _TransformControlsState:
 class TransformControlsHandle(
     _ClickableSceneNodeHandle,
     _messages.TransformControlsProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.TransformControlsProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for interacting with transform control gizmos."""
 
@@ -535,8 +510,7 @@ class TransformControlsHandle(
 class Gui3dContainerHandle(
     SceneNodeHandle,
     _messages.Gui3DProps,
-    _OverridableScenePropApi,
-    PropClass=_messages.Gui3DProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Use as a context to place GUI elements into a 3D GUI container."""
 

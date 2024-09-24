@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, Callable, Tuple, TypeVar, Union, cast, get_args
 
 import imageio.v3 as iio
-import numpy as onp
+import numpy as np
 from typing_extensions import Literal, ParamSpec, TypeAlias, assert_never
 
 from . import _messages
@@ -54,15 +54,15 @@ P = ParamSpec("P")
 
 
 RgbTupleOrArray: TypeAlias = Union[
-    Tuple[int, int, int], Tuple[float, float, float], onp.ndarray
+    Tuple[int, int, int], Tuple[float, float, float], np.ndarray
 ]
 
 
 def _encode_rgb(rgb: RgbTupleOrArray) -> tuple[int, int, int]:
-    if isinstance(rgb, onp.ndarray):
+    if isinstance(rgb, np.ndarray):
         assert rgb.shape == (3,)
     rgb_fixed = tuple(
-        int(value) if onp.issubdtype(type(value), onp.integer) else int(value * 255)
+        int(value) if np.issubdtype(type(value), np.integer) else int(value * 255)
         for value in rgb
     )
     assert len(rgb_fixed) == 3
@@ -70,7 +70,7 @@ def _encode_rgb(rgb: RgbTupleOrArray) -> tuple[int, int, int]:
 
 
 def _encode_image_binary(
-    image: onp.ndarray,
+    image: np.ndarray,
     format: Literal["png", "jpeg"],
     jpeg_quality: int | None = None,
 ) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
@@ -97,9 +97,9 @@ def _encode_image_binary(
 TVector = TypeVar("TVector", bound=tuple)
 
 
-def cast_vector(vector: TVector | onp.ndarray, length: int) -> TVector:
+def cast_vector(vector: TVector | np.ndarray, length: int) -> TVector:
     if not isinstance(vector, tuple):
-        assert cast(onp.ndarray, vector).shape == (
+        assert cast(np.ndarray, vector).shape == (
             length,
         ), f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
     return cast(TVector, tuple(map(float, vector)))
@@ -165,7 +165,7 @@ class SceneApi:
         self,
         direction: Literal["+x", "+y", "+z", "-x", "-y", "-z"]
         | tuple[float, float, float]
-        | onp.ndarray,
+        | np.ndarray,
     ) -> None:
         """Set the global up direction of the scene. By default we follow +Z-up
         (similar to Blender, 3DS Max, ROS, etc), the most common alternative is
@@ -186,20 +186,20 @@ class SceneApi:
             }[direction]
         assert not isinstance(direction, str)
 
-        default_three_up = onp.array([0.0, 1.0, 0.0])
-        direction = onp.asarray(direction)
+        default_three_up = np.array([0.0, 1.0, 0.0])
+        direction = np.asarray(direction)
 
-        def rotate_between(before: onp.ndarray, after: onp.ndarray) -> tf.SO3:
+        def rotate_between(before: np.ndarray, after: np.ndarray) -> tf.SO3:
             assert before.shape == after.shape == (3,)
-            before = before / onp.linalg.norm(before)
-            after = after / onp.linalg.norm(after)
+            before = before / np.linalg.norm(before)
+            after = after / np.linalg.norm(after)
 
-            angle = onp.arccos(onp.clip(onp.dot(before, after), -1, 1))
-            axis = onp.cross(before, after)
-            if onp.allclose(axis, onp.zeros(3), rtol=1e-3, atol=1e-5):
-                unit_vector = onp.arange(3) == onp.argmin(onp.abs(before))
-                axis = onp.cross(before, unit_vector)
-            axis = axis / onp.linalg.norm(axis)
+            angle = np.arccos(np.clip(np.dot(before, after), -1, 1))
+            axis = np.cross(before, after)
+            if np.allclose(axis, np.zeros(3), rtol=1e-3, atol=1e-5):
+                unit_vector = np.arange(3) == np.argmin(np.abs(before))
+                axis = np.cross(before, unit_vector)
+            axis = axis / np.linalg.norm(axis)
             return tf.SO3.exp(angle * axis)
 
         R_threeworld_world = rotate_between(direction, default_three_up)
@@ -209,21 +209,21 @@ class SceneApi:
         #     If we set +Z to up, +X and +Y should face the camera.
         # In App.tsx, the camera is initialized at [-3, 3, -3] in the threejs
         # coordinate frame.
-        desired_fwd = onp.array([-1.0, 0.0, -1.0]) / onp.sqrt(2.0)
-        current_fwd = R_threeworld_world @ (onp.ones(3) / onp.sqrt(3.0))
-        current_fwd = current_fwd * onp.array([1.0, 0.0, 1.0])
-        current_fwd = current_fwd / onp.linalg.norm(current_fwd)
+        desired_fwd = np.array([-1.0, 0.0, -1.0]) / np.sqrt(2.0)
+        current_fwd = R_threeworld_world @ (np.ones(3) / np.sqrt(3.0))
+        current_fwd = current_fwd * np.array([1.0, 0.0, 1.0])
+        current_fwd = current_fwd / np.linalg.norm(current_fwd)
         R_threeworld_world = (
             tf.SO3.from_y_radians(  # Rotate around the null space / up direction.
-                onp.arctan2(
-                    onp.cross(current_fwd, desired_fwd)[1],
-                    onp.dot(current_fwd, desired_fwd),
+                np.arctan2(
+                    np.cross(current_fwd, desired_fwd)[1],
+                    np.dot(current_fwd, desired_fwd),
                 ),
             )
             @ R_threeworld_world
         )
 
-        if not onp.any(onp.isnan(R_threeworld_world.wxyz)):
+        if not np.any(np.isnan(R_threeworld_world.wxyz)):
             # Set the orientation of the root node.
             self._websock_interface.queue_message(
                 _messages.SetOrientationMessage(
@@ -251,7 +251,7 @@ class SceneApi:
         name: str,
         color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> DirectionalLightHandle:
@@ -283,8 +283,8 @@ class SceneApi:
         name: str,
         color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> AmbientLightHandle:
         """
@@ -314,7 +314,7 @@ class SceneApi:
         sky_color: Tuple[int, int, int] = (255, 255, 255),
         ground_color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> HemisphereLightHandle:
@@ -347,7 +347,7 @@ class SceneApi:
         intensity: float = 1.0,
         distance: float = 0.0,
         decay: float = 2.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> PointLightHandle:
@@ -387,7 +387,7 @@ class SceneApi:
         intensity: float = 1.0,
         width: float = 10.0,
         height: float = 10.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> RectAreaLightHandle:
@@ -425,11 +425,11 @@ class SceneApi:
         name: str,
         color: Tuple[int, int, int] = (255, 255, 255),
         distance: float = 0.0,
-        angle: float = onp.pi / 3,
+        angle: float = np.pi / 3,
         penumbra: float = 0.0,
         decay: float = 2.0,
         intensity: float = 1.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> SpotLightHandle:
@@ -526,8 +526,8 @@ class SceneApi:
         name: str,
         glb_data: bytes,
         scale: float = 1.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GlbHandle:
         """Add a general 3D asset via binary glTF (GLB).
@@ -556,15 +556,15 @@ class SceneApi:
     def add_spline_catmull_rom(
         self,
         name: str,
-        positions: tuple[tuple[float, float, float], ...] | onp.ndarray,
+        positions: tuple[tuple[float, float, float], ...] | np.ndarray,
         curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
         tension: float = 0.5,
         closed: bool = False,
         line_width: float = 1,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> SplineCatmullRomHandle:
         """Add a spline to the scene using Catmull-Rom interpolation.
@@ -589,7 +589,7 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        if isinstance(positions, onp.ndarray):
+        if isinstance(positions, np.ndarray):
             assert len(positions.shape) == 2 and positions.shape[1] == 3
             positions = tuple(map(tuple, positions))  # type: ignore
         assert len(positions[0]) == 3
@@ -613,13 +613,13 @@ class SceneApi:
     def add_spline_cubic_bezier(
         self,
         name: str,
-        positions: tuple[tuple[float, float, float], ...] | onp.ndarray,
-        control_points: tuple[tuple[float, float, float], ...] | onp.ndarray,
+        positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        control_points: tuple[tuple[float, float, float], ...] | np.ndarray,
         line_width: float = 1.0,
         color: RgbTupleOrArray = (20, 20, 20),
         segments: int | None = None,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> SplineCubicBezierHandle:
         """Add a spline to the scene using Cubic Bezier interpolation.
@@ -644,10 +644,10 @@ class SceneApi:
             Handle for manipulating scene node.
         """
 
-        if isinstance(positions, onp.ndarray):
+        if isinstance(positions, np.ndarray):
             assert len(positions.shape) == 2 and positions.shape[1] == 3
             positions = tuple(map(tuple, positions))  # type: ignore
-        if isinstance(control_points, onp.ndarray):
+        if isinstance(control_points, np.ndarray):
             assert len(control_points.shape) == 2 and control_points.shape[1] == 3
             control_points = tuple(map(tuple, control_points))  # type: ignore
 
@@ -675,11 +675,11 @@ class SceneApi:
         aspect: float,
         scale: float = 0.3,
         color: RgbTupleOrArray = (20, 20, 20),
-        image: onp.ndarray | None = None,
+        image: np.ndarray | None = None,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: int | None = None,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
@@ -737,8 +737,8 @@ class SceneApi:
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
         origin_radius: float | None = None,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> FrameHandle:
         """Add a coordinate frame to the scene.
@@ -782,12 +782,12 @@ class SceneApi:
     def add_batched_axes(
         self,
         name: str,
-        batched_wxyzs: tuple[tuple[float, float, float, float], ...] | onp.ndarray,
-        batched_positions: tuple[tuple[float, float, float], ...] | onp.ndarray,
+        batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
+        batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> BatchedAxesHandle:
         """Visualize batched sets of coordinate frame axes.
@@ -818,15 +818,15 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        batched_wxyzs = onp.asarray(batched_wxyzs)
-        batched_positions = onp.asarray(batched_positions)
+        batched_wxyzs = np.asarray(batched_wxyzs)
+        batched_positions = np.asarray(batched_positions)
 
         num_axes = batched_wxyzs.shape[0]
         assert batched_wxyzs.shape == (num_axes, 4)
         assert batched_positions.shape == (num_axes, 3)
         props = _messages.BatchedAxesProps(
-            wxyzs_batched=batched_wxyzs.astype(onp.float32),
-            positions_batched=batched_positions.astype(onp.float32),
+            wxyzs_batched=batched_wxyzs.astype(np.float32),
+            positions_batched=batched_positions.astype(np.float32),
             axes_length=axes_length,
             axes_radius=axes_radius,
         )
@@ -850,8 +850,8 @@ class SceneApi:
         section_color: RgbTupleOrArray = (140, 140, 140),
         section_thickness: float = 1.0,
         section_size: float = 1.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GridHandle:
         """Add a 2D grid to the scene.
@@ -900,8 +900,8 @@ class SceneApi:
         self,
         name: str,
         text: str,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> LabelHandle:
         """Add a 2D label to the scene.
@@ -925,14 +925,14 @@ class SceneApi:
     def add_point_cloud(
         self,
         name: str,
-        points: onp.ndarray,
-        colors: onp.ndarray | tuple[float, float, float],
+        points: np.ndarray,
+        colors: np.ndarray | tuple[float, float, float],
         point_size: float = 0.1,
         point_shape: Literal[
             "square", "diamond", "circle", "rounded", "sparkle"
         ] = "square",
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> PointCloudHandle:
         """Add a point cloud to the scene.
@@ -950,7 +950,7 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
-        colors_cast = colors_to_uint8(onp.asarray(colors))
+        colors_cast = colors_to_uint8(np.asarray(colors))
         assert (
             len(points.shape) == 2 and points.shape[-1] == 3
         ), "Shape of points should be (N, 3)."
@@ -960,12 +960,12 @@ class SceneApi:
         }, "Shape of colors should be (N, 3) or (3,)."
 
         if colors_cast.shape == (3,):
-            colors_cast = onp.tile(colors_cast[None, :], reps=(points.shape[0], 1))
+            colors_cast = np.tile(colors_cast[None, :], reps=(points.shape[0], 1))
 
         message = _messages.PointCloudMessage(
             name=name,
             props=_messages.PointCloudProps(
-                points=points.astype(onp.float32),
+                points=points.astype(np.float32),
                 colors=colors_cast,
                 point_size=point_size,
                 point_ball_norm={
@@ -982,19 +982,19 @@ class SceneApi:
     def add_mesh_skinned(
         self,
         name: str,
-        vertices: onp.ndarray,
-        faces: onp.ndarray,
-        bone_wxyzs: tuple[tuple[float, float, float, float], ...] | onp.ndarray,
-        bone_positions: tuple[tuple[float, float, float], ...] | onp.ndarray,
-        skin_weights: onp.ndarray,
+        vertices: np.ndarray,
+        faces: np.ndarray,
+        bone_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
+        bone_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        skin_weights: np.ndarray,
         color: RgbTupleOrArray = (90, 200, 255),
         wireframe: bool = False,
         opacity: float | None = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
-        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> MeshSkinnedHandle:
         """Add a skinned mesh to the scene, which we can deform using a set of
@@ -1041,23 +1041,23 @@ class SceneApi:
         assert skin_weights.shape == (vertices.shape[0], num_bones)
 
         # Take the four biggest indices.
-        top4_skin_indices = onp.argsort(skin_weights, axis=-1)[:, -4:]
+        top4_skin_indices = np.argsort(skin_weights, axis=-1)[:, -4:]
         top4_skin_weights = skin_weights[
-            onp.arange(vertices.shape[0])[:, None], top4_skin_indices
+            np.arange(vertices.shape[0])[:, None], top4_skin_indices
         ]
         assert (
             top4_skin_weights.shape == top4_skin_indices.shape == (vertices.shape[0], 4)
         )
 
-        bone_wxyzs = onp.asarray(bone_wxyzs)
-        bone_positions = onp.asarray(bone_positions)
+        bone_wxyzs = np.asarray(bone_wxyzs)
+        bone_positions = np.asarray(bone_positions)
         assert bone_wxyzs.shape == (num_bones, 4)
         assert bone_positions.shape == (num_bones, 3)
         message = _messages.SkinnedMeshMessage(
             name=name,
             props=_messages.SkinnedMeshProps(
-                vertices=vertices.astype(onp.float32),
-                faces=faces.astype(onp.uint32),
+                vertices=vertices.astype(np.float32),
+                faces=faces.astype(np.uint32),
                 color=_encode_rgb(color),
                 vertex_colors=None,
                 wireframe=wireframe,
@@ -1072,14 +1072,14 @@ class SceneApi:
                         float(wxyz[2]),
                         float(wxyz[3]),
                     )
-                    for wxyz in bone_wxyzs.astype(onp.float32)
+                    for wxyz in bone_wxyzs.astype(np.float32)
                 ),
                 bone_positions=tuple(
                     (float(xyz[0]), float(xyz[1]), float(xyz[2]))
-                    for xyz in bone_positions.astype(onp.float32)
+                    for xyz in bone_positions.astype(np.float32)
                 ),
-                skin_indices=top4_skin_indices.astype(onp.uint16),
-                skin_weights=top4_skin_weights.astype(onp.float32),
+                skin_indices=top4_skin_indices.astype(np.uint16),
+                skin_weights=top4_skin_weights.astype(np.float32),
             ),
         )
         handle = MeshHandle._make(self, message, name, wxyz, position, visible)
@@ -1102,16 +1102,16 @@ class SceneApi:
     def add_mesh_simple(
         self,
         name: str,
-        vertices: onp.ndarray,
-        faces: onp.ndarray,
+        vertices: np.ndarray,
+        faces: np.ndarray,
         color: RgbTupleOrArray = (90, 200, 255),
         wireframe: bool = False,
         opacity: float | None = None,
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> MeshHandle:
         """Add a mesh to the scene.
@@ -1150,8 +1150,8 @@ class SceneApi:
         message = _messages.MeshMessage(
             name=name,
             props=_messages.MeshProps(
-                vertices=vertices.astype(onp.float32),
-                faces=faces.astype(onp.uint32),
+                vertices=vertices.astype(np.float32),
+                faces=faces.astype(np.uint32),
                 color=_encode_rgb(color),
                 vertex_colors=None,
                 wireframe=wireframe,
@@ -1168,8 +1168,8 @@ class SceneApi:
         name: str,
         mesh: trimesh.Trimesh,
         scale: float = 1.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GlbHandle:
         """Add a trimesh mesh to the scene. Internally calls `self.add_glb()`.
@@ -1202,12 +1202,12 @@ class SceneApi:
     def _add_gaussian_splats(
         self,
         name: str,
-        centers: onp.ndarray,
-        covariances: onp.ndarray,
-        rgbs: onp.ndarray,
-        opacities: onp.ndarray,
-        wxyz: Tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        centers: np.ndarray,
+        covariances: np.ndarray,
+        rgbs: np.ndarray,
+        opacities: np.ndarray,
+        wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> GaussianSplatHandle:
         """Add a model to render using Gaussian Splatting.
@@ -1237,26 +1237,26 @@ class SceneApi:
         # Get cholesky factor of covariance. This helps retain precision when
         # we convert to float16.
         cov_cholesky_triu = (
-            onp.linalg.cholesky(covariances.astype(onp.float64) + onp.ones(3) * 1e-7)
+            np.linalg.cholesky(covariances.astype(np.float64) + np.ones(3) * 1e-7)
             .swapaxes(-1, -2)  # tril => triu
-            .reshape((-1, 9))[:, onp.array([0, 1, 2, 4, 5, 8])]
+            .reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
         )
-        buffer = onp.concatenate(
+        buffer = np.concatenate(
             [
                 # First texelFetch.
                 # - xyz (96 bits): centers.
-                centers.astype(onp.float32).view(onp.uint8),
+                centers.astype(np.float32).view(np.uint8),
                 # - w (32 bits): this is reserved for use by the renderer.
-                onp.zeros((num_gaussians, 4), dtype=onp.uint8),
+                np.zeros((num_gaussians, 4), dtype=np.uint8),
                 # Second texelFetch.
                 # - xyz (96 bits): upper-triangular Cholesky factor of covariance.
-                cov_cholesky_triu.astype(onp.float16).copy().view(onp.uint8),
+                cov_cholesky_triu.astype(np.float16).copy().view(np.uint8),
                 # - w (32 bits): rgba.
                 colors_to_uint8(rgbs),
                 colors_to_uint8(opacities),
             ],
             axis=-1,
-        ).view(onp.uint32)
+        ).view(np.uint32)
         assert buffer.shape == (num_gaussians, 8)
 
         message = _messages.GaussianSplatsMessage(
@@ -1274,9 +1274,9 @@ class SceneApi:
         self,
         name: str,
         color: RgbTupleOrArray,
-        dimensions: tuple[float, float, float] | onp.ndarray = (1.0, 1.0, 1.0),
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        dimensions: tuple[float, float, float] | np.ndarray = (1.0, 1.0, 1.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> MeshHandle:
         """Add a box to the scene.
@@ -1314,8 +1314,8 @@ class SceneApi:
         radius: float,
         color: RgbTupleOrArray,
         subdivisions: int = 3,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> MeshHandle:
         """Add an icosphere to the scene.
@@ -1352,10 +1352,10 @@ class SceneApi:
 
     def set_background_image(
         self,
-        image: onp.ndarray,
+        image: np.ndarray,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: int | None = None,
-        depth: onp.ndarray | None = None,
+        depth: np.ndarray | None = None,
     ) -> None:
         """Set a background image for the scene, optionally with depth compositing.
 
@@ -1380,9 +1380,9 @@ class SceneApi:
             assert len(depth.shape) == 2 or (
                 len(depth.shape) == 3 and depth.shape[2] == 1
             ), "Depth should have shape (H,W) or (H,W,1)."
-            depth = onp.clip(depth * 100_000, 0, 2**24 - 1).astype(onp.uint32)
+            depth = np.clip(depth * 100_000, 0, 2**24 - 1).astype(np.uint32)
             assert depth is not None  # Appease mypy.
-            intdepth: onp.ndarray = depth.reshape((*depth.shape[:2], 1)).view(onp.uint8)
+            intdepth: np.ndarray = depth.reshape((*depth.shape[:2], 1)).view(np.uint8)
             assert intdepth.shape == (*depth.shape[:2], 4)
             with io.BytesIO() as data_buffer:
                 iio.imwrite(data_buffer, intdepth[:, :, :3], extension=".png")
@@ -1399,13 +1399,13 @@ class SceneApi:
     def add_image(
         self,
         name: str,
-        image: onp.ndarray,
+        image: np.ndarray,
         render_width: float,
         render_height: float,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: int | None = None,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> ImageHandle:
         """Add a 2D image to the scene.
@@ -1458,8 +1458,8 @@ class SceneApi:
         ] = ((-1000.0, 1000.0), (-1000.0, 1000.0), (-1000.0, 1000.0)),
         depth_test: bool = True,
         opacity: float = 1.0,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> TransformControlsHandle:
         """Add a transform gizmo for interacting with the scene.
@@ -1565,8 +1565,8 @@ class SceneApi:
             return
 
         # Update state.
-        wxyz = onp.array(message.wxyz)
-        position = onp.array(message.position)
+        wxyz = np.array(message.wxyz)
+        position = np.array(message.position)
         with self._owner.atomic():
             handle._impl.wxyz = wxyz
             handle._impl.position = position
@@ -1714,8 +1714,8 @@ class SceneApi:
     def add_3d_gui_container(
         self,
         name: str,
-        wxyz: tuple[float, float, float, float] | onp.ndarray = (1.0, 0.0, 0.0, 0.0),
-        position: tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
     ) -> Gui3dContainerHandle:
         """Add a 3D gui container to the scene. The returned container handle can be

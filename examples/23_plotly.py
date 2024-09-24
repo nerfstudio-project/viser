@@ -4,7 +4,7 @@ Examples of visualizing plotly plots in Viser."""
 
 import time
 
-import numpy as onp
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from PIL import Image
@@ -14,8 +14,8 @@ import viser
 
 def create_sinusoidal_wave(t: float) -> go.Figure:
     """Create a sinusoidal wave plot, starting at time t."""
-    x_data = onp.linspace(t, t + 6 * onp.pi, 50)
-    y_data = onp.sin(x_data) * 10
+    x_data = np.linspace(t, t + 6 * np.pi, 50)
+    y_data = np.sin(x_data) * 10
 
     fig = px.line(
         x=list(x_data),

@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 
 import imageio.v3 as iio
-import numpy as onp
+import numpy as np
 
 import viser
 
@@ -37,12 +37,7 @@ def main() -> None:
     while True:
         server.scene.add_image(
             "/noise",
-            onp.random.randint(
-                0,
-                256,
-                size=(400, 400, 3),
-                dtype=onp.uint8,
-            ),
+            np.random.randint(0, 256, size=(400, 400, 3), dtype=np.uint8),
             4.0,
             4.0,
             format="jpeg",

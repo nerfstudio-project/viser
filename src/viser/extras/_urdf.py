@@ -4,7 +4,7 @@ from functools import partial
 from pathlib import Path
 from typing import List, Tuple
 
-import numpy as onp
+import numpy as np
 import trimesh
 import yourdfpy
 
@@ -103,7 +103,7 @@ class ViserUrdf:
         for mesh in self._meshes:
             mesh.remove()
 
-    def update_cfg(self, configuration: onp.ndarray) -> None:
+    def update_cfg(self, configuration: np.ndarray) -> None:
         """Update the joint angles of the visualized URDF."""
         self._urdf.update_cfg(configuration)
         with self._target.atomic():
@@ -126,7 +126,7 @@ class ViserUrdf:
             assert isinstance(joint_name, str)
             assert isinstance(joint, yourdfpy.Joint)
             if joint.limit is None:
-                out[joint_name] = (-onp.pi, onp.pi)
+                out[joint_name] = (-np.pi, np.pi)
             else:
                 out[joint_name] = (joint.limit.lower, joint.limit.upper)
         return out

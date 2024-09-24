@@ -1,18 +1,14 @@
 import * as React from "react";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViserInputComponent } from "./common";
-import { GuiAddDropdownMessage } from "../WebsocketMessages";
+import { GuiDropdownMessage } from "../WebsocketMessages";
 import { Select } from "@mantine/core";
 
 export default function DropdownComponent({
   id,
-  hint,
-  label,
   value,
-  disabled,
-  visible,
-  options,
-}: GuiAddDropdownMessage) {
+  props: { hint, label, disabled, visible, options },
+}: GuiDropdownMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (

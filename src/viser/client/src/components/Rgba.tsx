@@ -3,16 +3,13 @@ import { ColorInput } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { rgbaToHex, hexToRgba } from "./utils";
 import { ViserInputComponent } from "./common";
-import { GuiAddRgbaMessage } from "../WebsocketMessages";
+import { GuiRgbaMessage } from "../WebsocketMessages";
 
 export default function RgbaComponent({
   id,
-  label,
-  hint,
   value,
-  disabled,
-  visible,
-}: GuiAddRgbaMessage) {
+  props: { label, hint, disabled, visible },
+}: GuiRgbaMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (

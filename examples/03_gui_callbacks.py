@@ -5,7 +5,7 @@ we get updates."""
 
 import time
 
-import numpy as onp
+import numpy as np
 from typing_extensions import assert_never
 
 import viser
@@ -75,8 +75,8 @@ def main() -> None:
         num_points = gui_num_points.value
         server.scene.add_point_cloud(
             "/frame/point_cloud",
-            points=onp.random.normal(size=(num_points, 3)),
-            colors=onp.random.randint(0, 256, size=(num_points, 3)),
+            points=np.random.normal(size=(num_points, 3)),
+            colors=np.random.randint(0, 256, size=(num_points, 3)),
         )
 
     # We can (optionally) also attach callbacks!

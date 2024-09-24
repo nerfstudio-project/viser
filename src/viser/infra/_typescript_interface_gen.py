@@ -2,7 +2,7 @@ import dataclasses
 from collections import defaultdict
 from typing import Any, Type, Union, cast
 
-import numpy as onp
+import numpy as np
 from typing_extensions import (
     Annotated,
     Literal,
@@ -26,7 +26,7 @@ _raw_type_mapping = {
     int: "number",
     str: "string",
     # For numpy arrays, we directly serialize the underlying data buffer.
-    onp.ndarray: "Uint8Array",
+    np.ndarray: "Uint8Array",
     bytes: "Uint8Array",
     Any: "any",
     None: "null",
@@ -58,6 +58,10 @@ def _get_ts_type(typ: Type[Any]) -> str:
         args = get_args(typ)
         assert len(args) == 1
         return _get_ts_type(args[0]) + "[]"
+    elif origin_typ is dict:
+        args = get_args(typ)
+        assert len(args) == 2
+        return "{[key: " + _get_ts_type(args[0]) + "]: " + _get_ts_type(args[1]) + "}"
     elif origin_typ in (Literal, LiteralAlt):
         return " | ".join(
             map(
@@ -85,6 +89,8 @@ def _get_ts_type(typ: Type[Any]) -> str:
         return "{ [key: " + _get_ts_type(args[0]) + "]: " + _get_ts_type(args[1]) + " }"
     elif is_typeddict(typ) or dataclasses.is_dataclass(typ):
         hints = get_type_hints(typ)
+        if dataclasses.is_dataclass(typ):
+            hints = {field.name: hints[field.name] for field in dataclasses.fields(typ)}
         optional_keys = getattr(typ, "__optional_keys__", [])
 
         def fmt(key):

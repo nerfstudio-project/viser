@@ -543,357 +543,92 @@ export interface ResetSceneMessage {
 export interface ResetGuiMessage {
   type: "ResetGuiMessage";
 }
-/** GuiAddFolderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', expand_by_default: 'bool', visible: 'bool')
+/** GuiFolderMessage(id: 'str', container_id: 'str', props: 'GuiFolderProps')
  *
  * (automatically generated)
  */
-export interface GuiAddFolderMessage {
-  type: "GuiAddFolderMessage";
-  order: number;
+export interface GuiFolderMessage {
+  type: "GuiFolderMessage";
   id: string;
-  label: string;
   container_id: string;
-  expand_by_default: boolean;
-  visible: boolean;
+  props: {
+    order: number;
+    label: string;
+    visible: boolean;
+    expand_by_default: boolean;
+  };
 }
-/** GuiAddMarkdownMessage(order: 'float', id: 'str', markdown: 'str', container_id: 'str', visible: 'bool')
+/** GuiMarkdownMessage(id: 'str', container_id: 'str', props: 'GuiMarkdownProps')
  *
  * (automatically generated)
  */
-export interface GuiAddMarkdownMessage {
-  type: "GuiAddMarkdownMessage";
-  order: number;
+export interface GuiMarkdownMessage {
+  type: "GuiMarkdownMessage";
   id: string;
-  markdown: string;
   container_id: string;
-  visible: boolean;
+  props: { order: number; _markdown: string; visible: boolean };
 }
-/** GuiAddProgressBarMessage(order: 'float', id: 'str', value: 'float', animated: 'bool', color: 'Optional[Color]', container_id: 'str', visible: 'bool')
+/** GuiProgressBarMessage(value: 'float', id: 'str', container_id: 'str', props: 'GuiProgressBarProps')
  *
  * (automatically generated)
  */
-export interface GuiAddProgressBarMessage {
-  type: "GuiAddProgressBarMessage";
-  order: number;
-  id: string;
+export interface GuiProgressBarMessage {
+  type: "GuiProgressBarMessage";
   value: number;
-  animated: boolean;
-  color:
-    | "dark"
-    | "gray"
-    | "red"
-    | "pink"
-    | "grape"
-    | "violet"
-    | "indigo"
-    | "blue"
-    | "cyan"
-    | "green"
-    | "lime"
-    | "yellow"
-    | "orange"
-    | "teal"
-    | null;
+  id: string;
   container_id: string;
-  visible: boolean;
+  props: {
+    order: number;
+    animated: boolean;
+    color:
+      | "dark"
+      | "gray"
+      | "red"
+      | "pink"
+      | "grape"
+      | "violet"
+      | "indigo"
+      | "blue"
+      | "cyan"
+      | "green"
+      | "lime"
+      | "yellow"
+      | "orange"
+      | "teal"
+      | null;
+    visible: boolean;
+  };
 }
-/** GuiAddPlotlyMessage(order: 'float', id: 'str', plotly_json_str: 'str', aspect: 'float', container_id: 'str', visible: 'bool')
+/** GuiPlotlyMessage(id: 'str', container_id: 'str', props: 'GuiPlotlyProps')
  *
  * (automatically generated)
  */
-export interface GuiAddPlotlyMessage {
-  type: "GuiAddPlotlyMessage";
-  order: number;
+export interface GuiPlotlyMessage {
+  type: "GuiPlotlyMessage";
   id: string;
-  plotly_json_str: string;
-  aspect: number;
   container_id: string;
-  visible: boolean;
+  props: {
+    order: number;
+    _plotly_json_str: string;
+    aspect: number;
+    visible: boolean;
+  };
 }
-/** GuiAddTabGroupMessage(order: 'float', id: 'str', container_id: 'str', tab_labels: 'Tuple[str, ...]', tab_icons_html: 'Tuple[Union[str, None], ...]', tab_container_ids: 'Tuple[str, ...]', visible: 'bool')
+/** GuiTabGroupMessage(id: 'str', container_id: 'str', props: 'GuiTabGroupProps')
  *
  * (automatically generated)
  */
-export interface GuiAddTabGroupMessage {
-  type: "GuiAddTabGroupMessage";
-  order: number;
+export interface GuiTabGroupMessage {
+  type: "GuiTabGroupMessage";
   id: string;
   container_id: string;
-  tab_labels: string[];
-  tab_icons_html: (string | null)[];
-  tab_container_ids: string[];
-  visible: boolean;
-}
-/** Base message type containing fields commonly used by GUI inputs.
- *
- * (automatically generated)
- */
-export interface _GuiAddInputBase {
-  type: "_GuiAddInputBase";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: any;
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiAddButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool', color: 'Optional[Color]', icon_html: 'Optional[str]')
- *
- * (automatically generated)
- */
-export interface GuiAddButtonMessage {
-  type: "GuiAddButtonMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: boolean;
-  visible: boolean;
-  disabled: boolean;
-  color:
-    | "dark"
-    | "gray"
-    | "red"
-    | "pink"
-    | "grape"
-    | "violet"
-    | "indigo"
-    | "blue"
-    | "cyan"
-    | "green"
-    | "lime"
-    | "yellow"
-    | "orange"
-    | "teal"
-    | null;
-  icon_html: string | null;
-}
-/** GuiAddUploadButtonMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', color: 'Optional[Color]', icon_html: 'Optional[str]', mime_type: 'str')
- *
- * (automatically generated)
- */
-export interface GuiAddUploadButtonMessage {
-  type: "GuiAddUploadButtonMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: any;
-  visible: boolean;
-  disabled: boolean;
-  color:
-    | "dark"
-    | "gray"
-    | "red"
-    | "pink"
-    | "grape"
-    | "violet"
-    | "indigo"
-    | "blue"
-    | "cyan"
-    | "green"
-    | "lime"
-    | "yellow"
-    | "orange"
-    | "teal"
-    | null;
-  icon_html: string | null;
-  mime_type: string;
-}
-/** GuiAddSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'float', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
- *
- * (automatically generated)
- */
-export interface GuiAddSliderMessage {
-  type: "GuiAddSliderMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: number;
-  visible: boolean;
-  disabled: boolean;
-  min: number;
-  max: number;
-  step: number | null;
-  precision: number;
-  marks: { value: number; label: string | null }[] | null;
-}
-/** GuiAddMultiSliderMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Any', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
- *
- * (automatically generated)
- */
-export interface GuiAddMultiSliderMessage {
-  type: "GuiAddMultiSliderMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: any;
-  visible: boolean;
-  disabled: boolean;
-  min: number;
-  max: number;
-  step: number | null;
-  min_range: number | null;
-  precision: number;
-  fixed_endpoints: boolean;
-  marks: { value: number; label: string | null }[] | null;
-}
-/** GuiAddNumberMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'float', visible: 'bool', disabled: 'bool', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
- *
- * (automatically generated)
- */
-export interface GuiAddNumberMessage {
-  type: "GuiAddNumberMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: number;
-  visible: boolean;
-  disabled: boolean;
-  precision: number;
-  step: number;
-  min: number | null;
-  max: number | null;
-}
-/** GuiAddRgbMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Tuple[int, int, int]', visible: 'bool', disabled: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiAddRgbMessage {
-  type: "GuiAddRgbMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: [number, number, number];
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiAddRgbaMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Tuple[int, int, int, int]', visible: 'bool', disabled: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiAddRgbaMessage {
-  type: "GuiAddRgbaMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: [number, number, number, number];
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiAddCheckboxMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'bool', visible: 'bool', disabled: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiAddCheckboxMessage {
-  type: "GuiAddCheckboxMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: boolean;
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiAddVector2Message(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Tuple[float, float]', visible: 'bool', disabled: 'bool', min: 'Optional[Tuple[float, float]]', max: 'Optional[Tuple[float, float]]', step: 'float', precision: 'int')
- *
- * (automatically generated)
- */
-export interface GuiAddVector2Message {
-  type: "GuiAddVector2Message";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: [number, number];
-  visible: boolean;
-  disabled: boolean;
-  min: [number, number] | null;
-  max: [number, number] | null;
-  step: number;
-  precision: number;
-}
-/** GuiAddVector3Message(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'Tuple[float, float, float]', visible: 'bool', disabled: 'bool', min: 'Optional[Tuple[float, float, float]]', max: 'Optional[Tuple[float, float, float]]', step: 'float', precision: 'int')
- *
- * (automatically generated)
- */
-export interface GuiAddVector3Message {
-  type: "GuiAddVector3Message";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: [number, number, number];
-  visible: boolean;
-  disabled: boolean;
-  min: [number, number, number] | null;
-  max: [number, number, number] | null;
-  step: number;
-  precision: number;
-}
-/** GuiAddTextMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'str', visible: 'bool', disabled: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiAddTextMessage {
-  type: "GuiAddTextMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: string;
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiAddDropdownMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'str', visible: 'bool', disabled: 'bool', options: 'Tuple[str, ...]')
- *
- * (automatically generated)
- */
-export interface GuiAddDropdownMessage {
-  type: "GuiAddDropdownMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: string;
-  visible: boolean;
-  disabled: boolean;
-  options: string[];
-}
-/** GuiAddButtonGroupMessage(order: 'float', id: 'str', label: 'str', container_id: 'str', hint: 'Optional[str]', value: 'str', visible: 'bool', disabled: 'bool', options: 'Tuple[str, ...]')
- *
- * (automatically generated)
- */
-export interface GuiAddButtonGroupMessage {
-  type: "GuiAddButtonGroupMessage";
-  order: number;
-  id: string;
-  label: string;
-  container_id: string;
-  hint: string | null;
-  value: string;
-  visible: boolean;
-  disabled: boolean;
-  options: string[];
+  props: {
+    _tab_labels: string[];
+    _tab_icons_html: (string | null)[];
+    _tab_container_ids: string[];
+    order: number;
+    visible: boolean;
+  };
 }
 /** GuiModalMessage(order: 'float', id: 'str', title: 'str')
  *
@@ -913,6 +648,287 @@ export interface GuiCloseModalMessage {
   type: "GuiCloseModalMessage";
   id: string;
 }
+/** GuiButtonMessage(value: 'bool', id: 'str', container_id: 'str', props: 'GuiButtonProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiButtonMessage {
+  type: "GuiButtonMessage";
+  value: boolean;
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+    color:
+      | "dark"
+      | "gray"
+      | "red"
+      | "pink"
+      | "grape"
+      | "violet"
+      | "indigo"
+      | "blue"
+      | "cyan"
+      | "green"
+      | "lime"
+      | "yellow"
+      | "orange"
+      | "teal"
+      | null;
+    _icon_html: string | null;
+  };
+}
+/** GuiUploadButtonMessage(id: 'str', container_id: 'str', props: 'GuiUploadButtonProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiUploadButtonMessage {
+  type: "GuiUploadButtonMessage";
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+    color:
+      | "dark"
+      | "gray"
+      | "red"
+      | "pink"
+      | "grape"
+      | "violet"
+      | "indigo"
+      | "blue"
+      | "cyan"
+      | "green"
+      | "lime"
+      | "yellow"
+      | "orange"
+      | "teal"
+      | null;
+    _icon_html: string | null;
+    mime_type: string;
+  };
+}
+/** GuiSliderMessage(value: 'float', id: 'str', container_id: 'str', props: 'GuiSliderProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiSliderMessage {
+  type: "GuiSliderMessage";
+  value: number;
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+    min: number;
+    max: number;
+    step: number;
+    precision: number;
+    _marks: { value: number; label: string | null }[] | null;
+  };
+}
+/** GuiMultiSliderMessage(value: 'tuple[float, ...]', id: 'str', container_id: 'str', props: 'GuiMultiSliderProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiMultiSliderMessage {
+  type: "GuiMultiSliderMessage";
+  value: number[];
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+    min: number;
+    max: number;
+    step: number;
+    min_range: number | null;
+    precision: number;
+    fixed_endpoints: boolean;
+    _marks: { value: number; label: string | null }[] | null;
+  };
+}
+/** GuiNumberMessage(value: 'float', id: 'str', container_id: 'str', props: 'GuiNumberProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiNumberMessage {
+  type: "GuiNumberMessage";
+  value: number;
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+    precision: number;
+    step: number;
+    min: number | null;
+    max: number | null;
+  };
+}
+/** GuiRgbMessage(value: 'Tuple[int, int, int]', id: 'str', container_id: 'str', props: 'GuiRgbProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiRgbMessage {
+  type: "GuiRgbMessage";
+  value: [number, number, number];
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+  };
+}
+/** GuiRgbaMessage(value: 'Tuple[int, int, int, int]', id: 'str', container_id: 'str', props: 'GuiRgbaProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiRgbaMessage {
+  type: "GuiRgbaMessage";
+  value: [number, number, number, number];
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+  };
+}
+/** GuiCheckboxMessage(value: 'bool', id: 'str', container_id: 'str', props: 'GuiCheckboxProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiCheckboxMessage {
+  type: "GuiCheckboxMessage";
+  value: boolean;
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+  };
+}
+/** GuiVector2Message(value: 'Tuple[float, float]', id: 'str', container_id: 'str', props: 'GuiVector2Props')
+ *
+ * (automatically generated)
+ */
+export interface GuiVector2Message {
+  type: "GuiVector2Message";
+  value: [number, number];
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+    min: [number, number] | null;
+    max: [number, number] | null;
+    step: number;
+    precision: number;
+  };
+}
+/** GuiVector3Message(value: 'Tuple[float, float, float]', id: 'str', container_id: 'str', props: 'GuiVector3Props')
+ *
+ * (automatically generated)
+ */
+export interface GuiVector3Message {
+  type: "GuiVector3Message";
+  value: [number, number, number];
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+    min: [number, number, number] | null;
+    max: [number, number, number] | null;
+    step: number;
+    precision: number;
+  };
+}
+/** GuiTextMessage(value: 'str', id: 'str', container_id: 'str', props: 'GuiTextProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiTextMessage {
+  type: "GuiTextMessage";
+  value: string;
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+  };
+}
+/** GuiDropdownMessage(value: 'str', id: 'str', container_id: 'str', props: 'GuiDropdownProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiDropdownMessage {
+  type: "GuiDropdownMessage";
+  value: string;
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+    options: string[];
+  };
+}
+/** GuiButtonGroupMessage(value: 'str', id: 'str', container_id: 'str', props: 'GuiButtonGroupProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiButtonGroupMessage {
+  type: "GuiButtonGroupMessage";
+  value: string;
+  id: string;
+  container_id: string;
+  props: {
+    order: number;
+    label: string;
+    hint: string | null;
+    visible: boolean;
+    disabled: boolean;
+    options: string[];
+  };
+}
 /** Sent server->client to remove a GUI element.
  *
  * (automatically generated)
@@ -928,7 +944,7 @@ export interface GuiRemoveMessage {
 export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
   id: string;
-  updates: Partial<GuiAddComponentMessage>;
+  updates: { [key: string]: any };
 }
 /** Sent client<->server when any property of a scene node is changed.
  *
@@ -1149,27 +1165,26 @@ export type Message =
   | SceneNodeClickMessage
   | ResetSceneMessage
   | ResetGuiMessage
-  | GuiAddFolderMessage
-  | GuiAddMarkdownMessage
-  | GuiAddProgressBarMessage
-  | GuiAddPlotlyMessage
-  | GuiAddTabGroupMessage
-  | _GuiAddInputBase
-  | GuiAddButtonMessage
-  | GuiAddUploadButtonMessage
-  | GuiAddSliderMessage
-  | GuiAddMultiSliderMessage
-  | GuiAddNumberMessage
-  | GuiAddRgbMessage
-  | GuiAddRgbaMessage
-  | GuiAddCheckboxMessage
-  | GuiAddVector2Message
-  | GuiAddVector3Message
-  | GuiAddTextMessage
-  | GuiAddDropdownMessage
-  | GuiAddButtonGroupMessage
+  | GuiFolderMessage
+  | GuiMarkdownMessage
+  | GuiProgressBarMessage
+  | GuiPlotlyMessage
+  | GuiTabGroupMessage
   | GuiModalMessage
   | GuiCloseModalMessage
+  | GuiButtonMessage
+  | GuiUploadButtonMessage
+  | GuiSliderMessage
+  | GuiMultiSliderMessage
+  | GuiNumberMessage
+  | GuiRgbMessage
+  | GuiRgbaMessage
+  | GuiCheckboxMessage
+  | GuiVector2Message
+  | GuiVector3Message
+  | GuiTextMessage
+  | GuiDropdownMessage
+  | GuiButtonGroupMessage
   | GuiRemoveMessage
   | GuiUpdateMessage
   | SceneNodeUpdateMessage
@@ -1208,25 +1223,25 @@ export type SceneNodeMessage =
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
   | GaussianSplatsMessage;
-export type GuiAddComponentMessage =
-  | GuiAddFolderMessage
-  | GuiAddMarkdownMessage
-  | GuiAddProgressBarMessage
-  | GuiAddPlotlyMessage
-  | GuiAddTabGroupMessage
-  | GuiAddButtonMessage
-  | GuiAddUploadButtonMessage
-  | GuiAddSliderMessage
-  | GuiAddMultiSliderMessage
-  | GuiAddNumberMessage
-  | GuiAddRgbMessage
-  | GuiAddRgbaMessage
-  | GuiAddCheckboxMessage
-  | GuiAddVector2Message
-  | GuiAddVector3Message
-  | GuiAddTextMessage
-  | GuiAddDropdownMessage
-  | GuiAddButtonGroupMessage;
+export type GuiComponentMessage =
+  | GuiFolderMessage
+  | GuiMarkdownMessage
+  | GuiProgressBarMessage
+  | GuiPlotlyMessage
+  | GuiTabGroupMessage
+  | GuiButtonMessage
+  | GuiUploadButtonMessage
+  | GuiSliderMessage
+  | GuiMultiSliderMessage
+  | GuiNumberMessage
+  | GuiRgbMessage
+  | GuiRgbaMessage
+  | GuiCheckboxMessage
+  | GuiVector2Message
+  | GuiVector3Message
+  | GuiTextMessage
+  | GuiDropdownMessage
+  | GuiButtonGroupMessage;
 const typeSetSceneNodeMessage = new Set([
   "CameraFrustumMessage",
   "GlbMessage",
@@ -1255,28 +1270,28 @@ export function isSceneNodeMessage(
 ): message is SceneNodeMessage {
   return typeSetSceneNodeMessage.has(message.type);
 }
-const typeSetGuiAddComponentMessage = new Set([
-  "GuiAddFolderMessage",
-  "GuiAddMarkdownMessage",
-  "GuiAddProgressBarMessage",
-  "GuiAddPlotlyMessage",
-  "GuiAddTabGroupMessage",
-  "GuiAddButtonMessage",
-  "GuiAddUploadButtonMessage",
-  "GuiAddSliderMessage",
-  "GuiAddMultiSliderMessage",
-  "GuiAddNumberMessage",
-  "GuiAddRgbMessage",
-  "GuiAddRgbaMessage",
-  "GuiAddCheckboxMessage",
-  "GuiAddVector2Message",
-  "GuiAddVector3Message",
-  "GuiAddTextMessage",
-  "GuiAddDropdownMessage",
-  "GuiAddButtonGroupMessage",
+const typeSetGuiComponentMessage = new Set([
+  "GuiFolderMessage",
+  "GuiMarkdownMessage",
+  "GuiProgressBarMessage",
+  "GuiPlotlyMessage",
+  "GuiTabGroupMessage",
+  "GuiButtonMessage",
+  "GuiUploadButtonMessage",
+  "GuiSliderMessage",
+  "GuiMultiSliderMessage",
+  "GuiNumberMessage",
+  "GuiRgbMessage",
+  "GuiRgbaMessage",
+  "GuiCheckboxMessage",
+  "GuiVector2Message",
+  "GuiVector3Message",
+  "GuiTextMessage",
+  "GuiDropdownMessage",
+  "GuiButtonGroupMessage",
 ]);
-export function isGuiAddComponentMessage(
+export function isGuiComponentMessage(
   message: Message,
-): message is GuiAddComponentMessage {
-  return typeSetGuiAddComponentMessage.has(message.type);
+): message is GuiComponentMessage {
+  return typeSetGuiComponentMessage.has(message.type);
 }

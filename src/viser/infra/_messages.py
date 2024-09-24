@@ -10,7 +10,7 @@ import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast
 
 import msgspec
-import numpy as onp
+import numpy as np
 from typing_extensions import get_args, get_origin, get_type_hints
 
 if TYPE_CHECKING:
@@ -51,10 +51,10 @@ def _prepare_for_serialization(value: Any, annotation: object) -> Any:
         annotation = type(value)
 
     # Coerce some scalar types: if we've annotated as float / int but we get an
-    # onp.float32 / onp.int64, for example, we should cast automatically.
-    if annotation is float or isinstance(value, onp.floating):
+    # np.float32 / np.int64, for example, we should cast automatically.
+    if annotation is float or isinstance(value, np.floating):
         return float(value)
-    if annotation is int or isinstance(value, onp.integer):
+    if annotation is int or isinstance(value, np.integer):
         return int(value)
 
     if dataclasses.is_dataclass(annotation):
@@ -62,7 +62,7 @@ def _prepare_for_serialization(value: Any, annotation: object) -> Any:
 
     # Recursively handle tuples.
     if isinstance(value, tuple):
-        if isinstance(value, onp.ndarray):
+        if isinstance(value, np.ndarray):
             assert False, (
                 "Expected a tuple, but got an array... missing a cast somewhere?"
                 f" {value}"
@@ -89,7 +89,7 @@ def _prepare_for_serialization(value: Any, annotation: object) -> Any:
 
     # For arrays, we serialize underlying data directly. The client is responsible for
     # reading using the correct dtype.
-    if isinstance(value, onp.ndarray):
+    if isinstance(value, np.ndarray):
         return value.data if value.data.c_contiguous else value.copy().data
 
     if isinstance(value, dict):

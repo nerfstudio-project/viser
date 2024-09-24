@@ -1,5 +1,5 @@
 import React from "react";
-import { GuiAddMultiSliderMessage } from "../WebsocketMessages";
+import { GuiMultiSliderMessage } from "../WebsocketMessages";
 import { Box, useMantineColorScheme } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { ViserInputComponent } from "./common";
@@ -8,18 +8,24 @@ import { sliderDefaultMarks } from "./ComponentStyles.css";
 
 export default function MultiSliderComponent({
   id,
-  label,
-  hint,
-  visible,
-  disabled,
   value,
-  ...otherProps
-}: GuiAddMultiSliderMessage) {
+  props: {
+    label,
+    hint,
+    visible,
+    disabled,
+    min,
+    max,
+    precision,
+    step,
+    _marks: marks,
+    fixed_endpoints,
+    min_range,
+  },
+}: GuiMultiSliderMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   const updateValue = (value: number[]) => setValue(id, value);
-  const { min, max, precision, step, marks, fixed_endpoints, min_range } =
-    otherProps;
   const colorScheme = useMantineColorScheme().colorScheme;
   const input = (
     <Box mt="0.2em" mb="0.4em">

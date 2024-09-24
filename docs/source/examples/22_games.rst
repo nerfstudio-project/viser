@@ -16,7 +16,7 @@ Some two-player games implemented using scene click events.
         import time
         from typing import Literal
 
-        import numpy as onp
+        import numpy as np
         import trimesh.creation
         from typing_extensions import assert_never
 
@@ -53,7 +53,7 @@ Some two-player games implemented using scene click events.
                         f"/structure/{row}_{col}",
                         trimesh.creation.annulus(0.45, 0.55, 0.125),
                         position=(0.0, col, row),
-                        wxyz=tf.SO3.from_y_radians(onp.pi / 2.0).wxyz,
+                        wxyz=tf.SO3.from_y_radians(np.pi / 2.0).wxyz,
                     )
 
             # Create a sphere to click on for each column.
@@ -81,10 +81,10 @@ Some two-player games implemented using scene click events.
                         f"/game_pieces/{row}_{col}",
                         cylinder.vertices,
                         cylinder.faces,
-                        wxyz=tf.SO3.from_y_radians(onp.pi / 2.0).wxyz,
+                        wxyz=tf.SO3.from_y_radians(np.pi / 2.0).wxyz,
                         color={"red": (255, 0, 0), "yellow": (255, 255, 0)}[whose_turn],
                     )
-                    for row_anim in onp.linspace(num_rows - 1, row, num_rows - row + 1):
+                    for row_anim in np.linspace(num_rows - 1, row, num_rows - row + 1):
                         piece.position = (
                             0,
                             col,
@@ -108,12 +108,12 @@ Some two-player games implemented using scene click events.
                     ((-0.5, -1.5, 0), (-0.5, 1.5, 0)),
                     color=(127, 127, 127),
                     position=(1, 1, 0),
-                    wxyz=tf.SO3.from_z_radians(onp.pi / 2 * i).wxyz,
+                    wxyz=tf.SO3.from_z_radians(np.pi / 2 * i).wxyz,
                 )
 
             def draw_symbol(symbol: Literal["x", "o"], i: int, j: int) -> None:
                 """Draw an X or O in the given cell."""
-                for scale in onp.linspace(0.01, 1.0, 5):
+                for scale in np.linspace(0.01, 1.0, 5):
                     if symbol == "x":
                         for k in range(2):
                             server.scene.add_box(
@@ -121,9 +121,7 @@ Some two-player games implemented using scene click events.
                                 dimensions=(0.7 * scale, 0.125 * scale, 0.125),
                                 position=(i, j, 0),
                                 color=(0, 0, 255),
-                                wxyz=tf.SO3.from_z_radians(
-                                    onp.pi / 2.0 * k + onp.pi / 4.0
-                                ).wxyz,
+                                wxyz=tf.SO3.from_z_radians(np.pi / 2.0 * k + np.pi / 4.0).wxyz,
                             )
                     elif symbol == "o":
                         mesh = trimesh.creation.annulus(0.25 * scale, 0.35 * scale, 0.125)

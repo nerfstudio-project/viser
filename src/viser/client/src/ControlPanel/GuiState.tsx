@@ -1,14 +1,16 @@
-import * as Messages from "../WebsocketMessages";
 import React from "react";
 import { create } from "zustand";
 import { ColorTranslator } from "colortranslator";
 
 import { immer } from "zustand/middleware/immer";
-
-export type GuiConfig = Messages.GuiAddComponentMessage;
+import {
+  GuiComponentMessage,
+  GuiModalMessage,
+  ThemeConfigurationMessage,
+} from "../WebsocketMessages";
 
 interface GuiState {
-  theme: Messages.ThemeConfigurationMessage;
+  theme: ThemeConfigurationMessage;
   label: string;
   server: string;
   shareUrl: string | null;
@@ -17,9 +19,9 @@ interface GuiState {
   guiIdSetFromContainerId: {
     [containerId: string]: { [id: string]: true } | undefined;
   };
-  modals: Messages.GuiModalMessage[];
+  modals: GuiModalMessage[];
   guiOrderFromId: { [id: string]: number };
-  guiConfigFromId: { [id: string]: GuiConfig };
+  guiConfigFromId: { [id: string]: GuiComponentMessage };
   uploadsInProgress: {
     [id: string]: {
       notificationId: string;
@@ -31,10 +33,10 @@ interface GuiState {
 }
 
 interface GuiActions {
-  setTheme: (theme: Messages.ThemeConfigurationMessage) => void;
+  setTheme: (theme: ThemeConfigurationMessage) => void;
   setShareUrl: (share_url: string | null) => void;
-  addGui: (config: GuiConfig) => void;
-  addModal: (config: Messages.GuiModalMessage) => void;
+  addGui: (config: GuiComponentMessage) => void;
+  addModal: (config: GuiModalMessage) => void;
   removeModal: (id: string) => void;
   updateGuiProps: (id: string, updates: { [key: string]: any }) => void;
   removeGui: (id: string) => void;
@@ -98,7 +100,7 @@ export function useGuiState(initialServer: string) {
           }),
         addGui: (guiConfig) =>
           set((state) => {
-            state.guiOrderFromId[guiConfig.id] = guiConfig.order;
+            state.guiOrderFromId[guiConfig.id] = guiConfig.props.order;
             state.guiConfigFromId[guiConfig.id] = guiConfig;
             if (!(guiConfig.container_id in state.guiIdSetFromContainerId)) {
               state.guiIdSetFromContainerId[guiConfig.container_id] = {};
@@ -160,18 +162,21 @@ export function useGuiState(initialServer: string) {
               return;
             }
 
-            // Double-check that key exists.
-            Object.keys(updates).forEach((key) => {
-              if (!(key in config))
+            // Iterate over key/value pairs.
+            for (const [key, value] of Object.entries(updates)) {
+              // We don't put `value` in the props object to make types
+              // stronger in the user-facing Python API. This results in some
+              // nastiness here, we should revisit...
+              if (key === "value") {
+                (state.guiConfigFromId[id] as any).value = value;
+              } else if (!(key in config.props)) {
                 console.error(
                   `Tried to update nonexistent property '${key}' of GUI element ${id}!`,
                 );
-            });
-
-            state.guiConfigFromId[id] = {
-              ...config,
-              ...updates,
-            } as GuiConfig;
+              } else {
+                (state.guiConfigFromId[id].props as any)[key] = value;
+              }
+            }
           });
         },
       })),

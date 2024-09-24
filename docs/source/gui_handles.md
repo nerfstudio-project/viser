@@ -20,4 +20,26 @@
 
 .. autoclass:: viser.GuiTabHandle()
 
+.. autoclass:: viser.GuiCheckboxHandle()
+
+.. autoclass:: viser.GuiMultiSliderHandle()
+
+.. autoclass:: viser.GuiNumberHandle()
+
+.. autoclass:: viser.GuiRgbaHandle()
+
+.. autoclass:: viser.GuiRgbHandle()
+
+.. autoclass:: viser.GuiSliderHandle()
+
+.. autoclass:: viser.GuiTextHandle()
+
+.. autoclass:: viser.GuiUploadButtonHandle()
+
+.. autoclass:: viser.UploadedFile()
+
+.. autoclass:: viser.GuiVector2Handle()
+
+.. autoclass:: viser.GuiVector3Handle()
+
 <!-- prettier-ignore-end -->

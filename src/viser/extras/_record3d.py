@@ -8,8 +8,7 @@ from typing import Tuple, cast
 import imageio.v3 as iio
 import liblzfse
 import numpy as np
-import numpy as onp
-import numpy.typing as onpt
+import numpy.typing as npt
 import skimage.transform
 from scipy.spatial.transform import Rotation
 
@@ -26,10 +25,10 @@ class Record3dLoader:
         # Read metadata.
         metadata = json.loads(metadata_path.read_text())
 
-        K: onp.ndarray = np.array(metadata["K"], np.float32).reshape(3, 3).T
+        K: np.ndarray = np.array(metadata["K"], np.float32).reshape(3, 3).T
         fps = metadata["fps"]
 
-        T_world_cameras: onp.ndarray = np.array(metadata["poses"], np.float32)
+        T_world_cameras: np.ndarray = np.array(metadata["poses"], np.float32)
         T_world_cameras = np.concatenate(
             [
                 Rotation.from_quat(T_world_cameras[:, :4]).as_matrix(),
@@ -55,7 +54,7 @@ class Record3dLoader:
 
     def get_frame(self, index: int) -> Record3dFrame:
         # Read conf.
-        conf: onp.ndarray = np.frombuffer(
+        conf: np.ndarray = np.frombuffer(
             liblzfse.decompress(self.conf_paths[index].read_bytes()), dtype=np.uint8
         )
         if conf.shape[0] == 640 * 480:
@@ -66,7 +65,7 @@ class Record3dLoader:
             assert False, f"Unexpected conf shape {conf.shape}"
 
         # Read depth.
-        depth: onp.ndarray = np.frombuffer(
+        depth: np.ndarray = np.frombuffer(
             liblzfse.decompress(self.depth_paths[index].read_bytes()), dtype=np.float32
         ).copy()
         if depth.shape[0] == 640 * 480:
@@ -91,19 +90,19 @@ class Record3dLoader:
 class Record3dFrame:
     """A single frame from a Record3D capture."""
 
-    K: onpt.NDArray[onp.float32]
-    rgb: onpt.NDArray[onp.uint8]
-    depth: onpt.NDArray[onp.float32]
-    mask: onpt.NDArray[onp.bool_]
-    T_world_camera: onpt.NDArray[onp.float32]
+    K: npt.NDArray[np.float32]
+    rgb: npt.NDArray[np.uint8]
+    depth: npt.NDArray[np.float32]
+    mask: npt.NDArray[np.bool_]
+    T_world_camera: npt.NDArray[np.float32]
 
     def get_point_cloud(
         self, downsample_factor: int = 1
-    ) -> Tuple[onpt.NDArray[onp.float32], onpt.NDArray[onp.uint8]]:
+    ) -> Tuple[npt.NDArray[np.float32], npt.NDArray[np.uint8]]:
         rgb = self.rgb[::downsample_factor, ::downsample_factor]
         depth = skimage.transform.resize(self.depth, rgb.shape[:2], order=0)
         mask = cast(
-            onpt.NDArray[onp.bool_],
+            npt.NDArray[np.bool_],
             skimage.transform.resize(self.mask, rgb.shape[:2], order=0),
         )
         assert depth.shape == rgb.shape[:2]

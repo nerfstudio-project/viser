@@ -1,4 +1,4 @@
-import { GuiAddButtonMessage } from "../WebsocketMessages";
+import { GuiButtonMessage } from "../WebsocketMessages";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { Box } from "@mantine/core";
 
@@ -8,13 +8,9 @@ import { htmlIconWrapper } from "./ComponentStyles.css";
 
 export default function ButtonComponent({
   id,
-  visible,
-  disabled,
-  label,
-  ...otherProps
-}: GuiAddButtonMessage) {
+  props: { visible, disabled, label, color, _icon_html: icon_html },
+}: GuiButtonMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
-  const { color, icon_html } = otherProps;
   if (!(visible ?? true)) return <></>;
 
   return (

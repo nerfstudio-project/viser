@@ -86,41 +86,41 @@ function GeneratedInput(props: { guiId: string }) {
   const viewer = React.useContext(ViewerContext)!;
   const conf = viewer.useGui((state) => state.guiConfigFromId[props.guiId]);
   switch (conf.type) {
-    case "GuiAddFolderMessage":
+    case "GuiFolderMessage":
       return <FolderComponent {...conf} />;
-    case "GuiAddTabGroupMessage":
+    case "GuiTabGroupMessage":
       return <TabGroupComponent {...conf} />;
-    case "GuiAddMarkdownMessage":
+    case "GuiMarkdownMessage":
       return <MarkdownComponent {...conf} />;
-    case "GuiAddPlotlyMessage":
+    case "GuiPlotlyMessage":
       return <PlotlyComponent {...conf} />;
-    case "GuiAddButtonMessage":
+    case "GuiButtonMessage":
       return <ButtonComponent {...conf} />;
-    case "GuiAddUploadButtonMessage":
+    case "GuiUploadButtonMessage":
       return <UploadButtonComponent {...conf} />;
-    case "GuiAddSliderMessage":
+    case "GuiSliderMessage":
       return <SliderComponent {...conf} />;
-    case "GuiAddMultiSliderMessage":
+    case "GuiMultiSliderMessage":
       return <MultiSliderComponent {...conf} />;
-    case "GuiAddNumberMessage":
+    case "GuiNumberMessage":
       return <NumberInputComponent {...conf} />;
-    case "GuiAddTextMessage":
+    case "GuiTextMessage":
       return <TextInputComponent {...conf} />;
-    case "GuiAddCheckboxMessage":
+    case "GuiCheckboxMessage":
       return <CheckboxComponent {...conf} />;
-    case "GuiAddVector2Message":
+    case "GuiVector2Message":
       return <Vector2Component {...conf} />;
-    case "GuiAddVector3Message":
+    case "GuiVector3Message":
       return <Vector3Component {...conf} />;
-    case "GuiAddDropdownMessage":
+    case "GuiDropdownMessage":
       return <DropdownComponent {...conf} />;
-    case "GuiAddRgbMessage":
+    case "GuiRgbMessage":
       return <RgbComponent {...conf} />;
-    case "GuiAddRgbaMessage":
+    case "GuiRgbaMessage":
       return <RgbaComponent {...conf} />;
-    case "GuiAddButtonGroupMessage":
+    case "GuiButtonGroupMessage":
       return <ButtonGroupComponent {...conf} />;
-    case "GuiAddProgressBarMessage":
+    case "GuiProgressBarMessage":
       return <ProgressBarComponent {...conf} />;
     default:
       assertNeverType(conf);

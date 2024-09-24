@@ -5,7 +5,7 @@ https://proofwiki.org/wiki/Definition:Group_Axioms
 
 from typing import Tuple, Type
 
-import numpy as onp
+import numpy as np
 import numpy.typing as onpt
 from utils import (
     assert_arrays_close,
@@ -46,11 +46,11 @@ def test_identity(
     assert_transforms_close(transform, transform @ identity)
     assert_arrays_close(
         transform.as_matrix(),
-        onp.einsum("...ij,...jk->...ik", identity.as_matrix(), transform.as_matrix()),
+        np.einsum("...ij,...jk->...ik", identity.as_matrix(), transform.as_matrix()),
     )
     assert_arrays_close(
         transform.as_matrix(),
-        onp.einsum("...ij,...jk->...ik", transform.as_matrix(), identity.as_matrix()),
+        np.einsum("...ij,...jk->...ik", transform.as_matrix(), identity.as_matrix()),
     )
 
 
@@ -66,22 +66,22 @@ def test_inverse(
     assert_transforms_close(identity, Group.multiply(transform, transform.inverse()))
     assert_transforms_close(identity, Group.multiply(transform.inverse(), transform))
     assert_arrays_close(
-        onp.broadcast_to(
-            onp.eye(Group.matrix_dim, dtype=dtype),
+        np.broadcast_to(
+            np.eye(Group.matrix_dim, dtype=dtype),
             (*batch_axes, Group.matrix_dim, Group.matrix_dim),
         ),
-        onp.einsum(
+        np.einsum(
             "...ij,...jk->...ik",
             transform.as_matrix(),
             transform.inverse().as_matrix(),
         ),
     )
     assert_arrays_close(
-        onp.broadcast_to(
-            onp.eye(Group.matrix_dim, dtype=dtype),
+        np.broadcast_to(
+            np.eye(Group.matrix_dim, dtype=dtype),
             (*batch_axes, Group.matrix_dim, Group.matrix_dim),
         ),
-        onp.einsum(
+        np.einsum(
             "...ij,...jk->...ik",
             transform.inverse().as_matrix(),
             transform.as_matrix(),
