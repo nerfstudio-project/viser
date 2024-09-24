@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import List
 
 import imageio.v3 as iio
-import numpy as onp
+import numpy as np
 import tyro
 from tqdm.auto import tqdm
 
@@ -50,7 +50,7 @@ def main(
     def _(event: viser.GuiEvent) -> None:
         client = event.client
         assert client is not None
-        client.camera.up_direction = tf.SO3(client.camera.wxyz) @ onp.array(
+        client.camera.up_direction = tf.SO3(client.camera.wxyz) @ np.array(
             [0.0, -1.0, 0.0]
         )
 
@@ -72,10 +72,10 @@ def main(
         "Point size", min=0.01, max=0.1, step=0.001, initial_value=0.05
     )
 
-    points = onp.array([points3d[p_id].xyz for p_id in points3d])
-    colors = onp.array([points3d[p_id].rgb for p_id in points3d])
+    points = np.array([points3d[p_id].xyz for p_id in points3d])
+    colors = np.array([points3d[p_id].rgb for p_id in points3d])
 
-    point_mask = onp.random.choice(points.shape[0], gui_points.value, replace=False)
+    point_mask = np.random.choice(points.shape[0], gui_points.value, replace=False)
     point_cloud = server.scene.add_point_cloud(
         name="/colmap/pcd",
         points=points[point_mask],
@@ -138,7 +138,7 @@ def main(
             image = image[::downsample_factor, ::downsample_factor]
             frustum = server.scene.add_camera_frustum(
                 f"/colmap/frame_{img_id}/frustum",
-                fov=2 * onp.arctan2(H / 2, fy),
+                fov=2 * np.arctan2(H / 2, fy),
                 aspect=W / H,
                 scale=0.15,
                 image=image,
@@ -149,7 +149,7 @@ def main(
 
     @gui_points.on_update
     def _(_) -> None:
-        point_mask = onp.random.choice(points.shape[0], gui_points.value, replace=False)
+        point_mask = np.random.choice(points.shape[0], gui_points.value, replace=False)
         point_cloud.points = points[point_mask]
         point_cloud.colors = colors[point_mask]
 

@@ -6,7 +6,7 @@ be useful when we want a 2D image to occlude 3D geometry, such as for NeRF rende
 
 import time
 
-import numpy as onp
+import numpy as np
 import trimesh
 import trimesh.creation
 
@@ -15,8 +15,8 @@ import viser
 server = viser.ViserServer()
 
 
-img = onp.random.randint(0, 255, size=(1000, 1000, 3), dtype=onp.uint8)
-depth = onp.ones((1000, 1000, 1), dtype=onp.float32)
+img = np.random.randint(0, 255, size=(1000, 1000, 3), dtype=np.uint8)
+depth = np.ones((1000, 1000, 1), dtype=np.float32)
 
 # Make a square middle portal.
 depth[250:750, 250:750, :] = 10.0

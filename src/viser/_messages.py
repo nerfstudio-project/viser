@@ -7,8 +7,8 @@ import dataclasses
 import uuid
 from typing import Any, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
 
-import numpy as onp
-import numpy.typing as onpt
+import numpy as np
+import numpy.typing as npt
 from typing_extensions import Literal, override
 
 from . import infra, theme
@@ -242,9 +242,9 @@ class BatchedAxesMessage(Message, tag="SceneNodeMessage"):
 
 @dataclasses.dataclass
 class BatchedAxesProps:
-    wxyzs_batched: onpt.NDArray[onp.float32]
+    wxyzs_batched: npt.NDArray[np.float32]
     """Float array of shape (N,4) representing quaternion rotations. Synchronized automatically when assigned."""
-    positions_batched: onpt.NDArray[onp.float32]
+    positions_batched: npt.NDArray[np.float32]
     """Float array of shape (N,3) representing positions. Synchronized automatically when assigned."""
     axes_length: float
     """Length of each axis. Synchronized automatically when assigned."""
@@ -331,9 +331,9 @@ class PointCloudMessage(Message, tag="SceneNodeMessage"):
 
 @dataclasses.dataclass
 class PointCloudProps:
-    points: onpt.NDArray[onp.float32]
+    points: npt.NDArray[np.float32]
     """Location of points. Should have shape (N, 3). Synchronized automatically when assigned."""
-    colors: onpt.NDArray[onp.uint8]
+    colors: npt.NDArray[np.uint8]
     """Colors of points. Should have shape (N, 3) or (3,). Synchronized automatically when assigned."""
     point_size: float
     """Size of each point. Synchronized automatically when assigned."""
@@ -346,8 +346,8 @@ class PointCloudProps:
         assert self.points.shape[-1] == 3
 
         # Check dtypes.
-        assert self.points.dtype == onp.float32
-        assert self.colors.dtype == onp.uint8
+        assert self.points.dtype == np.float32
+        assert self.colors.dtype == np.uint8
 
 
 @dataclasses.dataclass
@@ -465,7 +465,7 @@ class SpotLightProps:
     """Decay of the spot light. Synchronized automatically when assigned."""
 
     def __post_init__(self):
-        assert self.angle <= onp.pi / 2
+        assert self.angle <= np.pi / 2
         assert self.angle >= 0
 
 
@@ -514,13 +514,13 @@ class MeshMessage(Message, tag="SceneNodeMessage"):
 
 @dataclasses.dataclass
 class MeshProps:
-    vertices: onpt.NDArray[onp.float32]
+    vertices: npt.NDArray[np.float32]
     """A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned."""
-    faces: onpt.NDArray[onp.uint32]
+    faces: npt.NDArray[np.uint32]
     """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned."""
     color: Optional[Tuple[int, int, int]]
     """Color of the mesh as RGB integers. Synchronized automatically when assigned."""
-    vertex_colors: Optional[onpt.NDArray[onp.uint8]]
+    vertex_colors: Optional[npt.NDArray[np.uint8]]
     """Optional array of vertex colors. Synchronized automatically when assigned."""
     wireframe: bool
     """Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned."""
@@ -557,9 +557,9 @@ class SkinnedMeshProps(MeshProps):
     """Tuple of quaternions representing bone orientations. Synchronized automatically when assigned."""
     bone_positions: Tuple[Tuple[float, float, float], ...]
     """Tuple of positions representing bone positions. Synchronized automatically when assigned."""
-    skin_indices: onpt.NDArray[onp.uint16]
+    skin_indices: npt.NDArray[np.uint16]
     """Array of skin indices. Should have shape (V, 4). Synchronized automatically when assigned."""
-    skin_weights: onpt.NDArray[onp.float32]
+    skin_weights: npt.NDArray[np.float32]
     """Array of skin weights. Should have shape (V, 4). Synchronized automatically when assigned."""
 
     def __post_init__(self):
@@ -1241,7 +1241,7 @@ class GaussianSplatsMessage(Message, tag="SceneNodeMessage"):
 class GaussianSplatsProps:
     # Memory layout is borrowed from:
     # https://github.com/antimatter15/splat
-    buffer: onpt.NDArray[onp.uint32]
+    buffer: npt.NDArray[np.uint32]
     """Our buffer will contain:
     - x as f32
     - y as f32

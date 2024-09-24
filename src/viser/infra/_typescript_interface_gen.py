@@ -2,7 +2,7 @@ import dataclasses
 from collections import defaultdict
 from typing import Any, Type, Union, cast
 
-import numpy as onp
+import numpy as np
 from typing_extensions import (
     Annotated,
     Literal,
@@ -26,7 +26,7 @@ _raw_type_mapping = {
     int: "number",
     str: "string",
     # For numpy arrays, we directly serialize the underlying data buffer.
-    onp.ndarray: "Uint8Array",
+    np.ndarray: "Uint8Array",
     bytes: "Uint8Array",
     Any: "any",
     None: "null",

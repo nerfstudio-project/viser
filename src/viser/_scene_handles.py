@@ -15,7 +15,7 @@ from typing import (
     cast,
 )
 
-import numpy as onp
+import numpy as np
 import numpy.typing as onpt
 from typing_extensions import get_type_hints
 
@@ -29,14 +29,14 @@ if TYPE_CHECKING:
     from .infra import ClientId
 
 
-def colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
+def colors_to_uint8(colors: np.ndarray) -> onpt.NDArray[np.uint8]:
     """Convert intensity values to uint8. We assume the range [0,1] for floats, and
     [0,255] for integers. Accepts any shape."""
-    if colors.dtype != onp.uint8:
-        if onp.issubdtype(colors.dtype, onp.floating):
-            colors = onp.clip(colors * 255.0, 0, 255).astype(onp.uint8)
-        if onp.issubdtype(colors.dtype, onp.integer):
-            colors = onp.clip(colors, 0, 255).astype(onp.uint8)
+    if colors.dtype != np.uint8:
+        if np.issubdtype(colors.dtype, np.floating):
+            colors = np.clip(colors * 255.0, 0, 255).astype(np.uint8)
+        if np.issubdtype(colors.dtype, np.integer):
+            colors = np.clip(colors, 0, 255).astype(np.uint8)
     return colors
 
 
@@ -52,9 +52,9 @@ class _OverridableScenePropApi:
         if name in self._prop_hints:
             # Help the user with some casting...
             hint = self._prop_hints[name]
-            if hint == onpt.NDArray[onp.float32]:
-                value = value.astype(onp.float32)
-            elif hint == onpt.NDArray[onp.uint8] and "color" in name:
+            if hint == onpt.NDArray[np.float32]:
+                value = value.astype(np.float32)
+            elif hint == onpt.NDArray[np.uint8] and "color" in name:
                 value = colors_to_uint8(value)
 
             setattr(handle._impl.props, name, value)
@@ -112,11 +112,11 @@ class _SceneNodeHandleState:
     """Message containing properties of this scene node that are sent to the
     client."""
     api: SceneApi
-    wxyz: onp.ndarray = dataclasses.field(
-        default_factory=lambda: onp.array([1.0, 0.0, 0.0, 0.0])
+    wxyz: np.ndarray = dataclasses.field(
+        default_factory=lambda: np.array([1.0, 0.0, 0.0, 0.0])
     )
-    position: onp.ndarray = dataclasses.field(
-        default_factory=lambda: onp.array([0.0, 0.0, 0.0])
+    position: np.ndarray = dataclasses.field(
+        default_factory=lambda: np.array([0.0, 0.0, 0.0])
     )
     visible: bool = True
     # TODO: we should remove SceneNodeHandle as an argument here.
@@ -147,8 +147,8 @@ class SceneNodeHandle:
         api: SceneApi,
         message: _SceneNodeMessage,
         name: str,
-        wxyz: tuple[float, float, float, float] | onp.ndarray,
-        position: tuple[float, float, float] | onp.ndarray,
+        wxyz: tuple[float, float, float, float] | np.ndarray,
+        position: tuple[float, float, float] | np.ndarray,
         visible: bool,
     ) -> TSceneNodeHandle:
         """Create scene node: send state to client(s) and set up
@@ -170,35 +170,35 @@ class SceneNodeHandle:
         return out
 
     @property
-    def wxyz(self) -> onp.ndarray:
+    def wxyz(self) -> np.ndarray:
         """Orientation of the scene node. This is the quaternion representation of the R
         in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
         return self._impl.wxyz
 
     @wxyz.setter
-    def wxyz(self, wxyz: tuple[float, float, float, float] | onp.ndarray) -> None:
+    def wxyz(self, wxyz: tuple[float, float, float, float] | np.ndarray) -> None:
         from ._scene_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
-        self._impl.wxyz = onp.asarray(wxyz)
+        self._impl.wxyz = np.asarray(wxyz)
         self._impl.api._websock_interface.queue_message(
             _messages.SetOrientationMessage(self._impl.name, wxyz_cast)
         )
 
     @property
-    def position(self) -> onp.ndarray:
+    def position(self) -> np.ndarray:
         """Position of the scene node. This is equivalent to the t in
         `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
         return self._impl.position
 
     @position.setter
-    def position(self, position: tuple[float, float, float] | onp.ndarray) -> None:
+    def position(self, position: tuple[float, float, float] | np.ndarray) -> None:
         from ._scene_api import cast_vector
 
         position_cast = cast_vector(position, 3)
-        self._impl.position = onp.asarray(position)
+        self._impl.position = np.asarray(position)
         self._impl.api._websock_interface.queue_message(
             _messages.SetPositionMessage(self._impl.name, position_cast)
         )
@@ -380,8 +380,8 @@ class BoneState:
     name: str
     websock_interface: WebsockServer | WebsockClientConnection
     bone_index: int
-    wxyz: onp.ndarray
-    position: onp.ndarray
+    wxyz: np.ndarray
+    position: np.ndarray
 
 
 @dataclasses.dataclass
@@ -391,18 +391,18 @@ class MeshSkinnedBoneHandle:
     _impl: BoneState
 
     @property
-    def wxyz(self) -> onp.ndarray:
+    def wxyz(self) -> np.ndarray:
         """Orientation of the bone. This is the quaternion representation of the R
         in `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
         return self._impl.wxyz
 
     @wxyz.setter
-    def wxyz(self, wxyz: tuple[float, float, float, float] | onp.ndarray) -> None:
+    def wxyz(self, wxyz: tuple[float, float, float, float] | np.ndarray) -> None:
         from ._scene_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
-        self._impl.wxyz = onp.asarray(wxyz)
+        self._impl.wxyz = np.asarray(wxyz)
         self._impl.websock_interface.queue_message(
             _messages.SetBoneOrientationMessage(
                 self._impl.name, self._impl.bone_index, wxyz_cast
@@ -410,18 +410,18 @@ class MeshSkinnedBoneHandle:
         )
 
     @property
-    def position(self) -> onp.ndarray:
+    def position(self) -> np.ndarray:
         """Position of the bone. This is equivalent to the t in
         `p_parent = [R | t] p_local`. Synchronized to clients automatically when assigned.
         """
         return self._impl.position
 
     @position.setter
-    def position(self, position: tuple[float, float, float] | onp.ndarray) -> None:
+    def position(self, position: tuple[float, float, float] | np.ndarray) -> None:
         from ._scene_api import cast_vector
 
         position_cast = cast_vector(position, 3)
-        self._impl.position = onp.asarray(position)
+        self._impl.position = np.asarray(position)
         self._impl.websock_interface.queue_message(
             _messages.SetBonePositionMessage(
                 self._impl.name, self._impl.bone_index, position_cast

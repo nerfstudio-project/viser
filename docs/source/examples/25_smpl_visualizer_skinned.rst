@@ -24,7 +24,6 @@ See here for download instructions:
         from typing import List, Tuple
 
         import numpy as np
-        import numpy as onp
         import tyro
 
         import viser
@@ -44,7 +43,7 @@ See here for download instructions:
 
             def __init__(self, model_path: Path) -> None:
                 assert model_path.suffix.lower() == ".npz", "Model should be an .npz file!"
-                body_dict = dict(**onp.load(model_path, allow_pickle=True))
+                body_dict = dict(**np.load(model_path, allow_pickle=True))
 
                 self._J_regressor = body_dict["J_regressor"]
                 self._weights = body_dict["weights"]
@@ -100,7 +99,7 @@ See here for download instructions:
             )
             smpl_outputs = model.get_outputs(
                 betas=np.array([x.value for x in gui_elements.gui_betas]),
-                joint_rotmats=onp.zeros((model.num_joints, 3, 3)) + onp.eye(3),
+                joint_rotmats=np.zeros((model.num_joints, 3, 3)) + np.eye(3),
             )
 
             bone_wxyzs = np.array(
@@ -126,6 +125,9 @@ See here for download instructions:
                     continue
 
                 gui_elements.changed = False
+
+                # Render as wireframe?
+                skinned_handle.wireframe = gui_elements.gui_wireframe.value
 
                 # Compute SMPL outputs.
                 smpl_outputs = model.get_outputs(
@@ -215,7 +217,7 @@ See here for download instructions:
                 @gui_random_shape.on_click
                 def _(_):
                     for beta in gui_betas:
-                        beta.value = onp.random.normal(loc=0.0, scale=1.0)
+                        beta.value = np.random.normal(loc=0.0, scale=1.0)
 
                 gui_betas = []
                 for i in range(num_betas):
@@ -240,8 +242,8 @@ See here for download instructions:
                     for joint in gui_joints:
                         # It's hard to uniformly sample orientations directly in so(3), so we
                         # first sample on S^3 and then convert.
-                        quat = onp.random.normal(loc=0.0, scale=1.0, size=(4,))
-                        quat /= onp.linalg.norm(quat)
+                        quat = np.random.normal(loc=0.0, scale=1.0, size=(4,))
+                        quat /= np.linalg.norm(quat)
                         joint.value = tf.SO3(wxyz=quat).log()
 
                 gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]] = []

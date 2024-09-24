@@ -16,7 +16,7 @@ Visualize a mesh. To get the demo data, see ``./assets/download_dragon_mesh.sh``
         import time
         from pathlib import Path
 
-        import numpy as onp
+        import numpy as np
         import trimesh
 
         import viser
@@ -35,13 +35,13 @@ Visualize a mesh. To get the demo data, see ``./assets/download_dragon_mesh.sh``
             name="/simple",
             vertices=vertices,
             faces=faces,
-            wxyz=tf.SO3.from_x_radians(onp.pi / 2).wxyz,
+            wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
             position=(0.0, 0.0, 0.0),
         )
         server.scene.add_mesh_trimesh(
             name="/trimesh",
             mesh=mesh.smoothed(),
-            wxyz=tf.SO3.from_x_radians(onp.pi / 2).wxyz,
+            wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
             position=(0.0, 5.0, 0.0),
         )
 

@@ -2,7 +2,7 @@
 
 from typing import Tuple, Type
 
-import numpy as onp
+import numpy as np
 import numpy.typing as onpt
 from utils import (
     assert_arrays_close,
@@ -64,10 +64,10 @@ def test_adjoint(
 ):
     """Check adjoint definition."""
     transform = sample_transform(Group, batch_axes, dtype)
-    omega = onp.random.randn(*batch_axes, Group.tangent_dim).astype(dtype=dtype)
+    omega = np.random.randn(*batch_axes, Group.tangent_dim).astype(dtype=dtype)
     assert_transforms_close(
         transform @ Group.exp(omega),
-        Group.exp(onp.einsum("...ij,...j->...i", transform.adjoint(), omega))
+        Group.exp(np.einsum("...ij,...j->...i", transform.adjoint(), omega))
         @ transform,
     )
 
@@ -87,13 +87,13 @@ def test_apply(
 ):
     """Check group action interfaces."""
     T_w_b = sample_transform(Group, batch_axes, dtype)
-    p_b = onp.random.randn(*batch_axes, Group.space_dim).astype(dtype)
+    p_b = np.random.randn(*batch_axes, Group.space_dim).astype(dtype)
 
     if Group.matrix_dim == Group.space_dim:
         assert_arrays_close(
             T_w_b @ p_b,
             T_w_b.apply(p_b),
-            onp.einsum("...ij,...j->...i", T_w_b.as_matrix(), p_b),
+            np.einsum("...ij,...j->...i", T_w_b.as_matrix(), p_b),
         )
     else:
         # Homogeneous coordinates.
@@ -101,10 +101,10 @@ def test_apply(
         assert_arrays_close(
             T_w_b @ p_b,
             T_w_b.apply(p_b),
-            onp.einsum(
+            np.einsum(
                 "...ij,...j->...i",
                 T_w_b.as_matrix(),
-                onp.concatenate([p_b, onp.ones_like(p_b[..., :1])], axis=-1),
+                np.concatenate([p_b, np.ones_like(p_b[..., :1])], axis=-1),
             )[..., :-1],
         )
 
@@ -117,11 +117,11 @@ def test_multiply(
     T_w_b = sample_transform(Group, batch_axes, dtype)
     T_b_a = sample_transform(Group, batch_axes, dtype)
     assert_arrays_close(
-        onp.einsum(
-            "...ij,...jk->...ik", T_w_b.as_matrix(), onp.linalg.inv(T_w_b.as_matrix())
+        np.einsum(
+            "...ij,...jk->...ik", T_w_b.as_matrix(), np.linalg.inv(T_w_b.as_matrix())
         ),
-        onp.broadcast_to(
-            onp.eye(Group.matrix_dim, dtype=dtype),
+        np.broadcast_to(
+            np.eye(Group.matrix_dim, dtype=dtype),
             (*batch_axes, Group.matrix_dim, Group.matrix_dim),
         ),
     )

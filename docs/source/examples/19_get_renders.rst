@@ -16,7 +16,7 @@ Example for getting renders from a client's viewport to the Python API.
         import time
 
         import imageio.v3 as iio
-        import numpy as onp
+        import numpy as np
 
         import viser
 
@@ -36,13 +36,13 @@ Example for getting renders from a client's viewport to the Python API.
                 images = []
 
                 for i in range(20):
-                    positions = onp.random.normal(size=(30, 3)) * 3.0
+                    positions = np.random.normal(size=(30, 3)) * 3.0
                     client.scene.add_spline_catmull_rom(
                         f"/catmull_{i}",
                         positions,
                         tension=0.5,
                         line_width=3.0,
-                        color=onp.random.uniform(size=3),
+                        color=np.random.uniform(size=3),
                     )
                     images.append(client.camera.get_render(height=720, width=1280))
 

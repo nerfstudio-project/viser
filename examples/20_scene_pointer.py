@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 from typing import cast
 
-import numpy as onp
+import numpy as np
 import trimesh
 import trimesh.creation
 import trimesh.ray
@@ -46,8 +46,8 @@ hit_pos_handles: list[viser.GlbHandle] = []
 @server.on_client_connect
 def _(client: viser.ClientHandle) -> None:
     # Set up the camera -- this gives a nice view of the full mesh.
-    client.camera.position = onp.array([0.0, 0.0, -10.0])
-    client.camera.wxyz = onp.array([0.0, 0.0, 0.0, 1.0])
+    client.camera.position = np.array([0.0, 0.0, -10.0])
+    client.camera.wxyz = np.array([0.0, 0.0, 0.0, 1.0])
 
     # Tests "click" scenepointerevent.
     click_button_handle = client.gui.add_button("Add sphere", icon=viser.Icon.POINTER)
@@ -62,8 +62,8 @@ def _(client: viser.ClientHandle) -> None:
             # Note that mesh is in the mesh frame, so we need to transform the ray.
             R_world_mesh = tf.SO3(mesh_handle.wxyz)
             R_mesh_world = R_world_mesh.inverse()
-            origin = (R_mesh_world @ onp.array(event.ray_origin)).reshape(1, 3)
-            direction = (R_mesh_world @ onp.array(event.ray_direction)).reshape(1, 3)
+            origin = (R_mesh_world @ np.array(event.ray_origin)).reshape(1, 3)
+            direction = (R_mesh_world @ np.array(event.ray_direction)).reshape(1, 3)
             intersector = trimesh.ray.ray_triangle.RayMeshIntersector(mesh)
             hit_pos, _, _ = intersector.intersects_location(origin, direction)
 
@@ -72,7 +72,7 @@ def _(client: viser.ClientHandle) -> None:
             client.scene.remove_pointer_callback()
 
             # Get the first hit position (based on distance from the ray origin).
-            hit_pos = hit_pos[onp.argmin(onp.sum((hit_pos - origin) ** 2, axis=-1))]
+            hit_pos = hit_pos[np.argmin(np.sum((hit_pos - origin) ** 2, axis=-1))]
 
             # Create a sphere at the hit location.
             hit_pos_mesh = trimesh.creation.icosphere(radius=0.1)
@@ -107,17 +107,17 @@ def _(client: viser.ClientHandle) -> None:
             R_camera_world = tf.SE3.from_rotation_and_translation(
                 tf.SO3(camera.wxyz), camera.position
             ).inverse()
-            vertices = cast(onp.ndarray, mesh.vertices)
+            vertices = cast(np.ndarray, mesh.vertices)
             vertices = (R_mesh_world.as_matrix() @ vertices.T).T
             vertices = (
                 R_camera_world.as_matrix()
-                @ onp.hstack([vertices, onp.ones((vertices.shape[0], 1))]).T
+                @ np.hstack([vertices, np.ones((vertices.shape[0], 1))]).T
             ).T[:, :3]
 
             # Get the camera intrinsics, and project the vertices onto the image plane.
             fov, aspect = camera.fov, camera.aspect
             vertices_proj = vertices[:, :2] / vertices[:, 2].reshape(-1, 1)
-            vertices_proj /= onp.tan(fov / 2)
+            vertices_proj /= np.tan(fov / 2)
             vertices_proj[:, 0] /= aspect
 
             # Move the origin to the upper-left corner, and scale to [0, 1].
@@ -126,12 +126,12 @@ def _(client: viser.ClientHandle) -> None:
 
             # Select the vertices that lie inside the 2D selected box, once projected.
             mask = (
-                (vertices_proj > onp.array(message.screen_pos[0]))
-                & (vertices_proj < onp.array(message.screen_pos[1]))
+                (vertices_proj > np.array(message.screen_pos[0]))
+                & (vertices_proj < np.array(message.screen_pos[1]))
             ).all(axis=1)[..., None]
 
             # Update the mesh color based on whether the vertices are inside the box
-            mesh.visual.vertex_colors = onp.where(  # type: ignore
+            mesh.visual.vertex_colors = np.where(  # type: ignore
                 mask, (0.5, 0.0, 0.7, 1.0), (0.9, 0.9, 0.9, 1.0)
             )
             mesh_handle = server.scene.add_mesh_trimesh(

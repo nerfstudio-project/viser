@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
-import numpy as onp
 import tyro
 
 import viser
@@ -33,7 +32,7 @@ class SmplHelper:
 
     def __init__(self, model_path: Path) -> None:
         assert model_path.suffix.lower() == ".npz", "Model should be an .npz file!"
-        body_dict = dict(**onp.load(model_path, allow_pickle=True))
+        body_dict = dict(**np.load(model_path, allow_pickle=True))
 
         self._J_regressor = body_dict["J_regressor"]
         self._weights = body_dict["weights"]
@@ -170,7 +169,7 @@ def make_gui_elements(
         @gui_random_shape.on_click
         def _(_):
             for beta in gui_betas:
-                beta.value = onp.random.normal(loc=0.0, scale=1.0)
+                beta.value = np.random.normal(loc=0.0, scale=1.0)
 
         gui_betas = []
         for i in range(num_betas):
@@ -195,8 +194,8 @@ def make_gui_elements(
             for joint in gui_joints:
                 # It's hard to uniformly sample orientations directly in so(3), so we
                 # first sample on S^3 and then convert.
-                quat = onp.random.normal(loc=0.0, scale=1.0, size=(4,))
-                quat /= onp.linalg.norm(quat)
+                quat = np.random.normal(loc=0.0, scale=1.0, size=(4,))
+                quat /= np.linalg.norm(quat)
                 joint.value = tf.SO3(wxyz=quat).log()
 
         gui_joints: list[viser.GuiInputHandle[tuple[float, float, float]]] = []

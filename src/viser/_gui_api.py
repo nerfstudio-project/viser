@@ -19,7 +19,7 @@ from typing import (
     overload,
 )
 
-import numpy as onp
+import numpy as np
 from typing_extensions import (
     Literal,
     LiteralString,
@@ -420,10 +420,10 @@ class GuiApi:
 
                 primary_index = 8
                 ls = tuple(
-                    onp.interp(
-                        x=onp.arange(10),
-                        xp=onp.array([0, primary_index, 9]),
-                        fp=onp.array([max_l, l, min_l]),
+                    np.interp(
+                        x=np.arange(10),
+                        xp=np.array([0, primary_index, 9]),
+                        fp=np.array([max_l, l, min_l]),
                     )
                 )
                 colors_cast = cast(
@@ -967,7 +967,7 @@ class GuiApi:
             # It's ok that `step` is always a float, even if the value is an integer,
             # because things all become `number` types after serialization.
             step = float(  # type: ignore
-                onp.min(
+                np.min(
                     [
                         _compute_step(value),
                         _compute_step(min),
@@ -1006,9 +1006,9 @@ class GuiApi:
     def add_vector2(
         self,
         label: str,
-        initial_value: tuple[float, float] | onp.ndarray,
-        min: tuple[float, float] | onp.ndarray | None = None,
-        max: tuple[float, float] | onp.ndarray | None = None,
+        initial_value: tuple[float, float] | np.ndarray,
+        min: tuple[float, float] | np.ndarray | None = None,
+        max: tuple[float, float] | np.ndarray | None = None,
         step: float | None = None,
         disabled: bool = False,
         visible: bool = True,
@@ -1045,7 +1045,7 @@ class GuiApi:
                 possible_steps.extend([_compute_step(x) for x in min])
             if max is not None:
                 possible_steps.extend([_compute_step(x) for x in max])
-            step = float(onp.min(possible_steps))
+            step = float(np.min(possible_steps))
 
         return GuiVector2Handle(
             self._create_gui_input(
@@ -1072,9 +1072,9 @@ class GuiApi:
     def add_vector3(
         self,
         label: str,
-        initial_value: tuple[float, float, float] | onp.ndarray,
-        min: tuple[float, float, float] | onp.ndarray | None = None,
-        max: tuple[float, float, float] | onp.ndarray | None = None,
+        initial_value: tuple[float, float, float] | np.ndarray,
+        min: tuple[float, float, float] | np.ndarray | None = None,
+        max: tuple[float, float, float] | np.ndarray | None = None,
         step: float | None = None,
         disabled: bool = False,
         visible: bool = True,
@@ -1111,7 +1111,7 @@ class GuiApi:
                 possible_steps.extend([_compute_step(x) for x in min])
             if max is not None:
                 possible_steps.extend([_compute_step(x) for x in max])
-            step = float(onp.min(possible_steps))
+            step = float(np.min(possible_steps))
 
         return GuiVector3Handle(
             self._create_gui_input(

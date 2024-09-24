@@ -22,7 +22,7 @@ from typing import (
 )
 
 import imageio.v3 as iio
-import numpy as onp
+import numpy as np
 from typing_extensions import Protocol
 
 from . import _messages
@@ -183,8 +183,8 @@ class _GuiInputHandle(
         return self._impl.value
 
     @value.setter
-    def value(self, value: T | onp.ndarray) -> None:
-        if isinstance(value, onp.ndarray):
+    def value(self, value: T | np.ndarray) -> None:
+        if isinstance(value, np.ndarray):
             assert len(value.shape) <= 1, f"{value.shape} should be at most 1D!"
             value = tuple(map(float, value))  # type: ignore
 

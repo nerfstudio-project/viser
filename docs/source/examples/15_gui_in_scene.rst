@@ -18,7 +18,7 @@ performed on them.
         import time
         from typing import Optional
 
-        import numpy as onp
+        import numpy as np
 
         import viser
         import viser.transforms as tf
@@ -35,14 +35,14 @@ performed on them.
             When a frame is clicked, we display a 3D gui node.
             """
 
-            rng = onp.random.default_rng(0)
+            rng = np.random.default_rng(0)
 
             displayed_3d_container: Optional[viser.Gui3dContainerHandle] = None
 
             def make_frame(i: int) -> None:
                 # Sample a random orientation + position.
                 wxyz = rng.normal(size=4)
-                wxyz /= onp.linalg.norm(wxyz)
+                wxyz /= np.linalg.norm(wxyz)
                 position = rng.uniform(-3.0, 3.0, size=(3,))
 
                 # Create a coordinate frame and label.
@@ -72,7 +72,7 @@ performed on them.
                         )
                         T_world_target = tf.SE3.from_rotation_and_translation(
                             tf.SO3(frame.wxyz), frame.position
-                        ) @ tf.SE3.from_translation(onp.array([0.0, 0.0, -0.5]))
+                        ) @ tf.SE3.from_translation(np.array([0.0, 0.0, -0.5]))
 
                         T_current_target = T_world_current.inverse() @ T_world_target
 
@@ -94,7 +94,7 @@ performed on them.
                     @randomize_orientation.on_click
                     def _(_) -> None:
                         wxyz = rng.normal(size=4)
-                        wxyz /= onp.linalg.norm(wxyz)
+                        wxyz /= np.linalg.norm(wxyz)
                         frame.wxyz = wxyz
 
                     @close.on_click

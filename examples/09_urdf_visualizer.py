@@ -13,7 +13,7 @@ from __future__ import annotations
 import time
 from typing import Literal
 
-import numpy as onp
+import numpy as np
 import tyro
 from robot_descriptions.loaders.yourdfpy import load_robot_description
 
@@ -32,8 +32,8 @@ def create_robot_control_sliders(
         lower,
         upper,
     ) in viser_urdf.get_actuated_joint_limits().items():
-        lower = lower if lower is not None else -onp.pi
-        upper = upper if upper is not None else onp.pi
+        lower = lower if lower is not None else -np.pi
+        upper = upper if upper is not None else np.pi
         initial_pos = 0.0 if lower < 0 and upper > 0 else (lower + upper) / 2.0
         slider = server.gui.add_slider(
             label=joint_name,
@@ -44,7 +44,7 @@ def create_robot_control_sliders(
         )
         slider.on_update(  # When sliders move, we update the URDF configuration.
             lambda _: viser_urdf.update_cfg(
-                onp.array([slider.value for slider in slider_handles])
+                np.array([slider.value for slider in slider_handles])
             )
         )
         slider_handles.append(slider)
@@ -85,7 +85,7 @@ def main(
         )
 
     # Set initial robot configuration.
-    viser_urdf.update_cfg(onp.array(initial_config))
+    viser_urdf.update_cfg(np.array(initial_config))
 
     # Create joint reset button.
     reset_button = server.gui.add_button("Reset")
