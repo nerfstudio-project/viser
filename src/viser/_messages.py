@@ -1137,7 +1137,7 @@ class GuiUpdateMessage(Message):
     id: str
     updates: Annotated[
         Dict[str, Any],
-        infra.TypeScriptAnnotationOverride("Partial<GuiComponentMessage>"),
+        infra.TypeScriptAnnotationOverride("{[key: string]: any}"),
     ]
     """Mapping from property name to new value."""
 

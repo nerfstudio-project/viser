@@ -2,10 +2,7 @@ import { Box, Progress } from "@mantine/core";
 import { GuiProgressBarMessage } from "../WebsocketMessages";
 
 export default function ProgressBarComponent({
-  visible,
-  color,
-  value,
-  animated,
+  props: { visible, color, value, animated },
 }: GuiProgressBarMessage) {
   if (!visible) return <></>;
   return (

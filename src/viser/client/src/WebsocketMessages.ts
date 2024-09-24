@@ -946,7 +946,7 @@ export interface GuiRemoveMessage {
 export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
   id: string;
-  updates: Partial<GuiComponentMessage>;
+  updates: { [key: string]: any };
 }
 /** Sent client<->server when any property of a scene node is changed.
  *

@@ -164,14 +164,17 @@ export function useGuiState(initialServer: string) {
 
             // Iterate over key/value pairs.
             for (const [key, value] of Object.entries(updates)) {
+              // We don't put `value` in the props object to make types
+              // stronger in the user-facing Python API. This results in some
+              // nastiness here, we should revisit...
               if (key === "value") {
-                state.guiConfigFromId[id].value = value;
+                (state.guiConfigFromId[id] as any).value = value;
               } else if (!(key in config.props)) {
                 console.error(
                   `Tried to update nonexistent property '${key}' of GUI element ${id}!`,
                 );
               } else {
-                state.guiConfigFromId[id].props[key] = value;
+                (state.guiConfigFromId[id].props as any)[key] = value;
               }
             }
           });
