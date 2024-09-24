@@ -15,6 +15,7 @@ from typing import (
     Dict,
     Generic,
     Iterable,
+    Tuple,
     TypeVar,
     cast,
     get_type_hints,
@@ -29,14 +30,23 @@ from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._messages import (
     GuiBaseProps,
+    GuiCheckboxProps,
     GuiCloseModalMessage,
     GuiDropdownProps,
     GuiFolderProps,
     GuiMarkdownProps,
+    GuiMultiSliderProps,
+    GuiNumberProps,
     GuiPlotlyProps,
     GuiProgressBarProps,
     GuiRemoveMessage,
+    GuiRgbaProps,
+    GuiRgbProps,
+    GuiSliderProps,
+    GuiTextProps,
     GuiUpdateMessage,
+    GuiVector2Props,
+    GuiVector3Props,
 )
 from ._scene_api import _encode_image_binary
 from .infra import ClientId
@@ -223,6 +233,36 @@ class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
         """Attach a function to call when a GUI input is updated. Happens in a thread."""
         self._impl.update_cb.append(func)
         return func
+
+
+class GuiCheckboxHandle(GuiInputHandle[bool], GuiCheckboxProps): ...
+
+
+class GuiTextHandle(GuiInputHandle[str], GuiTextProps): ...
+
+
+IntOrFloat = TypeVar("IntOrFloat", int, float)
+
+
+class GuiNumberHandle(GuiInputHandle[T], Generic[T], GuiNumberProps): ...
+
+
+class GuiSliderHandle(GuiInputHandle[T], Generic[T], GuiSliderProps): ...
+
+
+class GuiMultiSliderHandle(GuiInputHandle[T], Generic[T], GuiMultiSliderProps): ...
+
+
+class GuiRgbHandle(GuiInputHandle[Tuple[int, int, int]], GuiRgbProps): ...
+
+
+class GuiRgbaHandle(GuiInputHandle[Tuple[int, int, int, int]], GuiRgbaProps): ...
+
+
+class GuiVector2Handle(GuiInputHandle[Tuple[float, float]], GuiVector2Props): ...
+
+
+class GuiVector3Handle(GuiInputHandle[Tuple[float, float, float]], GuiVector3Props): ...
 
 
 @dataclasses.dataclass(frozen=True)

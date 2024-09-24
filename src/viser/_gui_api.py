@@ -34,17 +34,25 @@ from . import _messages
 from ._gui_handles import (
     GuiButtonGroupHandle,
     GuiButtonHandle,
+    GuiCheckboxHandle,
     GuiContainerProtocol,
     GuiDropdownHandle,
     GuiEvent,
     GuiFolderHandle,
-    GuiInputHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
+    GuiMultiSliderHandle,
+    GuiNumberHandle,
     GuiPlotlyHandle,
     GuiProgressBarHandle,
+    GuiRgbaHandle,
+    GuiRgbHandle,
+    GuiSliderHandle,
     GuiTabGroupHandle,
+    GuiTextHandle,
     GuiUploadButtonHandle,
+    GuiVector2Handle,
+    GuiVector3Handle,
     SupportsRemoveProtocol,
     UploadedFile,
     _GuiHandleState,
@@ -735,7 +743,7 @@ class GuiApi:
                     ),
                 ),
                 is_button=True,
-            )._impl
+            )
         )
 
     def add_upload_button(
@@ -787,7 +795,7 @@ class GuiApi:
                     ),
                 ),
                 is_button=True,
-            )._impl
+            )
         )
 
     # The TLiteralString overload tells pyright to resolve the value type to a Literal
@@ -858,7 +866,7 @@ class GuiApi:
                         visible=visible,
                     ),
                 ),
-            )._impl,
+            )
         )
 
     def add_checkbox(
@@ -869,7 +877,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiInputHandle[bool]:
+    ) -> GuiCheckboxHandle:
         """Add a checkbox to the GUI.
 
         Args:
@@ -887,20 +895,22 @@ class GuiApi:
         assert isinstance(value, bool)
         id = _make_unique_id()
         order = _apply_default_order(order)
-        return self._create_gui_input(
-            value,
-            message=_messages.GuiCheckboxMessage(
-                value=value,
-                id=id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiCheckboxProps(
-                    order=order,
-                    label=label,
-                    hint=hint,
-                    disabled=disabled,
-                    visible=visible,
+        return GuiCheckboxHandle(
+            self._create_gui_input(
+                value,
+                message=_messages.GuiCheckboxMessage(
+                    value=value,
+                    id=id,
+                    container_id=self._get_container_id(),
+                    props=_messages.GuiCheckboxProps(
+                        order=order,
+                        label=label,
+                        hint=hint,
+                        disabled=disabled,
+                        visible=visible,
+                    ),
                 ),
-            ),
+            )
         )
 
     def add_text(
@@ -911,7 +921,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiInputHandle[str]:
+    ) -> GuiTextHandle:
         """Add a text input to the GUI.
 
         Args:
@@ -929,20 +939,22 @@ class GuiApi:
         assert isinstance(value, str)
         id = _make_unique_id()
         order = _apply_default_order(order)
-        return self._create_gui_input(
-            value,
-            message=_messages.GuiTextMessage(
-                value=value,
-                id=id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiTextProps(
-                    order=order,
-                    label=label,
-                    hint=hint,
-                    disabled=disabled,
-                    visible=visible,
+        return GuiTextHandle(
+            self._create_gui_input(
+                value,
+                message=_messages.GuiTextMessage(
+                    value=value,
+                    id=id,
+                    container_id=self._get_container_id(),
+                    props=_messages.GuiTextProps(
+                        order=order,
+                        label=label,
+                        hint=hint,
+                        disabled=disabled,
+                        visible=visible,
+                    ),
                 ),
-            ),
+            )
         )
 
     def add_number(
@@ -956,7 +968,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiInputHandle[IntOrFloat]:
+    ) -> GuiNumberHandle[IntOrFloat]:
         """Add a number input to the GUI, with user-specifiable bound and precision parameters.
 
         Args:
@@ -995,25 +1007,27 @@ class GuiApi:
 
         id = _make_unique_id()
         order = _apply_default_order(order)
-        return self._create_gui_input(
-            value,
-            message=_messages.GuiNumberMessage(
-                value=value,
-                id=id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiNumberProps(
-                    order=order,
-                    label=label,
-                    hint=hint,
-                    min=min,
-                    max=max,
-                    precision=_compute_precision_digits(step),
-                    step=step,
-                    disabled=disabled,
-                    visible=visible,
+        return GuiNumberHandle(
+            self._create_gui_input(
+                value,
+                message=_messages.GuiNumberMessage(
+                    value=value,
+                    id=id,
+                    container_id=self._get_container_id(),
+                    props=_messages.GuiNumberProps(
+                        order=order,
+                        label=label,
+                        hint=hint,
+                        min=min,
+                        max=max,
+                        precision=_compute_precision_digits(step),
+                        step=step,
+                        disabled=disabled,
+                        visible=visible,
+                    ),
                 ),
-            ),
-            is_button=False,
+                is_button=False,
+            )
         )
 
     def add_vector2(
@@ -1027,7 +1041,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiInputHandle[tuple[float, float]]:
+    ) -> GuiVector2Handle:
         """Add a length-2 vector input to the GUI.
 
         Args:
@@ -1060,24 +1074,26 @@ class GuiApi:
                 possible_steps.extend([_compute_step(x) for x in max])
             step = float(onp.min(possible_steps))
 
-        return self._create_gui_input(
-            value,
-            message=_messages.GuiVector2Message(
-                value=value,
-                id=id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiVector2Props(
-                    order=order,
-                    label=label,
-                    hint=hint,
-                    min=min,
-                    max=max,
-                    step=step,
-                    precision=_compute_precision_digits(step),
-                    disabled=disabled,
-                    visible=visible,
+        return GuiVector2Handle(
+            self._create_gui_input(
+                value,
+                message=_messages.GuiVector2Message(
+                    value=value,
+                    id=id,
+                    container_id=self._get_container_id(),
+                    props=_messages.GuiVector2Props(
+                        order=order,
+                        label=label,
+                        hint=hint,
+                        min=min,
+                        max=max,
+                        step=step,
+                        precision=_compute_precision_digits(step),
+                        disabled=disabled,
+                        visible=visible,
+                    ),
                 ),
-            ),
+            )
         )
 
     def add_vector3(
@@ -1091,7 +1107,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiInputHandle[tuple[float, float, float]]:
+    ) -> GuiVector3Handle:
         """Add a length-3 vector input to the GUI.
 
         Args:
@@ -1124,24 +1140,26 @@ class GuiApi:
                 possible_steps.extend([_compute_step(x) for x in max])
             step = float(onp.min(possible_steps))
 
-        return self._create_gui_input(
-            value,
-            message=_messages.GuiVector3Message(
-                value=value,
-                id=id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiVector3Props(
-                    order=order,
-                    label=label,
-                    hint=hint,
-                    min=min,
-                    max=max,
-                    step=step,
-                    precision=_compute_precision_digits(step),
-                    disabled=disabled,
-                    visible=visible,
+        return GuiVector3Handle(
+            self._create_gui_input(
+                value,
+                message=_messages.GuiVector3Message(
+                    value=value,
+                    id=id,
+                    container_id=self._get_container_id(),
+                    props=_messages.GuiVector3Props(
+                        order=order,
+                        label=label,
+                        hint=hint,
+                        min=min,
+                        max=max,
+                        step=step,
+                        precision=_compute_precision_digits(step),
+                        disabled=disabled,
+                        visible=visible,
+                    ),
                 ),
-            ),
+            )
         )
 
     # See add_dropdown for notes on overloads.
@@ -1214,7 +1232,7 @@ class GuiApi:
                         visible=visible,
                     ),
                 ),
-            )._impl,
+            ),
         )
 
     def add_progress_bar(
@@ -1277,7 +1295,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiInputHandle[IntOrFloat]:
+    ) -> GuiSliderHandle[IntOrFloat]:
         """Add a slider to the GUI. Types of the min, max, step, and initial value should match.
 
         Args:
@@ -1318,33 +1336,35 @@ class GuiApi:
 
         id = _make_unique_id()
         order = _apply_default_order(order)
-        return self._create_gui_input(
-            value,
-            message=_messages.GuiSliderMessage(
-                value=value,
-                id=id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiSliderProps(
-                    order=order,
-                    label=label,
-                    hint=hint,
-                    min=min,
-                    max=max,
-                    step=step,
-                    precision=_compute_precision_digits(step),
-                    visible=visible,
-                    disabled=disabled,
-                    _marks=tuple(
-                        GuiSliderMark(value=float(x[0]), label=x[1])
-                        if isinstance(x, tuple)
-                        else GuiSliderMark(value=x, label=None)
-                        for x in marks
-                    )
-                    if marks is not None
-                    else None,
+        return GuiSliderHandle(
+            self._create_gui_input(
+                value,
+                message=_messages.GuiSliderMessage(
+                    value=value,
+                    id=id,
+                    container_id=self._get_container_id(),
+                    props=_messages.GuiSliderProps(
+                        order=order,
+                        label=label,
+                        hint=hint,
+                        min=min,
+                        max=max,
+                        step=step,
+                        precision=_compute_precision_digits(step),
+                        visible=visible,
+                        disabled=disabled,
+                        _marks=tuple(
+                            GuiSliderMark(value=float(x[0]), label=x[1])
+                            if isinstance(x, tuple)
+                            else GuiSliderMark(value=x, label=None)
+                            for x in marks
+                        )
+                        if marks is not None
+                        else None,
+                    ),
                 ),
-            ),
-            is_button=False,
+                is_button=False,
+            )
         )
 
     def add_multi_slider(
@@ -1361,7 +1381,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiInputHandle[tuple[IntOrFloat, ...]]:
+    ) -> GuiMultiSliderHandle[tuple[IntOrFloat, ...]]:
         """Add a multi slider to the GUI. Types of the min, max, step, and initial value should match.
 
         Args:
@@ -1401,35 +1421,37 @@ class GuiApi:
 
         id = _make_unique_id()
         order = _apply_default_order(order)
-        return self._create_gui_input(
-            value=initial_value,
-            message=_messages.GuiMultiSliderMessage(
+        return GuiMultiSliderHandle(
+            self._create_gui_input(
                 value=initial_value,
-                id=id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiMultiSliderProps(
-                    order=order,
-                    label=label,
-                    hint=hint,
-                    min=min,
-                    min_range=min_range,
-                    max=max,
-                    step=step,
-                    visible=visible,
-                    disabled=disabled,
-                    fixed_endpoints=fixed_endpoints,
-                    precision=_compute_precision_digits(step),
-                    _marks=tuple(
-                        GuiSliderMark(value=float(x[0]), label=x[1])
-                        if isinstance(x, tuple)
-                        else GuiSliderMark(value=x, label=None)
-                        for x in marks
-                    )
-                    if marks is not None
-                    else None,
+                message=_messages.GuiMultiSliderMessage(
+                    value=initial_value,
+                    id=id,
+                    container_id=self._get_container_id(),
+                    props=_messages.GuiMultiSliderProps(
+                        order=order,
+                        label=label,
+                        hint=hint,
+                        min=min,
+                        min_range=min_range,
+                        max=max,
+                        step=step,
+                        visible=visible,
+                        disabled=disabled,
+                        fixed_endpoints=fixed_endpoints,
+                        precision=_compute_precision_digits(step),
+                        _marks=tuple(
+                            GuiSliderMark(value=float(x[0]), label=x[1])
+                            if isinstance(x, tuple)
+                            else GuiSliderMark(value=x, label=None)
+                            for x in marks
+                        )
+                        if marks is not None
+                        else None,
+                    ),
                 ),
-            ),
-            is_button=False,
+                is_button=False,
+            )
         )
 
     def add_rgb(
@@ -1440,7 +1462,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiInputHandle[tuple[int, int, int]]:
+    ) -> GuiRgbHandle:
         """Add an RGB picker to the GUI.
 
         Args:
@@ -1458,20 +1480,22 @@ class GuiApi:
         value = initial_value
         id = _make_unique_id()
         order = _apply_default_order(order)
-        return self._create_gui_input(
-            value,
-            message=_messages.GuiRgbMessage(
-                value=value,
-                id=id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiRgbProps(
-                    order=order,
-                    label=label,
-                    hint=hint,
-                    disabled=disabled,
-                    visible=visible,
+        return GuiRgbHandle(
+            self._create_gui_input(
+                value,
+                message=_messages.GuiRgbMessage(
+                    value=value,
+                    id=id,
+                    container_id=self._get_container_id(),
+                    props=_messages.GuiRgbProps(
+                        order=order,
+                        label=label,
+                        hint=hint,
+                        disabled=disabled,
+                        visible=visible,
+                    ),
                 ),
-            ),
+            )
         )
 
     def add_rgba(
@@ -1482,7 +1506,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiInputHandle[tuple[int, int, int, int]]:
+    ) -> GuiRgbaHandle:
         """Add an RGBA picker to the GUI.
 
         Args:
@@ -1499,20 +1523,22 @@ class GuiApi:
         value = initial_value
         id = _make_unique_id()
         order = _apply_default_order(order)
-        return self._create_gui_input(
-            value,
-            message=_messages.GuiRgbaMessage(
-                value=value,
-                id=id,
-                container_id=self._get_container_id(),
-                props=_messages.GuiRgbaProps(
-                    order=order,
-                    label=label,
-                    hint=hint,
-                    disabled=disabled,
-                    visible=visible,
+        return GuiRgbaHandle(
+            self._create_gui_input(
+                value,
+                message=_messages.GuiRgbaMessage(
+                    value=value,
+                    id=id,
+                    container_id=self._get_container_id(),
+                    props=_messages.GuiRgbaProps(
+                        order=order,
+                        label=label,
+                        hint=hint,
+                        disabled=disabled,
+                        visible=visible,
+                    ),
                 ),
-            ),
+            )
         )
 
     class GuiMessage(Protocol[GuiInputPropsType]):
@@ -1524,7 +1550,7 @@ class GuiApi:
         value: T,
         message: GuiMessage,
         is_button: bool = False,
-    ) -> GuiInputHandle[T]:
+    ) -> _GuiHandleState[T]:
         """Private helper for adding a simple GUI element."""
 
         # Send add GUI input message.
@@ -1557,6 +1583,4 @@ class GuiApi:
 
             handle_state.sync_cb = sync_other_clients
 
-        handle = GuiInputHandle(handle_state)
-
-        return handle
+        return handle_state
