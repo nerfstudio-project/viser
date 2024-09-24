@@ -13,7 +13,17 @@ import { sliderDefaultMarks } from "./ComponentStyles.css";
 export default function SliderComponent({
   id,
   value,
-  props: { label, hint, visible, disabled, min, max, precision, step, marks },
+  props: {
+    label,
+    hint,
+    visible,
+    disabled,
+    min,
+    max,
+    precision,
+    step,
+    _marks: marks,
+  },
 }: GuiSliderMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;

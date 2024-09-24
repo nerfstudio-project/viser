@@ -579,7 +579,7 @@ class GuiApi:
             container_id=self._get_container_id(),
             props=_messages.GuiMarkdownProps(
                 order=_apply_default_order(order),
-                markdown="",
+                _markdown="",
                 visible=visible,
             ),
         )
@@ -661,7 +661,7 @@ class GuiApi:
             container_id=self._get_container_id(),
             props=_messages.GuiPlotlyProps(
                 order=_apply_default_order(order),
-                plotly_json_str="",
+                _plotly_json_str="",
                 aspect=1.0,
                 visible=visible,
             ),
@@ -1334,7 +1334,7 @@ class GuiApi:
                     precision=_compute_precision_digits(step),
                     visible=visible,
                     disabled=disabled,
-                    marks=tuple(
+                    _marks=tuple(
                         GuiSliderMark(value=float(x[0]), label=x[1])
                         if isinstance(x, tuple)
                         else GuiSliderMark(value=x, label=None)
@@ -1419,7 +1419,7 @@ class GuiApi:
                     disabled=disabled,
                     fixed_endpoints=fixed_endpoints,
                     precision=_compute_precision_digits(step),
-                    marks=tuple(
+                    _marks=tuple(
                         GuiSliderMark(value=float(x[0]), label=x[1])
                         if isinstance(x, tuple)
                         else GuiSliderMark(value=x, label=None)

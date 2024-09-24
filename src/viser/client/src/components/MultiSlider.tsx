@@ -18,7 +18,7 @@ export default function MultiSliderComponent({
     max,
     precision,
     step,
-    marks,
+    _marks: marks,
     fixed_endpoints,
     min_range,
   },

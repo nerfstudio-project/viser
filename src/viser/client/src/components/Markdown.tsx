@@ -4,7 +4,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { GuiMarkdownMessage } from "../WebsocketMessages";
 
 export default function MarkdownComponent({
-  props: { visible, markdown },
+  props: { visible, _markdown: markdown },
 }: GuiMarkdownMessage) {
   if (!visible) return <></>;
   return (

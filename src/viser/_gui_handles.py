@@ -577,7 +577,7 @@ class GuiMarkdownHandle(_GuiHandle[None], GuiMarkdownProps):
     @content.setter
     def content(self, content: str) -> None:
         self._content = content
-        self.markdown = _parse_markdown(content, self._image_root)
+        self._markdown = _parse_markdown(content, self._image_root)
 
 
 class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
@@ -599,4 +599,4 @@ class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
 
         json_str = figure.to_json()
         assert isinstance(json_str, str)
-        self.plotly_json_str = json_str
+        self._plotly_json_str = json_str

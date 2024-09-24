@@ -614,7 +614,7 @@ export interface GuiUploadButtonProps {
   icon_html: string | null;
   mime_type: string;
 }
-/** GuiSliderProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
+/** GuiSliderProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', _marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
  *
  * (automatically generated)
  */
@@ -629,9 +629,9 @@ export interface GuiSliderProps {
   max: number;
   step: number | null;
   precision: number;
-  marks: { value: number; label: string | null }[] | null;
+  _marks: { value: number; label: string | null }[] | null;
 }
-/** GuiMultiSliderProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
+/** GuiMultiSliderProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, _marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
  *
  * (automatically generated)
  */
@@ -648,7 +648,7 @@ export interface GuiMultiSliderProps {
   min_range: number | null;
   precision: number;
   fixed_endpoints: boolean;
-  marks: { value: number; label: string | null }[] | null;
+  _marks: { value: number; label: string | null }[] | null;
 }
 /** GuiNumberProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
  *
@@ -906,7 +906,7 @@ export interface GuiMarkdownMessage {
   type: "GuiMarkdownMessage";
   id: string;
   container_id: string;
-  props: { order: number; markdown: string; visible: boolean };
+  props: { order: number; _markdown: string; visible: boolean };
 }
 /** GuiProgressBarMessage(value: 'float', id: 'str', container_id: 'str', props: 'GuiProgressBarProps')
  *
@@ -949,7 +949,7 @@ export interface GuiPlotlyMessage {
   container_id: string;
   props: {
     order: number;
-    plotly_json_str: string;
+    _plotly_json_str: string;
     aspect: number;
     visible: boolean;
   };
@@ -1075,7 +1075,7 @@ export interface GuiSliderMessage {
     max: number;
     step: number | null;
     precision: number;
-    marks: { value: number; label: string | null }[] | null;
+    _marks: { value: number; label: string | null }[] | null;
   };
 }
 /** GuiMultiSliderMessage(value: 'tuple[float, ...]', id: 'str', container_id: 'str', props: 'GuiMultiSliderProps')
@@ -1099,7 +1099,7 @@ export interface GuiMultiSliderMessage {
     min_range: number | null;
     precision: number;
     fixed_endpoints: boolean;
-    marks: { value: number; label: string | null }[] | null;
+    _marks: { value: number; label: string | null }[] | null;
   };
 }
 /** GuiNumberMessage(value: 'float', id: 'str', container_id: 'str', props: 'GuiNumberProps')

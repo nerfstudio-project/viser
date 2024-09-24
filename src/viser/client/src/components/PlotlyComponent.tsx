@@ -82,9 +82,7 @@ const PlotWithAspect = React.memo(function PlotWithAspect({
 });
 
 export default function PlotlyComponent({
-  visible,
-  plotly_json_str,
-  aspect,
+  props: { visible, _plotly_json_str: plotly_json_str, aspect },
 }: GuiPlotlyMessage) {
   if (!visible) return <></>;
 

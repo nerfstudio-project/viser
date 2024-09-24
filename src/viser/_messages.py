@@ -806,7 +806,7 @@ class GuiFolderMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiMarkdownProps:
     order: float
-    markdown: str
+    _markdown: str
     visible: bool
 
 
@@ -836,7 +836,7 @@ class GuiProgressBarMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiPlotlyProps:
     order: float
-    plotly_json_str: str
+    _plotly_json_str: str
     aspect: float
     visible: bool
 
@@ -910,7 +910,7 @@ class GuiSliderProps(GuiBaseProps):
     max: float
     step: Optional[float]
     precision: int
-    marks: Optional[Tuple[GuiSliderMark, ...]] = None
+    _marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
 @dataclasses.dataclass
@@ -929,7 +929,7 @@ class GuiMultiSliderProps(GuiBaseProps):
     min_range: Optional[float]
     precision: int
     fixed_endpoints: bool = False
-    marks: Optional[Tuple[GuiSliderMark, ...]] = None
+    _marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
 @dataclasses.dataclass
