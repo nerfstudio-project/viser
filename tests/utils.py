@@ -5,9 +5,10 @@ from typing import Any, Callable, Tuple, Type, TypeVar, Union, cast
 import numpy as np
 import numpy.typing as npt
 import pytest
-import viser.transforms as vtf
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
+import viser.transforms as vtf
 
 T = TypeVar("T", bound=vtf.MatrixLieGroup)
 
