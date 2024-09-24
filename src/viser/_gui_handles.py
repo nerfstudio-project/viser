@@ -30,6 +30,7 @@ from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._messages import (
     GuiBaseProps,
+    GuiButtonGroupProps,
     GuiCheckboxProps,
     GuiCloseModalMessage,
     GuiDropdownProps,
@@ -316,7 +317,7 @@ class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
         return func
 
 
-class GuiButtonGroupHandle(_GuiInputHandle[StringType], Generic[StringType]):
+class GuiButtonGroupHandle(_GuiInputHandle[str], GuiButtonGroupProps):
     """Handle for a button group input in our visualizer.
 
     Lets us detect clicks."""

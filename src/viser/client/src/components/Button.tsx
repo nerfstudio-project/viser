@@ -8,10 +8,9 @@ import { htmlIconWrapper } from "./ComponentStyles.css";
 
 export default function ButtonComponent({
   id,
-  props: { visible, disabled, label, ...otherProps },
+  props: { visible, disabled, label, color, _icon_html: icon_html },
 }: GuiButtonMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
-  const { color, icon_html } = otherProps;
   if (!(visible ?? true)) return <></>;
 
   return (

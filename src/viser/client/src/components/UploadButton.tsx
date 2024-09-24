@@ -11,7 +11,7 @@ import { htmlIconWrapper } from "./ComponentStyles.css";
 
 export default function UploadButtonComponent({
   id,
-  props: { disabled, mime_type, color, icon_html, label },
+  props: { disabled, mime_type, color, _icon_html: icon_html, label },
 }: GuiUploadButtonMessage) {
   // Handle GUI input types.
   const viewer = useContext(ViewerContext)!;

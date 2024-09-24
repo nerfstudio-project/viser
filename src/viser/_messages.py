@@ -102,17 +102,17 @@ class NotificationMessage(Message):
 @dataclasses.dataclass
 class NotificationProps:
     title: str
-    """Title of the notification. For handles, synchronized automatically when assigned."""
+    """Title of the notification. Synchronized automatically when assigned."""
     body: str
-    """Body text of the notification. For handles, synchronized automatically when assigned."""
+    """Body text of the notification. Synchronized automatically when assigned."""
     loading: bool
-    """Whether to show a loading indicator. For handles, synchronized automatically when assigned."""
+    """Whether to show a loading indicator. Synchronized automatically when assigned."""
     with_close_button: bool
-    """Whether to show a close button. For handles, synchronized automatically when assigned."""
+    """Whether to show a close button. Synchronized automatically when assigned."""
     auto_close: Union[int, Literal[False]]
-    """Time in milliseconds after which the notification should auto-close, or False to disable auto-close. For handles, synchronized automatically when assigned."""
+    """Time in milliseconds after which the notification should auto-close, or False to disable auto-close. Synchronized automatically when assigned."""
     color: Optional[Color]
-    """Color of the notification. For handles, synchronized automatically when assigned."""
+    """Color of the notification. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -180,17 +180,17 @@ class CameraFrustumMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class CameraFrustumProps:
     fov: float
-    """Field of view of the camera (in radians). For handles, synchronized automatically when assigned."""
+    """Field of view of the camera (in radians). Synchronized automatically when assigned."""
     aspect: float
-    """Aspect ratio of the camera (width over height). For handles, synchronized automatically when assigned."""
+    """Aspect ratio of the camera (width over height). Synchronized automatically when assigned."""
     scale: float
-    """Scale factor for the size of the frustum. For handles, synchronized automatically when assigned."""
+    """Scale factor for the size of the frustum. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
-    """Color of the frustum as RGB integers. For handles, synchronized automatically when assigned."""
+    """Color of the frustum as RGB integers. Synchronized automatically when assigned."""
     image_media_type: Optional[Literal["image/jpeg", "image/png"]]
-    """Format of the provided image ('image/jpeg' or 'image/png'). For handles, synchronized automatically when assigned."""
+    """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
     image_binary: Optional[bytes]
-    """Optional image to be displayed on the frustum. For handles, synchronized automatically when assigned."""
+    """Optional image to be displayed on the frustum. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -204,9 +204,9 @@ class GlbMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class GlbProps:
     glb_data: bytes
-    """A binary payload containing the GLB data. For handles, synchronized automatically when assigned."""
+    """A binary payload containing the GLB data. Synchronized automatically when assigned."""
     scale: float
-    """A scale for resizing the GLB asset. For handles, synchronized automatically when assigned."""
+    """A scale for resizing the GLB asset. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -220,13 +220,13 @@ class FrameMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class FrameProps:
     show_axes: bool
-    """Boolean to indicate whether to show the frame as a set of axes + origin sphere. For handles, synchronized automatically when assigned."""
+    """Boolean to indicate whether to show the frame as a set of axes + origin sphere. Synchronized automatically when assigned."""
     axes_length: float
-    """Length of each axis. For handles, synchronized automatically when assigned."""
+    """Length of each axis. Synchronized automatically when assigned."""
     axes_radius: float
-    """Radius of each axis. For handles, synchronized automatically when assigned."""
+    """Radius of each axis. Synchronized automatically when assigned."""
     origin_radius: float
-    """Radius of the origin sphere. For handles, synchronized automatically when assigned."""
+    """Radius of the origin sphere. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -243,13 +243,13 @@ class BatchedAxesMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class BatchedAxesProps:
     wxyzs_batched: onpt.NDArray[onp.float32]
-    """Float array of shape (N,4) representing quaternion rotations. For handles, synchronized automatically when assigned."""
+    """Float array of shape (N,4) representing quaternion rotations. Synchronized automatically when assigned."""
     positions_batched: onpt.NDArray[onp.float32]
-    """Float array of shape (N,3) representing positions. For handles, synchronized automatically when assigned."""
+    """Float array of shape (N,3) representing positions. Synchronized automatically when assigned."""
     axes_length: float
-    """Length of each axis. For handles, synchronized automatically when assigned."""
+    """Length of each axis. Synchronized automatically when assigned."""
     axes_radius: float
-    """Radius of each axis. For handles, synchronized automatically when assigned."""
+    """Radius of each axis. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -263,27 +263,27 @@ class GridMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class GridProps:
     width: float
-    """Width of the grid. For handles, synchronized automatically when assigned."""
+    """Width of the grid. Synchronized automatically when assigned."""
     height: float
-    """Height of the grid. For handles, synchronized automatically when assigned."""
+    """Height of the grid. Synchronized automatically when assigned."""
     width_segments: int
-    """Number of segments along the width. For handles, synchronized automatically when assigned."""
+    """Number of segments along the width. Synchronized automatically when assigned."""
     height_segments: int
-    """Number of segments along the height. For handles, synchronized automatically when assigned."""
+    """Number of segments along the height. Synchronized automatically when assigned."""
     plane: Literal["xz", "xy", "yx", "yz", "zx", "zy"]
-    """The plane in which the grid is oriented. For handles, synchronized automatically when assigned."""
+    """The plane in which the grid is oriented. Synchronized automatically when assigned."""
     cell_color: Tuple[int, int, int]
-    """Color of the grid cells as RGB integers. For handles, synchronized automatically when assigned."""
+    """Color of the grid cells as RGB integers. Synchronized automatically when assigned."""
     cell_thickness: float
-    """Thickness of the grid lines. For handles, synchronized automatically when assigned."""
+    """Thickness of the grid lines. Synchronized automatically when assigned."""
     cell_size: float
-    """Size of each cell in the grid. For handles, synchronized automatically when assigned."""
+    """Size of each cell in the grid. Synchronized automatically when assigned."""
     section_color: Tuple[int, int, int]
-    """Color of the grid sections as RGB integers. For handles, synchronized automatically when assigned."""
+    """Color of the grid sections as RGB integers. Synchronized automatically when assigned."""
     section_thickness: float
-    """Thickness of the section lines. For handles, synchronized automatically when assigned."""
+    """Thickness of the section lines. Synchronized automatically when assigned."""
     section_size: float
-    """Size of each section in the grid. For handles, synchronized automatically when assigned."""
+    """Size of each section in the grid. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -297,7 +297,7 @@ class LabelMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class LabelProps:
     text: str
-    """Text content of the label. For handles, synchronized automatically when assigned."""
+    """Text content of the label. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -311,9 +311,9 @@ class Gui3DMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class Gui3DProps:
     order: float
-    """Order value for arranging GUI elements. For handles, synchronized automatically when assigned."""
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     container_id: str
-    """Identifier for the container. For handles, synchronized automatically when assigned."""
+    """Identifier for the container. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -332,13 +332,13 @@ class PointCloudMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class PointCloudProps:
     points: onpt.NDArray[onp.float32]
-    """Location of points. Should have shape (N, 3). For handles, synchronized automatically when assigned."""
+    """Location of points. Should have shape (N, 3). Synchronized automatically when assigned."""
     colors: onpt.NDArray[onp.uint8]
-    """Colors of points. Should have shape (N, 3) or (3,). For handles, synchronized automatically when assigned."""
+    """Colors of points. Should have shape (N, 3) or (3,). Synchronized automatically when assigned."""
     point_size: float
-    """Size of each point. For handles, synchronized automatically when assigned."""
+    """Size of each point. Synchronized automatically when assigned."""
     point_ball_norm: float
-    """Norm value determining the shape of each point. For handles, synchronized automatically when assigned."""
+    """Norm value determining the shape of each point. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -362,9 +362,9 @@ class DirectionalLightMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class DirectionalLightProps:
     color: Tuple[int, int, int]
-    """Color of the directional light. For handles, synchronized automatically when assigned."""
+    """Color of the directional light. Synchronized automatically when assigned."""
     intensity: float
-    """Intensity of the directional light. For handles, synchronized automatically when assigned."""
+    """Intensity of the directional light. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -378,9 +378,9 @@ class AmbientLightMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class AmbientLightProps:
     color: Tuple[int, int, int]
-    """Color of the ambient light. For handles, synchronized automatically when assigned."""
+    """Color of the ambient light. Synchronized automatically when assigned."""
     intensity: float
-    """Intensity of the ambient light. For handles, synchronized automatically when assigned."""
+    """Intensity of the ambient light. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -394,11 +394,11 @@ class HemisphereLightMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class HemisphereLightProps:
     sky_color: Tuple[int, int, int]
-    """Sky color of the hemisphere light. For handles, synchronized automatically when assigned."""
+    """Sky color of the hemisphere light. Synchronized automatically when assigned."""
     ground_color: Tuple[int, int, int]
-    """Ground color of the hemisphere light. For handles, synchronized automatically when assigned."""
+    """Ground color of the hemisphere light. Synchronized automatically when assigned."""
     intensity: float
-    """Intensity of the hemisphere light. For handles, synchronized automatically when assigned."""
+    """Intensity of the hemisphere light. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -412,13 +412,13 @@ class PointLightMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class PointLightProps:
     color: Tuple[int, int, int]
-    """Color of the point light. For handles, synchronized automatically when assigned."""
+    """Color of the point light. Synchronized automatically when assigned."""
     intensity: float
-    """Intensity of the point light. For handles, synchronized automatically when assigned."""
+    """Intensity of the point light. Synchronized automatically when assigned."""
     distance: float
-    """Distance of the point light. For handles, synchronized automatically when assigned."""
+    """Distance of the point light. Synchronized automatically when assigned."""
     decay: float
-    """Decay of the point light. For handles, synchronized automatically when assigned."""
+    """Decay of the point light. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -432,13 +432,13 @@ class RectAreaLightMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class RectAreaLightProps:
     color: Tuple[int, int, int]
-    """Color of the rectangular area light. For handles, synchronized automatically when assigned."""
+    """Color of the rectangular area light. Synchronized automatically when assigned."""
     intensity: float
-    """Intensity of the rectangular area light. For handles, synchronized automatically when assigned."""
+    """Intensity of the rectangular area light. Synchronized automatically when assigned."""
     width: float
-    """Width of the rectangular area light. For handles, synchronized automatically when assigned."""
+    """Width of the rectangular area light. Synchronized automatically when assigned."""
     height: float
-    """Height of the rectangular area light. For handles, synchronized automatically when assigned."""
+    """Height of the rectangular area light. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -452,17 +452,17 @@ class SpotLightMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class SpotLightProps:
     color: Tuple[int, int, int]
-    """Color of the spot light. For handles, synchronized automatically when assigned."""
+    """Color of the spot light. Synchronized automatically when assigned."""
     intensity: float
-    """Intensity of the spot light. For handles, synchronized automatically when assigned."""
+    """Intensity of the spot light. Synchronized automatically when assigned."""
     distance: float
-    """Distance of the spot light. For handles, synchronized automatically when assigned."""
+    """Distance of the spot light. Synchronized automatically when assigned."""
     angle: float
-    """Angle of the spot light. For handles, synchronized automatically when assigned."""
+    """Angle of the spot light. Synchronized automatically when assigned."""
     penumbra: float
-    """Penumbra of the spot light. For handles, synchronized automatically when assigned."""
+    """Penumbra of the spot light. Synchronized automatically when assigned."""
     decay: float
-    """Decay of the spot light. For handles, synchronized automatically when assigned."""
+    """Decay of the spot light. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         assert self.angle <= onp.pi / 2
@@ -515,23 +515,23 @@ class MeshMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class MeshProps:
     vertices: onpt.NDArray[onp.float32]
-    """A numpy array of vertex positions. Should have shape (V, 3). For handles, synchronized automatically when assigned."""
+    """A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned."""
     faces: onpt.NDArray[onp.uint32]
-    """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). For handles, synchronized automatically when assigned."""
+    """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned."""
     color: Optional[Tuple[int, int, int]]
-    """Color of the mesh as RGB integers. For handles, synchronized automatically when assigned."""
+    """Color of the mesh as RGB integers. Synchronized automatically when assigned."""
     vertex_colors: Optional[onpt.NDArray[onp.uint8]]
-    """Optional array of vertex colors. For handles, synchronized automatically when assigned."""
+    """Optional array of vertex colors. Synchronized automatically when assigned."""
     wireframe: bool
-    """Boolean indicating if the mesh should be rendered as a wireframe. For handles, synchronized automatically when assigned."""
+    """Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned."""
     opacity: Optional[float]
-    """Opacity of the mesh. None means opaque. For handles, synchronized automatically when assigned."""
+    """Opacity of the mesh. None means opaque. Synchronized automatically when assigned."""
     flat_shading: bool
-    """Whether to do flat shading. For handles, synchronized automatically when assigned."""
+    """Whether to do flat shading. Synchronized automatically when assigned."""
     side: Literal["front", "back", "double"]
-    """Side of the surface to render. For handles, synchronized automatically when assigned."""
+    """Side of the surface to render. Synchronized automatically when assigned."""
     material: Literal["standard", "toon3", "toon5"]
-    """Material type of the mesh. For handles, synchronized automatically when assigned."""
+    """Material type of the mesh. Synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -554,13 +554,13 @@ class SkinnedMeshProps(MeshProps):
     Vertices are internally canonicalized to float32, faces to uint32."""
 
     bone_wxyzs: Tuple[Tuple[float, float, float, float], ...]
-    """Tuple of quaternions representing bone orientations. For handles, synchronized automatically when assigned."""
+    """Tuple of quaternions representing bone orientations. Synchronized automatically when assigned."""
     bone_positions: Tuple[Tuple[float, float, float], ...]
-    """Tuple of positions representing bone positions. For handles, synchronized automatically when assigned."""
+    """Tuple of positions representing bone positions. Synchronized automatically when assigned."""
     skin_indices: onpt.NDArray[onp.uint16]
-    """Array of skin indices. Should have shape (V, 4). For handles, synchronized automatically when assigned."""
+    """Array of skin indices. Should have shape (V, 4). Synchronized automatically when assigned."""
     skin_weights: onpt.NDArray[onp.float32]
-    """Array of skin weights. Should have shape (V, 4). For handles, synchronized automatically when assigned."""
+    """Array of skin weights. Should have shape (V, 4). Synchronized automatically when assigned."""
 
     def __post_init__(self):
         # Check shapes.
@@ -615,33 +615,33 @@ class TransformControlsMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class TransformControlsProps:
     scale: float
-    """Scale of the transform controls. For handles, synchronized automatically when assigned."""
+    """Scale of the transform controls. Synchronized automatically when assigned."""
     line_width: float
-    """Width of the lines used in the gizmo. For handles, synchronized automatically when assigned."""
+    """Width of the lines used in the gizmo. Synchronized automatically when assigned."""
     fixed: bool
-    """Boolean indicating if the gizmo should be fixed in position. For handles, synchronized automatically when assigned."""
+    """Boolean indicating if the gizmo should be fixed in position. Synchronized automatically when assigned."""
     auto_transform: bool
-    """Whether the transform should be applied automatically. For handles, synchronized automatically when assigned."""
+    """Whether the transform should be applied automatically. Synchronized automatically when assigned."""
     active_axes: Tuple[bool, bool, bool]
-    """Tuple of booleans indicating active axes. For handles, synchronized automatically when assigned."""
+    """Tuple of booleans indicating active axes. Synchronized automatically when assigned."""
     disable_axes: bool
-    """Boolean to disable axes interaction. For handles, synchronized automatically when assigned."""
+    """Boolean to disable axes interaction. Synchronized automatically when assigned."""
     disable_sliders: bool
-    """Boolean to disable slider interaction. For handles, synchronized automatically when assigned."""
+    """Boolean to disable slider interaction. Synchronized automatically when assigned."""
     disable_rotations: bool
-    """Boolean to disable rotation interaction. For handles, synchronized automatically when assigned."""
+    """Boolean to disable rotation interaction. Synchronized automatically when assigned."""
     translation_limits: Tuple[
         Tuple[float, float], Tuple[float, float], Tuple[float, float]
     ]
-    """Limits for translation. For handles, synchronized automatically when assigned."""
+    """Limits for translation. Synchronized automatically when assigned."""
     rotation_limits: Tuple[
         Tuple[float, float], Tuple[float, float], Tuple[float, float]
     ]
-    """Limits for rotation. For handles, synchronized automatically when assigned."""
+    """Limits for rotation. Synchronized automatically when assigned."""
     depth_test: bool
-    """Boolean indicating if depth testing should be used when rendering. For handles, synchronized automatically when assigned."""
+    """Boolean indicating if depth testing should be used when rendering. Synchronized automatically when assigned."""
     opacity: float
-    """Opacity of the gizmo. For handles, synchronized automatically when assigned."""
+    """Opacity of the gizmo. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -723,13 +723,13 @@ class ImageMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class ImageProps:
     media_type: Literal["image/jpeg", "image/png"]
-    """Format of the provided image ('image/jpeg' or 'image/png'). For handles, synchronized automatically when assigned."""
+    """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
     data: bytes
-    """Binary data of the image. For handles, synchronized automatically when assigned."""
+    """Binary data of the image. Synchronized automatically when assigned."""
     render_width: float
-    """Width at which the image should be rendered in the scene. For handles, synchronized automatically when assigned."""
+    """Width at which the image should be rendered in the scene. Synchronized automatically when assigned."""
     render_height: float
-    """Height at which the image should be rendered in the scene. For handles, synchronized automatically when assigned."""
+    """Height at which the image should be rendered in the scene. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -782,18 +782,27 @@ class GuiBaseProps:
     """Base message type containing fields commonly used by GUI inputs."""
 
     order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     label: str
+    """Label text for the GUI element. Synchronized automatically when assigned."""
     hint: Optional[str]
+    """Optional hint text for the GUI element. Synchronized automatically when assigned."""
     visible: bool
+    """Visibility state of the GUI element. Synchronized automatically when assigned."""
     disabled: bool
+    """Disabled state of the GUI element. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
 class GuiFolderProps:
     order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     label: str
+    """Label text for the GUI folder. Synchronized automatically when assigned."""
     visible: bool
+    """Visibility state of the GUI folder. Synchronized automatically when assigned."""
     expand_by_default: bool
+    """Whether the folder should be expanded by default. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -806,8 +815,11 @@ class GuiFolderMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiMarkdownProps:
     order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     _markdown: str
+    """(Private) Markdown content to be displayed. Synchronized automatically when assigned."""
     visible: bool
+    """Visibility state of the markdown element. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -820,9 +832,17 @@ class GuiMarkdownMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiProgressBarProps:
     order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     animated: bool
+    """Whether the progress bar should be animated. Synchronized automatically when assigned."""
     color: Optional[Color]
+    """Color of the progress bar. Synchronized automatically when assigned."""
     visible: bool
+    """Visibility state of the progress bar. Synchronized automatically when assigned."""
+    label: str
+    """Label text for the progress bar. Synchronized automatically when assigned."""
+    value: float
+    """Current value of the progress bar. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -836,9 +856,13 @@ class GuiProgressBarMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiPlotlyProps:
     order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     _plotly_json_str: str
+    """(Private) JSON string representation of the Plotly figure. Synchronized automatically when assigned."""
     aspect: float
+    """Aspect ratio of the plot. Synchronized automatically when assigned."""
     visible: bool
+    """Visibility state of the plot. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -850,6 +874,7 @@ class GuiPlotlyMessage(Message, tag="GuiComponentMessage"):
 
 @dataclasses.dataclass
 class GuiTabGroupProps:
+    # Note: for tab groups we currently don't expose properties automatically.
     tab_labels: Tuple[str, ...]
     tab_icons_html: Tuple[Union[str, None], ...]
     tab_container_ids: Tuple[str, ...]
@@ -879,7 +904,9 @@ class GuiCloseModalMessage(Message):
 @dataclasses.dataclass
 class GuiButtonProps(GuiBaseProps):
     color: Optional[Color]
-    icon_html: Optional[str]
+    """Color of the button. Synchronized automatically when assigned."""
+    _icon_html: Optional[str]
+    """(Private) HTML string for the icon to be displayed on the button. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -893,8 +920,11 @@ class GuiButtonMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiUploadButtonProps(GuiBaseProps):
     color: Optional[Color]
-    icon_html: Optional[str]
+    """Color of the upload button. Synchronized automatically when assigned."""
+    _icon_html: Optional[str]
+    """(Private) HTML string for the icon to be displayed on the upload button. Synchronized automatically when assigned."""
     mime_type: str
+    """MIME type of the files that can be uploaded. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -907,10 +937,15 @@ class GuiUploadButtonMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiSliderProps(GuiBaseProps):
     min: float
+    """Minimum value for the slider. Synchronized automatically when assigned."""
     max: float
-    step: Optional[float]
+    """Maximum value for the slider. Synchronized automatically when assigned."""
+    step: float
+    """Step size for the slider. Synchronized automatically when assigned."""
     precision: int
+    """Number of decimal places to display for the slider value. Synchronized automatically when assigned."""
     _marks: Optional[Tuple[GuiSliderMark, ...]] = None
+    """(Private) Optional tuple of GuiSliderMark objects to display custom marks on the slider. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -924,12 +959,19 @@ class GuiSliderMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiMultiSliderProps(GuiBaseProps):
     min: float
+    """Minimum value for the multi-slider. Synchronized automatically when assigned."""
     max: float
-    step: Optional[float]
+    """Maximum value for the multi-slider. Synchronized automatically when assigned."""
+    step: float
+    """Step size for the multi-slider. Synchronized automatically when assigned."""
     min_range: Optional[float]
+    """Minimum allowed range between slider handles. Synchronized automatically when assigned."""
     precision: int
+    """Number of decimal places to display for the multi-slider values. Synchronized automatically when assigned."""
     fixed_endpoints: bool = False
+    """If True, the first and last handles cannot be moved. Synchronized automatically when assigned."""
     _marks: Optional[Tuple[GuiSliderMark, ...]] = None
+    """(Private) Optional tuple of GuiSliderMark objects to display custom marks on the multi-slider. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -943,9 +985,13 @@ class GuiMultiSliderMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiNumberProps(GuiBaseProps):
     precision: int
+    """Number of decimal places to display for the number value. Synchronized automatically when assigned."""
     step: float
+    """Step size for incrementing/decrementing the number value. Synchronized automatically when assigned."""
     min: Optional[float]
+    """Minimum allowed value for the number input. Synchronized automatically when assigned."""
     max: Optional[float]
+    """Maximum allowed value for the number input. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -998,9 +1044,13 @@ class GuiCheckboxMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiVector2Props(GuiBaseProps):
     min: Optional[Tuple[float, float]]
+    """Minimum allowed values for each component of the vector. Synchronized automatically when assigned."""
     max: Optional[Tuple[float, float]]
+    """Maximum allowed values for each component of the vector. Synchronized automatically when assigned."""
     step: float
+    """Step size for incrementing/decrementing each component of the vector. Synchronized automatically when assigned."""
     precision: int
+    """Number of decimal places to display for each component of the vector. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -1014,9 +1064,13 @@ class GuiVector2Message(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiVector3Props(GuiBaseProps):
     min: Optional[Tuple[float, float, float]]
+    """Minimum allowed values for each component of the vector. Synchronized automatically when assigned."""
     max: Optional[Tuple[float, float, float]]
+    """Maximum allowed values for each component of the vector. Synchronized automatically when assigned."""
     step: float
+    """Step size for incrementing/decrementing each component of the vector. Synchronized automatically when assigned."""
     precision: int
+    """Number of decimal places to display for each component of the vector. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -1042,7 +1096,9 @@ class GuiTextMessage(Message, tag="GuiComponentMessage"):
 
 @dataclasses.dataclass
 class GuiDropdownProps(GuiBaseProps):
+    # This will actually be manually overridden for better types.
     options: Tuple[str, ...]
+    """Tuple of options for the dropdown. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -1056,6 +1112,7 @@ class GuiDropdownMessage(Message, tag="GuiComponentMessage"):
 @dataclasses.dataclass
 class GuiButtonGroupProps(GuiBaseProps):
     options: Tuple[str, ...]
+    """Tuple of buttons for the button group. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -1141,19 +1198,19 @@ class CatmullRomSplineMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class CatmullRomSplineProps:
     positions: Tuple[Tuple[float, float, float], ...]
-    """A tuple of 3D positions (x, y, z) defining the spline's path. For handles, synchronized automatically when assigned."""
+    """A tuple of 3D positions (x, y, z) defining the spline's path. Synchronized automatically when assigned."""
     curve_type: Literal["centripetal", "chordal", "catmullrom"]
-    """Type of the curve ('centripetal', 'chordal', 'catmullrom'). For handles, synchronized automatically when assigned."""
+    """Type of the curve ('centripetal', 'chordal', 'catmullrom'). Synchronized automatically when assigned."""
     tension: float
-    """Tension of the curve. Affects the tightness of the curve. For handles, synchronized automatically when assigned."""
+    """Tension of the curve. Affects the tightness of the curve. Synchronized automatically when assigned."""
     closed: bool
-    """Boolean indicating if the spline is closed (forms a loop). For handles, synchronized automatically when assigned."""
+    """Boolean indicating if the spline is closed (forms a loop). Synchronized automatically when assigned."""
     line_width: float
-    """Width of the spline line. For handles, synchronized automatically when assigned."""
+    """Width of the spline line. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
-    """Color of the spline as RGB integers. For handles, synchronized automatically when assigned."""
+    """Color of the spline as RGB integers. Synchronized automatically when assigned."""
     segments: Optional[int]
-    """Number of segments to divide the spline into. For handles, synchronized automatically when assigned."""
+    """Number of segments to divide the spline into. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
@@ -1167,15 +1224,15 @@ class CubicBezierSplineMessage(Message, tag="SceneNodeMessage"):
 @dataclasses.dataclass
 class CubicBezierSplineProps:
     positions: Tuple[Tuple[float, float, float], ...]
-    """A tuple of 3D positions (x, y, z) defining the spline's key points. For handles, synchronized automatically when assigned."""
+    """A tuple of 3D positions (x, y, z) defining the spline's key points. Synchronized automatically when assigned."""
     control_points: Tuple[Tuple[float, float, float], ...]
-    """A tuple of control points for Bezier curve shaping. For handles, synchronized automatically when assigned."""
+    """A tuple of control points for Bezier curve shaping. Synchronized automatically when assigned."""
     line_width: float
-    """Width of the spline line. For handles, synchronized automatically when assigned."""
+    """Width of the spline line. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
-    """Color of the spline as RGB integers. For handles, synchronized automatically when assigned."""
+    """Color of the spline as RGB integers. Synchronized automatically when assigned."""
     segments: Optional[int]
-    """Number of segments to divide the spline into. For handles, synchronized automatically when assigned."""
+    """Number of segments to divide the spline into. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass

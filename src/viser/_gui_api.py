@@ -737,7 +737,7 @@ class GuiApi:
                         label=label,
                         hint=hint,
                         color=color,
-                        icon_html=None if icon is None else svg_from_icon(icon),
+                        _icon_html=None if icon is None else svg_from_icon(icon),
                         disabled=disabled,
                         visible=visible,
                     ),
@@ -791,49 +791,22 @@ class GuiApi:
                         hint=hint,
                         color=color,
                         mime_type=mime_type,
-                        icon_html=None if icon is None else svg_from_icon(icon),
+                        _icon_html=None if icon is None else svg_from_icon(icon),
                     ),
                 ),
                 is_button=True,
             )
         )
 
-    # The TLiteralString overload tells pyright to resolve the value type to a Literal
-    # whenever possible.
-    #
-    # TString is helpful when the input types are generic (could be str, could be
-    # Literal).
-    @overload
     def add_button_group(
         self,
         label: str,
-        options: Sequence[TLiteralString],
+        options: Sequence[str],
         visible: bool = True,
         disabled: bool = False,
         hint: str | None = None,
         order: float | None = None,
-    ) -> GuiButtonGroupHandle[TLiteralString]: ...
-
-    @overload
-    def add_button_group(
-        self,
-        label: str,
-        options: Sequence[TString],
-        visible: bool = True,
-        disabled: bool = False,
-        hint: str | None = None,
-        order: float | None = None,
-    ) -> GuiButtonGroupHandle[TString]: ...
-
-    def add_button_group(
-        self,
-        label: str,
-        options: Sequence[TLiteralString] | Sequence[TString],
-        visible: bool = True,
-        disabled: bool = False,
-        hint: str | None = None,
-        order: float | None = None,
-    ) -> GuiButtonGroupHandle[Any]:  # Return types are specified in overloads.
+    ) -> GuiButtonGroupHandle:
         """Add a button group to the GUI.
 
         Args:

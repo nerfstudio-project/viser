@@ -543,346 +543,6 @@ export interface ResetSceneMessage {
 export interface ResetGuiMessage {
   type: "ResetGuiMessage";
 }
-/** Base message type containing fields commonly used by GUI inputs.
- *
- * (automatically generated)
- */
-export interface GuiBaseProps {
-  type: "GuiBaseProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiButtonProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', color: 'Optional[Color]', icon_html: 'Optional[str]')
- *
- * (automatically generated)
- */
-export interface GuiButtonProps {
-  type: "GuiButtonProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  color:
-    | "dark"
-    | "gray"
-    | "red"
-    | "pink"
-    | "grape"
-    | "violet"
-    | "indigo"
-    | "blue"
-    | "cyan"
-    | "green"
-    | "lime"
-    | "yellow"
-    | "orange"
-    | "teal"
-    | null;
-  icon_html: string | null;
-}
-/** GuiUploadButtonProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', color: 'Optional[Color]', icon_html: 'Optional[str]', mime_type: 'str')
- *
- * (automatically generated)
- */
-export interface GuiUploadButtonProps {
-  type: "GuiUploadButtonProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  color:
-    | "dark"
-    | "gray"
-    | "red"
-    | "pink"
-    | "grape"
-    | "violet"
-    | "indigo"
-    | "blue"
-    | "cyan"
-    | "green"
-    | "lime"
-    | "yellow"
-    | "orange"
-    | "teal"
-    | null;
-  icon_html: string | null;
-  mime_type: string;
-}
-/** GuiSliderProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', precision: 'int', _marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
- *
- * (automatically generated)
- */
-export interface GuiSliderProps {
-  type: "GuiSliderProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  min: number;
-  max: number;
-  step: number | null;
-  precision: number;
-  _marks: { value: number; label: string | null }[] | null;
-}
-/** GuiMultiSliderProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', min: 'float', max: 'float', step: 'Optional[float]', min_range: 'Optional[float]', precision: 'int', fixed_endpoints: 'bool' = False, _marks: 'Optional[Tuple[GuiSliderMark, ...]]' = None)
- *
- * (automatically generated)
- */
-export interface GuiMultiSliderProps {
-  type: "GuiMultiSliderProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  min: number;
-  max: number;
-  step: number | null;
-  min_range: number | null;
-  precision: number;
-  fixed_endpoints: boolean;
-  _marks: { value: number; label: string | null }[] | null;
-}
-/** GuiNumberProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', precision: 'int', step: 'float', min: 'Optional[float]', max: 'Optional[float]')
- *
- * (automatically generated)
- */
-export interface GuiNumberProps {
-  type: "GuiNumberProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  precision: number;
-  step: number;
-  min: number | null;
-  max: number | null;
-}
-/** GuiRgbProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiRgbProps {
-  type: "GuiRgbProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiRgbaProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiRgbaProps {
-  type: "GuiRgbaProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiCheckboxProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiCheckboxProps {
-  type: "GuiCheckboxProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiVector2Props(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', min: 'Optional[Tuple[float, float]]', max: 'Optional[Tuple[float, float]]', step: 'float', precision: 'int')
- *
- * (automatically generated)
- */
-export interface GuiVector2Props {
-  type: "GuiVector2Props";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  min: [number, number] | null;
-  max: [number, number] | null;
-  step: number;
-  precision: number;
-}
-/** GuiVector3Props(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', min: 'Optional[Tuple[float, float, float]]', max: 'Optional[Tuple[float, float, float]]', step: 'float', precision: 'int')
- *
- * (automatically generated)
- */
-export interface GuiVector3Props {
-  type: "GuiVector3Props";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  min: [number, number, number] | null;
-  max: [number, number, number] | null;
-  step: number;
-  precision: number;
-}
-/** GuiTextProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool')
- *
- * (automatically generated)
- */
-export interface GuiTextProps {
-  type: "GuiTextProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** GuiDropdownProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', options: 'Tuple[str, ...]')
- *
- * (automatically generated)
- */
-export interface GuiDropdownProps {
-  type: "GuiDropdownProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  options: string[];
-}
-/** Handle for a dropdown-style GUI input in our visualizer.
- *
- * Lets us get values, set values, and detect updates.
- *
- * (automatically generated)
- */
-export interface GuiDropdownHandle {
-  type: "GuiDropdownHandle";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  options: string[];
-}
-/** GuiButtonGroupProps(order: 'float', label: 'str', hint: 'Optional[str]', visible: 'bool', disabled: 'bool', options: 'Tuple[str, ...]')
- *
- * (automatically generated)
- */
-export interface GuiButtonGroupProps {
-  type: "GuiButtonGroupProps";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  options: string[];
-}
-export interface _GuiInputHandle {
-  type: "_GuiInputHandle";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** A handle is created for each GUI element that is added in `viser`.
- * Handles can be used to read and write state.
- *
- * When a GUI element is added via :attr:`ViserServer.gui`, state is
- * synchronized between all connected clients. When a GUI element is added via
- * :attr:`ClientHandle.gui`, state is local to a specific client.
- *
- *
- * (automatically generated)
- */
-export interface GuiInputHandle {
-  type: "GuiInputHandle";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** Handle for a dropdown-style GUI input in our visualizer.
- *
- * Lets us get values, set values, and detect updates.
- *
- * (automatically generated)
- */
-export interface GuiDropdownHandle {
-  type: "GuiDropdownHandle";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-  options: string[];
-}
-/** Handle for a button input in our visualizer.
- *
- * Lets us detect clicks.
- *
- * (automatically generated)
- */
-export interface GuiButtonHandle {
-  type: "GuiButtonHandle";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** Handle for an upload file button in our visualizer.
- *
- * The `.value` attribute will be updated with the contents of uploaded files.
- *
- *
- * (automatically generated)
- */
-export interface GuiUploadButtonHandle {
-  type: "GuiUploadButtonHandle";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** Handle for a button group input in our visualizer.
- *
- * Lets us detect clicks.
- *
- * (automatically generated)
- */
-export interface GuiButtonGroupHandle {
-  type: "GuiButtonGroupHandle";
-  order: number;
-  label: string;
-  hint: string | null;
-  visible: boolean;
-  disabled: boolean;
-}
-/** Use to remove markdown.
- *
- * (automatically generated)
- */
-export interface GuiProgressBarHandle {
-  type: "GuiProgressBarHandle";
-  order: number;
-  visible: boolean;
-  label: string;
-  hint: string | null;
-  disabled: boolean;
-}
 /** GuiFolderMessage(id: 'str', container_id: 'str', props: 'GuiFolderProps')
  *
  * (automatically generated)
@@ -937,6 +597,8 @@ export interface GuiProgressBarMessage {
       | "teal"
       | null;
     visible: boolean;
+    label: string;
+    value: number;
   };
 }
 /** GuiPlotlyMessage(id: 'str', container_id: 'str', props: 'GuiPlotlyProps')
@@ -1019,7 +681,7 @@ export interface GuiButtonMessage {
       | "orange"
       | "teal"
       | null;
-    icon_html: string | null;
+    _icon_html: string | null;
   };
 }
 /** GuiUploadButtonMessage(id: 'str', container_id: 'str', props: 'GuiUploadButtonProps')
@@ -1052,7 +714,7 @@ export interface GuiUploadButtonMessage {
       | "orange"
       | "teal"
       | null;
-    icon_html: string | null;
+    _icon_html: string | null;
     mime_type: string;
   };
 }
@@ -1073,7 +735,7 @@ export interface GuiSliderMessage {
     disabled: boolean;
     min: number;
     max: number;
-    step: number | null;
+    step: number;
     precision: number;
     _marks: { value: number; label: string | null }[] | null;
   };
@@ -1095,7 +757,7 @@ export interface GuiMultiSliderMessage {
     disabled: boolean;
     min: number;
     max: number;
-    step: number | null;
+    step: number;
     min_range: number | null;
     precision: number;
     fixed_endpoints: boolean;
@@ -1505,28 +1167,6 @@ export type Message =
   | SceneNodeClickMessage
   | ResetSceneMessage
   | ResetGuiMessage
-  | GuiBaseProps
-  | GuiButtonProps
-  | GuiUploadButtonProps
-  | GuiSliderProps
-  | GuiMultiSliderProps
-  | GuiNumberProps
-  | GuiRgbProps
-  | GuiRgbaProps
-  | GuiCheckboxProps
-  | GuiVector2Props
-  | GuiVector3Props
-  | GuiTextProps
-  | GuiDropdownProps
-  | GuiDropdownHandle
-  | GuiButtonGroupProps
-  | _GuiInputHandle
-  | GuiInputHandle
-  | GuiDropdownHandle
-  | GuiButtonHandle
-  | GuiUploadButtonHandle
-  | GuiButtonGroupHandle
-  | GuiProgressBarHandle
   | GuiFolderMessage
   | GuiMarkdownMessage
   | GuiProgressBarMessage
