@@ -1,4 +1,4 @@
-import { GuiAddUploadButtonMessage } from "../WebsocketMessages";
+import { GuiUploadButtonMessage } from "../WebsocketMessages";
 import { v4 as uuid } from "uuid";
 import { Box, Progress } from "@mantine/core";
 
@@ -9,24 +9,26 @@ import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
 
-export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
+export default function UploadButtonComponent({
+  id,
+  props: { disabled, mime_type, color, icon_html, label },
+}: GuiUploadButtonMessage) {
   // Handle GUI input types.
   const viewer = useContext(ViewerContext)!;
   const fileUploadRef = React.useRef<HTMLInputElement>(null);
   const { isUploading, upload } = useFileUpload({
     viewer,
-    componentId: conf.id,
+    componentId: id,
   });
 
-  const disabled = conf.disabled || isUploading;
   return (
     <Box mx="xs" mb="0.5em">
       <input
         type="file"
         style={{ display: "none" }}
-        id={`file_upload_${conf.id}`}
+        id={`file_upload_${id}`}
         name="file"
-        accept={conf.mime_type}
+        accept={mime_type}
         ref={fileUploadRef}
         onChange={(e) => {
           const input = e.target as HTMLInputElement;
@@ -35,27 +37,27 @@ export default function UploadButtonComponent(conf: GuiAddUploadButtonMessage) {
         }}
       />
       <Button
-        id={conf.id}
+        id={id}
         fullWidth
-        color={conf.color ?? undefined}
+        color={color ?? undefined}
         onClick={() => {
           if (fileUploadRef.current === null) return;
           fileUploadRef.current.value = fileUploadRef.current.defaultValue;
           fileUploadRef.current.click();
         }}
         style={{ height: "2.125em" }}
-        disabled={disabled}
+        disabled={disabled || isUploading}
         size="sm"
         leftSection={
-          conf.icon_html === null ? undefined : (
+          icon_html === null ? undefined : (
             <div
               className={htmlIconWrapper}
-              dangerouslySetInnerHTML={{ __html: conf.icon_html }}
+              dangerouslySetInnerHTML={{ __html: icon_html }}
             />
           )
         }
       >
-        {conf.label}
+        {label}
       </Button>
     </Box>
   );

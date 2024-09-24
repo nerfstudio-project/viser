@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { GuiAddFolderMessage } from "../WebsocketMessages";
+import { GuiFolderMessage } from "../WebsocketMessages";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { Box, Collapse, Paper } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
@@ -9,10 +9,8 @@ import { folderLabel, folderToggleIcon, folderWrapper } from "./Folder.css";
 
 export default function FolderComponent({
   id,
-  label,
-  visible,
-  expand_by_default,
-}: GuiAddFolderMessage) {
+  props: { label, visible, expand_by_default },
+}: GuiFolderMessage) {
   const viewer = React.useContext(ViewerContext)!;
   const [opened, { toggle }] = useDisclosure(expand_by_default);
   const guiIdSet = viewer.useGui((state) => state.guiIdSetFromContainerId[id]);

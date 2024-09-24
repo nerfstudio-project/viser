@@ -1,5 +1,5 @@
 import React from "react";
-import { GuiAddSliderMessage } from "../WebsocketMessages";
+import { GuiSliderMessage } from "../WebsocketMessages";
 import {
   Slider,
   Flex,
@@ -12,17 +12,12 @@ import { sliderDefaultMarks } from "./ComponentStyles.css";
 
 export default function SliderComponent({
   id,
-  label,
-  hint,
-  visible,
-  disabled,
   value,
-  ...otherProps
-}: GuiAddSliderMessage) {
+  props: { label, hint, visible, disabled, min, max, precision, step, marks },
+}: GuiSliderMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   const updateValue = (value: number) => setValue(id, value);
-  const { min, max, precision, step, marks } = otherProps;
   const colorScheme = useMantineColorScheme().colorScheme;
   const input = (
     <Flex justify="space-between">

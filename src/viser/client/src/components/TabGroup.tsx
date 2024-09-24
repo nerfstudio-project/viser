@@ -1,15 +1,12 @@
 import * as React from "react";
-import { GuiAddTabGroupMessage } from "../WebsocketMessages";
+import { GuiTabGroupMessage } from "../WebsocketMessages";
 import { Tabs } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 import { htmlIconWrapper } from "./ComponentStyles.css";
 
 export default function TabGroupComponent({
-  tab_labels,
-  tab_icons_html,
-  tab_container_ids,
-  visible,
-}: GuiAddTabGroupMessage) {
+  props: { tab_labels, tab_icons_html, tab_container_ids, visible },
+}: GuiTabGroupMessage) {
   const { GuiContainer } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (

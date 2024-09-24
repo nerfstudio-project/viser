@@ -1,17 +1,14 @@
 import * as React from "react";
 import { ViserInputComponent } from "./common";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
-import { GuiAddCheckboxMessage } from "../WebsocketMessages";
+import { GuiCheckboxMessage } from "../WebsocketMessages";
 import { Box, Checkbox, Tooltip } from "@mantine/core";
 
 export default function CheckboxComponent({
   id,
-  disabled,
-  visible,
-  hint,
-  label,
   value,
-}: GuiAddCheckboxMessage) {
+  props: { disabled, visible, hint, label },
+}: GuiCheckboxMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   let input = (

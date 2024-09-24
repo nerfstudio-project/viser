@@ -10,7 +10,7 @@ import {
   FileTransferStart,
   Message,
   SceneNodeMessage,
-  isGuiAddComponentMessage,
+  isGuiComponentMessage,
   isSceneNodeMessage,
 } from "./WebsocketMessages";
 import { isTexture } from "./WebsocketFunctions";
@@ -69,7 +69,7 @@ function useMessageHandler() {
 
   // Return message handler.
   return (message: Message) => {
-    if (isGuiAddComponentMessage(message)) {
+    if (isGuiComponentMessage(message)) {
       addGui(message);
       return;
     }

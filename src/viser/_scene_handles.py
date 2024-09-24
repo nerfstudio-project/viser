@@ -43,40 +43,38 @@ def colors_to_uint8(colors: onp.ndarray) -> onpt.NDArray[onp.uint8]:
 class _OverridableScenePropApi:
     """Mixin that allows reading/assigning properties defined in each scene node message."""
 
-    if not TYPE_CHECKING:
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name == "_impl":
+            return object.__setattr__(self, name, value)
 
-        def __setattr__(self, name: str, value: Any) -> None:
-            if name == "_impl":
-                return object.__setattr__(self, name, value)
+        handle = cast(SceneNodeHandle, self)
+        # Get the value of the T TypeVar.
+        if name in self._prop_hints:
+            # Help the user with some casting...
+            hint = self._prop_hints[name]
+            if hint == onpt.NDArray[onp.float32]:
+                value = value.astype(onp.float32)
+            elif hint == onpt.NDArray[onp.uint8] and "color" in name:
+                value = colors_to_uint8(value)
 
-            handle = cast(SceneNodeHandle, self)
-            # Get the value of the T TypeVar.
-            if name in self._prop_hints:
-                # Help the user with some casting...
-                hint = self._prop_hints[name]
-                if hint == onpt.NDArray[onp.float32]:
-                    value = value.astype(onp.float32)
-                elif hint == onpt.NDArray[onp.uint8] and "color" in name:
-                    value = colors_to_uint8(value)
+            setattr(handle._impl.props, name, value)
+            handle._impl.api._websock_interface.queue_message(
+                _messages.SceneNodeUpdateMessage(handle.name, {name: value})
+            )
+        else:
+            return object.__setattr__(self, name, value)
 
-                setattr(handle._impl.props, name, value)
-                handle._impl.api._websock_interface.queue_message(
-                    _messages.SceneNodeUpdateMessage(handle.name, {name: value})
-                )
-            else:
-                return object.__setattr__(self, name, value)
+    def __getattr__(self, name: str) -> Any:
+        if name in self._prop_hints:
+            return getattr(self._impl.props, name)
+        else:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
+            )
 
-        def __getattr__(self, name: str) -> Any:
-            if name in self._prop_hints:
-                return getattr(self._impl.props, name)
-            else:
-                raise AttributeError(
-                    f"'{self.__class__.__name__}' object has no attribute '{name}'"
-                )
-
-        @cached_property
-        def _prop_hints(self) -> Dict[str, Any]:
-            return get_type_hints(type(self._impl.props))
+    @cached_property
+    def _prop_hints(self) -> Dict[str, Any]:
+        return get_type_hints(type(self._impl.props))
 
 
 @dataclasses.dataclass(frozen=True)
@@ -267,7 +265,7 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
 class CameraFrustumHandle(
     _ClickableSceneNodeHandle,
     _messages.CameraFrustumProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for camera frustums."""
 
@@ -275,7 +273,7 @@ class CameraFrustumHandle(
 class DirectionalLightHandle(
     SceneNodeHandle,
     _messages.DirectionalLightProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for directional lights."""
 
@@ -283,7 +281,7 @@ class DirectionalLightHandle(
 class AmbientLightHandle(
     SceneNodeHandle,
     _messages.AmbientLightProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for ambient lights."""
 
@@ -291,7 +289,7 @@ class AmbientLightHandle(
 class HemisphereLightHandle(
     SceneNodeHandle,
     _messages.HemisphereLightProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for hemisphere lights."""
 
@@ -299,7 +297,7 @@ class HemisphereLightHandle(
 class PointLightHandle(
     SceneNodeHandle,
     _messages.PointLightProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for point lights."""
 
@@ -307,7 +305,7 @@ class PointLightHandle(
 class RectAreaLightHandle(
     SceneNodeHandle,
     _messages.RectAreaLightProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for rectangular area lights."""
 
@@ -315,7 +313,7 @@ class RectAreaLightHandle(
 class SpotLightHandle(
     SceneNodeHandle,
     _messages.SpotLightProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for spot lights."""
 
@@ -323,7 +321,7 @@ class SpotLightHandle(
 class PointCloudHandle(
     SceneNodeHandle,
     _messages.PointCloudProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for point clouds. Does not support click events."""
 
@@ -331,7 +329,7 @@ class PointCloudHandle(
 class BatchedAxesHandle(
     _ClickableSceneNodeHandle,
     _messages.BatchedAxesProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for batched coordinate frames."""
 
@@ -339,7 +337,7 @@ class BatchedAxesHandle(
 class FrameHandle(
     _ClickableSceneNodeHandle,
     _messages.FrameProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for coordinate frames."""
 
@@ -347,7 +345,7 @@ class FrameHandle(
 class MeshHandle(
     _ClickableSceneNodeHandle,
     _messages.MeshProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for mesh objects."""
 
@@ -355,7 +353,7 @@ class MeshHandle(
 class GaussianSplatHandle(
     _ClickableSceneNodeHandle,
     _messages.GaussianSplatsProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for Gaussian splatting objects.
 
@@ -366,7 +364,7 @@ class GaussianSplatHandle(
 class MeshSkinnedHandle(
     _ClickableSceneNodeHandle,
     _messages.SkinnedMeshProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for skinned mesh objects."""
 
@@ -434,7 +432,7 @@ class MeshSkinnedBoneHandle:
 class GridHandle(
     SceneNodeHandle,
     _messages.GridProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for grid objects."""
 
@@ -442,7 +440,7 @@ class GridHandle(
 class SplineCatmullRomHandle(
     SceneNodeHandle,
     _messages.CatmullRomSplineProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for Catmull-Rom splines."""
 
@@ -450,7 +448,7 @@ class SplineCatmullRomHandle(
 class SplineCubicBezierHandle(
     SceneNodeHandle,
     _messages.CubicBezierSplineProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for cubic Bezier splines."""
 
@@ -458,7 +456,7 @@ class SplineCubicBezierHandle(
 class GlbHandle(
     _ClickableSceneNodeHandle,
     _messages.GlbProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for GLB objects."""
 
@@ -466,7 +464,7 @@ class GlbHandle(
 class ImageHandle(
     _ClickableSceneNodeHandle,
     _messages.ImageProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for 2D images, rendered in 3D."""
 
@@ -474,7 +472,7 @@ class ImageHandle(
 class LabelHandle(
     SceneNodeHandle,
     _messages.LabelProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for 2D label objects. Does not support click events."""
 
@@ -489,7 +487,7 @@ class _TransformControlsState:
 class TransformControlsHandle(
     _ClickableSceneNodeHandle,
     _messages.TransformControlsProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for interacting with transform control gizmos."""
 
@@ -512,7 +510,7 @@ class TransformControlsHandle(
 class Gui3dContainerHandle(
     SceneNodeHandle,
     _messages.Gui3DProps,
-    _OverridableScenePropApi,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Use as a context to place GUI elements into a 3D GUI container."""
 

@@ -1,12 +1,11 @@
 import { Box, Text } from "@mantine/core";
 import Markdown from "../Markdown";
 import { ErrorBoundary } from "react-error-boundary";
-import { GuiAddMarkdownMessage } from "../WebsocketMessages";
+import { GuiMarkdownMessage } from "../WebsocketMessages";
 
 export default function MarkdownComponent({
-  visible,
-  markdown,
-}: GuiAddMarkdownMessage) {
+  props: { visible, markdown },
+}: GuiMarkdownMessage) {
   if (!visible) return <></>;
   return (
     <Box pb="xs" px="sm" style={{ maxWidth: "95%" }}>

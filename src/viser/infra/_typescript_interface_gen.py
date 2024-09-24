@@ -85,6 +85,8 @@ def _get_ts_type(typ: Type[Any]) -> str:
         return "{ [key: " + _get_ts_type(args[0]) + "]: " + _get_ts_type(args[1]) + " }"
     elif is_typeddict(typ) or dataclasses.is_dataclass(typ):
         hints = get_type_hints(typ)
+        if dataclasses.is_dataclass(typ):
+            hints = {field.name: hints[field.name] for field in dataclasses.fields(typ)}
         optional_keys = getattr(typ, "__optional_keys__", [])
 
         def fmt(key):

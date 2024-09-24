@@ -1,18 +1,13 @@
 import * as React from "react";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
-import { GuiAddVector3Message } from "../WebsocketMessages";
+import { GuiVector3Message } from "../WebsocketMessages";
 import { VectorInput, ViserInputComponent } from "./common";
 
 export default function Vector3Component({
   id,
-  hint,
-  label,
-  visible,
-  disabled,
   value,
-  ...otherProps
-}: GuiAddVector3Message) {
-  const { min, max, step, precision } = otherProps;
+  props: { hint, label, visible, disabled, min, max, step, precision },
+}: GuiVector3Message) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (

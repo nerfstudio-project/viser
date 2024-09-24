@@ -65,7 +65,7 @@ class Message(infra.Message):
 
     @classmethod
     def __init_subclass__(
-        cls, tag: Literal[None, "GuiAddComponentMessage", "SceneNodeMessage"] = None
+        cls, tag: Literal[None, "GuiComponentMessage", "SceneNodeMessage"] = None
     ):
         """Tag will be used to create a union type in TypeScript."""
         super().__init_subclass__()
@@ -778,68 +778,90 @@ class ResetGuiMessage(Message):
 
 
 @dataclasses.dataclass
-class GuiAddFolderMessage(Message, tag="GuiAddComponentMessage"):
-    order: float
-    id: str
-    label: str
-    container_id: str
-    expand_by_default: bool
-    visible: bool
-
-
-@dataclasses.dataclass
-class GuiAddMarkdownMessage(Message, tag="GuiAddComponentMessage"):
-    order: float
-    id: str
-    markdown: str
-    container_id: str
-    visible: bool
-
-
-@dataclasses.dataclass
-class GuiAddProgressBarMessage(Message, tag="GuiAddComponentMessage"):
-    order: float
-    id: str
-    value: float
-    animated: bool
-    color: Optional[Color]
-    container_id: str
-    visible: bool
-
-
-@dataclasses.dataclass
-class GuiAddPlotlyMessage(Message, tag="GuiAddComponentMessage"):
-    order: float
-    id: str
-    plotly_json_str: str
-    aspect: float
-    container_id: str
-    visible: bool
-
-
-@dataclasses.dataclass
-class GuiAddTabGroupMessage(Message, tag="GuiAddComponentMessage"):
-    order: float
-    id: str
-    container_id: str
-    tab_labels: Tuple[str, ...]
-    tab_icons_html: Tuple[Union[str, None], ...]
-    tab_container_ids: Tuple[str, ...]
-    visible: bool
-
-
-@dataclasses.dataclass
-class _GuiAddInputBase(Message):
+class GuiBaseProps(Message):
     """Base message type containing fields commonly used by GUI inputs."""
 
     order: float
-    id: str
     label: str
-    container_id: str
     hint: Optional[str]
-    value: Any
     visible: bool
     disabled: bool
+
+
+@dataclasses.dataclass
+class GuiFolderProps:
+    order: float
+    label: str
+    visible: bool
+    expand_by_default: bool
+
+
+@dataclasses.dataclass
+class GuiFolderMessage(Message, tag="GuiComponentMessage"):
+    id: str
+    container_id: str
+    props: GuiFolderProps
+
+
+@dataclasses.dataclass
+class GuiMarkdownProps:
+    order: float
+    markdown: str
+    visible: bool
+
+
+@dataclasses.dataclass
+class GuiMarkdownMessage(Message, tag="GuiComponentMessage"):
+    id: str
+    container_id: str
+    props: GuiMarkdownProps
+
+
+@dataclasses.dataclass
+class GuiProgressBarProps:
+    order: float
+    animated: bool
+    color: Optional[Color]
+    visible: bool
+
+
+@dataclasses.dataclass
+class GuiProgressBarMessage(Message, tag="GuiComponentMessage"):
+    value: float
+    id: str
+    container_id: str
+    props: GuiProgressBarProps
+
+
+@dataclasses.dataclass
+class GuiPlotlyProps:
+    order: float
+    plotly_json_str: str
+    aspect: float
+    visible: bool
+
+
+@dataclasses.dataclass
+class GuiPlotlyMessage(Message, tag="GuiComponentMessage"):
+    id: str
+    container_id: str
+    props: GuiPlotlyProps
+
+
+@dataclasses.dataclass
+class GuiTabGroupProps:
+    tab_labels: Tuple[str, ...]
+    tab_icons_html: Tuple[Union[str, None], ...]
+    tab_container_ids: Tuple[str, ...]
+    order: float
+    visible: bool
+
+
+@dataclasses.dataclass
+class GuiTabGroupMessage(Message, tag="GuiComponentMessage"):
+    id: str
+    container_id: str
+    props: GuiTabGroupProps
 
 
 @dataclasses.dataclass
@@ -855,33 +877,52 @@ class GuiCloseModalMessage(Message):
 
 
 @dataclasses.dataclass
-class GuiAddButtonMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    # All GUI elements currently need an `value` field.
-    # This makes our job on the frontend easier.
-    value: bool
+class GuiButtonProps(GuiBaseProps):
     color: Optional[Color]
     icon_html: Optional[str]
 
 
 @dataclasses.dataclass
-class GuiAddUploadButtonMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+class GuiButtonMessage(Message, tag="GuiComponentMessage"):
+    value: bool
+    id: str
+    container_id: str
+    props: GuiButtonProps
+
+
+@dataclasses.dataclass
+class GuiUploadButtonProps(GuiBaseProps):
     color: Optional[Color]
     icon_html: Optional[str]
     mime_type: str
 
 
 @dataclasses.dataclass
-class GuiAddSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+class GuiUploadButtonMessage(Message, tag="GuiComponentMessage"):
+    id: str
+    container_id: str
+    props: GuiUploadButtonProps
+
+
+@dataclasses.dataclass
+class GuiSliderProps(GuiBaseProps):
     min: float
     max: float
     step: Optional[float]
-    value: float
     precision: int
     marks: Optional[Tuple[GuiSliderMark, ...]] = None
 
 
 @dataclasses.dataclass
-class GuiAddMultiSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+class GuiSliderMessage(Message, tag="GuiComponentMessage"):
+    value: float
+    id: str
+    container_id: str
+    props: GuiSliderProps
+
+
+@dataclasses.dataclass
+class GuiMultiSliderProps(GuiBaseProps):
     min: float
     max: float
     step: Optional[float]
@@ -892,8 +933,15 @@ class GuiAddMultiSliderMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 
 
 @dataclasses.dataclass
-class GuiAddNumberMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    value: float
+class GuiMultiSliderMessage(Message, tag="GuiComponentMessage"):
+    value: tuple[float, ...]
+    id: str
+    container_id: str
+    props: GuiMultiSliderProps
+
+
+@dataclasses.dataclass
+class GuiNumberProps(GuiBaseProps):
     precision: int
     step: float
     min: Optional[float]
@@ -901,23 +949,54 @@ class GuiAddNumberMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 
 
 @dataclasses.dataclass
-class GuiAddRgbMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+class GuiNumberMessage(Message, tag="GuiComponentMessage"):
+    value: float
+    id: str
+    container_id: str
+    props: GuiNumberProps
+
+
+@dataclasses.dataclass
+class GuiRgbProps(GuiBaseProps):
+    pass
+
+
+@dataclasses.dataclass
+class GuiRgbMessage(Message, tag="GuiComponentMessage"):
     value: Tuple[int, int, int]
+    id: str
+    container_id: str
+    props: GuiRgbProps
 
 
 @dataclasses.dataclass
-class GuiAddRgbaMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+class GuiRgbaProps(GuiBaseProps):
+    pass
+
+
+@dataclasses.dataclass
+class GuiRgbaMessage(Message, tag="GuiComponentMessage"):
     value: Tuple[int, int, int, int]
+    id: str
+    container_id: str
+    props: GuiRgbaProps
 
 
 @dataclasses.dataclass
-class GuiAddCheckboxMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+class GuiCheckboxProps(GuiBaseProps):
+    pass
+
+
+@dataclasses.dataclass
+class GuiCheckboxMessage(Message, tag="GuiComponentMessage"):
     value: bool
+    id: str
+    container_id: str
+    props: GuiCheckboxProps
 
 
 @dataclasses.dataclass
-class GuiAddVector2Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    value: Tuple[float, float]
+class GuiVector2Props(GuiBaseProps):
     min: Optional[Tuple[float, float]]
     max: Optional[Tuple[float, float]]
     step: float
@@ -925,8 +1004,15 @@ class GuiAddVector2Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 
 
 @dataclasses.dataclass
-class GuiAddVector3Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    value: Tuple[float, float, float]
+class GuiVector2Message(Message, tag="GuiComponentMessage"):
+    value: Tuple[float, float]
+    id: str
+    container_id: str
+    props: GuiVector2Props
+
+
+@dataclasses.dataclass
+class GuiVector3Props(GuiBaseProps):
     min: Optional[Tuple[float, float, float]]
     max: Optional[Tuple[float, float, float]]
     step: float
@@ -934,20 +1020,50 @@ class GuiAddVector3Message(_GuiAddInputBase, tag="GuiAddComponentMessage"):
 
 
 @dataclasses.dataclass
-class GuiAddTextMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
-    value: str
+class GuiVector3Message(Message, tag="GuiComponentMessage"):
+    value: Tuple[float, float, float]
+    id: str
+    container_id: str
+    props: GuiVector3Props
 
 
 @dataclasses.dataclass
-class GuiAddDropdownMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+class GuiTextProps(GuiBaseProps):
+    pass
+
+
+@dataclasses.dataclass
+class GuiTextMessage(Message, tag="GuiComponentMessage"):
     value: str
+    id: str
+    container_id: str
+    props: GuiTextProps
+
+
+@dataclasses.dataclass
+class GuiDropdownProps(GuiBaseProps):
     options: Tuple[str, ...]
 
 
 @dataclasses.dataclass
-class GuiAddButtonGroupMessage(_GuiAddInputBase, tag="GuiAddComponentMessage"):
+class GuiDropdownMessage(Message, tag="GuiComponentMessage"):
     value: str
+    id: str
+    container_id: str
+    props: GuiDropdownProps
+
+
+@dataclasses.dataclass
+class GuiButtonGroupProps(GuiBaseProps):
     options: Tuple[str, ...]
+
+
+@dataclasses.dataclass
+class GuiButtonGroupMessage(Message, tag="GuiComponentMessage"):
+    value: str
+    id: str
+    container_id: str
+    props: GuiButtonGroupProps
 
 
 @dataclasses.dataclass
@@ -964,7 +1080,7 @@ class GuiUpdateMessage(Message):
     id: str
     updates: Annotated[
         Dict[str, Any],
-        infra.TypeScriptAnnotationOverride("Partial<GuiAddComponentMessage>"),
+        infra.TypeScriptAnnotationOverride("Partial<GuiComponentMessage>"),
     ]
     """Mapping from property name to new value."""
 

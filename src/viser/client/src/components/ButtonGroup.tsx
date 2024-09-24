@@ -1,17 +1,13 @@
 import * as React from "react";
 import { Button, Flex } from "@mantine/core";
 import { ViserInputComponent } from "./common";
-import { GuiAddButtonGroupMessage } from "../WebsocketMessages";
+import { GuiButtonGroupMessage } from "../WebsocketMessages";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 
 export default function ButtonGroupComponent({
   id,
-  hint,
-  label,
-  visible,
-  disabled,
-  options,
-}: GuiAddButtonGroupMessage) {
+  props: { hint, label, visible, disabled, options },
+}: GuiButtonGroupMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (

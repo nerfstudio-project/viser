@@ -1,5 +1,5 @@
 import React from "react";
-import { GuiAddPlotlyMessage } from "../WebsocketMessages";
+import { GuiPlotlyMessage } from "../WebsocketMessages";
 import { useDisclosure } from "@mantine/hooks";
 import { Modal, Box, Paper, Tooltip } from "@mantine/core";
 import { useElementSize } from "@mantine/hooks";
@@ -85,7 +85,7 @@ export default function PlotlyComponent({
   visible,
   plotly_json_str,
   aspect,
-}: GuiAddPlotlyMessage) {
+}: GuiPlotlyMessage) {
   if (!visible) return <></>;
 
   // Create a modal with the plot, and a button to open it.
