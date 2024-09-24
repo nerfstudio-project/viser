@@ -57,6 +57,10 @@ class _OverridableScenePropApi:
             elif hint == onpt.NDArray[np.uint8] and "color" in name:
                 value = colors_to_uint8(value)
 
+            if getattr(handle._impl.props, name) == value:
+                # Do nothing. Assumes equality is defined for the prop value.
+                return
+
             setattr(handle._impl.props, name, value)
             handle._impl.api._websock_interface.queue_message(
                 _messages.SceneNodeUpdateMessage(handle.name, {name: value})

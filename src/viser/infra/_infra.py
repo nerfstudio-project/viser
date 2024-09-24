@@ -442,13 +442,36 @@ class WebsockServer(WebsockMessageHandler):
 
             use_gzip = "gzip" in request_headers.get("Accept-Encoding", "")
 
-            mime_type = mimetypes.guess_type(relpath)[0]
+            # First, try some known MIME types. Using guess_type() can cause
+            # problems for Javascript on some Windows machines.
+            #
+            # Some references:
+            #     https://github.com/nerfstudio-project/viser/issues/256#issuecomment-2369684252
+            #     https://bugs.python.org/issue43975
+            #     https://github.com/golang/go/issues/32350#issuecomment-525111557
+            #
+            # We're assuming UTF-8, this is mostly reasonable but might want to revisit.
+            mime_type = {
+                ".css": "text/css; charset=utf-8",
+                ".gif": "image/gif",
+                ".htm": "text/html; charset=utf-8",
+                ".html": "text/html; charset=utf-8",
+                ".jpg": "image/jpeg",
+                ".js": "application/javascript",
+                ".wasm": "application/wasm",
+                ".pdf": "application/pdf",
+                ".png": "image/png",
+                ".svg": "image/svg+xml",
+                ".xml": "text/xml; charset=utf-8",
+            }.get(Path(path).suffix.lower(), None)
+            if mime_type is None:
+                mime_type = mimetypes.guess_type(relpath)[0]
             if mime_type is None:
                 mime_type = "application/octet-stream"
+
             response_headers = {
                 "Content-Type": mime_type,
             }
-
             if source_path not in file_cache:
                 file_cache[source_path] = source_path.read_bytes()
             if use_gzip:
