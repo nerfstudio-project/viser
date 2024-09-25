@@ -31,6 +31,13 @@ def main(
 
     # Add playback UI.
     with server.gui.add_folder("Playback"):
+        gui_point_size = server.gui.add_slider(
+            "Point size",
+            min=0.001,
+            max=0.02,
+            step=1e-3,
+            initial_value=0.01,
+        )
         gui_timestep = server.gui.add_slider(
             "Timestep",
             min=0,
@@ -78,6 +85,10 @@ def main(
         nonlocal prev_timestep
         current_timestep = gui_timestep.value
         with server.atomic():
+            # Update point size.
+            point_nodes[current_timestep].point_size = gui_point_size.value
+
+            # Toggle visibility.
             frame_nodes[current_timestep].visible = True
             frame_nodes[prev_timestep].visible = False
         prev_timestep = current_timestep
@@ -91,6 +102,7 @@ def main(
         show_axes=False,
     )
     frame_nodes: list[viser.FrameHandle] = []
+    point_nodes: list[viser.PointCloudHandle] = []
     for i in tqdm(range(num_frames)):
         frame = loader.get_frame(i)
         position, color = frame.get_point_cloud(downsample_factor)
@@ -99,12 +111,14 @@ def main(
         frame_nodes.append(server.scene.add_frame(f"/frames/t{i}", show_axes=False))
 
         # Place the point cloud in the frame.
-        server.scene.add_point_cloud(
-            name=f"/frames/t{i}/point_cloud",
-            points=position,
-            colors=color,
-            point_size=0.01,
-            point_shape="rounded",
+        point_nodes.append(
+            server.scene.add_point_cloud(
+                name=f"/frames/t{i}/point_cloud",
+                points=position,
+                colors=color,
+                point_size=gui_point_size.value,
+                point_shape="rounded",
+            )
         )
 
         # Place the frustum.

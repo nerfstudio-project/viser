@@ -1187,7 +1187,11 @@ class SceneApi:
                 visible=visible,
             )
 
-    def _add_gaussian_splats(
+    def _add_gaussian_splats(self, *args, **kwargs) -> GaussianSplatHandle:
+        """Backwards compatibility shim. Use `add_gaussian_splats()` instead."""
+        return self.add_gaussian_splats(*args, **kwargs)
+
+    def add_gaussian_splats(
         self,
         name: str,
         centers: np.ndarray,
@@ -1200,7 +1204,7 @@ class SceneApi:
     ) -> GaussianSplatHandle:
         """Add a model to render using Gaussian Splatting.
 
-        **Work-in-progress.** This feature is experimental and still under
+        **Experimental.** This feature is experimental and still under
         development. It may be changed or removed.
 
         Arguments:
