@@ -324,7 +324,6 @@ export interface MeshMessage {
     vertices: Uint8Array;
     faces: Uint8Array;
     color: [number, number, number] | null;
-    vertex_colors: Uint8Array | null;
     wireframe: boolean;
     opacity: number | null;
     flat_shading: boolean;
@@ -343,7 +342,6 @@ export interface SkinnedMeshMessage {
     vertices: Uint8Array;
     faces: Uint8Array;
     color: [number, number, number] | null;
-    vertex_colors: Uint8Array | null;
     wireframe: boolean;
     opacity: number | null;
     flat_shading: boolean;

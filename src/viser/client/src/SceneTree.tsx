@@ -222,16 +222,20 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 message.props.plane == "xz"
                   ? new THREE.Euler(0.0, 0.0, 0.0)
                   : message.props.plane == "xy"
-                  ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
-                  : message.props.plane == "yx"
-                  ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
-                  : message.props.plane == "yz"
-                  ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
-                  : message.props.plane == "zx"
-                  ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
-                  : message.props.plane == "zy"
-                  ? new THREE.Euler(-Math.PI / 2.0, 0.0, -Math.PI / 2.0)
-                  : undefined
+                    ? new THREE.Euler(Math.PI / 2.0, 0.0, 0.0)
+                    : message.props.plane == "yx"
+                      ? new THREE.Euler(0.0, Math.PI / 2.0, Math.PI / 2.0)
+                      : message.props.plane == "yz"
+                        ? new THREE.Euler(0.0, 0.0, Math.PI / 2.0)
+                        : message.props.plane == "zx"
+                          ? new THREE.Euler(0.0, Math.PI / 2.0, 0.0)
+                          : message.props.plane == "zy"
+                            ? new THREE.Euler(
+                                -Math.PI / 2.0,
+                                0.0,
+                                -Math.PI / 2.0,
+                              )
+                            : undefined
               }
             />
           </group>

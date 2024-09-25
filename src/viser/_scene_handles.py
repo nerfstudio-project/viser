@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+import warnings
 from functools import cached_property
 from typing import (
     TYPE_CHECKING,
@@ -17,7 +18,7 @@ from typing import (
 
 import numpy as np
 import numpy.typing as onpt
-from typing_extensions import get_type_hints
+from typing_extensions import Self, get_type_hints
 
 from . import _messages
 from .infra._infra import WebsockClientConnection, WebsockServer
@@ -123,10 +124,10 @@ class _SceneNodeHandleState:
         default_factory=lambda: np.array([0.0, 0.0, 0.0])
     )
     visible: bool = True
-    # TODO: we should remove SceneNodeHandle as an argument here.
-    click_cb: list[Callable[[SceneNodePointerEvent[SceneNodeHandle]], None]] | None = (
-        None
-    )
+    click_cb: list[
+        Callable[[SceneNodePointerEvent[_ClickableSceneNodeHandle]], None]
+    ] = dataclasses.field(default_factory=list)
+    removed: bool = False
 
 
 class _SceneNodeMessage(Protocol):
@@ -223,6 +224,12 @@ class SceneNodeHandle:
 
     def remove(self) -> None:
         """Remove the node from the scene."""
+        # Warn if already removed.
+        if self._impl.removed:
+            warnings.warn(f"Attempted to remove already removed node: {self.name}")
+            return
+
+        self._impl.removed = True
         self._impl.api._websock_interface.queue_message(
             _messages.RemoveSceneNodeMessage(self._impl.name)
         )
@@ -253,17 +260,34 @@ class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
 
 class _ClickableSceneNodeHandle(SceneNodeHandle):
     def on_click(
-        self: TSceneNodeHandle,
-        func: Callable[[SceneNodePointerEvent[TSceneNodeHandle]], None],
-    ) -> Callable[[SceneNodePointerEvent[TSceneNodeHandle]], None]:
+        self: Self,
+        func: Callable[[SceneNodePointerEvent[Self]], None],
+    ) -> Callable[[SceneNodePointerEvent[Self]], None]:
         """Attach a callback for when a scene node is clicked."""
         self._impl.api._websock_interface.queue_message(
             _messages.SetSceneNodeClickableMessage(self._impl.name, True)
         )
         if self._impl.click_cb is None:
             self._impl.click_cb = []
-        self._impl.click_cb.append(func)  # type: ignore
+        self._impl.click_cb.append(
+            cast(
+                Callable[[SceneNodePointerEvent[_ClickableSceneNodeHandle]], None], func
+            )
+        )
         return func
+
+    def remove_click_callback(
+        self, callback: Literal["all"] | Callable = "all"
+    ) -> None:
+        """Remove click callbacks from scene node.
+
+        Args:
+            callback: Either "all" to remove all callbacks, or a specific callback function to remove.
+        """
+        if callback == "all":
+            self._impl.click_cb.clear()
+        else:
+            self._impl.click_cb = [cb for cb in self._impl.click_cb if cb != callback]
 
 
 class CameraFrustumHandle(
@@ -509,6 +533,21 @@ class TransformControlsHandle(
         """Attach a callback for when the gizmo is moved."""
         self._impl_aux.update_cb.append(func)
         return func
+
+    def remove_update_callback(
+        self, callback: Literal["all"] | Callable = "all"
+    ) -> None:
+        """Remove update callbacks from the transform controls.
+
+        Args:
+            callback: Either "all" to remove all callbacks, or a specific callback function to remove.
+        """
+        if callback == "all":
+            self._impl_aux.update_cb.clear()
+        else:
+            self._impl_aux.update_cb = [
+                cb for cb in self._impl_aux.update_cb if cb != callback
+            ]
 
 
 class Gui3dContainerHandle(

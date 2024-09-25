@@ -15,6 +15,7 @@ from typing import (
     Dict,
     Generic,
     Iterable,
+    Literal,
     Tuple,
     TypeVar,
     cast,
@@ -106,6 +107,8 @@ class _GuiHandleState(Generic[T]):
     sync_cb: Callable[[ClientId, dict[str, Any]], None] | None = None
     """Callback for synchronizing inputs across clients."""
 
+    removed: bool = False
+
 
 class _OverridableGuiPropApi:
     """Mixin that allows reading/assigning properties defined in each scene node message."""
@@ -157,6 +160,17 @@ class _GuiHandle(
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
+
+        # Warn if already removed.
+        if self._impl.removed:
+            warnings.warn(
+                f"Attempted to remove an already removed {self.__class__.__name__}.",
+                stacklevel=2,
+            )
+            return
+        self._impl.removed = True
+
+        # Send remove to client(s) + update internal state.
         self._impl.gui_api._websock_interface.queue_message(
             GuiRemoveMessage(self._impl.id)
         )
@@ -241,9 +255,24 @@ class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
     def on_update(
         self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], Any]
     ) -> Callable[[GuiEvent[TGuiHandle]], None]:
-        """Attach a function to call when a GUI input is updated. Happens in a thread."""
+        """Attach a function to call when a GUI input is updated. Callbacks stack (need
+        to be manually removed via :meth:`remove_update_callback()`) and will be called
+        from a thread."""
         self._impl.update_cb.append(func)
         return func
+
+    def remove_update_callback(
+        self, callback: Literal["all"] | Callable = "all"
+    ) -> None:
+        """Remove update callbacks from the GUI input.
+
+        Args:
+            callback: Either "all" to remove all callbacks, or a specific callback function to remove.
+        """
+        if callback == "all":
+            self._impl.update_cb.clear()
+        else:
+            self._impl.update_cb = [cb for cb in self._impl.update_cb if cb != callback]
 
 
 class GuiCheckboxHandle(GuiInputHandle[bool], GuiCheckboxProps):
@@ -506,6 +535,16 @@ class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
 
     def remove(self) -> None:
         """Remove this tab group and all contained GUI elements."""
+        # Warn if already removed.
+        if self._impl.removed:
+            warnings.warn(
+                f"Attempted to remove an already removed {self.__class__.__name__}.",
+                stacklevel=2,
+            )
+            return
+        self._impl.removed = True
+
+        # Remove tabs, then self.
         for tab in tuple(self._tab_handles):
             tab.remove()
         gui_api = self._impl.gui_api
@@ -524,6 +563,7 @@ class GuiTabHandle:
     _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
+    _removed: bool = False
 
     def __enter__(self) -> GuiTabHandle:
         self._container_id_restore = self._parent._impl.gui_api._get_container_id()
@@ -542,6 +582,15 @@ class GuiTabHandle:
     def remove(self) -> None:
         """Permanently remove this tab and all contained GUI elements from the
         visualizer."""
+        # Warn if already removed.
+        if self._removed:
+            warnings.warn(
+                f"Attempted to remove an already removed {self.__class__.__name__}.",
+                stacklevel=2,
+            )
+            return
+        self._removed = True
+
         # We may want to make this thread-safe in the future.
         found_index = -1
         for i, tab in enumerate(self._parent._tab_handles):
@@ -594,6 +643,16 @@ class GuiFolderHandle(_GuiHandle, GuiFolderProps):
     def remove(self) -> None:
         """Permanently remove this folder and all contained GUI elements from the
         visualizer."""
+        # Warn if already removed.
+        if self._impl.removed:
+            warnings.warn(
+                f"Attempted to remove an already removed {self.__class__.__name__}.",
+                stacklevel=2,
+            )
+            return
+        self._impl.removed = True
+
+        # Remove children, then self.
         self._impl.gui_api._websock_interface.queue_message(
             GuiRemoveMessage(self._impl.id)
         )

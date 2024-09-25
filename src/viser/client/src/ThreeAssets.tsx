@@ -408,19 +408,6 @@ export const InstancedAxes = React.forwardRef<
 });
 
 /** Convert raw RGB color buffers to linear color buffers. **/
-function threeColorBufferFromUint8Buffer(colors: ArrayBuffer) {
-  return new THREE.Float32BufferAttribute(
-    new Float32Array(new Uint8Array(colors)).map((value) => {
-      value = value / 255.0;
-      if (value <= 0.04045) {
-        return value / 12.92;
-      } else {
-        return Math.pow((value + 0.055) / 1.055, 2.4);
-      }
-    }),
-    3,
-  );
-}
 export const ViserMesh = React.forwardRef<
   THREE.Mesh | THREE.SkinnedMesh,
   MeshMessage | SkinnedMeshMessage
@@ -448,7 +435,6 @@ export const ViserMesh = React.forwardRef<
   const standardArgs = {
     color:
       message.props.color === null ? undefined : rgbToInt(message.props.color),
-    vertexColors: message.props.vertex_colors !== null,
     wireframe: message.props.wireframe,
     transparent: message.props.opacity !== null,
     opacity: message.props.opacity ?? 1.0,
@@ -474,16 +460,16 @@ export const ViserMesh = React.forwardRef<
       message.props.material == "standard" || message.props.wireframe
         ? new THREE.MeshStandardMaterial(standardArgs)
         : message.props.material == "toon3"
-        ? new THREE.MeshToonMaterial({
-            gradientMap: generateGradientMap(3),
-            ...standardArgs,
-          })
-        : message.props.material == "toon5"
-        ? new THREE.MeshToonMaterial({
-            gradientMap: generateGradientMap(5),
-            ...standardArgs,
-          })
-        : assertUnreachable(message.props.material);
+          ? new THREE.MeshToonMaterial({
+              gradientMap: generateGradientMap(3),
+              ...standardArgs,
+            })
+          : message.props.material == "toon5"
+            ? new THREE.MeshToonMaterial({
+                gradientMap: generateGradientMap(5),
+                ...standardArgs,
+              })
+            : assertUnreachable(message.props.material);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
@@ -498,12 +484,6 @@ export const ViserMesh = React.forwardRef<
         3,
       ),
     );
-    if (message.props.vertex_colors !== null) {
-      geometry.setAttribute(
-        "color",
-        threeColorBufferFromUint8Buffer(message.props.vertex_colors),
-      );
-    }
 
     geometry.setIndex(
       new THREE.Uint32BufferAttribute(
