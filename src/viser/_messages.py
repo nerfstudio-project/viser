@@ -551,10 +551,10 @@ class SkinnedMeshProps(MeshProps):
 
     Vertices are internally canonicalized to float32, faces to uint32."""
 
-    bone_wxyzs: Tuple[Tuple[float, float, float, float], ...]
-    """Tuple of quaternions representing bone orientations. Synchronized automatically when assigned."""
-    bone_positions: Tuple[Tuple[float, float, float], ...]
-    """Tuple of positions representing bone positions. Synchronized automatically when assigned."""
+    bone_wxyzs: npt.NDArray[np.float32]
+    """Array of quaternions representing bone orientations (B, 4). Synchronized automatically when assigned."""
+    bone_positions: npt.NDArray[np.float32]
+    """Array of positions representing bone positions (B, 3). Synchronized automatically when assigned."""
     skin_indices: npt.NDArray[np.uint16]
     """Array of skin indices. Should have shape (V, 4). Synchronized automatically when assigned."""
     skin_weights: npt.NDArray[np.float32]
@@ -562,6 +562,9 @@ class SkinnedMeshProps(MeshProps):
 
     def __post_init__(self):
         # Check shapes.
+        assert self.bone_wxyzs.shape[-1] == 4
+        assert self.bone_positions.shape[-1] == 3
+        assert self.bone_wxyzs.shape[0] == self.bone_positions.shape[0]
         assert self.vertices.shape[-1] == 3
         assert self.faces.shape[-1] == 3
         assert self.skin_weights is not None

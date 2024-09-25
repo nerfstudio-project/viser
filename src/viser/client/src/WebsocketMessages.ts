@@ -347,8 +347,8 @@ export interface SkinnedMeshMessage {
     flat_shading: boolean;
     side: "front" | "back" | "double";
     material: "standard" | "toon3" | "toon5";
-    bone_wxyzs: [number, number, number, number][];
-    bone_positions: [number, number, number][];
+    bone_wxyzs: Uint8Array;
+    bone_positions: Uint8Array;
     skin_indices: Uint8Array;
     skin_weights: Uint8Array;
   };
