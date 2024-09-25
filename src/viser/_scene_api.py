@@ -324,8 +324,8 @@ class SceneApi:
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
                 define a kinematic tree.
-            skyColor: The light's sky color.
-            groundColor: The light's ground color.
+            sky_color: The light's sky color.
+            ground_color: The light's ground color.
             intensity: Light's strength/intensity.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
@@ -399,7 +399,7 @@ class SceneApi:
                 define a kinematic tree.
             color: Color of the light.
             intensity: Light's strength/intensity.
-            width: THe width of the light.
+            width: The width of the light.
             height: The height of the light.
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
@@ -1215,7 +1215,7 @@ class SceneApi:
             opacities: Opacity for each Gaussian. (N, 1).
             wxyz: R_parent_local transformation.
             position: t_parent_local transformation.
-            visibile: Initial visibility of scene node.
+            visible: Initial visibility of scene node.
 
         Returns:
             Scene node handle.
