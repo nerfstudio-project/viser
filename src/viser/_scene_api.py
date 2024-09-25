@@ -1037,6 +1037,7 @@ class SceneApi:
                 stacklevel=2,
             )
 
+        assert len(bone_wxyzs) == len(bone_positions)
         num_bones = len(bone_wxyzs)
         assert skin_weights.shape == (vertices.shape[0], num_bones)
 
@@ -1059,7 +1060,6 @@ class SceneApi:
                 vertices=vertices.astype(np.float32),
                 faces=faces.astype(np.uint32),
                 color=_encode_rgb(color),
-                vertex_colors=None,
                 wireframe=wireframe,
                 opacity=opacity,
                 flat_shading=flat_shading,
@@ -1153,7 +1153,6 @@ class SceneApi:
                 vertices=vertices.astype(np.float32),
                 faces=faces.astype(np.uint32),
                 color=_encode_rgb(color),
-                vertex_colors=None,
                 wireframe=wireframe,
                 opacity=opacity,
                 flat_shading=flat_shading,
@@ -1757,3 +1756,12 @@ class SceneApi:
             self, message, name, wxyz, position, visible=visible
         )
         return Gui3dContainerHandle(node_handle._impl, gui_api, container_id)
+
+    def remove_by_name(self, name: str) -> None:
+        """Helper to call `.remove()` on the scene node handles of the `name`
+        element or any of its children."""
+        handle_from_node_name = self._handle_from_node_name.copy()
+        name = name.rstrip("/")  # '/parent/' => '/parent'
+        for node_name, handle in handle_from_node_name.items():
+            if node_name == name or node_name.startswith(name + "/"):
+                handle.remove()

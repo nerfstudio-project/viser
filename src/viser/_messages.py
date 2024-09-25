@@ -520,8 +520,6 @@ class MeshProps:
     """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned."""
     color: Optional[Tuple[int, int, int]]
     """Color of the mesh as RGB integers. Synchronized automatically when assigned."""
-    vertex_colors: Optional[npt.NDArray[np.uint8]]
-    """Optional array of vertex colors. Synchronized automatically when assigned."""
     wireframe: bool
     """Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned."""
     opacity: Optional[float]
