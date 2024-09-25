@@ -197,12 +197,9 @@ def make_gui_elements(
 
         @gui_random_joints.on_click
         def _(_):
+            rng = np.random.default_rng()
             for joint in gui_joints:
-                # It's hard to uniformly sample orientations directly in so(3), so we
-                # first sample on S^3 and then convert.
-                quat = np.random.normal(loc=0.0, scale=1.0, size=(4,))
-                quat /= np.linalg.norm(quat)
-                joint.value = tf.SO3(wxyz=quat).log()
+                joint.value = tf.SO3.sample_uniform(rng).log()
 
         gui_joints: list[viser.GuiInputHandle[tuple[float, float, float]]] = []
         for i in range(num_joints):

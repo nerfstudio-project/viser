@@ -25,21 +25,18 @@ See here for download instructions:
 
         import numpy as np
         import tyro
-
         import viser
         import viser.transforms as tf
 
 
         @dataclass(frozen=True)
-        class SmplOutputs:
-            vertices: np.ndarray
-            faces: np.ndarray
+        class SmplFkOutputs:
             T_world_joint: np.ndarray  # (num_joints, 4, 4)
             T_parent_joint: np.ndarray  # (num_joints, 4, 4)
 
 
         class SmplHelper:
-            """Helper for models in the SMPL family, implemented in numpy."""
+            """Helper for models in the SMPL family, implemented in numpy. Does not include blend skinning."""
 
             def __init__(self, model_path: Path) -> None:
                 assert model_path.suffix.lower() == ".npz", "Model should be an .npz file!"
@@ -62,7 +59,9 @@ See here for download instructions:
                 j_tpose = np.einsum("jv,vx->jx", self.J_regressor, v_tpose)
                 return v_tpose, j_tpose
 
-            def get_outputs(self, betas: np.ndarray, joint_rotmats: np.ndarray) -> SmplOutputs:
+            def get_outputs(
+                self, betas: np.ndarray, joint_rotmats: np.ndarray
+            ) -> SmplFkOutputs:
                 # Get shaped vertices + joint positions, when all local poses are identity.
                 v_tpose = self.v_template + np.einsum("vxb,b->vx", self.shapedirs, betas)
                 j_tpose = np.einsum("jv,vx->jx", self.J_regressor, v_tpose)
@@ -78,15 +77,7 @@ See here for download instructions:
                 for i in range(1, self.num_joints):
                     T_world_joint[i] = T_world_joint[self.parent_idx[i]] @ T_parent_joint[i]
 
-                # Linear blend skinning.
-                pose_delta = (joint_rotmats[1:, ...] - np.eye(3)).flatten()
-                v_blend = v_tpose + np.einsum("byn,n->by", self.posedirs, pose_delta)
-                v_delta = np.ones((v_blend.shape[0], self.num_joints, 4))
-                v_delta[:, :, :3] = v_blend[:, None, :] - j_tpose[None, :, :]
-                v_posed = np.einsum(
-                    "jxy,vj,vjy->vx", T_world_joint[:, :3, :], self.weights, v_delta
-                )
-                return SmplOutputs(v_posed, self.faces, T_world_joint, T_parent_joint)
+                return SmplFkOutputs(T_world_joint, T_parent_joint)
 
 
         def main(model_path: Path) -> None:
@@ -252,12 +243,9 @@ See here for download instructions:
 
                 @gui_random_joints.on_click
                 def _(_):
+                    rng = np.random.default_rng()
                     for joint in gui_joints:
-                        # It's hard to uniformly sample orientations directly in so(3), so we
-                        # first sample on S^3 and then convert.
-                        quat = np.random.normal(loc=0.0, scale=1.0, size=(4,))
-                        quat /= np.linalg.norm(quat)
-                        joint.value = tf.SO3(wxyz=quat).log()
+                        joint.value = tf.SO3.sample_uniform(rng).log()
 
                 gui_joints: List[viser.GuiInputHandle[Tuple[float, float, float]]] = []
                 for i in range(num_joints):
