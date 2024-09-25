@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+import warnings
 from functools import cached_property
 from typing import (
     TYPE_CHECKING,
@@ -223,9 +224,11 @@ class SceneNodeHandle:
 
     def remove(self) -> None:
         """Remove the node from the scene."""
-        # No-op if already removed.
+        # Warn if already removed.
         if self._impl.removed:
+            warnings.warn(f"Attempted to remove already removed node: {self.name}")
             return
+
         self._impl.removed = True
         self._impl.api._websock_interface.queue_message(
             _messages.RemoveSceneNodeMessage(self._impl.name)
