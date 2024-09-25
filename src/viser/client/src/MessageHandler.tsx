@@ -81,12 +81,34 @@ function useMessageHandler() {
           initialized: false,
           poses: [],
         };
+
+        const bone_wxyzs = new Float32Array(
+          message.props.bone_wxyzs.buffer.slice(
+            message.props.bone_wxyzs.byteOffset,
+            message.props.bone_wxyzs.byteOffset +
+              message.props.bone_wxyzs.byteLength,
+          ),
+        );
+        const bone_positions = new Float32Array(
+          message.props.bone_positions.buffer.slice(
+            message.props.bone_positions.byteOffset,
+            message.props.bone_positions.byteOffset +
+              message.props.bone_positions.byteLength,
+          ),
+        );
         for (let i = 0; i < message.props.bone_wxyzs!.length; i++) {
-          const wxyz = message.props.bone_wxyzs[i];
-          const position = message.props.bone_positions[i];
           viewer.skinnedMeshState.current[message.name].poses.push({
-            wxyz: wxyz,
-            position: position,
+            wxyz: [
+              bone_wxyzs[4 * i],
+              bone_wxyzs[4 * i + 1],
+              bone_wxyzs[4 * i + 2],
+              bone_wxyzs[4 * i + 3],
+            ],
+            position: [
+              bone_positions[3 * i],
+              bone_positions[3 * i + 1],
+              bone_positions[3 * i + 2],
+            ],
           });
         }
       }

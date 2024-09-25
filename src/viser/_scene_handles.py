@@ -58,8 +58,13 @@ class _OverridableScenePropApi:
             elif hint == onpt.NDArray[np.uint8] and "color" in name:
                 value = colors_to_uint8(value)
 
-            if getattr(handle._impl.props, name) == value:
-                # Do nothing. Assumes equality is defined for the prop value.
+            current_value = getattr(handle._impl.props, name)
+
+            # Do nothing if the value hasn't changed.
+            if isinstance(current_value, np.ndarray):
+                if current_value.data == value.data:
+                    return
+            elif current_value == value:
                 return
 
             setattr(handle._impl.props, name, value)

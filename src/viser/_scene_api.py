@@ -1065,19 +1065,8 @@ class SceneApi:
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
-                bone_wxyzs=tuple(
-                    (
-                        float(wxyz[0]),
-                        float(wxyz[1]),
-                        float(wxyz[2]),
-                        float(wxyz[3]),
-                    )
-                    for wxyz in bone_wxyzs.astype(np.float32)
-                ),
-                bone_positions=tuple(
-                    (float(xyz[0]), float(xyz[1]), float(xyz[2]))
-                    for xyz in bone_positions.astype(np.float32)
-                ),
+                bone_wxyzs=bone_wxyzs.astype(np.float32),
+                bone_positions=bone_positions.astype(np.float32),
                 skin_indices=top4_skin_indices.astype(np.uint16),
                 skin_weights=top4_skin_weights.astype(np.float32),
             ),

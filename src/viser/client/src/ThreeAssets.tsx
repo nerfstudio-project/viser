@@ -502,26 +502,52 @@ export const ViserMesh = React.forwardRef<
     let skeleton = undefined;
     if (message.type === "SkinnedMeshMessage") {
       // Skinned mesh.
+      const bone_wxyzs = new Float32Array(
+        message.props.bone_wxyzs.buffer.slice(
+          message.props.bone_wxyzs.byteOffset,
+          message.props.bone_wxyzs.byteOffset +
+            message.props.bone_wxyzs.byteLength,
+        ),
+      );
+      const bone_positions = new Float32Array(
+        message.props.bone_positions.buffer.slice(
+          message.props.bone_positions.byteOffset,
+          message.props.bone_positions.byteOffset +
+            message.props.bone_positions.byteLength,
+        ),
+      );
+
       const bones: THREE.Bone[] = [];
       bonesRef.current = bones;
-      for (let i = 0; i < message.props.bone_wxyzs!.length; i++) {
+      for (let i = 0; i < bone_positions.length / 3; i++) {
         bones.push(new THREE.Bone());
       }
       const boneInverses: THREE.Matrix4[] = [];
       const xyzw_quat = new THREE.Quaternion();
       bones.forEach((bone, i) => {
-        const wxyz = message.props.bone_wxyzs[i];
-        const position = message.props.bone_positions[i];
-        xyzw_quat.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        xyzw_quat.set(
+          bone_wxyzs[i * 4 + 1],
+          bone_wxyzs[i * 4 + 2],
+          bone_wxyzs[i * 4 + 3],
+          bone_wxyzs[i * 4 + 0],
+        );
 
         const boneInverse = new THREE.Matrix4();
         boneInverse.makeRotationFromQuaternion(xyzw_quat);
-        boneInverse.setPosition(position[0], position[1], position[2]);
+        boneInverse.setPosition(
+          bone_positions[i * 3 + 0],
+          bone_positions[i * 3 + 1],
+          bone_positions[i * 3 + 2],
+        );
         boneInverse.invert();
         boneInverses.push(boneInverse);
 
         bone.quaternion.copy(xyzw_quat);
-        bone.position.set(position[0], position[1], position[2]);
+        bone.position.set(
+          bone_positions[i * 3 + 0],
+          bone_positions[i * 3 + 1],
+          bone_positions[i * 3 + 2],
+        );
       });
       skeleton = new THREE.Skeleton(bones, boneInverses);
 
