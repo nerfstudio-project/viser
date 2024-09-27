@@ -260,9 +260,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 ),
               )
             }
-            colors={new Float32Array(message.props.colors).map(
-              (val) => val / 255.0,
-            )}
+            colors={new Uint8Array(message.props.colors)}
           />
         ),
       };

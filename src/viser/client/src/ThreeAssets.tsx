@@ -95,20 +95,17 @@ export const PointCloud = React.forwardRef<
     /** We visualize each point as a 2D ball, which is defined by some norm. */
     pointBallNorm: number;
     points: Float32Array;
-    colors: Float32Array;
+    colors: Uint8Array;
   }
 >(function PointCloud(props, ref) {
   const getThreeState = useThree((state) => state.get);
 
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new THREE.Float32BufferAttribute(props.points, 3),
-  );
+  geometry.setAttribute("position", new THREE.BufferAttribute(props.points, 3));
   geometry.computeBoundingSphere();
   geometry.setAttribute(
     "color",
-    new THREE.Float32BufferAttribute(props.colors, 3),
+    new THREE.BufferAttribute(props.colors, 3, true),
   );
 
   const [material] = React.useState(
@@ -473,7 +470,7 @@ export const ViserMesh = React.forwardRef<
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
-      new THREE.Float32BufferAttribute(
+      new THREE.BufferAttribute(
         new Float32Array(
           message.props.vertices.buffer.slice(
             message.props.vertices.byteOffset,
@@ -486,7 +483,7 @@ export const ViserMesh = React.forwardRef<
     );
 
     geometry.setIndex(
-      new THREE.Uint32BufferAttribute(
+      new THREE.BufferAttribute(
         new Uint32Array(
           message.props.faces.buffer.slice(
             message.props.faces.byteOffset,
@@ -553,7 +550,7 @@ export const ViserMesh = React.forwardRef<
 
       geometry.setAttribute(
         "skinIndex",
-        new THREE.Uint16BufferAttribute(
+        new THREE.BufferAttribute(
           new Uint16Array(
             message.props.skin_indices.buffer.slice(
               message.props.skin_indices.byteOffset,
@@ -566,7 +563,7 @@ export const ViserMesh = React.forwardRef<
       );
       geometry.setAttribute(
         "skinWeight",
-        new THREE.Float32BufferAttribute(
+        new THREE.BufferAttribute(
           new Float32Array(
             message.props.skin_weights!.buffer.slice(
               message.props.skin_weights!.byteOffset,
