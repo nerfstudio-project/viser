@@ -1528,7 +1528,29 @@ class SceneApi:
 
     def reset(self) -> None:
         """Reset the scene."""
+        scene_node_tag: _messages.TagLiteral = "SceneNodeMessage"
+
         self._websock_interface.queue_message(_messages.ResetSceneMessage())
+        self._websock_interface.get_message_buffer().remove_messages(
+            # Don't send outdated nodes to new clients. We're clearly
+            # outgrowing the way we do state management here, a refactor could
+            # fix this.
+            #
+            # This is optional but can decrease the size of our message buffer.
+            lambda message: scene_node_tag in cast(_messages.Message, message)._tags
+            or isinstance(
+                message,
+                (
+                    _messages.SceneNodeUpdateMessage,
+                    _messages.SetOrientationMessage,
+                    _messages.SetPositionMessage,
+                    _messages.SetBoneOrientationMessage,
+                    _messages.SetBonePositionMessage,
+                    _messages.SetSceneNodeVisibilityMessage,
+                    _messages.SetSceneNodeClickableMessage,
+                ),
+            )
+        )
 
     def _get_client_handle(self, client_id: ClientId) -> ClientHandle:
         """Private helper for getting a client handle from its ID."""

@@ -171,16 +171,18 @@ class _GuiHandle(
         self._impl.removed = True
 
         # Send remove to client(s) + update internal state.
-        self._impl.gui_api._websock_interface.queue_message(
-            GuiRemoveMessage(self._impl.id)
+        gui_api = self._impl.gui_api
+        gui_api._websock_interface.get_message_buffer().remove_messages(
+            # Don't send outdated GUI updates to new clients.
+            lambda message: isinstance(message, GuiUpdateMessage)
+            and message.id == self._impl.id
         )
-        parent = self._impl.gui_api._container_handle_from_id[
-            self._impl.parent_container_id
-        ]
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
+        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
         parent._children.pop(self._impl.id)
 
         if isinstance(self, _GuiInputHandle):
-            self._impl.gui_api._gui_input_handle_from_id.pop(self._impl.id)
+            gui_api._gui_input_handle_from_id.pop(self._impl.id)
 
 
 class _GuiInputHandle(
@@ -548,6 +550,11 @@ class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
         for tab in tuple(self._tab_handles):
             tab.remove()
         gui_api = self._impl.gui_api
+        gui_api._websock_interface.get_message_buffer().remove_messages(
+            # Don't send outdated GUI updates to new clients.
+            lambda message: isinstance(message, GuiUpdateMessage)
+            and message.id == self._impl.id
+        )
         gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
         parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
         parent._children.pop(self._impl.id)
@@ -653,16 +660,18 @@ class GuiFolderHandle(_GuiHandle, GuiFolderProps):
         self._impl.removed = True
 
         # Remove children, then self.
-        self._impl.gui_api._websock_interface.queue_message(
-            GuiRemoveMessage(self._impl.id)
+        gui_api = self._impl.gui_api
+        gui_api._websock_interface.get_message_buffer().remove_messages(
+            # Don't send outdated GUI updates to new clients.
+            lambda message: isinstance(message, GuiUpdateMessage)
+            and message.id == self._impl.id
         )
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
         for child in tuple(self._children.values()):
             child.remove()
-        parent = self._impl.gui_api._container_handle_from_id[
-            self._impl.parent_container_id
-        ]
+        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
         parent._children.pop(self._impl.id)
-        self._impl.gui_api._container_handle_from_id.pop(self._impl.id)
+        gui_api._container_handle_from_id.pop(self._impl.id)
 
 
 @dataclasses.dataclass

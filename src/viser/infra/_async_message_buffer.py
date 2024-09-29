@@ -4,7 +4,7 @@ import asyncio
 import dataclasses
 import threading
 from asyncio.events import AbstractEventLoop
-from typing import AsyncGenerator, Dict, List, Sequence
+from typing import AsyncGenerator, Callable, Dict, List, Sequence
 
 from ._messages import Message
 
@@ -30,6 +30,18 @@ class AsyncMessageBuffer:
     max_window_size: int = 128
     window_duration_sec: float = 1.0 / 60.0
     done: bool = False
+
+    def remove_messages(self, match_fn: Callable[[Message], bool]) -> None:
+        """Remove messages that match some condition."""
+
+        with self.buffer_lock:
+            # Remove messages that match the condition.
+            for id, message in filter(
+                lambda kv_pair: match_fn(self.message_from_id[kv_pair[0]]),
+                tuple(self.message_from_id.items()),
+            ):
+                self.message_from_id.pop(id)
+                self.id_from_redundancy_key.pop(message.redundancy_key())
 
     def push(self, message: Message) -> None:
         """Push a new message to our buffer, and remove old redundant ones."""

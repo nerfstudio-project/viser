@@ -38,8 +38,11 @@ Color = Literal[
 ]
 
 
+TagLiteral = Literal["GuiComponentMessage", "SceneNodeMessage"]
+
+
 class Message(infra.Message):
-    _tags: ClassVar[Tuple[str, ...]] = tuple()
+    _tags: ClassVar[Tuple[TagLiteral, ...]] = tuple()
 
     @override
     def redundancy_key(self) -> str:
@@ -64,9 +67,7 @@ class Message(infra.Message):
         return "_".join(parts)
 
     @classmethod
-    def __init_subclass__(
-        cls, tag: Literal[None, "GuiComponentMessage", "SceneNodeMessage"] = None
-    ):
+    def __init_subclass__(cls, tag: TagLiteral | None = None):
         """Tag will be used to create a union type in TypeScript."""
         super().__init_subclass__()
         if tag is not None:
