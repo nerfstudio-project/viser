@@ -144,8 +144,7 @@ class SceneApi:
         )
         """Handle for the world axes, which are created by default."""
 
-        # Send a scene reset message. This will also hide the world axes by default.
-        self.reset()
+        self.world_axes.visible = False
 
         self._websock_interface.register_handler(
             _messages.TransformControlsUpdateMessage,
@@ -1529,12 +1528,6 @@ class SceneApi:
 
     def reset(self) -> None:
         """Reset the scene."""
-        for name, node in self._handle_from_node_name.items():
-            if name != "/WorldAxes":
-                node.remove()
-
-        # Currently this is still needed to clear the background image.
-        # We could/should remove this message in the future.
         self._websock_interface.queue_message(_messages.ResetSceneMessage())
 
     def _get_client_handle(self, client_id: ClientId) -> ClientHandle:

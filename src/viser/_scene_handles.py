@@ -235,26 +235,7 @@ class SceneNodeHandle:
             return
 
         self._impl.removed = True
-        self._impl.api._websock_interface.get_message_buffer().remove_from_buffer(
-            # Don't send outdated updates to new clients. We're clearly
-            # outgrowing the way we do state management here, a refactor could
-            # fix this.
-            #
-            # This is optional but can decrease the size of our message buffer.
-            lambda message: isinstance(
-                message,
-                (
-                    _messages.SceneNodeUpdateMessage,
-                    _messages.SetOrientationMessage,
-                    _messages.SetPositionMessage,
-                    _messages.SetBoneOrientationMessage,
-                    _messages.SetBonePositionMessage,
-                    _messages.SetSceneNodeVisibilityMessage,
-                    _messages.SetSceneNodeClickableMessage,
-                ),
-            )
-            and message.name == self._impl.name
-        )
+        self._impl.api._handle_from_node_name.pop(self._impl.name)
         self._impl.api._websock_interface.queue_message(
             _messages.RemoveSceneNodeMessage(self._impl.name)
         )

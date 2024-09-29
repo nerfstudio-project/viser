@@ -358,6 +358,11 @@ function useMessageHandler() {
       // Remove a scene node and its children by name.
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
+        const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
+        if (!(name in nodeFromName)) {
+          console.log("Skipping scene node removal for " + name);
+          return;
+        }
         removeSceneNode(message.name);
         const attrs = viewer.nodeAttributesFromName.current;
         delete attrs[message.name];
