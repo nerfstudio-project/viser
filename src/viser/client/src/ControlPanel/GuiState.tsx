@@ -123,7 +123,9 @@ export function useGuiState(initialServer: string) {
           set((state) => {
             const guiConfig = state.guiConfigFromUuid[id];
             if (guiConfig == undefined) {
-              console.error("Tried to remove non-existent component", id);
+              // TODO: this will currently happen when GUI elements are removed
+              // and then a new client connects. Needs to be revisited.
+              console.warn("(OK) Tried to remove non-existent component", id);
               return;
             }
             delete state.guiUuidSetFromContainerUuid[guiConfig.container_uuid]![
