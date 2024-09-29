@@ -20,7 +20,7 @@ from typing_extensions import Literal
 
 from . import _client_autobuild, _messages, infra
 from . import transforms as tf
-from ._gui_api import Color, GuiApi, _make_unique_id
+from ._gui_api import Color, GuiApi, _make_uuid
 from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
@@ -366,7 +366,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             for i in range(int(np.ceil(len(content) / chunk_size)))
         ]
 
-        uuid = _make_unique_id()
+        uuid = _make_uuid()
         self._websock_connection.queue_message(
             _messages.FileTransferStart(
                 source_component_id=None,
@@ -417,7 +417,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         handle = NotificationHandle(
             _NotificationHandleState(
                 websock_interface=self._websock_connection,
-                id=_make_unique_id(),
+                id=_make_uuid(),
                 props=_messages.NotificationProps(
                     title=title,
                     body=body,

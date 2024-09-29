@@ -588,17 +588,17 @@ class Gui3dContainerHandle(
         self._container_id = container_id
         self._container_id_restore = None
         self._children = {}
-        self._gui_api._container_handle_from_id[self._container_id] = self
+        self._gui_api._container_handle_from_uuid[self._container_id] = self
 
     def __enter__(self) -> Gui3dContainerHandle:
-        self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._container_id)
+        self._container_id_restore = self._gui_api._get_container_uid()
+        self._gui_api._set_container_uid(self._container_id)
         return self
 
     def __exit__(self, *args) -> None:
         del args
         assert self._container_id_restore is not None
-        self._gui_api._set_container_id(self._container_id_restore)
+        self._gui_api._set_container_uid(self._container_id_restore)
         self._container_id_restore = None
 
     def remove(self) -> None:
@@ -610,4 +610,4 @@ class Gui3dContainerHandle(
         # Clean up contained GUI elements.
         for child in tuple(self._children.values()):
             child.remove()
-        self._gui_api._container_handle_from_id.pop(self._container_id)
+        self._gui_api._container_handle_from_uuid.pop(self._container_id)

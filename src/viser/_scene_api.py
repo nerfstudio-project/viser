@@ -1748,7 +1748,7 @@ class SceneApi:
         """
 
         # Avoids circular import.
-        from ._gui_api import _make_unique_id
+        from ._gui_api import _make_uuid
 
         # New name to make the type checker happy; ViserServer and ClientHandle inherit
         # from both GuiApi and MessageApi. The pattern below is unideal.
@@ -1759,12 +1759,12 @@ class SceneApi:
         if name in self._handle_from_node_name:
             self._handle_from_node_name[name].remove()
 
-        container_id = _make_unique_id()
+        container_id = _make_uuid()
         message = _messages.Gui3DMessage(
             name=name,
             props=_messages.Gui3DProps(
                 order=time.time(),
-                container_id=container_id,
+                container_uuid=container_id,
             ),
         )
         node_handle = SceneNodeHandle._make(

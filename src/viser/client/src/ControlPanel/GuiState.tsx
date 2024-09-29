@@ -16,14 +16,14 @@ interface GuiState {
   shareUrl: string | null;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
-  guiIdSetFromContainerId: {
-    [containerId: string]: { [id: string]: true } | undefined;
+  guiUuidSetFromContainerUuid: {
+    [containerUuid: string]: { [uuid: string]: true } | undefined;
   };
   modals: GuiModalMessage[];
-  guiOrderFromId: { [id: string]: number };
-  guiConfigFromId: { [id: string]: GuiComponentMessage };
+  guiOrderFromUuid: { [id: string]: number };
+  guiConfigFromUuid: { [id: string]: GuiComponentMessage | undefined };
   uploadsInProgress: {
-    [id: string]: {
+    [uuid: string]: {
       notificationId: string;
       uploadedBytes: number;
       totalBytes: number;
@@ -65,10 +65,10 @@ const cleanGuiState: GuiState = {
   shareUrl: null,
   websocketConnected: false,
   backgroundAvailable: false,
-  guiIdSetFromContainerId: {},
+  guiUuidSetFromContainerUuid: {},
   modals: [],
-  guiOrderFromId: {},
-  guiConfigFromId: {},
+  guiOrderFromUuid: {},
+  guiConfigFromUuid: {},
   uploadsInProgress: {},
 };
 
@@ -100,13 +100,15 @@ export function useGuiState(initialServer: string) {
           }),
         addGui: (guiConfig) =>
           set((state) => {
-            state.guiOrderFromId[guiConfig.id] = guiConfig.props.order;
-            state.guiConfigFromId[guiConfig.id] = guiConfig;
-            if (!(guiConfig.container_id in state.guiIdSetFromContainerId)) {
-              state.guiIdSetFromContainerId[guiConfig.container_id] = {};
+            state.guiOrderFromUuid[guiConfig.uuid] = guiConfig.props.order;
+            state.guiConfigFromUuid[guiConfig.uuid] = guiConfig;
+            if (
+              !(guiConfig.container_uuid in state.guiUuidSetFromContainerUuid)
+            ) {
+              state.guiUuidSetFromContainerUuid[guiConfig.container_uuid] = {};
             }
-            state.guiIdSetFromContainerId[guiConfig.container_id]![
-              guiConfig.id
+            state.guiUuidSetFromContainerUuid[guiConfig.container_uuid]![
+              guiConfig.uuid
             ] = true;
           }),
         addModal: (modalConfig) =>
@@ -115,21 +117,28 @@ export function useGuiState(initialServer: string) {
           }),
         removeModal: (id) =>
           set((state) => {
-            state.modals = state.modals.filter((m) => m.id !== id);
+            state.modals = state.modals.filter((m) => m.uuid !== id);
           }),
         removeGui: (id) =>
           set((state) => {
-            const guiConfig = state.guiConfigFromId[id];
-
-            delete state.guiIdSetFromContainerId[guiConfig.container_id]![id];
-            delete state.guiOrderFromId[id];
-            delete state.guiConfigFromId[id];
+            const guiConfig = state.guiConfigFromUuid[id];
+            if (guiConfig == undefined) {
+              console.error("Tried to remove non-existent component", id);
+              return;
+            }
+            delete state.guiUuidSetFromContainerUuid[guiConfig.container_uuid]![
+              id
+            ];
+            delete state.guiOrderFromUuid[id];
+            delete state.guiConfigFromUuid[id];
             if (
               Object.keys(
-                state.guiIdSetFromContainerId[guiConfig.container_id]!,
+                state.guiUuidSetFromContainerUuid[guiConfig.container_uuid]!,
               ).length == 0
             )
-              delete state.guiIdSetFromContainerId[guiConfig.container_id];
+              delete state.guiUuidSetFromContainerUuid[
+                guiConfig.container_uuid
+              ];
           }),
         resetGui: () =>
           set((state) => {
@@ -140,10 +149,10 @@ export function useGuiState(initialServer: string) {
 
             // This feels brittle, could be cleaned up...
             state.shareUrl = null;
-            state.guiIdSetFromContainerId = {};
+            state.guiUuidSetFromContainerUuid = {};
             state.modals = [];
-            state.guiOrderFromId = {};
-            state.guiConfigFromId = {};
+            state.guiOrderFromUuid = {};
+            state.guiConfigFromUuid = {};
             state.uploadsInProgress = {};
           }),
         updateUploadState: (state) =>
@@ -156,9 +165,12 @@ export function useGuiState(initialServer: string) {
           }),
         updateGuiProps: (id, updates) => {
           set((state) => {
-            const config = state.guiConfigFromId[id];
+            const config = state.guiConfigFromUuid[id];
             if (config === undefined) {
-              console.error("Tried to update non-existent component", id);
+              console.error(
+                `Tried to update non-existent component '${id}' with`,
+                updates,
+              );
               return;
             }
 
@@ -168,13 +180,13 @@ export function useGuiState(initialServer: string) {
               // stronger in the user-facing Python API. This results in some
               // nastiness here, we should revisit...
               if (key === "value") {
-                (state.guiConfigFromId[id] as any).value = value;
+                (state.guiConfigFromUuid[id] as any).value = value;
               } else if (!(key in config.props)) {
                 console.error(
                   `Tried to update nonexistent property '${key}' of GUI element ${id}!`,
                 );
               } else {
-                (state.guiConfigFromId[id].props as any)[key] = value;
+                (config.props as any)[key] = value;
               }
             }
           });

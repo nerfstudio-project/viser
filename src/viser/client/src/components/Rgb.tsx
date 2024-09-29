@@ -6,19 +6,19 @@ import { ViserInputComponent } from "./common";
 import { GuiRgbMessage } from "../WebsocketMessages";
 
 export default function RgbComponent({
-  id,
+  uuid,
   value,
   props: { label, hint, disabled, visible },
 }: GuiRgbMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (
-    <ViserInputComponent {...{ id, hint, label }}>
+    <ViserInputComponent {...{ uuid, hint, label }}>
       <ColorInput
         disabled={disabled}
         size="xs"
         value={rgbToHex(value)}
-        onChange={(v) => setValue(id, hexToRgb(v))}
+        onChange={(v) => setValue(uuid, hexToRgb(v))}
         format="hex"
         // zIndex of dropdown should be >modal zIndex.
         // On edge cases: it seems like existing dropdowns are always closed when a new modal is opened.

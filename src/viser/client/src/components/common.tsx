@@ -3,12 +3,12 @@ import { Box, Flex, Text, NumberInput, Tooltip } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 
 export function ViserInputComponent({
-  id,
+  uuid,
   label,
   hint,
   children,
 }: {
-  id: string;
+  uuid: string;
   children: React.ReactNode;
   label?: string;
   hint?: string | null;
@@ -34,7 +34,7 @@ export function ViserInputComponent({
   if (label !== undefined)
     children = (
       <LabeledInput
-        id={id}
+        uuid={uuid}
         label={label}
         input={children}
         folderDepth={folderDepth}
@@ -50,7 +50,7 @@ export function ViserInputComponent({
 
 /** GUI input with a label horizontally placed to the left of it. */
 function LabeledInput(props: {
-  id: string;
+  uuid: string;
   label: string;
   input: React.ReactNode;
   folderDepth: number;
@@ -75,7 +75,7 @@ function LabeledInput(props: {
             boxSizing: "content-box",
           }}
         >
-          <label htmlFor={props.id}>{props.label}</label>
+          <label htmlFor={props.uuid}>{props.label}</label>
         </Text>
       </Box>
       <Box style={{ flexGrow: 1 }}>{props.input}</Box>
@@ -86,7 +86,7 @@ function LabeledInput(props: {
 export function VectorInput(
   props:
     | {
-        id: string;
+        uuid: string;
         n: 2;
         value: [number, number];
         min: [number, number] | null;
@@ -97,7 +97,7 @@ export function VectorInput(
         disabled: boolean;
       }
     | {
-        id: string;
+        uuid: string;
         n: 3;
         value: [number, number, number];
         min: [number, number, number] | null;
@@ -112,7 +112,7 @@ export function VectorInput(
     <Flex justify="space-between" columnGap="0.5em">
       {[...Array(props.n).keys()].map((i) => (
         <NumberInput
-          id={i === 0 ? props.id : undefined}
+          id={i === 0 ? props.uuid : undefined}
           key={i}
           value={props.value[i]}
           onChange={(v) => {

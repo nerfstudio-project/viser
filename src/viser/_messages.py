@@ -59,8 +59,8 @@ class Message(infra.Message):
         if node_name is not None:
             parts.append(node_name)
 
-        # GUI and notification messages all have an "id" field.
-        node_name = getattr(self, "id", None)
+        # GUI and notification messages all have an "uuid" field.
+        node_name = getattr(self, "uuid", None)
         if node_name is not None:
             parts.append(node_name)
 
@@ -96,7 +96,7 @@ class NotificationMessage(Message):
     """Notification message."""
 
     mode: Literal["show", "update"]
-    id: str
+    uuid: str
     props: NotificationProps
 
 
@@ -120,7 +120,7 @@ class NotificationProps:
 class RemoveNotificationMessage(Message):
     """Remove a specific notification."""
 
-    id: str
+    uuid: str
 
 
 @dataclasses.dataclass
@@ -313,7 +313,7 @@ class Gui3DMessage(Message, tag="SceneNodeMessage"):
 class Gui3DProps:
     order: float
     """Order value for arranging GUI elements. Synchronized automatically when assigned."""
-    container_id: str
+    container_uuid: str
     """Identifier for the container. Synchronized automatically when assigned."""
 
 
@@ -809,8 +809,8 @@ class GuiFolderProps:
 
 @dataclasses.dataclass
 class GuiFolderMessage(Message, tag="GuiComponentMessage"):
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiFolderProps
 
 
@@ -826,8 +826,8 @@ class GuiMarkdownProps:
 
 @dataclasses.dataclass
 class GuiMarkdownMessage(Message, tag="GuiComponentMessage"):
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiMarkdownProps
 
 
@@ -846,8 +846,8 @@ class GuiProgressBarProps:
 @dataclasses.dataclass
 class GuiProgressBarMessage(Message, tag="GuiComponentMessage"):
     value: float
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiProgressBarProps
 
 
@@ -865,8 +865,8 @@ class GuiPlotlyProps:
 
 @dataclasses.dataclass
 class GuiPlotlyMessage(Message, tag="GuiComponentMessage"):
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiPlotlyProps
 
 
@@ -886,21 +886,21 @@ class GuiTabGroupProps:
 
 @dataclasses.dataclass
 class GuiTabGroupMessage(Message, tag="GuiComponentMessage"):
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiTabGroupProps
 
 
 @dataclasses.dataclass
 class GuiModalMessage(Message):
     order: float
-    id: str
+    uuid: str
     title: str
 
 
 @dataclasses.dataclass
 class GuiCloseModalMessage(Message):
-    id: str
+    uuid: str
 
 
 @dataclasses.dataclass
@@ -914,8 +914,8 @@ class GuiButtonProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiButtonMessage(Message, tag="GuiComponentMessage"):
     value: bool
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiButtonProps
 
 
@@ -931,8 +931,8 @@ class GuiUploadButtonProps(GuiBaseProps):
 
 @dataclasses.dataclass
 class GuiUploadButtonMessage(Message, tag="GuiComponentMessage"):
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiUploadButtonProps
 
 
@@ -953,8 +953,8 @@ class GuiSliderProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiSliderMessage(Message, tag="GuiComponentMessage"):
     value: float
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiSliderProps
 
 
@@ -979,8 +979,8 @@ class GuiMultiSliderProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiMultiSliderMessage(Message, tag="GuiComponentMessage"):
     value: tuple[float, ...]
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiMultiSliderProps
 
 
@@ -999,8 +999,8 @@ class GuiNumberProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiNumberMessage(Message, tag="GuiComponentMessage"):
     value: float
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiNumberProps
 
 
@@ -1012,8 +1012,8 @@ class GuiRgbProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiRgbMessage(Message, tag="GuiComponentMessage"):
     value: Tuple[int, int, int]
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiRgbProps
 
 
@@ -1025,8 +1025,8 @@ class GuiRgbaProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiRgbaMessage(Message, tag="GuiComponentMessage"):
     value: Tuple[int, int, int, int]
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiRgbaProps
 
 
@@ -1038,8 +1038,8 @@ class GuiCheckboxProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiCheckboxMessage(Message, tag="GuiComponentMessage"):
     value: bool
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiCheckboxProps
 
 
@@ -1058,8 +1058,8 @@ class GuiVector2Props(GuiBaseProps):
 @dataclasses.dataclass
 class GuiVector2Message(Message, tag="GuiComponentMessage"):
     value: Tuple[float, float]
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiVector2Props
 
 
@@ -1078,8 +1078,8 @@ class GuiVector3Props(GuiBaseProps):
 @dataclasses.dataclass
 class GuiVector3Message(Message, tag="GuiComponentMessage"):
     value: Tuple[float, float, float]
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiVector3Props
 
 
@@ -1091,8 +1091,8 @@ class GuiTextProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiTextMessage(Message, tag="GuiComponentMessage"):
     value: str
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiTextProps
 
 
@@ -1106,8 +1106,8 @@ class GuiDropdownProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiDropdownMessage(Message, tag="GuiComponentMessage"):
     value: str
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiDropdownProps
 
 
@@ -1120,8 +1120,8 @@ class GuiButtonGroupProps(GuiBaseProps):
 @dataclasses.dataclass
 class GuiButtonGroupMessage(Message, tag="GuiComponentMessage"):
     value: str
-    id: str
-    container_id: str
+    uuid: str
+    container_uuid: str
     props: GuiButtonGroupProps
 
 
@@ -1129,14 +1129,14 @@ class GuiButtonGroupMessage(Message, tag="GuiComponentMessage"):
 class GuiRemoveMessage(Message):
     """Sent server->client to remove a GUI element."""
 
-    id: str
+    uuid: str
 
 
 @dataclasses.dataclass
 class GuiUpdateMessage(Message):
     """Sent client<->server when any property of a GUI component is changed."""
 
-    id: str
+    uuid: str
     updates: Dict[str, Any]
     """Mapping from property name to new value."""
 
@@ -1145,7 +1145,7 @@ class GuiUpdateMessage(Message):
         return (
             type(self).__name__
             + "-"
-            + self.id
+            + self.uuid
             + "-"
             + ",".join(list(self.updates.keys()))
         )
@@ -1279,7 +1279,7 @@ class GetRenderResponseMessage(Message):
 class FileTransferStart(Message):
     """Signal that a file is about to be sent."""
 
-    source_component_id: Optional[str]
+    source_component_uuid: Optional[str]
     """Origin GUI component, used for client->server file uploads."""
     transfer_uuid: str
     filename: str
@@ -1297,7 +1297,7 @@ class FileTransferPart(Message):
     """Send a file for clients to download or upload files from client."""
 
     # TODO: it would make sense to rename all "id" instances to "uuid" for GUI component ids.
-    source_component_id: Optional[str]
+    source_component_uuid: Optional[str]
     transfer_uuid: str
     part: int
     content: bytes
@@ -1311,7 +1311,7 @@ class FileTransferPart(Message):
 class FileTransferPartAck(Message):
     """Send a file for clients to download or upload files from client."""
 
-    source_component_id: Optional[str]
+    source_component_uuid: Optional[str]
     transfer_uuid: str
     transferred_bytes: int
     total_bytes: int

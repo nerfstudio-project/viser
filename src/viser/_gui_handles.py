@@ -65,7 +65,7 @@ T = TypeVar("T")
 TGuiHandle = TypeVar("TGuiHandle", bound="_GuiInputHandle")
 
 
-def _make_unique_id() -> str:
+def _make_uuid() -> str:
     """Return a unique ID for referencing GUI elements."""
     return str(uuid.uuid4())
 
@@ -88,7 +88,7 @@ class GuiPropsProtocol(Protocol):
 class _GuiHandleState(Generic[T]):
     """Internal API for GUI elements."""
 
-    id: str
+    uuid: str
     gui_api: GuiApi
     value: T
     props: GuiPropsProtocol
@@ -125,7 +125,7 @@ class _OverridableGuiPropApi:
                 return
             setattr(handle._impl.props, name, value)
             handle._impl.gui_api._websock_interface.queue_message(
-                _messages.GuiUpdateMessage(handle._impl.id, {name: value})
+                _messages.GuiUpdateMessage(handle._impl.uuid, {name: value})
             )
         else:
             return object.__setattr__(self, name, value)
@@ -150,13 +150,13 @@ class _GuiHandle(
     # Let's shove private implementation details in here...
     def __init__(self, _impl: _GuiHandleState[T]) -> None:
         self._impl = _impl
-        parent = self._impl.gui_api._container_handle_from_id[
+        parent = self._impl.gui_api._container_handle_from_uuid[
             self._impl.parent_container_id
         ]
-        parent._children[self._impl.id] = self
+        parent._children[self._impl.uuid] = self
 
         if isinstance(self, _GuiInputHandle):
-            self._impl.gui_api._gui_input_handle_from_id[self._impl.id] = self
+            self._impl.gui_api._gui_input_handle_from_uuid[self._impl.uuid] = self
 
     def remove(self) -> None:
         """Permanently remove this GUI element from the visualizer."""
@@ -174,15 +174,15 @@ class _GuiHandle(
         gui_api = self._impl.gui_api
         gui_api._websock_interface.get_message_buffer().remove_messages(
             # Don't send outdated GUI updates to new clients.
-            lambda message: isinstance(message, GuiUpdateMessage)
-            and message.id == self._impl.id
+            # This is brittle...
+            lambda message: getattr(message, "uuid") == self._impl.uuid
         )
-        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
-        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
-        parent._children.pop(self._impl.id)
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.uuid))
+        parent = gui_api._container_handle_from_uuid[self._impl.parent_container_id]
+        parent._children.pop(self._impl.uuid)
 
         if isinstance(self, _GuiInputHandle):
-            gui_api._gui_input_handle_from_id.pop(self._impl.id)
+            gui_api._gui_input_handle_from_uuid.pop(self._impl.uuid)
 
 
 class _GuiInputHandle(
@@ -210,7 +210,7 @@ class _GuiInputHandle(
         # Send to client, except for buttons.
         if not self._impl.is_button:
             self._impl.gui_api._websock_interface.queue_message(
-                GuiUpdateMessage(self._impl.id, {"value": value})
+                GuiUpdateMessage(self._impl.uuid, {"value": value})
             )
 
         # Set internal state. We automatically convert numpy arrays to the expected
@@ -492,7 +492,7 @@ class GuiDropdownHandle(
         if need_to_overwrite_value:
             self._impl.gui_api._websock_interface.queue_message(
                 GuiUpdateMessage(
-                    self._impl.id,
+                    self._impl.uuid,
                     {"options": options, "value": options},
                 )
             )
@@ -500,7 +500,7 @@ class GuiDropdownHandle(
         else:
             self._impl.gui_api._websock_interface.queue_message(
                 GuiUpdateMessage(
-                    self._impl.id,
+                    self._impl.uuid,
                     {"options": options},
                 )
             )
@@ -516,10 +516,10 @@ class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
     def add_tab(self, label: str, icon: IconName | None = None) -> GuiTabHandle:
         """Add a tab. Returns a handle we can use to add GUI elements to it."""
 
-        id = _make_unique_id()
+        uuid = _make_uuid()
 
         # We may want to make this thread-safe in the future.
-        out = GuiTabHandle(_parent=self, _id=id)
+        out = GuiTabHandle(_parent=self, _id=uuid)
 
         self._tab_handles.append(out)
         self._tab_labels = self._tab_labels + (label,)
@@ -530,10 +530,10 @@ class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
         return out
 
     def __post_init__(self) -> None:
-        parent = self._impl.gui_api._container_handle_from_id[
+        parent = self._impl.gui_api._container_handle_from_uuid[
             self._impl.parent_container_id
         ]
-        parent._children[self._impl.id] = self
+        parent._children[self._impl.uuid] = self
 
     def remove(self) -> None:
         """Remove this tab group and all contained GUI elements."""
@@ -553,11 +553,11 @@ class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
         gui_api._websock_interface.get_message_buffer().remove_messages(
             # Don't send outdated GUI updates to new clients.
             lambda message: isinstance(message, GuiUpdateMessage)
-            and message.id == self._impl.id
+            and message.uuid == self._impl.uuid
         )
-        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
-        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
-        parent._children.pop(self._impl.id)
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.uuid))
+        parent = gui_api._container_handle_from_uuid[self._impl.parent_container_id]
+        parent._children.pop(self._impl.uuid)
 
 
 @dataclasses.dataclass
@@ -573,18 +573,18 @@ class GuiTabHandle:
     _removed: bool = False
 
     def __enter__(self) -> GuiTabHandle:
-        self._container_id_restore = self._parent._impl.gui_api._get_container_id()
-        self._parent._impl.gui_api._set_container_id(self._id)
+        self._container_id_restore = self._parent._impl.gui_api._get_container_uid()
+        self._parent._impl.gui_api._set_container_uid(self._id)
         return self
 
     def __exit__(self, *args) -> None:
         del args
         assert self._container_id_restore is not None
-        self._parent._impl.gui_api._set_container_id(self._container_id_restore)
+        self._parent._impl.gui_api._set_container_uid(self._container_id_restore)
         self._container_id_restore = None
 
     def __post_init__(self) -> None:
-        self._parent._impl.gui_api._container_handle_from_id[self._id] = self
+        self._parent._impl.gui_api._container_handle_from_uuid[self._id] = self
 
     def remove(self) -> None:
         """Permanently remove this tab and all contained GUI elements from the
@@ -621,7 +621,7 @@ class GuiTabHandle:
 
         for child in tuple(self._children.values()):
             child.remove()
-        self._parent._impl.gui_api._container_handle_from_id.pop(self._id)
+        self._parent._impl.gui_api._container_handle_from_uuid.pop(self._id)
 
 
 class GuiFolderHandle(_GuiHandle, GuiFolderProps):
@@ -629,22 +629,22 @@ class GuiFolderHandle(_GuiHandle, GuiFolderProps):
 
     def __init__(self, _impl: _GuiHandleState[None]) -> None:
         super().__init__(_impl=_impl)
-        self._impl.gui_api._container_handle_from_id[self._impl.id] = self
+        self._impl.gui_api._container_handle_from_uuid[self._impl.uuid] = self
         self._children = {}
-        parent = self._impl.gui_api._container_handle_from_id[
+        parent = self._impl.gui_api._container_handle_from_uuid[
             self._impl.parent_container_id
         ]
-        parent._children[self._impl.id] = self
+        parent._children[self._impl.uuid] = self
 
     def __enter__(self) -> GuiFolderHandle:
-        self._container_id_restore = self._impl.gui_api._get_container_id()
-        self._impl.gui_api._set_container_id(self._impl.id)
+        self._container_id_restore = self._impl.gui_api._get_container_uid()
+        self._impl.gui_api._set_container_uid(self._impl.uuid)
         return self
 
     def __exit__(self, *args) -> None:
         del args
         assert self._container_id_restore is not None
-        self._impl.gui_api._set_container_id(self._container_id_restore)
+        self._impl.gui_api._set_container_uid(self._container_id_restore)
         self._container_id_restore = None
 
     def remove(self) -> None:
@@ -664,14 +664,14 @@ class GuiFolderHandle(_GuiHandle, GuiFolderProps):
         gui_api._websock_interface.get_message_buffer().remove_messages(
             # Don't send outdated GUI updates to new clients.
             lambda message: isinstance(message, GuiUpdateMessage)
-            and message.id == self._impl.id
+            and message.uuid == self._impl.uuid
         )
-        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.id))
+        gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.uuid))
         for child in tuple(self._children.values()):
             child.remove()
-        parent = gui_api._container_handle_from_id[self._impl.parent_container_id]
-        parent._children.pop(self._impl.id)
-        gui_api._container_handle_from_id.pop(self._impl.id)
+        parent = gui_api._container_handle_from_uuid[self._impl.parent_container_id]
+        parent._children.pop(self._impl.uuid)
+        gui_api._container_handle_from_uuid.pop(self._impl.uuid)
 
 
 @dataclasses.dataclass
@@ -679,34 +679,34 @@ class GuiModalHandle:
     """Use as a context to place GUI elements into a modal."""
 
     _gui_api: GuiApi
-    _id: str  # Used as container ID of children.
-    _container_id_restore: str | None = None
+    _uid: str  # Used as container ID of children.
+    _container_uid_restore: str | None = None
     _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
     def __enter__(self) -> GuiModalHandle:
-        self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._id)
+        self._container_uid_restore = self._gui_api._get_container_uid()
+        self._gui_api._set_container_uid(self._uid)
         return self
 
     def __exit__(self, *args) -> None:
         del args
-        assert self._container_id_restore is not None
-        self._gui_api._set_container_id(self._container_id_restore)
-        self._container_id_restore = None
+        assert self._container_uid_restore is not None
+        self._gui_api._set_container_uid(self._container_uid_restore)
+        self._container_uid_restore = None
 
     def __post_init__(self) -> None:
-        self._gui_api._container_handle_from_id[self._id] = self
+        self._gui_api._container_handle_from_uuid[self._uid] = self
 
     def close(self) -> None:
         """Close this modal and permananently remove all contained GUI elements."""
         self._gui_api._websock_interface.queue_message(
-            GuiCloseModalMessage(self._id),
+            GuiCloseModalMessage(self._uid),
         )
         for child in tuple(self._children.values()):
             child.remove()
-        self._gui_api._container_handle_from_id.pop(self._id)
+        self._gui_api._container_handle_from_uuid.pop(self._uid)
 
 
 def _get_data_url(url: str, image_root: Path | None) -> str:
