@@ -267,7 +267,9 @@ class GuiApi:
             if isinstance(self._owner, ClientHandle):
                 client = self._owner
             elif isinstance(self._owner, ViserServer):
-                client = self._owner.get_clients()[client_id]
+                client = self._owner.get_clients().get(client_id, None)
+                if client is None:
+                    return
             else:
                 assert False
 
@@ -348,7 +350,9 @@ class GuiApi:
             if isinstance(self._owner, ClientHandle):
                 client = self._owner
             elif isinstance(self._owner, ViserServer):
-                client = self._owner.get_clients()[client_id]
+                client = self._owner.get_clients().get(client_id, None)
+                if client is None:
+                    return
             else:
                 assert False
 
