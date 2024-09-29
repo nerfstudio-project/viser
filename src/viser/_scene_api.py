@@ -143,8 +143,9 @@ class SceneApi:
             axes_radius=0.0125,
         )
         """Handle for the world axes, which are created by default."""
-        if isinstance(owner, ViserServer):
-            self.world_axes.visible = False
+
+        # Send a scene reset message. This will also hide the world axes by default.
+        self.reset()
 
         self._websock_interface.register_handler(
             _messages.TransformControlsUpdateMessage,
@@ -1551,6 +1552,8 @@ class SceneApi:
                 ),
             )
         )
+        if isinstance(self._owner, ViserServer):
+            self.world_axes.visible = False
 
     def _get_client_handle(self, client_id: ClientId) -> ClientHandle:
         """Private helper for getting a client handle from its ID."""
