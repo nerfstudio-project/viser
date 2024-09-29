@@ -1552,6 +1552,8 @@ class SceneApi:
                 ),
             )
         )
+        from ._viser import ViserServer
+
         if isinstance(self._owner, ViserServer):
             self.world_axes.visible = False
 
