@@ -359,7 +359,7 @@ function useMessageHandler() {
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
         const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
-        if (!(name in nodeFromName)) {
+        if (!(message.name in nodeFromName)) {
           console.log("Skipping scene node removal for " + name);
           return;
         }
