@@ -172,10 +172,10 @@ class _GuiHandle(
 
         # Send remove to client(s) + update internal state.
         gui_api = self._impl.gui_api
-        gui_api._websock_interface.get_message_buffer().remove_messages(
+        gui_api._websock_interface.get_message_buffer().remove_from_buffer(
             # Don't send outdated GUI updates to new clients.
             # This is brittle...
-            lambda message: getattr(message, "uuid") == self._impl.uuid
+            lambda message: getattr(message, "uuid", None) == self._impl.uuid
         )
         gui_api._websock_interface.queue_message(GuiRemoveMessage(self._impl.uuid))
         parent = gui_api._container_handle_from_uuid[self._impl.parent_container_id]
@@ -550,7 +550,7 @@ class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
         for tab in tuple(self._tab_handles):
             tab.remove()
         gui_api = self._impl.gui_api
-        gui_api._websock_interface.get_message_buffer().remove_messages(
+        gui_api._websock_interface.get_message_buffer().remove_from_buffer(
             # Don't send outdated GUI updates to new clients.
             lambda message: isinstance(message, GuiUpdateMessage)
             and message.uuid == self._impl.uuid
@@ -573,7 +573,7 @@ class GuiTabHandle:
     _removed: bool = False
 
     def __enter__(self) -> GuiTabHandle:
-        self._container_id_restore = self._parent._impl.gui_api._get_container_uid()
+        self._container_id_restore = self._parent._impl.gui_api._get_container_uuid()
         self._parent._impl.gui_api._set_container_uid(self._id)
         return self
 
@@ -637,7 +637,7 @@ class GuiFolderHandle(_GuiHandle, GuiFolderProps):
         parent._children[self._impl.uuid] = self
 
     def __enter__(self) -> GuiFolderHandle:
-        self._container_id_restore = self._impl.gui_api._get_container_uid()
+        self._container_id_restore = self._impl.gui_api._get_container_uuid()
         self._impl.gui_api._set_container_uid(self._impl.uuid)
         return self
 
@@ -661,7 +661,7 @@ class GuiFolderHandle(_GuiHandle, GuiFolderProps):
 
         # Remove children, then self.
         gui_api = self._impl.gui_api
-        gui_api._websock_interface.get_message_buffer().remove_messages(
+        gui_api._websock_interface.get_message_buffer().remove_from_buffer(
             # Don't send outdated GUI updates to new clients.
             lambda message: isinstance(message, GuiUpdateMessage)
             and message.uuid == self._impl.uuid
@@ -686,7 +686,7 @@ class GuiModalHandle:
     )
 
     def __enter__(self) -> GuiModalHandle:
-        self._container_uid_restore = self._gui_api._get_container_uid()
+        self._container_uid_restore = self._gui_api._get_container_uuid()
         self._gui_api._set_container_uid(self._uid)
         return self
 

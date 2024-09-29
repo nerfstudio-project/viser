@@ -235,7 +235,7 @@ class SceneNodeHandle:
             return
 
         self._impl.removed = True
-        self._impl.api._websock_interface.get_message_buffer().remove_messages(
+        self._impl.api._websock_interface.get_message_buffer().remove_from_buffer(
             # Don't send outdated updates to new clients. We're clearly
             # outgrowing the way we do state management here, a refactor could
             # fix this.
@@ -591,7 +591,7 @@ class Gui3dContainerHandle(
         self._gui_api._container_handle_from_uuid[self._container_id] = self
 
     def __enter__(self) -> Gui3dContainerHandle:
-        self._container_id_restore = self._gui_api._get_container_uid()
+        self._container_id_restore = self._gui_api._get_container_uuid()
         self._gui_api._set_container_uid(self._container_id)
         return self
 

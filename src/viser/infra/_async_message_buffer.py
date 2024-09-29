@@ -31,7 +31,7 @@ class AsyncMessageBuffer:
     window_duration_sec: float = 1.0 / 60.0
     done: bool = False
 
-    def remove_messages(self, match_fn: Callable[[Message], bool]) -> None:
+    def remove_from_buffer(self, match_fn: Callable[[Message], bool]) -> None:
         """Remove messages that match some condition."""
 
         with self.buffer_lock:

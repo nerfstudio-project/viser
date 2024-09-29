@@ -1531,7 +1531,7 @@ class SceneApi:
         scene_node_tag: _messages.TagLiteral = "SceneNodeMessage"
 
         self._websock_interface.queue_message(_messages.ResetSceneMessage())
-        self._websock_interface.get_message_buffer().remove_messages(
+        self._websock_interface.get_message_buffer().remove_from_buffer(
             # Don't send outdated nodes to new clients. We're clearly
             # outgrowing the way we do state management here, a refactor could
             # fix this.

@@ -369,7 +369,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         uuid = _make_uuid()
         self._websock_connection.queue_message(
             _messages.FileTransferStart(
-                source_component_id=None,
+                source_component_uuid=None,
                 transfer_uuid=uuid,
                 filename=filename,
                 mime_type=mime_type,
@@ -417,7 +417,7 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         handle = NotificationHandle(
             _NotificationHandleState(
                 websock_interface=self._websock_connection,
-                id=_make_uuid(),
+                uuid=_make_uuid(),
                 props=_messages.NotificationProps(
                     title=title,
                     body=body,
@@ -626,9 +626,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             def _() -> None:
                 rich.print("[bold](viser)[/bold] Disconnected from share URL")
                 self._share_tunnel = None
-                self._websock_server.unsafe_send_message(
-                    _messages.ShareUrlUpdated(None)
-                )
+                self._websock_server.queue_message(_messages.ShareUrlUpdated(None))
 
             @self._share_tunnel.on_connect
             def _(max_clients: int) -> None:
@@ -641,9 +639,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                         rich.print(
                             f"[bold](viser)[/bold] Generated share URL (expires in 24 hours, max {max_clients} clients): {share_url}"
                         )
-                self._websock_server.unsafe_send_message(
-                    _messages.ShareUrlUpdated(share_url)
-                )
+                self._websock_server.queue_message(_messages.ShareUrlUpdated(share_url))
                 connect_event.set()
 
             connect_event.wait()
