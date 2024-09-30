@@ -99,12 +99,53 @@ export function SynchronizedCameraControls() {
       look_at: [lookAt.x, lookAt.y, lookAt.z],
       up_direction: [up.x, up.y, up.z],
     });
+
+    // Log camera.
+    if (logCamera != undefined) {
+      console.log("Sending camera", t_world_camera.toArray(), lookAt);
+    }
   }, [camera, sendCameraThrottled]);
 
-  // Send camera for new connections.
+  // Search parameters.
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialCameraPosString = searchParams.get("initialCameraPosition");
+  const initialCameraLookAtString = searchParams.get("initialCameraLookAt");
+  const logCamera = searchParams.get("logCamera");
+
+  // Set initial camera pose + send camera to new connections.
   // We add a small delay to give the server time to add a callback.
   const connected = viewer.useGui((state) => state.websocketConnected);
   React.useEffect(() => {
+    const initialCameraPos = new THREE.Vector3(
+      ...((initialCameraPosString
+        ? (initialCameraPosString.split(",").map(Number) as [
+            number,
+            number,
+            number,
+          ])
+        : [-3.0, 3.0, -3.0]) as [number, number, number]),
+    );
+    initialCameraPos.applyMatrix4(computeT_threeworld_world(viewer));
+    const initialCameraLookAt = new THREE.Vector3(
+      ...((initialCameraLookAtString
+        ? (initialCameraLookAtString.split(",").map(Number) as [
+            number,
+            number,
+            number,
+          ])
+        : [0, 0, 0]) as [number, number, number]),
+    );
+    initialCameraLookAt.applyMatrix4(computeT_threeworld_world(viewer));
+    viewer.cameraControlRef.current!.setLookAt(
+      initialCameraPos.x,
+      initialCameraPos.y,
+      initialCameraPos.z,
+      initialCameraLookAt.x,
+      initialCameraLookAt.y,
+      initialCameraLookAt.z,
+      true,
+    );
+
     viewer.sendCameraRef.current = sendCamera;
     if (!connected) return;
     setTimeout(() => sendCamera(), 50);
