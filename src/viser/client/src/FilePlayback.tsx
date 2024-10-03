@@ -78,11 +78,19 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   const viewer = useContext(ViewerContext)!;
   const messageQueueRef = viewer.messageQueueRef;
 
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
   const darkMode = viewer.useGui((state) => state.theme.dark_mode);
   const [status, setStatus] = useState({ downloaded: 0.0, total: 0.0 });
   const [playbackSpeed, setPlaybackSpeed] = useState("1x");
   const [paused, setPaused] = useState(false);
   const [recording, setRecording] = useState<SerializedMessages | null>(null);
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const overlayVideo = searchParams.getAll("synchronizedVideoOverlay");
+  const videoTimeOffset = parseFloat(
+    searchParams.get("synchronizedVideoTimeOffset") || "0",
+  );
 
   const [currentTime, setCurrentTime] = useState(0.0);
 
@@ -122,6 +130,27 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     }
     setCurrentTime(mutable.currentTime);
   }, [recording]);
+
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const updateVideoTime = () => {
+      if (videoRef.current && videoRef.current.readyState >= 2) {
+        videoRef.current.currentTime = Math.max(
+          0,
+          playbackMutable.current.currentTime + videoTimeOffset,
+        );
+      }
+      animationFrameId = requestAnimationFrame(updateVideoTime);
+    };
+    updateVideoTime();
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const playbackMultiplier = parseFloat(playbackSpeed); // '0.5x' -> 0.5
@@ -201,85 +230,127 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     );
   } else {
     return (
-      <Paper
-        radius="xs"
-        shadow="0.1em 0 1em 0 rgba(0,0,0,0.1)"
-        style={{
-          position: "fixed",
-          bottom: "1em",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "25em",
-          maxWidth: "95%",
-          zIndex: 1,
-          padding: "0.5em",
-          display: recording.durationSeconds === 0.0 ? "none" : "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.375em",
-        }}
-      >
-        <ActionIcon size="md" variant="subtle">
-          {paused ? (
-            <IconPlayerPlayFilled
-              onClick={() => setPaused(false)}
-              height="1.125em"
-              width="1.125em"
-            />
-          ) : (
-            <IconPlayerPauseFilled
-              onClick={() => setPaused(true)}
-              height="1.125em"
-              width="1.125em"
-            />
-          )}
-        </ActionIcon>
-        <NumberInput
-          size="xs"
-          hideControls
-          value={currentTime.toFixed(1)}
-          step={0.01}
-          styles={{
-            wrapper: {
-              width: "3.1em",
-            },
-            input: {
-              padding: "0.2em",
-              fontFamily: theme.fontFamilyMonospace,
-              textAlign: "center",
-            },
-          }}
-          onChange={(value) =>
-            updateCurrentTime(
-              typeof value === "number" ? value : parseFloat(value),
-            )
-          }
-        />
-        <Slider
-          thumbSize={0}
-          radius="xs"
-          step={1e-4}
-          style={{ flexGrow: 1 }}
-          min={0}
-          max={recording.durationSeconds}
-          value={currentTime}
-          onChange={updateCurrentTime}
-          styles={{ thumb: { display: "none" } }}
-        />
-        <Tooltip zIndex={10} label={"Playback speed"} withinPortal>
-          <Select
-            size="xs"
-            value={playbackSpeed}
-            onChange={(val) => (val === null ? null : setPlaybackSpeed(val))}
-            radius="xs"
-            data={["0.5x", "1x", "2x", "4x", "8x"]}
-            styles={{
-              wrapper: { width: "3.25em" },
+      <>
+        {overlayVideo.length > 0 && (
+          <div
+            style={{
+              position: "fixed",
+              top: "1.5em",
+              left: "1em",
+              zIndex: 2,
+              width: "15rem",
+              height: "15rem",
+              boxShadow: "0 0 0.5em rgba(255, 255, 255, 0.5)",
+              overflow: "hidden",
+              borderRadius: "0.25em",
             }}
-            comboboxProps={{ zIndex: 5, width: "5.25em" }}
+          >
+            <div
+              style={{
+                textAlign: "center",
+                position: "absolute",
+                top: "0",
+                width: "100%",
+                backgroundColor: "rgba(0,0,0,0.5)",
+                lineHeight: "2em",
+                fontFamily: "Inter",
+                padding: "0.5em 1em 0 1em",
+                fontWeight: "500",
+              }}
+            >
+              Input video
+            </div>
+            <video
+              ref={videoRef}
+              src={overlayVideo[0]}
+              style={{
+                width: "100%",
+                height: "100%",
+              }}
+              muted
+            />
+          </div>
+        )}
+        <Paper
+          radius="xs"
+          shadow="0.1em 0 1em 0 rgba(0,0,0,0.1)"
+          style={{
+            position: "fixed",
+            bottom: "1em",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "25em",
+            maxWidth: "95%",
+            zIndex: 1,
+            padding: "0.5em",
+            display: recording.durationSeconds === 0.0 ? "none" : "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "0.375em",
+          }}
+        >
+          <ActionIcon size="md" variant="subtle">
+            {paused ? (
+              <IconPlayerPlayFilled
+                onClick={() => setPaused(false)}
+                height="1.125em"
+                width="1.125em"
+              />
+            ) : (
+              <IconPlayerPauseFilled
+                onClick={() => setPaused(true)}
+                height="1.125em"
+                width="1.125em"
+              />
+            )}
+          </ActionIcon>
+          <NumberInput
+            size="xs"
+            hideControls
+            value={currentTime.toFixed(1)}
+            step={0.01}
+            styles={{
+              wrapper: {
+                width: "3.1em",
+              },
+              input: {
+                padding: "0.2em",
+                fontFamily: theme.fontFamilyMonospace,
+                textAlign: "center",
+              },
+            }}
+            onChange={(value) =>
+              updateCurrentTime(
+                typeof value === "number" ? value : parseFloat(value),
+              )
+            }
           />
-        </Tooltip>
-      </Paper>
+          <Slider
+            thumbSize={0}
+            radius="xs"
+            step={1e-4}
+            style={{ flexGrow: 1 }}
+            min={0}
+            max={recording.durationSeconds}
+            value={currentTime}
+            onChange={updateCurrentTime}
+            styles={{ thumb: { display: "none" } }}
+          />
+          <Tooltip zIndex={10} label={"Playback speed"} withinPortal>
+            <Select
+              size="xs"
+              value={playbackSpeed}
+              onChange={(val) => (val === null ? null : setPlaybackSpeed(val))}
+              radius="xs"
+              data={["0.5x", "1x", "2x", "4x", "8x"]}
+              styles={{
+                wrapper: { width: "3.25em" },
+              }}
+              comboboxProps={{ zIndex: 5, width: "5.25em" }}
+            />
+          </Tooltip>
+        </Paper>
+      </>
     );
   }
 }
