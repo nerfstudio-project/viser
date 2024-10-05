@@ -965,7 +965,7 @@ class SceneApi:
         message = _messages.PointCloudMessage(
             name=name,
             props=_messages.PointCloudProps(
-                points=points.astype(np.float32),
+                points=points.astype(np.float16),
                 colors=colors_cast,
                 point_size=point_size,
                 point_ball_norm={

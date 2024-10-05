@@ -94,7 +94,7 @@ export const PointCloud = React.forwardRef<
     pointSize: number;
     /** We visualize each point as a 2D ball, which is defined by some norm. */
     pointBallNorm: number;
-    points: Float32Array;
+    points: Uint16Array /* Actually float16. */;
     colors: Uint8Array;
   }
 >(function PointCloud(props, ref) {
