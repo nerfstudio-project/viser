@@ -391,7 +391,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                     }}
                   >
                     <GeneratedGuiContainer
-                      containerId={message.props.container_id}
+                      containerUuid={message.props.container_uuid}
                     />
                   </Paper>
                 </ContextBridge>

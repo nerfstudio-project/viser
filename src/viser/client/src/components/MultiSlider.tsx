@@ -7,7 +7,7 @@ import { MultiSlider } from "./MultiSliderPrimitive";
 import { sliderDefaultMarks } from "./ComponentStyles.css";
 
 export default function MultiSliderComponent({
-  id,
+  uuid,
   value,
   props: {
     label,
@@ -25,12 +25,12 @@ export default function MultiSliderComponent({
 }: GuiMultiSliderMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
-  const updateValue = (value: number[]) => setValue(id, value);
+  const updateValue = (value: number[]) => setValue(uuid, value);
   const colorScheme = useMantineColorScheme().colorScheme;
   const input = (
     <Box mt="0.2em" mb="0.4em">
       <MultiSlider
-        id={id}
+        id={uuid}
         className={marks === null ? sliderDefaultMarks : undefined}
         size="xs"
         radius="xs"
@@ -88,6 +88,8 @@ export default function MultiSliderComponent({
   );
 
   return (
-    <ViserInputComponent {...{ id, hint, label }}>{input}</ViserInputComponent>
+    <ViserInputComponent {...{ uuid, hint, label }}>
+      {input}
+    </ViserInputComponent>
   );
 }

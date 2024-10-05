@@ -9,7 +9,7 @@ export function ViserModal() {
 
   const modalList = viewer.useGui((state) => state.modals);
   const modals = modalList.map((conf, index) => {
-    return <GeneratedModal key={conf.id} conf={conf} index={index} />;
+    return <GeneratedModal key={conf.uuid} conf={conf} index={index} />;
   });
 
   return modals;
@@ -36,7 +36,7 @@ function GeneratedModal({
       centered
       zIndex={100 + index}
     >
-      <GeneratedGuiContainer containerId={conf.id} />
+      <GeneratedGuiContainer containerUuid={conf.uuid} />
     </Modal>
   );
 }

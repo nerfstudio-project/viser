@@ -57,7 +57,7 @@ from ._gui_handles import (
     UploadedFile,
     _GuiHandleState,
     _GuiInputHandle,
-    _make_unique_id,
+    _make_uuid,
 )
 from ._icons import svg_from_icon
 from ._icons_enum import IconName
@@ -197,8 +197,8 @@ class GuiApi:
         )
         """Interface for sending and listening to messages."""
 
-        self._gui_input_handle_from_id: dict[str, _GuiInputHandle[Any]] = {}
-        self._container_handle_from_id: dict[str, GuiContainerProtocol] = {
+        self._gui_input_handle_from_uuid: dict[str, _GuiInputHandle[Any]] = {}
+        self._container_handle_from_uuid: dict[str, GuiContainerProtocol] = {
             "root": _RootGuiContainer({})
         }
         self._current_file_upload_states: dict[str, _FileUploadState] = {}
@@ -221,7 +221,7 @@ class GuiApi:
         self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
         """Callback for handling GUI messages."""
-        handle = self._gui_input_handle_from_id.get(message.id, None)
+        handle = self._gui_input_handle_from_uuid.get(message.uuid, None)
         if handle is None:
             return
         handle_state = handle._impl
@@ -267,7 +267,9 @@ class GuiApi:
             if isinstance(self._owner, ClientHandle):
                 client = self._owner
             elif isinstance(self._owner, ViserServer):
-                client = self._owner.get_clients()[client_id]
+                client = self._owner._connected_clients.get(client_id, None)
+                if client is None:
+                    return
             else:
                 assert False
 
@@ -279,7 +281,7 @@ class GuiApi:
     def _handle_file_transfer_start(
         self, client_id: ClientId, message: _messages.FileTransferStart
     ) -> None:
-        if message.source_component_id not in self._gui_input_handle_from_id:
+        if message.source_component_uuid not in self._gui_input_handle_from_uuid:
             return
         self._current_file_upload_states[message.transfer_uuid] = {
             "filename": message.filename,
@@ -296,7 +298,7 @@ class GuiApi:
     ) -> None:
         if message.transfer_uuid not in self._current_file_upload_states:
             return
-        assert message.source_component_id in self._gui_input_handle_from_id
+        assert message.source_component_uuid in self._gui_input_handle_from_uuid
 
         state = self._current_file_upload_states[message.transfer_uuid]
         state["parts"][message.part] = message.content
@@ -308,7 +310,7 @@ class GuiApi:
             # Send ack to the server.
             self._websock_interface.queue_message(
                 FileTransferPartAck(
-                    source_component_id=message.source_component_id,
+                    source_component_uuid=message.source_component_uuid,
                     transfer_uuid=message.transfer_uuid,
                     transferred_bytes=state["transferred_bytes"],
                     total_bytes=total_bytes,
@@ -322,7 +324,9 @@ class GuiApi:
         assert state["transferred_bytes"] == total_bytes
         state = self._current_file_upload_states.pop(message.transfer_uuid)
 
-        handle = self._gui_input_handle_from_id.get(message.source_component_id, None)
+        handle = self._gui_input_handle_from_uuid.get(
+            message.source_component_uuid, None
+        )
         if handle is None:
             return
 
@@ -334,9 +338,8 @@ class GuiApi:
         )
 
         # Update state.
-        with self._owner.atomic():
-            handle_state.value = value
-            handle_state.update_timestamp = time.time()
+        handle_state.value = value
+        handle_state.update_timestamp = time.time()
 
         # Trigger callbacks.
         for cb in handle_state.update_cb:
@@ -346,19 +349,21 @@ class GuiApi:
             if isinstance(self._owner, ClientHandle):
                 client = self._owner
             elif isinstance(self._owner, ViserServer):
-                client = self._owner.get_clients()[client_id]
+                client = self._owner._connected_clients.get(client_id, None)
+                if client is None:
+                    return
             else:
                 assert False
 
             cb(GuiEvent(client, client_id, handle))
 
-    def _get_container_id(self) -> str:
+    def _get_container_uuid(self) -> str:
         """Get container ID associated with the current thread."""
         return self._target_container_from_thread_id.get(threading.get_ident(), "root")
 
-    def _set_container_id(self, container_id: str) -> None:
+    def _set_container_uid(self, container_uuid: str) -> None:
         """Set container ID associated with the current thread."""
-        self._target_container_from_thread_id[threading.get_ident()] = container_id
+        self._target_container_from_thread_id[threading.get_ident()] = container_uuid
 
     def reset(self) -> None:
         """Reset the GUI."""
@@ -466,7 +471,7 @@ class GuiApi:
         Returns:
             A handle that can be used as a context to populate the folder.
         """
-        folder_container_id = _make_unique_id()
+        folder_container_id = _make_uuid()
         order = _apply_default_order(order)
         props = _messages.GuiFolderProps(
             order=order,
@@ -476,8 +481,8 @@ class GuiApi:
         )
         self._websock_interface.queue_message(
             _messages.GuiFolderMessage(
-                id=folder_container_id,
-                container_id=self._get_container_id(),
+                uuid=folder_container_id,
+                container_uuid=self._get_container_uuid(),
                 props=props,
             )
         )
@@ -487,7 +492,7 @@ class GuiApi:
                 self,
                 None,
                 props=props,
-                parent_container_id=self._get_container_id(),
+                parent_container_id=self._get_container_uuid(),
             )
         )
 
@@ -506,18 +511,18 @@ class GuiApi:
         Returns:
             A handle that can be used as a context to populate the modal.
         """
-        modal_container_id = _make_unique_id()
+        modal_container_id = _make_uuid()
         order = _apply_default_order(order)
         self._websock_interface.queue_message(
             _messages.GuiModalMessage(
                 order=order,
-                id=modal_container_id,
+                uuid=modal_container_id,
                 title=title,
             )
         )
         return GuiModalHandle(
             _gui_api=self,
-            _id=modal_container_id,
+            _uid=modal_container_id,
         )
 
     def add_tab_group(
@@ -534,12 +539,12 @@ class GuiApi:
         Returns:
             A handle that can be used as a context to populate the tab group.
         """
-        tab_group_id = _make_unique_id()
+        tab_group_id = _make_uuid()
         order = _apply_default_order(order)
 
         message = _messages.GuiTabGroupMessage(
-            id=tab_group_id,
-            container_id=self._get_container_id(),
+            uuid=tab_group_id,
+            container_uuid=self._get_container_uuid(),
             props=_messages.GuiTabGroupProps(
                 order=order,
                 _tab_labels=(),
@@ -551,11 +556,11 @@ class GuiApi:
         self._websock_interface.queue_message(message)
         return GuiTabGroupHandle(
             _GuiHandleState(
-                message.id,
+                message.uuid,
                 self,
                 value=None,
                 props=message.props,
-                parent_container_id=message.container_id,
+                parent_container_id=message.container_uuid,
             )
         )
 
@@ -578,8 +583,8 @@ class GuiApi:
             A handle that can be used to interact with the GUI element.
         """
         message = _messages.GuiMarkdownMessage(
-            id=_make_unique_id(),
-            container_id=self._get_container_id(),
+            uuid=_make_uuid(),
+            container_uuid=self._get_container_uuid(),
             props=_messages.GuiMarkdownProps(
                 order=_apply_default_order(order),
                 _markdown="",
@@ -590,11 +595,11 @@ class GuiApi:
 
         handle = GuiMarkdownHandle(
             _GuiHandleState(
-                message.id,
+                message.uuid,
                 self,
                 None,
                 props=message.props,
-                parent_container_id=message.container_id,
+                parent_container_id=message.container_uuid,
             ),
             _content=content,
             _image_root=image_root,
@@ -656,8 +661,8 @@ class GuiApi:
         # After plotly.min.js has been sent, we can send the plotly figure.
         # Empty string for `plotly_json_str` is a signal to the client to render nothing.
         message = _messages.GuiPlotlyMessage(
-            id=_make_unique_id(),
-            container_id=self._get_container_id(),
+            uuid=_make_uuid(),
+            container_uuid=self._get_container_uuid(),
             props=_messages.GuiPlotlyProps(
                 order=_apply_default_order(order),
                 _plotly_json_str="",
@@ -669,11 +674,11 @@ class GuiApi:
 
         handle = GuiPlotlyHandle(
             _GuiHandleState(
-                message.id,
+                message.uuid,
                 self,
                 value=None,
                 props=message.props,
-                parent_container_id=message.container_id,
+                parent_container_id=message.container_uuid,
             ),
             _figure=figure,
         )
@@ -710,15 +715,15 @@ class GuiApi:
         """
 
         # Re-wrap the GUI handle with a button interface.
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiButtonHandle(
             self._create_gui_input(
                 value=False,
                 message=_messages.GuiButtonMessage(
                     value=False,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiButtonProps(
                         order=order,
                         label=label,
@@ -762,14 +767,14 @@ class GuiApi:
         """
 
         # Re-wrap the GUI handle with a button interface.
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiUploadButtonHandle(
             self._create_gui_input(
                 value=UploadedFile("", b""),
                 message=_messages.GuiUploadButtonMessage(
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiUploadButtonProps(
                         disabled=disabled,
                         visible=visible,
@@ -808,15 +813,15 @@ class GuiApi:
             A handle that can be used to interact with the GUI element.
         """
         value = options[0]
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiButtonGroupHandle(
             self._create_gui_input(
                 value,
                 message=_messages.GuiButtonGroupMessage(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiButtonGroupProps(
                         order=order,
                         label=label,
@@ -853,15 +858,15 @@ class GuiApi:
         """
         value = initial_value
         assert isinstance(value, bool)
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiCheckboxHandle(
             self._create_gui_input(
                 value,
                 message=_messages.GuiCheckboxMessage(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiCheckboxProps(
                         order=order,
                         label=label,
@@ -897,15 +902,15 @@ class GuiApi:
         """
         value = initial_value
         assert isinstance(value, str)
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiTextHandle(
             self._create_gui_input(
                 value,
                 message=_messages.GuiTextMessage(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiTextProps(
                         order=order,
                         label=label,
@@ -965,15 +970,15 @@ class GuiApi:
 
         assert step is not None
 
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiNumberHandle(
             self._create_gui_input(
                 value,
                 message=_messages.GuiNumberMessage(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiNumberProps(
                         order=order,
                         label=label,
@@ -1022,7 +1027,7 @@ class GuiApi:
         value = cast_vector(value, 2)
         min = cast_vector(min, 2) if min is not None else None
         max = cast_vector(max, 2) if max is not None else None
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
 
         if step is None:
@@ -1039,8 +1044,8 @@ class GuiApi:
                 value,
                 message=_messages.GuiVector2Message(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiVector2Props(
                         order=order,
                         label=label,
@@ -1088,7 +1093,7 @@ class GuiApi:
         value = cast_vector(value, 3)
         min = cast_vector(min, 3) if min is not None else None
         max = cast_vector(max, 3) if max is not None else None
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
 
         if step is None:
@@ -1105,8 +1110,8 @@ class GuiApi:
                 value,
                 message=_messages.GuiVector3Message(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiVector3Props(
                         order=order,
                         label=label,
@@ -1174,15 +1179,15 @@ class GuiApi:
         value = initial_value
         if value is None:
             value = options[0]
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiDropdownHandle(
             self._create_gui_input(
                 value,
                 message=_messages.GuiDropdownMessage(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiDropdownProps(
                         order=order,
                         label=label,
@@ -1218,8 +1223,8 @@ class GuiApi:
         assert value >= 0 and value <= 100
         message = _messages.GuiProgressBarMessage(
             value=value,
-            id=_make_unique_id(),
-            container_id=self._get_container_id(),
+            uuid=_make_uuid(),
+            container_uuid=self._get_container_uuid(),
             props=_messages.GuiProgressBarProps(
                 order=_apply_default_order(order),
                 animated=animated,
@@ -1230,11 +1235,11 @@ class GuiApi:
         self._websock_interface.queue_message(message)
         handle = GuiProgressBarHandle(
             _GuiHandleState(
-                message.id,
+                message.uuid,
                 self,
                 value=value,
                 props=message.props,
-                parent_container_id=message.container_id,
+                parent_container_id=message.container_uuid,
             ),
         )
         return handle
@@ -1290,15 +1295,15 @@ class GuiApi:
         #
         # assert type(min) == type(max) == type(step) == type(value)
 
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiSliderHandle(
             self._create_gui_input(
                 value,
                 message=_messages.GuiSliderMessage(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiSliderProps(
                         order=order,
                         label=label,
@@ -1375,15 +1380,15 @@ class GuiApi:
         ):
             initial_value = tuple(float(x) for x in initial_value)  # type: ignore
 
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiMultiSliderHandle(
             self._create_gui_input(
                 value=initial_value,
                 message=_messages.GuiMultiSliderMessage(
                     value=initial_value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiMultiSliderProps(
                         order=order,
                         label=label,
@@ -1434,15 +1439,15 @@ class GuiApi:
         """
 
         value = initial_value
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiRgbHandle(
             self._create_gui_input(
                 value,
                 message=_messages.GuiRgbMessage(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiRgbProps(
                         order=order,
                         label=label,
@@ -1477,15 +1482,15 @@ class GuiApi:
             A handle that can be used to interact with the GUI element.
         """
         value = initial_value
-        id = _make_unique_id()
+        uuid = _make_uuid()
         order = _apply_default_order(order)
         return GuiRgbaHandle(
             self._create_gui_input(
                 value,
                 message=_messages.GuiRgbaMessage(
                     value=value,
-                    id=id,
-                    container_id=self._get_container_id(),
+                    uuid=uuid,
+                    container_uuid=self._get_container_uuid(),
                     props=_messages.GuiRgbaProps(
                         order=order,
                         label=label,
@@ -1498,7 +1503,7 @@ class GuiApi:
         )
 
     class GuiMessage(Protocol[GuiInputPropsType]):
-        id: str
+        uuid: str
         props: GuiInputPropsType
 
     def _create_gui_input(
@@ -1519,11 +1524,11 @@ class GuiApi:
             gui_api=self,
             value=value,
             update_timestamp=time.time(),
-            parent_container_id=self._get_container_id(),
+            parent_container_id=self._get_container_uuid(),
             update_cb=[],
             is_button=is_button,
             sync_cb=None,
-            id=message.id,
+            uuid=message.uuid,
         )
 
         # For broadcasted GUI handles, we should synchronize all clients.
@@ -1533,7 +1538,7 @@ class GuiApi:
             def sync_other_clients(
                 client_id: ClientId, updates: dict[str, Any]
             ) -> None:
-                message = _messages.GuiUpdateMessage(handle_state.id, updates)
+                message = _messages.GuiUpdateMessage(handle_state.uuid, updates)
                 message.excluded_self_client = client_id
                 self._websock_interface.queue_message(message)
 

@@ -25,19 +25,19 @@ import ProgressBarComponent from "../components/ProgressBar";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
-  containerId,
+  containerUuid,
 }: {
-  containerId: string;
+  containerUuid: string;
 }) {
   const viewer = React.useContext(ViewerContext)!;
   const updateGuiProps = viewer.useGui((state) => state.updateGuiProps);
   const messageSender = useThrottledMessageSender(50);
 
-  function setValue(id: string, value: NonNullable<unknown>) {
-    updateGuiProps(id, { value: value });
+  function setValue(uuid: string, value: NonNullable<unknown>) {
+    updateGuiProps(uuid, { value: value });
     messageSender({
       type: "GuiUpdateMessage",
-      id: id,
+      uuid: uuid,
       updates: { value: value },
     });
   }
@@ -50,31 +50,35 @@ export default function GeneratedGuiContainer({
         setValue: setValue,
       }}
     >
-      <GuiContainer containerId={containerId} />
+      <GuiContainer containerUuid={containerUuid} />
     </GuiComponentContext.Provider>
   );
 }
 
-function GuiContainer({ containerId }: { containerId: string }) {
+function GuiContainer({ containerUuid }: { containerUuid: string }) {
   const viewer = React.useContext(ViewerContext)!;
 
   const guiIdSet =
-    viewer.useGui((state) => state.guiIdSetFromContainerId[containerId]) ?? {};
+    viewer.useGui(
+      (state) => state.guiUuidSetFromContainerUuid[containerUuid],
+    ) ?? {};
 
   // Render each GUI element in this container.
   const guiIdArray = [...Object.keys(guiIdSet)];
-  const guiOrderFromId = viewer!.useGui((state) => state.guiOrderFromId);
+  const guiOrderFromId = viewer!.useGui((state) => state.guiOrderFromUuid);
   if (guiIdSet === undefined) return null;
 
-  let guiIdOrderPairArray = guiIdArray.map((id) => ({
-    id: id,
-    order: guiOrderFromId[id],
+  let guiUuidOrderPairArray = guiIdArray.map((uuid) => ({
+    uuid: uuid,
+    order: guiOrderFromId[uuid],
   }));
-  guiIdOrderPairArray = guiIdOrderPairArray.sort((a, b) => a.order - b.order);
+  guiUuidOrderPairArray = guiUuidOrderPairArray.sort(
+    (a, b) => a.order - b.order,
+  );
   const out = (
     <Box pt="xs">
-      {guiIdOrderPairArray.map((pair) => (
-        <GeneratedInput key={pair.id} guiId={pair.id} />
+      {guiUuidOrderPairArray.map((pair) => (
+        <GeneratedInput key={pair.uuid} guiUuid={pair.uuid} />
       ))}
     </Box>
   );
@@ -82,9 +86,13 @@ function GuiContainer({ containerId }: { containerId: string }) {
 }
 
 /** A single generated GUI element. */
-function GeneratedInput(props: { guiId: string }) {
+function GeneratedInput(props: { guiUuid: string }) {
   const viewer = React.useContext(ViewerContext)!;
-  const conf = viewer.useGui((state) => state.guiConfigFromId[props.guiId]);
+  const conf = viewer.useGui((state) => state.guiConfigFromUuid[props.guiUuid]);
+  if (conf === undefined) {
+    console.error("Tried to render non-existent component", props.guiUuid);
+    return null;
+  }
   switch (conf.type) {
     case "GuiFolderMessage":
       return <FolderComponent {...conf} />;

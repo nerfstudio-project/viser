@@ -143,8 +143,8 @@ class SceneApi:
             axes_radius=0.0125,
         )
         """Handle for the world axes, which are created by default."""
-        if isinstance(owner, ViserServer):
-            self.world_axes.visible = False
+
+        self.world_axes.visible = False
 
         self._websock_interface.register_handler(
             _messages.TransformControlsUpdateMessage,
@@ -1571,10 +1571,9 @@ class SceneApi:
         # Update state.
         wxyz = np.array(message.wxyz)
         position = np.array(message.position)
-        with self._owner.atomic():
-            handle._impl.wxyz = wxyz
-            handle._impl.position = position
-            handle._impl_aux.last_updated = time.time()
+        handle._impl.wxyz = wxyz
+        handle._impl.position = position
+        handle._impl_aux.last_updated = time.time()
 
         # Trigger callbacks.
         for cb in handle._impl_aux.update_cb:
@@ -1738,7 +1737,7 @@ class SceneApi:
         """
 
         # Avoids circular import.
-        from ._gui_api import _make_unique_id
+        from ._gui_api import _make_uuid
 
         # New name to make the type checker happy; ViserServer and ClientHandle inherit
         # from both GuiApi and MessageApi. The pattern below is unideal.
@@ -1749,12 +1748,12 @@ class SceneApi:
         if name in self._handle_from_node_name:
             self._handle_from_node_name[name].remove()
 
-        container_id = _make_unique_id()
+        container_id = _make_uuid()
         message = _messages.Gui3DMessage(
             name=name,
             props=_messages.Gui3DProps(
                 order=time.time(),
-                container_id=container_id,
+                container_uuid=container_id,
             ),
         )
         node_handle = SceneNodeHandle._make(

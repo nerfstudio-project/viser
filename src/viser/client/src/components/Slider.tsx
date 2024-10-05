@@ -11,7 +11,7 @@ import { ViserInputComponent } from "./common";
 import { sliderDefaultMarks } from "./ComponentStyles.css";
 
 export default function SliderComponent({
-  id,
+  uuid,
   value,
   props: {
     label,
@@ -27,12 +27,12 @@ export default function SliderComponent({
 }: GuiSliderMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
-  const updateValue = (value: number) => setValue(id, value);
+  const updateValue = (value: number) => setValue(uuid, value);
   const colorScheme = useMantineColorScheme().colorScheme;
   const input = (
     <Flex justify="space-between">
       <Slider
-        id={id}
+        id={uuid}
         className={marks === null ? sliderDefaultMarks : undefined}
         size="xs"
         thumbSize={0}
@@ -115,6 +115,8 @@ export default function SliderComponent({
   );
 
   return (
-    <ViserInputComponent {...{ id, hint, label }}>{input}</ViserInputComponent>
+    <ViserInputComponent {...{ uuid, hint, label }}>
+      {input}
+    </ViserInputComponent>
   );
 }

@@ -10,7 +10,7 @@ from .infra._infra import WebsockClientConnection
 @dataclasses.dataclass
 class _NotificationHandleState:
     websock_interface: WebsockClientConnection
-    id: str
+    uuid: str
     props: NotificationProps
 
 
@@ -39,9 +39,14 @@ class NotificationHandle(NotificationProps):
                 )
 
     def _sync_with_client(self, mode: Literal["show", "update"]) -> None:
-        msg = NotificationMessage(mode, self._impl.id, self._impl.props)
+        msg = NotificationMessage(mode, self._impl.uuid, self._impl.props)
         self._impl.websock_interface.queue_message(msg)
 
     def remove(self) -> None:
-        msg = RemoveNotificationMessage(self._impl.id)
+        self._impl.websock_interface.get_message_buffer().remove_from_buffer(
+            # Don't send outdated GUI updates to new clients.
+            # This is brittle...
+            lambda message: getattr(message, "uuid", None) == self._impl.uuid
+        )
+        msg = RemoveNotificationMessage(self._impl.uuid)
         self._impl.websock_interface.queue_message(msg)
