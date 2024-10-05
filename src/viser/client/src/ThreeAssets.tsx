@@ -58,7 +58,8 @@ const originMaterial = new THREE.MeshBasicMaterial({ color: 0xecec00 });
 
 const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
   { scale: 1.0, point_ball_norm: 0.0 },
-  `
+  `precision mediump float;
+
   varying vec3 vPosition;
   varying vec3 vColor; // in the vertex shader
   uniform float scale;
@@ -101,7 +102,10 @@ export const PointCloud = React.forwardRef<
   const getThreeState = useThree((state) => state.get);
 
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(props.points, 3));
+  geometry.setAttribute(
+    "position",
+    new THREE.Float16BufferAttribute(props.points, 3),
+  );
   geometry.computeBoundingSphere();
   geometry.setAttribute(
     "color",

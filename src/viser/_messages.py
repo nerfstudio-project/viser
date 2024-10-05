@@ -347,7 +347,7 @@ class PointCloudProps:
         assert self.points.shape[-1] == 3
 
         # Check dtypes.
-        assert self.points.dtype == np.float32
+        assert self.points.dtype == np.float16
         assert self.colors.dtype == np.uint8
 
 
