@@ -8,12 +8,14 @@ import { ViewerContext } from "../App";
 import { folderLabel, folderToggleIcon, folderWrapper } from "./Folder.css";
 
 export default function FolderComponent({
-  id,
+  uuid,
   props: { label, visible, expand_by_default },
 }: GuiFolderMessage) {
   const viewer = React.useContext(ViewerContext)!;
   const [opened, { toggle }] = useDisclosure(expand_by_default);
-  const guiIdSet = viewer.useGui((state) => state.guiIdSetFromContainerId[id]);
+  const guiIdSet = viewer.useGui(
+    (state) => state.guiUuidSetFromContainerUuid[uuid],
+  );
   const guiContext = React.useContext(GuiComponentContext)!;
   const isEmpty = guiIdSet === undefined || Object.keys(guiIdSet).length === 0;
 
@@ -43,7 +45,7 @@ export default function FolderComponent({
             folderDepth: guiContext.folderDepth + 1,
           }}
         >
-          <guiContext.GuiContainer containerId={id} />
+          <guiContext.GuiContainer containerUuid={uuid} />
         </GuiComponentContext.Provider>
       </Collapse>
       <Collapse in={!(opened && !isEmpty)}>

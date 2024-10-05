@@ -4,19 +4,19 @@ import { GuiVector2Message } from "../WebsocketMessages";
 import { VectorInput, ViserInputComponent } from "./common";
 
 export default function Vector2Component({
-  id,
+  uuid,
   value,
   props: { hint, label, visible, disabled, min, max, step, precision },
 }: GuiVector2Message) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (
-    <ViserInputComponent {...{ id, hint, label }}>
+    <ViserInputComponent {...{ uuid, hint, label }}>
       <VectorInput
-        id={id}
+        uuid={uuid}
         n={2}
         value={value}
-        onChange={(value: any) => setValue(id, value)}
+        onChange={(value: any) => setValue(uuid, value)}
         min={min}
         max={max}
         step={step}

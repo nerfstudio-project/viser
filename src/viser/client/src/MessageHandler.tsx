@@ -156,7 +156,7 @@ function useMessageHandler() {
       // Add a notification.
       case "NotificationMessage": {
         (message.mode === "show" ? notifications.show : notifications.update)({
-          id: message.id,
+          id: message.uuid,
           title: message.props.title,
           message: message.props.body,
           withCloseButton: message.props.with_close_button,
@@ -169,7 +169,7 @@ function useMessageHandler() {
 
       // Remove a specific notification.
       case "RemoveNotificationMessage": {
-        notifications.hide(message.id);
+        notifications.hide(message.uuid);
         return;
       }
       // Enable/disable whether scene pointer events are sent.
@@ -204,7 +204,7 @@ function useMessageHandler() {
       }
 
       case "GuiCloseModalMessage": {
-        removeModal(message.id);
+        removeModal(message.uuid);
         return;
       }
 
@@ -358,6 +358,11 @@ function useMessageHandler() {
       // Remove a scene node and its children by name.
       case "RemoveSceneNodeMessage": {
         console.log("Removing scene node:", message.name);
+        const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
+        if (!(message.name in nodeFromName)) {
+          console.log("Skipping scene node removal for " + name);
+          return;
+        }
         removeSceneNode(message.name);
         const attrs = viewer.nodeAttributesFromName.current;
         delete attrs[message.name];
@@ -393,12 +398,12 @@ function useMessageHandler() {
       }
       // Update props of a GUI component
       case "GuiUpdateMessage": {
-        updateGuiProps(message.id, message.updates);
+        updateGuiProps(message.uuid, message.updates);
         return;
       }
       // Remove a GUI input.
       case "GuiRemoveMessage": {
-        removeGui(message.id);
+        removeGui(message.uuid);
         return;
       }
 
@@ -409,7 +414,7 @@ function useMessageHandler() {
       }
       case "FileTransferPartAck": {
         updateUploadState({
-          componentId: message.source_component_id!,
+          componentId: message.source_component_uuid!,
           uploadedBytes: message.transferred_bytes,
           totalBytes: message.total_bytes,
         });

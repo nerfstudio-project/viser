@@ -38,9 +38,9 @@ export default function TabGroupComponent({
           </Tabs.Tab>
         ))}
       </Tabs.List>
-      {tab_container_ids.map((containerId, index) => (
-        <Tabs.Panel value={index.toString()} key={containerId}>
-          <GuiContainer containerId={containerId} />
+      {tab_container_ids.map((containerUuid, index) => (
+        <Tabs.Panel value={index.toString()} key={containerUuid}>
+          <GuiContainer containerUuid={containerUuid} />
         </Tabs.Panel>
       ))}
     </Tabs>

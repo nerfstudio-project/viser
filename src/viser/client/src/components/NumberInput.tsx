@@ -5,16 +5,16 @@ import { ViserInputComponent } from "./common";
 import { NumberInput } from "@mantine/core";
 
 export default function NumberInputComponent({
-  id,
+  uuid,
   value,
   props: { visible, label, hint, disabled, precision, min, max, step },
 }: GuiNumberMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (
-    <ViserInputComponent {...{ id, hint, label }}>
+    <ViserInputComponent {...{ uuid, hint, label }}>
       <NumberInput
-        id={id}
+        id={uuid}
         value={value}
         // This was renamed in Mantine v7.
         decimalScale={precision}
@@ -24,7 +24,7 @@ export default function NumberInputComponent({
         size="xs"
         onChange={(newValue) => {
           // Ignore empty values.
-          newValue !== "" && setValue(id, newValue);
+          newValue !== "" && setValue(uuid, newValue);
         }}
         styles={{
           input: {

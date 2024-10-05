@@ -191,7 +191,10 @@ class SceneNodeHandle:
         from ._scene_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
-        self._impl.wxyz = np.asarray(wxyz)
+        wxyz_array = np.asarray(wxyz)
+        if np.allclose(wxyz_cast, self._impl.wxyz):
+            return
+        self._impl.wxyz = wxyz_array
         self._impl.api._websock_interface.queue_message(
             _messages.SetOrientationMessage(self._impl.name, wxyz_cast)
         )
@@ -208,7 +211,10 @@ class SceneNodeHandle:
         from ._scene_api import cast_vector
 
         position_cast = cast_vector(position, 3)
-        self._impl.position = np.asarray(position)
+        position_array = np.asarray(position)
+        if np.allclose(position_array, self._impl.position):
+            return
+        self._impl.position = position_array
         self._impl.api._websock_interface.queue_message(
             _messages.SetPositionMessage(self._impl.name, position_cast)
         )
@@ -235,6 +241,7 @@ class SceneNodeHandle:
             return
 
         self._impl.removed = True
+        self._impl.api._handle_from_node_name.pop(self._impl.name)
         self._impl.api._websock_interface.queue_message(
             _messages.RemoveSceneNodeMessage(self._impl.name)
         )
@@ -435,7 +442,10 @@ class MeshSkinnedBoneHandle:
         from ._scene_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
-        self._impl.wxyz = np.asarray(wxyz)
+        wxyz_array = np.asarray(wxyz)
+        if np.allclose(wxyz_cast, self._impl.wxyz):
+            return
+        self._impl.wxyz = wxyz_array
         self._impl.websock_interface.queue_message(
             _messages.SetBoneOrientationMessage(
                 self._impl.name, self._impl.bone_index, wxyz_cast
@@ -454,7 +464,10 @@ class MeshSkinnedBoneHandle:
         from ._scene_api import cast_vector
 
         position_cast = cast_vector(position, 3)
-        self._impl.position = np.asarray(position)
+        position_array = np.asarray(position)
+        if np.allclose(position_array, self._impl.position):
+            return
+        self._impl.position = position_array
         self._impl.websock_interface.queue_message(
             _messages.SetBonePositionMessage(
                 self._impl.name, self._impl.bone_index, position_cast
@@ -568,17 +581,17 @@ class Gui3dContainerHandle(
         self._container_id = container_id
         self._container_id_restore = None
         self._children = {}
-        self._gui_api._container_handle_from_id[self._container_id] = self
+        self._gui_api._container_handle_from_uuid[self._container_id] = self
 
     def __enter__(self) -> Gui3dContainerHandle:
-        self._container_id_restore = self._gui_api._get_container_id()
-        self._gui_api._set_container_id(self._container_id)
+        self._container_id_restore = self._gui_api._get_container_uuid()
+        self._gui_api._set_container_uid(self._container_id)
         return self
 
     def __exit__(self, *args) -> None:
         del args
         assert self._container_id_restore is not None
-        self._gui_api._set_container_id(self._container_id_restore)
+        self._gui_api._set_container_uid(self._container_id_restore)
         self._container_id_restore = None
 
     def remove(self) -> None:
@@ -590,4 +603,4 @@ class Gui3dContainerHandle(
         # Clean up contained GUI elements.
         for child in tuple(self._children.values()):
             child.remove()
-        self._gui_api._container_handle_from_id.pop(self._container_id)
+        self._gui_api._container_handle_from_uuid.pop(self._container_id)

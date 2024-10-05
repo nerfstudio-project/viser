@@ -5,19 +5,19 @@ import { GuiTextMessage } from "../WebsocketMessages";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 
 export default function TextInputComponent({
-  id,
+  uuid,
   value,
   props: { hint, label, disabled, visible },
 }: GuiTextMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (
-    <ViserInputComponent {...{ id, hint, label }}>
+    <ViserInputComponent {...{ uuid, hint, label }}>
       <TextInput
         value={value}
         size="xs"
         onChange={(value) => {
-          setValue(id, value.target.value);
+          setValue(uuid, value.target.value);
         }}
         styles={{
           input: {

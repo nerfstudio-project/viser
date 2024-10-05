@@ -139,7 +139,7 @@ class WebsockMessageHandler:
                 cb(client_id, message)
 
     @abc.abstractmethod
-    def unsafe_send_message(self, message: Message) -> None: ...
+    def get_message_buffer(self) -> AsyncMessageBuffer: ...
 
     def queue_message(self, message: Message) -> None:
         """Wrapped method for sending messages safely."""
@@ -148,7 +148,7 @@ class WebsockMessageHandler:
 
         got_lock = self._atomic_lock.acquire(blocking=False)
         if got_lock:
-            self.unsafe_send_message(message)
+            self.get_message_buffer().push(message)
             self._atomic_lock.release()
         else:
             # Send when lock is acquirable, while retaining message order.
@@ -157,7 +157,7 @@ class WebsockMessageHandler:
 
             def try_again() -> None:
                 with self._atomic_lock:
-                    self.unsafe_send_message(self._queued_messages.get())
+                    self.get_message_buffer().push(self._queued_messages.get())
 
             self._thread_executor.submit(try_again)
 
@@ -204,9 +204,9 @@ class WebsockClientConnection(WebsockMessageHandler):
         super().__init__(thread_executor)
 
     @override
-    def unsafe_send_message(self, message: Message) -> None:
-        """Send a message to a specific client."""
-        self._state.message_buffer.push(message)
+    def get_message_buffer(self) -> AsyncMessageBuffer:
+        """Get client message buffer."""
+        return self._state.message_buffer
 
 
 class WebsockServer(WebsockMessageHandler):
@@ -291,13 +291,9 @@ class WebsockServer(WebsockMessageHandler):
         self._client_disconnect_cb.append(cb)
 
     @override
-    def unsafe_send_message(self, message: Message) -> None:
-        """Pushes a message onto the broadcast queue. Message will be sent to all clients.
-
-        Broadcasted messages are persistent: if a new client connects to the server,
-        they will receive a buffered set of previously broadcasted messages. The buffer
-        is culled using the value of `message.redundancy_key()`."""
-        self._broadcast_buffer.push(message)
+    def get_message_buffer(self) -> AsyncMessageBuffer:
+        """Pushes a message onto the broadcast queue. Message will be sent to all clients."""
+        return self._broadcast_buffer
 
     def flush(self) -> None:
         """Flush the outgoing message buffer for broadcasted messages. Any buffered
@@ -493,8 +489,8 @@ class WebsockServer(WebsockMessageHandler):
                     serve,
                     host,
                     port,
-                    # Compression can be turned off to reduce client-side CPU usage.
-                    # compression=None,
+                    # Compression can be too slow for our use cases.
+                    compression=None,
                     process_request=(
                         viser_http_server if http_server_root is not None else None
                     ),

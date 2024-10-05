@@ -5,13 +5,13 @@ import { GuiButtonGroupMessage } from "../WebsocketMessages";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
 
 export default function ButtonGroupComponent({
-  id,
+  uuid,
   props: { hint, label, visible, disabled, options },
 }: GuiButtonGroupMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (
-    <ViserInputComponent {...{ id, hint, label }}>
+    <ViserInputComponent {...{ uuid, hint, label }}>
       <Flex justify="space-between" columnGap="xs">
         {options.map((option, index) => (
           <Button
@@ -19,11 +19,11 @@ export default function ButtonGroupComponent({
             onClick={() =>
               messageSender({
                 type: "GuiUpdateMessage",
-                id: id,
+                uuid: uuid,
                 updates: { value: option },
               })
             }
-            style={{ flexGrow: 1, width: 0 }}
+            style={{ flexGrow: 1, wuuidth: 0 }}
             disabled={disabled}
             size="compact-xs"
             variant="outline"

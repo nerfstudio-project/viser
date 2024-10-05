@@ -17,7 +17,7 @@ export interface RunJavascriptMessage {
 export interface NotificationMessage {
   type: "NotificationMessage";
   mode: "show" | "update";
-  id: string;
+  uuid: string;
   props: {
     title: string;
     body: string;
@@ -48,7 +48,7 @@ export interface NotificationMessage {
  */
 export interface RemoveNotificationMessage {
   type: "RemoveNotificationMessage";
-  id: string;
+  uuid: string;
 }
 /** Message for a posed viewer camera.
  * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
@@ -182,7 +182,7 @@ export interface LabelMessage {
 export interface Gui3DMessage {
   type: "Gui3DMessage";
   name: string;
-  props: { order: number; container_id: string };
+  props: { order: number; container_uuid: string };
 }
 /** Point cloud message.
  *
@@ -541,14 +541,14 @@ export interface ResetSceneMessage {
 export interface ResetGuiMessage {
   type: "ResetGuiMessage";
 }
-/** GuiFolderMessage(id: 'str', container_id: 'str', props: 'GuiFolderProps')
+/** GuiFolderMessage(uuid: 'str', container_uuid: 'str', props: 'GuiFolderProps')
  *
  * (automatically generated)
  */
 export interface GuiFolderMessage {
   type: "GuiFolderMessage";
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -556,25 +556,25 @@ export interface GuiFolderMessage {
     expand_by_default: boolean;
   };
 }
-/** GuiMarkdownMessage(id: 'str', container_id: 'str', props: 'GuiMarkdownProps')
+/** GuiMarkdownMessage(uuid: 'str', container_uuid: 'str', props: 'GuiMarkdownProps')
  *
  * (automatically generated)
  */
 export interface GuiMarkdownMessage {
   type: "GuiMarkdownMessage";
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: { order: number; _markdown: string; visible: boolean };
 }
-/** GuiProgressBarMessage(value: 'float', id: 'str', container_id: 'str', props: 'GuiProgressBarProps')
+/** GuiProgressBarMessage(value: 'float', uuid: 'str', container_uuid: 'str', props: 'GuiProgressBarProps')
  *
  * (automatically generated)
  */
 export interface GuiProgressBarMessage {
   type: "GuiProgressBarMessage";
   value: number;
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     animated: boolean;
@@ -597,14 +597,14 @@ export interface GuiProgressBarMessage {
     visible: boolean;
   };
 }
-/** GuiPlotlyMessage(id: 'str', container_id: 'str', props: 'GuiPlotlyProps')
+/** GuiPlotlyMessage(uuid: 'str', container_uuid: 'str', props: 'GuiPlotlyProps')
  *
  * (automatically generated)
  */
 export interface GuiPlotlyMessage {
   type: "GuiPlotlyMessage";
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     _plotly_json_str: string;
@@ -612,14 +612,14 @@ export interface GuiPlotlyMessage {
     visible: boolean;
   };
 }
-/** GuiTabGroupMessage(id: 'str', container_id: 'str', props: 'GuiTabGroupProps')
+/** GuiTabGroupMessage(uuid: 'str', container_uuid: 'str', props: 'GuiTabGroupProps')
  *
  * (automatically generated)
  */
 export interface GuiTabGroupMessage {
   type: "GuiTabGroupMessage";
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     _tab_labels: string[];
     _tab_icons_html: (string | null)[];
@@ -628,33 +628,33 @@ export interface GuiTabGroupMessage {
     visible: boolean;
   };
 }
-/** GuiModalMessage(order: 'float', id: 'str', title: 'str')
+/** GuiModalMessage(order: 'float', uuid: 'str', title: 'str')
  *
  * (automatically generated)
  */
 export interface GuiModalMessage {
   type: "GuiModalMessage";
   order: number;
-  id: string;
+  uuid: string;
   title: string;
 }
-/** GuiCloseModalMessage(id: 'str')
+/** GuiCloseModalMessage(uuid: 'str')
  *
  * (automatically generated)
  */
 export interface GuiCloseModalMessage {
   type: "GuiCloseModalMessage";
-  id: string;
+  uuid: string;
 }
-/** GuiButtonMessage(value: 'bool', id: 'str', container_id: 'str', props: 'GuiButtonProps')
+/** GuiButtonMessage(value: 'bool', uuid: 'str', container_uuid: 'str', props: 'GuiButtonProps')
  *
  * (automatically generated)
  */
 export interface GuiButtonMessage {
   type: "GuiButtonMessage";
   value: boolean;
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -680,14 +680,14 @@ export interface GuiButtonMessage {
     _icon_html: string | null;
   };
 }
-/** GuiUploadButtonMessage(id: 'str', container_id: 'str', props: 'GuiUploadButtonProps')
+/** GuiUploadButtonMessage(uuid: 'str', container_uuid: 'str', props: 'GuiUploadButtonProps')
  *
  * (automatically generated)
  */
 export interface GuiUploadButtonMessage {
   type: "GuiUploadButtonMessage";
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -714,15 +714,15 @@ export interface GuiUploadButtonMessage {
     mime_type: string;
   };
 }
-/** GuiSliderMessage(value: 'float', id: 'str', container_id: 'str', props: 'GuiSliderProps')
+/** GuiSliderMessage(value: 'float', uuid: 'str', container_uuid: 'str', props: 'GuiSliderProps')
  *
  * (automatically generated)
  */
 export interface GuiSliderMessage {
   type: "GuiSliderMessage";
   value: number;
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -736,15 +736,15 @@ export interface GuiSliderMessage {
     _marks: { value: number; label: string | null }[] | null;
   };
 }
-/** GuiMultiSliderMessage(value: 'tuple[float, ...]', id: 'str', container_id: 'str', props: 'GuiMultiSliderProps')
+/** GuiMultiSliderMessage(value: 'tuple[float, ...]', uuid: 'str', container_uuid: 'str', props: 'GuiMultiSliderProps')
  *
  * (automatically generated)
  */
 export interface GuiMultiSliderMessage {
   type: "GuiMultiSliderMessage";
   value: number[];
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -760,15 +760,15 @@ export interface GuiMultiSliderMessage {
     _marks: { value: number; label: string | null }[] | null;
   };
 }
-/** GuiNumberMessage(value: 'float', id: 'str', container_id: 'str', props: 'GuiNumberProps')
+/** GuiNumberMessage(value: 'float', uuid: 'str', container_uuid: 'str', props: 'GuiNumberProps')
  *
  * (automatically generated)
  */
 export interface GuiNumberMessage {
   type: "GuiNumberMessage";
   value: number;
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -781,15 +781,15 @@ export interface GuiNumberMessage {
     max: number | null;
   };
 }
-/** GuiRgbMessage(value: 'Tuple[int, int, int]', id: 'str', container_id: 'str', props: 'GuiRgbProps')
+/** GuiRgbMessage(value: 'Tuple[int, int, int]', uuid: 'str', container_uuid: 'str', props: 'GuiRgbProps')
  *
  * (automatically generated)
  */
 export interface GuiRgbMessage {
   type: "GuiRgbMessage";
   value: [number, number, number];
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -798,15 +798,15 @@ export interface GuiRgbMessage {
     disabled: boolean;
   };
 }
-/** GuiRgbaMessage(value: 'Tuple[int, int, int, int]', id: 'str', container_id: 'str', props: 'GuiRgbaProps')
+/** GuiRgbaMessage(value: 'Tuple[int, int, int, int]', uuid: 'str', container_uuid: 'str', props: 'GuiRgbaProps')
  *
  * (automatically generated)
  */
 export interface GuiRgbaMessage {
   type: "GuiRgbaMessage";
   value: [number, number, number, number];
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -815,15 +815,15 @@ export interface GuiRgbaMessage {
     disabled: boolean;
   };
 }
-/** GuiCheckboxMessage(value: 'bool', id: 'str', container_id: 'str', props: 'GuiCheckboxProps')
+/** GuiCheckboxMessage(value: 'bool', uuid: 'str', container_uuid: 'str', props: 'GuiCheckboxProps')
  *
  * (automatically generated)
  */
 export interface GuiCheckboxMessage {
   type: "GuiCheckboxMessage";
   value: boolean;
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -832,15 +832,15 @@ export interface GuiCheckboxMessage {
     disabled: boolean;
   };
 }
-/** GuiVector2Message(value: 'Tuple[float, float]', id: 'str', container_id: 'str', props: 'GuiVector2Props')
+/** GuiVector2Message(value: 'Tuple[float, float]', uuid: 'str', container_uuid: 'str', props: 'GuiVector2Props')
  *
  * (automatically generated)
  */
 export interface GuiVector2Message {
   type: "GuiVector2Message";
   value: [number, number];
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -853,15 +853,15 @@ export interface GuiVector2Message {
     precision: number;
   };
 }
-/** GuiVector3Message(value: 'Tuple[float, float, float]', id: 'str', container_id: 'str', props: 'GuiVector3Props')
+/** GuiVector3Message(value: 'Tuple[float, float, float]', uuid: 'str', container_uuid: 'str', props: 'GuiVector3Props')
  *
  * (automatically generated)
  */
 export interface GuiVector3Message {
   type: "GuiVector3Message";
   value: [number, number, number];
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -874,15 +874,15 @@ export interface GuiVector3Message {
     precision: number;
   };
 }
-/** GuiTextMessage(value: 'str', id: 'str', container_id: 'str', props: 'GuiTextProps')
+/** GuiTextMessage(value: 'str', uuid: 'str', container_uuid: 'str', props: 'GuiTextProps')
  *
  * (automatically generated)
  */
 export interface GuiTextMessage {
   type: "GuiTextMessage";
   value: string;
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -891,15 +891,15 @@ export interface GuiTextMessage {
     disabled: boolean;
   };
 }
-/** GuiDropdownMessage(value: 'str', id: 'str', container_id: 'str', props: 'GuiDropdownProps')
+/** GuiDropdownMessage(value: 'str', uuid: 'str', container_uuid: 'str', props: 'GuiDropdownProps')
  *
  * (automatically generated)
  */
 export interface GuiDropdownMessage {
   type: "GuiDropdownMessage";
   value: string;
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -909,15 +909,15 @@ export interface GuiDropdownMessage {
     options: string[];
   };
 }
-/** GuiButtonGroupMessage(value: 'str', id: 'str', container_id: 'str', props: 'GuiButtonGroupProps')
+/** GuiButtonGroupMessage(value: 'str', uuid: 'str', container_uuid: 'str', props: 'GuiButtonGroupProps')
  *
  * (automatically generated)
  */
 export interface GuiButtonGroupMessage {
   type: "GuiButtonGroupMessage";
   value: string;
-  id: string;
-  container_id: string;
+  uuid: string;
+  container_uuid: string;
   props: {
     order: number;
     label: string;
@@ -933,7 +933,7 @@ export interface GuiButtonGroupMessage {
  */
 export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
-  id: string;
+  uuid: string;
 }
 /** Sent client<->server when any property of a GUI component is changed.
  *
@@ -941,7 +941,7 @@ export interface GuiRemoveMessage {
  */
 export interface GuiUpdateMessage {
   type: "GuiUpdateMessage";
-  id: string;
+  uuid: string;
   updates: { [key: string]: any };
 }
 /** Sent client<->server when any property of a scene node is changed.
@@ -1060,7 +1060,7 @@ export interface GetRenderResponseMessage {
  */
 export interface FileTransferStart {
   type: "FileTransferStart";
-  source_component_id: string | null;
+  source_component_uuid: string | null;
   transfer_uuid: string;
   filename: string;
   mime_type: string;
@@ -1073,7 +1073,7 @@ export interface FileTransferStart {
  */
 export interface FileTransferPart {
   type: "FileTransferPart";
-  source_component_id: string | null;
+  source_component_uuid: string | null;
   transfer_uuid: string;
   part: number;
   content: Uint8Array;
@@ -1084,7 +1084,7 @@ export interface FileTransferPart {
  */
 export interface FileTransferPartAck {
   type: "FileTransferPartAck";
-  source_component_id: string | null;
+  source_component_uuid: string | null;
   transfer_uuid: string;
   transferred_bytes: number;
   total_bytes: number;

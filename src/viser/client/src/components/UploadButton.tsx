@@ -10,7 +10,7 @@ import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
 
 export default function UploadButtonComponent({
-  id,
+  uuid,
   props: { disabled, mime_type, color, _icon_html: icon_html, label },
 }: GuiUploadButtonMessage) {
   // Handle GUI input types.
@@ -18,7 +18,7 @@ export default function UploadButtonComponent({
   const fileUploadRef = React.useRef<HTMLInputElement>(null);
   const { isUploading, upload } = useFileUpload({
     viewer,
-    componentId: id,
+    componentUuid: uuid,
   });
 
   return (
@@ -26,7 +26,7 @@ export default function UploadButtonComponent({
       <input
         type="file"
         style={{ display: "none" }}
-        id={`file_upload_${id}`}
+        id={`file_upload_${uuid}`}
         name="file"
         accept={mime_type}
         ref={fileUploadRef}
@@ -37,7 +37,7 @@ export default function UploadButtonComponent({
         }}
       />
       <Button
-        id={id}
+        id={uuid}
         fullWidth
         color={color ?? undefined}
         onClick={() => {
@@ -65,14 +65,14 @@ export default function UploadButtonComponent({
 
 function useFileUpload({
   viewer,
-  componentId,
+  componentUuid,
 }: {
-  componentId: string;
+  componentUuid: string;
   viewer: ViewerContextContents;
 }) {
   const updateUploadState = viewer.useGui((state) => state.updateUploadState);
   const uploadState = viewer.useGui(
-    (state) => state.uploadsInProgress[componentId],
+    (state) => state.uploadsInProgress[componentUuid],
   );
   const totalBytes = uploadState?.totalBytes;
 
@@ -96,7 +96,7 @@ function useFileUpload({
     if (uploadState.uploadedBytes === 0) {
       // Show notification.
       notifications.show({
-        id: notificationId,
+        uuid: notificationId,
         title: "Uploading " + `${filename} (${totalBytesString})`,
         message: <Progress size="sm" value={0} />,
         autoClose: false,
@@ -108,7 +108,7 @@ function useFileUpload({
       const progressValue = uploadState.uploadedBytes / uploadState.totalBytes;
       const isDone = progressValue === 1.0;
       notifications.update({
-        id: notificationId,
+        uuid: notificationId,
         title: "Uploading " + `${filename} (${totalBytesString})`,
         message: !isDone ? (
           <Progress
@@ -139,7 +139,7 @@ function useFileUpload({
 
     // Begin upload by setting initial state
     updateUploadState({
-      componentId: componentId,
+      componentId: componentUuid,
       uploadedBytes: 0,
       totalBytes: file.size,
       filename: file.name,
@@ -148,7 +148,7 @@ function useFileUpload({
 
     viewer.sendMessageRef.current({
       type: "FileTransferStart",
-      source_component_id: componentId,
+      source_component_uuid: componentUuid,
       transfer_uuid: transferUuid,
       filename: file.name,
       mime_type: file.type,
@@ -164,7 +164,7 @@ function useFileUpload({
 
       viewer.sendMessageRef.current({
         type: "FileTransferPart",
-        source_component_id: componentId,
+        source_component_uuid: componentUuid,
         transfer_uuid: transferUuid,
         part: i,
         content: new Uint8Array(buffer),

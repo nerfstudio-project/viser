@@ -51,7 +51,7 @@ export default function ControlPanel(props: {
   // TODO: will result in unnecessary re-renders.
   const viewer = React.useContext(ViewerContext)!;
   const showGenerated = viewer.useGui(
-    (state) => "root" in state.guiIdSetFromContainerId,
+    (state) => "root" in state.guiUuidSetFromContainerUuid,
   );
   const [showSettings, { toggle }] = useDisclosure(false);
 
@@ -99,7 +99,7 @@ export default function ControlPanel(props: {
         <ServerControls />
       </Collapse>
       <Collapse in={showGenerated && !showSettings}>
-        <GeneratedGuiContainer containerId={ROOT_CONTAINER_ID} />
+        <GeneratedGuiContainer containerUuid={ROOT_CONTAINER_ID} />
       </Collapse>
     </>
   );
