@@ -1226,10 +1226,21 @@ class SceneApi:
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
 
+        # Filter out Gaussians with covariances with very eigenvalues <= 0.
+        eigenvalues = np.linalg.eigvalsh(covariances)
+        valid_gaussians = np.all(eigenvalues > 1e-7, axis=1)
+
+        # Filter out invalid Gaussians
+        centers = centers[valid_gaussians]
+        covariances = covariances[valid_gaussians]
+        rgbs = rgbs[valid_gaussians]
+        opacities = opacities[valid_gaussians]
+        num_gaussians = centers.shape[0]
+
         # Get cholesky factor of covariance. This helps retain precision when
         # we convert to float16.
         cov_cholesky_triu = (
-            np.linalg.cholesky(covariances.astype(np.float64) + np.ones(3) * 1e-7)
+            np.linalg.cholesky(covariances)
             .swapaxes(-1, -2)  # tril => triu
             .reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
         )

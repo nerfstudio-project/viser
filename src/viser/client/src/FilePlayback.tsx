@@ -239,10 +239,12 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
               left: "1em",
               zIndex: 2,
               width: "15rem",
-              height: "15rem",
-              boxShadow: "0 0 0.5em rgba(255, 255, 255, 0.5)",
+              maxWidth: "25%",
+              aspectRatio: "1",
+              maxHeight: "auto",
+              border: "0.2em solid rgba(255, 255, 255, 0.5)",
               overflow: "hidden",
-              borderRadius: "0.25em",
+              borderRadius: "0.3rem",
             }}
           >
             <div
@@ -252,6 +254,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
                 top: "0",
                 width: "100%",
                 backgroundColor: "rgba(0,0,0,0.5)",
+                color: "#eee",
                 lineHeight: "2em",
                 fontFamily: "Inter",
                 padding: "0.5em 1em 0 1em",
