@@ -1235,6 +1235,7 @@ class SceneApi:
         covariances = covariances[valid_gaussians]
         rgbs = rgbs[valid_gaussians]
         opacities = opacities[valid_gaussians]
+        print(f"Before: {num_gaussians}, after: {centers.shape[0]}")
         num_gaussians = centers.shape[0]
 
         # Get cholesky factor of covariance. This helps retain precision when

@@ -238,13 +238,11 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
               top: "1.5em",
               left: "1em",
               zIndex: 2,
-              width: "15rem",
-              maxWidth: "25%",
-              aspectRatio: "1",
               maxHeight: "auto",
               border: "0.2em solid rgba(255, 255, 255, 0.5)",
               overflow: "hidden",
               borderRadius: "0.3rem",
+              padding: "0",
             }}
           >
             <div
@@ -252,12 +250,10 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
                 textAlign: "center",
                 position: "absolute",
                 top: "0",
-                width: "100%",
-                backgroundColor: "rgba(0,0,0,0.5)",
+                backgroundColor: "rgba(0,0,0,0.75)",
                 color: "#eee",
-                lineHeight: "2em",
                 fontFamily: "Inter",
-                padding: "0.5em 1em 0 1em",
+                padding: "0.25em 1em 0.125em 1em",
                 fontWeight: "500",
               }}
             >
@@ -267,8 +263,11 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
               ref={videoRef}
               src={overlayVideo[0]}
               style={{
-                width: "100%",
-                height: "100%",
+                width: "15rem",
+                maxWidth: "25vw",
+                aspectRatio: "1",
+                margin: "0",
+                display: "block",
               }}
               muted
             />
