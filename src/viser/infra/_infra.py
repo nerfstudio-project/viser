@@ -489,8 +489,8 @@ class WebsockServer(WebsockMessageHandler):
                     serve,
                     host,
                     port,
-                    # Compression can be turned off to reduce client-side CPU usage.
-                    # compression=None,
+                    # Compression can be too slow for our use cases.
+                    compression=None,
                     process_request=(
                         viser_http_server if http_server_root is not None else None
                     ),

@@ -267,7 +267,7 @@ class GuiApi:
             if isinstance(self._owner, ClientHandle):
                 client = self._owner
             elif isinstance(self._owner, ViserServer):
-                client = self._owner.get_clients().get(client_id, None)
+                client = self._owner._connected_clients.get(client_id, None)
                 if client is None:
                     return
             else:
@@ -338,9 +338,8 @@ class GuiApi:
         )
 
         # Update state.
-        with self._owner.atomic():
-            handle_state.value = value
-            handle_state.update_timestamp = time.time()
+        handle_state.value = value
+        handle_state.update_timestamp = time.time()
 
         # Trigger callbacks.
         for cb in handle_state.update_cb:
@@ -350,7 +349,7 @@ class GuiApi:
             if isinstance(self._owner, ClientHandle):
                 client = self._owner
             elif isinstance(self._owner, ViserServer):
-                client = self._owner.get_clients().get(client_id, None)
+                client = self._owner._connected_clients.get(client_id, None)
                 if client is None:
                     return
             else:

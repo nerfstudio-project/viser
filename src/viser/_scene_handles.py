@@ -191,7 +191,10 @@ class SceneNodeHandle:
         from ._scene_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
-        self._impl.wxyz = np.asarray(wxyz)
+        wxyz_array = np.asarray(wxyz)
+        if np.allclose(wxyz_cast, self._impl.wxyz):
+            return
+        self._impl.wxyz = wxyz_array
         self._impl.api._websock_interface.queue_message(
             _messages.SetOrientationMessage(self._impl.name, wxyz_cast)
         )
@@ -208,7 +211,10 @@ class SceneNodeHandle:
         from ._scene_api import cast_vector
 
         position_cast = cast_vector(position, 3)
-        self._impl.position = np.asarray(position)
+        position_array = np.asarray(position)
+        if np.allclose(position_array, self._impl.position):
+            return
+        self._impl.position = position_array
         self._impl.api._websock_interface.queue_message(
             _messages.SetPositionMessage(self._impl.name, position_cast)
         )
@@ -436,7 +442,10 @@ class MeshSkinnedBoneHandle:
         from ._scene_api import cast_vector
 
         wxyz_cast = cast_vector(wxyz, 4)
-        self._impl.wxyz = np.asarray(wxyz)
+        wxyz_array = np.asarray(wxyz)
+        if np.allclose(wxyz_cast, self._impl.wxyz):
+            return
+        self._impl.wxyz = wxyz_array
         self._impl.websock_interface.queue_message(
             _messages.SetBoneOrientationMessage(
                 self._impl.name, self._impl.bone_index, wxyz_cast
@@ -455,7 +464,10 @@ class MeshSkinnedBoneHandle:
         from ._scene_api import cast_vector
 
         position_cast = cast_vector(position, 3)
-        self._impl.position = np.asarray(position)
+        position_array = np.asarray(position)
+        if np.allclose(position_array, self._impl.position):
+            return
+        self._impl.position = position_array
         self._impl.websock_interface.queue_message(
             _messages.SetBonePositionMessage(
                 self._impl.name, self._impl.bone_index, position_cast

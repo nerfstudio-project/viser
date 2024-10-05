@@ -158,13 +158,19 @@ class CameraHandle:
 
     @position.setter
     def position(self, position: tuple[float, float, float] | np.ndarray) -> None:
-        offset = np.asarray(position) - np.array(self.position)  # type: ignore
-        self._state.position = np.asarray(position)
+        position_array = np.asarray(position)
+
+        if np.allclose(position_array, self._state.position):
+            return
+        offset = position_array - np.array(self.position)  # type: ignore
+        self._state.position = position_array
+
+        position_tuple = cast_vector(position, 3)
+        self._state.client._websock_connection.queue_message(
+            _messages.SetCameraPositionMessage(position_tuple)
+        )
         self.look_at = np.array(self.look_at) + offset
         self._state.update_timestamp = time.time()
-        self._state.client._websock_connection.queue_message(
-            _messages.SetCameraPositionMessage(cast_vector(position, 3))
-        )
 
     def _update_wxyz(self) -> None:
         """Compute and update the camera orientation from the internal look_at, position, and up vectors."""
@@ -185,6 +191,8 @@ class CameraHandle:
 
     @fov.setter
     def fov(self, fov: float) -> None:
+        if np.allclose(self._state.fov, fov):
+            return
         self._state.fov = fov
         self._state.update_timestamp = time.time()
         self._state.client._websock_connection.queue_message(
@@ -210,7 +218,10 @@ class CameraHandle:
 
     @look_at.setter
     def look_at(self, look_at: tuple[float, float, float] | np.ndarray) -> None:
-        self._state.look_at = np.asarray(look_at)
+        look_at_array = np.asarray(look_at)
+        if np.allclose(self._state.look_at, look_at_array):
+            return
+        self._state.look_at = look_at_array
         self._state.update_timestamp = time.time()
         self._update_wxyz()
         self._state.client._websock_connection.queue_message(
@@ -227,7 +238,10 @@ class CameraHandle:
     def up_direction(
         self, up_direction: tuple[float, float, float] | np.ndarray
     ) -> None:
-        self._state.up_direction = np.asarray(up_direction)
+        up_direction_array = np.asarray(up_direction)
+        if np.allclose(self._state.up_direction, up_direction_array):
+            return
+        self._state.up_direction = np.asarray(up_direction_array)
         self._update_wxyz()
         self._state.update_timestamp = time.time()
         self._state.client._websock_connection.queue_message(
@@ -497,18 +511,17 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                 assert client_id == client.client_id
 
                 # Update the client's camera.
-                with client.atomic():
-                    client.camera._state = _CameraHandleState(
-                        client,
-                        np.array(message.wxyz),
-                        np.array(message.position),
-                        message.fov,
-                        message.aspect,
-                        np.array(message.look_at),
-                        np.array(message.up_direction),
-                        time.time(),
-                        camera_cb=client.camera._state.camera_cb,
-                    )
+                client.camera._state = _CameraHandleState(
+                    client,
+                    np.array(message.wxyz),
+                    np.array(message.position),
+                    message.fov,
+                    message.aspect,
+                    np.array(message.look_at),
+                    np.array(message.up_direction),
+                    time.time(),
+                    camera_cb=client.camera._state.camera_cb,
+                )
 
                 # We consider a client to be connected after the first camera message is
                 # received.

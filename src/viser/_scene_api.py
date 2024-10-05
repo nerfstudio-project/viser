@@ -1559,10 +1559,9 @@ class SceneApi:
         # Update state.
         wxyz = np.array(message.wxyz)
         position = np.array(message.position)
-        with self._owner.atomic():
-            handle._impl.wxyz = wxyz
-            handle._impl.position = position
-            handle._impl_aux.last_updated = time.time()
+        handle._impl.wxyz = wxyz
+        handle._impl.position = position
+        handle._impl_aux.last_updated = time.time()
 
         # Trigger callbacks.
         for cb in handle._impl_aux.update_cb:
