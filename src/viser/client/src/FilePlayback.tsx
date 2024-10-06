@@ -91,15 +91,25 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   const videoTimeOffset = parseFloat(
     searchParams.get("synchronizedVideoTimeOffset") || "0",
   );
-  const baseSpeed = parseFloat(searchParams.get("baseSpeed") || "1");
-
   const [currentTime, setCurrentTime] = useState(0.0);
 
   const theme = useMantineTheme();
 
+  const baseSpeed = parseFloat(searchParams.get("baseSpeed") || "1");
+
   useEffect(() => {
     deserializeGzippedMsgpackFile<SerializedMessages>(fileUrl, setStatus).then(
-      setRecording,
+      (record) => {
+        // Apply baseSpeed.
+        setRecording({
+          loopStartIndex: record.loopStartIndex,
+          durationSeconds: record.durationSeconds / baseSpeed,
+          messages: record.messages.map(([time, message]) => [
+            time / baseSpeed,
+            message,
+          ]),
+        });
+      },
     );
   }, []);
 
@@ -135,11 +145,12 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   useEffect(() => {
     let animationFrameId: number;
 
+    const mutable = playbackMutable.current;
     const updateVideoTime = () => {
       if (videoRef.current && videoRef.current.readyState >= 2) {
         videoRef.current.currentTime = Math.max(
           0,
-          playbackMutable.current.currentTime + videoTimeOffset,
+          mutable.currentTime + videoTimeOffset,
         );
       }
       animationFrameId = requestAnimationFrame(updateVideoTime);
@@ -160,7 +171,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       const interval = setInterval(() => {
         const now = Date.now();
         playbackMutable.current.currentTime +=
-          ((now - lastUpdate) / 1000.0) * playbackMultiplier * baseSpeed;
+          ((now - lastUpdate) / 1000.0) * playbackMultiplier;
         lastUpdate = now;
 
         updatePlayback();
@@ -236,8 +247,8 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           <div
             style={{
               position: "fixed",
-              top: "1.5em",
-              left: "1em",
+              top: "0.75em",
+              left: "0.75em",
               zIndex: 2,
               maxHeight: "auto",
               border: "0.2em solid rgba(255, 255, 255, 0.5)",
@@ -264,8 +275,8 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
               ref={videoRef}
               src={overlayVideo[0]}
               style={{
-                width: "20rem",
-                maxWidth: "20vw",
+                width: "25rem",
+                maxWidth: "23vw",
                 aspectRatio: "1",
                 margin: "0",
                 display: "block",
