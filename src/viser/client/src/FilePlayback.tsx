@@ -91,6 +91,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   const videoTimeOffset = parseFloat(
     searchParams.get("synchronizedVideoTimeOffset") || "0",
   );
+  const baseSpeed = parseFloat(searchParams.get("baseSpeed") || "1");
 
   const [currentTime, setCurrentTime] = useState(0.0);
 
@@ -159,7 +160,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       const interval = setInterval(() => {
         const now = Date.now();
         playbackMutable.current.currentTime +=
-          ((now - lastUpdate) / 1000.0) * playbackMultiplier;
+          ((now - lastUpdate) / 1000.0) * playbackMultiplier * baseSpeed;
         lastUpdate = now;
 
         updatePlayback();

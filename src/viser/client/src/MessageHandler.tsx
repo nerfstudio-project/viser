@@ -618,7 +618,9 @@ export function FrameSynchronizedMessageHandler() {
       const processBatch = messageQueueRef.current.splice(0, numMessages);
       processBatch.forEach(handleMessage);
     }
-  });
+  }, 
+  // We should handle messages before doing anything else!!
+  -100000);
 
   return null;
 }

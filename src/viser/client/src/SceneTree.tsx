@@ -688,23 +688,25 @@ export function SceneNodeThreeObject(props: {
 
       if (attrs.poseUpdateState == "needsUpdate") {
         attrs.poseUpdateState = "updated";
-        const wxyz = attrs.wxyz;
-        if (wxyz !== undefined) {
-          obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-        }
-        const position = attrs.position;
-        if (position !== undefined) {
-          obj.position.set(position[0], position[1], position[2]);
-        }
-
-        // Update matrices if necessary. This is necessary for PivotControls.
-        if (!obj.matrixAutoUpdate) obj.updateMatrix();
-        if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
       }
+      const wxyz = attrs.wxyz;
+      if (wxyz !== undefined) {
+        obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+      }
+      const position = attrs.position;
+      if (position !== undefined) {
+        obj.position.set(position[0], position[1], position[2]);
+      }
+
+      // Update matrices if necessary. This is necessary for PivotControls.
+      if (!obj.matrixAutoUpdate) obj.updateMatrix();
+      if (!obj.matrixWorldAutoUpdate) obj.updateMatrixWorld();
     },
     // Other useFrame hooks may depend on transforms + visibility. So it's best
     // to call this hook early.
-    -10000,
+    //
+    // Note: it's important that this is lower than the priority for the messagehandler useFrame!
+    -100,
   );
 
   // Clicking logic.
