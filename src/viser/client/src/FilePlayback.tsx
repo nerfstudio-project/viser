@@ -150,7 +150,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       if (videoRef.current && videoRef.current.readyState >= 2) {
         videoRef.current.currentTime = Math.max(
           0,
-          mutable.currentTime + videoTimeOffset,
+          mutable.currentTime * baseSpeed + videoTimeOffset,
         );
       }
       animationFrameId = requestAnimationFrame(updateVideoTime);
