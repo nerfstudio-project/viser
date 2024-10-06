@@ -264,7 +264,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
               ref={videoRef}
               src={overlayVideo[0]}
               style={{
-                width: "15rem",
+                width: "20rem",
                 maxWidth: "20vw",
                 aspectRatio: "1",
                 margin: "0",
