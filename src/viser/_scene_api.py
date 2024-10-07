@@ -1226,25 +1226,9 @@ class SceneApi:
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
 
-        # Filter out Gaussians with covariances with very eigenvalues <= 0.
-        eigenvalues = np.linalg.eigvalsh(covariances)
-        valid_gaussians = np.all(eigenvalues > 1e-7, axis=1)
-
-        # Filter out invalid Gaussians
-        centers = centers[valid_gaussians]
-        covariances = covariances[valid_gaussians]
-        rgbs = rgbs[valid_gaussians]
-        opacities = opacities[valid_gaussians]
-        print(f"Before: {num_gaussians}, after: {centers.shape[0]}")
-        num_gaussians = centers.shape[0]
-
-        # Get cholesky factor of covariance. This helps retain precision when
-        # we convert to float16.
-        cov_cholesky_triu = (
-            np.linalg.cholesky(covariances)
-            .swapaxes(-1, -2)  # tril => triu
-            .reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
-        )
+        cov_triu = covariances.reshape((-1, 9))[
+            :, np.array([0, 1, 2, 4, 5, 8])
+        ]
         buffer = np.concatenate(
             [
                 # First texelFetch.
@@ -1253,8 +1237,8 @@ class SceneApi:
                 # - w (32 bits): this is reserved for use by the renderer.
                 np.zeros((num_gaussians, 4), dtype=np.uint8),
                 # Second texelFetch.
-                # - xyz (96 bits): upper-triangular Cholesky factor of covariance.
-                cov_cholesky_triu.astype(np.float16).copy().view(np.uint8),
+                # - xyz (96 bits): upper-triangular of covariance.
+                cov_triu.astype(np.float16).copy().view(np.uint8),
                 # - w (32 bits): rgba.
                 colors_to_uint8(rgbs),
                 colors_to_uint8(opacities),

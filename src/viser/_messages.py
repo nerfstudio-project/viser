@@ -1249,13 +1249,12 @@ class GaussianSplatsProps:
     - y as f32
     - z as f32
     - (unused)
-    - chol1 (f16), chol2 (f16)
-    - chol3 (f16), chol4 (f16)
-    - chol5 (f16), chol6 (f16)
+    - cov1 (f16), cov2 (f16)
+    - cov3 (f16), cov4 (f16)
+    - cov5 (f16), cov6 (f16)
     - rgba (int32)
 
-    Where chol1-6 are the terms of the upper-triangular Cholesky
-    factor of covariance matrices."""
+    Where cov1-6 are upper-triangular terms of covariance matrices."""
 
 
 @dataclasses.dataclass

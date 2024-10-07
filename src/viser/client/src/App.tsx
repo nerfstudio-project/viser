@@ -309,7 +309,6 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <Canvas
         camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
         gl={{ preserveDrawingBuffer: true }}
-        dpr={window.devicePixelRatio * 0.5}
         style={{
           position: "relative",
           zIndex: 0,
@@ -539,8 +538,8 @@ function AdaptiveDpr() {
   const setDpr = useThree((state) => state.setDpr);
   return (
     <PerformanceMonitor
-      factor={0.0}
-      ms={200}
+      factor={1.0}
+      ms={100}
       iterations={5}
       step={0.2}
       bounds={(refreshrate) => {
