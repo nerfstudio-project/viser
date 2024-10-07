@@ -146,18 +146,22 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   useEffect(() => {
     const mutable = playbackMutable.current;
     const playbackMultiplier = parseFloat(playbackSpeed); // '0.5x' -> 0.5
+
+    if (videoRef.current !== null) {
+      if (paused && !videoRef.current.paused) {
+        videoRef.current.pause();
+      } else if (!paused && videoRef.current.paused) {
+        videoRef.current.play();
+      }
+    }
+
     if (recording !== null && !paused) {
       let lastUpdate = Date.now();
       const interval = setInterval(() => {
         const now = Date.now();
         if (videoRef.current) {
           // Don't need to do any of this if there's a video.
-          if (videoRef.current && videoRef.current.readyState >= 2) {
-            if (paused && !videoRef.current.paused) {
-              videoRef.current.pause();
-            } else if (!paused && videoRef.current.paused) {
-              videoRef.current.play();
-            }
+          if (videoRef.current !== null && videoRef.current.readyState >= 2) {
             videoRef.current.playbackRate =
               baseSpeed * parseFloat(playbackSpeed);
             mutable.currentTime = videoRef.current.currentTime / baseSpeed;
