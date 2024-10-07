@@ -260,7 +260,33 @@ export const SplatObject = React.forwardRef<
 
   React.useEffect(() => {
     if (obj === null) return;
-    setBuffer(name, buffer);
+
+    // Get the downsample factor from URL search params
+    const urlParams = new URLSearchParams(window.location.search);
+    const downsampleFactor = parseInt(
+      urlParams.get("downsampleGaussianFactor") || "1",
+      10,
+    );
+
+    // Downsample the buffer if necessary
+    let downsampledBuffer = buffer;
+    if (downsampleFactor > 1) {
+      const numGaussians = buffer.length / 8;
+      const downsampledNumGaussians = Math.floor(
+        numGaussians / downsampleFactor,
+      );
+      downsampledBuffer = new Uint32Array(downsampledNumGaussians * 8);
+      for (let i = 0; i < downsampledNumGaussians; i++) {
+        const srcIndex = i * downsampleFactor * 8;
+        const dstIndex = i * 8;
+        downsampledBuffer.set(
+          buffer.subarray(srcIndex, srcIndex + 8),
+          dstIndex,
+        );
+      }
+    }
+
+    setBuffer(name, downsampledBuffer);
     if (ref !== null) {
       if ("current" in ref) {
         ref.current = obj;

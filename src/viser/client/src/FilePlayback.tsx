@@ -113,7 +113,11 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     );
   }, []);
 
-  const playbackMutable = useRef({ currentTime: 0.0, currentIndex: 0 });
+  const playbackMutable = useRef({
+    currentTime: 0.0,
+    currentIndex: 0,
+    prevUpdateTime: 0.0,
+  });
 
   const updatePlayback = useCallback(() => {
     if (recording === null) return;
@@ -132,56 +136,56 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       messageQueueRef.current.push(message);
     }
 
-    if (
-      mutable.currentTime >= recording.durationSeconds &&
-      recording.loopStartIndex !== null
-    ) {
+    if (mutable.currentTime < mutable.prevUpdateTime) {
       mutable.currentIndex = recording.loopStartIndex!;
-      mutable.currentTime = recording.messages[recording.loopStartIndex!][0];
     }
+    mutable.prevUpdateTime = mutable.currentTime;
     setCurrentTime(mutable.currentTime);
   }, [recording]);
 
   useEffect(() => {
-    let animationFrameId: number;
-
     const mutable = playbackMutable.current;
-    const updateVideoTime = () => {
-      if (videoRef.current && videoRef.current.readyState >= 2) {
-        videoRef.current.currentTime = Math.max(
-          0,
-          mutable.currentTime * baseSpeed + videoTimeOffset,
-        );
-      }
-      animationFrameId = requestAnimationFrame(updateVideoTime);
-    };
-    updateVideoTime();
-
-    return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     const playbackMultiplier = parseFloat(playbackSpeed); // '0.5x' -> 0.5
     if (recording !== null && !paused) {
       let lastUpdate = Date.now();
       const interval = setInterval(() => {
         const now = Date.now();
-        playbackMutable.current.currentTime +=
-          ((now - lastUpdate) / 1000.0) * playbackMultiplier;
-        lastUpdate = now;
+        if (videoRef.current) {
+          // Don't need to do any of this if there's a video.
+          if (videoRef.current && videoRef.current.readyState >= 2) {
+            if (paused && !videoRef.current.paused) {
+              videoRef.current.pause();
+            } else if (!paused && videoRef.current.paused) {
+              videoRef.current.play();
+            }
+            videoRef.current.playbackRate =
+              baseSpeed * parseFloat(playbackSpeed);
+            mutable.currentTime = videoRef.current.currentTime / baseSpeed;
+            if (
+              recording !== null &&
+              mutable.currentTime > recording.durationSeconds
+            ) {
+              mutable.currentTime = 0;
+              videoRef.current.currentTime = 0;
+            }
+            mutable.currentTime = Math.max(0, mutable.currentTime);
+            updatePlayback();
+          }
+        } else {
+          // Manually increment currentTime only if video is not available
+          mutable.currentTime +=
+            ((now - lastUpdate) / 1000.0) * playbackMultiplier;
+          lastUpdate = now;
 
-        updatePlayback();
+          updatePlayback();
+        }
         if (
-          playbackMutable.current.currentIndex === recording.messages.length &&
+          mutable.currentIndex === recording.messages.length &&
           recording.loopStartIndex === null
         ) {
           clearInterval(interval);
         }
-      }, 1000.0 / 120.0);
+      }, 1000.0 / 60.0);
       return () => clearInterval(interval);
     }
   }, [
@@ -191,6 +195,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     playbackSpeed,
     messageQueueRef,
     setCurrentTime,
+    baseSpeed,
   ]);
 
   // Pause/play with spacebar.
@@ -208,16 +213,17 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
 
   const updateCurrentTime = useCallback(
     (value: number) => {
-      if (value < playbackMutable.current.currentTime) {
-        // Going backwards is more expensive...
-        playbackMutable.current.currentIndex = recording!.loopStartIndex!;
-      }
-      playbackMutable.current.currentTime = value;
-      setCurrentTime(value);
+      const mutable = playbackMutable.current;
+      mutable.currentTime = value;
       setPaused(true);
       updatePlayback();
+
+      // Update video time if video element exists
+      if (videoRef.current) {
+        videoRef.current.currentTime = value * baseSpeed;
+      }
     },
-    [recording],
+    [recording, baseSpeed, updatePlayback],
   );
 
   if (recording === null) {
@@ -265,7 +271,8 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
                 backgroundColor: "rgba(0,0,0,0.75)",
                 color: "#eee",
                 fontFamily: "Inter",
-                padding: "0.25em 1em 0.125em 1em",
+                padding: "0.2em 0.5em",
+                whiteSpace: "nowrap",
                 fontWeight: "500",
               }}
             >
@@ -273,10 +280,11 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
             </div>
             <video
               ref={videoRef}
-              src={overlayVideo[0]}
+              src={overlayVideo[0] + `#t=${-videoTimeOffset}`}
               style={{
                 width: "25rem",
                 maxWidth: "23vw",
+                minWidth: "10em",
                 aspectRatio: "1",
                 margin: "0",
                 display: "block",
