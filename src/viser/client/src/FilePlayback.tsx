@@ -180,7 +180,9 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           mutable.currentTime +=
             ((now - lastUpdate) / 1000.0) * playbackMultiplier;
           lastUpdate = now;
-
+          if (mutable.currentTime > recording.durationSeconds) {
+            mutable.currentTime = 0;
+          }
           updatePlayback();
         }
         if (
