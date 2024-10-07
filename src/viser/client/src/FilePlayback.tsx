@@ -295,6 +295,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
                 margin: "0",
                 display: "block",
               }}
+              loop
               muted
             />
           </div>
