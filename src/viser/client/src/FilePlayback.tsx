@@ -147,7 +147,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     const mutable = playbackMutable.current;
     const playbackMultiplier = parseFloat(playbackSpeed); // '0.5x' -> 0.5
 
-    if (videoRef.current !== null) {
+    if (videoRef.current !== null && videoRef.current.readyState >= 3) {
       if (paused && !videoRef.current.paused) {
         videoRef.current.pause();
       } else if (!paused && videoRef.current.paused) {
@@ -161,7 +161,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         const now = Date.now();
         if (videoRef.current) {
           // Don't need to do any of this if there's a video.
-          if (videoRef.current !== null && videoRef.current.readyState >= 2) {
+          if (videoRef.current !== null && videoRef.current.readyState >= 3) {
             videoRef.current.playbackRate =
               baseSpeed * parseFloat(playbackSpeed);
             mutable.currentTime = videoRef.current.currentTime / baseSpeed;
@@ -296,6 +296,8 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
                 display: "block",
               }}
               loop
+              autoPlay
+              playsInline
               muted
             />
           </div>
