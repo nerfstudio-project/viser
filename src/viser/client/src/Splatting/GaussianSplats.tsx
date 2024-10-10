@@ -243,6 +243,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     float B = exp(A) * vRgba.a;
     if (B < 0.01) discard;  // alphaTest.
     gl_FragColor = vec4(vRgba.rgb, B);
+    //gl_FragColor = vec4(1, 0, 0, 1); // testing this shader.
   }`,
 );
 
@@ -250,19 +251,22 @@ export const SplatObject = React.forwardRef<
   THREE.Group,
   {
     buffer: Uint32Array;
+    sh_buffer: Uint32Array;
   }
->(function SplatObject({ buffer }, ref) {
+>(function SplatObject({ buffer, sh_buffer }, ref) {
   const splatContext = React.useContext(GaussianSplatsContext)!;
   const setBuffer = splatContext((state) => state.setBuffer);
   const removeBuffer = splatContext((state) => state.removeBuffer);
   const nodeRefFromId = splatContext((state) => state.nodeRefFromId);
   const name = React.useMemo(() => crypto.randomUUID(), [buffer]);
+  const sh_buffer_name = "sh_buffer_" + name 
 
   const [obj, setRef] = React.useState<THREE.Group | null>(null);
 
   React.useEffect(() => {
     if (obj === null) return;
     setBuffer(name, buffer);
+    setBuffer(sh_buffer_name, sh_buffer)
     if (ref !== null) {
       if ("current" in ref) {
         ref.current = obj;
@@ -271,8 +275,9 @@ export const SplatObject = React.forwardRef<
       }
     }
     nodeRefFromId.current[name] = obj;
-    return () => {
+    return () => { // this is the cleanup function that is triggered on every re-render (every time obj is changed)
       removeBuffer(name);
+      removeBuffer(sh_buffer_name)
       delete nodeRefFromId.current[name];
     };
   }, [obj]);
@@ -536,16 +541,31 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, numGroups: number) {
   textureT_camera_groups.internalFormat = "RGBA32F";
   textureT_camera_groups.needsUpdate = true;
 
+  // Spherical Harmonics Texture Buffer
+  const shTextureWidth = Math.min(numGaussians * 6, maxTextureSize);
+  const shTextureHeight = Math.ceil((numGaussians * 6) / textureWidth);
+  const shBufferPadded = new Uint32Array(shTextureWidth * shTextureHeight * 4);
+  const shTextureBuffer = new THREE.DataTexture(
+    shBufferPadded,
+    shTextureWidth,
+    shTextureHeight,
+    THREE.RGBAIntegerFormat,
+    THREE.UnsignedIntType,
+  );
+  shTextureBuffer.internalFormat = "RGBA32UI";
+  shTextureBuffer.needsUpdate = true;
+
   const material = new GaussianSplatMaterial({
     // @ts-ignore
     textureBuffer: textureBuffer,
+    shTextureBuffer: shTextureBuffer,
     textureT_camera_groups: textureT_camera_groups,
     numGaussians: 0,
     transitionInState: 0.0,
   });
   console.log(numGaussians) // 447703
   console.log(textureWidth, textureWidth) // 16384 16384
-  console.log(gaussianBuffer) // long list of ints
+  // console.log(gaussianBuffer) // long list of ints
   return {
     geometry,
     material,

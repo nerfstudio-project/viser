@@ -996,6 +996,14 @@ function useMessageHandler() {
                     ),
                   )
                 }
+                shBuffer={
+                  new Uint32Array(
+                    message.sh_buffer.buffer.slice(
+                      message.sh_buffer.byteOffset,
+                      message.sh_buffer.byteOffset + message.sh_buffer.byteLength,
+                    ),
+                  )
+                }
               />
             );
           }),

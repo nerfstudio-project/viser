@@ -761,6 +761,11 @@ class GaussianSplatsMessage(Message):
     - cov5 (f16), cov6 (f16)
     - rgba (int32)
     Where cov1-6 are the upper triangular elements of the covariance matrix."""
+    
+    
+    sh_buffer_R: onpt.NDArray[onp.uint32]
+    sh_buffer_G: onpt.NDArray[onp.uint32]
+    sh_buffer_B: onpt.NDArray[onp.uint32]
 
 
 @dataclasses.dataclass

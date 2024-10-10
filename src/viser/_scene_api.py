@@ -943,7 +943,7 @@ class SceneApi:
         position: Tuple[float, float, float] | onp.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
         sh_degree: int = 0,
-        sh_coefficients: onp.ndarray = None,
+        sh_coeffs: onp.ndarray = None,
     ) -> GaussianSplatHandle:
         """Add a model to render using Gaussian Splatting.
 
@@ -989,18 +989,23 @@ class SceneApi:
                 # - w (32 bits): rgba.
                 _colors_to_uint8(rgbs),
                 _colors_to_uint8(opacities),
-                # - (1536 bits): spherical harmonics
-                sh_coeffs.astype(np.float16).view(np.uint8),
             ],
             axis=-1,
         ).view(onp.uint32)
-        # breakpoint()
-        assert buffer.shape == (num_gaussians, 8)
+
+        assert buffer.shape == (num_gaussians, 8) 
+        print(buffer.shape)
+        # assert buffer.shape == (num_gaussians, 32) 
+
+        # - (768 bits): spherical harmonics
+        sh_buffer = (sh_coeffs.astype(onp.float16).view(onp.uint8)).view(onp.uint32)
+        
 
         self._websock_interface.queue_message(
             _messages.GaussianSplatsMessage(
                 name=name,
                 buffer=buffer,
+                sh_buffer=sh_buffer,
             )
         )
         node_handle = GaussianSplatHandle._make(self, name, wxyz, position, visible)

@@ -110,8 +110,8 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
 
     num_gaussians = len(v)
 
-    print(sh_coeffs.shape)
-    print(v["x"].shape)
+    # print(sh_coeffs.shape) # prints (447703, 48)
+    # print(v["x"].shape) # prints (447703,)
 
     print(
         f"PLY file with {num_gaussians=} loaded in {time.time() - start_time} seconds"
@@ -159,7 +159,7 @@ def main(splat_paths: tuple[Path, ...]) -> None:
             opacities=splat_data["opacities"],
             covariances=splat_data["covariances"],
             sh_degree=splat_data["sh_degree"],
-            sh_coefficients=splat_data["sh_coeffs"],
+            sh_coeffs=splat_data["sh_coeffs"],
         )
 
         remove_button = server.gui.add_button(f"Remove splat object {i}")
