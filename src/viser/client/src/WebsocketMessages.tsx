@@ -851,6 +851,7 @@ export interface GaussianSplatsMessage {
   type: "GaussianSplatsMessage";
   name: string;
   buffer: Uint8Array;
+  sh_buffer: Uint8Array;
 }
 /** Message from server->client requesting a render of the current viewport.
  *

@@ -996,7 +996,7 @@ function useMessageHandler() {
                     ),
                   )
                 }
-                shBuffer={
+                sh_buffer={
                   new Uint32Array(
                     message.sh_buffer.buffer.slice(
                       message.sh_buffer.byteOffset,
