@@ -994,12 +994,13 @@ class SceneApi:
         ).view(onp.uint32)
 
         assert buffer.shape == (num_gaussians, 8) 
-        print(buffer.shape)
-        # assert buffer.shape == (num_gaussians, 32) 
 
+        # Will 
         # - (768 bits): spherical harmonics
-        sh_buffer = (sh_coeffs.astype(onp.float16).view(onp.uint8)).view(onp.uint32)
-        
+        print(sh_coeffs.shape)
+        sh_buffer = (sh_coeffs.astype(onp.float16)).view(onp.uint32)
+        print("sh_buffer.shape", sh_buffer.shape) # has shape (num_gaussians, 24), each  
+
 
         self._websock_interface.queue_message(
             _messages.GaussianSplatsMessage(

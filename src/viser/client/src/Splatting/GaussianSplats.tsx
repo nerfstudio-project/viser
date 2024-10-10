@@ -107,6 +107,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   // copy quadjr for this.
   uniform usampler2D textureBuffer;
 
+  // Buffer for spherical harmonics; each Gaussian also gets 24 int32s representing this information.
+  uniform usampler2D shTextureBuffer;
+
   // We could also use a uniform to store transforms, but this would be more
   // limiting in terms of the # of groups we can have.
   uniform sampler2D textureT_camera_groups;
@@ -175,6 +178,15 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 chol01 = unpackHalf2x16(intBufferData.x);
     vec2 chol23 = unpackHalf2x16(intBufferData.y);
     vec2 chol45 = unpackHalf2x16(intBufferData.z);
+
+    // Get spherical harmonic terms from the buffer
+    uint shTexStart = sortedIndex * 6u;
+    uvec4 shData[6];
+    for (int i = 0; i < 6; i++) {
+        ivec2 shTexPos = ivec2((shTexStart + uint(i)) % uint(shTexSize.x), 
+                               (shTexStart + uint(i)) / uint(shTexSize.x));
+        shData[i] = texelFetch(textureShBuffer, shTexPos, 0);
+    }
 
     // Transition in.
     float startTime = 0.8 * float(sortedIndex) / float(numGaussians);
@@ -259,7 +271,7 @@ export const SplatObject = React.forwardRef<
   const removeBuffer = splatContext((state) => state.removeBuffer);
   const nodeRefFromId = splatContext((state) => state.nodeRefFromId);
   const name = React.useMemo(() => crypto.randomUUID(), [buffer]);
-  const sh_buffer_name = "sh_buffer_" + name 
+  const sh_buffer_name = "sh_buffer_" + name
 
   const [obj, setRef] = React.useState<THREE.Group | null>(null);
 
@@ -295,6 +307,7 @@ function SplatRenderer() {
   const merged = mergeGaussianGroups(groupBufferFromId);
   const meshProps = useGaussianMeshProps(
     merged.gaussianBuffer,
+    merged.combinedSHBuffer,
     merged.numGroups,
   );
 
@@ -453,16 +466,20 @@ function mergeGaussianGroups(groupBufferFromName: {
 }) {
   // Create geometry. Each Gaussian will be rendered as a quad.
   let totalBufferLength = 0;
-  for (const buffer of Object.values(groupBufferFromName)) {
+  const groupBufferFromNameFiltered = Object.fromEntries(
+    Object.entries(groupBufferFromName).filter(([key]) => !key.startsWith("sh_buffer_"))
+  );
+  for (const buffer of Object.values(groupBufferFromNameFiltered)) {
     totalBufferLength += buffer.length;
   }
   const numGaussians = totalBufferLength / 8;
+  // console.log(numGaussians) # this is correct! it logged 447703
   const gaussianBuffer = new Uint32Array(totalBufferLength);
   const groupIndices = new Uint32Array(numGaussians);
 
   let offset = 0;
   for (const [groupIndex, groupBuffer] of Object.values(
-    groupBufferFromName,
+    groupBufferFromNameFiltered,
   ).entries()) {
     groupIndices.fill(
       groupIndex,
@@ -483,12 +500,27 @@ function mergeGaussianGroups(groupBufferFromName: {
     offset += groupBuffer.length;
   }
 
-  const numGroups = Object.keys(groupBufferFromName).length;
-  return { numGaussians, gaussianBuffer, numGroups, groupIndices };
+  // Consolidate the spherical harmonic coefficient buffers
+  let totalSHBufferLength = 0;
+  const shGaussianBuffers = Object.fromEntries(
+    Object.entries(groupBufferFromName).filter(([key]) => key.startsWith("sh_buffer_"))
+  );
+  for (const sh_buffer of Object.values(shGaussianBuffers)) {
+    totalSHBufferLength += sh_buffer.length;
+  }
+  const combinedSHBuffer = new Uint32Array(totalSHBufferLength);
+  let sh_offset = 0
+  for (const sh_buffer of Object.values(shGaussianBuffers)) {
+    combinedSHBuffer.set(sh_buffer, sh_offset)
+    sh_offset += sh_buffer.length;
+  }
+
+  const numGroups = Object.keys(groupBufferFromNameFiltered).length;
+  return { numGaussians, gaussianBuffer, numGroups, groupIndices, combinedSHBuffer};
 }
 
 /**Hook to generate properties for rendering Gaussians via a three.js mesh.*/
-function useGaussianMeshProps(gaussianBuffer: Uint32Array, numGroups: number) {
+function useGaussianMeshProps(gaussianBuffer: Uint32Array, combinedSHBuffer: Uint32Array, numGroups: number) {
   const numGaussians = gaussianBuffer.length / 8;
   const maxTextureSize = useThree((state) => state.gl).capabilities
     .maxTextureSize;
@@ -544,7 +576,12 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, numGroups: number) {
   // Spherical Harmonics Texture Buffer
   const shTextureWidth = Math.min(numGaussians * 6, maxTextureSize);
   const shTextureHeight = Math.ceil((numGaussians * 6) / textureWidth);
+  console.log("textureWidth ", textureWidth);
+  console.log("textureHeight ", textureHeight);
+  console.log("shTextureWidth ", shTextureWidth);
+  console.log("shTextureHeight ", shTextureHeight);
   const shBufferPadded = new Uint32Array(shTextureWidth * shTextureHeight * 4);
+  shBufferPadded.set(combinedSHBuffer);
   const shTextureBuffer = new THREE.DataTexture(
     shBufferPadded,
     shTextureWidth,
@@ -563,8 +600,6 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, numGroups: number) {
     numGaussians: 0,
     transitionInState: 0.0,
   });
-  console.log(numGaussians) // 447703
-  console.log(textureWidth, textureWidth) // 16384 16384
   // console.log(gaussianBuffer) // long list of ints
   return {
     geometry,
