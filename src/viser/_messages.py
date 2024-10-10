@@ -762,10 +762,13 @@ class GaussianSplatsMessage(Message):
     - rgba (int32)
     Where cov1-6 are the upper triangular elements of the covariance matrix."""
     
+    sh_buffer: onpt.NDArray[onp.uint32]
+    """The spherical harmonic buffer contains:
+    - 
+    -
+    -
+    """
     
-    sh_buffer_R: onpt.NDArray[onp.uint32]
-    sh_buffer_G: onpt.NDArray[onp.uint32]
-    sh_buffer_B: onpt.NDArray[onp.uint32]
 
 
 @dataclasses.dataclass
