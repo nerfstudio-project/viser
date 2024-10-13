@@ -995,11 +995,14 @@ class SceneApi:
 
         assert buffer.shape == (num_gaussians, 8) 
 
-        # Will 
+        # We have 48 float32 spherical coeffecients per gaussian. 
+        # However, by converting them to float16 we now have 48 float16 values per gaussian
+        # This means, each cell of sh_buffer contains 2 spherical coefficients because each cell is 32bits
+
         # - (768 bits): spherical harmonics
-        print(sh_coeffs.shape)
+        print("sh_coeffs.shape", sh_coeffs.shape)
         sh_buffer = (sh_coeffs.astype(onp.float16)).view(onp.uint32)
-        print("sh_buffer.shape", sh_buffer.shape) # has shape (num_gaussians, 24), each  
+        print("sh_buffer.shape", sh_buffer.shape) # has shape (num_gaussians, 24), each cell contains 2 spherical coeff.
 
 
         self._websock_interface.queue_message(

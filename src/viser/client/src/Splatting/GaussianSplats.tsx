@@ -179,14 +179,23 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 chol23 = unpackHalf2x16(intBufferData.y);
     vec2 chol45 = unpackHalf2x16(intBufferData.z);
 
-    // Get spherical harmonic terms from the buffer
+    // Get spherical harmonic terms from the buffer, there are 48 coeffecients per vertex
     uint shTexStart = sortedIndex * 6u;
-    uvec4 shData[6];
+    ivec2 shTexSize = textureSize(shTextureBuffer, 0);
+    vec2 sh_coeffs[24];
     for (int i = 0; i < 6; i++) {
         ivec2 shTexPos = ivec2((shTexStart + uint(i)) % uint(shTexSize.x), 
                                (shTexStart + uint(i)) / uint(shTexSize.x));
-        shData[i] = texelFetch(textureShBuffer, shTexPos, 0);
+        uvec4 packedCoeffs = texelFetch(textureShBuffer, shTexPos, 0);
+
+        // Unpack each uint32 directly into two float16 values
+        sh_coeffs[i*4]   = unpackHalf2x16(packedCoeffs.x);
+        sh_coeffs[i*4+1] = unpackHalf2x16(packedCoeffs.y);
+        sh_coeffs[i*4+2] = unpackHalf2x16(packedCoeffs.z);
+        sh_coeffs[i*4+3] = unpackHalf2x16(packedCoeffs.w);
     }
+    // Get the spherical harmonic view direction in world coordinates
+    vec3 viewDir = position - cameraPosition;
 
     // Transition in.
     float startTime = 0.8 * float(sortedIndex) / float(numGaussians);
@@ -222,12 +231,13 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 v1 = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
     vec2 v2 = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
 
-    vRgba = vec4(
-      float(rgbaUint32 & uint(0xFF)) / 255.0,
-      float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
-      float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
-      float(rgbaUint32 >> uint(24)) / 255.0
-    );
+    // vRgba = vec4(
+    //   float(rgbaUint32 & uint(0xFF)) / 255.0,
+    //   float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
+    //   float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
+    //   float(rgbaUint32 >> uint(24)) / 255.0
+    // );
+    vRgba = sh_coeffs[0] * 255
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
@@ -254,8 +264,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     if (A < -4.0) discard;
     float B = exp(A) * vRgba.a;
     if (B < 0.01) discard;  // alphaTest.
-    gl_FragColor = vec4(vRgba.rgb, B);
+    //gl_FragColor = vec4(vRgba.rgb, B);
     //gl_FragColor = vec4(1, 0, 0, 1); // testing this shader.
+    gl_FragColor = vRgba; // more tests
   }`,
 );
 
