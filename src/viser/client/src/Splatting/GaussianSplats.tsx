@@ -296,20 +296,21 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
                 C3[5] * z * (xx - yy) * sh_coeffs[14] + 
                 C3[6] * x * (xx - 3 * yy) * sh_coeffs[15]
 
-    vRgba = vec4(vRgba, float(rgbaUint32 >> uint(24)) / 255.0)
-    
+    //vRgba = vec4(vRgba, float(rgbaUint32 >> uint(24)) / 255.0)
+    vRgba = vec4(0.99, 0.99, 0.99, float(rgbaUint32 >> uint(24)) / 255.0)
+
     // this is the og code
-    //vRgba = vec4(
-      //float(rgbaUint32 & uint(0xFF)) / 255.0,
-      //float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
-      //float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
-      //float(rgbaUint32 >> uint(24)) / 255.0
-    //);
+    vRgba = vec4(
+      float(rgbaUint32 & uint(0xFF)) / 255.0,
+      float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
+      float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
+      float(rgbaUint32 >> uint(24)) / 255.0
+    );
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
-    if (weightedDeterminant < 0.5)
-      return;
+    //if (weightedDeterminant < 0.5)
+      //return;
     vPosition = position.xy;
 
     gl_Position = vec4(
@@ -331,9 +332,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     if (A < -4.0) discard;
     float B = exp(A) * vRgba.a;
     if (B < 0.01) discard;  // alphaTest.
-    //gl_FragColor = vec4(vRgba.rgb, B);
-    //gl_FragColor = vec4(1, 0, 0, 1); // testing this shader.
-    gl_FragColor = vRgba; // more tests
+    gl_FragColor = vec4(vRgba.rgb, B);
   }`,
 );
 
