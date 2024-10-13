@@ -116,6 +116,7 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     print(
         f"PLY file with {num_gaussians=} loaded in {time.time() - start_time} seconds"
     )
+    print("sh_coeffs[0, :]", sh_coeffs[0, :])
     return {
         "centers": positions,
         "rgbs": colors,
