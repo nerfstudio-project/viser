@@ -121,12 +121,13 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     )
     print("sh_coeffs[0, :]", sh_coeffs[0, :])
     return {
-        "centers": positions,
-        "rgbs": colors,
-        "opacities": opacities,
-        "covariances": covariances,
+        "centers": positions[0:1, :],
+        "rgbs": colors[0:1, :],
+        # "opacities": opacities[0:1, :],
+        "opacities": onp.array([[1.0]]),
+        "covariances": covariances[0:1, :],
         "sh_degree": sh_degree,
-        "sh_coeffs": sh_coeffs,
+        "sh_coeffs": sh_coeffs[0:1, :],
     }
 
 
