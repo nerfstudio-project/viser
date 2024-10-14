@@ -5,20 +5,20 @@ import { GuiDropdownMessage } from "../WebsocketMessages";
 import { Select } from "@mantine/core";
 
 export default function DropdownComponent({
-  id,
+  uuid,
   value,
   props: { hint, label, disabled, visible, options },
 }: GuiDropdownMessage) {
   const { setValue } = React.useContext(GuiComponentContext)!;
   if (!visible) return <></>;
   return (
-    <ViserInputComponent {...{ id, hint, label }}>
+    <ViserInputComponent {...{ uuid, hint, label }}>
       <Select
-        id={id}
+        id={uuid}
         radius="xs"
         value={value}
         data={options}
-        onChange={(value) => value !== null && setValue(id, value)}
+        onChange={(value) => value !== null && setValue(uuid, value)}
         disabled={disabled}
         searchable
         maxDropdownHeight={400}

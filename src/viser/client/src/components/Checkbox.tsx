@@ -5,7 +5,7 @@ import { GuiCheckboxMessage } from "../WebsocketMessages";
 import { Box, Checkbox, Tooltip } from "@mantine/core";
 
 export default function CheckboxComponent({
-  id,
+  uuid,
   value,
   props: { disabled, visible, hint, label },
 }: GuiCheckboxMessage) {
@@ -13,18 +13,18 @@ export default function CheckboxComponent({
   if (!visible) return <></>;
   let input = (
     <Checkbox
-      id={id}
+      id={uuid}
       checked={value}
       size="xs"
       onChange={(value) => {
-        setValue(id, value.target.checked);
+        setValue(uuid, value.target.checked);
       }}
       disabled={disabled}
     />
   );
   if (hint !== null && hint !== undefined) {
     // For checkboxes, we want to make sure that the wrapper
-    // doesn't expand to the full width of the parent. This will
+    // doesn't expand to the full wuuidth of the parent. This will
     // de-center the tooltip.
     input = (
       <Tooltip
@@ -40,5 +40,7 @@ export default function CheckboxComponent({
       </Tooltip>
     );
   }
-  return <ViserInputComponent {...{ id, label }}>{input}</ViserInputComponent>;
+  return (
+    <ViserInputComponent {...{ uuid, label }}>{input}</ViserInputComponent>
+  );
 }

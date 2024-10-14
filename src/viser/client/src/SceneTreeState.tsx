@@ -114,11 +114,6 @@ export function useSceneTreeState(
           }),
         removeSceneNode: (name) =>
           set((state) => {
-            if (!(name in state.nodeFromName)) {
-              console.log("Skipping scene node removal for " + name);
-              return;
-            }
-
             // Remove this scene node and all children.
             const removeNames: string[] = [];
             function findChildrenRecursive(name: string) {

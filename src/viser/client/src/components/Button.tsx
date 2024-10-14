@@ -7,7 +7,7 @@ import React from "react";
 import { htmlIconWrapper } from "./ComponentStyles.css";
 
 export default function ButtonComponent({
-  id,
+  uuid,
   props: { visible, disabled, label, color, _icon_html: icon_html },
 }: GuiButtonMessage) {
   const { messageSender } = React.useContext(GuiComponentContext)!;
@@ -16,13 +16,13 @@ export default function ButtonComponent({
   return (
     <Box mx="xs" mb="0.5em">
       <Button
-        id={id}
+        id={uuid}
         fullWidth
         color={color ?? undefined}
         onClick={() =>
           messageSender({
             type: "GuiUpdateMessage",
-            id: id,
+            uuid: uuid,
             updates: { value: true },
           })
         }
