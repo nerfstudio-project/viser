@@ -170,21 +170,20 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // Get covariance terms from int buffer.
     uint rgbaUint32 = intBufferData.w;
-    vec2 chol01 = unpackHalf2x16(intBufferData.x);
-    vec2 chol23 = unpackHalf2x16(intBufferData.y);
-    vec2 chol45 = unpackHalf2x16(intBufferData.z);
+    vec2 triu01 = unpackHalf2x16(intBufferData.x);
+    vec2 triu23 = unpackHalf2x16(intBufferData.y);
+    vec2 triu45 = unpackHalf2x16(intBufferData.z);
 
     // Transition in.
     float startTime = 0.8 * float(sortedIndex) / float(numGaussians);
     float cov_scale = smoothstep(startTime, startTime + 0.2, transitionInState);
 
     // Do the actual splatting.
-    mat3 chol = mat3(
-        chol01.x, chol01.y, chol23.x,
-        0.,       chol23.y, chol45.x,
-        0.,       0.,       chol45.y
+    mat3 cov3d = mat3(
+        triu01.x, triu01.y, triu23.x,
+        triu01.y, triu23.y, triu45.x,
+        triu23.x, triu45.x, triu45.y
     );
-    mat3 cov3d = chol * transpose(chol) * cov_scale;
     mat3 J = mat3(
         // Matrices are column-major.
         focal.x / c_cam.z, 0., 0.0,
