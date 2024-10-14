@@ -106,7 +106,7 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
 
 
 def main(splat_paths: tuple[Path, ...]) -> None:
-    server = viser.ViserServer(port=9999)
+    server = viser.ViserServer()
     server.gui.configure_theme(dark_mode=True)
     gui_reset_up = server.gui.add_button(
         "Reset up direction",

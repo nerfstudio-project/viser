@@ -252,7 +252,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             pointSize={message.props.point_size}
             pointBallNorm={message.props.point_ball_norm}
             points={
-              new Uint16Array( // Actually float16.
+              new Uint16Array( // (contains float16)
                 message.props.points.buffer.slice(
                   message.props.points.byteOffset,
                   message.props.points.byteOffset +
@@ -705,8 +705,10 @@ export function SceneNodeThreeObject(props: {
     // Other useFrame hooks may depend on transforms + visibility. So it's best
     // to call this hook early.
     //
-    // Note: it's important that this is lower than the priority for the messagehandler useFrame!
-    -100,
+    // However, it's also important that this is *higher* than the priority for
+    // the MessageHandler's useFrame. This is to make sure that transforms are
+    // updated in the same frame that they are set.
+    -1000,
   );
 
   // Clicking logic.

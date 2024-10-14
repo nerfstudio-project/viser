@@ -629,6 +629,9 @@ export function FrameSynchronizedMessageHandler() {
       }
     },
     // We should handle messages before doing anything else!!
+    //
+    // Importantly, this priority should be *lower* than the useFrame priority
+    // used to update scene node transforms in SceneTree.tsx.
     -100000,
   );
 

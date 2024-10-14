@@ -1237,7 +1237,7 @@ class SceneApi:
                 # - w (32 bits): this is reserved for use by the renderer.
                 np.zeros((num_gaussians, 4), dtype=np.uint8),
                 # Second texelFetch.
-                # - xyz (96 bits): upper-triangular of covariance.
+                # - xyz (96 bits): upper-triangular terms of covariance.
                 cov_triu.astype(np.float16).copy().view(np.uint8),
                 # - w (32 bits): rgba.
                 colors_to_uint8(rgbs),

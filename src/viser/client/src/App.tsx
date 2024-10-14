@@ -288,7 +288,6 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
   const viewer = React.useContext(ViewerContext)!;
   const sendClickThrottled = useThrottledMessageSender(20);
   const theme = useMantineTheme();
-  const { ref, inView } = useInView();
 
   // Make sure we don't re-mount the camera controls, since that will reset the camera position.
   const memoizedCameraControls = React.useMemo(
@@ -296,9 +295,12 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  // We'll disable rendering if the canvas is not in view.
+  const { ref: inViewRef, inView } = useInView();
+
   return (
     <div
-      ref={ref}
+      ref={inViewRef}
       style={{
         position: "relative",
         zIndex: 0,
@@ -309,10 +311,8 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <Canvas
         camera={{ position: [-3.0, 3.0, -3.0], near: 0.05 }}
         gl={{ preserveDrawingBuffer: true }}
-        dpr={0.6 * window.devicePixelRatio}
+        dpr={0.6 * window.devicePixelRatio /* Relaxed initial DPR. */}
         style={{
-          position: "relative",
-          zIndex: 0,
           width: "100%",
           height: "100%",
         }}

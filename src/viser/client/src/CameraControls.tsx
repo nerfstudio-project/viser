@@ -106,45 +106,52 @@ export function SynchronizedCameraControls() {
     }
   }, [camera, sendCameraThrottled]);
 
-  // Search parameters.
+  // Camera control search parameters.
+  // EXPERIMENTAL: these may be removed or renamed in the future. Please pin to
+  // a commit/version if you're relying on this (undocumented) feature.
   const searchParams = new URLSearchParams(window.location.search);
   const initialCameraPosString = searchParams.get("initialCameraPosition");
   const initialCameraLookAtString = searchParams.get("initialCameraLookAt");
   const logCamera = searchParams.get("logCamera");
 
-  // Set initial camera pose + send camera to new connections.
+  // Send camera for new connections.
   // We add a small delay to give the server time to add a callback.
   const connected = viewer.useGui((state) => state.websocketConnected);
+  const initialCameraPositionSet = React.useRef(false);
   React.useEffect(() => {
-    const initialCameraPos = new THREE.Vector3(
-      ...((initialCameraPosString
-        ? (initialCameraPosString.split(",").map(Number) as [
-            number,
-            number,
-            number,
-          ])
-        : [-3.0, 3.0, -3.0]) as [number, number, number]),
-    );
-    initialCameraPos.applyMatrix4(computeT_threeworld_world(viewer));
-    const initialCameraLookAt = new THREE.Vector3(
-      ...((initialCameraLookAtString
-        ? (initialCameraLookAtString.split(",").map(Number) as [
-            number,
-            number,
-            number,
-          ])
-        : [0, 0, 0]) as [number, number, number]),
-    );
-    initialCameraLookAt.applyMatrix4(computeT_threeworld_world(viewer));
-    viewer.cameraControlRef.current!.setLookAt(
-      initialCameraPos.x,
-      initialCameraPos.y,
-      initialCameraPos.z,
-      initialCameraLookAt.x,
-      initialCameraLookAt.y,
-      initialCameraLookAt.z,
-      true,
-    );
+    if (!initialCameraPositionSet.current) {
+      const initialCameraPos = new THREE.Vector3(
+        ...((initialCameraPosString
+          ? (initialCameraPosString.split(",").map(Number) as [
+              number,
+              number,
+              number,
+            ])
+          : [3.0, 3.0, 3.0]) as [number, number, number]),
+      );
+      initialCameraPos.applyMatrix4(computeT_threeworld_world(viewer));
+      const initialCameraLookAt = new THREE.Vector3(
+        ...((initialCameraLookAtString
+          ? (initialCameraLookAtString.split(",").map(Number) as [
+              number,
+              number,
+              number,
+            ])
+          : [0, 0, 0]) as [number, number, number]),
+      );
+      initialCameraLookAt.applyMatrix4(computeT_threeworld_world(viewer));
+
+      viewer.cameraControlRef.current!.setLookAt(
+        initialCameraPos.x,
+        initialCameraPos.y,
+        initialCameraPos.z,
+        initialCameraLookAt.x,
+        initialCameraLookAt.y,
+        initialCameraLookAt.z,
+        false,
+      );
+      initialCameraPositionSet.current = true;
+    }
 
     viewer.sendCameraRef.current = sendCamera;
     if (!connected) return;

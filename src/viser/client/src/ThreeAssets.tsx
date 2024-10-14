@@ -58,7 +58,8 @@ const originMaterial = new THREE.MeshBasicMaterial({ color: 0xecec00 });
 
 const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
   { scale: 1.0, point_ball_norm: 0.0 },
-  `precision mediump float;
+  `
+  precision mediump float;
 
   varying vec3 vPosition;
   varying vec3 vColor; // in the vertex shader
@@ -95,7 +96,7 @@ export const PointCloud = React.forwardRef<
     pointSize: number;
     /** We visualize each point as a 2D ball, which is defined by some norm. */
     pointBallNorm: number;
-    points: Uint16Array /* Actually float16. */;
+    points: Uint16Array; // Contains float16.
     colors: Uint8Array;
   }
 >(function PointCloud(props, ref) {
