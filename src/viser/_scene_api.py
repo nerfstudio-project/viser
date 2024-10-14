@@ -1228,11 +1228,7 @@ class SceneApi:
 
         # Get cholesky factor of covariance. This helps retain precision when
         # we convert to float16.
-        cov_cholesky_triu = (
-            np.linalg.cholesky(covariances.astype(np.float64) + np.ones(3) * 1e-7)
-            .swapaxes(-1, -2)  # tril => triu
-            .reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
-        )
+        cov_triu = covariances.reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
         buffer = np.concatenate(
             [
                 # First texelFetch.
@@ -1241,8 +1237,8 @@ class SceneApi:
                 # - w (32 bits): this is reserved for use by the renderer.
                 np.zeros((num_gaussians, 4), dtype=np.uint8),
                 # Second texelFetch.
-                # - xyz (96 bits): upper-triangular Cholesky factor of covariance.
-                cov_cholesky_triu.astype(np.float16).copy().view(np.uint8),
+                # - xyz (96 bits): upper-triangular terms of covariance.
+                cov_triu.astype(np.float16).copy().view(np.uint8),
                 # - w (32 bits): rgba.
                 colors_to_uint8(rgbs),
                 colors_to_uint8(opacities),
