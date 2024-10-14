@@ -252,7 +252,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             pointSize={message.props.point_size}
             pointBallNorm={message.props.point_ball_norm}
             points={
-              new Float32Array(
+              new Uint16Array( // (contains float16)
                 message.props.points.buffer.slice(
                   message.props.points.byteOffset,
                   message.props.points.byteOffset +
