@@ -1226,8 +1226,7 @@ class SceneApi:
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
 
-        # Get cholesky factor of covariance. This helps retain precision when
-        # we convert to float16.
+        # Get upper-triangular terms of covariance matrix.
         cov_triu = covariances.reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
         buffer = np.concatenate(
             [
