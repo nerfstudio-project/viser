@@ -107,6 +107,8 @@ export function SynchronizedCameraControls() {
   }, [camera, sendCameraThrottled]);
 
   // Camera control search parameters.
+  // EXPERIMENTAL: these may be removed or renamed in the future. Please pin to
+  // a commit/version if you're relying on this (undocumented) feature.
   const searchParams = new URLSearchParams(window.location.search);
   const initialCameraPosString = searchParams.get("initialCameraPosition");
   const initialCameraLookAtString = searchParams.get("initialCameraLookAt");
