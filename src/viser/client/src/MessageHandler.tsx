@@ -522,103 +522,118 @@ export function FrameSynchronizedMessageHandler() {
   const viewer = useContext(ViewerContext)!;
   const messageQueueRef = viewer.messageQueueRef;
 
-  useFrame(() => {
-    // Send a render along if it was requested!
-    if (viewer.getRenderRequestState.current === "triggered") {
-      viewer.getRenderRequestState.current = "pause";
-    } else if (viewer.getRenderRequestState.current === "pause") {
-      const sourceCanvas = viewer.canvasRef.current!;
+  useFrame(
+    () => {
+      // Send a render along if it was requested!
+      if (viewer.getRenderRequestState.current === "triggered") {
+        viewer.getRenderRequestState.current = "pause";
+      } else if (viewer.getRenderRequestState.current === "pause") {
+        const sourceCanvas = viewer.canvasRef.current!;
 
-      const targetWidth = viewer.getRenderRequest.current!.width;
-      const targetHeight = viewer.getRenderRequest.current!.height;
+        const targetWidth = viewer.getRenderRequest.current!.width;
+        const targetHeight = viewer.getRenderRequest.current!.height;
 
-      // We'll save a render to an intermediate canvas with the requested dimensions.
-      const renderBufferCanvas = new OffscreenCanvas(targetWidth, targetHeight);
-      const ctx = renderBufferCanvas.getContext("2d")!;
-      ctx.reset();
-      // Use a white background for JPEGs, which don't have an alpha channel.
-      if (viewer.getRenderRequest.current?.format === "image/jpeg") {
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, renderBufferCanvas.width, renderBufferCanvas.height);
-      }
+        // We'll save a render to an intermediate canvas with the requested dimensions.
+        const renderBufferCanvas = new OffscreenCanvas(
+          targetWidth,
+          targetHeight,
+        );
+        const ctx = renderBufferCanvas.getContext("2d")!;
+        ctx.reset();
+        // Use a white background for JPEGs, which don't have an alpha channel.
+        if (viewer.getRenderRequest.current?.format === "image/jpeg") {
+          ctx.fillStyle = "white";
+          ctx.fillRect(
+            0,
+            0,
+            renderBufferCanvas.width,
+            renderBufferCanvas.height,
+          );
+        }
 
-      // Determine offsets for the source canvas. We'll always center our renders.
-      // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
-      let sourceWidth = sourceCanvas.width;
-      let sourceHeight = sourceCanvas.height;
+        // Determine offsets for the source canvas. We'll always center our renders.
+        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
+        let sourceWidth = sourceCanvas.width;
+        let sourceHeight = sourceCanvas.height;
 
-      const sourceAspect = sourceWidth / sourceHeight;
-      const targetAspect = targetWidth / targetHeight;
+        const sourceAspect = sourceWidth / sourceHeight;
+        const targetAspect = targetWidth / targetHeight;
 
-      if (sourceAspect > targetAspect) {
-        // The source is wider than the target.
-        // We need to shrink the width.
-        sourceWidth = Math.round(targetAspect * sourceHeight);
-      } else if (sourceAspect < targetAspect) {
-        // The source is narrower than the target.
-        // We need to shrink the height.
-        sourceHeight = Math.round(sourceWidth / targetAspect);
-      }
+        if (sourceAspect > targetAspect) {
+          // The source is wider than the target.
+          // We need to shrink the width.
+          sourceWidth = Math.round(targetAspect * sourceHeight);
+        } else if (sourceAspect < targetAspect) {
+          // The source is narrower than the target.
+          // We need to shrink the height.
+          sourceHeight = Math.round(sourceWidth / targetAspect);
+        }
 
-      console.log(
-        `Sending render; requested aspect ratio was ${targetAspect} (dimensinos: ${targetWidth}/${targetHeight}), copying from aspect ratio ${
-          sourceWidth / sourceHeight
-        } (dimensions: ${sourceWidth}/${sourceHeight}).`,
-      );
+        console.log(
+          `Sending render; requested aspect ratio was ${targetAspect} (dimensinos: ${targetWidth}/${targetHeight}), copying from aspect ratio ${
+            sourceWidth / sourceHeight
+          } (dimensions: ${sourceWidth}/${sourceHeight}).`,
+        );
 
-      ctx.drawImage(
-        sourceCanvas,
-        (sourceCanvas.width - sourceWidth) / 2.0,
-        (sourceCanvas.height - sourceHeight) / 2.0,
-        sourceWidth,
-        sourceHeight,
-        0,
-        0,
-        targetWidth,
-        targetHeight,
-      );
+        ctx.drawImage(
+          sourceCanvas,
+          (sourceCanvas.width - sourceWidth) / 2.0,
+          (sourceCanvas.height - sourceHeight) / 2.0,
+          sourceWidth,
+          sourceHeight,
+          0,
+          0,
+          targetWidth,
+          targetHeight,
+        );
 
-      viewer.getRenderRequestState.current = "in_progress";
+        viewer.getRenderRequestState.current = "in_progress";
 
-      // Encode the image, the send it.
-      renderBufferCanvas
-        .convertToBlob({
-          type: viewer.getRenderRequest.current!.format,
-          quality: viewer.getRenderRequest.current!.quality / 100.0,
-        })
-        .then(async (blob) => {
-          if (blob === null) {
-            console.error("Render failed");
+        // Encode the image, the send it.
+        renderBufferCanvas
+          .convertToBlob({
+            type: viewer.getRenderRequest.current!.format,
+            quality: viewer.getRenderRequest.current!.quality / 100.0,
+          })
+          .then(async (blob) => {
+            if (blob === null) {
+              console.error("Render failed");
+              viewer.getRenderRequestState.current = "ready";
+              return;
+            }
+            const payload = new Uint8Array(await blob.arrayBuffer());
+            viewer.sendMessageRef.current({
+              type: "GetRenderResponseMessage",
+              payload: payload,
+            });
             viewer.getRenderRequestState.current = "ready";
-            return;
-          }
-          const payload = new Uint8Array(await blob.arrayBuffer());
-          viewer.sendMessageRef.current({
-            type: "GetRenderResponseMessage",
-            payload: payload,
           });
-          viewer.getRenderRequestState.current = "ready";
-        });
-    }
+      }
 
-    // Handle messages, but only if we're not trying to render something.
-    if (viewer.getRenderRequestState.current === "ready") {
-      // Handle messages before every frame.
-      // Place this directly in ws.onmessage can cause race conditions!
-      //
-      // If a render is requested, note that we don't handle any more messages
-      // until the render is done.
-      const requestRenderIndex = messageQueueRef.current.findIndex(
-        (message) => message.type === "GetRenderRequestMessage",
-      );
-      const numMessages =
-        requestRenderIndex !== -1
-          ? requestRenderIndex + 1
-          : messageQueueRef.current.length;
-      const processBatch = messageQueueRef.current.splice(0, numMessages);
-      processBatch.forEach(handleMessage);
-    }
-  });
+      // Handle messages, but only if we're not trying to render something.
+      if (viewer.getRenderRequestState.current === "ready") {
+        // Handle messages before every frame.
+        // Place this directly in ws.onmessage can cause race conditions!
+        //
+        // If a render is requested, note that we don't handle any more messages
+        // until the render is done.
+        const requestRenderIndex = messageQueueRef.current.findIndex(
+          (message) => message.type === "GetRenderRequestMessage",
+        );
+        const numMessages =
+          requestRenderIndex !== -1
+            ? requestRenderIndex + 1
+            : messageQueueRef.current.length;
+        const processBatch = messageQueueRef.current.splice(0, numMessages);
+        processBatch.forEach(handleMessage);
+      }
+    },
+    // We should handle messages before doing anything else!!
+    //
+    // Importantly, this priority should be *lower* than the useFrame priority
+    // used to update scene node transforms in SceneTree.tsx.
+    -100000,
+  );
 
   return null;
 }

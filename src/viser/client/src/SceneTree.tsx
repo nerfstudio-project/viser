@@ -704,7 +704,11 @@ export function SceneNodeThreeObject(props: {
     },
     // Other useFrame hooks may depend on transforms + visibility. So it's best
     // to call this hook early.
-    -10000,
+    //
+    // However, it's also important that this is *higher* than the priority for
+    // the MessageHandler's useFrame. This is to make sure that transforms are
+    // updated in the same frame that they are set.
+    -1000,
   );
 
   // Clicking logic.
