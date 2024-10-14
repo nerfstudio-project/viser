@@ -55,6 +55,8 @@ class _OverridableScenePropApi:
             hint = self._prop_hints[name]
             if hint == onpt.NDArray[np.float32]:
                 value = value.astype(np.float32)
+            elif hint == onpt.NDArray[np.float16]:
+                value = value.astype(np.float16)
             elif hint == onpt.NDArray[np.uint8] and "color" in name:
                 value = colors_to_uint8(value)
 
