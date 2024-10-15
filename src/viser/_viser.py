@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import asyncio
 import dataclasses
 import io
 import mimetypes
 import threading
 import time
 import warnings
+from collections.abc import Coroutine
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ContextManager
+from typing import TYPE_CHECKING, Any, Callable, ContextManager, TypeVar, cast
 
 import imageio.v3 as iio
 import numpy as np
@@ -22,7 +25,7 @@ from . import _client_autobuild, _messages, infra
 from . import transforms as tf
 from ._gui_api import Color, GuiApi, _make_uuid
 from ._notification_handle import NotificationHandle, _NotificationHandleState
-from ._scene_api import SceneApi, cast_vector
+from ._scene_api import NoneOrCoroutine, SceneApi, cast_vector
 from ._tunnel import ViserTunnel
 from .infra._infra import RecordHandle
 
@@ -75,7 +78,7 @@ class _CameraHandleState:
     look_at: npt.NDArray[np.float64]
     up_direction: npt.NDArray[np.float64]
     update_timestamp: float
-    camera_cb: list[Callable[[CameraHandle], None]]
+    camera_cb: list[Callable[[CameraHandle], None | Coroutine]]
 
 
 class CameraHandle:
@@ -249,8 +252,8 @@ class CameraHandle:
         )
 
     def on_update(
-        self, callback: Callable[[CameraHandle], None]
-    ) -> Callable[[CameraHandle], None]:
+        self, callback: Callable[[CameraHandle], NoneOrCoroutine]
+    ) -> Callable[[CameraHandle], NoneOrCoroutine]:
         """Attach a callback to run when a new camera message is received."""
         self._state.camera_cb.append(callback)
         return callback
@@ -307,6 +310,9 @@ class CameraHandle:
         return out
 
 
+NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
+
+
 # Don't inherit from _BackwardsCompatibilityShim during type checking, because
 # this will unnecessarily suppress type errors. (from the overriding of
 # __getattr__).
@@ -330,13 +336,9 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         self._viser_server = server
 
         # Public attributes.
-        self.scene: SceneApi = SceneApi(
-            self, thread_executor=server._websock_server._thread_executor
-        )
+        self.scene: SceneApi = SceneApi(self, thread_executor=server._thread_executor)
         """Handle for interacting with the 3D scene."""
-        self.gui: GuiApi = GuiApi(
-            self, thread_executor=server._websock_server._thread_executor
-        )
+        self.gui: GuiApi = GuiApi(self, thread_executor=server._thread_executor)
         """Handle for interacting with the GUI."""
         self.client_id: int = conn.client_id
         """Unique ID for this client."""
@@ -494,16 +496,20 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         self._connection = server
         self._connected_clients: dict[int, ClientHandle] = {}
         self._client_lock = threading.Lock()
-        self._client_connect_cb: list[Callable[[ClientHandle], None]] = []
-        self._client_disconnect_cb: list[Callable[[ClientHandle], None]] = []
+        self._client_connect_cb: list[Callable[[ClientHandle], None | Coroutine]] = []
+        self._client_disconnect_cb: list[
+            Callable[[ClientHandle], None | Coroutine]
+        ] = []
+
+        self._thread_executor = ThreadPoolExecutor(max_workers=32)
 
         # For new clients, register and add a handler for camera messages.
         @server.on_client_connect
-        def _(conn: infra.WebsockClientConnection) -> None:
+        async def _(conn: infra.WebsockClientConnection) -> None:
             client = ClientHandle(conn, server=self)
             first = True
 
-            def handle_camera_message(
+            async def handle_camera_message(
                 client_id: infra.ClientId, message: _messages.ViewerCameraMessage
             ) -> None:
                 nonlocal first
@@ -530,39 +536,58 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                     with self._client_lock:
                         self._connected_clients[conn.client_id] = client
                         for cb in self._client_connect_cb:
-                            cb(client)
+                            if asyncio.iscoroutinefunction(cb):
+                                await cb(client)
+                            else:
+                                self._thread_executor.submit(cb, client)
 
                 for camera_cb in client.camera._state.camera_cb:
-                    camera_cb(client.camera)
+                    if asyncio.iscoroutinefunction(camera_cb):
+                        await camera_cb(client.camera)
+                    else:
+                        self._thread_executor.submit(camera_cb, client.camera)
 
             conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
 
         # Remove clients when they disconnect.
         @server.on_client_disconnect
-        def _(conn: infra.WebsockClientConnection) -> None:
+        async def _(conn: infra.WebsockClientConnection) -> None:
             with self._client_lock:
                 if conn.client_id not in self._connected_clients:
                     return
 
                 handle = self._connected_clients.pop(conn.client_id)
                 for cb in self._client_disconnect_cb:
-                    cb(handle)
+                    if asyncio.iscoroutinefunction(cb):
+                        await cb(handle)
+                    else:
+                        self._thread_executor.submit(cb, handle)
 
         # Start the server.
         server.start()
+        self._event_loop = server._broadcast_buffer.event_loop
 
-        self.scene: SceneApi = SceneApi(self, thread_executor=server._thread_executor)
+        self.scene: SceneApi = SceneApi(
+            self, thread_executor=self._thread_executor, event_loop=self._event_loop
+        )
         """Handle for interacting with the 3D scene."""
 
-        self.gui: GuiApi = GuiApi(self, thread_executor=server._thread_executor)
+        self.gui: GuiApi = GuiApi(
+            self, thread_executor=self._thread_executor, event_loop=self._event_loop
+        )
         """Handle for interacting with the GUI."""
 
         server.register_handler(
             _messages.ShareUrlDisconnect,
             lambda client_id, msg: self.disconnect_share_url(),
         )
+
+        def request_share_url_no_return() -> None:  # To suppress type error.
+            self.request_share_url()
+
         server.register_handler(
-            _messages.ShareUrlRequest, lambda client_id, msg: self.request_share_url()
+            _messages.ShareUrlRequest,
+            lambda client_id, msg: cast(None, request_share_url_no_return()),
         )
 
         # Form status print.
@@ -686,8 +711,8 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             return self._connected_clients.copy()
 
     def on_client_connect(
-        self, cb: Callable[[ClientHandle], None]
-    ) -> Callable[[ClientHandle], None]:
+        self, cb: Callable[[ClientHandle], NoneOrCoroutine]
+    ) -> Callable[[ClientHandle], NoneOrCoroutine]:
         """Attach a callback to run for newly connected clients."""
         with self._client_lock:
             clients = self._connected_clients.copy().values()
@@ -702,12 +727,16 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         # This makes sure that the the callback is applied to any clients that
         # connect between the two lines.
         for client in clients:
-            cb(client)
-        return cb
+            if asyncio.iscoroutinefunction(cb):
+                self._event_loop.create_task(cb(client))
+            else:
+                self._thread_executor.submit(cb, client)
+
+        return cb  # type: ignore
 
     def on_client_disconnect(
-        self, cb: Callable[[ClientHandle], None]
-    ) -> Callable[[ClientHandle], None]:
+        self, cb: Callable[[ClientHandle], NoneOrCoroutine]
+    ) -> Callable[[ClientHandle], NoneOrCoroutine]:
         """Attach a callback to run when clients disconnect."""
         self._client_disconnect_cb.append(cb)
         return cb
@@ -743,9 +772,14 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         for client in self.get_clients().values():
             client.send_file_download(filename, content, chunk_size)
 
+    def get_event_loop(self) -> asyncio.AbstractEventLoop:
+        """Get the asyncio event loop used by the Viser background thread. This
+        can be useful for safe concurrent operations."""
+        return self._event_loop
+
     def _start_scene_recording(self) -> RecordHandle:
-        """Start recording outgoing messages for playback or
-        embedding. Includes only the scene.
+        """Start recording outgoing messages for playback or embedding.
+        Includes only the scene.
 
         **Work-in-progress.** This API may be changed or removed.
         """

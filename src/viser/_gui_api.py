@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import builtins
 import colorsys
 import dataclasses
 import functools
 import threading
 import time
+from asyncio import AbstractEventLoop
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import (
@@ -183,12 +185,14 @@ class GuiApi:
         self,
         owner: ViserServer | ClientHandle,  # Who do I belong to?
         thread_executor: ThreadPoolExecutor,
+        event_loop: AbstractEventLoop,
     ) -> None:
         from ._viser import ViserServer
 
         self._owner = owner
         """Entity that owns this API."""
         self._thread_executor = thread_executor
+        self._event_loop = event_loop
 
         self._websock_interface = (
             owner._websock_server
@@ -217,7 +221,7 @@ class GuiApi:
             self._handle_file_transfer_part,
         )
 
-    def _handle_gui_updates(
+    async def _handle_gui_updates(
         self, client_id: ClientId, message: _messages.GuiUpdateMessage
     ) -> None:
         """Callback for handling GUI messages."""
@@ -273,7 +277,10 @@ class GuiApi:
             else:
                 assert False
 
-            cb(GuiEvent(client, client_id, handle))
+            if asyncio.iscoroutinefunction(cb):
+                self._event_loop.create_task(cb(GuiEvent(client, client_id, handle)))
+            else:
+                self._thread_executor.submit(cb, GuiEvent(client, client_id, handle))
 
         if handle_state.sync_cb is not None:
             handle_state.sync_cb(client_id, updates_cast)
@@ -355,7 +362,10 @@ class GuiApi:
             else:
                 assert False
 
-            cb(GuiEvent(client, client_id, handle))
+            if asyncio.iscoroutinefunction(cb):
+                self._event_loop.create_task(cb(GuiEvent(client, client_id, handle)))
+            else:
+                self._thread_executor.submit(cb, GuiEvent(client, client_id, handle))
 
     def _get_container_uuid(self) -> str:
         """Get container ID associated with the current thread."""

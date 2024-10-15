@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import dataclasses
 import warnings
+from collections.abc import Coroutine
 from functools import cached_property
 from typing import (
     TYPE_CHECKING,
@@ -132,7 +133,7 @@ class _SceneNodeHandleState:
     )
     visible: bool = True
     click_cb: list[
-        Callable[[SceneNodePointerEvent[_ClickableSceneNodeHandle]], None]
+        Callable[[SceneNodePointerEvent[_ClickableSceneNodeHandle]], None | Coroutine]
     ] = dataclasses.field(default_factory=list)
     removed: bool = False
 
@@ -272,12 +273,22 @@ class SceneNodePointerEvent(Generic[TSceneNodeHandle]):
     """Instance ID of the clicked object, if applicable. Currently this is `None` for all objects except for the output of :meth:`SceneApi.add_batched_axes()`."""
 
 
+NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
+
+
 class _ClickableSceneNodeHandle(SceneNodeHandle):
     def on_click(
         self: Self,
-        func: Callable[[SceneNodePointerEvent[Self]], None],
-    ) -> Callable[[SceneNodePointerEvent[Self]], None]:
-        """Attach a callback for when a scene node is clicked."""
+        func: Callable[[SceneNodePointerEvent[Self]], NoneOrCoroutine],
+    ) -> Callable[[SceneNodePointerEvent[Self]], NoneOrCoroutine]:
+        """Attach a callback for when a scene node is clicked.
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Using async functions may help reduce race conditions in certain scenarios.
+        """
         self._impl.api._websock_interface.queue_message(
             _messages.SetSceneNodeClickableMessage(self._impl.name, True)
         )
@@ -285,7 +296,10 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
             self._impl.click_cb = []
         self._impl.click_cb.append(
             cast(
-                Callable[[SceneNodePointerEvent[_ClickableSceneNodeHandle]], None], func
+                Callable[
+                    [SceneNodePointerEvent[_ClickableSceneNodeHandle]], None | Coroutine
+                ],
+                func,
             )
         )
         return func
@@ -528,7 +542,7 @@ class LabelHandle(
 @dataclasses.dataclass
 class _TransformControlsState:
     last_updated: float
-    update_cb: list[Callable[[TransformControlsHandle], None]]
+    update_cb: list[Callable[[TransformControlsHandle], None | Coroutine]]
     sync_cb: None | Callable[[ClientId, TransformControlsHandle], None] = None
 
 
@@ -548,9 +562,16 @@ class TransformControlsHandle(
         return self._impl_aux.last_updated
 
     def on_update(
-        self, func: Callable[[TransformControlsHandle], None]
-    ) -> Callable[[TransformControlsHandle], None]:
-        """Attach a callback for when the gizmo is moved."""
+        self, func: Callable[[TransformControlsHandle], NoneOrCoroutine]
+    ) -> Callable[[TransformControlsHandle], NoneOrCoroutine]:
+        """Attach a callback for when the gizmo is moved.
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Using async functions may help reduce race conditions in certain scenarios.
+        """
         self._impl_aux.update_cb.append(func)
         return func
 

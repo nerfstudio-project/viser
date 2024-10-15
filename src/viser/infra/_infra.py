@@ -10,6 +10,7 @@ import mimetypes
 import queue
 import threading
 from asyncio.events import AbstractEventLoop
+from collections.abc import Coroutine
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
@@ -89,12 +90,10 @@ class RecordHandle:
 class WebsockMessageHandler:
     """Mix-in for adding message handling to a class."""
 
-    def __init__(self, thread_executor: ThreadPoolExecutor) -> None:
-        self._thread_executor = thread_executor
+    def __init__(self) -> None:
         self._incoming_handlers: dict[
-            type[Message], list[Callable[[ClientId, Message], None]]
+            type[Message], list[Callable[[ClientId, Message], None | Coroutine]]
         ] = {}
-        self._atomic_lock = threading.Lock()
         self._queued_messages: queue.Queue = queue.Queue()
         self._locked_thread_id = -1
 
@@ -111,7 +110,7 @@ class WebsockMessageHandler:
     def register_handler(
         self,
         message_cls: type[TMessage],
-        callback: Callable[[ClientId, TMessage], Any],
+        callback: Callable[[ClientId, TMessage], None | Coroutine],
     ) -> None:
         """Register a handler for a particular message type."""
         if message_cls not in self._incoming_handlers:
@@ -121,7 +120,7 @@ class WebsockMessageHandler:
     def unregister_handler(
         self,
         message_cls: type[TMessage],
-        callback: Callable[[ClientId, TMessage], Any] | None = None,
+        callback: Callable[[ClientId, TMessage], None | Coroutine] | None = None,
     ):
         """Unregister a handler for a particular message type."""
         assert (
@@ -132,34 +131,26 @@ class WebsockMessageHandler:
         else:
             self._incoming_handlers[message_cls].remove(callback)  # type: ignore
 
-    def _handle_incoming_message(self, client_id: ClientId, message: Message) -> None:
+    async def _handle_incoming_message(
+        self, client_id: ClientId, message: Message
+    ) -> None:
         """Handle incoming messages."""
         if type(message) in self._incoming_handlers:
             for cb in self._incoming_handlers[type(message)]:
-                cb(client_id, message)
+                if asyncio.iscoroutinefunction(cb):
+                    await cb(client_id, message)
+                else:
+                    cb(client_id, message)
 
     @abc.abstractmethod
     def get_message_buffer(self) -> AsyncMessageBuffer: ...
 
     def queue_message(self, message: Message) -> None:
-        """Wrapped method for sending messages safely."""
+        """Wrapped method for sending messages."""
         if self._record_handle is not None:
             self._record_handle._insert_message(message)
 
-        got_lock = self._atomic_lock.acquire(blocking=False)
-        if got_lock:
-            self.get_message_buffer().push(message)
-            self._atomic_lock.release()
-        else:
-            # Send when lock is acquirable, while retaining message order.
-            # This could be optimized!
-            self._queued_messages.put(message)
-
-            def try_again() -> None:
-                with self._atomic_lock:
-                    self.get_message_buffer().push(self._queued_messages.get())
-
-            self._thread_executor.submit(try_again)
+        self.get_message_buffer().push(message)
 
     @contextlib.contextmanager
     def atomic(self) -> Generator[None, None, None]:
@@ -174,19 +165,9 @@ class WebsockMessageHandler:
             Context manager.
         """
         # If called multiple times in the same thread, we ignore inner calls.
-        thread_id = threading.get_ident()
-        if thread_id == self._locked_thread_id:
-            got_lock = False
-        else:
-            self._atomic_lock.acquire()
-            self._locked_thread_id = thread_id
-            got_lock = True
-
+        self.get_message_buffer().atomic_start()
         yield
-
-        if got_lock:
-            self._atomic_lock.release()
-            self._locked_thread_id = -1
+        self.get_message_buffer().atomic_end()
 
 
 class WebsockClientConnection(WebsockMessageHandler):
@@ -196,12 +177,11 @@ class WebsockClientConnection(WebsockMessageHandler):
     def __init__(
         self,
         client_id: int,
-        thread_executor: ThreadPoolExecutor,
         client_state: _ClientHandleState,
     ) -> None:
         self.client_id = client_id
         self._state = client_state
-        super().__init__(thread_executor)
+        super().__init__()
 
     @override
     def get_message_buffer(self) -> AsyncMessageBuffer:
@@ -239,11 +219,15 @@ class WebsockServer(WebsockMessageHandler):
         verbose: bool = True,
         client_api_version: Literal[0, 1] = 0,
     ):
-        super().__init__(thread_executor=ThreadPoolExecutor(max_workers=32))
+        super().__init__()
 
         # Track connected clients.
-        self._client_connect_cb: list[Callable[[WebsockClientConnection], None]] = []
-        self._client_disconnect_cb: list[Callable[[WebsockClientConnection], None]] = []
+        self._client_connect_cb: list[
+            Callable[[WebsockClientConnection], None | Coroutine]
+        ] = []
+        self._client_disconnect_cb: list[
+            Callable[[WebsockClientConnection], None | Coroutine]
+        ] = []
 
         self._host = host
         self._port = port
@@ -278,14 +262,15 @@ class WebsockServer(WebsockMessageHandler):
         assert self._ws_server is not None
         self._ws_server.close()
         self._ws_server = None
-        self._thread_executor.shutdown(wait=True)
 
-    def on_client_connect(self, cb: Callable[[WebsockClientConnection], Any]) -> None:
+    def on_client_connect(
+        self, cb: Callable[[WebsockClientConnection], None | Coroutine]
+    ) -> None:
         """Attach a callback to run for newly connected clients."""
         self._client_connect_cb.append(cb)
 
     def on_client_disconnect(
-        self, cb: Callable[[WebsockClientConnection], Any]
+        self, cb: Callable[[WebsockClientConnection], None | Coroutine]
     ) -> None:
         """Attach a callback to run when clients disconnect."""
         self._client_disconnect_cb.append(cb)
@@ -298,7 +283,6 @@ class WebsockServer(WebsockMessageHandler):
     def flush(self) -> None:
         """Flush the outgoing message buffer for broadcasted messages. Any buffered
         messages will immediately be sent. (by default they are windowed)"""
-        # TODO: we should add a flush event.
         self._broadcast_buffer.flush()
 
     def flush_client(self, client_id: int) -> None:
@@ -346,28 +330,23 @@ class WebsockServer(WebsockMessageHandler):
                 AsyncMessageBuffer(event_loop, persistent_messages=False),
                 event_loop,
             )
-            client_connection = WebsockClientConnection(
-                client_id, self._thread_executor, client_state
-            )
+            client_connection = WebsockClientConnection(client_id, client_state)
             self._client_state_from_id[client_id] = client_state
 
             def handle_incoming(message: Message) -> None:
-                self._thread_executor.submit(
-                    error_print_wrapper(
-                        lambda: self._handle_incoming_message(client_id, message)
-                    )
+                event_loop.create_task(
+                    self._handle_incoming_message(client_id, message)
                 )
-                self._thread_executor.submit(
-                    error_print_wrapper(
-                        lambda: client_connection._handle_incoming_message(
-                            client_id, message
-                        )
-                    )
+                event_loop.create_task(
+                    client_connection._handle_incoming_message(client_id, message)
                 )
 
             # New connection callbacks.
             for cb in self._client_connect_cb:
-                cb(client_connection)
+                if asyncio.iscoroutinefunction(cb):
+                    await cb(client_connection)
+                else:
+                    cb(client_connection)
 
             try:
                 # For each client: infinite loop over producers (which send messages)
@@ -401,7 +380,10 @@ class WebsockServer(WebsockMessageHandler):
 
                 # Disconnection callbacks.
                 for cb in self._client_disconnect_cb:
-                    cb(client_connection)
+                    if asyncio.iscoroutinefunction(cb):
+                        await cb(client_connection)
+                    else:
+                        cb(client_connection)
 
                 # Cleanup.
                 self._client_state_from_id.pop(client_id)

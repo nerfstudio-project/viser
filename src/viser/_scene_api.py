@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 import io
 import time
 import warnings
+from collections.abc import Coroutine
 from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, Callable, Tuple, TypeVar, Union, cast, get_args
 
@@ -39,6 +41,7 @@ from ._scene_handles import (
     SplineCubicBezierHandle,
     SpotLightHandle,
     TransformControlsHandle,
+    _ClickableSceneNodeHandle,
     _TransformControlsState,
     colors_to_uint8,
 )
@@ -56,6 +59,8 @@ P = ParamSpec("P")
 RgbTupleOrArray: TypeAlias = Union[
     Tuple[int, int, int], Tuple[float, float, float], np.ndarray
 ]
+
+NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
 
 
 def _encode_rgb(rgb: RgbTupleOrArray) -> tuple[int, int, int]:
@@ -115,8 +120,12 @@ class SceneApi:
         self,
         owner: ViserServer | ClientHandle,  # Who do I belong to?
         thread_executor: ThreadPoolExecutor,
+        event_loop: asyncio.AbstractEventLoop,
     ) -> None:
         from ._viser import ViserServer
+
+        self._thread_executor = thread_executor
+        self._event_loop = event_loop
 
         self._owner = owner
         """Entity that owns this API."""
@@ -133,8 +142,10 @@ class SceneApi:
         ] = {}
         self._handle_from_node_name: dict[str, SceneNodeHandle] = {}
 
-        self._scene_pointer_cb: Callable[[ScenePointerEvent], None] | None = None
-        self._scene_pointer_done_cb: Callable[[], None] = lambda: None
+        self._scene_pointer_cb: (
+            Callable[[ScenePointerEvent], None | Coroutine] | None
+        ) = None
+        self._scene_pointer_done_cb: Callable[[], None | Coroutine] = lambda: None
         self._scene_pointer_event_type: _messages.ScenePointerEventType | None = None
 
         # Set up world axes handle.
@@ -158,8 +169,6 @@ class SceneApi:
             _messages.ScenePointerMessage,
             self._handle_scene_pointer_updates,
         )
-
-        self._thread_executor = thread_executor
 
     def set_up_direction(
         self,
@@ -1543,7 +1552,7 @@ class SceneApi:
             assert client_id == self._owner.client_id
             return self._owner
 
-    def _handle_transform_controls_updates(
+    async def _handle_transform_controls_updates(
         self, client_id: ClientId, message: _messages.TransformControlsUpdateMessage
     ) -> None:
         """Callback for handling transform gizmo messages."""
@@ -1560,11 +1569,14 @@ class SceneApi:
 
         # Trigger callbacks.
         for cb in handle._impl_aux.update_cb:
-            cb(handle)
+            if asyncio.iscoroutinefunction(cb):
+                await cb(handle)
+            else:
+                self._thread_executor.submit(cb, handle)
         if handle._impl_aux.sync_cb is not None:
             handle._impl_aux.sync_cb(client_id, handle)
 
-    def _handle_node_click_updates(
+    async def _handle_node_click_updates(
         self, client_id: ClientId, message: _messages.SceneNodeClickMessage
     ) -> None:
         """Callback for handling click messages."""
@@ -1576,15 +1588,18 @@ class SceneApi:
                 client=self._get_client_handle(client_id),
                 client_id=client_id,
                 event="click",
-                target=handle,
+                target=cast(_ClickableSceneNodeHandle, handle),
                 ray_origin=message.ray_origin,
                 ray_direction=message.ray_direction,
                 screen_pos=message.screen_pos,
                 instance_index=message.instance_index,
             )
-            cb(event)  # type: ignore
+            if asyncio.iscoroutinefunction(cb):
+                await cb(event)
+            else:
+                self._thread_executor.submit(cb, event)
 
-    def _handle_scene_pointer_updates(
+    async def _handle_scene_pointer_updates(
         self, client_id: ClientId, message: _messages.ScenePointerMessage
     ):
         """Callback for handling click messages."""
@@ -1599,7 +1614,10 @@ class SceneApi:
         # Call the callback if it exists, and the after-run callback.
         if self._scene_pointer_cb is None:
             return
-        self._scene_pointer_cb(event)
+        if asyncio.iscoroutinefunction(self._scene_pointer_cb):
+            await self._scene_pointer_cb(event)
+        else:
+            self._thread_executor.submit(self._scene_pointer_cb, event)
 
     def on_pointer_event(
         self, event_type: Literal["click", "rect-select"]
@@ -1654,8 +1672,8 @@ class SceneApi:
 
     def on_pointer_callback_removed(
         self,
-        func: Callable[[], None],
-    ) -> Callable[[], None]:
+        func: Callable[[], NoneOrCoroutine],
+    ) -> Callable[[], NoneOrCoroutine]:
         """Add a callback to run automatically when the callback for a scene
         pointer event is removed. This will be triggered exactly once, either
         manually (via :meth:`remove_pointer_callback()`) or automatically (if
@@ -1690,7 +1708,10 @@ class SceneApi:
         self._owner.flush()
 
         # Run cleanup callback.
-        self._scene_pointer_done_cb()
+        if asyncio.iscoroutinefunction(self._scene_pointer_done_cb):
+            self._event_loop.create_task(self._scene_pointer_done_cb())
+        else:
+            self._scene_pointer_done_cb()
 
         # Reset the callback and event type, on the python side.
         self._scene_pointer_cb = None

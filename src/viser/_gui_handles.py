@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import dataclasses
 import re
 import time
 import uuid
 import warnings
+from collections.abc import Coroutine
 from functools import cached_property
 from pathlib import Path
 from typing import (
@@ -51,7 +53,7 @@ from ._messages import (
     GuiVector2Props,
     GuiVector3Props,
 )
-from ._scene_api import _encode_image_binary
+from ._scene_api import NoneOrCoroutine, _encode_image_binary
 from .infra import ClientId
 
 if TYPE_CHECKING:
@@ -63,6 +65,7 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 TGuiHandle = TypeVar("TGuiHandle", bound="_GuiInputHandle")
+NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
 
 
 def _make_uuid() -> str:
@@ -96,7 +99,7 @@ class _GuiHandleState(Generic[T]):
     """Container that this GUI input was placed into."""
 
     update_timestamp: float = 0.0
-    update_cb: list[Callable[[GuiEvent], None]] = dataclasses.field(
+    update_cb: list[Callable[[GuiEvent], None | Coroutine]] = dataclasses.field(
         default_factory=list
     )
     """Registered functions to call when this input is updated."""
@@ -220,17 +223,19 @@ class _GuiInputHandle(
 
         # Call update callbacks.
         for cb in self._impl.update_cb:
-            # Pushing callbacks into separate threads helps prevent deadlocks when we
-            # have a lock in a callback. TODO: revisit other callbacks.
-            self._impl.gui_api._thread_executor.submit(
-                lambda: cb(
+            if asyncio.iscoroutinefunction(cb):
+                self._impl.gui_api._event_loop.create_task(
+                    cb(GuiEvent(client_id=None, client=None, target=self))
+                )
+            else:
+                self._impl.gui_api._thread_executor.submit(
+                    cb,
                     GuiEvent(
                         client_id=None,
                         client=None,
                         target=self,
-                    )
+                    ),
                 )
-            )
 
     @property
     def update_timestamp(self) -> float:
@@ -255,11 +260,16 @@ class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
     """
 
     def on_update(
-        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], Any]
-    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
-        """Attach a function to call when a GUI input is updated. Callbacks stack (need
-        to be manually removed via :meth:`remove_update_callback()`) and will be called
-        from a thread."""
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]
+    ) -> Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]:
+        """Attach a function to call when a GUI input is updated.
+
+        Note:
+        - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.
+        - If `func` is an async function (defined with `async def`), it will be executed in the event loop.
+
+        Using async functions may help reduce race conditions in certain scenarios.
+        """
         self._impl.update_cb.append(func)
         return func
 
@@ -396,9 +406,16 @@ class GuiButtonHandle(_GuiInputHandle[bool]):
     """
 
     def on_click(
-        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
-    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
-        """Attach a function to call when a button is pressed. Happens in a thread."""
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]
+    ) -> Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]:
+        """Attach a function to call when a button is pressed.
+
+        Note:
+        - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.
+        - If `func` is an async function (defined with `async def`), it will be executed in the event loop.
+
+        Using async functions may help reduce race conditions in certain scenarios.
+        """
         self._impl.update_cb.append(func)
         return func
 
@@ -425,9 +442,16 @@ class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
     """
 
     def on_upload(
-        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
-    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
-        """Attach a function to call when a button is pressed. Happens in a thread."""
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]
+    ) -> Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]:
+        """Attach a function to call when a file is uploaded.
+
+        Note:
+        - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.
+        - If `func` is an async function (defined with `async def`), it will be executed in the event loop.
+
+        Using async functions may help reduce race conditions in certain scenarios.
+        """
         self._impl.update_cb.append(func)
         return func
 
@@ -442,9 +466,16 @@ class GuiButtonGroupHandle(_GuiInputHandle[str], GuiButtonGroupProps):
     """
 
     def on_click(
-        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], None]
-    ) -> Callable[[GuiEvent[TGuiHandle]], None]:
-        """Attach a function to call when a button is pressed. Happens in a thread."""
+        self: TGuiHandle, func: Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]
+    ) -> Callable[[GuiEvent[TGuiHandle]], NoneOrCoroutine]:
+        """Attach a function to call when a button in the group is clicked.
+
+        Note:
+        - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.
+        - If `func` is an async function (defined with `async def`), it will be executed in the event loop.
+
+        Using async functions may help reduce race conditions in certain scenarios.
+        """
         self._impl.update_cb.append(func)
         return func
 
