@@ -70,7 +70,7 @@ examples = [
 # installation via the Git URL, because build artifacts aren't
 # version-controlled.
 [tool.setuptools.package-data]
-viser = ["py.typed", "*.pyi", "_icons/tabler-icons.tar", "client/**/*", "client/**/.*"]
+viser = ["py.typed", "*.pyi", "_icons/tabler-icons.zip", "client/**/*", "client/**/.*"]
 # </>
 
 [tool.setuptools.exclude-package-data]
