@@ -11,7 +11,6 @@ import queue
 import threading
 from asyncio.events import AbstractEventLoop
 from collections.abc import Coroutine
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 

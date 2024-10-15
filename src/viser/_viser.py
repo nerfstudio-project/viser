@@ -25,7 +25,7 @@ from . import _client_autobuild, _messages, infra
 from . import transforms as tf
 from ._gui_api import Color, GuiApi, _make_uuid
 from ._notification_handle import NotificationHandle, _NotificationHandleState
-from ._scene_api import NoneOrCoroutine, SceneApi, cast_vector
+from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
 from .infra._infra import RecordHandle
 
@@ -336,9 +336,13 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         self._viser_server = server
 
         # Public attributes.
-        self.scene: SceneApi = SceneApi(self, thread_executor=server._thread_executor)
+        self.scene: SceneApi = SceneApi(
+            self, thread_executor=server._thread_executor, event_loop=server._event_loop
+        )
         """Handle for interacting with the 3D scene."""
-        self.gui: GuiApi = GuiApi(self, thread_executor=server._thread_executor)
+        self.gui: GuiApi = GuiApi(
+            self, thread_executor=server._thread_executor, event_loop=server._event_loop
+        )
         """Handle for interacting with the GUI."""
         self.client_id: int = conn.client_id
         """Unique ID for this client."""

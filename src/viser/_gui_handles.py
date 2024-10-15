@@ -53,7 +53,7 @@ from ._messages import (
     GuiVector2Props,
     GuiVector3Props,
 )
-from ._scene_api import NoneOrCoroutine, _encode_image_binary
+from ._scene_api import _encode_image_binary
 from .infra import ClientId
 
 if TYPE_CHECKING:
