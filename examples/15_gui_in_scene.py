@@ -51,11 +51,9 @@ def _(client: viser.ClientHandle) -> None:
                 f"/frame_{i}/gui"
             )
             with displayed_3d_container:
-                print("hi")
                 go_to = client.gui.add_button("Go to")
                 randomize_orientation = client.gui.add_button("Randomize orientation")
                 close = client.gui.add_button("Close GUI")
-                print("hello")
 
             @go_to.on_click
             def _(_) -> None:
