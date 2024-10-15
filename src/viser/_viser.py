@@ -254,7 +254,14 @@ class CameraHandle:
     def on_update(
         self, callback: Callable[[CameraHandle], NoneOrCoroutine]
     ) -> Callable[[CameraHandle], NoneOrCoroutine]:
-        """Attach a callback to run when a new camera message is received."""
+        """Attach a callback to run when a new camera message is received.
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Using async functions can be useful for reducing race conditions.
+        """
         self._state.camera_cb.append(callback)
         return callback
 
@@ -717,7 +724,14 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
     def on_client_connect(
         self, cb: Callable[[ClientHandle], NoneOrCoroutine]
     ) -> Callable[[ClientHandle], NoneOrCoroutine]:
-        """Attach a callback to run for newly connected clients."""
+        """Attach a callback to run for newly connected clients.
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Using async functions can be useful for reducing race conditions.
+        """
         with self._client_lock:
             clients = self._connected_clients.copy().values()
             self._client_connect_cb.append(cb)
@@ -741,7 +755,14 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
     def on_client_disconnect(
         self, cb: Callable[[ClientHandle], NoneOrCoroutine]
     ) -> Callable[[ClientHandle], NoneOrCoroutine]:
-        """Attach a callback to run when clients disconnect."""
+        """Attach a callback to run when clients disconnect.
+
+        The callback can be either a standard function or an async function:
+        - Standard functions (def) will be executed in a threadpool.
+        - Async functions (async def) will be executed in the event loop.
+
+        Using async functions can be useful for reducing race conditions.
+        """
         self._client_disconnect_cb.append(cb)
         return cb
 

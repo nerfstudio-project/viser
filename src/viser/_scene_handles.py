@@ -287,7 +287,7 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
         - Standard functions (def) will be executed in a threadpool.
         - Async functions (async def) will be executed in the event loop.
 
-        Using async functions may help reduce race conditions in certain scenarios.
+        Using async functions can be useful for reducing race conditions.
         """
         self._impl.api._websock_interface.queue_message(
             _messages.SetSceneNodeClickableMessage(self._impl.name, True)
@@ -570,7 +570,7 @@ class TransformControlsHandle(
         - Standard functions (def) will be executed in a threadpool.
         - Async functions (async def) will be executed in the event loop.
 
-        Using async functions may help reduce race conditions in certain scenarios.
+        Using async functions can be useful for reducing race conditions.
         """
         self._impl_aux.update_cb.append(func)
         return func

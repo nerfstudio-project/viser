@@ -268,7 +268,7 @@ class GuiInputHandle(_GuiInputHandle[T], Generic[T]):
         - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.
         - If `func` is an async function (defined with `async def`), it will be executed in the event loop.
 
-        Using async functions may help reduce race conditions in certain scenarios.
+        Using async functions can be useful for reducing race conditions.
         """
         self._impl.update_cb.append(func)
         return func
@@ -414,7 +414,7 @@ class GuiButtonHandle(_GuiInputHandle[bool]):
         - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.
         - If `func` is an async function (defined with `async def`), it will be executed in the event loop.
 
-        Using async functions may help reduce race conditions in certain scenarios.
+        Using async functions can be useful for reducing race conditions.
         """
         self._impl.update_cb.append(func)
         return func
@@ -450,7 +450,7 @@ class GuiUploadButtonHandle(_GuiInputHandle[UploadedFile]):
         - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.
         - If `func` is an async function (defined with `async def`), it will be executed in the event loop.
 
-        Using async functions may help reduce race conditions in certain scenarios.
+        Using async functions can be useful for reducing race conditions.
         """
         self._impl.update_cb.append(func)
         return func
@@ -474,7 +474,7 @@ class GuiButtonGroupHandle(_GuiInputHandle[str], GuiButtonGroupProps):
         - If `func` is a regular function (defined with `def`), it will be executed in a thread pool.
         - If `func` is an async function (defined with `async def`), it will be executed in the event loop.
 
-        Using async functions may help reduce race conditions in certain scenarios.
+        Using async functions can be useful for reducing race conditions.
         """
         self._impl.update_cb.append(func)
         return func
