@@ -1254,7 +1254,7 @@ class GaussianSplatsProps:
     - cov5 (f16), cov6 (f16)
     - rgba (int32)
 
-    Where cov1-6 are upper-triangular terms of covariance matrices."""
+    Where cov1-6 are the upper-triangular terms of covariance matrices."""
 
 
 @dataclasses.dataclass

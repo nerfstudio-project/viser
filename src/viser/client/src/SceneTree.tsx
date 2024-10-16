@@ -370,11 +370,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
       return {
         makeObject: (ref) => {
           // We wrap with <group /> because Html doesn't implement
-          // THREE.Object3D. The initial position is intended to be
-          // off-screen; it will be overwritten with the actual position
-          // after the component is mounted.
+          // THREE.Object3D.
           return (
-            <group ref={ref} position={new THREE.Vector3(1e8, 1e8, 1e8)}>
+            <group ref={ref}>
               <Html>
                 <ContextBridge>
                   <Paper
