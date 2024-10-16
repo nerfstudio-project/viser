@@ -30,6 +30,7 @@ class AsyncMessageBuffer:
     max_window_size: int = 128
     window_duration_sec: float = 1.0 / 60.0
     done: bool = False
+    atomic_counter: int = 0
 
     def remove_from_buffer(self, match_fn: Callable[[Message], bool]) -> None:
         """Remove messages that match some condition."""
@@ -66,7 +67,19 @@ class AsyncMessageBuffer:
             self.id_from_redundancy_key[redundancy_key] = new_message_id
 
         # Pulse message event to notify consumers that a new message is available.
-        self.event_loop.call_soon_threadsafe(self.message_event.set)
+        # But only do so if we're not in an atomic block.
+        if self.atomic_counter == 0:
+            self.event_loop.call_soon_threadsafe(self.message_event.set)
+
+    def atomic_start(self) -> None:
+        """Start an atomic block. No new messages/windows should be sent."""
+        self.atomic_counter += 1
+
+    def atomic_end(self) -> None:
+        """End an atomic block."""
+        self.atomic_counter -= 1
+        if self.atomic_counter == 0:
+            self.event_loop.call_soon_threadsafe(self.message_event.set)
 
     def flush(self) -> None:
         """Flush the message buffer; signals to yield a message window immediately."""
@@ -89,13 +102,15 @@ class AsyncMessageBuffer:
         are available."""
 
         last_sent_id = -1
-        flush_wait = asyncio.create_task(self.flush_event.wait())
+        flush_wait = self.event_loop.create_task(self.flush_event.wait())
         while not self.done:
             window: List[Message] = []
             most_recent_message_id = self.message_counter - 1
             while (
                 last_sent_id < most_recent_message_id
                 and len(window) < self.max_window_size
+                # We should only be polling for new messages if we aren't in an atomic block.
+                and self.atomic_counter == 0
             ):
                 last_sent_id += 1
                 if self.persistent_messages:
@@ -128,4 +143,4 @@ class AsyncMessageBuffer:
                 del pending
                 if flush_wait in done and not self.done:
                     self.flush_event.clear()
-                    flush_wait = asyncio.create_task(self.flush_event.wait())
+                    flush_wait = self.event_loop.create_task(self.flush_event.wait())
