@@ -21,7 +21,7 @@
  * implementations that we're aware of, this enables correct compositing
  * between multiple splat objects.
  */
-
+import { v4 as uuidv4 } from "uuid";
 import React from "react";
 import * as THREE from "three";
 import SplatSortWorker from "./SplatSortWorker?worker";
@@ -253,7 +253,7 @@ export const SplatObject = React.forwardRef<
   const setBuffer = splatContext((state) => state.setBuffer);
   const removeBuffer = splatContext((state) => state.removeBuffer);
   const nodeRefFromId = splatContext((state) => state.nodeRefFromId);
-  const name = React.useMemo(() => crypto.randomUUID(), [buffer]);
+  const name = React.useMemo(() => uuidv4(), [buffer]);
 
   const [obj, setRef] = React.useState<THREE.Group | null>(null);
 

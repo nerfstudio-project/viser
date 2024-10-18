@@ -263,7 +263,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
               left: "0.75em",
               zIndex: 2,
               maxHeight: "auto",
-              border: "0.2em solid rgba(255, 255, 255, 0.5)",
+              border: "0.2rem solid #fff",
               overflow: "hidden",
               borderRadius: "0.3rem",
               padding: "0",
@@ -274,12 +274,14 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
                 textAlign: "center",
                 position: "absolute",
                 top: "0",
-                backgroundColor: "rgba(0,0,0,0.75)",
-                color: "#eee",
+                backgroundColor: "#fff",
+                borderBottomRightRadius: "0.3rem",
+                fontSize: "1.1em",
+                color: "#000",
                 fontFamily: "Inter",
                 padding: "0.2em 0.5em",
                 whiteSpace: "nowrap",
-                fontWeight: "500",
+                fontWeight: "600",
               }}
             >
               Input video
@@ -336,7 +338,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
             )}
           </ActionIcon>
           <NumberInput
-            size="xs"
+            size="xxs"
             hideControls
             value={currentTime.toFixed(1)}
             step={0.01}
@@ -348,6 +350,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
                 padding: "0.2em",
                 fontFamily: theme.fontFamilyMonospace,
                 textAlign: "center",
+                fontSize: "0.75em",
               },
             }}
             onChange={(value) =>
@@ -369,13 +372,14 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           />
           <Tooltip zIndex={10} label={"Playback speed"} withinPortal>
             <Select
-              size="xs"
+              size="xxs"
               value={playbackSpeed}
               onChange={(val) => (val === null ? null : setPlaybackSpeed(val))}
               radius="xs"
               data={["0.5x", "1x", "2x", "4x", "8x"]}
               styles={{
                 wrapper: { width: "3.25em" },
+                input: { fontSize: "0.75em", padding: "0.2em 0.75em" },
               }}
               comboboxProps={{ zIndex: 5, width: "5.25em" }}
             />

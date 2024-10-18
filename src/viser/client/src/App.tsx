@@ -219,7 +219,7 @@ function ViewerContents({ children }: { children: React.ReactNode }) {
             ? {}
             : { colors: { custom: colors }, primaryColor: "custom" }),
         })}
-        forceColorScheme={darkMode ? "dark" : "light"}
+        // forceColorScheme={darkMode ? "dark" : "light"}
       >
         {children}
         <Notifications
