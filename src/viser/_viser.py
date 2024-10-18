@@ -512,7 +512,7 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             Callable[[ClientHandle], None | Coroutine]
         ] = []
 
-        self._thread_executor = ThreadPoolExecutor(max_workers=32)
+        self._thread_executor = ThreadPoolExecutor(max_workers=8)
 
         # For new clients, register and add a handler for camera messages.
         @server.on_client_connect
