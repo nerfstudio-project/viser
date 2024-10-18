@@ -30,6 +30,7 @@ import { shaderMaterial } from "@react-three/drei";
 import { SorterWorkerIncoming } from "./SplatSortWorker";
 import { create } from "zustand";
 import { Object3D } from "three";
+import { v4 as uuidv4 } from "uuid";
 
 /**Global splat state.*/
 interface SplatState {
@@ -253,7 +254,7 @@ export const SplatObject = React.forwardRef<
   const setBuffer = splatContext((state) => state.setBuffer);
   const removeBuffer = splatContext((state) => state.removeBuffer);
   const nodeRefFromId = splatContext((state) => state.nodeRefFromId);
-  const name = React.useMemo(() => crypto.randomUUID(), [buffer]);
+  const name = React.useMemo(() => uuidv4(), [buffer]);
 
   const [obj, setRef] = React.useState<THREE.Group | null>(null);
 
