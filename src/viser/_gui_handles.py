@@ -120,6 +120,13 @@ class _OverridableGuiPropApi:
         if name == "_impl":
             return object.__setattr__(self, name, value)
 
+        # If it's a property with a setter, use the setter
+        prop = getattr(self.__class__, name, None)
+        if isinstance(prop, property) and prop.fset is not None:
+            prop.fset(self, value)
+            return
+
+        # Otherwise, look for the field in the general props struct.
         handle = cast(_GuiInputHandle, self)
         # Get the value of the T TypeVar.
         if name in self._prop_hints:
@@ -223,19 +230,13 @@ class _GuiInputHandle(
 
         # Call update callbacks.
         for cb in self._impl.update_cb:
-            if asyncio.iscoroutinefunction(cb):
-                self._impl.gui_api._event_loop.create_task(
-                    cb(GuiEvent(client_id=None, client=None, target=self))
-                )
-            else:
-                self._impl.gui_api._thread_executor.submit(
-                    cb,
-                    GuiEvent(
-                        client_id=None,
-                        client=None,
-                        target=self,
-                    ),
-                )
+            # As a design decision: we choose to call update callbacks
+            # synchronously instead of in the thread pool. It's rare that there
+            # are significant blocking callbacks for GUI updates; this also
+            # reduces the likelihood of many common race conditions.
+            cb_out = cb(GuiEvent(client_id=None, client=None, target=self))
+            if isinstance(cb_out, Coroutine):
+                self._impl.gui_api._event_loop.create_task(cb_out)
 
     @property
     def update_timestamp(self) -> float:
@@ -519,22 +520,14 @@ class GuiDropdownHandle(
         options = tuple(options)
         self._impl.props.options = options
 
-        need_to_overwrite_value = self.value not in options
-        if need_to_overwrite_value:
-            self._impl.gui_api._websock_interface.queue_message(
-                GuiUpdateMessage(
-                    self._impl.uuid,
-                    {"options": options, "value": options},
-                )
+        self._impl.gui_api._websock_interface.queue_message(
+            GuiUpdateMessage(
+                self._impl.uuid,
+                {"options": options},
             )
-            self._impl.value = options[0]
-        else:
-            self._impl.gui_api._websock_interface.queue_message(
-                GuiUpdateMessage(
-                    self._impl.uuid,
-                    {"options": options},
-                )
-            )
+        )
+        if self.value not in options:
+            self.value = options[0]
 
 
 class GuiTabGroupHandle(_GuiHandle[None], GuiTabGroupProps):
