@@ -14,6 +14,7 @@ from typing import (
     Literal,
     Protocol,
     TypeVar,
+    Union,
     cast,
 )
 
@@ -297,7 +298,9 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
         self._impl.click_cb.append(
             cast(
                 Callable[
-                    [SceneNodePointerEvent[_ClickableSceneNodeHandle]], None | Coroutine
+                    [SceneNodePointerEvent[_ClickableSceneNodeHandle]],
+                    # `Union[X, Y]` instead of `X | Y` for Python 3.8 support.
+                    Union[None, Coroutine],
                 ],
                 func,
             )
