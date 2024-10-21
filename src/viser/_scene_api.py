@@ -1003,7 +1003,7 @@ class SceneApi:
         print("sh_coeffs.shape", sh_coeffs.shape)
         sh_buffer = (sh_coeffs.astype(onp.float16)).view(onp.uint32)
         print("sh_buffer.shape", sh_buffer.shape) # has shape (num_gaussians, 24), each cell contains 2 spherical coeff.
-
+        print(sh_buffer)
 
         self._websock_interface.queue_message(
             _messages.GaussianSplatsMessage(

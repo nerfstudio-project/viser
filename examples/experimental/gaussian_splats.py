@@ -91,12 +91,18 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     dc_terms = onp.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
 
     # Load higher order SH coefficients (f_rest_0, ... f_rest_44), which are either level 1 or higher
-    # Note: .ply file supports maximum SH degree of 3, R = 0 (mod 3), G = 1 (mod 3), B = 2 (mod 3)
+    # Note: .ply file supports maximum SH degree of 3, R = f_rest_0, ... f_rest_14; G = f_rest_15, ... f_rest_29
     rest_terms = []
     i = 0
-    while f"f_rest_{i}" in v:
-        rest_terms.append(v[f"f_rest_{i}"])
+    #while f"f_rest_{i}" in v:
+    while i < 15:
+        rest_terms.append(v[f"f_rest_{i}"]) # has shape (numGaussians, )
+        rest_terms.append(v[f"f_rest_{15 + i}"])
+        rest_terms.append(v[f"f_rest_{30 + i}"])
         i += 1
+    # while f"f_rest_{i}" in v:
+    #     rest_terms.append(v[f"f_rest_{i}"])
+    #     i += 1
     if len(rest_terms) > 0: # if we do have higher than zero order SH, we will process them and add them here.
         sh_coeffs = onp.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]] + rest_terms, axis=1)
     sh_degree = int(onp.sqrt(sh_coeffs.shape[1] // 3) - 1)
@@ -112,21 +118,24 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
 
     # print(sh_coeffs.shape) # prints (447703, 48)
     # print(v["x"].shape) # prints (447703,)
-    print(positions.shape)
-    print(colors.shape)
-    print(covariances.shape)
+    # print(positions.shape)
+    # print(colors.shape)
+    # print(covariances.shape)
 
     print(
         f"PLY file with {num_gaussians=} loaded in {time.time() - start_time} seconds"
     )
-    print("sh_coeffs[0, :]", sh_coeffs[0, :])
+    print(onp.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)[0 , :])
+    print(sh_coeffs[0, :]) # first gaussian, all 48 coefficients
+    # print(sh_coeffs[0, :]) # next 3 SH coefficients that are the 1st order
+
     return {
-        "centers": positions[0:20, :],
-        "rgbs": colors[0:20, :],
-        "opacities": opacities[0:20, :],
-        "covariances": 10000*covariances[0:20, :],
+        "centers": positions[0:1, :],
+        "rgbs": colors[0:1, :],
+        "opacities": opacities[0:1, :],
+        "covariances": 10000*covariances[0:1, :],
         "sh_degree": sh_degree,
-        "sh_coeffs": sh_coeffs[0:20, :],
+        "sh_coeffs": sh_coeffs[0:1, :],
     }
 
 

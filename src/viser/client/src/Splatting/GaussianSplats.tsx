@@ -180,7 +180,8 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 chol45 = unpackHalf2x16(intBufferData.z);
 
     // Get spherical harmonic terms from the buffer, there are 48 coeffecients per vertex
-    uint shTexStart = sortedIndex * 6u;
+    // uint shTexStart = sortedIndex * 6u;
+    uint shTexStart = sortedIndex * 0u;
     ivec2 shTexSize = textureSize(shTextureBuffer, 0);
     float sh_coeffs_unpacked[48];
     for (int i = 0; i < 6; i++) {
@@ -188,23 +189,23 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
                                (shTexStart + uint(i)) / uint(shTexSize.x));
         uvec4 packedCoeffs = texelFetch(shTextureBuffer, shTexPos, 0);
 
-        // Unpack each uint32 directly into two float16 values
+        // unpack each uint32 directly into two float16 values, we read 4 at a time
         vec2 unpacked;
         unpacked = unpackHalf2x16(packedCoeffs.x);
-        sh_coeffs_unpacked[i*8]   = unpacked.x;
-        sh_coeffs_unpacked[i*8+1] = unpacked.y;
+        sh_coeffs_unpacked[i*8]   = unpacked.y;
+        sh_coeffs_unpacked[i*8+1] = unpacked.x;
         
         unpacked = unpackHalf2x16(packedCoeffs.y);
-        sh_coeffs_unpacked[i*8+2] = unpacked.x;
-        sh_coeffs_unpacked[i*8+3] = unpacked.y;
+        sh_coeffs_unpacked[i*8+2] = unpacked.y;
+        sh_coeffs_unpacked[i*8+3] = unpacked.x;
         
         unpacked = unpackHalf2x16(packedCoeffs.z);
-        sh_coeffs_unpacked[i*8+4] = unpacked.x;
-        sh_coeffs_unpacked[i*8+5] = unpacked.y;
+        sh_coeffs_unpacked[i*8+4] = unpacked.y;
+        sh_coeffs_unpacked[i*8+5] = unpacked.x;
         
         unpacked = unpackHalf2x16(packedCoeffs.w);
-        sh_coeffs_unpacked[i*8+6] = unpacked.x;
-        sh_coeffs_unpacked[i*8+7] = unpacked.y;
+        sh_coeffs_unpacked[i*8+6] = unpacked.y;
+        sh_coeffs_unpacked[i*8+7] = unpacked.x;
     }
 
     // Transition in.
@@ -267,50 +268,57 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
         sh_coeffs[i] = vec3(sh_coeffs_unpacked[i*3], sh_coeffs_unpacked[i*3+1], sh_coeffs_unpacked[i*3+2]);
     }
 
-    vRgba = C0 * sh_coeffs[0];
-    vRgba = vRgba - 
-            C1 * viewDir.y * sh_coeffs[1] +
-            C1 * viewDir.z * sh_coeffs[2] -
-            C1 * viewDir.x * sh_coeffs[3]
+    float x = viewDir.x;
+    float y = viewDir.y;
+    float z = viewDir.z;
+    float xx = viewDir.x * viewDir.x;
+    float yy = viewDir.y * viewDir.y;
+    float zz = viewDir.z * viewDir.z;
+    float xy = viewDir.x * viewDir.y;
+    float yz = viewDir.y * viewDir.z;
+    float xz = viewDir.x * viewDir.z;
 
-    xx = viewDir.x * viewDir.x;
-    yy = viewDir.y * viewDir.y;
-    zz = viewDir.z * viewDir.z;
-    xy = viewDir.x * viewDir.y;
-    yz = viewDir.y * viewDir.z;
-    xz = viewDir.x * viewDir.z;
-
-    vRgba = vRgba + 
-                C2[0] * xy * sh_coeffs[4] +
-                C2[1] * yz * sh_coeffs[5] + 
-                C2[2] * (2.0 - zz - xx - yy) * sh_coeffs[6] +
-                C2[3] * xz * sh_coeffs[7] + 
-                C2[4] * (xx - yy) * sh_coeffs[8]
+    vec3 rgb = C0 * sh_coeffs[0];
+    vec3 pointFive = vec3(0.5, 0.5, 0.5);
+    vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
+    // vRgba = vec4(sh_coeffs[0], 1.0); // im using this to see what the sh_coeffs actually are
     
-    vRgba = vRgba + 
-                C3[0] * y * (3 * xx - yy) * sh_coeffs[9] +
-                C3[1] * xy * z * sh_coeffs[10] + 
-                C3[2] * y * (4 * zz - xx - yy) * sh_coeffs[11] +
-                C3[3] * z * (2 * zz - 3 * xx - 3 * yy) * sh_coeffs[12] +
-                C3[4] * x * (4 * zz - xx - yy) * sh_coeffs[13] + 
-                C3[5] * z * (xx - yy) * sh_coeffs[14] + 
-                C3[6] * x * (xx - 3 * yy) * sh_coeffs[15]
 
-    //vRgba = vec4(vRgba, float(rgbaUint32 >> uint(24)) / 255.0)
-    vRgba = vec4(0.99, 0.99, 0.99, float(rgbaUint32 >> uint(24)) / 255.0)
+    // rgb = rgb -
+    //         C1 * y * sh_coeffs[1] +
+    //         C1 * z * sh_coeffs[2] -
+    //         C1 * x * sh_coeffs[3];
+
+    // rgb = rgb + 
+    //         C2[0] * xy * sh_coeffs[4] +
+    //         C2[1] * yz * sh_coeffs[5] + 
+    //         C2[2] * (2.0 - zz - xx - yy) * sh_coeffs[6] +
+    //         C2[3] * xz * sh_coeffs[7] + 
+    //         C2[4] * (xx - yy) * sh_coeffs[8];
+    
+    // rgb = rgb + 
+    //         C3[0] * y * (3.0 * xx - yy) * sh_coeffs[9] +
+    //         C3[1] * xy * z * sh_coeffs[10] + 
+    //         C3[2] * y * (4.0 * zz - xx - yy) * sh_coeffs[11] +
+    //         C3[3] * z * (2.0 * zz - 3.0 * xx - 3.0 * yy) * sh_coeffs[12] +
+    //         C3[4] * x * (4.0 * zz - xx - yy) * sh_coeffs[13] + 
+    //         C3[5] * z * (xx - yy) * sh_coeffs[14] + 
+    //         C3[6] * x * (xx - 3.0 * yy) * sh_coeffs[15];
+
+    //vRgba = vec4(rgb, float(rgbaUint32 >> uint(24)) / 255.0);
 
     // this is the og code
-    vRgba = vec4(
-      float(rgbaUint32 & uint(0xFF)) / 255.0,
-      float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
-      float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
-      float(rgbaUint32 >> uint(24)) / 255.0
-    );
+    //vRgba = vec4(
+      //float(rgbaUint32 & uint(0xFF)) / 255.0,
+      //float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
+      //float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
+      //float(rgbaUint32 >> uint(24)) / 255.0
+    //);
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
-    //if (weightedDeterminant < 0.5)
-      //return;
+    if (weightedDeterminant < 0.5)
+      return;
     vPosition = position.xy;
 
     gl_Position = vec4(
@@ -638,6 +646,10 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, combinedSHBuffer: Uin
   );
   textureBuffer.internalFormat = "RGBA32UI";
   textureBuffer.needsUpdate = true;
+  console.log("textureWidth ", textureWidth); // 
+  console.log("textureHeight ", textureHeight); // 
+  console.log("bufferPadded ", bufferPadded);
+  console.log("textureBuffer ", textureBuffer);
 
   const rowMajorT_camera_groups = new Float32Array(numGroups * 12);
   const textureT_camera_groups = new THREE.DataTexture(
@@ -652,11 +664,7 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, combinedSHBuffer: Uin
 
   // Spherical Harmonics Texture Buffer
   const shTextureWidth = Math.min(numGaussians * 6, maxTextureSize);
-  const shTextureHeight = Math.ceil((numGaussians * 6) / textureWidth);
-  console.log("textureWidth ", textureWidth);
-  console.log("textureHeight ", textureHeight);
-  console.log("shTextureWidth ", shTextureWidth);
-  console.log("shTextureHeight ", shTextureHeight);
+  const shTextureHeight = Math.ceil((numGaussians * 6) / shTextureWidth);
   const shBufferPadded = new Uint32Array(shTextureWidth * shTextureHeight * 4);
   shBufferPadded.set(combinedSHBuffer);
   const shTextureBuffer = new THREE.DataTexture(
@@ -668,6 +676,11 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, combinedSHBuffer: Uin
   );
   shTextureBuffer.internalFormat = "RGBA32UI";
   shTextureBuffer.needsUpdate = true;
+  console.log("numGaussians ", numGaussians); // 1
+  console.log("shTextureWidth ", shTextureWidth); // 6
+  console.log("shTextureHeight ", shTextureHeight); // 1
+  console.log("shBufferPadded ", shBufferPadded);
+  console.log("shTextureBuffer ", shTextureBuffer);
 
   const material = new GaussianSplatMaterial({
     // @ts-ignore
