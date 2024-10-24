@@ -1002,9 +1002,8 @@ class SceneApi:
         # - (768 bits): spherical harmonics
         print("sh_coeffs.shape", sh_coeffs.shape)
         sh_buffer = (sh_coeffs.astype(onp.float16)).view(onp.uint32)
-        # sh_buffer = sh_coeffs
         print("sh_buffer.shape", sh_buffer.shape) # has shape (num_gaussians, 24), each cell contains 2 spherical coeff.
-        print(sh_buffer)
+        # print(sh_buffer)
 
         self._websock_interface.queue_message(
             _messages.GaussianSplatsMessage(

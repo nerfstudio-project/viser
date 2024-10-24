@@ -129,13 +129,22 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     print(sh_coeffs[0, :]) # first gaussian, all 48 coefficients
     # print(sh_coeffs[0, :]) # next 3 SH coefficients that are the 1st order
 
+    # return {
+    #     "centers": positions[0:1, :],
+    #     "rgbs": colors[0:1, :],
+    #     "opacities": opacities[0:1, :],
+    #     "covariances": 10000*covariances[0:1, :],
+    #     "sh_degree": sh_degree,
+    #     "sh_coeffs": sh_coeffs[0:1, :],
+    # }
+
     return {
-        "centers": positions[0:1, :],
-        "rgbs": colors[0:1, :],
-        "opacities": opacities[0:1, :],
-        "covariances": 10000*covariances[0:1, :],
+        "centers": positions,
+        "rgbs": colors,
+        "opacities": opacities,
+        "covariances": covariances,
         "sh_degree": sh_degree,
-        "sh_coeffs": sh_coeffs[0:1, :],
+        "sh_coeffs": sh_coeffs,
     }
 
 

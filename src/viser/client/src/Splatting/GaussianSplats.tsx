@@ -192,20 +192,20 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
         // unpack each uint32 directly into two float16 values, we read 4 at a time
         vec2 unpacked;
         unpacked = unpackHalf2x16(packedCoeffs.x);
-        sh_coeffs_unpacked[i*8]   = unpacked.y;
-        sh_coeffs_unpacked[i*8+1] = unpacked.x;
+        sh_coeffs_unpacked[i*8]   = unpacked.x;
+        sh_coeffs_unpacked[i*8+1] = unpacked.y;
         
         unpacked = unpackHalf2x16(packedCoeffs.y);
-        sh_coeffs_unpacked[i*8+2] = unpacked.y;
-        sh_coeffs_unpacked[i*8+3] = unpacked.x;
+        sh_coeffs_unpacked[i*8+2] = unpacked.x;
+        sh_coeffs_unpacked[i*8+3] = unpacked.y;
         
         unpacked = unpackHalf2x16(packedCoeffs.z);
-        sh_coeffs_unpacked[i*8+4] = unpacked.y;
-        sh_coeffs_unpacked[i*8+5] = unpacked.x;
+        sh_coeffs_unpacked[i*8+4] = unpacked.x;
+        sh_coeffs_unpacked[i*8+5] = unpacked.y;
         
         unpacked = unpackHalf2x16(packedCoeffs.w);
-        sh_coeffs_unpacked[i*8+6] = unpacked.y;
-        sh_coeffs_unpacked[i*8+7] = unpacked.x;
+        sh_coeffs_unpacked[i*8+6] = unpacked.x;
+        sh_coeffs_unpacked[i*8+7] = unpacked.y;
     }
 
     // Transition in.
@@ -278,21 +278,24 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     float yz = viewDir.y * viewDir.z;
     float xz = viewDir.x * viewDir.z;
 
-    vec3 rgb = C0 * sh_coeffs[0];
+    vec3 rgb = C0 * sh_coeffs[0]; // line 74 of plenoxels
     vec3 pointFive = vec3(0.5, 0.5, 0.5);
+    //vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
     
-    vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
-    if (sh_coeffs[0].x > 1.0 && sh_coeffs[0].x < 1.6) {
-        vRgba = vec4(1.0, 0.0, 0.0, 1.0);
-    } else {
-        vRgba = vec4(1.0, 1.0, 1.0, 1.0);
-    }
+    // could be useful code
+    // if (sh_coeffs[0].x > 1.0 && sh_coeffs[0].x < 1.6) {
+    //     vRgba = vec4(1.0, 0.0, 0.0, 1.0);
+    // } else {
+    //     vRgba = vec4(1.0, 1.0, 1.0, 1.0);
+    // }
 
+    // degree 1 coefficents
     rgb = rgb -
             C1 * y * sh_coeffs[1] +
             C1 * z * sh_coeffs[2] -
             C1 * x * sh_coeffs[3];
 
+    // degree 2 coefficents
     rgb = rgb + 
             C2[0] * xy * sh_coeffs[4] +
             C2[1] * yz * sh_coeffs[5] + 
@@ -300,6 +303,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
             C2[3] * xz * sh_coeffs[7] + 
             C2[4] * (xx - yy) * sh_coeffs[8];
     
+    // degree 3 coefficents
     rgb = rgb + 
             C3[0] * y * (3.0 * xx - yy) * sh_coeffs[9] +
             C3[1] * xy * z * sh_coeffs[10] + 
@@ -309,7 +313,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
             C3[5] * z * (xx - yy) * sh_coeffs[14] + 
             C3[6] * x * (xx - 3.0 * yy) * sh_coeffs[15];
 
-    vRgba = vec4(rgb, float(rgbaUint32 >> uint(24)) / 255.0);
+    vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
 
     // this is the og code
     // vRgba = vec4(
