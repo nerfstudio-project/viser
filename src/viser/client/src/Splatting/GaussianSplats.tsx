@@ -94,6 +94,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     transparent: true,
     sh_degree: 0,
     textureBuffer: null,
+    shTextureBuffer: null,
     textureT_camera_groups: null,
     transitionInState: 0.0,
   },
@@ -180,8 +181,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 chol45 = unpackHalf2x16(intBufferData.z);
 
     // Get spherical harmonic terms from the buffer, there are 48 coeffecients per vertex
-    // uint shTexStart = sortedIndex * 6u;
-    uint shTexStart = sortedIndex * 0u;
+    uint shTexStart = sortedIndex * 6u;
     ivec2 shTexSize = textureSize(shTextureBuffer, 0);
     float sh_coeffs_unpacked[48];
     for (int i = 0; i < 6; i++) {
@@ -280,9 +280,15 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     vec3 rgb = C0 * sh_coeffs[0];
     vec3 pointFive = vec3(0.5, 0.5, 0.5);
-    vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
-    // vRgba = vec4(sh_coeffs[0], 1.0); // im using this to see what the sh_coeffs actually are
     
+    vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
+    //vRgba = vec4(sh_coeffs[0], 1.0); // im using this to see what the sh_coeffs actually are
+    
+    // if (sh_coeffs[0].x > 1.0 && sh_coeffs[0].x < 1.6) {
+    //     vRgba = vec4(1.0, 0.0, 0.0, 1.0);
+    // } else {
+    //     vRgba = vec4(1.0, 1.0, 1.0, 1.0);
+    // }
 
     // rgb = rgb -
     //         C1 * y * sh_coeffs[1] +
@@ -409,6 +415,7 @@ function SplatRenderer() {
     if (!initializedBufferTexture) {
       meshProps.material.uniforms.numGaussians.value = merged.numGaussians;
       meshProps.textureBuffer.needsUpdate = true;
+      meshProps.shTextureBuffer.needsUpdate = true;
       initializedBufferTexture = true;
     }
   };
@@ -425,6 +432,7 @@ function SplatRenderer() {
   React.useEffect(() => {
     return () => {
       meshProps.textureBuffer.dispose();
+      meshProps.shTextureBuffer.dispose();
       meshProps.geometry.dispose();
       meshProps.material.dispose();
       postToWorker({ close: true });
@@ -554,6 +562,7 @@ function mergeGaussianGroups(groupBufferFromName: {
   const groupBufferFromNameFiltered = Object.fromEntries(
     Object.entries(groupBufferFromName).filter(([key]) => !key.startsWith("sh_buffer_"))
   );
+  // groupBufferFromNameFiltered only contains buffers for the gaussians (not sh buffers)
   for (const buffer of Object.values(groupBufferFromNameFiltered)) {
     totalBufferLength += buffer.length;
   }
@@ -599,6 +608,7 @@ function mergeGaussianGroups(groupBufferFromName: {
     combinedSHBuffer.set(sh_buffer, sh_offset)
     sh_offset += sh_buffer.length;
   }
+  console.log(combinedSHBuffer)
 
   const numGroups = Object.keys(groupBufferFromNameFiltered).length;
   return { numGaussians, gaussianBuffer, numGroups, groupIndices, combinedSHBuffer};
@@ -695,6 +705,7 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, combinedSHBuffer: Uin
     geometry,
     material,
     textureBuffer,
+    shTextureBuffer,
     sortedIndexAttribute,
     textureT_camera_groups,
     rowMajorT_camera_groups,
