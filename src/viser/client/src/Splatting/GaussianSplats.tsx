@@ -282,44 +282,42 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec3 pointFive = vec3(0.5, 0.5, 0.5);
     
     vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
-    //vRgba = vec4(sh_coeffs[0], 1.0); // im using this to see what the sh_coeffs actually are
+    if (sh_coeffs[0].x > 1.0 && sh_coeffs[0].x < 1.6) {
+        vRgba = vec4(1.0, 0.0, 0.0, 1.0);
+    } else {
+        vRgba = vec4(1.0, 1.0, 1.0, 1.0);
+    }
+
+    rgb = rgb -
+            C1 * y * sh_coeffs[1] +
+            C1 * z * sh_coeffs[2] -
+            C1 * x * sh_coeffs[3];
+
+    rgb = rgb + 
+            C2[0] * xy * sh_coeffs[4] +
+            C2[1] * yz * sh_coeffs[5] + 
+            C2[2] * (2.0 - zz - xx - yy) * sh_coeffs[6] +
+            C2[3] * xz * sh_coeffs[7] + 
+            C2[4] * (xx - yy) * sh_coeffs[8];
     
-    // if (sh_coeffs[0].x > 1.0 && sh_coeffs[0].x < 1.6) {
-    //     vRgba = vec4(1.0, 0.0, 0.0, 1.0);
-    // } else {
-    //     vRgba = vec4(1.0, 1.0, 1.0, 1.0);
-    // }
+    rgb = rgb + 
+            C3[0] * y * (3.0 * xx - yy) * sh_coeffs[9] +
+            C3[1] * xy * z * sh_coeffs[10] + 
+            C3[2] * y * (4.0 * zz - xx - yy) * sh_coeffs[11] +
+            C3[3] * z * (2.0 * zz - 3.0 * xx - 3.0 * yy) * sh_coeffs[12] +
+            C3[4] * x * (4.0 * zz - xx - yy) * sh_coeffs[13] + 
+            C3[5] * z * (xx - yy) * sh_coeffs[14] + 
+            C3[6] * x * (xx - 3.0 * yy) * sh_coeffs[15];
 
-    // rgb = rgb -
-    //         C1 * y * sh_coeffs[1] +
-    //         C1 * z * sh_coeffs[2] -
-    //         C1 * x * sh_coeffs[3];
-
-    // rgb = rgb + 
-    //         C2[0] * xy * sh_coeffs[4] +
-    //         C2[1] * yz * sh_coeffs[5] + 
-    //         C2[2] * (2.0 - zz - xx - yy) * sh_coeffs[6] +
-    //         C2[3] * xz * sh_coeffs[7] + 
-    //         C2[4] * (xx - yy) * sh_coeffs[8];
-    
-    // rgb = rgb + 
-    //         C3[0] * y * (3.0 * xx - yy) * sh_coeffs[9] +
-    //         C3[1] * xy * z * sh_coeffs[10] + 
-    //         C3[2] * y * (4.0 * zz - xx - yy) * sh_coeffs[11] +
-    //         C3[3] * z * (2.0 * zz - 3.0 * xx - 3.0 * yy) * sh_coeffs[12] +
-    //         C3[4] * x * (4.0 * zz - xx - yy) * sh_coeffs[13] + 
-    //         C3[5] * z * (xx - yy) * sh_coeffs[14] + 
-    //         C3[6] * x * (xx - 3.0 * yy) * sh_coeffs[15];
-
-    //vRgba = vec4(rgb, float(rgbaUint32 >> uint(24)) / 255.0);
+    vRgba = vec4(rgb, float(rgbaUint32 >> uint(24)) / 255.0);
 
     // this is the og code
-    //vRgba = vec4(
-      //float(rgbaUint32 & uint(0xFF)) / 255.0,
-      //float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
-      //float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
-      //float(rgbaUint32 >> uint(24)) / 255.0
-    //);
+    // vRgba = vec4(
+    //   float(rgbaUint32 & uint(0xFF)) / 255.0,
+    //   float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
+    //   float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
+    //   float(rgbaUint32 >> uint(24)) / 255.0
+    // );
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
