@@ -278,7 +278,7 @@ class GuiApi:
                 assert False
 
             if asyncio.iscoroutinefunction(cb):
-                self._event_loop.create_task(cb(GuiEvent(client, client_id, handle)))
+                await cb(GuiEvent(client, client_id, handle))
             else:
                 self._thread_executor.submit(cb, GuiEvent(client, client_id, handle))
 
