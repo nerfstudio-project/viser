@@ -6,7 +6,6 @@ import time
 
 import imageio.v3 as iio
 import numpy as np
-
 import viser
 
 
@@ -24,8 +23,8 @@ def main():
 
         images = []
 
-        for i in range(20):
-            positions = np.random.normal(size=(30, 3)) * 3.0
+        for i in range(2):
+            positions = np.random.normal(size=(30, 3))
             client.scene.add_spline_catmull_rom(
                 f"/catmull_{i}",
                 positions,
@@ -33,7 +32,8 @@ def main():
                 line_width=3.0,
                 color=np.random.uniform(size=3),
             )
-            images.append(client.camera.get_render(height=720, width=1280))
+            images.append(client.get_render(height=720, width=1280))
+            print(images[-1].shape)
 
         print("Generating and sending GIF...")
         client.send_file_download(
