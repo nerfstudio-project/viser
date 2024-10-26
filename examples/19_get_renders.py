@@ -6,6 +6,7 @@ import time
 
 import imageio.v3 as iio
 import numpy as np
+
 import viser
 
 
