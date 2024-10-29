@@ -501,6 +501,33 @@ otherwise False such that the notification never closes on its own.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.ClientHandle.get_render">
+<span class="sig-name descname"><span class="pre">get_render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wxyz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘png’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘jpeg’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jpeg'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ClientHandle.get_render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ClientHandle.get_render" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">get_render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘png’</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">‘jpeg’</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'jpeg'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span></dt>
+<dd><p>Request a render from a client, block until it’s done and received, then
+return it as a numpy array. If wxyz, position, and fov are not provided, the
+current camera state will be used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>height</strong> – Height of rendered image. Should be &lt;= the browser height.</p></li>
+<li><p><strong>width</strong> – Width of rendered image. Should be &lt;= the browser width.</p></li>
+<li><p><strong>wxyz</strong> – Camera orientation as a quaternion. If not provided, the current camera
+position will be used.</p></li>
+<li><p><strong>position</strong> – Camera position. If not provided, the current camera position will
+be used.</p></li>
+<li><p><strong>fov</strong> – Vertical field of view of the camera, in radians. If not provided, the
+current camera position will be used.</p></li>
+<li><p><strong>transport_format</strong> – Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
+return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
+too quickly for higher-resolution images.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -629,6 +656,7 @@ otherwise False such that the notification never closes on its own.</p></li>
 <li><a class="reference internal" href="#viser.ClientHandle.atomic"><code class="docutils literal notranslate"><span class="pre">ClientHandle.atomic()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.send_file_download"><code class="docutils literal notranslate"><span class="pre">ClientHandle.send_file_download()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ClientHandle.add_notification"><code class="docutils literal notranslate"><span class="pre">ClientHandle.add_notification()</span></code></a></li>
+<li><a class="reference internal" href="#viser.ClientHandle.get_render"><code class="docutils literal notranslate"><span class="pre">ClientHandle.get_render()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.NotificationHandle"><code class="docutils literal notranslate"><span class="pre">NotificationHandle</span></code></a><ul>

@@ -36,7 +36,7 @@ Example for getting renders from a client's viewport to the Python API.
                 images = []
 
                 for i in range(20):
-                    positions = np.random.normal(size=(30, 3)) * 3.0
+                    positions = np.random.normal(size=(30, 3))
                     client.scene.add_spline_catmull_rom(
                         f"/catmull_{i}",
                         positions,
@@ -44,11 +44,12 @@ Example for getting renders from a client's viewport to the Python API.
                         line_width=3.0,
                         color=np.random.uniform(size=3),
                     )
-                    images.append(client.camera.get_render(height=720, width=1280))
+                    images.append(client.get_render(height=720, width=1280))
+                    print("Got image with shape", images[-1].shape)
 
                 print("Generating and sending GIF...")
                 client.send_file_download(
-                    "image.gif", iio.imwrite("<bytes>", images, extension=".gif")
+                    "image.gif", iio.imwrite("<bytes>", images, extension=".gif", loop=0)
                 )
                 print("Done!")
 
