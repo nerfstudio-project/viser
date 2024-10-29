@@ -17,6 +17,7 @@ Example for getting renders from a client's viewport to the Python API.
 
         import imageio.v3 as iio
         import numpy as np
+
         import viser
 
 
