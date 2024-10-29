@@ -1267,8 +1267,8 @@ class GetRenderRequestMessage(Message):
     width: int
     quality: int
 
-    position: Tuple[float, float, float]
     wxyz: Tuple[float, float, float, float]
+    position: Tuple[float, float, float]
     fov: float
 
 

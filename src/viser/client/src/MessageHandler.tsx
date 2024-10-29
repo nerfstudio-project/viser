@@ -537,83 +537,63 @@ export function FrameSynchronizedMessageHandler() {
 
         // Render the scene using the virtual camera
         const T_threeworld_world = computeT_threeworld_world(viewer);
-        const transformedPosition = new THREE.Vector3(
-          ...cameraPosition,
-        ).applyMatrix4(T_threeworld_world);
-        const transformedQuaternion = new THREE.Quaternion(
-          cameraWxyz[1],
-          cameraWxyz[2],
-          cameraWxyz[3],
-          cameraWxyz[0],
-        )
-          .premultiply(
-            new THREE.Quaternion().setFromRotationMatrix(T_threeworld_world),
+
+        // Create a new perspective camera
+        const camera = new THREE.PerspectiveCamera(
+          THREE.MathUtils.radToDeg(cameraFov),
+          targetWidth / targetHeight,
+          0.01, // Near.
+          1000.0, // Far.
+        );
+
+        // Set camera pose.
+        camera.position.set(...cameraPosition).applyMatrix4(T_threeworld_world);
+        camera.setRotationFromQuaternion(
+          new THREE.Quaternion(
+            cameraWxyz[1],
+            cameraWxyz[2],
+            cameraWxyz[3],
+            cameraWxyz[0],
           )
-          .multiply(
-            new THREE.Quaternion().setFromAxisAngle(
-              new THREE.Vector3(1, 0, 0),
-              Math.PI,
+            .premultiply(
+              new THREE.Quaternion().setFromRotationMatrix(T_threeworld_world),
+            )
+            .multiply(
+              new THREE.Quaternion().setFromAxisAngle(
+                new THREE.Vector3(1, 0, 0),
+                Math.PI,
+              ),
             ),
-          );
-
-        const imageDataUrl = renderVirtualCamera(
-          viewer.sceneRef.current!,
-          targetWidth,
-          targetHeight,
-          cameraFov,
-          transformedPosition.toArray(),
-          transformedQuaternion,
         );
-        console.log("Rendered image", imageDataUrl);
 
-        // Create an image from the rendered data URL
-        const img = new Image();
-        img.src = imageDataUrl;
+        // Note: We don't need to add the camera to the scene for rendering
+        // The renderer.render() function uses the camera directly
+        // Create a new renderer
+        const renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: true,
+        });
+        renderer.setSize(targetWidth, targetHeight);
+        renderer.setClearColor(
+          0xffffff,
+          viewer.getRenderRequest.current!.format == "image/png" ? 0.0 : 1.0,
+        ); // Set clear color to transparent
 
-        // We'll save the render to an intermediate canvas with the requested dimensions.
-        const renderBufferCanvas = new OffscreenCanvas(
-          targetWidth,
-          targetHeight,
-        );
-        const ctx = renderBufferCanvas.getContext("2d")!;
-        ctx.reset();
+        // Render the scene.
+        renderer.render(viewer.sceneRef.current!, camera);
 
-        // Use a white background for JPEGs, which don't have an alpha channel.
-        if (viewer.getRenderRequest.current?.format === "image/jpeg") {
-          ctx.fillStyle = "white";
-          ctx.fillRect(
-            0,
-            0,
-            renderBufferCanvas.width,
-            renderBufferCanvas.height,
-          );
-        }
-
-        // Draw the rendered image onto the canvas
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-
-          // Encode the image, the send it.
-          renderBufferCanvas
-            .convertToBlob({
-              type: viewer.getRenderRequest.current!.format,
-              quality: viewer.getRenderRequest.current!.quality / 100.0,
-            })
-            .then(async (blob) => {
-              if (blob === null) {
-                console.error("Render failed");
-                viewer.getRenderRequestState.current = "ready";
-                return;
-              }
-              const payload = new Uint8Array(await blob.arrayBuffer());
-              viewer.sendMessageRef.current({
-                type: "GetRenderResponseMessage",
-                payload: payload,
-              });
-              viewer.getRenderRequestState.current = "ready";
-            });
-        };
+        // Get the rendered image.
         viewer.getRenderRequestState.current = "in_progress";
+        renderer.domElement.toBlob(async (blob) => {
+          renderer.dispose();
+          renderer.forceContextLoss();
+
+          viewer.sendMessageRef.current({
+            type: "GetRenderResponseMessage",
+            payload: new Uint8Array(await blob!.arrayBuffer()),
+          });
+          viewer.getRenderRequestState.current = "ready";
+        }, viewer.getRenderRequest.current!.format);
       }
 
       // Handle messages, but only if we're not trying to render something.
@@ -642,45 +622,4 @@ export function FrameSynchronizedMessageHandler() {
   );
 
   return null;
-}
-
-function renderVirtualCamera(
-  scene: THREE.Scene,
-  width: number,
-  height: number,
-  fov: number,
-  position: [number, number, number],
-  quaternion: THREE.Quaternion,
-): string {
-  // Create a new perspective camera
-  const camera = new THREE.PerspectiveCamera(
-    THREE.MathUtils.radToDeg(fov),
-    width / height,
-    0.1,
-    1000,
-  );
-
-  // Set camera position
-  camera.position.set(...position);
-
-  // Set camera rotation using quaternion
-  camera.setRotationFromQuaternion(quaternion);
-
-  // Note: We don't need to add the camera to the scene for rendering
-  // The renderer.render() function uses the camera directly
-  // Create a new renderer
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(width, height);
-  renderer.setClearColor(0xffffff, 0); // Set clear color to transparent
-
-  // Render the scene
-  renderer.render(scene, camera);
-
-  // Get the rendered image as a data URL
-  const imageDataUrl = renderer.domElement.toDataURL("image/png");
-
-  // Clean up
-  renderer.dispose();
-
-  return imageDataUrl;
 }

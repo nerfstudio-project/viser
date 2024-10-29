@@ -24,7 +24,7 @@ def main():
 
         images = []
 
-        for i in range(2):
+        for i in range(20):
             positions = np.random.normal(size=(30, 3))
             client.scene.add_spline_catmull_rom(
                 f"/catmull_{i}",
@@ -38,7 +38,7 @@ def main():
 
         print("Generating and sending GIF...")
         client.send_file_download(
-            "image.gif", iio.imwrite("<bytes>", images, extension=".gif")
+            "image.gif", iio.imwrite("<bytes>", images, extension=".gif", loop=0)
         )
         print("Done!")
 
