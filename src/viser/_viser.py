@@ -272,7 +272,7 @@ class CameraHandle:
         transport_format: Literal["png", "jpeg"] = "jpeg",
     ) -> np.ndarray:
         """Request a render from a client, block until it's done and received, then
-        return it as a numpy array.
+        return it as a numpy array. This is an alias for :meth:`ClientHandle.get_render()`.
 
         Args:
             height: Height of rendered image. Should be <= the browser height.
