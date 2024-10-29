@@ -1259,12 +1259,17 @@ class GaussianSplatsProps:
 
 @dataclasses.dataclass
 class GetRenderRequestMessage(Message):
-    """Message from server->client requesting a render of the current viewport."""
+    """Message from server->client requesting a render from a specified camera
+    pose."""
 
     format: Literal["image/jpeg", "image/png"]
     height: int
     width: int
     quality: int
+
+    wxyz: Tuple[float, float, float, float]
+    position: Tuple[float, float, float]
+    fov: float
 
 
 @dataclasses.dataclass

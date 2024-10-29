@@ -24,6 +24,7 @@ See here for download instructions:
 
         import numpy as np
         import tyro
+
         import viser
         import viser.transforms as tf
 

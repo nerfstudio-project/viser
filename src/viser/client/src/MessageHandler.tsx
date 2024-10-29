@@ -528,86 +528,73 @@ export function FrameSynchronizedMessageHandler() {
       if (viewer.getRenderRequestState.current === "triggered") {
         viewer.getRenderRequestState.current = "pause";
       } else if (viewer.getRenderRequestState.current === "pause") {
-        const sourceCanvas = viewer.canvasRef.current!;
+        const cameraPosition = viewer.getRenderRequest.current!.position;
+        const cameraWxyz = viewer.getRenderRequest.current!.wxyz;
+        const cameraFov = viewer.getRenderRequest.current!.fov;
 
         const targetWidth = viewer.getRenderRequest.current!.width;
         const targetHeight = viewer.getRenderRequest.current!.height;
 
-        // We'll save a render to an intermediate canvas with the requested dimensions.
-        const renderBufferCanvas = new OffscreenCanvas(
-          targetWidth,
-          targetHeight,
-        );
-        const ctx = renderBufferCanvas.getContext("2d")!;
-        ctx.reset();
-        // Use a white background for JPEGs, which don't have an alpha channel.
-        if (viewer.getRenderRequest.current?.format === "image/jpeg") {
-          ctx.fillStyle = "white";
-          ctx.fillRect(
-            0,
-            0,
-            renderBufferCanvas.width,
-            renderBufferCanvas.height,
-          );
-        }
+        // Render the scene using the virtual camera
+        const T_threeworld_world = computeT_threeworld_world(viewer);
 
-        // Determine offsets for the source canvas. We'll always center our renders.
-        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/drawImage
-        let sourceWidth = sourceCanvas.width;
-        let sourceHeight = sourceCanvas.height;
-
-        const sourceAspect = sourceWidth / sourceHeight;
-        const targetAspect = targetWidth / targetHeight;
-
-        if (sourceAspect > targetAspect) {
-          // The source is wider than the target.
-          // We need to shrink the width.
-          sourceWidth = Math.round(targetAspect * sourceHeight);
-        } else if (sourceAspect < targetAspect) {
-          // The source is narrower than the target.
-          // We need to shrink the height.
-          sourceHeight = Math.round(sourceWidth / targetAspect);
-        }
-
-        console.log(
-          `Sending render; requested aspect ratio was ${targetAspect} (dimensinos: ${targetWidth}/${targetHeight}), copying from aspect ratio ${
-            sourceWidth / sourceHeight
-          } (dimensions: ${sourceWidth}/${sourceHeight}).`,
+        // Create a new perspective camera
+        const camera = new THREE.PerspectiveCamera(
+          THREE.MathUtils.radToDeg(cameraFov),
+          targetWidth / targetHeight,
+          0.01, // Near.
+          1000.0, // Far.
         );
 
-        ctx.drawImage(
-          sourceCanvas,
-          (sourceCanvas.width - sourceWidth) / 2.0,
-          (sourceCanvas.height - sourceHeight) / 2.0,
-          sourceWidth,
-          sourceHeight,
-          0,
-          0,
-          targetWidth,
-          targetHeight,
+        // Set camera pose.
+        camera.position.set(...cameraPosition).applyMatrix4(T_threeworld_world);
+        camera.setRotationFromQuaternion(
+          new THREE.Quaternion(
+            cameraWxyz[1],
+            cameraWxyz[2],
+            cameraWxyz[3],
+            cameraWxyz[0],
+          )
+            .premultiply(
+              new THREE.Quaternion().setFromRotationMatrix(T_threeworld_world),
+            )
+            .multiply(
+              // OpenCV => OpenGL coordinate system conversion.
+              new THREE.Quaternion().setFromAxisAngle(
+                new THREE.Vector3(1, 0, 0),
+                Math.PI,
+              ),
+            ),
         );
 
+        // Note: We don't need to add the camera to the scene for rendering
+        // The renderer.render() function uses the camera directly
+        // Create a new renderer
+        const renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: true,
+        });
+        renderer.setSize(targetWidth, targetHeight);
+        renderer.setClearColor(
+          0xffffff,
+          viewer.getRenderRequest.current!.format == "image/png" ? 0.0 : 1.0,
+        ); // Set clear color to transparent
+
+        // Render the scene.
+        renderer.render(viewer.sceneRef.current!, camera);
+
+        // Get the rendered image.
         viewer.getRenderRequestState.current = "in_progress";
+        renderer.domElement.toBlob(async (blob) => {
+          renderer.dispose();
+          renderer.forceContextLoss();
 
-        // Encode the image, the send it.
-        renderBufferCanvas
-          .convertToBlob({
-            type: viewer.getRenderRequest.current!.format,
-            quality: viewer.getRenderRequest.current!.quality / 100.0,
-          })
-          .then(async (blob) => {
-            if (blob === null) {
-              console.error("Render failed");
-              viewer.getRenderRequestState.current = "ready";
-              return;
-            }
-            const payload = new Uint8Array(await blob.arrayBuffer());
-            viewer.sendMessageRef.current({
-              type: "GetRenderResponseMessage",
-              payload: payload,
-            });
-            viewer.getRenderRequestState.current = "ready";
+          viewer.sendMessageRef.current({
+            type: "GetRenderResponseMessage",
+            payload: new Uint8Array(await blob!.arrayBuffer()),
           });
+          viewer.getRenderRequestState.current = "ready";
+        }, viewer.getRenderRequest.current!.format);
       }
 
       // Handle messages, but only if we're not trying to render something.

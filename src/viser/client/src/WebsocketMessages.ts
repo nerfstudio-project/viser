@@ -1035,7 +1035,8 @@ export interface GaussianSplatsMessage {
   name: string;
   props: { buffer: Uint8Array };
 }
-/** Message from server->client requesting a render of the current viewport.
+/** Message from server->client requesting a render from a specified camera
+ * pose.
  *
  * (automatically generated)
  */
@@ -1045,6 +1046,9 @@ export interface GetRenderRequestMessage {
   height: number;
   width: number;
   quality: number;
+  wxyz: [number, number, number, number];
+  position: [number, number, number];
+  fov: number;
 }
 /** Message from client->server carrying a render.
  *

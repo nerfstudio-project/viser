@@ -10,7 +10,7 @@ import warnings
 from collections.abc import Coroutine
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, ContextManager, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, ContextManager, TypeVar, cast, overload
 
 import imageio.v3 as iio
 import numpy as np
@@ -266,10 +266,13 @@ class CameraHandle:
         return callback
 
     def get_render(
-        self, height: int, width: int, transport_format: Literal["png", "jpeg"] = "jpeg"
+        self,
+        height: int,
+        width: int,
+        transport_format: Literal["png", "jpeg"] = "jpeg",
     ) -> np.ndarray:
         """Request a render from a client, block until it's done and received, then
-        return it as a numpy array.
+        return it as a numpy array. This is an alias for :meth:`ClientHandle.get_render()`.
 
         Args:
             height: Height of rendered image. Should be <= the browser height.
@@ -278,43 +281,9 @@ class CameraHandle:
                 return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
                 too quickly for higher-resolution images.
         """
-
-        # Listen for a render reseponse message, which should contain the rendered
-        # image.
-        render_ready_event = threading.Event()
-        out: np.ndarray | None = None
-
-        connection = self.client._websock_connection
-
-        def got_render_cb(
-            client_id: int, message: _messages.GetRenderResponseMessage
-        ) -> None:
-            del client_id
-            connection.unregister_handler(
-                _messages.GetRenderResponseMessage, got_render_cb
-            )
-            nonlocal out
-            out = iio.imread(
-                io.BytesIO(message.payload),
-                extension=f".{transport_format}",
-            )
-            render_ready_event.set()
-
-        connection.register_handler(_messages.GetRenderResponseMessage, got_render_cb)
-        self.client._websock_connection.queue_message(
-            _messages.GetRenderRequestMessage(
-                "image/jpeg" if transport_format == "jpeg" else "image/png",
-                height=height,
-                width=width,
-                # Only used for JPEG. The main reason to use a lower quality version
-                # value is (unfortunately) to make life easier for the Javascript
-                # garbage collector.
-                quality=80,
-            )
+        return self._state.client.get_render(
+            height, width, transport_format=transport_format
         )
-        render_ready_event.wait()
-        assert out is not None
-        return out
 
 
 NoneOrCoroutine = TypeVar("NoneOrCoroutine", None, Coroutine)
@@ -457,6 +426,97 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         )
         handle._sync_with_client("show")
         return handle
+
+    @overload
+    def get_render(
+        self,
+        height: int,
+        width: int,
+        *,
+        wxyz: tuple[float, float, float, float],
+        position: tuple[float, float, float],
+        fov: float,
+        transport_format: Literal["png", "jpeg"] = "jpeg",
+    ) -> np.ndarray: ...
+
+    @overload
+    def get_render(
+        self,
+        height: int,
+        width: int,
+        *,
+        transport_format: Literal["png", "jpeg"] = "jpeg",
+    ) -> np.ndarray: ...
+
+    def get_render(
+        self,
+        height: int,
+        width: int,
+        *,
+        wxyz: tuple[float, float, float, float] | None = None,
+        position: tuple[float, float, float] | None = None,
+        fov: float | None = None,
+        transport_format: Literal["png", "jpeg"] = "jpeg",
+    ) -> np.ndarray:
+        """Request a render from a client, block until it's done and received, then
+        return it as a numpy array. If wxyz, position, and fov are not provided, the
+        current camera state will be used.
+
+        Args:
+            height: Height of rendered image. Should be <= the browser height.
+            width: Width of rendered image. Should be <= the browser width.
+            wxyz: Camera orientation as a quaternion. If not provided, the current camera
+                position will be used.
+            position: Camera position. If not provided, the current camera position will
+                be used.
+            fov: Vertical field of view of the camera, in radians. If not provided, the
+                current camera position will be used.
+            transport_format: Image transport format. JPEG will return a lossy (H, W, 3) RGB array. PNG will
+                return a lossless (H, W, 4) RGBA array, but can cause memory issues on the frontend if called
+                too quickly for higher-resolution images.
+        """
+
+        # Listen for a render reseponse message, which should contain the rendered
+        # image.
+        render_ready_event = threading.Event()
+        out: np.ndarray | None = None
+
+        connection = self._websock_connection
+
+        def got_render_cb(
+            client_id: int, message: _messages.GetRenderResponseMessage
+        ) -> None:
+            del client_id
+            connection.unregister_handler(
+                _messages.GetRenderResponseMessage, got_render_cb
+            )
+            nonlocal out
+            out = iio.imread(
+                io.BytesIO(message.payload),
+                extension=f".{transport_format}",
+            )
+            render_ready_event.set()
+
+        connection.register_handler(_messages.GetRenderResponseMessage, got_render_cb)
+        self._websock_connection.queue_message(
+            _messages.GetRenderRequestMessage(
+                "image/jpeg" if transport_format == "jpeg" else "image/png",
+                height=height,
+                width=width,
+                # Only used for JPEG. The main reason to use a lower quality version
+                # value is (unfortunately) to make life easier for the Javascript
+                # garbage collector.
+                quality=80,
+                position=cast_vector(
+                    position if position is not None else self.camera.position, 3
+                ),
+                wxyz=cast_vector(wxyz if wxyz is not None else self.camera.wxyz, 4),
+                fov=fov if fov is not None else self.camera.fov,
+            )
+        )
+        render_ready_event.wait()
+        assert out is not None
+        return out
 
 
 class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
