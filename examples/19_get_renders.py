@@ -6,7 +6,6 @@ import time
 
 import imageio.v3 as iio
 import numpy as np
-
 import viser
 
 
@@ -34,7 +33,7 @@ def main():
                 color=np.random.uniform(size=3),
             )
             images.append(client.get_render(height=720, width=1280))
-            print(images[-1].shape)
+            print("Got image with shape", images[-1].shape)
 
         print("Generating and sending GIF...")
         client.send_file_download(

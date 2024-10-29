@@ -559,6 +559,7 @@ export function FrameSynchronizedMessageHandler() {
               new THREE.Quaternion().setFromRotationMatrix(T_threeworld_world),
             )
             .multiply(
+              // OpenCV => OpenGL coordinate system conversion.
               new THREE.Quaternion().setFromAxisAngle(
                 new THREE.Vector3(1, 0, 0),
                 Math.PI,
