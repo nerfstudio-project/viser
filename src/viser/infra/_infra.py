@@ -236,6 +236,7 @@ class WebsockServer(WebsockMessageHandler):
         self._client_api_version: Literal[0, 1] = client_api_version
         self._shutdown_event = threading.Event()
         self._ws_server: websockets.WebSocketServer | None = None
+        self._background_event_loop: asyncio.AbstractEventLoop | None = None
 
         self._client_state_from_id: dict[int, _ClientHandleState] = {}
 
@@ -258,8 +259,9 @@ class WebsockServer(WebsockMessageHandler):
 
     def stop(self) -> None:
         """Stop the server."""
-        assert self._ws_server is not None
-        self._ws_server.close()
+        assert self._ws_server is not None, "Server is not running!"
+        assert self._background_event_loop is not None
+        self._background_event_loop.call_soon_threadsafe(self._ws_server.close)
         self._ws_server = None
 
     def on_client_connect(
@@ -298,6 +300,7 @@ class WebsockServer(WebsockMessageHandler):
         # Need to make a new event loop for notebook compatbility.
         event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(event_loop)
+        self._background_event_loop = event_loop
         self._broadcast_buffer = AsyncMessageBuffer(
             event_loop, persistent_messages=True
         )
