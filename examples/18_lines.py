@@ -6,6 +6,7 @@ Make a ball with some random line segments and splines.
 import time
 
 import numpy as np
+
 import viser
 
 
@@ -20,7 +21,7 @@ def main() -> None:
     points = np.random.normal(size=(N, 2, 3)) * 3.0
     colors = np.random.randint(0, 255, size=(N, 2, 3))
     server.scene.add_line_segments(
-        f"/line_segments",
+        "/line_segments",
         points=points,
         colors=colors,
         line_width=3.0,
