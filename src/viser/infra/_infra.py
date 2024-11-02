@@ -11,7 +11,7 @@ import mimetypes
 import queue
 import threading
 from asyncio.events import AbstractEventLoop
-from collections.abc import Awaitable, Coroutine
+from collections.abc import Coroutine
 from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 
@@ -22,7 +22,7 @@ import websockets.datastructures
 import websockets.exceptions
 from typing_extensions import Literal, assert_never, override
 from websockets import Headers
-from websockets.asyncio.server import Server, ServerConnection
+from websockets.asyncio.server import ServerConnection
 from websockets.http11 import Request, Response
 
 from ._async_message_buffer import AsyncMessageBuffer
