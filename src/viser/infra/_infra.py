@@ -6,22 +6,24 @@ import contextlib
 import dataclasses
 import gzip
 import http
+import logging
 import mimetypes
 import queue
 import threading
 from asyncio.events import AbstractEventLoop
-from collections.abc import Coroutine
+from collections.abc import Awaitable, Coroutine
 from pathlib import Path
 from typing import Any, Callable, Generator, NewType, TypeVar
 
 import msgspec
 import rich
-import websockets.connection
+import websockets.asyncio.server
 import websockets.datastructures
 import websockets.exceptions
-import websockets.server
 from typing_extensions import Literal, assert_never, override
-from websockets.legacy.server import WebSocketServerProtocol
+from websockets import Headers
+from websockets.asyncio.server import Server, ServerConnection
+from websockets.http11 import Request, Response
 
 from ._async_message_buffer import AsyncMessageBuffer
 from ._messages import Message
@@ -234,9 +236,9 @@ class WebsockServer(WebsockMessageHandler):
         self._http_server_root = http_server_root
         self._verbose = verbose
         self._client_api_version: Literal[0, 1] = client_api_version
-        self._shutdown_event = threading.Event()
-        self._ws_server: websockets.WebSocketServer | None = None
         self._background_event_loop: asyncio.AbstractEventLoop | None = None
+
+        self._stop_event = asyncio.Event()
 
         self._client_state_from_id: dict[int, _ClientHandleState] = {}
 
@@ -259,10 +261,8 @@ class WebsockServer(WebsockMessageHandler):
 
     def stop(self) -> None:
         """Stop the server."""
-        assert self._ws_server is not None, "Server is not running!"
         assert self._background_event_loop is not None
-        self._background_event_loop.call_soon_threadsafe(self._ws_server.close)
-        self._ws_server = None
+        self._background_event_loop.call_soon_threadsafe(self._stop_event.set)
 
     def on_client_connect(
         self, cb: Callable[[WebsockClientConnection], None | Coroutine]
@@ -309,8 +309,20 @@ class WebsockServer(WebsockMessageHandler):
         connection_count = 0
         total_connections = 0
 
-        async def serve(websocket: WebSocketServerProtocol) -> None:
-            """Server loop, run once per connection."""
+        async def ws_handler(
+            connection: websockets.asyncio.server.ServerConnection,
+        ) -> None:
+            """Handler for websocket connections."""
+
+            # <Hack>
+            # Suppress errors for: https://github.com/python-websockets/websockets/issues/1513
+            # TODO: remove this when websockets behavior changes upstream.
+            class NoHttpErrors(logging.Filter):
+                def filter(self, record):
+                    return not record.getMessage() == "opening handshake failed"
+
+            connection.logger.logger.addFilter(NoHttpErrors())  # type: ignore
+            # </Hack>
 
             async with count_lock:
                 nonlocal connection_count
@@ -355,18 +367,18 @@ class WebsockServer(WebsockMessageHandler):
                 # and consumers (which receive messages).
                 await asyncio.gather(
                     _message_producer(
-                        websocket,
+                        connection,
                         client_state.message_buffer,
                         client_id,
                         self._client_api_version,
                     ),
                     _message_producer(
-                        websocket,
+                        connection,
                         self._broadcast_buffer,
                         client_id,
                         self._client_api_version,
                     ),
-                    _message_consumer(websocket, handle_incoming, message_class),
+                    _message_consumer(connection, handle_incoming, message_class),
                 )
             except (
                 websockets.exceptions.ConnectionClosedOK,
@@ -400,16 +412,16 @@ class WebsockServer(WebsockMessageHandler):
         file_cache: dict[Path, bytes] = {}
         file_cache_gzipped: dict[Path, bytes] = {}
 
-        async def viser_http_server(
-            path: str, request_headers: websockets.datastructures.Headers
-        ) -> (
-            tuple[http.HTTPStatus, websockets.datastructures.HeadersLike, bytes] | None
-        ):
+        def viser_http_server(
+            connection: ServerConnection,
+            request: Request,
+        ) -> Response | None:
             # Ignore websocket packets.
-            if request_headers.get("Upgrade") == "websocket":
+            if request.headers.get("Upgrade") == "websocket":
                 return None
 
             # Strip out search params, get relative path.
+            path = request.path
             path = path.partition("?")[0]
             relpath = str(Path(path).relative_to("/"))
             if relpath == ".":
@@ -418,9 +430,9 @@ class WebsockServer(WebsockMessageHandler):
 
             source_path = http_server_root / relpath
             if not source_path.exists():
-                return (http.HTTPStatus.NOT_FOUND, {}, b"404")  # type: ignore
+                return Response(http.HTTPStatus.NOT_FOUND, "NOT FOUND", Headers())
 
-            use_gzip = "gzip" in request_headers.get("Accept-Encoding", "")
+            use_gzip = "gzip" in request.headers.get("Accept-Encoding", "")
 
             # First, try some known MIME types. Using guess_type() can cause
             # problems for Javascript on some Windows machines.
@@ -465,42 +477,43 @@ class WebsockServer(WebsockMessageHandler):
                 response_payload = file_cache[source_path]
 
             # Try to read + send over file.
-            return (http.HTTPStatus.OK, response_headers, response_payload)
+            return Response(
+                http.HTTPStatus.OK,
+                "OK",
+                websockets.datastructures.Headers(**response_headers),
+                response_payload,
+            )
+            # return (http.HTTPStatus.OK, response_headers, response_payload)
 
-        for _ in range(1000):
-            try:
-                serve_future = websockets.server.serve(
-                    serve,
-                    host,
-                    port,
-                    # Compression can be too slow for our use cases.
-                    compression=None,
-                    process_request=(
-                        viser_http_server if http_server_root is not None else None
-                    ),
-                )
-                self._ws_server = serve_future.ws_server
-                event_loop.run_until_complete(serve_future)
-                break
-            except OSError:  # Port not available.
-                port += 1
-                continue
+        async def start_server() -> None:
+            port_attempt = port
+            for _ in range(1000):
+                try:
+                    async with websockets.asyncio.server.serve(
+                        ws_handler,
+                        host,
+                        port_attempt,
+                        # Compression can be too slow for our use cases.
+                        compression=None,
+                        process_request=(
+                            viser_http_server if http_server_root is not None else None
+                        ),
+                    ) as serve_future:
+                        assert serve_future.server is not None
+                        self._port = port_attempt
+                        ready_sem.release()
+                        await self._stop_event.wait()
+                        return
+                except OSError:  # Port not available.
+                    port_attempt += 1
+                    continue
 
-        if self._ws_server is None:
-            raise RuntimeError("Failed to bind to port!")
-
-        self._port = port
-
-        ready_sem.release()
-        event_loop.run_forever()
-
-        # This will run only when the event loop ends, which happens when the
-        # websocket server is closed.
+        event_loop.run_until_complete(start_server())
         rich.print("[bold](viser)[/bold] Server stopped")
 
 
 async def _message_producer(
-    websocket: WebSocketServerProtocol,
+    websocket: ServerConnection,
     buffer: AsyncMessageBuffer,
     client_id: int,
     client_api_version: Literal[0, 1],
@@ -525,7 +538,7 @@ async def _message_producer(
 
 
 async def _message_consumer(
-    websocket: WebSocketServerProtocol,
+    websocket: ServerConnection,
     handle_message: Callable[[Message], None],
     message_class: type[Message],
 ) -> None:
