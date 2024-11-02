@@ -238,7 +238,7 @@ class WebsockServer(WebsockMessageHandler):
         self._client_api_version: Literal[0, 1] = client_api_version
         self._background_event_loop: asyncio.AbstractEventLoop | None = None
 
-        self._stop_event = asyncio.Event()
+        self._stop_event: asyncio.Event | None = None
 
         self._client_state_from_id: dict[int, _ClientHandleState] = {}
 
@@ -262,6 +262,7 @@ class WebsockServer(WebsockMessageHandler):
     def stop(self) -> None:
         """Stop the server."""
         assert self._background_event_loop is not None
+        assert self._stop_event is not None
         self._background_event_loop.call_soon_threadsafe(self._stop_event.set)
 
     def on_client_connect(
@@ -300,6 +301,7 @@ class WebsockServer(WebsockMessageHandler):
         # Need to make a new event loop for notebook compatbility.
         event_loop = asyncio.new_event_loop()
         asyncio.set_event_loop(event_loop)
+        self._stop_event = asyncio.Event()
         self._background_event_loop = event_loop
         self._broadcast_buffer = AsyncMessageBuffer(
             event_loop, persistent_messages=True
@@ -502,6 +504,7 @@ class WebsockServer(WebsockMessageHandler):
                         assert serve_future.server is not None
                         self._port = port_attempt
                         ready_sem.release()
+                        assert self._stop_event is not None
                         await self._stop_event.wait()
                         return
                 except OSError:  # Port not available.
