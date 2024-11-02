@@ -2,6 +2,7 @@ import {
   CatmullRomLine,
   CubicBezierLine,
   Grid,
+  Line,
   PivotControls,
   useCursor,
 } from "@react-three/drei";
@@ -416,6 +417,52 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             scale={message.props.scale}
           />
         ),
+      };
+    }
+    case "LineSegmentsMessage": {
+      return {
+        makeObject: (ref) => {
+          // The array conversion here isn't very efficient. We go from buffer
+          // => TypeArray => Javascript Array, then back to buffers in drei's
+          // <Line /> abstraction.
+          const pointsArray = new Float32Array(
+            message.props.points.buffer.slice(
+              message.props.points.byteOffset,
+              message.props.points.byteOffset + message.props.points.byteLength,
+            ),
+          );
+          const colorArray = new Uint8Array(
+            message.props.colors.buffer.slice(
+              message.props.colors.byteOffset,
+              message.props.colors.byteOffset + message.props.colors.byteLength,
+            ),
+          );
+          return (
+            <group ref={ref}>
+              <Line
+                points={Array.from(
+                  { length: pointsArray.length / 3 },
+                  (_, i) => [
+                    pointsArray[i * 3],
+                    pointsArray[i * 3 + 1],
+                    pointsArray[i * 3 + 2],
+                  ],
+                )}
+                color="white"
+                lineWidth={message.props.line_width}
+                vertexColors={Array.from(
+                  { length: colorArray.length / 3 },
+                  (_, i) => [
+                    colorArray[i * 3] / 255,
+                    colorArray[i * 3 + 1] / 255,
+                    colorArray[i * 3 + 2] / 255,
+                  ],
+                )}
+                segments={true}
+              />
+            </group>
+          );
+        },
       };
     }
     case "CatmullRomSplineMessage": {

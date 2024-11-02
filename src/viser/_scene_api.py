@@ -28,6 +28,7 @@ from ._scene_handles import (
     HemisphereLightHandle,
     ImageHandle,
     LabelHandle,
+    LineSegmentsHandle,
     MeshHandle,
     MeshSkinnedBoneHandle,
     MeshSkinnedHandle,
@@ -562,9 +563,58 @@ class SceneApi:
         message = _messages.GlbMessage(name, _messages.GlbProps(glb_data, scale))
         return GlbHandle._make(self, message, name, wxyz, position, visible)
 
+    def add_line_segments(
+        self,
+        name: str,
+        points: np.ndarray,
+        colors: np.ndarray | tuple[float, float, float],
+        line_width: float = 1,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> LineSegmentsHandle:
+        """Add line segments to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can
+                be used to define a kinematic tree.
+            points: A numpy array of shape (N, 2, 3) defining start/end points
+                for each of N line segments.
+            colors: Colors of points. Should have shape (N, 2, 3) or be
+                broadcastable to it.
+            line_width: Width of the lines.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not these line segments are initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        points_array = np.asarray(points, dtype=np.float32)
+        if (
+            points_array.shape[-1] != 3
+            or points_array.ndim != 3
+            or points_array.shape[1] != 2
+        ):
+            raise ValueError("Points should have shape (N, 2, 3) for N line segments.")
+
+        colors_array = colors_to_uint8(np.asarray(colors))
+        colors_array = np.broadcast_to(colors_array, points_array.shape)
+
+        message = _messages.LineSegmentsMessage(
+            name=name,
+            props=_messages.LineSegmentsProps(
+                points=points_array,
+                colors=colors_array,
+                line_width=line_width,
+            ),
+        )
+        return LineSegmentsHandle._make(self, message, name, wxyz, position, visible)
+
     def add_spline_catmull_rom(
         self,
         name: str,
+        # The naming inconsistency here compared to add_line_segments is unfortunate...
         positions: tuple[tuple[float, float, float], ...] | np.ndarray,
         curve_type: Literal["centripetal", "chordal", "catmullrom"] = "centripetal",
         tension: float = 0.5,
@@ -580,6 +630,9 @@ class SceneApi:
 
         This method creates a spline based on a set of positions and interpolates
         them using the Catmull-Rom algorithm. This can be used to create smooth curves.
+
+        If many splines are needed, it'll be more efficient to batch them in
+        :meth:`add_line_segments()`.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -636,6 +689,9 @@ class SceneApi:
         This method allows for the creation of a cubic Bezier spline based on given
         positions and control points. It is useful for creating complex, smooth,
         curving shapes.
+
+        If many splines are needed, it'll be more efficient to batch them in
+        :meth:`add_line_segments()`.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
