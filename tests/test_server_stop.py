@@ -1,9 +1,13 @@
 import socket
 
 import viser
+import viser._client_autobuild
 
 
 def test_server_port_is_freed():
+    # Mock the client autobuild to avoid building the client.
+    viser._client_autobuild.ensure_client_is_built = lambda: None
+
     server = viser.ViserServer()
     original_port = server.get_port()
 
