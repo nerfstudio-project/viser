@@ -390,6 +390,7 @@
 <span class="kn">import</span> <span class="nn">dataclasses</span>
 <span class="kn">import</span> <span class="nn">gzip</span>
 <span class="kn">import</span> <span class="nn">http</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">mimetypes</span>
 <span class="kn">import</span> <span class="nn">queue</span>
 <span class="kn">import</span> <span class="nn">threading</span>
@@ -400,12 +401,13 @@
 
 <span class="kn">import</span> <span class="nn">msgspec</span>
 <span class="kn">import</span> <span class="nn">rich</span>
-<span class="kn">import</span> <span class="nn">websockets.connection</span>
+<span class="kn">import</span> <span class="nn">websockets.asyncio.server</span>
 <span class="kn">import</span> <span class="nn">websockets.datastructures</span>
 <span class="kn">import</span> <span class="nn">websockets.exceptions</span>
-<span class="kn">import</span> <span class="nn">websockets.server</span>
 <span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">assert_never</span><span class="p">,</span> <span class="n">override</span>
-<span class="kn">from</span> <span class="nn">websockets.legacy.server</span> <span class="kn">import</span> <span class="n">WebSocketServerProtocol</span>
+<span class="kn">from</span> <span class="nn">websockets</span> <span class="kn">import</span> <span class="n">Headers</span>
+<span class="kn">from</span> <span class="nn">websockets.asyncio.server</span> <span class="kn">import</span> <span class="n">ServerConnection</span>
+<span class="kn">from</span> <span class="nn">websockets.http11</span> <span class="kn">import</span> <span class="n">Request</span><span class="p">,</span> <span class="n">Response</span>
 
 <span class="kn">from</span> <span class="nn">._async_message_buffer</span> <span class="kn">import</span> <span class="n">AsyncMessageBuffer</span>
 <span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="n">Message</span>
@@ -647,8 +649,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_http_server_root</span> <span class="o">=</span> <span class="n">http_server_root</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_api_version</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">client_api_version</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ws_server</span><span class="p">:</span> <span class="n">websockets</span><span class="o">.</span><span class="n">WebSocketServer</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_event_loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_client_state_from_id</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">_ClientHandleState</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -676,9 +679,9 @@
 <a class="viewcode-back" href="../../../../infrastructure/#viser.infra.WebsockServer.stop">[docs]</a>
     <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the server.&quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ws_server</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ws_server</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ws_server</span> <span class="o">=</span> <span class="kc">None</span></div>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_event_loop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_event_loop</span><span class="o">.</span><span class="n">call_soon_threadsafe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">set</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="WebsockServer.on_client_connect">
@@ -732,6 +735,8 @@
         <span class="c1"># Need to make a new event loop for notebook compatbility.</span>
         <span class="n">event_loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">new_event_loop</span><span class="p">()</span>
         <span class="n">asyncio</span><span class="o">.</span><span class="n">set_event_loop</span><span class="p">(</span><span class="n">event_loop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_event_loop</span> <span class="o">=</span> <span class="n">event_loop</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span> <span class="o">=</span> <span class="n">AsyncMessageBuffer</span><span class="p">(</span>
             <span class="n">event_loop</span><span class="p">,</span> <span class="n">persistent_messages</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">)</span>
@@ -740,8 +745,20 @@
         <span class="n">connection_count</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">total_connections</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="k">async</span> <span class="k">def</span> <span class="nf">serve</span><span class="p">(</span><span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Server loop, run once per connection.&quot;&quot;&quot;</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">ws_handler</span><span class="p">(</span>
+            <span class="n">connection</span><span class="p">:</span> <span class="n">websockets</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">ServerConnection</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Handler for websocket connections.&quot;&quot;&quot;</span>
+
+            <span class="c1"># &lt;Hack&gt;</span>
+            <span class="c1"># Suppress errors for: https://github.com/python-websockets/websockets/issues/1513</span>
+            <span class="c1"># TODO: remove this when websockets behavior changes upstream.</span>
+            <span class="k">class</span> <span class="nc">NoHttpErrors</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
+                <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="ow">not</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;opening handshake failed&quot;</span>
+
+            <span class="n">connection</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addFilter</span><span class="p">(</span><span class="n">NoHttpErrors</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
+            <span class="c1"># &lt;/Hack&gt;</span>
 
             <span class="k">async</span> <span class="k">with</span> <span class="n">count_lock</span><span class="p">:</span>
                 <span class="k">nonlocal</span> <span class="n">connection_count</span>
@@ -786,18 +803,18 @@
                 <span class="c1"># and consumers (which receive messages).</span>
                 <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span>
                     <span class="n">_message_producer</span><span class="p">(</span>
-                        <span class="n">websocket</span><span class="p">,</span>
+                        <span class="n">connection</span><span class="p">,</span>
                         <span class="n">client_state</span><span class="o">.</span><span class="n">message_buffer</span><span class="p">,</span>
                         <span class="n">client_id</span><span class="p">,</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_client_api_version</span><span class="p">,</span>
                     <span class="p">),</span>
                     <span class="n">_message_producer</span><span class="p">(</span>
-                        <span class="n">websocket</span><span class="p">,</span>
+                        <span class="n">connection</span><span class="p">,</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="p">,</span>
                         <span class="n">client_id</span><span class="p">,</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_client_api_version</span><span class="p">,</span>
                     <span class="p">),</span>
-                    <span class="n">_message_consumer</span><span class="p">(</span><span class="n">websocket</span><span class="p">,</span> <span class="n">handle_incoming</span><span class="p">,</span> <span class="n">message_class</span><span class="p">),</span>
+                    <span class="n">_message_consumer</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">handle_incoming</span><span class="p">,</span> <span class="n">message_class</span><span class="p">),</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="p">(</span>
                 <span class="n">websockets</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">ConnectionClosedOK</span><span class="p">,</span>
@@ -831,16 +848,16 @@
         <span class="n">file_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">file_cache_gzipped</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="k">async</span> <span class="k">def</span> <span class="nf">viser_http_server</span><span class="p">(</span>
-            <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">request_headers</span><span class="p">:</span> <span class="n">websockets</span><span class="o">.</span><span class="n">datastructures</span><span class="o">.</span><span class="n">Headers</span>
-        <span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span>
-            <span class="nb">tuple</span><span class="p">[</span><span class="n">http</span><span class="o">.</span><span class="n">HTTPStatus</span><span class="p">,</span> <span class="n">websockets</span><span class="o">.</span><span class="n">datastructures</span><span class="o">.</span><span class="n">HeadersLike</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
-        <span class="p">):</span>
+        <span class="k">def</span> <span class="nf">viser_http_server</span><span class="p">(</span>
+            <span class="n">connection</span><span class="p">:</span> <span class="n">ServerConnection</span><span class="p">,</span>
+            <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Ignore websocket packets.</span>
-            <span class="k">if</span> <span class="n">request_headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Upgrade&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;websocket&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Upgrade&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;websocket&quot;</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
 
             <span class="c1"># Strip out search params, get relative path.</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">path</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot;?&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">relpath</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">relpath</span> <span class="o">==</span> <span class="s2">&quot;.&quot;</span><span class="p">:</span>
@@ -849,9 +866,9 @@
 
             <span class="n">source_path</span> <span class="o">=</span> <span class="n">http_server_root</span> <span class="o">/</span> <span class="n">relpath</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">source_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
-                <span class="k">return</span> <span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">,</span> <span class="p">{},</span> <span class="sa">b</span><span class="s2">&quot;404&quot;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+                <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">,</span> <span class="s2">&quot;NOT FOUND&quot;</span><span class="p">,</span> <span class="n">Headers</span><span class="p">())</span>
 
-            <span class="n">use_gzip</span> <span class="o">=</span> <span class="s2">&quot;gzip&quot;</span> <span class="ow">in</span> <span class="n">request_headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Accept-Encoding&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">use_gzip</span> <span class="o">=</span> <span class="s2">&quot;gzip&quot;</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Accept-Encoding&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
 
             <span class="c1"># First, try some known MIME types. Using guess_type() can cause</span>
             <span class="c1"># problems for Javascript on some Windows machines.</span>
@@ -896,43 +913,45 @@
                 <span class="n">response_payload</span> <span class="o">=</span> <span class="n">file_cache</span><span class="p">[</span><span class="n">source_path</span><span class="p">]</span>
 
             <span class="c1"># Try to read + send over file.</span>
-            <span class="k">return</span> <span class="p">(</span><span class="n">http</span><span class="o">.</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span> <span class="n">response_headers</span><span class="p">,</span> <span class="n">response_payload</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Response</span><span class="p">(</span>
+                <span class="n">http</span><span class="o">.</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span>
+                <span class="s2">&quot;OK&quot;</span><span class="p">,</span>
+                <span class="n">websockets</span><span class="o">.</span><span class="n">datastructures</span><span class="o">.</span><span class="n">Headers</span><span class="p">(</span><span class="o">**</span><span class="n">response_headers</span><span class="p">),</span>
+                <span class="n">response_payload</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># return (http.HTTPStatus.OK, response_headers, response_payload)</span>
 
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">serve_future</span> <span class="o">=</span> <span class="n">websockets</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">serve</span><span class="p">(</span>
-                    <span class="n">serve</span><span class="p">,</span>
-                    <span class="n">host</span><span class="p">,</span>
-                    <span class="n">port</span><span class="p">,</span>
-                    <span class="c1"># Compression can be too slow for our use cases.</span>
-                    <span class="n">compression</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                    <span class="n">process_request</span><span class="o">=</span><span class="p">(</span>
-                        <span class="n">viser_http_server</span> <span class="k">if</span> <span class="n">http_server_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
-                    <span class="p">),</span>
-                <span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_ws_server</span> <span class="o">=</span> <span class="n">serve_future</span><span class="o">.</span><span class="n">ws_server</span>
-                <span class="n">event_loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">serve_future</span><span class="p">)</span>
-                <span class="k">break</span>
-            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>  <span class="c1"># Port not available.</span>
-                <span class="n">port</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="k">continue</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">start_server</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">port_attempt</span> <span class="o">=</span> <span class="n">port</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">async</span> <span class="k">with</span> <span class="n">websockets</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">serve</span><span class="p">(</span>
+                        <span class="n">ws_handler</span><span class="p">,</span>
+                        <span class="n">host</span><span class="p">,</span>
+                        <span class="n">port_attempt</span><span class="p">,</span>
+                        <span class="c1"># Compression can be too slow for our use cases.</span>
+                        <span class="n">compression</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">process_request</span><span class="o">=</span><span class="p">(</span>
+                            <span class="n">viser_http_server</span> <span class="k">if</span> <span class="n">http_server_root</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span> <span class="k">as</span> <span class="n">serve_future</span><span class="p">:</span>
+                        <span class="k">assert</span> <span class="n">serve_future</span><span class="o">.</span><span class="n">server</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="n">port_attempt</span>
+                        <span class="n">ready_sem</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                        <span class="k">return</span>
+                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>  <span class="c1"># Port not available.</span>
+                    <span class="n">port_attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ws_server</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Failed to bind to port!&quot;</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_port</span> <span class="o">=</span> <span class="n">port</span>
-
-        <span class="n">ready_sem</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
-        <span class="n">event_loop</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
-
-        <span class="c1"># This will run only when the event loop ends, which happens when the</span>
-        <span class="c1"># websocket server is closed.</span>
+        <span class="n">event_loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">start_server</span><span class="p">())</span>
         <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Server stopped&quot;</span><span class="p">)</span></div>
 
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">_message_producer</span><span class="p">(</span>
-    <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span>
+    <span class="n">websocket</span><span class="p">:</span> <span class="n">ServerConnection</span><span class="p">,</span>
     <span class="n">buffer</span><span class="p">:</span> <span class="n">AsyncMessageBuffer</span><span class="p">,</span>
     <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">client_api_version</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
@@ -957,7 +976,7 @@
 
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">_message_consumer</span><span class="p">(</span>
-    <span class="n">websocket</span><span class="p">:</span> <span class="n">WebSocketServerProtocol</span><span class="p">,</span>
+    <span class="n">websocket</span><span class="p">:</span> <span class="n">ServerConnection</span><span class="p">,</span>
     <span class="n">handle_message</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span>
     <span class="n">message_class</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Message</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
