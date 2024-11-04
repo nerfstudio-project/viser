@@ -315,17 +315,6 @@ class WebsockServer(WebsockMessageHandler):
             connection: websockets.asyncio.server.ServerConnection,
         ) -> None:
             """Handler for websocket connections."""
-
-            # <Hack>
-            # Suppress errors for: https://github.com/python-websockets/websockets/issues/1513
-            # TODO: remove this when websockets behavior changes upstream.
-            class NoHttpErrors(logging.Filter):
-                def filter(self, record):
-                    return not record.getMessage() == "opening handshake failed"
-
-            connection.logger.logger.addFilter(NoHttpErrors())  # type: ignore
-            # </Hack>
-
             async with count_lock:
                 nonlocal connection_count
                 client_id = ClientId(connection_count)
@@ -414,10 +403,26 @@ class WebsockServer(WebsockMessageHandler):
         file_cache: dict[Path, bytes] = {}
         file_cache_gzipped: dict[Path, bytes] = {}
 
+        filter_added = False
+
         def viser_http_server(
             connection: ServerConnection,
             request: Request,
         ) -> Response | None:
+            # <Hack>
+            # Suppress errors for: https://github.com/python-websockets/websockets/issues/1513
+            # TODO: remove this when websockets behavior changes upstream.
+            nonlocal filter_added
+            if not filter_added:
+
+                class NoHttpErrors(logging.Filter):
+                    def filter(self, record):
+                        return not record.getMessage() == "opening handshake failed"
+
+                connection.logger.logger.addFilter(NoHttpErrors())  # type: ignore
+                filter_added = True
+            # </Hack>
+
             # Ignore websocket packets.
             if request.headers.get("Upgrade") == "websocket":
                 return None
