@@ -338,7 +338,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/15_gui_in_scene/">3D GUI elements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/16_modal/">Modal basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/17_background_composite/">Depth compositing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/18_splines/">Splines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/18_lines/">Lines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/19_get_renders/">Get renders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/20_scene_pointer/">Scene pointer events.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/21_set_up_direction/">Set up direction</a></li>
@@ -412,6 +412,7 @@
     <span class="n">HemisphereLightHandle</span><span class="p">,</span>
     <span class="n">ImageHandle</span><span class="p">,</span>
     <span class="n">LabelHandle</span><span class="p">,</span>
+    <span class="n">LineSegmentsHandle</span><span class="p">,</span>
     <span class="n">MeshHandle</span><span class="p">,</span>
     <span class="n">MeshSkinnedBoneHandle</span><span class="p">,</span>
     <span class="n">MeshSkinnedHandle</span><span class="p">,</span>
@@ -981,11 +982,63 @@
         <span class="k">return</span> <span class="n">GlbHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
 
 
+<div class="viewcode-block" id="SceneApi.add_line_segments">
+<a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_line_segments">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_line_segments</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">colors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+        <span class="n">line_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LineSegmentsHandle</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add line segments to the scene.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: A scene tree name. Names in the format of /parent/child can</span>
+<span class="sd">                be used to define a kinematic tree.</span>
+<span class="sd">            points: A numpy array of shape (N, 2, 3) defining start/end points</span>
+<span class="sd">                for each of N line segments.</span>
+<span class="sd">            colors: Colors of points. Should have shape (N, 2, 3) or be</span>
+<span class="sd">                broadcastable to it.</span>
+<span class="sd">            line_width: Width of the lines.</span>
+<span class="sd">            wxyz: Quaternion rotation to parent frame from local frame (R_pl).</span>
+<span class="sd">            position: Translation to parent frame from local frame (t_pl).</span>
+<span class="sd">            visible: Whether or not these line segments are initially visible.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Handle for manipulating scene node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">points_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">points_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span>
+            <span class="ow">or</span> <span class="n">points_array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">3</span>
+            <span class="ow">or</span> <span class="n">points_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Points should have shape (N, 2, 3) for N line segments.&quot;</span><span class="p">)</span>
+
+        <span class="n">colors_array</span> <span class="o">=</span> <span class="n">colors_to_uint8</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">colors</span><span class="p">))</span>
+        <span class="n">colors_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">colors_array</span><span class="p">,</span> <span class="n">points_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">message</span> <span class="o">=</span> <span class="n">_messages</span><span class="o">.</span><span class="n">LineSegmentsMessage</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">props</span><span class="o">=</span><span class="n">_messages</span><span class="o">.</span><span class="n">LineSegmentsProps</span><span class="p">(</span>
+                <span class="n">points</span><span class="o">=</span><span class="n">points_array</span><span class="p">,</span>
+                <span class="n">colors</span><span class="o">=</span><span class="n">colors_array</span><span class="p">,</span>
+                <span class="n">line_width</span><span class="o">=</span><span class="n">line_width</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">LineSegmentsHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="SceneApi.add_spline_catmull_rom">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_spline_catmull_rom">[docs]</a>
     <span class="k">def</span> <span class="nf">add_spline_catmull_rom</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="c1"># The naming inconsistency here compared to add_line_segments is unfortunate...</span>
         <span class="n">positions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">curve_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;centripetal&quot;</span><span class="p">,</span> <span class="s2">&quot;chordal&quot;</span><span class="p">,</span> <span class="s2">&quot;catmullrom&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;centripetal&quot;</span><span class="p">,</span>
         <span class="n">tension</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
@@ -1001,6 +1054,9 @@
 
 <span class="sd">        This method creates a spline based on a set of positions and interpolates</span>
 <span class="sd">        them using the Catmull-Rom algorithm. This can be used to create smooth curves.</span>
+
+<span class="sd">        If many splines are needed, it&#39;ll be more efficient to batch them in</span>
+<span class="sd">        :meth:`add_line_segments()`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: A scene tree name. Names in the format of /parent/child can be used to</span>
@@ -1060,6 +1116,9 @@
 <span class="sd">        This method allows for the creation of a cubic Bezier spline based on given</span>
 <span class="sd">        positions and control points. It is useful for creating complex, smooth,</span>
 <span class="sd">        curving shapes.</span>
+
+<span class="sd">        If many splines are needed, it&#39;ll be more efficient to batch them in</span>
+<span class="sd">        :meth:`add_line_segments()`.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: A scene tree name. Names in the format of /parent/child can be used to</span>

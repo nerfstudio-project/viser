@@ -15,7 +15,7 @@
     <link rel="index" title="Index" href="../../genindex/" /><link rel="search" title="Search" href="../../search/" /><link rel="next" title="Get renders" href="../19_get_renders/" /><link rel="prev" title="Depth compositing" href="../17_background_composite/" />
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
-        <title>Splines - viser</title>
+        <title>Lines - viser</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
@@ -339,7 +339,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../15_gui_in_scene/">3D GUI elements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../16_modal/">Modal basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../17_background_composite/">Depth compositing</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Splines</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Lines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../19_get_renders/">Get renders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../20_scene_pointer/">Scene pointer events.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../21_set_up_direction/">Set up direction</a></li>
@@ -368,7 +368,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../../_sources/examples/18_splines.rst.txt" title="View this page">
+  <a class="muted-link" href="../../_sources/examples/18_lines.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -388,9 +388,9 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="splines">
-<h1>Splines<a class="headerlink" href="#splines" title="Link to this heading">¶</a></h1>
-<p>Make a ball with some random splines.</p>
+          <section id="lines">
+<h1>Lines<a class="headerlink" href="#lines" title="Link to this heading">¶</a></h1>
+<p>Make a ball with some random line segments and splines.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span> <span class="nn">time</span>
 <span class="linenos"> 2</span>
 <span class="linenos"> 3</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -400,33 +400,52 @@
 <span class="linenos"> 7</span>
 <span class="linenos"> 8</span><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 9</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
-<span class="linenos">10</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
-<span class="linenos">11</span>        <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="mf">3.0</span>
-<span class="linenos">12</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_spline_catmull_rom</span><span class="p">(</span>
-<span class="linenos">13</span>            <span class="sa">f</span><span class="s2">&quot;/catmull_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-<span class="linenos">14</span>            <span class="n">positions</span><span class="p">,</span>
-<span class="linenos">15</span>            <span class="n">tension</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-<span class="linenos">16</span>            <span class="n">line_width</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
-<span class="linenos">17</span>            <span class="n">color</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
-<span class="linenos">18</span>            <span class="n">segments</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-<span class="linenos">19</span>        <span class="p">)</span>
-<span class="linenos">20</span>
-<span class="linenos">21</span>        <span class="n">control_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="mf">3.0</span>
-<span class="linenos">22</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_spline_cubic_bezier</span><span class="p">(</span>
-<span class="linenos">23</span>            <span class="sa">f</span><span class="s2">&quot;/cubic_bezier_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-<span class="linenos">24</span>            <span class="n">positions</span><span class="p">,</span>
-<span class="linenos">25</span>            <span class="n">control_points</span><span class="p">,</span>
-<span class="linenos">26</span>            <span class="n">line_width</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
-<span class="linenos">27</span>            <span class="n">color</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
-<span class="linenos">28</span>            <span class="n">segments</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-<span class="linenos">29</span>        <span class="p">)</span>
-<span class="linenos">30</span>
-<span class="linenos">31</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-<span class="linenos">32</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
-<span class="linenos">33</span>
-<span class="linenos">34</span>
-<span class="linenos">35</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
-<span class="linenos">36</span>    <span class="n">main</span><span class="p">()</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span>    <span class="c1"># Line segments.</span>
+<span class="linenos">12</span>    <span class="c1">#</span>
+<span class="linenos">13</span>    <span class="c1"># This will be much faster than creating separate scene objects for</span>
+<span class="linenos">14</span>    <span class="c1"># individual line segments or splines.</span>
+<span class="linenos">15</span>    <span class="n">N</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="linenos">16</span>    <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="mf">3.0</span>
+<span class="linenos">17</span>    <span class="n">colors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="linenos">18</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_line_segments</span><span class="p">(</span>
+<span class="linenos">19</span>        <span class="s2">&quot;/line_segments&quot;</span><span class="p">,</span>
+<span class="linenos">20</span>        <span class="n">points</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
+<span class="linenos">21</span>        <span class="n">colors</span><span class="o">=</span><span class="n">colors</span><span class="p">,</span>
+<span class="linenos">22</span>        <span class="n">line_width</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+<span class="linenos">23</span>    <span class="p">)</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span>    <span class="c1"># Spline helpers.</span>
+<span class="linenos">26</span>    <span class="c1">#</span>
+<span class="linenos">27</span>    <span class="c1"># If many lines are needed, it&#39;ll be more efficient to batch them in</span>
+<span class="linenos">28</span>    <span class="c1"># `add_line_segments()`.</span>
+<span class="linenos">29</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+<span class="linenos">30</span>        <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="mf">3.0</span>
+<span class="linenos">31</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_spline_catmull_rom</span><span class="p">(</span>
+<span class="linenos">32</span>            <span class="sa">f</span><span class="s2">&quot;/catmull/</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">33</span>            <span class="n">positions</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
+<span class="linenos">34</span>            <span class="n">tension</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="linenos">35</span>            <span class="n">line_width</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+<span class="linenos">36</span>            <span class="n">color</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+<span class="linenos">37</span>            <span class="n">segments</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="linenos">38</span>        <span class="p">)</span>
+<span class="linenos">39</span>
+<span class="linenos">40</span>        <span class="n">control_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">30</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">*</span> <span class="mf">3.0</span>
+<span class="linenos">41</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">add_spline_cubic_bezier</span><span class="p">(</span>
+<span class="linenos">42</span>            <span class="sa">f</span><span class="s2">&quot;/cubic_bezier/</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<span class="linenos">43</span>            <span class="n">positions</span><span class="o">=</span><span class="n">points</span><span class="p">,</span>
+<span class="linenos">44</span>            <span class="n">control_points</span><span class="o">=</span><span class="n">control_points</span><span class="p">,</span>
+<span class="linenos">45</span>            <span class="n">line_width</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+<span class="linenos">46</span>            <span class="n">color</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span>
+<span class="linenos">47</span>            <span class="n">segments</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="linenos">48</span>        <span class="p">)</span>
+<span class="linenos">49</span>
+<span class="linenos">50</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">51</span>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="linenos">52</span>
+<span class="linenos">53</span>
+<span class="linenos">54</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">55</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>

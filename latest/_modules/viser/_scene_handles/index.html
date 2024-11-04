@@ -338,7 +338,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/15_gui_in_scene/">3D GUI elements</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/16_modal/">Modal basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/17_background_composite/">Depth compositing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/18_splines/">Splines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/18_lines/">Lines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/19_get_renders/">Get renders</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/20_scene_pointer/">Scene pointer events.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/21_set_up_direction/">Set up direction</a></li>
@@ -938,6 +938,14 @@
     <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for grid objects.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">LineSegmentsHandle</span><span class="p">(</span>
+    <span class="n">SceneNodeHandle</span><span class="p">,</span>
+    <span class="n">_messages</span><span class="o">.</span><span class="n">LineSegmentsProps</span><span class="p">,</span>
+    <span class="n">_OverridableScenePropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for line segments objects.&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="SplineCatmullRomHandle">
