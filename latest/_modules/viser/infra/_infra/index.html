@@ -749,17 +749,6 @@
             <span class="n">connection</span><span class="p">:</span> <span class="n">websockets</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">ServerConnection</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;Handler for websocket connections.&quot;&quot;&quot;</span>
-
-            <span class="c1"># &lt;Hack&gt;</span>
-            <span class="c1"># Suppress errors for: https://github.com/python-websockets/websockets/issues/1513</span>
-            <span class="c1"># TODO: remove this when websockets behavior changes upstream.</span>
-            <span class="k">class</span> <span class="nc">NoHttpErrors</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
-                <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="ow">not</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;opening handshake failed&quot;</span>
-
-            <span class="n">connection</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addFilter</span><span class="p">(</span><span class="n">NoHttpErrors</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
-            <span class="c1"># &lt;/Hack&gt;</span>
-
             <span class="k">async</span> <span class="k">with</span> <span class="n">count_lock</span><span class="p">:</span>
                 <span class="k">nonlocal</span> <span class="n">connection_count</span>
                 <span class="n">client_id</span> <span class="o">=</span> <span class="n">ClientId</span><span class="p">(</span><span class="n">connection_count</span><span class="p">)</span>
@@ -848,10 +837,26 @@
         <span class="n">file_cache</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">file_cache_gzipped</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 
+        <span class="n">filter_added</span> <span class="o">=</span> <span class="kc">False</span>
+
         <span class="k">def</span> <span class="nf">viser_http_server</span><span class="p">(</span>
             <span class="n">connection</span><span class="p">:</span> <span class="n">ServerConnection</span><span class="p">,</span>
             <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Response</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># &lt;Hack&gt;</span>
+            <span class="c1"># Suppress errors for: https://github.com/python-websockets/websockets/issues/1513</span>
+            <span class="c1"># TODO: remove this when websockets behavior changes upstream.</span>
+            <span class="k">nonlocal</span> <span class="n">filter_added</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">filter_added</span><span class="p">:</span>
+
+                <span class="k">class</span> <span class="nc">NoHttpErrors</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
+                    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="ow">not</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;opening handshake failed&quot;</span>
+
+                <span class="n">connection</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addFilter</span><span class="p">(</span><span class="n">NoHttpErrors</span><span class="p">())</span>  <span class="c1"># type: ignore</span>
+                <span class="n">filter_added</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1"># &lt;/Hack&gt;</span>
+
             <span class="c1"># Ignore websocket packets.</span>
             <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Upgrade&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;websocket&quot;</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">None</span>
