@@ -20,7 +20,7 @@ classifiers = [
     "Operating System :: OS Independent"
 ]
 dependencies = [
-    "websockets>=10.4",
+    "websockets>=13.1",
     "numpy>=1.0.0",
     "msgspec>=0.18.6",
     "imageio>=2.0.0",
