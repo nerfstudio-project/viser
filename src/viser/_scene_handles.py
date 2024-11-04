@@ -502,6 +502,14 @@ class GridHandle(
     """Handle for grid objects."""
 
 
+class LineSegmentsHandle(
+    SceneNodeHandle,
+    _messages.LineSegmentsProps,
+    _OverridableScenePropApi if not TYPE_CHECKING else object,
+):
+    """Handle for line segments objects."""
+
+
 class SplineCatmullRomHandle(
     SceneNodeHandle,
     _messages.CatmullRomSplineProps,

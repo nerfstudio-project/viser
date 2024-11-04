@@ -1184,6 +1184,26 @@ class ThemeConfigurationMessage(Message):
 
 
 @dataclasses.dataclass
+class LineSegmentsMessage(Message, tag="SceneNodeMessage"):
+    """Message from server->client carrying line segments information."""
+
+    name: str
+    props: LineSegmentsProps
+
+
+@dataclasses.dataclass
+class LineSegmentsProps:
+    points: npt.NDArray[np.float32]
+    """A numpy array of shape (N, 2, 3) containing a batched set of line
+    segments. Synchronized automatically when assigned."""
+    line_width: float
+    """Width of the lines. Synchronized automatically when assigned."""
+    colors: npt.NDArray[np.uint8]
+    """Numpy array of shape (N, 2, 3) containing a color for each point.
+    Synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
 class CatmullRomSplineMessage(Message, tag="SceneNodeMessage"):
     """Message from server->client carrying Catmull-Rom spline information."""
 
@@ -1193,6 +1213,7 @@ class CatmullRomSplineMessage(Message, tag="SceneNodeMessage"):
 
 @dataclasses.dataclass
 class CatmullRomSplineProps:
+    # TODO: consider renaming positions to points and using numpy arrays for consistency with LineSegmentsProps.
     positions: Tuple[Tuple[float, float, float], ...]
     """A tuple of 3D positions (x, y, z) defining the spline's path. Synchronized automatically when assigned."""
     curve_type: Literal["centripetal", "chordal", "catmullrom"]

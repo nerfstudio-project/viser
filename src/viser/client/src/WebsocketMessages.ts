@@ -994,6 +994,15 @@ export interface ThemeConfigurationMessage {
       ]
     | null;
 }
+/** Message from server->client carrying line segments information.
+ *
+ * (automatically generated)
+ */
+export interface LineSegmentsMessage {
+  type: "LineSegmentsMessage";
+  name: string;
+  props: { points: Uint8Array; line_width: number; colors: Uint8Array };
+}
 /** Message from server->client carrying Catmull-Rom spline information.
  *
  * (automatically generated)
@@ -1191,6 +1200,7 @@ export type Message =
   | GuiUpdateMessage
   | SceneNodeUpdateMessage
   | ThemeConfigurationMessage
+  | LineSegmentsMessage
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
   | GaussianSplatsMessage
@@ -1222,6 +1232,7 @@ export type SceneNodeMessage =
   | SkinnedMeshMessage
   | TransformControlsMessage
   | ImageMessage
+  | LineSegmentsMessage
   | CatmullRomSplineMessage
   | CubicBezierSplineMessage
   | GaussianSplatsMessage;
@@ -1263,6 +1274,7 @@ const typeSetSceneNodeMessage = new Set([
   "SkinnedMeshMessage",
   "TransformControlsMessage",
   "ImageMessage",
+  "LineSegmentsMessage",
   "CatmullRomSplineMessage",
   "CubicBezierSplineMessage",
   "GaussianSplatsMessage",
