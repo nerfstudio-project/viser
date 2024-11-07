@@ -464,6 +464,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
           // Release drag lock.
           pointerInfo.isDragging = false;
         }}
+        shadows
       >
         {inView ? null : <DisableRender />}
         {children}
@@ -520,6 +521,7 @@ function DefaultLights() {
     return (
       <>
         {envMapNode}
+        
         <directionalLight
           color={0x0000ff}
           intensity={1.0}

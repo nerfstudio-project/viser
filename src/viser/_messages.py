@@ -352,7 +352,6 @@ class PointCloudProps:
 
 
 @dataclasses.dataclass
-@dataclasses.dataclass
 class DirectionalLightMessage(Message, tag="SceneNodeMessage"):
     """Directional light message."""
 
@@ -366,7 +365,7 @@ class DirectionalLightProps:
     """Color of the directional light. Synchronized automatically when assigned."""
     intensity: float
     """Intensity of the directional light. Synchronized automatically when assigned."""
-
+    castShadow: bool
 
 @dataclasses.dataclass
 class AmbientLightMessage(Message, tag="SceneNodeMessage"):
@@ -420,6 +419,7 @@ class PointLightProps:
     """Distance of the point light. Synchronized automatically when assigned."""
     decay: float
     """Decay of the point light. Synchronized automatically when assigned."""
+    castShadow: bool
 
 
 @dataclasses.dataclass
@@ -464,6 +464,7 @@ class SpotLightProps:
     """Penumbra of the spot light. Synchronized automatically when assigned."""
     decay: float
     """Decay of the spot light. Synchronized automatically when assigned."""
+    castShadow: bool
 
     def __post_init__(self):
         assert self.angle <= np.pi / 2
@@ -529,9 +530,10 @@ class MeshProps:
     """Whether to do flat shading. Synchronized automatically when assigned."""
     side: Literal["front", "back", "double"]
     """Side of the surface to render. Synchronized automatically when assigned."""
+    castShadow: bool
+    receiveShadow: bool
     material: Literal["standard", "toon3", "toon5"]
     """Material type of the mesh. Synchronized automatically when assigned."""
-
     def __post_init__(self):
         # Check shapes.
         assert self.vertices.shape[-1] == 3

@@ -189,6 +189,7 @@ export const GlbAsset = React.forwardRef<
         console.log(error);
       },
     );
+    
 
     return () => {
       if (mixerRef.current) mixerRef.current.stopAllAction();
@@ -230,7 +231,14 @@ export const GlbAsset = React.forwardRef<
       gltf?.scene.traverse(disposeNode);
     };
   }, [glb_data]);
-
+  
+  // add shadows in all meshes
+  for (let i = 0; i < meshes.length ; i++) {
+    console.log("hello")
+    meshes[i].castShadow = true;
+    meshes[i].receiveShadow = true;
+  }
+  
   useFrame((_, delta) => {
     if (mixerRef.current) {
       mixerRef.current.update(delta);
@@ -446,7 +454,7 @@ export const ViserMesh = React.forwardRef<
       front: THREE.FrontSide,
       back: THREE.BackSide,
       double: THREE.DoubleSide,
-    }[message.props.side],
+    }[message.props.side]
   };
   const assertUnreachable = (x: never): never => {
     throw new Error(`Should never get here! ${x}`);
@@ -500,7 +508,7 @@ export const ViserMesh = React.forwardRef<
     );
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
-
+    
     let skeleton = undefined;
     if (message.type === "SkinnedMeshMessage") {
       // Skinned mesh.
@@ -633,6 +641,8 @@ export const ViserMesh = React.forwardRef<
         geometry={geometry}
         material={material}
         skeleton={skeleton}
+        castShadow
+        receiveShadow
         // TODO: leaving culling on (default) sometimes causes the
         // mesh to randomly disappear, as of r3f==8.16.2.
         //
@@ -650,6 +660,8 @@ export const ViserMesh = React.forwardRef<
         ref={ref as React.ForwardedRef<THREE.Mesh>}
         geometry={geometry}
         material={material}
+        castShadow
+        receiveShadow
       >
         <OutlinesIfHovered alwaysMounted />
       </mesh>

@@ -261,6 +261,7 @@ class SceneApi:
         name: str,
         color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
+        castShadow: bool = False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -282,7 +283,7 @@ class SceneApi:
         """
 
         message = _messages.DirectionalLightMessage(
-            name, _messages.DirectionalLightProps(color, intensity)
+            name, _messages.DirectionalLightProps(color, intensity, castShadow)
         )
         return DirectionalLightHandle._make(
             self, message, name, wxyz, position, visible
@@ -357,6 +358,7 @@ class SceneApi:
         intensity: float = 1.0,
         distance: float = 0.0,
         decay: float = 2.0,
+        castShadow: bool = False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -386,6 +388,7 @@ class SceneApi:
                 intensity=intensity,
                 distance=distance,
                 decay=decay,
+                castShadow=castShadow,
             ),
         )
         return PointLightHandle._make(self, message, name, wxyz, position, visible)
@@ -439,6 +442,7 @@ class SceneApi:
         penumbra: float = 0.0,
         decay: float = 2.0,
         intensity: float = 1.0,
+        castShadow: bool = False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -468,7 +472,7 @@ class SceneApi:
         message = _messages.SpotLightMessage(
             name,
             _messages.SpotLightProps(
-                color, intensity, distance, angle, penumbra, decay
+                color, intensity, distance, angle, penumbra, decay, castShadow
             ),
         )
         return SpotLightHandle._make(self, message, name, wxyz, position, visible)
@@ -1164,6 +1168,8 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
+        castShadow: bool=False,
+        receiveShadow: bool=False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1211,6 +1217,8 @@ class SceneApi:
                 opacity=opacity,
                 flat_shading=flat_shading,
                 side=side,
+                castShadow=castShadow,
+                receiveShadow=receiveShadow,
                 material=material,
             ),
         )

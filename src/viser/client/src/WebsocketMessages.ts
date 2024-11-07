@@ -210,7 +210,11 @@ export interface PointCloudMessage {
 export interface DirectionalLightMessage {
   type: "DirectionalLightMessage";
   name: string;
-  props: { color: [number, number, number]; intensity: number };
+  props: {
+    color: [number, number, number];
+    intensity: number;
+    castShadow: boolean;
+  };
 }
 /** Ambient light message.
  *
@@ -246,6 +250,7 @@ export interface PointLightMessage {
     intensity: number;
     distance: number;
     decay: number;
+    castShadow: boolean;
   };
 }
 /** Rectangular Area light message.
@@ -276,6 +281,7 @@ export interface SpotLightMessage {
     angle: number;
     penumbra: number;
     decay: number;
+    castShadow: boolean;
   };
 }
 /** Environment Map message.
@@ -328,6 +334,8 @@ export interface MeshMessage {
     opacity: number | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
+    castShadow: boolean;
+    receiveShadow: boolean;
     material: "standard" | "toon3" | "toon5";
   };
 }
@@ -346,6 +354,8 @@ export interface SkinnedMeshMessage {
     opacity: number | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
+    castShadow: boolean;
+    receiveShadow: boolean;
     material: "standard" | "toon3" | "toon5";
     bone_wxyzs: Uint8Array;
     bone_positions: Uint8Array;
