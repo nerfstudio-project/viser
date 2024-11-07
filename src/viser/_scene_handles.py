@@ -71,7 +71,12 @@ class _OverridableScenePropApi:
             elif current_value == value:
                 return
 
-            setattr(handle._impl.props, name, value)
+            # Update the value.
+            if isinstance(value, np.ndarray):
+                current_value[:] = value
+            else:
+                setattr(handle._impl.props, name, value)
+
             handle._impl.api._websock_interface.queue_message(
                 _messages.SceneNodeUpdateMessage(handle.name, {name: value})
             )
@@ -171,7 +176,7 @@ class SceneNodeHandle:
         assert isinstance(message, _messages.Message)
         api._websock_interface.queue_message(message)
 
-        out = cls(_SceneNodeHandleState(name, copy.copy(message.props), api))
+        out = cls(_SceneNodeHandleState(name, copy.deepcopy(message.props), api))
         api._handle_from_node_name[name] = out
 
         out.wxyz = wxyz
@@ -198,7 +203,7 @@ class SceneNodeHandle:
         wxyz_array = np.asarray(wxyz)
         if np.allclose(wxyz_cast, self._impl.wxyz):
             return
-        self._impl.wxyz = wxyz_array
+        self._impl.wxyz[:] = wxyz_array
         self._impl.api._websock_interface.queue_message(
             _messages.SetOrientationMessage(self._impl.name, wxyz_cast)
         )
@@ -218,7 +223,7 @@ class SceneNodeHandle:
         position_array = np.asarray(position)
         if np.allclose(position_array, self._impl.position):
             return
-        self._impl.position = position_array
+        self._impl.position[:] = position_array
         self._impl.api._websock_interface.queue_message(
             _messages.SetPositionMessage(self._impl.name, position_cast)
         )
@@ -464,7 +469,7 @@ class MeshSkinnedBoneHandle:
         wxyz_array = np.asarray(wxyz)
         if np.allclose(wxyz_cast, self._impl.wxyz):
             return
-        self._impl.wxyz = wxyz_array
+        self._impl.wxyz[:] = wxyz_array
         self._impl.websock_interface.queue_message(
             _messages.SetBoneOrientationMessage(
                 self._impl.name, self._impl.bone_index, wxyz_cast
@@ -486,7 +491,7 @@ class MeshSkinnedBoneHandle:
         position_array = np.asarray(position)
         if np.allclose(position_array, self._impl.position):
             return
-        self._impl.position = position_array
+        self._impl.position[:] = position_array
         self._impl.websock_interface.queue_message(
             _messages.SetBonePositionMessage(
                 self._impl.name, self._impl.bone_index, position_cast
