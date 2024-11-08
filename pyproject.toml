@@ -9,7 +9,7 @@ exclude = ["src/viser/client/.nodeenv", "src/viser/client/node_modules"]
 
 [project]
 name = "viser"
-version = "0.2.12"
+version = "0.2.13"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
