@@ -147,6 +147,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             axesLength={message.props.axes_length}
             axesRadius={message.props.axes_radius}
             originRadius={message.props.origin_radius}
+            originColor={rgbToInt(message.props.origin_color)}
           />
         ),
       };

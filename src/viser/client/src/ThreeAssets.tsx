@@ -54,7 +54,6 @@ function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
 }
 const originGeom = new THREE.SphereGeometry(1.0);
-const originMaterial = new THREE.MeshBasicMaterial({ color: 0xecec00 });
 
 const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
   { scale: 1.0, point_ball_norm: 0.0 },
@@ -259,6 +258,7 @@ export const CoordinateFrame = React.forwardRef<
     axesLength?: number;
     axesRadius?: number;
     originRadius?: number;
+    originColor?: number;
   }
 >(function CoordinateFrame(
   {
@@ -266,6 +266,7 @@ export const CoordinateFrame = React.forwardRef<
     axesLength = 0.5,
     axesRadius = 0.0125,
     originRadius = undefined,
+    originColor = 0xecec00,
   },
   ref,
 ) {
@@ -276,9 +277,9 @@ export const CoordinateFrame = React.forwardRef<
         <>
           <mesh
             geometry={originGeom}
-            material={originMaterial}
             scale={new THREE.Vector3(originRadius, originRadius, originRadius)}
           >
+            <meshBasicMaterial color={originColor} />
             <OutlinesIfHovered />
           </mesh>
           <Instances limit={3}>

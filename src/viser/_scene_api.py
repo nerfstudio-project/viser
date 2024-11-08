@@ -802,6 +802,7 @@ class SceneApi:
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
         origin_radius: float | None = None,
+        origin_color: RgbTupleOrArray = (236, 236, 0),
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -840,6 +841,7 @@ class SceneApi:
                 axes_length=axes_length,
                 axes_radius=axes_radius,
                 origin_radius=origin_radius,
+                origin_color=_encode_rgb(origin_color),
             ),
         )
         return FrameHandle._make(self, message, name, wxyz, position, visible)

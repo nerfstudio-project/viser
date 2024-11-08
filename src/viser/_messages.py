@@ -228,6 +228,8 @@ class FrameProps:
     """Radius of each axis. Synchronized automatically when assigned."""
     origin_radius: float
     """Radius of the origin sphere. Synchronized automatically when assigned."""
+    origin_color: Tuple[int, int, int]
+    """Color of the origin sphere as RGB integers. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
