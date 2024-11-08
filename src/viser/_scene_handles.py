@@ -73,8 +73,13 @@ class _OverridableScenePropApi:
 
             # Update the value.
             if isinstance(value, np.ndarray):
-                current_value[:] = value
+                assert value.dtype == current_value.dtype
+                if value.shape == current_value.shape:
+                    current_value[:] = value
+                else:
+                    setattr(handle._impl.props, name, value.copy())
             else:
+                # Non-array properties should be immutable, so no need to copy.
                 setattr(handle._impl.props, name, value)
 
             handle._impl.api._websock_interface.queue_message(
