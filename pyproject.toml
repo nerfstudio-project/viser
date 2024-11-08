@@ -3,13 +3,19 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
+exclude = ["src/viser/client/.nodeenv", "src/viser/client/node_modules", "**/__pycache__/**"]
+# Client build is in the gitignore, but we still want it in the distribution.
+ignore-vcs = true
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src/viser"]
+
+[tool.hatch.build.targets.wheel]
 packages = ["src/viser"]
-# .nodeenv can't be copied/moved without causing errors.
-exclude = ["src/viser/client/.nodeenv", "src/viser/client/node_modules"]
 
 [project]
 name = "viser"
-version = "0.2.13"
+version = "0.2.14"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
