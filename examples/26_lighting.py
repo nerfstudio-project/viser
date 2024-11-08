@@ -1,8 +1,3 @@
-"""Lights
-
-Visualize a mesh under different lighting conditions. To get the demo data, see `./assets/download_dragon_mesh.sh`.
-"""
-
 import time
 from pathlib import Path
 
@@ -21,7 +16,7 @@ def main() -> None:
     vertices = mesh.vertices
     faces = mesh.faces
     print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
-
+    print(mesh)
     # Start Viser server with mesh.
     server = viser.ViserServer()
 

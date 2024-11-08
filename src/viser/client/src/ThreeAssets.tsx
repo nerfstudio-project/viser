@@ -153,13 +153,16 @@ export const GlbAsset = React.forwardRef<
 >(function GlbAsset({ glb_data, scale }, ref) {
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.
+
+  const [material, setMaterial] = React.useState<THREE.Material>();
   const [gltf, setGltf] = React.useState<GLTF>();
   const [meshes, setMeshes] = React.useState<THREE.Mesh[]>([]);
 
   // glTF/GLB files support animations.
   const mixerRef = React.useRef<THREE.AnimationMixer | null>(null);
-
   React.useEffect(() => {
+    const material = new THREE.MeshStandardMaterial()
+
     const loader = new GLTFLoader();
 
     // We use a CDN for Draco. We could move this locally if we want to use Viser offline.
@@ -179,10 +182,19 @@ export const GlbAsset = React.forwardRef<
         }
         const meshes: THREE.Mesh[] = [];
         gltf?.scene.traverse((obj) => {
-          if (obj instanceof THREE.Mesh) meshes.push(obj);
+          if (obj instanceof THREE.Mesh){
+            obj.geometry.computeVertexNormals();
+            obj.geometry.computeBoundingSphere();
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+            obj.material = material;
+            meshes.push(obj);}
         });
+        
+        setMaterial(material);
         setMeshes(meshes);
         setGltf(gltf);
+        
       },
       (error) => {
         console.log("Error loading GLB!");
@@ -190,7 +202,6 @@ export const GlbAsset = React.forwardRef<
       },
     );
     
-
     return () => {
       if (mixerRef.current) mixerRef.current.stopAllAction();
 
@@ -232,19 +243,13 @@ export const GlbAsset = React.forwardRef<
     };
   }, [glb_data]);
   
-  // add shadows in all meshes
-  for (let i = 0; i < meshes.length ; i++) {
-    console.log("hello")
-    meshes[i].castShadow = true;
-    meshes[i].receiveShadow = true;
-  }
-  
   useFrame((_, delta) => {
     if (mixerRef.current) {
       mixerRef.current.update(delta);
     }
+   
   });
-
+  
   return (
     <group ref={ref}>
       {gltf === undefined ? null : (
