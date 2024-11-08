@@ -1,6 +1,11 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+packages = ["src/viser"]
+exclude = ["**/node_modules/**"]
+# exclude = ["**/node_modules/**", "src/viser/client/*", "!src/viser/client/build/**"]
 
 [project]
 name = "viser"
@@ -56,29 +61,6 @@ examples = [
 
 [project.urls]
 "GitHub" = "https://github.com/nerfstudio-project/viser"
-
-# <>
-# Important: in the ./.github/workflows/publish.yml action, we have sed
-# commands that assume the `viser = ...` line below directly follows
-# `[tool.setuptools.package-data]`. We use this to remove the client source
-# from PyPI builds.
-#
-# We should make sure that any modifications to the package-data list remain
-# compatible with the sed commands!
-#
-# We keep the client source in by default to support things like pip
-# installation via the Git URL, because build artifacts aren't
-# version-controlled.
-[tool.setuptools.package-data]
-viser = ["py.typed", "*.pyi", "_icons/tabler-icons.zip", "client/**/*", "client/**/.*"]
-# </>
-
-[tool.setuptools.exclude-package-data]
-# We exclude node_modules to prevent long build times for wheels when
-# installing from source, eg via `pip install .`.
-#
-# https://github.com/nerfstudio-project/viser/issues/271
-viser = ["**/node_modules/**"]
 
 [project.scripts]
 viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
