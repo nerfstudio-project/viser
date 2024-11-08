@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build]
 packages = ["src/viser"]
-exclude = ["**/node_modules/**"]
-# exclude = ["**/node_modules/**", "src/viser/client/*", "!src/viser/client/build/**"]
+# .nodeenv can't be copied/moved without causing errors.
+exclude = ["src/viser/client/.nodeenv", "src/viser/client/node_modules"]
 
 [project]
 name = "viser"
