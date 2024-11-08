@@ -126,6 +126,7 @@ export interface FrameMessage {
     axes_length: number;
     axes_radius: number;
     origin_radius: number;
+    origin_color: [number, number, number];
   };
 }
 /** Batched axes message.
