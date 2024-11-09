@@ -5,6 +5,7 @@
   "dependencies": {
     "@mantine/core": "^7.6.2",
     "@mantine/dates": "^7.6.2",
+    "@mantine/form": "^7.13.5",
     "@mantine/hooks": "^7.6.2",
     "@mantine/notifications": "^7.6.2",
     "@mantine/vanilla-extract": "^7.6.2",

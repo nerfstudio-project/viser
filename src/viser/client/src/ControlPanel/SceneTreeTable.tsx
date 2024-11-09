@@ -1,14 +1,258 @@
-import { ViewerContext } from "../App";
-import { Box, ScrollArea, Tooltip } from "@mantine/core";
 import {
   IconCaretDown,
   IconCaretRight,
   IconEye,
   IconEyeOff,
+  IconPencil,
+  IconDeviceFloppy,
+  IconX,
 } from "@tabler/icons-react";
 import React from "react";
-import { caretIcon, tableRow, tableWrapper } from "./SceneTreeTable.css";
+import {
+  caretIcon,
+  editIconWrapper,
+  propsWrapper,
+  tableRow,
+  tableWrapper,
+} from "./SceneTreeTable.css";
 import { useDisclosure } from "@mantine/hooks";
+import { useForm } from "@mantine/form";
+import { ViewerContext } from "../App";
+import {
+  Box,
+  Flex,
+  ScrollArea,
+  TextInput,
+  Tooltip,
+  ColorInput,
+} from "@mantine/core";
+
+function EditNodeProps({
+  nodeName,
+  close,
+}: {
+  nodeName: string;
+  close: () => void;
+}) {
+  const viewer = React.useContext(ViewerContext)!;
+  const node = viewer.useSceneTree((state) => state.nodeFromName[nodeName]);
+  const updateSceneNode = viewer.useSceneTree((state) => state.updateSceneNode);
+
+  if (node === undefined) {
+    return null;
+  }
+
+  // We'll use JSON, but add support for Infinity.
+  // We use infinity for point cloud rendering norms.
+  function stringify(value: any) {
+    if (value == Number.POSITIVE_INFINITY) {
+      return "Infinity";
+    } else {
+      return JSON.stringify(value);
+    }
+  }
+  function parse(value: string) {
+    if (value === "Infinity") {
+      return Number.POSITIVE_INFINITY;
+    } else {
+      return JSON.parse(value);
+    }
+  }
+
+  const props = node.message.props;
+  console.log(props);
+  const initialValues = Object.fromEntries(
+    Object.entries(props)
+      .filter(([, value]) => !(value instanceof Uint8Array))
+      .map(([key, value]) => [key, stringify(value)]),
+  );
+
+  const form = useForm({
+    initialValues: {
+      ...initialValues,
+    },
+    validate: {
+      ...Object.fromEntries(
+        Object.keys(initialValues).map((key) => [
+          key,
+          (value: string) => {
+            try {
+              parse(value);
+              return null;
+            } catch (e) {
+              return "Invalid JSON";
+            }
+          },
+        ]),
+      ),
+    },
+  });
+
+  const handleSubmit = (values: Record<string, string>) => {
+    Object.entries(values).forEach(([key, value]) => {
+      if (value !== initialValues[key]) {
+        try {
+          const parsedValue = parse(value);
+          updateSceneNode(nodeName, { [key]: parsedValue });
+          // Update the form value to match the parsed value
+          form.setFieldValue(key, stringify(parsedValue));
+        } catch (e) {
+          console.error("Failed to parse JSON:", e);
+        }
+      }
+    });
+  };
+
+  return (
+    <Box
+      className={propsWrapper}
+      component="form"
+      onSubmit={form.onSubmit(handleSubmit)}
+    >
+      <Box
+        style={{
+          position: "absolute",
+          top: "0.3em",
+          right: "0.4em",
+        }}
+      >
+        <Tooltip label={"Close props"}>
+          <IconX
+            style={{
+              cursor: "pointer",
+              width: "1em",
+              height: "1em",
+              display: "block",
+              color: "--mantine-color-error",
+              opacity: "0.7",
+            }}
+            onClick={(evt) => {
+              evt.stopPropagation();
+              close();
+            }}
+          />
+        </Tooltip>
+      </Box>
+      {Object.entries(props).map(([key, value]) => {
+        if (value instanceof Uint8Array) {
+          return null;
+        }
+
+        const isDirty = form.values[key] !== initialValues[key];
+
+        return (
+          <Flex key={key} align="center">
+            <Box size="sm" fz="xs" style={{ flexGrow: "1" }}>
+              {key.charAt(0).toUpperCase() + key.slice(1).split("_").join(" ")}
+            </Box>
+            <Flex gap="xs" w="9em">
+              {(() => {
+                // Check if this is a color property
+                try {
+                  const parsedValue = parse(form.values[key]);
+                  const isColorProp =
+                    key.toLowerCase().includes("color") &&
+                    Array.isArray(parsedValue) &&
+                    parsedValue.length === 3 &&
+                    parsedValue.every((v) => typeof v === "number");
+
+                  if (isColorProp) {
+                    // Convert RGB array [0-1] to hex color
+                    const rgbToHex = (r: number, g: number, b: number) => {
+                      const toHex = (n: number) => {
+                        const hex = Math.round(n).toString(16);
+                        return hex.length === 1 ? "0" + hex : hex;
+                      };
+                      return "#" + toHex(r) + toHex(g) + toHex(b);
+                    };
+
+                    // Convert hex color to RGB array [0-1]
+                    const hexToRgb = (hex: string) => {
+                      const r = parseInt(hex.slice(1, 3), 16);
+                      const g = parseInt(hex.slice(3, 5), 16);
+                      const b = parseInt(hex.slice(5, 7), 16);
+                      return [r, g, b];
+                    };
+
+                    return (
+                      <ColorInput
+                        size="xs"
+                        styles={{
+                          input: { height: "1.625rem", minHeight: "1.625rem" },
+                          // icon: { transform: "scale(0.8)" },
+                        }}
+                        w="100%"
+                        value={rgbToHex(
+                          parsedValue[0],
+                          parsedValue[1],
+                          parsedValue[2],
+                        )}
+                        onChange={(hex) => {
+                          const rgb = hexToRgb(hex);
+                          form.setFieldValue(key, stringify(rgb));
+                          form.onSubmit(handleSubmit)();
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            form.onSubmit(handleSubmit)();
+                          }
+                        }}
+                      />
+                    );
+                  }
+                } catch (e) {
+                  // If parsing fails, fall back to TextInput
+                }
+
+                // Default TextInput for non-color properties
+                return (
+                  <TextInput
+                    size="xs"
+                    styles={{
+                      input: {
+                        height: "1.625rem",
+                        minHeight: "1.625rem",
+                        width: "100%",
+                      },
+                      // icon: { transform: "scale(0.8)" },
+                    }}
+                    w="100%"
+                    {...form.getInputProps(key)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        form.onSubmit(handleSubmit)();
+                      }
+                    }}
+                    rightSection={
+                      <IconDeviceFloppy
+                        style={{
+                          width: "1rem",
+                          height: "1rem",
+                          opacity: isDirty ? 1.0 : 0.3,
+                          cursor: isDirty ? "pointer" : "default",
+                        }}
+                        onClick={() => {
+                          if (isDirty) {
+                            form.onSubmit(handleSubmit)();
+                          }
+                        }}
+                      />
+                    }
+                  />
+                );
+              })()}
+            </Flex>
+          </Flex>
+        );
+      })}
+      <Box fz="xs" opacity="0.4">
+        Changes can be overwritten by updates from the server.
+      </Box>
+    </Box>
+  );
+}
 
 /* Table for seeing an overview of the scene tree, toggling visibility, etc. * */
 export default function SceneTreeTable() {
@@ -74,6 +318,9 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   const isVisibleEffective = isVisible && props.isParentVisible;
   const VisibleIcon = isVisible ? IconEye : IconEyeOff;
 
+  const [modalOpened, { open: openEditModal, close: closeEditModal }] =
+    useDisclosure(false);
+
   return (
     <>
       <Box
@@ -105,6 +352,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
                 opacity: isVisibleEffective ? 0.85 : 0.25,
                 width: "1.5em",
                 height: "1.5em",
+                display: "block",
               }}
               onClick={(evt) => {
                 evt.stopPropagation();
@@ -113,7 +361,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
             />
           </Tooltip>
         </Box>
-        <Box>
+        <Box style={{ flexGrow: "1" }}>
           {props.nodeName
             .split("/")
             .filter((part) => part.length > 0)
@@ -128,7 +376,36 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
               </span>
             ))}
         </Box>
+        {!modalOpened ? (
+          <Box
+            className={editIconWrapper}
+            style={{
+              width: "1.25em",
+              height: "1.25em",
+              display: "block",
+              transition: "opacity 0.2s",
+            }}
+          >
+            <Tooltip label={"Local props"}>
+              <IconPencil
+                style={{
+                  cursor: "pointer",
+                  width: "1.25em",
+                  height: "1.25em",
+                  display: "block",
+                }}
+                onClick={(evt) => {
+                  evt.stopPropagation();
+                  openEditModal();
+                }}
+              />
+            </Tooltip>
+          </Box>
+        ) : null}
       </Box>
+      {modalOpened ? (
+        <EditNodeProps nodeName={props.nodeName} close={closeEditModal} />
+      ) : null}
       {expanded
         ? childrenName.map((name) => (
             <SceneTreeTableRow
