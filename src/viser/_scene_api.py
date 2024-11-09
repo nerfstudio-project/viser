@@ -1147,8 +1147,8 @@ class SceneApi:
                         name=name,
                         websock_interface=self._websock_interface,
                         bone_index=i,
-                        wxyz=bone_wxyzs[i],
-                        position=bone_positions[i],
+                        wxyz=bone_wxyzs[i].copy(),
+                        position=bone_positions[i].copy(),
                     )
                 )
                 for i in range(num_bones)

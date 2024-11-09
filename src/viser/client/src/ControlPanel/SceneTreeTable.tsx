@@ -115,7 +115,11 @@ function EditNodeProps({
         }}
       >
         <Box fw="500" style={{ flexGrow: "1" }} fz="sm">
-          {node.message.type.replace("Message", "")} Props
+          {node.message.type
+            .replace("Message", "")
+            .replace(/([A-Z])/g, " $1")
+            .trim()}{" "}
+          Props
         </Box>
         <Tooltip label={"Close props"}>
           <IconX
@@ -249,7 +253,7 @@ function EditNodeProps({
         );
       })}
       <Box fz="xs" opacity="0.4">
-        Changes will be overwritten by updates from the server.
+        Updates from the server will overwrite local changes.
       </Box>
     </Box>
   );
