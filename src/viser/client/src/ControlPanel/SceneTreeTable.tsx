@@ -1,5 +1,5 @@
 import { ViewerContext } from "../App";
-import { Box, ScrollArea, Stack, Tooltip } from "@mantine/core";
+import { Box, ScrollArea, Tooltip } from "@mantine/core";
 import {
   IconCaretDown,
   IconCaretRight,
