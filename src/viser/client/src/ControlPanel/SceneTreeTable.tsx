@@ -190,6 +190,7 @@ function EditNodeProps({
                         onChange={(hex) => {
                           const rgb = hexToRgb(hex);
                           form.setFieldValue(key, stringify(rgb));
+                          form.onSubmit(handleSubmit)();
                         }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
@@ -197,21 +198,6 @@ function EditNodeProps({
                             form.onSubmit(handleSubmit)();
                           }
                         }}
-                        rightSection={
-                          <IconDeviceFloppy
-                            style={{
-                              width: "1rem",
-                              height: "1rem",
-                              opacity: isDirty ? 1.0 : 0.3,
-                              cursor: isDirty ? "pointer" : "default",
-                            }}
-                            onClick={() => {
-                              if (isDirty) {
-                                form.onSubmit(handleSubmit)();
-                              }
-                            }}
-                          />
-                        }
                       />
                     );
                   }
@@ -261,8 +247,8 @@ function EditNodeProps({
           </Flex>
         );
       })}
-      <Box fz="xs" opacity="0.5">
-        Changes will be reset on refresh.
+      <Box fz="xs" opacity="0.4">
+        Changes can be overwritten by updates from the server.
       </Box>
     </Box>
   );
@@ -400,7 +386,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
               transition: "opacity 0.2s",
             }}
           >
-            <Tooltip label={"Override props (experimental)"}>
+            <Tooltip label={"Local props"}>
               <IconPencil
                 style={{
                   cursor: "pointer",
