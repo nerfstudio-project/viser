@@ -139,7 +139,7 @@ export default function ServerControls() {
         />
         <Divider mt="xs" />
         <Box>
-          <Text mb="0.2em" fw={500}>
+          <Text mb="0.2em" fw={500} fz="sm">
             Scene tree
           </Text>
           <MemoizedTable />
