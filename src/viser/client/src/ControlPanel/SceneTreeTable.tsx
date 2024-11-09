@@ -7,7 +7,7 @@ import {
   IconDeviceFloppy,
   IconX,
 } from "@tabler/icons-react";
-import React from "react";
+import React, { Suspense } from "react";
 import {
   caretIcon,
   editIconWrapper,
@@ -60,7 +60,6 @@ function EditNodeProps({
   }
 
   const props = node.message.props;
-  console.log(props);
   const initialValues = Object.fromEntries(
     Object.entries(props)
       .filter(([, value]) => !(value instanceof Uint8Array))
@@ -111,11 +110,13 @@ function EditNodeProps({
     >
       <Box
         style={{
-          position: "absolute",
-          top: "0.3em",
-          right: "0.4em",
+          display: "flex",
+          alignItems: "center",
         }}
       >
+        <Box fw="500" style={{ flexGrow: "1" }} fz="sm">
+          {node.message.type.replace("Message", "")} Props
+        </Box>
         <Tooltip label={"Close props"}>
           <IconX
             style={{
@@ -248,7 +249,7 @@ function EditNodeProps({
         );
       })}
       <Box fz="xs" opacity="0.4">
-        Changes can be overwritten by updates from the server.
+        Changes will be overwritten by updates from the server.
       </Box>
     </Box>
   );
@@ -262,14 +263,16 @@ export default function SceneTreeTable() {
   );
   return (
     <ScrollArea className={tableWrapper}>
-      {childrenName.map((name) => (
-        <SceneTreeTableRow
-          nodeName={name}
-          key={name}
-          isParentVisible={true}
-          indentCount={0}
-        />
-      ))}
+      <Suspense fallback={<div>Loading...</div>}>
+        {childrenName.map((name) => (
+          <SceneTreeTableRow
+            nodeName={name}
+            key={name}
+            isParentVisible={true}
+            indentCount={0}
+          />
+        ))}
+      </Suspense>
     </ScrollArea>
   );
 }
@@ -318,7 +321,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   const isVisibleEffective = isVisible && props.isParentVisible;
   const VisibleIcon = isVisible ? IconEye : IconEyeOff;
 
-  const [modalOpened, { open: openEditModal, close: closeEditModal }] =
+  const [propsPanelOpened, { open: openPropsPanel, close: closePropsPanel }] =
     useDisclosure(false);
 
   return (
@@ -376,7 +379,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
               </span>
             ))}
         </Box>
-        {!modalOpened ? (
+        {!propsPanelOpened ? (
           <Box
             className={editIconWrapper}
             style={{
@@ -396,15 +399,15 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
                 }}
                 onClick={(evt) => {
                   evt.stopPropagation();
-                  openEditModal();
+                  openPropsPanel();
                 }}
               />
             </Tooltip>
           </Box>
         ) : null}
       </Box>
-      {modalOpened ? (
-        <EditNodeProps nodeName={props.nodeName} close={closeEditModal} />
+      {propsPanelOpened ? (
+        <EditNodeProps nodeName={props.nodeName} close={closePropsPanel} />
       ) : null}
       {expanded
         ? childrenName.map((name) => (

@@ -15,7 +15,7 @@ packages = ["src/viser"]
 
 [project]
 name = "viser"
-version = "0.2.14"
+version = "0.2.15"
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }

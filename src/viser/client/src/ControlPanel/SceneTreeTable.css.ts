@@ -16,7 +16,6 @@ export const propsWrapper = style({
   border: "1px solid",
   borderColor: vars.colors.defaultBorder,
   padding: vars.spacing.xs,
-  paddingTop: "1.5em",
   boxSizing: "border-box",
   margin: vars.spacing.xs,
   marginTop: "0.1em",
