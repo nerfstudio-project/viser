@@ -1595,8 +1595,8 @@
                         <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                         <span class="n">websock_interface</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="p">,</span>
                         <span class="n">bone_index</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
-                        <span class="n">wxyz</span><span class="o">=</span><span class="n">bone_wxyzs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
-                        <span class="n">position</span><span class="o">=</span><span class="n">bone_positions</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="n">wxyz</span><span class="o">=</span><span class="n">bone_wxyzs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                        <span class="n">position</span><span class="o">=</span><span class="n">bone_positions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_bones</span><span class="p">)</span>
