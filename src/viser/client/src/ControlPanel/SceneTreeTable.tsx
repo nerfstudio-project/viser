@@ -1,5 +1,5 @@
 import { ViewerContext } from "../App";
-import { Box, Stack, Tooltip } from "@mantine/core";
+import { Box, ScrollArea, Tooltip } from "@mantine/core";
 import {
   IconCaretDown,
   IconCaretRight,
@@ -7,11 +7,7 @@ import {
   IconEyeOff,
 } from "@tabler/icons-react";
 import React from "react";
-import {
-  icon as caretIcon,
-  tableRow,
-  tableWrapper,
-} from "./SceneTreeTable.css";
+import { caretIcon, tableRow, tableWrapper } from "./SceneTreeTable.css";
 import { useDisclosure } from "@mantine/hooks";
 
 /* Table for seeing an overview of the scene tree, toggling visibility, etc. * */
@@ -21,7 +17,7 @@ export default function SceneTreeTable() {
     (state) => state.nodeFromName[""]!.children,
   );
   return (
-    <Stack className={tableWrapper} style={{ padding: "0.1em 0" }} gap={0}>
+    <ScrollArea className={tableWrapper}>
       {childrenName.map((name) => (
         <SceneTreeTableRow
           nodeName={name}
@@ -30,7 +26,7 @@ export default function SceneTreeTable() {
           indentCount={0}
         />
       ))}
-    </Stack>
+    </ScrollArea>
   );
 }
 
@@ -101,18 +97,22 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
             <IconCaretRight className={caretIcon} />
           )}
         </Box>
-        <Tooltip label="Override visibility">
-          <VisibleIcon
-            style={{
-              cursor: "pointer",
-              opacity: isVisibleEffective ? 0.85 : 0.25,
-            }}
-            onClick={(evt) => {
-              evt.stopPropagation();
-              setOverrideVisibility(props.nodeName, !isVisible);
-            }}
-          />
-        </Tooltip>
+        <Box style={{ width: "1.5em", height: "1.5em" }}>
+          <Tooltip label="Override visibility">
+            <VisibleIcon
+              style={{
+                cursor: "pointer",
+                opacity: isVisibleEffective ? 0.85 : 0.25,
+                width: "1.5em",
+                height: "1.5em",
+              }}
+              onClick={(evt) => {
+                evt.stopPropagation();
+                setOverrideVisibility(props.nodeName, !isVisible);
+              }}
+            />
+          </Tooltip>
+        </Box>
         <Box>
           {props.nodeName
             .split("/")
