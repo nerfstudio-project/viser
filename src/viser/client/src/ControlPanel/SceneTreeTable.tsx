@@ -25,7 +25,6 @@ import {
   TextInput,
   Tooltip,
   ColorInput,
-  useMantineTheme,
 } from "@mantine/core";
 
 function EditNodeProps({
@@ -43,11 +42,29 @@ function EditNodeProps({
     return null;
   }
 
+  // We'll use JSON, but add support for Infinity.
+  // We use infinity for point cloud rendering norms.
+  function stringify(value: any) {
+    if (value == Number.POSITIVE_INFINITY) {
+      return "Infinity";
+    } else {
+      return JSON.stringify(value);
+    }
+  }
+  function parse(value: string) {
+    if (value === "Infinity") {
+      return Number.POSITIVE_INFINITY;
+    } else {
+      return JSON.parse(value);
+    }
+  }
+
   const props = node.message.props;
+  console.log(props);
   const initialValues = Object.fromEntries(
     Object.entries(props)
-      .filter(([_, value]) => !(value instanceof Uint8Array))
-      .map(([key, value]) => [key, JSON.stringify(value)]),
+      .filter(([, value]) => !(value instanceof Uint8Array))
+      .map(([key, value]) => [key, stringify(value)]),
   );
 
   const form = useForm({
@@ -60,7 +77,7 @@ function EditNodeProps({
           key,
           (value: string) => {
             try {
-              JSON.parse(value);
+              parse(value);
               return null;
             } catch (e) {
               return "Invalid JSON";
@@ -75,10 +92,10 @@ function EditNodeProps({
     Object.entries(values).forEach(([key, value]) => {
       if (value !== initialValues[key]) {
         try {
-          const parsedValue = JSON.parse(value);
+          const parsedValue = parse(value);
           updateSceneNode(nodeName, { [key]: parsedValue });
           // Update the form value to match the parsed value
-          form.setFieldValue(key, JSON.stringify(parsedValue));
+          form.setFieldValue(key, stringify(parsedValue));
         } catch (e) {
           console.error("Failed to parse JSON:", e);
         }
@@ -128,11 +145,11 @@ function EditNodeProps({
             <Box size="sm" fz="xs" style={{ flexGrow: "1" }}>
               {key.charAt(0).toUpperCase() + key.slice(1).split("_").join(" ")}
             </Box>
-            <Flex gap="xs" w="10em">
+            <Flex gap="xs" w="9em">
               {(() => {
                 // Check if this is a color property
                 try {
-                  const parsedValue = JSON.parse(form.values[key]);
+                  const parsedValue = parse(form.values[key]);
                   const isColorProp =
                     key.toLowerCase().includes("color") &&
                     Array.isArray(parsedValue) &&
@@ -172,7 +189,7 @@ function EditNodeProps({
                         )}
                         onChange={(hex) => {
                           const rgb = hexToRgb(hex);
-                          form.setFieldValue(key, JSON.stringify(rgb));
+                          form.setFieldValue(key, stringify(rgb));
                         }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
@@ -317,8 +334,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
 
   const [modalOpened, { open: openEditModal, close: closeEditModal }] =
     useDisclosure(false);
-
-  const theme = useMantineTheme();
 
   return (
     <>
