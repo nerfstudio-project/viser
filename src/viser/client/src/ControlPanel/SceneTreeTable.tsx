@@ -333,11 +333,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
 
   const colorScheme = useMantineColorScheme();
   const theme = useMantineTheme();
-  const nodeType = viewer
-    .useSceneTree((state) => state.nodeFromName[props.nodeName]!.message.type)
-    .replace("Message", "")
-    .replace(/([A-Z])/g, " $1")
-    .trim();
 
   return (
     <>
