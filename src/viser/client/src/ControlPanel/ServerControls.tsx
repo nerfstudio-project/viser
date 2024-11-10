@@ -13,6 +13,8 @@ import { Stats } from "@react-three/drei";
 import React from "react";
 import SceneTreeTable from "./SceneTreeTable";
 
+const MemoizedTable = React.memo(SceneTreeTable);
+
 export default function ServerControls() {
   const viewer = React.useContext(ViewerContext)!;
   const [showStats, setShowStats] = React.useState(false);
@@ -22,7 +24,6 @@ export default function ServerControls() {
     event.currentTarget.blur();
     event.currentTarget.focus();
   }
-  const MemoizedTable = React.memo(SceneTreeTable);
 
   return (
     <>

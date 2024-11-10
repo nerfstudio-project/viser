@@ -42,6 +42,8 @@ import SidebarPanel from "./SidebarPanel";
 // Must match constant in Python.
 const ROOT_CONTAINER_ID = "root";
 
+const MemoizedGeneratedGuiContainer = React.memo(GeneratedGuiContainer);
+
 export default function ControlPanel(props: {
   control_layout: ThemeConfigurationMessage["control_layout"];
 }) {
@@ -99,7 +101,7 @@ export default function ControlPanel(props: {
         <ServerControls />
       </Collapse>
       <Collapse in={showGenerated && !showSettings}>
-        <GeneratedGuiContainer containerUuid={ROOT_CONTAINER_ID} />
+        <MemoizedGeneratedGuiContainer containerUuid={ROOT_CONTAINER_ID} />
       </Collapse>
     </>
   );
