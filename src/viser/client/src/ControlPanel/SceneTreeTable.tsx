@@ -7,9 +7,8 @@ import {
   IconDeviceFloppy,
   IconX,
 } from "@tabler/icons-react";
-import React, { Suspense } from "react";
+import React from "react";
 import {
-  caretIcon,
   editIconWrapper,
   propsWrapper,
   tableRow,
@@ -25,6 +24,8 @@ import {
   TextInput,
   Tooltip,
   ColorInput,
+  useMantineColorScheme,
+  useMantineTheme,
 } from "@mantine/core";
 
 function EditNodeProps({
@@ -108,35 +109,39 @@ function EditNodeProps({
       component="form"
       onSubmit={form.onSubmit(handleSubmit)}
     >
-      <Box
-        style={{
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <Box fw="500" style={{ flexGrow: "1" }} fz="sm">
-          {node.message.type
-            .replace("Message", "")
-            .replace(/([A-Z])/g, " $1")
-            .trim()}{" "}
-          Props
+      <Box>
+        <Box
+          style={{
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Box fw="500" style={{ flexGrow: "1" }} fz="sm">
+            {node.message.type
+              .replace("Message", "")
+              .replace(/([A-Z])/g, " $1")
+              .trim()}{" "}
+            Props
+          </Box>
+          <Tooltip label={"Close props"}>
+            <IconX
+              style={{
+                cursor: "pointer",
+                width: "1em",
+                height: "1em",
+                display: "block",
+                opacity: "0.7",
+              }}
+              onClick={(evt) => {
+                evt.stopPropagation();
+                close();
+              }}
+            />
+          </Tooltip>
         </Box>
-        <Tooltip label={"Close props"}>
-          <IconX
-            style={{
-              cursor: "pointer",
-              width: "1em",
-              height: "1em",
-              display: "block",
-              color: "--mantine-color-error",
-              opacity: "0.7",
-            }}
-            onClick={(evt) => {
-              evt.stopPropagation();
-              close();
-            }}
-          />
-        </Tooltip>
+        <Box fz="xs" opacity="0.5">
+          {nodeName}
+        </Box>
       </Box>
       {Object.entries(props).map(([key, value]) => {
         if (value instanceof Uint8Array) {
@@ -267,16 +272,14 @@ export default function SceneTreeTable() {
   );
   return (
     <ScrollArea className={tableWrapper}>
-      <Suspense fallback={<div>Loading...</div>}>
-        {childrenName.map((name) => (
-          <SceneTreeTableRow
-            nodeName={name}
-            key={name}
-            isParentVisible={true}
-            indentCount={0}
-          />
-        ))}
-      </Suspense>
+      {childrenName.map((name) => (
+        <SceneTreeTableRow
+          nodeName={name}
+          key={name}
+          isParentVisible={true}
+          indentCount={0}
+        />
+      ))}
     </ScrollArea>
   );
 }
@@ -328,27 +331,56 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   const [propsPanelOpened, { open: openPropsPanel, close: closePropsPanel }] =
     useDisclosure(false);
 
+  const colorScheme = useMantineColorScheme();
+  const theme = useMantineTheme();
+
   return (
     <>
       <Box
         className={tableRow}
         style={{
           cursor: expandable ? "pointer" : undefined,
-          marginLeft: (props.indentCount * 0.75).toString() + "em",
         }}
         onClick={expandable ? toggleExpanded : undefined}
         onMouseOver={() => setLabelVisibility(props.nodeName, true)}
         onMouseOut={() => setLabelVisibility(props.nodeName, false)}
       >
+        {new Array(props.indentCount).fill(null).map((_, i) => (
+          <Box
+            key={i}
+            style={{
+              borderLeft: "0.3em solid",
+              borderColor:
+                colorScheme.colorScheme == "dark"
+                  ? theme.colors.gray[7]
+                  : theme.colors.gray[2],
+              width: "0.2em",
+              marginLeft: "0.375em",
+              height: "2em",
+            }}
+          />
+        ))}
         <Box
           style={{
-            opacity: expandable ? 1 : 0.3,
+            opacity: expandable ? 0.7 : 0.1,
           }}
         >
           {expanded ? (
-            <IconCaretDown className={caretIcon} />
+            <IconCaretDown
+              style={{
+                height: "1em",
+                width: "1em",
+                transform: "translateY(0.1em)",
+              }}
+            />
           ) : (
-            <IconCaretRight className={caretIcon} />
+            <IconCaretRight
+              style={{
+                height: "1em",
+                width: "1em",
+                transform: "translateY(0.1em)",
+              }}
+            />
           )}
         </Box>
         <Box style={{ width: "1.5em", height: "1.5em" }}>
@@ -369,19 +401,8 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
           </Tooltip>
         </Box>
         <Box style={{ flexGrow: "1" }}>
-          {props.nodeName
-            .split("/")
-            .filter((part) => part.length > 0)
-            .map((part, index, all) => (
-              // We set userSelect to prevent users from accidentally
-              // selecting text when dragging over the hide/show icons.
-              <span key={index} style={{ userSelect: "none" }}>
-                <span style={{ opacity: "0.3" }}>
-                  {index === all.length - 1 ? "/" : `/${part}`}
-                </span>
-                {index === all.length - 1 ? part : ""}
-              </span>
-            ))}
+          <span style={{ opacity: "0.3" }}>/</span>
+          {props.nodeName.split("/").at(-1)}
         </Box>
         {!propsPanelOpened ? (
           <Box

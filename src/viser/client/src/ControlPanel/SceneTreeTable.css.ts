@@ -18,18 +18,12 @@ export const propsWrapper = style({
   padding: vars.spacing.xs,
   boxSizing: "border-box",
   margin: vars.spacing.xs,
-  marginTop: "0.1em",
+  marginTop: "0.2em",
+  marginBottom: "0.2em",
   overflowX: "auto",
   display: "flex",
   flexDirection: "column",
   gap: vars.spacing.xs,
-});
-
-export const caretIcon = style({
-  opacity: 0.5,
-  height: "1em",
-  width: "1em",
-  transform: "translateY(0.1em)",
 });
 
 export const editIconWrapper = style({
