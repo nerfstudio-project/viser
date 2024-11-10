@@ -739,6 +739,7 @@ class SceneApi:
         fov: float,
         aspect: float,
         scale: float = 0.3,
+        line_thickness: float | None = None,
         color: RgbTupleOrArray = (20, 20, 20),
         image: np.ndarray | None = None,
         format: Literal["png", "jpeg"] = "jpeg",
@@ -762,6 +763,8 @@ class SceneApi:
             fov: Field of view of the camera (in radians).
             aspect: Aspect ratio of the camera (width over height).
             scale: Scale factor for the size of the frustum.
+            line_thickness: Thickness of the frustum lines. If not set,
+                defaults to `0.03 * scale`.
             color: Color of the frustum as an RGB tuple.
             image: Optional image to be displayed on the frustum.
             format: Format of the provided image ('png' or 'jpeg').
@@ -788,6 +791,9 @@ class SceneApi:
                 fov=fov,
                 aspect=aspect,
                 scale=scale,
+                line_thickness=line_thickness
+                if line_thickness is not None
+                else 0.03 * scale,
                 color=_encode_rgb(color),
                 image_media_type=media_type,
                 image_binary=binary,
