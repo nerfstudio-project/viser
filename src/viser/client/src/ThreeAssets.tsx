@@ -699,6 +699,7 @@ export const CameraFrustum = React.forwardRef<
     fov: number;
     aspect: number;
     scale: number;
+    lineThickness: number;
     color: number;
     imageBinary: Uint8Array | null;
     imageMediaType: string | null;
@@ -746,7 +747,7 @@ export const CameraFrustum = React.forwardRef<
       <Instances limit={9}>
         <meshBasicMaterial color={props.color} side={THREE.DoubleSide} />
         <cylinderGeometry
-          args={[props.scale * 0.03, props.scale * 0.03, 1.0, 3]}
+          args={[props.lineThickness, props.lineThickness, 1.0, 3]}
         />
         {scaledLineSegments([
           // Rectangle.

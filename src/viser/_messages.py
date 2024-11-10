@@ -186,6 +186,8 @@ class CameraFrustumProps:
     """Aspect ratio of the camera (width over height). Synchronized automatically when assigned."""
     scale: float
     """Scale factor for the size of the frustum. Synchronized automatically when assigned."""
+    line_thickness: float
+    """Thickness of the frustum lines. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the frustum as RGB integers. Synchronized automatically when assigned."""
     image_media_type: Optional[Literal["image/jpeg", "image/png"]]
