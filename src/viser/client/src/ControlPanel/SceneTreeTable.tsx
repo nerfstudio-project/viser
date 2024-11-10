@@ -346,7 +346,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
         className={tableRow}
         style={{
           cursor: expandable ? "pointer" : undefined,
-          // marginLeft: (props.indentCount * 0.75).toString() + "em",
         }}
         onClick={expandable ? toggleExpanded : undefined}
         onMouseOver={() => setLabelVisibility(props.nodeName, true)}
