@@ -1169,6 +1169,7 @@
         <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">aspect</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
+        <span class="n">line_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">color</span><span class="p">:</span> <span class="n">RgbTupleOrArray</span> <span class="o">=</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
         <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span>
@@ -1192,6 +1193,8 @@
 <span class="sd">            fov: Field of view of the camera (in radians).</span>
 <span class="sd">            aspect: Aspect ratio of the camera (width over height).</span>
 <span class="sd">            scale: Scale factor for the size of the frustum.</span>
+<span class="sd">            line_thickness: Thickness of the frustum lines. If not set,</span>
+<span class="sd">                defaults to `0.03 * scale`.</span>
 <span class="sd">            color: Color of the frustum as an RGB tuple.</span>
 <span class="sd">            image: Optional image to be displayed on the frustum.</span>
 <span class="sd">            format: Format of the provided image (&#39;png&#39; or &#39;jpeg&#39;).</span>
@@ -1218,6 +1221,9 @@
                 <span class="n">fov</span><span class="o">=</span><span class="n">fov</span><span class="p">,</span>
                 <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span>
                 <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span>
+                <span class="n">line_thickness</span><span class="o">=</span><span class="n">line_thickness</span>
+                <span class="k">if</span> <span class="n">line_thickness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">else</span> <span class="mf">0.03</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
                 <span class="n">color</span><span class="o">=</span><span class="n">_encode_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">),</span>
                 <span class="n">image_media_type</span><span class="o">=</span><span class="n">media_type</span><span class="p">,</span>
                 <span class="n">image_binary</span><span class="o">=</span><span class="n">binary</span><span class="p">,</span>
