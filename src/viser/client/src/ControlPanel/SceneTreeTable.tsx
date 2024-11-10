@@ -130,7 +130,6 @@ function EditNodeProps({
                 width: "1em",
                 height: "1em",
                 display: "block",
-                color: "--mantine-color-error",
                 opacity: "0.7",
               }}
               onClick={(evt) => {
