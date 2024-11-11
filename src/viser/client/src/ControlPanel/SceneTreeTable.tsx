@@ -297,34 +297,41 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
 
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(false);
 
-  function setOverrideVisibility(name: string, visible: boolean | undefined) {
+  function setOverrideVisibility(name: string, visible: boolean) {
     const attr = viewer.nodeAttributesFromName.current;
     attr[name]!.overrideVisibility = visible;
-    rerenderTable();
+    setIsVisible(visible);
   }
   const setLabelVisibility = viewer.useSceneTree(
     (state) => state.setLabelVisibility,
   );
 
-  // For performance, scene node visibility is stored in a ref instead of the
-  // zustand state. This means that re-renders for the table need to be
-  // triggered manually when visibilities are updated.
-  const [, setTime] = React.useState(Date.now());
-  function rerenderTable() {
-    setTime(Date.now());
-  }
+  const pollIsVisible = React.useCallback(() => {
+    const attrs = viewer.nodeAttributesFromName.current[props.nodeName];
+    return (
+      (attrs?.overrideVisibility === undefined
+        ? attrs?.visibility
+        : attrs.overrideVisibility) ?? true
+    );
+  }, [props.nodeName]);
+
+  const [isVisible, setIsVisible] = React.useState(pollIsVisible());
   React.useEffect(() => {
-    const interval = setInterval(rerenderTable, 200);
+    // We put the visibility in a ref, so it needs to be polled. This was for
+    // performance reasons, but we should probably move it into the zustand
+    // store and just be careful to avoid subscribing to it from the r3f
+    // components.
+    const interval = setInterval(() => {
+      const visible = pollIsVisible();
+      if (visible !== isVisible) {
+        setIsVisible(visible);
+      }
+    }, 200);
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [isVisible]);
 
-  const attrs = viewer.nodeAttributesFromName.current[props.nodeName];
-  const isVisible =
-    (attrs?.overrideVisibility === undefined
-      ? attrs?.visibility
-      : attrs.overrideVisibility) ?? true;
   const isVisibleEffective = isVisible && props.isParentVisible;
   const VisibleIcon = isVisible ? IconEye : IconEyeOff;
 
