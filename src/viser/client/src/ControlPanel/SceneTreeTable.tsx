@@ -345,11 +345,9 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
         onMouseOver={() => setLabelVisibility(props.nodeName, true)}
         onMouseOut={() => setLabelVisibility(props.nodeName, false)}
       >
-        <Box style={{ display: "flex" }}>
-          {new Array(props.indentCount).fill(null).map((_, i) => (
-            <Box className={tableHierarchyLine} key={i} />
-          ))}
-        </Box>
+        {new Array(props.indentCount).fill(null).map((_, i) => (
+          <Box className={tableHierarchyLine} key={i} />
+        ))}
         <Box
           style={{
             opacity: expandable ? 0.7 : 0.1,
