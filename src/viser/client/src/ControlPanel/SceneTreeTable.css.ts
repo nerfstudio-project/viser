@@ -37,6 +37,36 @@ export const tableRow = style({
   padding: "0 0.25em",
   lineHeight: "2em",
   fontSize: "0.875em",
+  ":hover": {
+    [vars.lightSelector]: {
+      backgroundColor: vars.colors.gray[1],
+    },
+    [vars.darkSelector]: {
+      backgroundColor: vars.colors.dark[6],
+    },
+  },
+});
+
+export const tableHierarchyLine = style({
+  [vars.lightSelector]: {
+    borderColor: vars.colors.gray[2],
+  },
+  [vars.darkSelector]: {
+    borderColor: vars.colors.dark[5],
+  },
+  borderLeft: "0.3em solid",
+  width: "0.2em",
+  marginLeft: "0.375em",
+  height: "2em",
+});
+
+globalStyle(`${tableRow}:hover ${tableHierarchyLine}`, {
+  [vars.lightSelector]: {
+    borderColor: vars.colors.gray[3],
+  },
+  [vars.darkSelector]: {
+    borderColor: vars.colors.dark[4],
+  },
 });
 
 globalStyle(`${tableRow}:hover ${editIconWrapper}`, {

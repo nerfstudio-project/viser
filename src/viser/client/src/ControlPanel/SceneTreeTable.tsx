@@ -11,6 +11,7 @@ import React from "react";
 import {
   editIconWrapper,
   propsWrapper,
+  tableHierarchyLine,
   tableRow,
   tableWrapper,
 } from "./SceneTreeTable.css";
@@ -297,11 +298,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
 
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(false);
 
-  function setOverrideVisibility(name: string, visible: boolean) {
-    const attr = viewer.nodeAttributesFromName.current;
-    attr[name]!.overrideVisibility = visible;
-    setIsVisible(visible);
-  }
   const setLabelVisibility = viewer.useSceneTree(
     (state) => state.setLabelVisibility,
   );
@@ -338,9 +334,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
   const [propsPanelOpened, { open: openPropsPanel, close: closePropsPanel }] =
     useDisclosure(false);
 
-  const colorScheme = useMantineColorScheme();
-  const theme = useMantineTheme();
-
   return (
     <>
       <Box
@@ -352,21 +345,11 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
         onMouseOver={() => setLabelVisibility(props.nodeName, true)}
         onMouseOut={() => setLabelVisibility(props.nodeName, false)}
       >
-        {new Array(props.indentCount).fill(null).map((_, i) => (
-          <Box
-            key={i}
-            style={{
-              borderLeft: "0.3em solid",
-              borderColor:
-                colorScheme.colorScheme == "dark"
-                  ? theme.colors.gray[7]
-                  : theme.colors.gray[2],
-              width: "0.2em",
-              marginLeft: "0.375em",
-              height: "2em",
-            }}
-          />
-        ))}
+        <Box style={{ display: "flex" }}>
+          {new Array(props.indentCount).fill(null).map((_, i) => (
+            <Box className={tableHierarchyLine} key={i} />
+          ))}
+        </Box>
         <Box
           style={{
             opacity: expandable ? 0.7 : 0.1,
@@ -402,7 +385,9 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
               }}
               onClick={(evt) => {
                 evt.stopPropagation();
-                setOverrideVisibility(props.nodeName, !isVisible);
+                const attr = viewer.nodeAttributesFromName.current;
+                attr[props.nodeName]!.overrideVisibility = !isVisible;
+                setIsVisible(!isVisible);
               }}
             />
           </Tooltip>
