@@ -85,9 +85,6 @@ def main(
         nonlocal prev_timestep
         current_timestep = gui_timestep.value
         with server.atomic():
-            # Update point size.
-            point_nodes[current_timestep].point_size = gui_point_size.value
-
             # Toggle visibility.
             frame_nodes[current_timestep].visible = True
             frame_nodes[prev_timestep].visible = False
@@ -148,8 +145,19 @@ def main(
     # Playback update loop.
     prev_timestep = gui_timestep.value
     while True:
+        # Update the timestep if we're playing.
         if gui_playing.value:
             gui_timestep.value = (gui_timestep.value + 1) % num_frames
+
+        # Update point size of both this timestep and the next one! There's
+        # redundancy here, but this will be optimized out internally by viser.
+        #
+        # We update the point size for the next timestep so that it will be
+        # immediately available when we toggle the visibility.
+        point_nodes[gui_timestep.value].point_size = gui_point_size.value
+        point_nodes[
+            (gui_timestep.value + 1) % num_frames
+        ].point_size = gui_point_size.value
 
         time.sleep(1.0 / gui_framerate.value)
 
