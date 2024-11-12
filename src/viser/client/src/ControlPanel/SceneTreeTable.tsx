@@ -25,8 +25,6 @@ import {
   TextInput,
   Tooltip,
   ColorInput,
-  useMantineColorScheme,
-  useMantineTheme,
 } from "@mantine/core";
 
 function EditNodeProps({
