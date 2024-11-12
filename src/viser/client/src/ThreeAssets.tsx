@@ -774,7 +774,8 @@ export const CameraFrustum = React.forwardRef<
       />
       {imageTexture && (
         <mesh
-          position={[0.0, 0.0, z]}
+          // 0.999999 is to avoid z-fighting with the frustum lines.
+          position={[0.0, 0.0, z * 0.999999]}
           rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
         >
           <planeGeometry
