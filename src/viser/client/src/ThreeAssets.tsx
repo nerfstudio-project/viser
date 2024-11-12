@@ -755,9 +755,10 @@ export const CameraFrustum = React.forwardRef<
     [0, 0, 0],
     [0, 0, 0],
     [1, 1, 1],
-    // Up direction.
+    // Up direction indicator.
+    // Don't overlap with the image if the image is present.
     [0.0, -1.2, 1.0],
-    [0.0, -0.9, 1.0],
+    imageTexture === undefined ? [0.0, -0.9, 1.0] : [0.0, -1.0, 1.0],
   ].map((xyz) => [xyz[0] * x, xyz[1] * y, xyz[2] * z]);
 
   return (
