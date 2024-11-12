@@ -1169,7 +1169,7 @@
         <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">aspect</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span>
-        <span class="n">line_thickness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">line_width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
         <span class="n">color</span><span class="p">:</span> <span class="n">RgbTupleOrArray</span> <span class="o">=</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
         <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span>
@@ -1177,6 +1177,7 @@
         <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
         <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">_removed_kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CameraFrustumHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a camera frustum to the scene for visualization.</span>
 
@@ -1185,7 +1186,7 @@
 <span class="sd">        and coverage of a camera in the 3D space.</span>
 
 <span class="sd">        Like all cameras in the viser Python API, frustums follow the OpenCV [+Z forward,</span>
-<span class="sd">        +X right, +Y down] convention. fov is vertical in radians; aspect is width over height</span>
+<span class="sd">        +X right, +Y down] convention. fov is vertical in radians; aspect is width over height.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            name: A scene tree name. Names in the format of /parent/child can be used to</span>
@@ -1193,8 +1194,7 @@
 <span class="sd">            fov: Field of view of the camera (in radians).</span>
 <span class="sd">            aspect: Aspect ratio of the camera (width over height).</span>
 <span class="sd">            scale: Scale factor for the size of the frustum.</span>
-<span class="sd">            line_thickness: Thickness of the frustum lines. If not set,</span>
-<span class="sd">                defaults to `0.03 * scale`.</span>
+<span class="sd">            line_width: Width of the frustum lines, in screen space. Defaults to `2.0`.</span>
 <span class="sd">            color: Color of the frustum as an RGB tuple.</span>
 <span class="sd">            image: Optional image to be displayed on the frustum.</span>
 <span class="sd">            format: Format of the provided image (&#39;png&#39; or &#39;jpeg&#39;).</span>
@@ -1206,6 +1206,12 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Handle for manipulating scene node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="s2">&quot;line_thickness&quot;</span> <span class="ow">in</span> <span class="n">_removed_kwargs</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;The &#39;line_thickness&#39; argument has been removed. Please use &#39;line_width&#39; instead. Note that the units have been changed from world space to screen space.&quot;</span><span class="p">,</span>
+                <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">media_type</span><span class="p">,</span> <span class="n">binary</span> <span class="o">=</span> <span class="n">_encode_image_binary</span><span class="p">(</span>
@@ -1221,9 +1227,7 @@
                 <span class="n">fov</span><span class="o">=</span><span class="n">fov</span><span class="p">,</span>
                 <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span>
                 <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">,</span>
-                <span class="n">line_thickness</span><span class="o">=</span><span class="n">line_thickness</span>
-                <span class="k">if</span> <span class="n">line_thickness</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                <span class="k">else</span> <span class="mf">0.03</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span>
+                <span class="n">line_width</span><span class="o">=</span><span class="n">line_width</span><span class="p">,</span>
                 <span class="n">color</span><span class="o">=</span><span class="n">_encode_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">),</span>
                 <span class="n">image_media_type</span><span class="o">=</span><span class="n">media_type</span><span class="p">,</span>
                 <span class="n">image_binary</span><span class="o">=</span><span class="n">binary</span><span class="p">,</span>
