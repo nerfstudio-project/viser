@@ -766,7 +766,7 @@ export const CameraFrustum = React.forwardRef<
       <Line
         points={frustumPoints}
         color={isHovered ? 0xfbff00 : props.color}
-        lineWidth={props.lineWidth}
+        lineWidth={isHovered ? 1.5 * props.lineWidth : props.lineWidth}
         segments
       />
       {imageTexture && (
