@@ -841,7 +841,8 @@ class GuiApi:
                         visible=visible,
                     ),
                 ),
-            )
+                is_button=True,
+            ),
         )
 
     def add_checkbox(

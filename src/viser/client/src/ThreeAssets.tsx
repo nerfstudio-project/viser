@@ -722,15 +722,18 @@ export const CameraFrustum = React.forwardRef<
   let z = 1.0;
 
   const volumeScale = Math.cbrt((x * y * z) / 3.0);
-  x /= volumeScale * props.scale;
-  y /= volumeScale * props.scale;
-  z /= volumeScale * props.scale;
+  x /= volumeScale;
+  y /= volumeScale;
+  z /= volumeScale;
+  x *= props.scale;
+  y *= props.scale;
+  z *= props.scale;
 
-  const hoveredRef = React.useContext(HoverableContext)!;
+  const hoveredRef = React.useContext(HoverableContext);
   const [isHovered, setIsHovered] = React.useState(false);
 
   useFrame(() => {
-    if (hoveredRef.current !== isHovered) {
+    if (hoveredRef !== null && hoveredRef.current !== isHovered) {
       setIsHovered(hoveredRef.current);
     }
   });
@@ -771,12 +774,12 @@ export const CameraFrustum = React.forwardRef<
       />
       {imageTexture && (
         <mesh
-          position={[0.0, 0.0, props.scale * z]}
+          position={[0.0, 0.0, z]}
           rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}
         >
           <planeGeometry
             attach="geometry"
-            args={[props.scale * props.aspect * y * 2, props.scale * y * 2]}
+            args={[props.aspect * y * 2, y * 2]}
           />
           <meshBasicMaterial
             attach="material"
