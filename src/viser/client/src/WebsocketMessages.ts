@@ -100,7 +100,7 @@ export interface CameraFrustumMessage {
     fov: number;
     aspect: number;
     scale: number;
-    line_thickness: number;
+    line_width: number;
     color: [number, number, number];
     image_media_type: "image/jpeg" | "image/png" | null;
     image_binary: Uint8Array | null;

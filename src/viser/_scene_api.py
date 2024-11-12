@@ -739,7 +739,7 @@ class SceneApi:
         fov: float,
         aspect: float,
         scale: float = 0.3,
-        line_thickness: float | None = None,
+        line_width: float = 2.0,
         color: RgbTupleOrArray = (20, 20, 20),
         image: np.ndarray | None = None,
         format: Literal["png", "jpeg"] = "jpeg",
@@ -747,6 +747,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        *_removed_kwargs,
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
 
@@ -755,7 +756,7 @@ class SceneApi:
         and coverage of a camera in the 3D space.
 
         Like all cameras in the viser Python API, frustums follow the OpenCV [+Z forward,
-        +X right, +Y down] convention. fov is vertical in radians; aspect is width over height
+        +X right, +Y down] convention. fov is vertical in radians; aspect is width over height.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -763,8 +764,7 @@ class SceneApi:
             fov: Field of view of the camera (in radians).
             aspect: Aspect ratio of the camera (width over height).
             scale: Scale factor for the size of the frustum.
-            line_thickness: Thickness of the frustum lines. If not set,
-                defaults to `0.03 * scale`.
+            line_width: Width of the frustum lines, in screen space. Defaults to `2.0`.
             color: Color of the frustum as an RGB tuple.
             image: Optional image to be displayed on the frustum.
             format: Format of the provided image ('png' or 'jpeg').
@@ -776,6 +776,12 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
+
+        if "line_thickness" in _removed_kwargs:
+            warnings.warn(
+                "The 'line_thickness' argument has been removed. Please use 'line_width' instead. Note that the units have been changed from world space to screen space.",
+                DeprecationWarning,
+            )
 
         if image is not None:
             media_type, binary = _encode_image_binary(
@@ -791,9 +797,7 @@ class SceneApi:
                 fov=fov,
                 aspect=aspect,
                 scale=scale,
-                line_thickness=line_thickness
-                if line_thickness is not None
-                else 0.03 * scale,
+                line_width=line_width,
                 color=_encode_rgb(color),
                 image_media_type=media_type,
                 image_binary=binary,
