@@ -11,6 +11,7 @@ import React from "react";
 import {
   editIconWrapper,
   propsWrapper,
+  tableHierarchyLine,
   tableRow,
   tableWrapper,
 } from "./SceneTreeTable.css";
@@ -24,8 +25,6 @@ import {
   TextInput,
   Tooltip,
   ColorInput,
-  useMantineColorScheme,
-  useMantineTheme,
 } from "@mantine/core";
 
 function EditNodeProps({
@@ -297,42 +296,41 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
 
   const [expanded, { toggle: toggleExpanded }] = useDisclosure(false);
 
-  function setOverrideVisibility(name: string, visible: boolean | undefined) {
-    const attr = viewer.nodeAttributesFromName.current;
-    attr[name]!.overrideVisibility = visible;
-    rerenderTable();
-  }
   const setLabelVisibility = viewer.useSceneTree(
     (state) => state.setLabelVisibility,
   );
 
-  // For performance, scene node visibility is stored in a ref instead of the
-  // zustand state. This means that re-renders for the table need to be
-  // triggered manually when visibilities are updated.
-  const [, setTime] = React.useState(Date.now());
-  function rerenderTable() {
-    setTime(Date.now());
-  }
+  const pollIsVisible = React.useCallback(() => {
+    const attrs = viewer.nodeAttributesFromName.current[props.nodeName];
+    return (
+      (attrs?.overrideVisibility === undefined
+        ? attrs?.visibility
+        : attrs.overrideVisibility) ?? true
+    );
+  }, [props.nodeName]);
+
+  const [isVisible, setIsVisible] = React.useState(pollIsVisible());
   React.useEffect(() => {
-    const interval = setInterval(rerenderTable, 200);
+    // We put the visibility in a ref, so it needs to be polled. This was for
+    // performance reasons, but we should probably move it into the zustand
+    // store and just be careful to avoid subscribing to it from the r3f
+    // components.
+    const interval = setInterval(() => {
+      const visible = pollIsVisible();
+      if (visible !== isVisible) {
+        setIsVisible(visible);
+      }
+    }, 200);
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [isVisible]);
 
-  const attrs = viewer.nodeAttributesFromName.current[props.nodeName];
-  const isVisible =
-    (attrs?.overrideVisibility === undefined
-      ? attrs?.visibility
-      : attrs.overrideVisibility) ?? true;
   const isVisibleEffective = isVisible && props.isParentVisible;
   const VisibleIcon = isVisible ? IconEye : IconEyeOff;
 
   const [propsPanelOpened, { open: openPropsPanel, close: closePropsPanel }] =
     useDisclosure(false);
-
-  const colorScheme = useMantineColorScheme();
-  const theme = useMantineTheme();
 
   return (
     <>
@@ -346,19 +344,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
         onMouseOut={() => setLabelVisibility(props.nodeName, false)}
       >
         {new Array(props.indentCount).fill(null).map((_, i) => (
-          <Box
-            key={i}
-            style={{
-              borderLeft: "0.3em solid",
-              borderColor:
-                colorScheme.colorScheme == "dark"
-                  ? theme.colors.gray[7]
-                  : theme.colors.gray[2],
-              width: "0.2em",
-              marginLeft: "0.375em",
-              height: "2em",
-            }}
-          />
+          <Box className={tableHierarchyLine} key={i} />
         ))}
         <Box
           style={{
@@ -395,7 +381,9 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
               }}
               onClick={(evt) => {
                 evt.stopPropagation();
-                setOverrideVisibility(props.nodeName, !isVisible);
+                const attr = viewer.nodeAttributesFromName.current;
+                attr[props.nodeName]!.overrideVisibility = !isVisible;
+                setIsVisible(!isVisible);
               }}
             />
           </Tooltip>
