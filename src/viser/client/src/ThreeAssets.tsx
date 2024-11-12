@@ -729,11 +729,11 @@ export const CameraFrustum = React.forwardRef<
   y *= props.scale;
   z *= props.scale;
 
-  const hoveredRef = React.useContext(HoverableContext)!;
+  const hoveredRef = React.useContext(HoverableContext);
   const [isHovered, setIsHovered] = React.useState(false);
 
   useFrame(() => {
-    if (hoveredRef.current !== isHovered) {
+    if (hoveredRef !== null && hoveredRef.current !== isHovered) {
       setIsHovered(hoveredRef.current);
     }
   });
