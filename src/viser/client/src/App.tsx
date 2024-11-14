@@ -487,6 +487,52 @@ function DefaultLights() {
   );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
+  // Environment map frames:
+  // - We want the `background_wxyz` and `environment_wxyz` to be in the Viser
+  //   world frame. This is different from the threejs world frame, which should
+  //   not be exposed to the user.
+  // - `backgroundRotation` and `environmentRotation` for the `Environment` component
+  //   are in the threejs world frame.
+  const [R_threeworld_world, setR_threeworld_world] = React.useState(
+    // In Python, this will be set by `set_up_direction()`.
+    viewer.nodeAttributesFromName.current![""]!.wxyz!,
+  );
+  useFrame(() => {
+    const currentR_threeworld_world =
+      viewer.nodeAttributesFromName.current![""]!.wxyz!;
+    if (currentR_threeworld_world !== R_threeworld_world) {
+      setR_threeworld_world(currentR_threeworld_world);
+    }
+  });
+
+  const Rquat_threeworld_world = new THREE.Quaternion(
+    R_threeworld_world[1],
+    R_threeworld_world[2],
+    R_threeworld_world[3],
+    R_threeworld_world[0],
+  );
+  const Rquat_world_threeworld = Rquat_threeworld_world.clone().invert();
+  const backgroundRotation = new THREE.Euler().setFromQuaternion(
+    new THREE.Quaternion(
+      environmentMap.background_wxyz[1],
+      environmentMap.background_wxyz[2],
+      environmentMap.background_wxyz[3],
+      environmentMap.background_wxyz[0],
+    )
+      .premultiply(Rquat_threeworld_world)
+      .multiply(Rquat_world_threeworld),
+  );
+  const environmentRotation = new THREE.Euler().setFromQuaternion(
+    new THREE.Quaternion(
+      environmentMap.environment_wxyz[1],
+      environmentMap.environment_wxyz[2],
+      environmentMap.environment_wxyz[3],
+      environmentMap.environment_wxyz[0],
+    )
+      .premultiply(Rquat_threeworld_world)
+      .multiply(Rquat_world_threeworld),
+  );
+
   let envMapNode;
   if (environmentMap.hdri === null) {
     envMapNode = null;
@@ -510,9 +556,9 @@ function DefaultLights() {
         background={environmentMap.background}
         backgroundBlurriness={environmentMap.background_blurriness}
         backgroundIntensity={environmentMap.background_intensity}
-        backgroundRotation={environmentMap.background_rotation}
+        backgroundRotation={backgroundRotation}
         environmentIntensity={environmentMap.environment_intensity}
-        environmentRotation={environmentMap.environment_rotation}
+        environmentRotation={environmentRotation}
       />
     );
   }

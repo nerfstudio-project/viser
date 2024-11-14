@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Tuple
+from typing import NamedTuple, Tuple
 
 import numpy as onp
 import numpy.typing as onpt
@@ -11,8 +11,7 @@ from . import _base, hints
 from .utils import broadcast_leading_axes, get_epsilon
 
 
-@dataclasses.dataclass(frozen=True)
-class RollPitchYaw:
+class RollPitchYaw(NamedTuple):
     """Struct containing roll, pitch, and yaw Euler angles."""
 
     roll: onpt.NDArray[onp.floating]
@@ -131,7 +130,7 @@ class SO3(
         """Computes roll, pitch, and yaw angles. Uses the ZYX mobile robot convention.
 
         Returns:
-            Named tuple containing Euler angles in radians.
+            NamedTuple containing Euler angles in radians.
         """
         return RollPitchYaw(
             roll=self.compute_roll_radians(),

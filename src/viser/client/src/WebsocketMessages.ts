@@ -301,9 +301,9 @@ export interface EnvironmentMapMessage {
   background: boolean;
   background_blurriness: number;
   background_intensity: number;
-  background_rotation: [number, number, number];
+  background_wxyz: [number, number, number, number];
   environment_intensity: number;
-  environment_rotation: [number, number, number];
+  environment_wxyz: [number, number, number, number];
 }
 /** Spot light message.
  *
