@@ -487,7 +487,14 @@ function DefaultLights() {
   );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
+  // Environment map frames:
+  // - We want the `background_wxyz` and `environment_wxyz` to be in the Viser
+  //   world frame. This is different from the threejs world frame, which should
+  //   not be exposed to the user.
+  // - `backgroundRotation` and `environmentRotation` for the `Environment` component
+  //   are in the threejs world frame.
   const [R_threeworld_world, setR_threeworld_world] = React.useState(
+    // In Python, this will be set by `set_up_direction()`.
     viewer.nodeAttributesFromName.current![""]!.wxyz!,
   );
   useFrame(() => {
@@ -512,8 +519,8 @@ function DefaultLights() {
       environmentMap.background_wxyz[3],
       environmentMap.background_wxyz[0],
     )
-      .multiply(Rquat_world_threeworld)
-      .premultiply(Rquat_threeworld_world),
+      .premultiply(Rquat_threeworld_world)
+      .multiply(Rquat_world_threeworld),
   );
   const environmentRotation = new THREE.Euler().setFromQuaternion(
     new THREE.Quaternion(
@@ -522,8 +529,8 @@ function DefaultLights() {
       environmentMap.environment_wxyz[3],
       environmentMap.environment_wxyz[0],
     )
-      .multiply(Rquat_world_threeworld)
-      .premultiply(Rquat_threeworld_world),
+      .premultiply(Rquat_threeworld_world)
+      .multiply(Rquat_world_threeworld),
   );
 
   let envMapNode;
