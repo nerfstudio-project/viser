@@ -495,9 +495,9 @@ class EnvironmentMapMessage(Message):
     background: bool
     background_blurriness: float
     background_intensity: float
-    background_rotation: tuple[float, float, float]
+    background_wxyz: Tuple[float, float, float, float]
     environment_intensity: float
-    environment_rotation: tuple[float, float, float]
+    environment_wxyz: Tuple[float, float, float, float]
 
 
 @dataclasses.dataclass
