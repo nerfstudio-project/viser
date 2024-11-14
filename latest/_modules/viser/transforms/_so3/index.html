@@ -385,7 +385,7 @@
 <span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">onp</span>
 <span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">onpt</span>
@@ -395,8 +395,7 @@
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">broadcast_leading_axes</span><span class="p">,</span> <span class="n">get_epsilon</span>
 
 
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">RollPitchYaw</span><span class="p">:</span>
+<span class="k">class</span> <span class="nc">RollPitchYaw</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Struct containing roll, pitch, and yaw Euler angles.&quot;&quot;&quot;</span>
 
     <span class="n">roll</span><span class="p">:</span> <span class="n">onpt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">onp</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
@@ -537,7 +536,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes roll, pitch, and yaw angles. Uses the ZYX mobile robot convention.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Named tuple containing Euler angles in radians.</span>
+<span class="sd">            NamedTuple containing Euler angles in radians.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">RollPitchYaw</span><span class="p">(</span>
             <span class="n">roll</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_roll_radians</span><span class="p">(),</span>

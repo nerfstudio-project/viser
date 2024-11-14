@@ -569,6 +569,11 @@
 <span class="sd">        (similar to Blender, 3DS Max, ROS, etc), the most common alternative is</span>
 <span class="sd">        +Y (OpenGL, Maya, etc).</span>
 
+<span class="sd">        In practice, the impact of this can improve (1) the ergonomics of</span>
+<span class="sd">        camera controls, which will default to the same up direction as the</span>
+<span class="sd">        scene, and (2) lighting, because the default lights and environment map</span>
+<span class="sd">        are oriented to match the scene&#39;s up direction.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            direction: New up direction. Can either be a string (one of +x, +y,</span>
 <span class="sd">                +z, -x, -y, -z) or a length-3 direction vector.</span>
@@ -903,9 +908,19 @@
         <span class="n">background</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">background_blurriness</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">background_intensity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">background_rotation</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">background_wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mf">1.0</span><span class="p">,</span>
+            <span class="mf">0.0</span><span class="p">,</span>
+            <span class="mf">0.0</span><span class="p">,</span>
+            <span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">),</span>
         <span class="n">environment_intensity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">environment_rotation</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">environment_wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mf">1.0</span><span class="p">,</span>
+            <span class="mf">0.0</span><span class="p">,</span>
+            <span class="mf">0.0</span><span class="p">,</span>
+            <span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">),</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the environment map for the scene. This will set some lights and background.</span>
 
@@ -914,9 +929,9 @@
 <span class="sd">            background: Show or hide the environment map in the background.</span>
 <span class="sd">            background_blurriness: Blur factor of the environment map background (0-1).</span>
 <span class="sd">            background_intensity: Intensity of the background.</span>
-<span class="sd">            background_rotation: Rotation of the background in radians.</span>
+<span class="sd">            background_wxyz: Orientation of the background.</span>
 <span class="sd">            environment_intensity: Intensity of the environment lighting.</span>
-<span class="sd">            environment_rotation: Rotation of the environment lighting in radians.</span>
+<span class="sd">            environment_wxyz: Orientation of the environment lighting.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">EnvironmentMapMessage</span><span class="p">(</span>
@@ -924,9 +939,9 @@
                 <span class="n">background</span><span class="o">=</span><span class="n">background</span><span class="p">,</span>
                 <span class="n">background_blurriness</span><span class="o">=</span><span class="n">background_blurriness</span><span class="p">,</span>
                 <span class="n">background_intensity</span><span class="o">=</span><span class="n">background_intensity</span><span class="p">,</span>
-                <span class="n">background_rotation</span><span class="o">=</span><span class="n">background_rotation</span><span class="p">,</span>
+                <span class="n">background_wxyz</span><span class="o">=</span><span class="n">cast_vector</span><span class="p">(</span><span class="n">background_wxyz</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
                 <span class="n">environment_intensity</span><span class="o">=</span><span class="n">environment_intensity</span><span class="p">,</span>
-                <span class="n">environment_rotation</span><span class="o">=</span><span class="n">environment_rotation</span><span class="p">,</span>
+                <span class="n">environment_wxyz</span><span class="o">=</span><span class="n">cast_vector</span><span class="p">(</span><span class="n">environment_wxyz</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
             <span class="p">)</span>
         <span class="p">)</span></div>
 
@@ -941,7 +956,7 @@
 <span class="sd">        see :meth:`SceneApi.set_environment_map()`.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            enabled: True if user wants default lighting. False is user does</span>
+<span class="sd">            enabled: True if user wants default lighting. False if user does</span>
 <span class="sd">                not want default lighting.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">EnableLightsMessage</span><span class="p">(</span><span class="n">enabled</span><span class="p">))</span></div>
