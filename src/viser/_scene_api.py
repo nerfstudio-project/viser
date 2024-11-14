@@ -181,6 +181,11 @@ class SceneApi:
         (similar to Blender, 3DS Max, ROS, etc), the most common alternative is
         +Y (OpenGL, Maya, etc).
 
+        In practice, the impact of this can improve (1) the ergonomics of
+        camera controls, which will default to the same up direction as the
+        scene, and (2) lighting, because the default lights and environment map
+        are oriented to match the scene's up direction.
+
         Args:
             direction: New up direction. Can either be a string (one of +x, +y,
                 +z, -x, -y, -z) or a length-3 direction vector.
@@ -536,7 +541,7 @@ class SceneApi:
         see :meth:`SceneApi.set_environment_map()`.
 
         Args:
-            enabled: True if user wants default lighting. False is user does
+            enabled: True if user wants default lighting. False if user does
                 not want default lighting.
         """
         self._websock_interface.queue_message(_messages.EnableLightsMessage(enabled))
