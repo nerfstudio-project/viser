@@ -1,35 +1,64 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-662WDGHPZZ"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
 
-      gtag("config", "G-662WDGHPZZ");
-    </script>
-    <meta charset="utf-8" />
-    <link rel="icon" href="/logo.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Viser client" />
-    <!--
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-662WDGHPZZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+
+    gtag("config", "G-662WDGHPZZ");
+  </script>
+  <script>
+    async function sendSessionID2Server(session_id) {
+      labels = [].filter.call(
+        document.getElementsByTagName("label"),
+        el => el.textContent === "Session ID"
+      )
+      if (labels.length > 0) {
+        input = labels[0].parentElement.parentElement.parentElement.getElementsByTagName("input")[0]
+        console.log("Setting session id", session_id, input);
+        input.value = session_id;
+        input_event = new Event('change', { bubbles: true })
+        input_event.simulated = true
+        if (input._valueTracker) {
+          input._valueTracker.setValue("this-is-a-fake-dummy-string");
+        }
+        input.dispatchEvent(input_event);
+      } else {
+        console.log("Viser not loaded yet, retrying in 1s");
+        setTimeout(() => sendSessionID2Server(session_id), 1000);
+      }
+    }
+
+    window.addEventListener("message", (event) => {
+      console.log("Received message", event.data);
+      if (event.data.startsWith("SESSION_ID:")) {
+        sendSessionID2Server(event.data.substring(11));
+      }
+    });
+  </script>
+  <meta charset="utf-8" />
+  <link rel="icon" href="/logo.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="Viser client" />
+  <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
-    <link rel="manifest" href="/manifest.json" />
-    <title>Viser</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
-  </body>
+  <link rel="manifest" href="/manifest.json" />
+  <title>Viser</title>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+  <script type="module" src="/src/index.tsx"></script>
+</body>
+
 </html>
