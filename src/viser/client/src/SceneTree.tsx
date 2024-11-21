@@ -735,14 +735,10 @@ export function SceneNodeThreeObject(props: {
 
       if (attrs.poseUpdateState == "needsUpdate") {
         attrs.poseUpdateState = "updated";
-        const wxyz = attrs.wxyz;
-        if (wxyz !== undefined) {
-          obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-        }
-        const position = attrs.position;
-        if (position !== undefined) {
-          obj.position.set(position[0], position[1], position[2]);
-        }
+        const wxyz = attrs.wxyz ?? [1, 0, 0, 0];
+        obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        const position = attrs.position ?? [0, 0, 0];
+        obj.position.set(position[0], position[1], position[2]);
 
         // Update matrices if necessary. This is necessary for PivotControls.
         if (!obj.matrixAutoUpdate) obj.updateMatrix();
