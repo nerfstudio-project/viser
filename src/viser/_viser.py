@@ -433,8 +433,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         height: int,
         width: int,
         *,
-        wxyz: tuple[float, float, float, float],
-        position: tuple[float, float, float],
+        wxyz: tuple[float, float, float, float] | np.ndarray,
+        position: tuple[float, float, float] | np.ndarray,
         fov: float,
         transport_format: Literal["png", "jpeg"] = "jpeg",
     ) -> np.ndarray: ...
@@ -453,8 +453,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         height: int,
         width: int,
         *,
-        wxyz: tuple[float, float, float, float] | None = None,
-        position: tuple[float, float, float] | None = None,
+        wxyz: tuple[float, float, float, float] | np.ndarray | None = None,
+        position: tuple[float, float, float] | np.ndarray | None = None,
         fov: float | None = None,
         transport_format: Literal["png", "jpeg"] = "jpeg",
     ) -> np.ndarray:
