@@ -334,11 +334,6 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
                 _messages.SetSceneNodeClickableMessage(self._impl.name, False)
             )
 
-        if len(self._impl.click_cb) == 0:
-            self._impl.api._websock_interface.queue_message(
-                _messages.SetSceneNodeClickableMessage(self._impl.name, False)
-            )
-
 
 class CameraFrustumHandle(
     _ClickableSceneNodeHandle,
