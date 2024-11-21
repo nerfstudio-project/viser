@@ -298,7 +298,7 @@ function useMessageHandler() {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.wxyz = message.wxyz;
-        if (attr[message.name]!.poseUpdateState == "updated")
+        if (attr[message.name]!.poseUpdateState != "waitForMakeObject")
           attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
@@ -306,7 +306,7 @@ function useMessageHandler() {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.position = message.position;
-        if (attr[message.name]!.poseUpdateState == "updated")
+        if (attr[message.name]!.poseUpdateState != "waitForMakeObject")
           attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }

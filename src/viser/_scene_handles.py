@@ -329,6 +329,10 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
             self._impl.click_cb.clear()
         else:
             self._impl.click_cb = [cb for cb in self._impl.click_cb if cb != callback]
+        if len(self._impl.click_cb) == 0:
+            self._impl.api._websock_interface.queue_message(
+                _messages.SetSceneNodeClickableMessage(self._impl.name, False)
+            )
 
 
 class CameraFrustumHandle(

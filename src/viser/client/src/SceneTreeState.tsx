@@ -137,6 +137,13 @@ export function useSceneTreeState(
           }),
         updateSceneNode: (name, updates) =>
           set((state) => {
+            if (state.nodeFromName[name] === undefined) {
+              console.error(
+                `Attempted to update non-existent node ${name} with updates:`,
+                updates,
+              );
+              return;
+            }
             state.nodeFromName[name]!.message.props = {
               ...state.nodeFromName[name]!.message.props,
               ...updates,
