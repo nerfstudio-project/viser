@@ -31,7 +31,7 @@ export default function SliderComponent({
   const updateValue = (value: number) => setValue(uuid, value);
   const colorScheme = useMantineColorScheme().colorScheme;
   const input = (
-    <Flex justify="space-between">
+    <Flex justify="space-between" align="center">
       <Slider
         id={uuid}
         className={marks === null ? sliderDefaultMarks : undefined}
@@ -64,8 +64,6 @@ export default function SliderComponent({
               : theme.primaryColor,
           },
         })}
-        pt="0.3em"
-        pb="0.2em"
         showLabelOnHover={false}
         min={min}
         max={max}
@@ -100,16 +98,8 @@ export default function SliderComponent({
         max={max}
         hideControls = {hideControls === undefined ? true: hideControls}
         step={step ?? undefined}
-        // precision={precision}
-        style={{ width: "3rem" }}
-        styles={{
-          input: {
-            padding: "0.375em",
-            letterSpacing: "-0.5px",
-            minHeight: "1.875em",
-            height: "1.875em",
-          },
-        }}
+        decimalScale={precision}
+        style={{ width: "4rem" }}
         ml="xs"
       />
     </Flex>
