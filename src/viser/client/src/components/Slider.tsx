@@ -22,6 +22,7 @@ export default function SliderComponent({
     max,
     precision,
     step,
+    hideControls,
     _marks: marks,
   },
 }: GuiSliderMessage) {
@@ -97,7 +98,7 @@ export default function SliderComponent({
         size="xs"
         min={min}
         max={max}
-        hideControls
+        hideControls = {hideControls === undefined ? true: hideControls}
         step={step ?? undefined}
         // precision={precision}
         style={{ width: "3rem" }}

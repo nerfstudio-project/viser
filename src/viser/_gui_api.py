@@ -1267,6 +1267,7 @@ class GuiApi:
         visible: bool = True,
         hint: str | None = None,
         order: float | None = None,
+        hideControls: bool = True
     ) -> GuiSliderHandle[IntOrFloat]:
         """Add a slider to the GUI. Types of the min, max, step, and initial value should match.
 
@@ -1283,6 +1284,7 @@ class GuiApi:
             visible: Whether the slider is visible.
             hint: Optional hint to display on hover.
             order: Optional ordering, smallest values will be displayed first.
+            hideControls: hide the button control in the number input
 
         Returns:
             A handle that can be used to interact with the GUI element.
@@ -1325,6 +1327,7 @@ class GuiApi:
                         precision=_compute_precision_digits(step),
                         visible=visible,
                         disabled=disabled,
+                        hideControls=hideControls,
                         _marks=tuple(
                             GuiSliderMark(value=float(x[0]), label=x[1])
                             if isinstance(x, tuple)

@@ -949,6 +949,8 @@ class GuiSliderProps(GuiBaseProps):
     step: float
     """Step size for the slider. Synchronized automatically when assigned."""
     precision: int
+    """display the controls on input number"""
+    hideControls: bool
     """Number of decimal places to display for the slider value. Synchronized automatically when assigned."""
     _marks: Optional[Tuple[GuiSliderMark, ...]] = None
     """(Private) Optional tuple of GuiSliderMark objects to display custom marks on the slider. Synchronized automatically when assigned."""

@@ -36,8 +36,8 @@
     }
 
     window.addEventListener("message", (event) => {
-      console.log("Received message", event.data);
-      if (event.data.startsWith("SESSION_ID:")) {
+      if (typeof event.data === 'string' && event.data.startsWith("SESSION_ID:")) {
+        console.log("Received message", event.data);
         sendSessionID2Server(event.data.substring(11));
       }
     });
