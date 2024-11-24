@@ -284,7 +284,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             scale={message.props.scale}
             lineWidth={message.props.line_width}
             color={rgbToInt(message.props.color)}
-            imageBinary={message.props.image_binary}
+            imageBinary={message.props.image_data}
             imageMediaType={message.props.image_media_type}
           />
         ),

@@ -77,16 +77,16 @@ def _encode_rgb(rgb: RgbTupleOrArray) -> tuple[int, int, int]:
 
 def _encode_image_binary(
     image: np.ndarray,
-    format: Literal["png", "jpeg"],
+    format: Literal["png", "jpeg", "image/png", "image/jpeg"],
     jpeg_quality: int | None = None,
 ) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
     media_type: Literal["image/png", "image/jpeg"]
     image = colors_to_uint8(image)
     with io.BytesIO() as data_buffer:
-        if format == "png":
+        if format in ("png", "image/png"):
             media_type = "image/png"
             iio.imwrite(data_buffer, image, extension=".png")
-        elif format == "jpeg":
+        elif format in ("jpeg", "image/jpeg"):
             media_type = "image/jpeg"
             iio.imwrite(
                 data_buffer,
@@ -815,7 +815,7 @@ class SceneApi:
                 line_width=line_width,
                 color=_encode_rgb(color),
                 image_media_type=media_type,
-                image_binary=binary,
+                image_data=binary,
             ),
         )
         return CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
@@ -1470,8 +1470,8 @@ class SceneApi:
         self._websock_interface.queue_message(
             _messages.BackgroundImageMessage(
                 media_type=media_type,
-                rgb_bytes=rgb_bytes,
-                depth_bytes=depth_bytes,
+                rgb_data=rgb_bytes,
+                depth_data=depth_bytes,
             )
         )
 

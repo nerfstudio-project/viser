@@ -1,5 +1,6 @@
 import dataclasses
 from collections import defaultdict
+from types import UnionType
 from typing import Any, Type, Union, cast
 
 import numpy as np
@@ -69,7 +70,7 @@ def _get_ts_type(typ: Type[Any]) -> str:
                 get_args(typ),
             )
         )
-    elif origin_typ is Union:
+    elif origin_typ in (Union, UnionType):
         return (
             "("
             + " | ".join(

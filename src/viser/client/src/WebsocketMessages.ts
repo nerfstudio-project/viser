@@ -103,7 +103,7 @@ export interface CameraFrustumMessage {
     line_width: number;
     color: [number, number, number];
     image_media_type: "image/jpeg" | "image/png" | null;
-    image_binary: Uint8Array | null;
+    image_data: Uint8Array | null;
   };
 }
 /** GlTF message.
@@ -474,8 +474,8 @@ export interface TransformControlsUpdateMessage {
 export interface BackgroundImageMessage {
   type: "BackgroundImageMessage";
   media_type: "image/jpeg" | "image/png";
-  rgb_bytes: Uint8Array;
-  depth_bytes: Uint8Array | null;
+  rgb_data: Uint8Array;
+  depth_data: Uint8Array | null;
 }
 /** Message for rendering 2D images.
  *
@@ -611,6 +611,22 @@ export interface GuiPlotlyMessage {
     order: number;
     _plotly_json_str: string;
     aspect: number;
+    visible: boolean;
+  };
+}
+/** GuiImageMessage(uuid: 'str', container_uuid: 'str', props: 'GuiImageProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiImageMessage {
+  type: "GuiImageMessage";
+  uuid: string;
+  container_uuid: string;
+  props: {
+    order: number;
+    label: string | null;
+    data: Uint8Array | null;
+    media_type: "image/jpeg" | "image/png";
     visible: boolean;
   };
 }
@@ -1182,6 +1198,7 @@ export type Message =
   | GuiMarkdownMessage
   | GuiProgressBarMessage
   | GuiPlotlyMessage
+  | GuiImageMessage
   | GuiTabGroupMessage
   | GuiModalMessage
   | GuiCloseModalMessage
@@ -1243,6 +1260,7 @@ export type GuiComponentMessage =
   | GuiMarkdownMessage
   | GuiProgressBarMessage
   | GuiPlotlyMessage
+  | GuiImageMessage
   | GuiTabGroupMessage
   | GuiButtonMessage
   | GuiUploadButtonMessage
@@ -1291,6 +1309,7 @@ const typeSetGuiComponentMessage = new Set([
   "GuiMarkdownMessage",
   "GuiProgressBarMessage",
   "GuiPlotlyMessage",
+  "GuiImageMessage",
   "GuiTabGroupMessage",
   "GuiButtonMessage",
   "GuiUploadButtonMessage",

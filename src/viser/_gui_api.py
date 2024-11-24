@@ -41,6 +41,7 @@ from ._gui_handles import (
     GuiDropdownHandle,
     GuiEvent,
     GuiFolderHandle,
+    GuiImageHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiMultiSliderHandle,
@@ -618,6 +619,42 @@ class GuiApi:
         # Logic for processing markdown, handling images, etc is all in the
         # `.content` setter, which should send a GuiUpdateMessage.
         handle.content = content
+        return handle
+
+    def add_image(
+        self,
+        image: np.ndarray,
+        label: str | None = None,
+        format: Literal["png", "jpeg"] = "jpeg",
+        jpeg_quality: int | None = None,
+        order: float | None = None,
+        visible: bool = True,
+    ) -> GuiImageHandle:
+        message = _messages.GuiImageMessage(
+            uuid=_make_uuid(),
+            container_uuid=self._get_container_uuid(),
+            props=_messages.GuiImageProps(
+                data=None,  # Sent in prop update later.
+                label=label,
+                media_type="image/png" if format == "png" else "image/jpeg",
+                order=_apply_default_order(order),
+                visible=visible,
+            ),
+        )
+        self._websock_interface.queue_message(message)
+
+        handle = GuiImageHandle(
+            _GuiHandleState(
+                message.uuid,
+                self,
+                None,
+                props=message.props,
+                parent_container_id=message.container_uuid,
+            ),
+            _image=image,
+            _jpeg_quality=jpeg_quality,
+        )
+        handle.image = image
         return handle
 
     def add_plotly(

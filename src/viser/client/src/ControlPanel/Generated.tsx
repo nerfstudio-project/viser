@@ -22,6 +22,7 @@ import FolderComponent from "../components/Folder";
 import MultiSliderComponent from "../components/MultiSlider";
 import UploadButtonComponent from "../components/UploadButton";
 import ProgressBarComponent from "../components/ProgressBar";
+import ImageComponent from "../components/Image";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -102,6 +103,8 @@ function GeneratedInput(props: { guiUuid: string }) {
       return <MarkdownComponent {...conf} />;
     case "GuiPlotlyMessage":
       return <PlotlyComponent {...conf} />;
+    case "GuiImageMessage":
+      return <ImageComponent {...conf} />;
     case "GuiButtonMessage":
       return <ButtonComponent {...conf} />;
     case "GuiUploadButtonMessage":

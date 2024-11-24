@@ -319,7 +319,7 @@ function useMessageHandler() {
       // Add a background image.
       case "BackgroundImageMessage": {
         const rgb_url = URL.createObjectURL(
-          new Blob([message.rgb_bytes], {
+          new Blob([message.rgb_data], {
             type: message.media_type,
           }),
         );
@@ -335,12 +335,12 @@ function useMessageHandler() {
         });
         viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
         viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
-          message.depth_bytes !== null;
+          message.depth_data !== null;
 
-        if (message.depth_bytes !== null) {
+        if (message.depth_data !== null) {
           // If depth is available set the texture
           const depth_url = URL.createObjectURL(
-            new Blob([message.depth_bytes], {
+            new Blob([message.depth_data], {
               type: message.media_type,
             }),
           );

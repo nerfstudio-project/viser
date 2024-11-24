@@ -63,6 +63,7 @@ examples = [
     "robot_descriptions>=1.10.0",
     "gdown>=4.6.6",
     "plyfile",
+    "opencv-python",
 ]
 
 [project.urls]
