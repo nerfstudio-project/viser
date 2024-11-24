@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import dataclasses
 import uuid
-from typing import Any, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, ClassVar, Dict, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing as npt
