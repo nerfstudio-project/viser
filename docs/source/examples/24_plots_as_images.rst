@@ -14,6 +14,7 @@ than using Plotly.
         :linenos:
 
 
+        import colorsys
         import time
 
         import cv2
@@ -21,23 +22,27 @@ than using Plotly.
         import tyro
 
         import viser
+        import viser.transforms as vtf
 
 
         def get_line_plot(
-            x: np.ndarray,
-            y: np.ndarray,
+            xs: np.ndarray,
+            ys: np.ndarray,
             height: int,
             width: int,
             *,
             x_bounds: tuple[float, float] | None = None,
             y_bounds: tuple[float, float] | None = None,
+            title: str | None = None,
             line_thickness: int = 2,
+            grid_x_lines: int = 8,
+            grid_y_lines: int = 5,
             font_scale: float = 0.4,
             background_color: tuple[int, int, int] = (0, 0, 0),
             plot_area_color: tuple[int, int, int] = (0, 0, 0),
             grid_color: tuple[int, int, int] = (60, 60, 60),
             axes_color: tuple[int, int, int] = (100, 100, 100),
-            line_color: tuple[int, int, int] = (0, 255, 255),
+            line_color: tuple[int, int, int] = (255, 255, 255),
             text_color: tuple[int, int, int] = (200, 200, 200),
         ) -> np.ndarray:
             """Create a line plot using OpenCV with axes, labels, and grid.
@@ -47,12 +52,12 @@ than using Plotly.
             """
 
             if x_bounds is None:
-                x_bounds = (np.min(x), np.max(x.round(decimals=4)))
+                x_bounds = (np.min(xs), np.max(xs.round(decimals=4)))
             if y_bounds is None:
-                y_bounds = (np.min(y), np.max(y))
+                y_bounds = (np.min(ys), np.max(ys))
 
             # Calculate text sizes for padding.
-            font = cv2.FONT_HERSHEY_SIMPLEX
+            font = cv2.FONT_HERSHEY_DUPLEX
             sample_y_label = f"{max(abs(y_bounds[0]), abs(y_bounds[1])):.1f}"
             y_text_size = cv2.getTextSize(sample_y_label, font, font_scale, 1)[0]
 
@@ -63,7 +68,14 @@ than using Plotly.
             extra_padding = 8
             left_pad = int(y_text_size[0] * 1.5) + extra_padding  # Space for y-axis labels
             right_pad = int(10 * font_scale) + extra_padding
-            top_pad = int(20 * font_scale) + extra_padding
+
+            # Calculate top padding, accounting for title if present
+            top_pad = int(10 * font_scale) + extra_padding
+            title_font_scale = font_scale * 1.5  # Make title slightly larger
+            if title is not None:
+                title_size = cv2.getTextSize(title, font, title_font_scale, 1)[0]
+                top_pad += title_size[1] + int(10 * font_scale)
+
             bottom_pad = int(x_text_size[1] * 2.0) + extra_padding  # Space for x-axis labels
 
             # Create larger image to accommodate padding.
@@ -88,19 +100,14 @@ than using Plotly.
                 normalized = (values - min_val) / (max_val - min_val)
                 return (normalized * (pixels - 1)).astype(np.int32)
 
-            # Draw grid lines.
-
-            num_vertical_lines = 5
-            num_horizontal_lines = 3
-
             # Vertical grid lines.
-            for i in range(num_vertical_lines):
-                x_pos = left_pad + int(plot_width * i / (num_vertical_lines - 1))
+            for i in range(grid_x_lines):
+                x_pos = left_pad + int(plot_width * i / (grid_x_lines - 1))
                 cv2.line(img, (x_pos, top_pad), (x_pos, top_pad + plot_height), grid_color, 1)
 
             # Horizontal grid lines.
-            for i in range(num_horizontal_lines):
-                y_pos = top_pad + int(plot_height * i / (num_horizontal_lines - 1))
+            for i in range(grid_y_lines):
+                y_pos = top_pad + int(plot_height * i / (grid_y_lines - 1))
                 cv2.line(img, (left_pad, y_pos), (left_pad + plot_width, y_pos), grid_color, 1)
 
             # Draw axes.
@@ -116,8 +123,8 @@ than using Plotly.
             )  # y-axis
 
             # Scale and plot the data.
-            x_scaled = scale_to_pixels(x, x_bounds, plot_width) + left_pad
-            y_scaled = top_pad + plot_height - 1 - scale_to_pixels(y, y_bounds, plot_height)
+            x_scaled = scale_to_pixels(xs, x_bounds, plot_width) + left_pad
+            y_scaled = top_pad + plot_height - 1 - scale_to_pixels(ys, y_bounds, plot_height)
             pts = np.column_stack((x_scaled, y_scaled)).reshape((-1, 1, 2))
 
             # Draw the main plot line.
@@ -125,13 +132,26 @@ than using Plotly.
                 img, [pts], False, line_color, thickness=line_thickness, lineType=cv2.LINE_AA
             )
 
-            # Add labels.
-            font = cv2.FONT_HERSHEY_SIMPLEX
+            # Draw title if specified
+            if title is not None:
+                title_size = cv2.getTextSize(title, font, title_font_scale, 1)[0]
+                title_x = left_pad + (plot_width - title_size[0]) // 2
+                title_y = int(top_pad / 2) + title_size[1] // 2 - 1
+                cv2.putText(
+                    img,
+                    title,
+                    (title_x, title_y),
+                    font,
+                    title_font_scale,
+                    text_color,
+                    1,
+                    cv2.LINE_AA,
+                )
 
             # X-axis labels.
-            for i in range(num_vertical_lines):
-                x_val = x_bounds[0] + (x_bounds[1] - x_bounds[0]) * i / (num_vertical_lines - 1)
-                x_pos = left_pad + int(plot_width * i / (num_vertical_lines - 1))
+            for i in range(grid_x_lines):
+                x_val = x_bounds[0] + (x_bounds[1] - x_bounds[0]) * i / (grid_x_lines - 1)
+                x_pos = left_pad + int(plot_width * i / (grid_x_lines - 1))
                 label = f"{x_val:.1f}"
                 if label == "-0.0":
                     label = "0.0"
@@ -148,11 +168,11 @@ than using Plotly.
                 )
 
             # Y-axis labels.
-            for i in range(num_horizontal_lines):
-                y_val = y_bounds[0] + (y_bounds[1] - y_bounds[0]) * (
-                    num_horizontal_lines - 1 - i
-                ) / (num_horizontal_lines - 1)
-                y_pos = top_pad + int(plot_height * i / (num_horizontal_lines - 1))
+            for i in range(grid_y_lines):
+                y_val = y_bounds[0] + (y_bounds[1] - y_bounds[0]) * (grid_y_lines - 1 - i) / (
+                    grid_y_lines - 1
+                )
+                y_pos = top_pad + int(plot_height * i / (grid_y_lines - 1))
                 label = f"{y_val:.1f}"
                 if label == "-0.0":
                     label = "0.0"
@@ -171,50 +191,91 @@ than using Plotly.
             return img
 
 
-        def create_sine_plot(counter: int) -> np.ndarray:
+        def create_sine_plot(title: str, counter: int) -> np.ndarray:
             """Create a sine wave plot with the given counter offset."""
-            xs = np.linspace(0, 2 * np.pi, 50)
+            xs = np.linspace(0, 2 * np.pi, 20)
+            rgb = colorsys.hsv_to_rgb(counter / 4000 % 1, 1, 1)
             return get_line_plot(
-                xs,
-                np.sin(xs + counter / 20),
+                xs=xs,
+                ys=np.sin(xs + counter / 20),
+                title=title,
+                line_color=(int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255)),
                 height=150,
                 width=350,
             )
 
 
-        def main(num_plots: int = 4) -> None:
+        def main(num_plots: int = 8) -> None:
             server = viser.ViserServer()
 
+            # Create GUI elements for display runtimes.
             with server.gui.add_folder("Runtime"):
-                draw_time = server.gui.add_text("Draw / plot (ms)", "0.00")
-                send_time = server.gui.add_text("Send / plot (ms)", "0.00")
+                draw_time = server.gui.add_text("Draw / plot (ms)", "0.00", disabled=True)
+                send_gui_time = server.gui.add_text(
+                    "Gui update / plot (ms)", "0.00", disabled=True
+                )
+                send_scene_time = server.gui.add_text(
+                    "Scene update / plot (ms)", "0.00", disabled=True
+                )
 
+            # Add 2D plots to the GUI.
             with server.gui.add_folder("Plots"):
-                image_handles = [
+                plots_cb = server.gui.add_checkbox("Update plots", True)
+                gui_image_handles = [
                     server.gui.add_image(
-                        create_sine_plot(counter=0),
-                        label=f"Plot {i}",
+                        create_sine_plot(f"Plot {i}", counter=0),
+                        label=f"Image {i}",
                         format="jpeg",
                     )
                     for i in range(num_plots)
                 ]
 
+            # Add 2D plots to the scene. We flip them with a parent coordinate frame.
+            server.scene.add_frame(
+                "/images", wxyz=vtf.SO3.from_y_radians(np.pi).wxyz, show_axes=False
+            )
+            scene_image_handles = [
+                server.scene.add_image(
+                    f"/images/plot{i}",
+                    image=gui_image_handles[i].image,
+                    render_width=3.5,
+                    render_height=1.5,
+                    format="jpeg",
+                    position=(
+                        (i % 2 - 0.5) * 3.5,
+                        (i // 2 - (num_plots - 1) / 4) * 1.5,
+                        0,
+                    ),
+                )
+                for i in range(num_plots)
+            ]
+
             counter = 0
 
             while True:
-                # Create and time the plot generation
-                start = time.time()
-                images = [create_sine_plot(counter=counter * (i + 1)) for i in range(num_plots)]
-                draw_time.value = f"{(time.time() - start) / num_plots * 1000:.2f}"
+                if plots_cb.value:
+                    # Create and time the plot generation.
+                    start = time.time()
+                    images = [
+                        create_sine_plot(f"Plot {i}", counter=counter * (i + 1))
+                        for i in range(num_plots)
+                    ]
+                    draw_time.value = f"{0.98 * float(draw_time.value) + 0.02 * (time.time() - start) / num_plots * 1000:.2f}"
 
-                # Update all plot images
-                start = time.time()
-                for i, handle in enumerate(image_handles):
-                    handle.image = images[i]
-                send_time.value = f"{(time.time() - start) / num_plots * 1000:.2f}"
+                    # Update all plot images.
+                    start = time.time()
+                    for i, handle in enumerate(gui_image_handles):
+                        handle.image = images[i]
+                    send_gui_time.value = f"{0.98 * float(send_gui_time.value) + 0.02 * (time.time() - start) / num_plots * 1000:.2f}"
+
+                    # Update all scene images.
+                    start = time.time()
+                    for i, handle in enumerate(scene_image_handles):
+                        handle.image = gui_image_handles[i].image
+                    send_scene_time.value = f"{0.98 * float(send_scene_time.value) + 0.02 * (time.time() - start) / num_plots * 1000:.2f}"
 
                 # Sleep a bit before continuing.
-                time.sleep(0.01)
+                time.sleep(0.02)
                 counter += 1
 
 

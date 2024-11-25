@@ -818,7 +818,10 @@ class SceneApi:
                 image_data=binary,
             ),
         )
-        return CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
+        handle = CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
+        handle._image = image
+        handle._jpeg_quality = jpeg_quality
+        return handle
 
     def add_frame(
         self,
@@ -1516,7 +1519,10 @@ class SceneApi:
                 render_height=render_height,
             ),
         )
-        return ImageHandle._make(self, message, name, wxyz, position, visible)
+        handle = ImageHandle._make(self, message, name, wxyz, position, visible)
+        handle._image = image
+        handle._jpeg_quality = jpeg_quality
+        return handle
 
     def add_transform_controls(
         self,
