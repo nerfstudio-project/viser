@@ -841,5 +841,5 @@ class GuiImageHandle(_GuiHandle[None], GuiImageProps):
         media_type, data = _encode_image_binary(
             image, self.media_type, jpeg_quality=self._jpeg_quality
         )
-        self.data = data
+        self._data = data
         del media_type

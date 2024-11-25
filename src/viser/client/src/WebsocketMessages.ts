@@ -103,7 +103,7 @@ export interface CameraFrustumMessage {
     line_width: number;
     color: [number, number, number];
     image_media_type: "image/jpeg" | "image/png" | null;
-    image_data: Uint8Array | null;
+    _image_data: Uint8Array | null;
   };
 }
 /** GlTF message.
@@ -486,7 +486,7 @@ export interface ImageMessage {
   name: string;
   props: {
     media_type: "image/jpeg" | "image/png";
-    data: Uint8Array;
+    _data: Uint8Array;
     render_width: number;
     render_height: number;
   };
@@ -625,7 +625,7 @@ export interface GuiImageMessage {
   props: {
     order: number;
     label: string | null;
-    data: Uint8Array | null;
+    _data: Uint8Array | null;
     media_type: "image/jpeg" | "image/png";
     visible: boolean;
   };

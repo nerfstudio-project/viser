@@ -663,14 +663,14 @@ export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
     const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
 
     React.useEffect(() => {
-      if (message.props.media_type !== null && message.props.data !== null) {
-        const image_url = URL.createObjectURL(new Blob([message.props.data]));
+      if (message.props.media_type !== null && message.props._data !== null) {
+        const image_url = URL.createObjectURL(new Blob([message.props._data]));
         new THREE.TextureLoader().load(image_url, (texture) => {
           setImageTexture(texture);
           URL.revokeObjectURL(image_url);
         });
       }
-    }, [message.props.media_type, message.props.data]);
+    }, [message.props.media_type, message.props._data]);
     return (
       <group ref={ref}>
         <mesh rotation={new THREE.Euler(Math.PI, 0.0, 0.0)}>

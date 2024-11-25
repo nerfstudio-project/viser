@@ -192,7 +192,7 @@ class CameraFrustumProps:
     """Color of the frustum as RGB integers. Synchronized automatically when assigned."""
     image_media_type: Literal["image/jpeg", "image/png"] | None
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
-    image_data: bytes | None
+    _image_data: bytes | None
     """Optional image to be displayed on the frustum. Synchronized automatically when assigned."""
 
 
@@ -731,7 +731,7 @@ class ImageMessage(Message, tag="SceneNodeMessage"):
 class ImageProps:
     media_type: Literal["image/jpeg", "image/png"]
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
-    data: bytes
+    _data: bytes
     """Binary data of the image. Synchronized automatically when assigned."""
     render_width: float
     """Width at which the image should be rendered in the scene. Synchronized automatically when assigned."""
@@ -881,7 +881,7 @@ class GuiImageProps:
     """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     label: str | None
     """Label text for the image. Synchronized automatically when assigned."""
-    data: bytes | None
+    _data: bytes | None
     """Binary data of the image. Synchronized automatically when assigned."""
     media_type: Literal["image/jpeg", "image/png"]
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""

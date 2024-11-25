@@ -815,7 +815,7 @@ class SceneApi:
                 line_width=line_width,
                 color=_encode_rgb(color),
                 image_media_type=media_type,
-                image_data=binary,
+                _image_data=binary,
             ),
         )
         handle = CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
@@ -1514,7 +1514,7 @@ class SceneApi:
             name=name,
             props=_messages.ImageProps(
                 media_type=media_type,
-                data=binary,
+                _data=binary,
                 render_width=render_width,
                 render_height=render_height,
             ),

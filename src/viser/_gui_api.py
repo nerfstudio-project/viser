@@ -634,7 +634,7 @@ class GuiApi:
             uuid=_make_uuid(),
             container_uuid=self._get_container_uuid(),
             props=_messages.GuiImageProps(
-                data=None,  # Sent in prop update later.
+                _data=None,  # Sent in prop update later.
                 label=label,
                 media_type="image/png" if format == "png" else "image/jpeg",
                 order=_apply_default_order(order),

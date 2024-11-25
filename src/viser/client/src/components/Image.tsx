@@ -8,18 +8,18 @@ function ImageComponent({ props }: GuiImageMessage) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (props.data === null) {
+    if (props._data === null) {
       setImageUrl(null);
     } else {
       const image_url = URL.createObjectURL(
-        new Blob([props.data], { type: props.media_type }),
+        new Blob([props._data], { type: props.media_type }),
       );
       setImageUrl(image_url);
       return () => {
         URL.revokeObjectURL(image_url);
       };
     }
-  }, [props.data, props.media_type]);
+  }, [props._data, props.media_type]);
 
   return imageUrl === null ? null : (
     <Box px="xs">

@@ -351,8 +351,12 @@ class CameraFrustumHandle(
         return self._image
 
     @image.setter
-    def image(self, image: np.ndarray) -> None:
+    def image(self, image: np.ndarray | None) -> None:
         from ._scene_api import _encode_image_binary
+
+        if image is None:
+            self._image_data = None
+            return
 
         if self.image_media_type is None:
             self.image_media_type = "image/png"
@@ -361,7 +365,7 @@ class CameraFrustumHandle(
         media_type, data = _encode_image_binary(
             image, self.image_media_type, jpeg_quality=self._jpeg_quality
         )
-        self.image_data = data
+        self._image_data = data
         del media_type
 
 
@@ -594,7 +598,7 @@ class ImageHandle(
         media_type, data = _encode_image_binary(
             image, self.media_type, jpeg_quality=self._jpeg_quality
         )
-        self.data = data
+        self._data = data
         del media_type
 
 
