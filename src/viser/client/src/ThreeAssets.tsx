@@ -714,6 +714,8 @@ export const CameraFrustum = React.forwardRef<
         setImageTexture(texture);
         URL.revokeObjectURL(image_url);
       });
+    } else {
+      setImageTexture(undefined);
     }
   }, [props.imageMediaType, props.imageBinary]);
 
