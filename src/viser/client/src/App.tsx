@@ -565,17 +565,17 @@ function DefaultLights() {
   if (enableDefaultLights)
     return (
       <>
-        {envMapNode}
         <directionalLight
-          color={0x0000ff}
-          intensity={1.0}
+          color={0xffffff}
+          intensity={2.0}
           position={[0, 1, 0]}
         />
         <directionalLight
-          color={0x00ff00}
-          intensity={0.2}
+          color={0xffffff}
+          intensity={0.4}
           position={[0, -1, 0]}
         />
+        {envMapNode}
       </>
     );
   else return envMapNode;
