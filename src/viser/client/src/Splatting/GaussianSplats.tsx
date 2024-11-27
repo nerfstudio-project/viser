@@ -405,6 +405,7 @@ function SplatRenderer() {
       uniforms.viewport.value = [width, height];
 
       // Update group transforms.
+      camera.updateMatrixWorld();
       const T_camera_world = camera.matrixWorldInverse;
       const groupVisibles: boolean[] = [];
       let visibilitiesChanged = false;
@@ -487,7 +488,12 @@ function SplatRenderer() {
 
   useFrame((state, delta) => {
     const mesh = meshRef.current;
-    if (mesh === null || sortWorker === null) return;
+    if (
+      mesh === null ||
+      sortWorker === null ||
+      meshProps.rowMajorT_camera_groups.length === 0
+    )
+      return;
 
     const uniforms = meshProps.material.uniforms;
     uniforms.transitionInState.value = Math.min(

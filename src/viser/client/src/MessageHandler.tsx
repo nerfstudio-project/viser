@@ -568,7 +568,6 @@ export function FrameSynchronizedMessageHandler() {
               ),
             ),
         );
-        camera.updateMatrixWorld();
 
         // Update splatting camera if needed.
         // We'll back up the current sorted indices, and restore them after rendering.
