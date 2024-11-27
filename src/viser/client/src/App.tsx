@@ -466,12 +466,12 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
         }}
       >
         {inView ? null : <DisableRender />}
-        {children}
         <BackgroundImage />
         <AdaptiveDpr />
         <SceneContextSetter />
         {memoizedCameraControls}
         <SplatRenderContext>
+          {children}
           <SceneNodeThreeObject name="" parent={null} />
         </SplatRenderContext>
         <DefaultLights />

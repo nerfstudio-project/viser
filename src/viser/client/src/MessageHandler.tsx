@@ -19,6 +19,7 @@ import { Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { rootNodeTemplate } from "./SceneTreeState";
+import { GaussianSplatsContext } from "./Splatting/GaussianSplats";
 
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
@@ -521,6 +522,7 @@ export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();
   const viewer = useContext(ViewerContext)!;
   const messageQueueRef = viewer.messageQueueRef;
+  const splatContext = React.useContext(GaussianSplatsContext)!;
 
   useFrame(
     () => {
@@ -566,6 +568,22 @@ export function FrameSynchronizedMessageHandler() {
               ),
             ),
         );
+        camera.updateMatrixWorld();
+
+        // Update splatting camera if needed.
+        // We'll back up the current sorted indices, and restore them after rendering.
+        const splatMeshProps = splatContext.meshPropsRef.current;
+        const sortedIndicesOrig =
+          splatMeshProps !== null
+            ? splatMeshProps.sortedIndexAttribute.array.slice()
+            : null;
+        if (splatContext.updateCamera.current !== null)
+          splatContext.updateCamera.current!(
+            camera,
+            targetWidth,
+            targetHeight,
+            true,
+          );
 
         // Note: We don't need to add the camera to the scene for rendering
         // The renderer.render() function uses the camera directly
@@ -582,6 +600,12 @@ export function FrameSynchronizedMessageHandler() {
 
         // Render the scene.
         renderer.render(viewer.sceneRef.current!, camera);
+
+        // Restore splatting indices.
+        if (sortedIndicesOrig !== null && splatMeshProps !== null) {
+          splatMeshProps.sortedIndexAttribute.array = sortedIndicesOrig;
+          splatMeshProps.sortedIndexAttribute.needsUpdate = true;
+        }
 
         // Get the rendered image.
         viewer.getRenderRequestState.current = "in_progress";
