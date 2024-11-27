@@ -90,6 +90,9 @@ export function SplatRenderContext({
   children: React.ReactNode;
 }) {
   const store = useGaussianSplatStore();
+  const numGroups = Object.keys(
+    store((state) => state.groupBufferFromId),
+  ).length;
   return (
     <GaussianSplatsContext.Provider
       value={{
@@ -98,7 +101,7 @@ export function SplatRenderContext({
         meshPropsRef: React.useRef(null),
       }}
     >
-      <SplatRenderer />
+      {numGroups > 0 ? <SplatRenderer /> : null}
       {children}
     </GaussianSplatsContext.Provider>
   );
