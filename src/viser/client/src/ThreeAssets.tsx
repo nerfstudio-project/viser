@@ -419,17 +419,10 @@ export const ViserMesh = React.forwardRef<
 
   const generateGradientMap = (shades: 3 | 5) => {
     const texture = new THREE.DataTexture(
-      Uint8Array.from(
-        shades == 3
-          ? [0, 0, 0, 255, 128, 128, 128, 255, 255, 255, 255, 255]
-          : [
-              0, 0, 0, 255, 64, 64, 64, 255, 128, 128, 128, 255, 192, 192, 192,
-              255, 255, 255, 255, 255,
-            ],
-      ),
+      Uint8Array.from(shades == 3 ? [0, 128, 255] : [0, 64, 128, 192, 255]),
       shades,
       1,
-      THREE.RGBAFormat,
+      THREE.RedFormat,
     );
 
     texture.needsUpdate = true;
@@ -473,6 +466,7 @@ export const ViserMesh = React.forwardRef<
                 ...standardArgs,
               })
             : assertUnreachable(message.props.material);
+    console.log(material);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
