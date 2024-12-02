@@ -1,4 +1,5 @@
 import dataclasses
+import types
 from collections import defaultdict
 from typing import Any, Type, Union, cast
 
@@ -48,6 +49,7 @@ def _get_ts_type(typ: Type[Any]) -> str:
         origin_typ = args[0]
 
     # Automatic Python => TypeScript conversion.
+    UnionType = getattr(types, "UnionType", Union)
     if origin_typ is tuple:
         args = get_args(typ)
         if len(args) == 2 and args[1] == ...:
@@ -69,7 +71,7 @@ def _get_ts_type(typ: Type[Any]) -> str:
                 get_args(typ),
             )
         )
-    elif origin_typ is Union:
+    elif origin_typ in (Union, UnionType):
         return (
             "("
             + " | ".join(

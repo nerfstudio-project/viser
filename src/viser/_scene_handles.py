@@ -342,6 +342,32 @@ class CameraFrustumHandle(
 ):
     """Handle for camera frustums."""
 
+    _image: np.ndarray | None
+    _jpeg_quality: int | None
+
+    @property
+    def image(self) -> np.ndarray | None:
+        """Current content of the image. Synchronized automatically when assigned."""
+        return self._image
+
+    @image.setter
+    def image(self, image: np.ndarray | None) -> None:
+        from ._scene_api import _encode_image_binary
+
+        if image is None:
+            self._image_data = None
+            return
+
+        if self.image_media_type is None:
+            self.image_media_type = "image/png"
+
+        self._image = image
+        media_type, data = _encode_image_binary(
+            image, self.image_media_type, jpeg_quality=self._jpeg_quality
+        )
+        self._image_data = data
+        del media_type
+
 
 class DirectionalLightHandle(
     SceneNodeHandle,
@@ -554,6 +580,26 @@ class ImageHandle(
     _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for 2D images, rendered in 3D."""
+
+    _image: np.ndarray
+    _jpeg_quality: int | None
+
+    @property
+    def image(self) -> np.ndarray:
+        """Current content of the image. Synchronized automatically when assigned."""
+        assert self._image is not None
+        return self._image
+
+    @image.setter
+    def image(self, image: np.ndarray) -> None:
+        from ._scene_api import _encode_image_binary
+
+        self._image = image
+        media_type, data = _encode_image_binary(
+            image, self.media_type, jpeg_quality=self._jpeg_quality
+        )
+        self._data = data
+        del media_type
 
 
 class LabelHandle(

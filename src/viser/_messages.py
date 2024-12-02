@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import dataclasses
 import uuid
-from typing import Any, ClassVar, Dict, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, ClassVar, Dict, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -17,7 +17,7 @@ from . import infra, theme
 @dataclasses.dataclass(frozen=True)
 class GuiSliderMark:
     value: float
-    label: Optional[str]
+    label: str | None
 
 
 Color = Literal[
@@ -112,7 +112,7 @@ class NotificationProps:
     """Whether to show a close button. Synchronized automatically when assigned."""
     auto_close: Union[int, Literal[False]]
     """Time in milliseconds after which the notification should auto-close, or False to disable auto-close. Synchronized automatically when assigned."""
-    color: Optional[Color]
+    color: Color | None
     """Color of the notification. Synchronized automatically when assigned."""
 
 
@@ -149,8 +149,8 @@ class ScenePointerMessage(Message):
 
     # Later we can add `double_click`, `move`, `down`, `up`, etc.
     event_type: ScenePointerEventType
-    ray_origin: Optional[Tuple[float, float, float]]
-    ray_direction: Optional[Tuple[float, float, float]]
+    ray_origin: Tuple[float, float, float] | None
+    ray_direction: Tuple[float, float, float] | None
     screen_pos: Tuple[Tuple[float, float], ...]
 
 
@@ -190,9 +190,9 @@ class CameraFrustumProps:
     """Width of the frustum lines. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the frustum as RGB integers. Synchronized automatically when assigned."""
-    image_media_type: Optional[Literal["image/jpeg", "image/png"]]
+    image_media_type: Literal["image/jpeg", "image/png"] | None
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
-    image_binary: Optional[bytes]
+    _image_data: bytes | None
     """Optional image to be displayed on the frustum. Synchronized automatically when assigned."""
 
 
@@ -478,7 +478,7 @@ class SpotLightProps:
 class EnvironmentMapMessage(Message):
     """Environment Map message."""
 
-    hdri: Optional[
+    hdri: (
         Literal[
             "apartment",
             "city",
@@ -491,7 +491,8 @@ class EnvironmentMapMessage(Message):
             "sunset",
             "warehouse",
         ]
-    ]
+        | None
+    )
     background: bool
     background_blurriness: float
     background_intensity: float
@@ -523,11 +524,11 @@ class MeshProps:
     """A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned."""
     faces: npt.NDArray[np.uint32]
     """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned."""
-    color: Optional[Tuple[int, int, int]]
+    color: Tuple[int, int, int] | None
     """Color of the mesh as RGB integers. Synchronized automatically when assigned."""
     wireframe: bool
     """Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned."""
-    opacity: Optional[float]
+    opacity: float | None
     """Opacity of the mesh. None means opaque. Synchronized automatically when assigned."""
     flat_shading: bool
     """Whether to do flat shading. Synchronized automatically when assigned."""
@@ -714,8 +715,8 @@ class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
     media_type: Literal["image/jpeg", "image/png"]
-    rgb_bytes: bytes
-    depth_bytes: Optional[bytes]
+    rgb_data: bytes
+    depth_data: bytes | None
 
 
 @dataclasses.dataclass
@@ -730,7 +731,7 @@ class ImageMessage(Message, tag="SceneNodeMessage"):
 class ImageProps:
     media_type: Literal["image/jpeg", "image/png"]
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
-    data: bytes
+    _data: bytes
     """Binary data of the image. Synchronized automatically when assigned."""
     render_width: float
     """Width at which the image should be rendered in the scene. Synchronized automatically when assigned."""
@@ -766,7 +767,7 @@ class SceneNodeClickMessage(Message):
     """Message for clicked objects."""
 
     name: str
-    instance_index: Optional[int]
+    instance_index: int | None
     """Instance index. Currently only used for batched axes."""
     ray_origin: Tuple[float, float, float]
     ray_direction: Tuple[float, float, float]
@@ -791,7 +792,7 @@ class GuiBaseProps:
     """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     label: str
     """Label text for the GUI element. Synchronized automatically when assigned."""
-    hint: Optional[str]
+    hint: str | None
     """Optional hint text for the GUI element. Synchronized automatically when assigned."""
     visible: bool
     """Visibility state of the GUI element. Synchronized automatically when assigned."""
@@ -841,7 +842,7 @@ class GuiProgressBarProps:
     """Order value for arranging GUI elements. Synchronized automatically when assigned."""
     animated: bool
     """Whether the progress bar should be animated. Synchronized automatically when assigned."""
-    color: Optional[Color]
+    color: Color | None
     """Color of the progress bar. Synchronized automatically when assigned."""
     visible: bool
     """Visibility state of the progress bar. Synchronized automatically when assigned."""
@@ -872,6 +873,27 @@ class GuiPlotlyMessage(Message, tag="GuiComponentMessage"):
     uuid: str
     container_uuid: str
     props: GuiPlotlyProps
+
+
+@dataclasses.dataclass
+class GuiImageProps:
+    order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
+    label: str | None
+    """Label text for the image. Synchronized automatically when assigned."""
+    _data: bytes | None
+    """Binary data of the image. Synchronized automatically when assigned."""
+    media_type: Literal["image/jpeg", "image/png"]
+    """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
+    visible: bool
+    """Visibility state of the image. Synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class GuiImageMessage(Message, tag="GuiComponentMessage"):
+    uuid: str
+    container_uuid: str
+    props: GuiImageProps
 
 
 @dataclasses.dataclass
@@ -909,9 +931,9 @@ class GuiCloseModalMessage(Message):
 
 @dataclasses.dataclass
 class GuiButtonProps(GuiBaseProps):
-    color: Optional[Color]
+    color: Color | None
     """Color of the button. Synchronized automatically when assigned."""
-    _icon_html: Optional[str]
+    _icon_html: str | None
     """(Private) HTML string for the icon to be displayed on the button. Synchronized automatically when assigned."""
 
 
@@ -925,9 +947,9 @@ class GuiButtonMessage(Message, tag="GuiComponentMessage"):
 
 @dataclasses.dataclass
 class GuiUploadButtonProps(GuiBaseProps):
-    color: Optional[Color]
+    color: Color | None
     """Color of the upload button. Synchronized automatically when assigned."""
-    _icon_html: Optional[str]
+    _icon_html: str | None
     """(Private) HTML string for the icon to be displayed on the upload button. Synchronized automatically when assigned."""
     mime_type: str
     """MIME type of the files that can be uploaded. Synchronized automatically when assigned."""
@@ -950,7 +972,7 @@ class GuiSliderProps(GuiBaseProps):
     """Step size for the slider. Synchronized automatically when assigned."""
     precision: int
     """Number of decimal places to display for the slider value. Synchronized automatically when assigned."""
-    _marks: Optional[Tuple[GuiSliderMark, ...]] = None
+    _marks: Tuple[GuiSliderMark, ...] | None
     """(Private) Optional tuple of GuiSliderMark objects to display custom marks on the slider. Synchronized automatically when assigned."""
 
 
@@ -970,13 +992,13 @@ class GuiMultiSliderProps(GuiBaseProps):
     """Maximum value for the multi-slider. Synchronized automatically when assigned."""
     step: float
     """Step size for the multi-slider. Synchronized automatically when assigned."""
-    min_range: Optional[float]
+    min_range: float | None
     """Minimum allowed range between slider handles. Synchronized automatically when assigned."""
     precision: int
     """Number of decimal places to display for the multi-slider values. Synchronized automatically when assigned."""
-    fixed_endpoints: bool = False
+    fixed_endpoints: bool
     """If True, the first and last handles cannot be moved. Synchronized automatically when assigned."""
-    _marks: Optional[Tuple[GuiSliderMark, ...]] = None
+    _marks: Tuple[GuiSliderMark, ...] | None
     """(Private) Optional tuple of GuiSliderMark objects to display custom marks on the multi-slider. Synchronized automatically when assigned."""
 
 
@@ -994,9 +1016,9 @@ class GuiNumberProps(GuiBaseProps):
     """Number of decimal places to display for the number value. Synchronized automatically when assigned."""
     step: float
     """Step size for incrementing/decrementing the number value. Synchronized automatically when assigned."""
-    min: Optional[float]
+    min: float | None
     """Minimum allowed value for the number input. Synchronized automatically when assigned."""
-    max: Optional[float]
+    max: float | None
     """Maximum allowed value for the number input. Synchronized automatically when assigned."""
 
 
@@ -1049,9 +1071,9 @@ class GuiCheckboxMessage(Message, tag="GuiComponentMessage"):
 
 @dataclasses.dataclass
 class GuiVector2Props(GuiBaseProps):
-    min: Optional[Tuple[float, float]]
+    min: Tuple[float, float] | None
     """Minimum allowed values for each component of the vector. Synchronized automatically when assigned."""
-    max: Optional[Tuple[float, float]]
+    max: Tuple[float, float] | None
     """Maximum allowed values for each component of the vector. Synchronized automatically when assigned."""
     step: float
     """Step size for incrementing/decrementing each component of the vector. Synchronized automatically when assigned."""
@@ -1069,9 +1091,9 @@ class GuiVector2Message(Message, tag="GuiComponentMessage"):
 
 @dataclasses.dataclass
 class GuiVector3Props(GuiBaseProps):
-    min: Optional[Tuple[float, float, float]]
+    min: Tuple[float, float, float] | None
     """Minimum allowed values for each component of the vector. Synchronized automatically when assigned."""
-    max: Optional[Tuple[float, float, float]]
+    max: Tuple[float, float, float] | None
     """Maximum allowed values for each component of the vector. Synchronized automatically when assigned."""
     step: float
     """Step size for incrementing/decrementing each component of the vector. Synchronized automatically when assigned."""
@@ -1178,13 +1200,13 @@ class SceneNodeUpdateMessage(Message):
 class ThemeConfigurationMessage(Message):
     """Message from server->client to configure parts of the GUI."""
 
-    titlebar_content: Optional[theme.TitlebarConfig]
+    titlebar_content: theme.TitlebarConfig | None
     control_layout: Literal["floating", "collapsible", "fixed"]
     control_width: Literal["small", "medium", "large"]
     show_logo: bool
     show_share_button: bool
     dark_mode: bool
-    colors: Optional[Tuple[str, str, str, str, str, str, str, str, str, str]]
+    colors: Tuple[str, str, str, str, str, str, str, str, str, str] | None
 
 
 @dataclasses.dataclass
@@ -1230,7 +1252,7 @@ class CatmullRomSplineProps:
     """Width of the spline line. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the spline as RGB integers. Synchronized automatically when assigned."""
-    segments: Optional[int]
+    segments: int | None
     """Number of segments to divide the spline into. Synchronized automatically when assigned."""
 
 
@@ -1252,7 +1274,7 @@ class CubicBezierSplineProps:
     """Width of the spline line. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the spline as RGB integers. Synchronized automatically when assigned."""
-    segments: Optional[int]
+    segments: int | None
     """Number of segments to divide the spline into. Synchronized automatically when assigned."""
 
 
@@ -1308,7 +1330,7 @@ class GetRenderResponseMessage(Message):
 class FileTransferStart(Message):
     """Signal that a file is about to be sent."""
 
-    source_component_uuid: Optional[str]
+    source_component_uuid: str | None
     """Origin GUI component, used for client->server file uploads."""
     transfer_uuid: str
     filename: str
@@ -1326,7 +1348,7 @@ class FileTransferPart(Message):
     """Send a file for clients to download or upload files from client."""
 
     # TODO: it would make sense to rename all "id" instances to "uuid" for GUI component ids.
-    source_component_uuid: Optional[str]
+    source_component_uuid: str | None
     transfer_uuid: str
     part: int
     content: bytes
@@ -1340,7 +1362,7 @@ class FileTransferPart(Message):
 class FileTransferPartAck(Message):
     """Send a file for clients to download or upload files from client."""
 
-    source_component_uuid: Optional[str]
+    source_component_uuid: str | None
     transfer_uuid: str
     transferred_bytes: int
     total_bytes: int
@@ -1365,7 +1387,7 @@ class ShareUrlRequest(Message):
 class ShareUrlUpdated(Message):
     """Message from server->client to indicate that the share URL has been updated."""
 
-    share_url: Optional[str]
+    share_url: str | None
 
 
 @dataclasses.dataclass
@@ -1377,4 +1399,4 @@ class ShareUrlDisconnect(Message):
 class SetGuiPanelLabelMessage(Message):
     """Message from server->client to set the label of the GUI panel."""
 
-    label: Optional[str]
+    label: str | None

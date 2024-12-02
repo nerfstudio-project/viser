@@ -37,6 +37,7 @@ from ._messages import (
     GuiCloseModalMessage,
     GuiDropdownProps,
     GuiFolderProps,
+    GuiImageProps,
     GuiMarkdownProps,
     GuiMultiSliderProps,
     GuiNumberProps,
@@ -813,3 +814,32 @@ class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
         json_str = figure.to_json()
         assert isinstance(json_str, str)
         self._plotly_json_str = json_str
+
+
+class GuiImageHandle(_GuiHandle[None], GuiImageProps):
+    """Handle for updating and removing images."""
+
+    def __init__(
+        self,
+        _impl: _GuiHandleState,
+        _image: np.ndarray,
+        _jpeg_quality: int | None,
+    ):
+        super().__init__(_impl=_impl)
+        self._image = _image
+        self._jpeg_quality = _jpeg_quality
+
+    @property
+    def image(self) -> np.ndarray:
+        """Current content of this image element. Synchronized automatically when assigned."""
+        assert self._image is not None
+        return self._image
+
+    @image.setter
+    def image(self, image: np.ndarray) -> None:
+        self._image = image
+        media_type, data = _encode_image_binary(
+            image, self.media_type, jpeg_quality=self._jpeg_quality
+        )
+        self._data = data
+        del media_type
