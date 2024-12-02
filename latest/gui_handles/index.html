@@ -345,9 +345,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/21_set_up_direction/">Set up direction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/22_games/">Games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/23_plotly/">Plotly</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/24_notification/">Notifications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/24_plots_as_images/">Plots as Images</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/25_smpl_visualizer_skinned/">SMPL visualizer (Skinned Mesh)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/26_lighting/">Lights</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/27_notifications/">Notifications</a></li>
 </ul>
 
 </div>
@@ -1048,12 +1049,6 @@ visualizer.</p>
 <dd><p>Value of the input. Synchronized automatically when assigned.</p>
 </dd></dl>
 
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.GuiMultiSliderHandle.fixed_endpoints">
-<span class="sig-name descname"><span class="pre">fixed_endpoints</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#viser.GuiMultiSliderHandle.fixed_endpoints" title="Link to this definition">¶</a></dt>
-<dd><p>If True, the first and last handles cannot be moved. Synchronized automatically when assigned.</p>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.GuiMultiSliderHandle.on_update">
 <span class="sig-name descname"><span class="pre">on_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.GuiEvent" title="viser._gui_handles.GuiEvent"><span class="pre">GuiEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../events/#viser.GuiEvent" title="viser._gui_handles.GuiEvent"><span class="pre">GuiEvent</span></a><span class="p"><span class="pre">[</span></span><span class="pre">TGuiHandle</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">NoneOrCoroutine</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#viser.GuiMultiSliderHandle.on_update" title="Link to this definition">¶</a></dt>
@@ -1166,6 +1161,12 @@ visualizer.</p>
 <dt class="sig sig-object py" id="viser.GuiMultiSliderHandle.precision">
 <span class="sig-name descname"><span class="pre">precision</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#viser.GuiMultiSliderHandle.precision" title="Link to this definition">¶</a></dt>
 <dd><p>Number of decimal places to display for the multi-slider values. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GuiMultiSliderHandle.fixed_endpoints">
+<span class="sig-name descname"><span class="pre">fixed_endpoints</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.GuiMultiSliderHandle.fixed_endpoints" title="Link to this definition">¶</a></dt>
+<dd><p>If True, the first and last handles cannot be moved. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 </dd></dl>
@@ -2204,7 +2205,6 @@ visualizer.</p>
 </li>
 <li><a class="reference internal" href="#viser.GuiMultiSliderHandle"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.GuiMultiSliderHandle.value"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle.value</span></code></a></li>
-<li><a class="reference internal" href="#viser.GuiMultiSliderHandle.fixed_endpoints"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle.fixed_endpoints</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMultiSliderHandle.on_update"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle.on_update()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMultiSliderHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMultiSliderHandle.remove_update_callback"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle.remove_update_callback()</span></code></a></li>
@@ -2219,6 +2219,7 @@ visualizer.</p>
 <li><a class="reference internal" href="#viser.GuiMultiSliderHandle.step"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle.step</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMultiSliderHandle.min_range"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle.min_range</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMultiSliderHandle.precision"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle.precision</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiMultiSliderHandle.fixed_endpoints"><code class="docutils literal notranslate"><span class="pre">GuiMultiSliderHandle.fixed_endpoints</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiNumberHandle"><code class="docutils literal notranslate"><span class="pre">GuiNumberHandle</span></code></a><ul>

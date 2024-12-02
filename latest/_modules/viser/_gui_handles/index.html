@@ -344,9 +344,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/21_set_up_direction/">Set up direction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/22_games/">Games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/23_plotly/">Plotly</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/24_notification/">Notifications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/24_plots_as_images/">Plots as Images</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/25_smpl_visualizer_skinned/">SMPL visualizer (Skinned Mesh)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/26_lighting/">Lights</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/27_notifications/">Notifications</a></li>
 </ul>
 
 </div>
@@ -421,6 +422,7 @@
     <span class="n">GuiCloseModalMessage</span><span class="p">,</span>
     <span class="n">GuiDropdownProps</span><span class="p">,</span>
     <span class="n">GuiFolderProps</span><span class="p">,</span>
+    <span class="n">GuiImageProps</span><span class="p">,</span>
     <span class="n">GuiMarkdownProps</span><span class="p">,</span>
     <span class="n">GuiMultiSliderProps</span><span class="p">,</span>
     <span class="n">GuiNumberProps</span><span class="p">,</span>
@@ -1287,6 +1289,35 @@
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">json_str</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_plotly_json_str</span> <span class="o">=</span> <span class="n">json_str</span></div>
 
+
+
+<span class="k">class</span> <span class="nc">GuiImageHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiImageProps</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for updating and removing images.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">,</span>
+        <span class="n">_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">_jpeg_quality</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">_impl</span><span class="o">=</span><span class="n">_impl</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_image</span> <span class="o">=</span> <span class="n">_image</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span> <span class="o">=</span> <span class="n">_jpeg_quality</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">image</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Current content of this image element. Synchronized automatically when assigned.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image</span>
+
+    <span class="nd">@image</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_image</span> <span class="o">=</span> <span class="n">image</span>
+        <span class="n">media_type</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">_encode_image_binary</span><span class="p">(</span>
+            <span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">media_type</span><span class="p">,</span> <span class="n">jpeg_quality</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">del</span> <span class="n">media_type</span>
 </pre></div>
         </article>
       </div>

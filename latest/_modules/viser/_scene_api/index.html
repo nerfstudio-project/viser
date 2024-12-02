@@ -344,9 +344,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/21_set_up_direction/">Set up direction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/22_games/">Games</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/23_plotly/">Plotly</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/24_notification/">Notifications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/24_plots_as_images/">Plots as Images</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/25_smpl_visualizer_skinned/">SMPL visualizer (Skinned Mesh)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/26_lighting/">Lights</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/27_notifications/">Notifications</a></li>
 </ul>
 
 </div>
@@ -461,16 +462,16 @@
 
 <span class="k">def</span> <span class="nf">_encode_image_binary</span><span class="p">(</span>
     <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-    <span class="nb">format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">],</span>
+    <span class="nb">format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;image/png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">],</span>
     <span class="n">jpeg_quality</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;image/png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">],</span> <span class="nb">bytes</span><span class="p">]:</span>
     <span class="n">media_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;image/png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">]</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">colors_to_uint8</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">data_buffer</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;png&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/png&quot;</span><span class="p">):</span>
             <span class="n">media_type</span> <span class="o">=</span> <span class="s2">&quot;image/png&quot;</span>
             <span class="n">iio</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">data_buffer</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="s2">&quot;.png&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">):</span>
             <span class="n">media_type</span> <span class="o">=</span> <span class="s2">&quot;image/jpeg&quot;</span>
             <span class="n">iio</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span>
                 <span class="n">data_buffer</span><span class="p">,</span>
@@ -1245,10 +1246,13 @@
                 <span class="n">line_width</span><span class="o">=</span><span class="n">line_width</span><span class="p">,</span>
                 <span class="n">color</span><span class="o">=</span><span class="n">_encode_rgb</span><span class="p">(</span><span class="n">color</span><span class="p">),</span>
                 <span class="n">image_media_type</span><span class="o">=</span><span class="n">media_type</span><span class="p">,</span>
-                <span class="n">image_binary</span><span class="o">=</span><span class="n">binary</span><span class="p">,</span>
+                <span class="n">_image_data</span><span class="o">=</span><span class="n">binary</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">CameraFrustumHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">CameraFrustumHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">_image</span> <span class="o">=</span> <span class="n">image</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">_jpeg_quality</span> <span class="o">=</span> <span class="n">jpeg_quality</span>
+        <span class="k">return</span> <span class="n">handle</span></div>
 
 
 <div class="viewcode-block" id="SceneApi.add_frame">
@@ -1936,8 +1940,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">BackgroundImageMessage</span><span class="p">(</span>
                 <span class="n">media_type</span><span class="o">=</span><span class="n">media_type</span><span class="p">,</span>
-                <span class="n">rgb_bytes</span><span class="o">=</span><span class="n">rgb_bytes</span><span class="p">,</span>
-                <span class="n">depth_bytes</span><span class="o">=</span><span class="n">depth_bytes</span><span class="p">,</span>
+                <span class="n">rgb_data</span><span class="o">=</span><span class="n">rgb_bytes</span><span class="p">,</span>
+                <span class="n">depth_data</span><span class="o">=</span><span class="n">depth_bytes</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="p">)</span></div>
 
@@ -1980,12 +1984,15 @@
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
             <span class="n">props</span><span class="o">=</span><span class="n">_messages</span><span class="o">.</span><span class="n">ImageProps</span><span class="p">(</span>
                 <span class="n">media_type</span><span class="o">=</span><span class="n">media_type</span><span class="p">,</span>
-                <span class="n">data</span><span class="o">=</span><span class="n">binary</span><span class="p">,</span>
+                <span class="n">_data</span><span class="o">=</span><span class="n">binary</span><span class="p">,</span>
                 <span class="n">render_width</span><span class="o">=</span><span class="n">render_width</span><span class="p">,</span>
                 <span class="n">render_height</span><span class="o">=</span><span class="n">render_height</span><span class="p">,</span>
             <span class="p">),</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">ImageHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span></div>
+        <span class="n">handle</span> <span class="o">=</span> <span class="n">ImageHandle</span><span class="o">.</span><span class="n">_make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">_image</span> <span class="o">=</span> <span class="n">image</span>
+        <span class="n">handle</span><span class="o">.</span><span class="n">_jpeg_quality</span> <span class="o">=</span> <span class="n">jpeg_quality</span>
+        <span class="k">return</span> <span class="n">handle</span></div>
 
 
 <div class="viewcode-block" id="SceneApi.add_transform_controls">
