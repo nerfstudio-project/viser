@@ -95,8 +95,9 @@ function useFileUpload({
     const { notificationId, filename } = uploadState;
     if (uploadState.uploadedBytes === 0) {
       // Show notification.
+      console.log("Show notification", notificationId);
       notifications.show({
-        uuid: notificationId,
+        id: notificationId,
         title: "Uploading " + `${filename} (${totalBytesString})`,
         message: <Progress size="sm" value={0} />,
         autoClose: false,
@@ -107,8 +108,9 @@ function useFileUpload({
       // Update progress.
       const progressValue = uploadState.uploadedBytes / uploadState.totalBytes;
       const isDone = progressValue === 1.0;
+      console.log("Update?", notificationId);
       notifications.update({
-        uuid: notificationId,
+        id: notificationId,
         title: "Uploading " + `${filename} (${totalBytesString})`,
         message: !isDone ? (
           <Progress
