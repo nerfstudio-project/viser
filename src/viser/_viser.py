@@ -574,6 +574,11 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
 
         self._thread_executor = ThreadPoolExecutor(max_workers=32)
 
+        # Run "garbage collector" on message buffer when new clients connect.
+        @server.on_client_connect
+        async def _(_: infra.WebsockClientConnection) -> None:
+            self._run_garbage_collector()
+
         # For new clients, register and add a handler for camera messages.
         @server.on_client_connect
         async def _(conn: infra.WebsockClientConnection) -> None:
@@ -701,6 +706,50 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         self.scene.reset()
         self.gui.reset()
         self.gui.set_panel_label(label)
+
+    def _run_garbage_collector(self) -> None:
+        """Clean up old messages. This is not elegant; a refactor of our
+        message persistence logic will significantly reduce complexity."""
+        buffer = self._websock_server._broadcast_buffer
+        with buffer.buffer_lock:
+            remove_message_ids: list[int] = []
+
+            remove_scene_names: set[str] = set()
+            remove_gui_uuids: set[str] = set()
+
+            for id, message in reversed(buffer.message_from_id.items()):
+                # Find scene nodes or GUI elements that were removed.
+                if isinstance(message, _messages.RemoveSceneNodeMessage):
+                    remove_message_ids.append(id)
+                    remove_scene_names.add(message.name)
+                elif isinstance(message, _messages.GuiRemoveMessage):
+                    remove_message_ids.append(id)
+                    remove_gui_uuids.add(message.uuid)
+
+                # For removed elements, no need to send any update messages.
+                if (
+                    isinstance(
+                        message,
+                        (
+                            _messages.SetPositionMessage,
+                            _messages.SetOrientationMessage,
+                            _messages.SetBonePositionMessage,
+                            _messages.SetBoneOrientationMessage,
+                            _messages.SetSceneNodeClickableMessage,
+                            _messages.SetSceneNodeVisibilityMessage,
+                        ),
+                    )
+                    and message.name in remove_scene_names
+                ):
+                    remove_message_ids.append(id)
+
+                if isinstance(message, _messages.GuiUpdateMessage):
+                    remove_message_ids.append(id)
+
+            # Remove old messages.
+            for id in remove_message_ids:
+                message = buffer.message_from_id.pop(id)
+                buffer.id_from_redundancy_key.pop(message.redundancy_key())
 
     def get_host(self) -> str:
         """Returns the host address of the Viser server.

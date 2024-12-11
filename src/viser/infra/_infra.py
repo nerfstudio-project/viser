@@ -323,14 +323,6 @@ class WebsockServer(WebsockMessageHandler):
                 nonlocal total_connections
                 total_connections += 1
 
-            if self._verbose:
-                rich.print(
-                    f"[bold](viser)[/bold] Connection opened ({client_id},"
-                    f" {total_connections} total),"
-                    f" {len(self._broadcast_buffer.message_from_id)} persistent"
-                    " messages"
-                )
-
             client_state = _ClientHandleState(
                 AsyncMessageBuffer(event_loop, persistent_messages=False),
                 event_loop,
@@ -352,6 +344,14 @@ class WebsockServer(WebsockMessageHandler):
                     await cb(client_connection)
                 else:
                     cb(client_connection)
+
+            if self._verbose:
+                rich.print(
+                    f"[bold](viser)[/bold] Connection opened ({client_id},"
+                    f" {total_connections} total),"
+                    f" {len(self._broadcast_buffer.message_from_id)} persistent"
+                    " messages"
+                )
 
             try:
                 # For each client: infinite loop over producers (which send messages)

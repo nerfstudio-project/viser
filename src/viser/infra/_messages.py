@@ -7,7 +7,16 @@ import abc
 import dataclasses
 import functools
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    cast,
+)
 
 import msgspec
 import numpy as np

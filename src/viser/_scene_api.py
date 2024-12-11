@@ -1627,8 +1627,11 @@ class SceneApi:
         """Reset the scene."""
 
         # Remove all scene nodes.
-        while len(self._handle_from_node_name) > 0:
-            next(iter(self._handle_from_node_name.values())).remove()
+        handles = list(self._handle_from_node_name.values())
+        for handle in handles:
+            if handle.name == "/WorldAxes":
+                continue
+            handle.remove()
 
         # Clear the background image.
         self.set_background_image(image=None)
