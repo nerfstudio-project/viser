@@ -707,11 +707,23 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         self.gui.reset()
         self.gui.set_panel_label(label)
 
-    def _run_garbage_collector(self) -> None:
+    def _run_garbage_collector(self, force: bool = False) -> None:
         """Clean up old messages. This is not elegant; a refactor of our
         message persistence logic will significantly reduce complexity."""
         buffer = self._websock_server._broadcast_buffer
         with buffer.buffer_lock:
+            # Skip garbage collection if we have messages that are queeud but
+            # not yet processed by the window generators.
+            #
+            # This makes sure that we don't accidentally cull messages before
+            # they're sent to existing clients. RemoveSceneNodeMessage, for example,
+            # needs to be sent to old clients but not new ones.
+            if (
+                not force
+                and self._websock_server._broadcast_buffer.message_event.is_set()
+            ):
+                return
+
             remove_message_ids: list[int] = []
 
             remove_scene_names: set[str] = set()

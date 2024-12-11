@@ -19,13 +19,9 @@ def test_remove_scene_node() -> None:
         server.scene.add_frame(f"/frame_{i}")
 
     assert len(internal_message_dict) > orig_len
-
     server.scene.reset()
-
     assert len(internal_message_dict) > orig_len
-
-    server._run_garbage_collector()
-
+    server._run_garbage_collector(force=True)
     assert len(internal_message_dict) == orig_len
 
 
@@ -50,11 +46,7 @@ def test_remove_gui_element() -> None:
             server.gui.add_button(f"Button {i}")
 
     assert len(internal_message_dict) > orig_len
-
     server.gui.reset()
-
     assert len(internal_message_dict) > orig_len
-
-    server._run_garbage_collector()
-
+    server._run_garbage_collector(force=True)
     assert len(internal_message_dict) == orig_len
