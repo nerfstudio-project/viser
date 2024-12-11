@@ -933,10 +933,18 @@ class GuiModalMessage(Message):
     uuid: str
     title: str
 
+    @override
+    def redundancy_key(self) -> str:
+        return f"modal-{self.uuid}"
+
 
 @dataclasses.dataclass
 class GuiCloseModalMessage(Message):
     uuid: str
+
+    @override
+    def redundancy_key(self) -> str:
+        return f"modal-{self.uuid}"
 
 
 @dataclasses.dataclass

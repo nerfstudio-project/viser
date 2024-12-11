@@ -50,3 +50,27 @@ def test_remove_gui_element() -> None:
     assert len(internal_message_dict) > orig_len
     server._run_garbage_collector(force=True)
     assert len(internal_message_dict) == orig_len
+
+
+def test_remove_gui_in_modal() -> None:
+    """Test that viser's internal message buffer is cleaned up properly when we
+    remove GUI elements."""
+
+    # def test_server_port_is_freed():
+    # Mock the client autobuild to avoid building the client.
+    viser._client_autobuild.ensure_client_is_built = lambda: None
+
+    server = viser.ViserServer()
+
+    internal_message_dict = server._websock_server._broadcast_buffer.message_from_id
+    orig_len = len(internal_message_dict)
+
+    with server.gui.add_modal("Buttons in folder") as modal:
+        for i in range(50):
+            server.gui.add_button(f"Button {i}")
+
+    assert len(internal_message_dict) > orig_len
+    modal.close()
+    assert len(internal_message_dict) > orig_len
+    server._run_garbage_collector(force=True)
+    assert len(internal_message_dict) == orig_len

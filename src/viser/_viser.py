@@ -737,6 +737,8 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                 elif isinstance(message, _messages.GuiRemoveMessage):
                     remove_message_ids.append(id)
                     remove_gui_uuids.add(message.uuid)
+                elif isinstance(message, _messages.GuiCloseModalMessage):
+                    remove_message_ids.append(id)
 
                 # For removed elements, no need to send any update messages.
                 if (
