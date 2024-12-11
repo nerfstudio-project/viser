@@ -206,6 +206,7 @@ class GuiApi:
         self._container_handle_from_uuid: dict[str, GuiContainerProtocol] = {
             "root": _RootGuiContainer({})
         }
+        self._modal_handle_from_uuid: dict[str, GuiModalHandle] = {}
         self._current_file_upload_states: dict[str, _FileUploadState] = {}
 
         # Set to True when plotly.min.js has been sent to client.
@@ -372,13 +373,17 @@ class GuiApi:
         """Get container ID associated with the current thread."""
         return self._target_container_from_thread_id.get(threading.get_ident(), "root")
 
-    def _set_container_uid(self, container_uuid: str) -> None:
+    def _set_container_uuid(self, container_uuid: str) -> None:
         """Set container ID associated with the current thread."""
         self._target_container_from_thread_id[threading.get_ident()] = container_uuid
 
     def reset(self) -> None:
         """Reset the GUI."""
-        self._websock_interface.queue_message(_messages.ResetGuiMessage())
+        root_container = self._container_handle_from_uuid["root"]
+        while len(root_container._children) > 0:
+            next(iter(root_container._children.values())).remove()
+        while len(self._modal_handle_from_uuid) > 0:
+            next(iter(self._modal_handle_from_uuid.values())).close()
 
     def set_panel_label(self, label: str | None) -> None:
         """Set the main label that appears in the GUI panel.
@@ -533,7 +538,7 @@ class GuiApi:
         )
         return GuiModalHandle(
             _gui_api=self,
-            _uid=modal_container_id,
+            _uuid=modal_container_id,
         )
 
     def add_tab_group(

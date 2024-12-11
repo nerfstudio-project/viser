@@ -549,7 +549,6 @@ function DefaultLights() {
       sunset: "venice_sunset_1k.hdr",
       warehouse: "empty_warehouse_01_1k.hdr",
     };
-    console.log(environmentMap.environment_intensity);
     envMapNode = (
       <Environment
         files={`hdri/${presetsObj[environmentMap.hdri]}`}

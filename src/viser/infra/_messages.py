@@ -7,7 +7,16 @@ import abc
 import dataclasses
 import functools
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, TypeVar, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    List,
+    Optional,
+    Type,
+    TypeVar,
+    cast,
+)
 
 import msgspec
 import numpy as np
@@ -167,7 +176,8 @@ class Message(abc.ABC):
         def _get_subclasses(typ: Type[T]) -> List[Type[T]]:
             out = []
             for sub in typ.__subclasses__():
-                out.append(sub)
+                if not sub.__name__.startswith("_"):
+                    out.append(sub)
                 out.extend(_get_subclasses(sub))
             return out
 

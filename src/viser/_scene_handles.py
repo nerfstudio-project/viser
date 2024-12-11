@@ -334,6 +334,19 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
                 _messages.SetSceneNodeClickableMessage(self._impl.name, False)
             )
 
+    def remove(self) -> None:
+        """Remove the node from the scene."""
+        if len(self._impl.click_cb) > 0:
+            # SetSceneNodeClickableMessage can still remain in the message
+            # buffer, even if a scene node is removed. This could cause a new
+            # scene node to be mistakenly considered clickable if it is made
+            # with the same name. We ideally would fix this with better state
+            # management... in the meantime we can just set the flag to False.
+            self._impl.api._websock_interface.queue_message(
+                _messages.SetSceneNodeClickableMessage(self._impl.name, False)
+            )
+        super().remove()
+
 
 class CameraFrustumHandle(
     _ClickableSceneNodeHandle,
@@ -661,6 +674,11 @@ class TransformControlsHandle(
                 cb for cb in self._impl_aux.update_cb if cb != callback
             ]
 
+    def remove(self) -> None:
+        """Remove the node from the scene."""
+        self._impl.api._handle_from_transform_controls_name.pop(self.name)
+        super().remove()
+
 
 class Gui3dContainerHandle(
     SceneNodeHandle,
@@ -679,13 +697,13 @@ class Gui3dContainerHandle(
 
     def __enter__(self) -> Gui3dContainerHandle:
         self._container_id_restore = self._gui_api._get_container_uuid()
-        self._gui_api._set_container_uid(self._container_id)
+        self._gui_api._set_container_uuid(self._container_id)
         return self
 
     def __exit__(self, *args) -> None:
         del args
         assert self._container_id_restore is not None
-        self._gui_api._set_container_uid(self._container_id_restore)
+        self._gui_api._set_container_uuid(self._container_id_restore)
         self._container_id_restore = None
 
     def remove(self) -> None:
