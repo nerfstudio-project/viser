@@ -29,9 +29,7 @@ function useMessageHandler() {
   // https://github.com/nerfstudio-project/viser/issues/39
   const updateSceneNode = viewer.useSceneTree((state) => state.updateSceneNode);
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
-  const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
-  const resetGui = viewer.useGui((state) => state.resetGui);
   const setTheme = viewer.useGui((state) => state.setTheme);
   const setShareUrl = viewer.useGui((state) => state.setShareUrl);
   const addGui = viewer.useGui((state) => state.addGui);
@@ -319,25 +317,37 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
-        const rgb_url = URL.createObjectURL(
-          new Blob([message.rgb_data], {
-            type: message.media_type,
-          }),
-        );
-        new TextureLoader().load(rgb_url, (texture) => {
-          URL.revokeObjectURL(rgb_url);
+        if (message.rgb_data !== null) {
+          const rgb_url = URL.createObjectURL(
+            new Blob([message.rgb_data], {
+              type: message.media_type,
+            }),
+          );
+          new TextureLoader().load(rgb_url, (texture) => {
+            URL.revokeObjectURL(rgb_url);
+            const oldBackgroundTexture =
+              viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
+            viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
+              texture;
+
+            // Dispose the old background texture.
+            if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
+          });
+
+          viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
+        } else {
+          // Dispose the old background texture.
           const oldBackgroundTexture =
             viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
-          viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
-            texture;
           if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
 
-          viewer.useGui.setState({ backgroundAvailable: true });
-        });
-        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
+          // Disable the background.
+          viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
+        }
+
+        // Set the depth texture.
         viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
           message.depth_data !== null;
-
         if (message.depth_data !== null) {
           // If depth is available set the texture
           const depth_url = URL.createObjectURL(
@@ -361,7 +371,7 @@ function useMessageHandler() {
         console.log("Removing scene node:", message.name);
         const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
         if (!(message.name in nodeFromName)) {
-          console.log("Skipping scene node removal for " + name);
+          console.log("(OK) Skipping scene node removal for " + name);
           return;
         }
         removeSceneNode(message.name);
@@ -377,24 +387,6 @@ function useMessageHandler() {
         // This setTimeout is totally unnecessary, but can help surface some race
         // conditions.
         setTimeout(() => setClickable(message.name, message.clickable), 50);
-        return;
-      }
-      // Reset the entire scene, removing all scene nodes.
-      case "ResetSceneMessage": {
-        resetScene();
-
-        const oldBackground = viewer.sceneRef.current?.background;
-        viewer.sceneRef.current!.background = null;
-        if (isTexture(oldBackground)) oldBackground.dispose();
-
-        viewer.useGui.setState({ backgroundAvailable: false });
-        // Disable the depth texture rendering
-        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
-        return;
-      }
-      // Reset the GUI state.
-      case "ResetGuiMessage": {
-        resetGui();
         return;
       }
       // Update props of a GUI component

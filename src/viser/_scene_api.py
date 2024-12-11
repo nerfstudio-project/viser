@@ -1434,7 +1434,7 @@ class SceneApi:
 
     def set_background_image(
         self,
-        image: np.ndarray,
+        image: np.ndarray | None,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: int | None = None,
         depth: np.ndarray | None = None,
@@ -1447,9 +1447,13 @@ class SceneApi:
             jpeg_quality: Quality of the jpeg image (if jpeg format is used).
             depth: Optional depth image to use to composite background with scene elements.
         """
-        media_type, rgb_bytes = _encode_image_binary(
-            image, format, jpeg_quality=jpeg_quality
-        )
+        if image is None:
+            media_type = "image/png"
+            rgb_bytes = None
+        else:
+            media_type, rgb_bytes = _encode_image_binary(
+                image, format, jpeg_quality=jpeg_quality
+            )
 
         # Encode depth if provided. We use a 3-channel PNG to represent a fixed point
         # depth at each pixel.
@@ -1621,7 +1625,13 @@ class SceneApi:
 
     def reset(self) -> None:
         """Reset the scene."""
-        self._websock_interface.queue_message(_messages.ResetSceneMessage())
+
+        # Remove all scene nodes.
+        while len(self._handle_from_node_name) > 0:
+            next(iter(self._handle_from_node_name.values())).remove()
+
+        # Clear the background image.
+        self.set_background_image(image=None)
 
     def _get_client_handle(self, client_id: ClientId) -> ClientHandle:
         """Private helper for getting a client handle from its ID."""

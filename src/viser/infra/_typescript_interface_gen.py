@@ -125,6 +125,7 @@ def generate_typescript_interfaces(message_cls: Type[Message]) -> str:
     """Generate TypeScript definitions for all subclasses of a base message class."""
     out_lines = []
     message_types = message_cls.get_subclasses()
+
     tag_map = defaultdict(list)
 
     # Generate interfaces for each specific message.

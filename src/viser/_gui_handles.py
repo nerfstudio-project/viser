@@ -78,6 +78,8 @@ class GuiContainerProtocol(Protocol):
         default_factory=dict
     )
 
+    def remove(self) -> None: ...
+
 
 class SupportsRemoveProtocol(Protocol):
     def remove(self) -> None: ...

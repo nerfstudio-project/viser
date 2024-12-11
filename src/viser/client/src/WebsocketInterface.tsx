@@ -11,6 +11,7 @@ export function WebsocketMessageProducer() {
   const viewer = useContext(ViewerContext)!;
   const server = viewer.useGui((state) => state.server);
   const resetGui = viewer.useGui((state) => state.resetGui);
+  const resetScene = viewer.useSceneTree((state) => state.resetScene);
 
   syncSearchParamServer(server);
 
@@ -21,6 +22,7 @@ export function WebsocketMessageProducer() {
       const data: WsWorkerOutgoing = event.data;
       if (data.type === "connected") {
         resetGui();
+        resetScene();
         viewer.useGui.setState({ websocketConnected: true });
         viewer.sendMessageRef.current = (message) => {
           postToWorker({ type: "send", message: message });
@@ -49,7 +51,7 @@ export function WebsocketMessageProducer() {
         );
       viewer.useGui.setState({ websocketConnected: false });
     };
-  }, [server, resetGui]);
+  }, [server, resetGui, resetScene]);
 
   return <></>;
 }

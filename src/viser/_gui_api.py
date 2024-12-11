@@ -378,7 +378,9 @@ class GuiApi:
 
     def reset(self) -> None:
         """Reset the GUI."""
-        self._websock_interface.queue_message(_messages.ResetGuiMessage())
+        root_container = self._container_handle_from_uuid["root"]
+        while len(root_container._children) > 0:
+            next(iter(root_container._children.values())).remove()
 
     def set_panel_label(self, label: str | None) -> None:
         """Set the main label that appears in the GUI panel.
