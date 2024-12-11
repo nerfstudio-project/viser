@@ -515,6 +515,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate TypeScript definitions for all subclasses of a base message class.&quot;&quot;&quot;</span>
     <span class="n">out_lines</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">message_types</span> <span class="o">=</span> <span class="n">message_cls</span><span class="o">.</span><span class="n">get_subclasses</span><span class="p">()</span>
+
     <span class="n">tag_map</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 
     <span class="c1"># Generate interfaces for each specific message.</span>

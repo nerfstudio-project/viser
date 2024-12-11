@@ -758,14 +758,6 @@
                 <span class="k">nonlocal</span> <span class="n">total_connections</span>
                 <span class="n">total_connections</span> <span class="o">+=</span> <span class="mi">1</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
-                <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;[bold](viser)[/bold] Connection opened (</span><span class="si">{</span><span class="n">client_id</span><span class="si">}</span><span class="s2">,&quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">total_connections</span><span class="si">}</span><span class="s2"> total),&quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">message_from_id</span><span class="p">)</span><span class="si">}</span><span class="s2"> persistent&quot;</span>
-                    <span class="s2">&quot; messages&quot;</span>
-                <span class="p">)</span>
-
             <span class="n">client_state</span> <span class="o">=</span> <span class="n">_ClientHandleState</span><span class="p">(</span>
                 <span class="n">AsyncMessageBuffer</span><span class="p">(</span><span class="n">event_loop</span><span class="p">,</span> <span class="n">persistent_messages</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
                 <span class="n">event_loop</span><span class="p">,</span>
@@ -787,6 +779,14 @@
                     <span class="k">await</span> <span class="n">cb</span><span class="p">(</span><span class="n">client_connection</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">cb</span><span class="p">(</span><span class="n">client_connection</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
+                <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;[bold](viser)[/bold] Connection opened (</span><span class="si">{</span><span class="n">client_id</span><span class="si">}</span><span class="s2">,&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">total_connections</span><span class="si">}</span><span class="s2"> total),&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_broadcast_buffer</span><span class="o">.</span><span class="n">message_from_id</span><span class="p">)</span><span class="si">}</span><span class="s2"> persistent&quot;</span>
+                    <span class="s2">&quot; messages&quot;</span>
+                <span class="p">)</span>
 
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># For each client: infinite loop over producers (which send messages)</span>

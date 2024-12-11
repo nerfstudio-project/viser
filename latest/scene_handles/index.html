@@ -934,6 +934,12 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">ImageHandle</span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#ImageHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ImageHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Handle for 2D images, rendered in 3D.</p>
 <dl class="py property">
+<dt class="sig sig-object py" id="viser.ImageHandle.image">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">image</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.ImageHandle.image" title="Link to this definition">¶</a></dt>
+<dd><p>Current content of the image. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="viser.ImageHandle.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#viser.ImageHandle.name" title="Link to this definition">¶</a></dt>
 <dd><p>Read-only name of the scene node.</p>
@@ -1023,12 +1029,6 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dt class="sig sig-object py" id="viser.ImageHandle.render_height">
 <span class="sig-name descname"><span class="pre">render_height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#viser.ImageHandle.render_height" title="Link to this definition">¶</a></dt>
 <dd><p>Height at which the image should be rendered in the scene. Synchronized automatically when assigned.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="viser.ImageHandle.image">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">image</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#viser.ImageHandle.image" title="Link to this definition">¶</a></dt>
-<dd><p>Current content of the image. Synchronized automatically when assigned.</p>
 </dd></dl>
 
 </dd></dl>
@@ -1648,17 +1648,6 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="viser.TransformControlsHandle.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.TransformControlsHandle.remove" title="Link to this definition">¶</a></dt>
-<dd><p>Remove the node from the scene.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="viser.TransformControlsHandle.remove_click_callback">
 <span class="sig-name descname"><span class="pre">remove_click_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">‘all’</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.TransformControlsHandle.remove_click_callback" title="Link to this definition">¶</a></dt>
 <dd><p>Remove click callbacks from scene node.</p>
@@ -1792,6 +1781,17 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.TransformControlsHandle.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#TransformControlsHandle.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.TransformControlsHandle.remove" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the node from the scene.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2422,6 +2422,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.ImageHandle"><code class="docutils literal notranslate"><span class="pre">ImageHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.ImageHandle.image"><code class="docutils literal notranslate"><span class="pre">ImageHandle.image</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.name"><code class="docutils literal notranslate"><span class="pre">ImageHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.on_click"><code class="docutils literal notranslate"><span class="pre">ImageHandle.on_click()</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.position"><code class="docutils literal notranslate"><span class="pre">ImageHandle.position</span></code></a></li>
@@ -2432,7 +2433,6 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.ImageHandle.media_type"><code class="docutils literal notranslate"><span class="pre">ImageHandle.media_type</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.render_width"><code class="docutils literal notranslate"><span class="pre">ImageHandle.render_width</span></code></a></li>
 <li><a class="reference internal" href="#viser.ImageHandle.render_height"><code class="docutils literal notranslate"><span class="pre">ImageHandle.render_height</span></code></a></li>
-<li><a class="reference internal" href="#viser.ImageHandle.image"><code class="docutils literal notranslate"><span class="pre">ImageHandle.image</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.LabelHandle"><code class="docutils literal notranslate"><span class="pre">LabelHandle</span></code></a><ul>
@@ -2533,7 +2533,6 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.TransformControlsHandle.name"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.on_click"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.on_click()</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.position"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.position</span></code></a></li>
-<li><a class="reference internal" href="#viser.TransformControlsHandle.remove"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove()</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.remove_click_callback"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove_click_callback()</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.visible"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.wxyz"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.wxyz</span></code></a></li>
@@ -2552,6 +2551,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <li><a class="reference internal" href="#viser.TransformControlsHandle.update_timestamp"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.update_timestamp</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.on_update"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.on_update()</span></code></a></li>
 <li><a class="reference internal" href="#viser.TransformControlsHandle.remove_update_callback"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove_update_callback()</span></code></a></li>
+<li><a class="reference internal" href="#viser.TransformControlsHandle.remove"><code class="docutils literal notranslate"><span class="pre">TransformControlsHandle.remove()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GaussianSplatHandle"><code class="docutils literal notranslate"><span class="pre">GaussianSplatHandle</span></code></a><ul>
