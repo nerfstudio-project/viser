@@ -162,12 +162,6 @@ def make_gui_elements(
             for control in transform_controls:
                 control.visible = gui_show_controls.value
 
-        gui_reset = server.gui.add_button("Reset GUI")
-
-        @gui_reset.on_click
-        def _(_) -> None:
-            server.gui.reset()
-
     # GUI elements: shape parameters.
     with tab_group.add_tab("Shape", viser.Icon.BOX):
         gui_reset_shape = server.gui.add_button("Reset Shape")
