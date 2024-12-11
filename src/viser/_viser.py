@@ -183,7 +183,9 @@ class CameraHandle:
         y = y - np.dot(z, y) * z
         y /= np.linalg.norm(y)
         x = np.cross(y, z)
-        self._state.wxyz = tf.SO3.from_matrix(np.stack([x, y, z], axis=1)).wxyz
+        self._state.wxyz = tf.SO3.from_matrix(np.stack([x, y, z], axis=1)).wxyz.astype(
+            np.float64
+        )
 
     @property
     def fov(self) -> float:
