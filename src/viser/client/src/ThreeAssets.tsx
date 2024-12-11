@@ -466,7 +466,6 @@ export const ViserMesh = React.forwardRef<
                 ...standardArgs,
               })
             : assertUnreachable(message.props.material);
-    console.log(material);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute(
       "position",
