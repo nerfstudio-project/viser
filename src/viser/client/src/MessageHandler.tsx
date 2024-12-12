@@ -293,6 +293,18 @@ function useMessageHandler() {
         viewer.sendCameraRef.current !== null && viewer.sendCameraRef.current();
         return;
       }
+      case "SetCameraNearMessage": {
+        const camera = viewer.cameraRef.current!;
+        camera.near = message.near;
+        camera.updateProjectionMatrix();
+        return;
+      }
+      case "SetCameraFarMessage": {
+        const camera = viewer.cameraRef.current!;
+        camera.far = message.far;
+        camera.updateProjectionMatrix();
+        return;
+      }
       case "SetOrientationMessage": {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
