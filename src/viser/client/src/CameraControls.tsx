@@ -96,6 +96,8 @@ export function SynchronizedCameraControls() {
       position: t_world_camera.toArray(),
       aspect: three_camera.aspect,
       fov: (three_camera.fov * Math.PI) / 180.0,
+      near: three_camera.near,
+      far: three_camera.far,
       look_at: [lookAt.x, lookAt.y, lookAt.z],
       up_direction: [up.x, up.y, up.z],
     });
@@ -247,8 +249,7 @@ export function SynchronizedCameraControls() {
   return (
     <CameraControls
       ref={viewer.cameraControlRef}
-      minDistance={0.1}
-      maxDistance={200.0}
+      minDistance={0.01}
       dollySpeed={0.3}
       smoothTime={0.05}
       draggingSmoothTime={0.0}
