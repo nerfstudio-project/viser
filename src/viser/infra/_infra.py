@@ -51,7 +51,6 @@ class RecordHandle:
     ):
         self._handler = handler
         self._filter = filter
-        self._loop_start_index: int | None = None
         self._time: float = 0.0
         self._messages: list[tuple[float, dict[str, Any]]] = []
 
@@ -70,15 +69,13 @@ class RecordHandle:
     def set_loop_start(self) -> None:
         """Mark the start of the loop. Messages sent after this point will be
         looped. Should only be called once."""
-        assert self._loop_start_index is None, "Loop start already set."
-        self._loop_start_index = len(self._messages)
+        pass
 
     def end_and_serialize(self) -> bytes:
         """End the recording and serialize contents. Returns the recording as
         bytes, which should generally be written to a file."""
         packed_bytes = msgspec.msgpack.encode(
             {
-                "loopStartIndex": self._loop_start_index,
                 "durationSeconds": self._time,
                 "messages": self._messages,
             }

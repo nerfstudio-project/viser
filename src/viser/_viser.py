@@ -982,6 +982,16 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         can be useful for safe concurrent operations."""
         return self._event_loop
 
+    def sleep_forever(self) -> None:
+        """Equivalent to:
+        ```
+        while True:
+            time.sleep(3600)
+        ```
+        """
+        while True:
+            time.sleep(3600)
+
     def _start_scene_recording(self) -> RecordHandle:
         """Start recording outgoing messages for playback or embedding.
         Includes only the scene.

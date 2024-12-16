@@ -50,8 +50,15 @@ function useMessageHandler() {
       overrideVisibility: attrs[message.name]?.overrideVisibility,
     };
 
-    // Don't update the pose of the object until we've made a new one!
-    attrs[message.name]!.poseUpdateState = "waitForMakeObject";
+    // If the object is new or changed, we need to wait until it's created
+    // before updating its pose. Updating the pose too early can cause
+    // flickering when we replace objects (old object will take the pose of the new
+    // object while it's being loaded/mounted)
+    const oldMessage =
+      viewer.useSceneTree.getState().nodeFromName[message.name]?.message;
+    if (oldMessage === undefined || message !== oldMessage) {
+      attrs[message.name]!.poseUpdateState = "waitForMakeObject";
+    }
 
     // Make sure parents exists.
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
