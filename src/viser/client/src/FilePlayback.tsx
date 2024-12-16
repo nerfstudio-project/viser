@@ -69,9 +69,8 @@ async function deserializeGzippedMsgpackFile<T>(
 }
 
 interface SerializedMessages {
-  loopStartIndex: number | null;
   durationSeconds: number;
-  messages: [number, Message][];
+  messages: [number, Message][]; // (time in seconds, message).
 }
 
 export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
@@ -83,6 +82,24 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   const [playbackSpeed, setPlaybackSpeed] = useState("1x");
   const [paused, setPaused] = useState(false);
   const [recording, setRecording] = useState<SerializedMessages | null>(null);
+
+  // Instead of removing all of the existing scene nodes, we're just going to hide them.
+  // This will prevent unnecessary remounting when messages are looped.
+  function resetScene() {
+    const attrs = viewer.nodeAttributesFromName.current;
+    Object.keys(attrs).forEach((key) => {
+      if (key === "") return;
+      console.log("reset", attrs[key]!.poseUpdateState);
+      attrs[key]!.visibility = false;
+
+      // We'll also reset poses. This is to prevent edge cases when looping:
+      // - We first add /parent/child.
+      // - We then add /parent.
+      // - We then modify the pose of /parent.
+      attrs[key]!.wxyz = [1, 0, 0, 0];
+      attrs[key]!.position = [0, 0, 0];
+    });
+  }
 
   const [currentTime, setCurrentTime] = useState(0.0);
 
@@ -113,12 +130,10 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       messageQueueRef.current.push(message);
     }
 
-    if (
-      mutable.currentTime >= recording.durationSeconds &&
-      recording.loopStartIndex !== null
-    ) {
-      mutable.currentIndex = recording.loopStartIndex!;
-      mutable.currentTime = recording.messages[recording.loopStartIndex!][0];
+    if (mutable.currentTime >= recording.durationSeconds) {
+      resetScene();
+      mutable.currentIndex = 0;
+      mutable.currentTime = recording.messages[0][0];
     }
     setCurrentTime(mutable.currentTime);
   }, [recording]);
@@ -136,7 +151,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         updatePlayback();
         if (
           playbackMutable.current.currentIndex === recording.messages.length &&
-          recording.loopStartIndex === null
+          recording.durationSeconds === 0.0
         ) {
           clearInterval(interval);
         }
@@ -169,7 +184,8 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     (value: number) => {
       if (value < playbackMutable.current.currentTime) {
         // Going backwards is more expensive...
-        playbackMutable.current.currentIndex = recording!.loopStartIndex!;
+        resetScene();
+        playbackMutable.current.currentIndex = 0;
       }
       playbackMutable.current.currentTime = value;
       setCurrentTime(value);
