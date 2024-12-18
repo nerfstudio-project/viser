@@ -7,6 +7,71 @@ import { PerspectiveCamera } from "three";
 import * as THREE from "three";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { useThrottledMessageSender } from "./WebsocketFunctions";
+import { Grid, PivotControls } from "@react-three/drei";
+
+function CameraOrientationTool({
+  pivotRef,
+  onPivotChange,
+  update,
+}: {
+  pivotRef: React.RefObject<THREE.Group>;
+  onPivotChange: (matrix: THREE.Matrix4) => void;
+  update: () => void;
+}) {
+  const viewer = useContext(ViewerContext)!;
+  const showCameraControls = viewer.useGui((state) => state.showCameraControls);
+  React.useEffect(update, [showCameraControls]);
+
+  if (!showCameraControls) return null;
+
+  return (
+    <PivotControls
+      ref={pivotRef}
+      scale={200}
+      lineWidth={4}
+      fixed={true}
+      axisColors={["#aaaaaa", "#ff33ff", "#aaaaaa"]}
+      disableScaling={true}
+      onDragEnd={() => {
+        onPivotChange(pivotRef.current!.matrix);
+      }}
+    >
+      <mesh>
+        <sphereGeometry args={[0.1, 32, 32]} />
+        <shaderMaterial
+          transparent
+          uniforms={{
+            color: { value: new THREE.Color("#ff33ff") },
+            size: { value: 200.0 },
+          }}
+          vertexShader={`
+            uniform float size;
+            void main() {
+              vec4 clipPos = projectionMatrix * modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+              vec4 clipPosOffset = projectionMatrix * modelViewMatrix * vec4(position * size / 1000.0, 1.0);
+              gl_Position = clipPos + (clipPosOffset - clipPos) * clipPos.w;
+            }
+          `}
+          fragmentShader={`
+            uniform vec3 color;
+            void main() {
+              gl_FragColor = vec4(color, 0.8);
+            }
+          `}
+        />
+      </mesh>
+      <Grid
+        args={[10, 10, 10, 10]}
+        infiniteGrid
+        fadeFrom={0}
+        fadeStrength={2}
+        sectionColor={"#ffaaff"}
+        cellColor={"#ffccff"}
+        side={THREE.DoubleSide}
+      />
+    </PivotControls>
+  );
+}
 
 export function SynchronizedCameraControls() {
   const viewer = useContext(ViewerContext)!;
@@ -20,7 +85,97 @@ export function SynchronizedCameraControls() {
     lookAt: THREE.Vector3;
   } | null>(null);
 
+  const pivotRef = useRef<THREE.Group>(null);
+
+  const cameraControlRef = viewer.cameraControlRef;
+
+  const updateCameraLookAtAndUpFromPivotControl = (matrix: THREE.Matrix4) => {
+    if (!cameraControlRef.current) return;
+
+    const targetPosition = new THREE.Vector3();
+    targetPosition.setFromMatrixPosition(matrix);
+
+    // const upVector = new THREE.Vector3();
+    // upVector.setFromMatrixColumn(matrix, 1);
+
+    const cameraControls = cameraControlRef.current;
+    const camera = cameraControlRef.current.camera;
+    camera.up.setFromMatrixColumn(matrix, 1);
+
+    // Back up position.
+    const prevPosition = new THREE.Vector3();
+    cameraControls.getPosition(prevPosition);
+
+    cameraControls.updateCameraUp();
+    // Restore position, which can get unexpectedly mutated in updateCameraUp().
+    cameraControls.setPosition(
+      prevPosition.x,
+      prevPosition.y,
+      prevPosition.z,
+      false,
+    );
+
+    cameraControls.setLookAt(
+      cameraControls.camera.position.x,
+      cameraControls.camera.position.y,
+      cameraControls.camera.position.z,
+      targetPosition.x,
+      targetPosition.y,
+      targetPosition.z,
+      true,
+      // {
+      //   up: upVector,
+      // },
+    );
+  };
+
+  const updatePivotControlFromCameraLookAtAndup = () => {
+    if (!cameraControlRef.current) return;
+    if (!pivotRef.current) return;
+
+    const cameraControls = cameraControlRef.current;
+    const lookAt = cameraControls.getTarget(new THREE.Vector3());
+
+    // Rotate matrix s.t. it's y-axis aligns with the camera's up vector.
+    // We'll do this with math.
+    const origRotation = new THREE.Matrix4().extractRotation(
+      pivotRef.current.matrix,
+    );
+
+    const cameraUp = camera.up.clone().normalize();
+    const pivotUp = new THREE.Vector3(0, 1, 0)
+      .applyMatrix4(origRotation)
+      .normalize();
+    const axis = new THREE.Vector3()
+      .crossVectors(pivotUp, cameraUp)
+      .normalize();
+    const angle = Math.acos(Math.min(1, Math.max(-1, cameraUp.dot(pivotUp))));
+
+    // Create rotation matrix
+    const rotationMatrix = new THREE.Matrix4();
+    if (axis.lengthSq() > 0.0001) {
+      // Check if cross product is valid
+      rotationMatrix.makeRotationAxis(axis, angle);
+    }
+    // rotationMatrix.premultiply(origRotation);
+
+    // Combine rotation with position
+    const matrix = new THREE.Matrix4();
+    matrix.multiply(rotationMatrix);
+    matrix.multiply(origRotation);
+    matrix.setPosition(lookAt);
+
+    pivotRef.current.matrix.copy(matrix);
+    pivotRef.current.updateMatrixWorld(true);
+  };
+
   viewer.resetCameraViewRef.current = () => {
+    viewer.cameraRef.current!.up.set(
+      initialCameraRef.current!.camera.up.x,
+      initialCameraRef.current!.camera.up.y,
+      initialCameraRef.current!.camera.up.z,
+    );
+    viewer.cameraControlRef.current!.updateCameraUp();
     viewer.cameraControlRef.current!.setLookAt(
       initialCameraRef.current!.camera.position.x,
       initialCameraRef.current!.camera.position.y,
@@ -30,12 +185,6 @@ export function SynchronizedCameraControls() {
       initialCameraRef.current!.lookAt.z,
       true,
     );
-    viewer.cameraRef.current!.up.set(
-      initialCameraRef.current!.camera.up.x,
-      initialCameraRef.current!.camera.up.y,
-      initialCameraRef.current!.camera.up.z,
-    );
-    viewer.cameraControlRef.current!.updateCameraUp();
   };
 
   // Callback for sending cameras.
@@ -51,6 +200,8 @@ export function SynchronizedCameraControls() {
   const t_world_camera = new THREE.Vector3();
   const scale = new THREE.Vector3();
   const sendCamera = React.useCallback(() => {
+    updatePivotControlFromCameraLookAtAndup();
+
     const three_camera = camera;
     const camera_control = viewer.cameraControlRef.current;
 
@@ -247,14 +398,23 @@ export function SynchronizedCameraControls() {
   }, [CameraControls]);
 
   return (
-    <CameraControls
-      ref={viewer.cameraControlRef}
-      minDistance={0.01}
-      dollySpeed={0.3}
-      smoothTime={0.05}
-      draggingSmoothTime={0.0}
-      onChange={sendCamera}
-      makeDefault
-    />
+    <>
+      <CameraControls
+        ref={viewer.cameraControlRef}
+        minDistance={0.01}
+        dollySpeed={0.3}
+        smoothTime={0.05}
+        draggingSmoothTime={0.0}
+        onChange={sendCamera}
+        makeDefault
+      />
+      <CameraOrientationTool
+        pivotRef={pivotRef}
+        onPivotChange={(matrix) =>
+          updateCameraLookAtAndUpFromPivotControl(matrix)
+        }
+        update={updatePivotControlFromCameraLookAtAndup}
+      />
+    </>
   );
 }

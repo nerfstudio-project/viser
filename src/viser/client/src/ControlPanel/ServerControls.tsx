@@ -7,6 +7,7 @@ import {
   Switch,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
 import { Stats } from "@react-three/drei";
@@ -130,6 +131,27 @@ export default function ServerControls() {
         >
           Reset View
         </Button>
+        <Tooltip
+          label={
+            <>
+              Show tool for setting the up direction
+              <br /> and orbit center of the camera.
+            </>
+          }
+          refProp="rootRef"
+          position="top-start"
+        >
+          <Switch
+            radius="sm"
+            label="Camera Orientation Tool"
+            onChange={(event) => {
+              viewer.useGui.setState({
+                showCameraControls: event.currentTarget.checked,
+              });
+            }}
+            size="sm"
+          />
+        </Tooltip>
         <Switch
           radius="sm"
           label="WebGL Statistics"

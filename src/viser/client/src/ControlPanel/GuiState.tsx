@@ -16,6 +16,7 @@ interface GuiState {
   shareUrl: string | null;
   websocketConnected: boolean;
   backgroundAvailable: boolean;
+  showCameraControls: boolean;
   guiUuidSetFromContainerUuid: {
     [containerUuid: string]: { [uuid: string]: true } | undefined;
   };
@@ -65,6 +66,7 @@ const cleanGuiState: GuiState = {
   shareUrl: null,
   websocketConnected: false,
   backgroundAvailable: false,
+  showCameraControls: false,
   guiUuidSetFromContainerUuid: {},
   modals: [],
   guiOrderFromUuid: {},
