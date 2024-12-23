@@ -30,7 +30,7 @@ function CameraOrientationTool({
       scale={200}
       lineWidth={4}
       fixed={true}
-      axisColors={["#aaaaaa", "#ff33ff", "#aaaaaa"]}
+      axisColors={["#ffaaff", "#ff33ff", "#ffaaff"]}
       disableScaling={true}
       onDragEnd={() => {
         onPivotChange(pivotRef.current!.matrix);
@@ -63,8 +63,9 @@ function CameraOrientationTool({
       <Grid
         args={[10, 10, 10, 10]}
         infiniteGrid
+        fadeStrength={0}
         fadeFrom={0}
-        fadeStrength={2}
+        fadeDistance={1000}
         sectionColor={"#ffaaff"}
         cellColor={"#ffccff"}
         side={THREE.DoubleSide}
