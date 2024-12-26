@@ -134,8 +134,14 @@ export default function ServerControls() {
         <Tooltip
           label={
             <>
-              Show tool for setting the up direction
-              <br /> and orbit center of the camera.
+              Show tool for setting the look-at point and
+              <br />
+              up direction of the camera.
+              <br />
+              <br />
+              These can be used to re-orient the camera&apos;s
+              <br />
+              orbit controls.
             </>
           }
           refProp="rootRef"
@@ -146,7 +152,7 @@ export default function ServerControls() {
             label="Camera Orientation Tool"
             onChange={(event) => {
               viewer.useGui.setState({
-                showCameraControls: event.currentTarget.checked,
+                showCameraControlsTool: event.currentTarget.checked,
               });
             }}
             size="sm"

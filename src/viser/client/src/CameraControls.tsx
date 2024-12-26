@@ -2,7 +2,8 @@ import { ViewerContext } from "./App";
 import { CameraControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import * as holdEvent from "hold-event";
-import React, { useContext, useRef } from "react";
+import React, { useContext, useRef, useState } from "react";
+import { useFrame } from "@react-three/fiber";
 import { PerspectiveCamera } from "three";
 import * as THREE from "three";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
@@ -19,7 +20,9 @@ function CameraOrientationTool({
   update: () => void;
 }) {
   const viewer = useContext(ViewerContext)!;
-  const showCameraControls = viewer.useGui((state) => state.showCameraControls);
+  const showCameraControls = viewer.useGui(
+    (state) => state.showCameraControlsTool,
+  );
   React.useEffect(update, [showCameraControls]);
 
   if (!showCameraControls) return null;
@@ -90,47 +93,107 @@ export function SynchronizedCameraControls() {
 
   const cameraControlRef = viewer.cameraControlRef;
 
+  // Animation state interface
+  interface CameraAnimation {
+    startUp: THREE.Vector3;
+    targetUp: THREE.Vector3;
+    startLookAt: THREE.Vector3;
+    targetLookAt: THREE.Vector3;
+    startTime: number;
+    duration: number;
+  }
+
+  const [cameraAnimation, setCameraAnimation] =
+    useState<CameraAnimation | null>(null);
+
+  // Animation parameters
+  const ANIMATION_DURATION = 0.5; // seconds
+
+  useFrame((state) => {
+    if (cameraAnimation && cameraControlRef.current) {
+      const cameraControls = cameraControlRef.current;
+      const camera = cameraControls.camera;
+
+      const elapsed = state.clock.getElapsedTime() - cameraAnimation.startTime;
+      const progress = Math.min(elapsed / cameraAnimation.duration, 1);
+
+      // Smooth step easing
+      const t = progress * progress * (3 - 2 * progress);
+
+      // Interpolate up vector
+      const newUp = new THREE.Vector3()
+        .copy(cameraAnimation.startUp)
+        .lerp(cameraAnimation.targetUp, t)
+        .normalize();
+
+      // Interpolate look-at position
+      const newLookAt = new THREE.Vector3()
+        .copy(cameraAnimation.startLookAt)
+        .lerp(cameraAnimation.targetLookAt, t);
+
+      camera.up.copy(newUp);
+
+      // Back up position
+      const prevPosition = new THREE.Vector3();
+      cameraControls.getPosition(prevPosition);
+
+      cameraControls.updateCameraUp();
+
+      // Restore position and set new look-at
+      cameraControls.setPosition(
+        prevPosition.x,
+        prevPosition.y,
+        prevPosition.z,
+        false,
+      );
+
+      cameraControls.setLookAt(
+        prevPosition.x,
+        prevPosition.y,
+        prevPosition.z,
+        newLookAt.x,
+        newLookAt.y,
+        newLookAt.z,
+        false,
+      );
+
+      // Clear animation when complete
+      if (progress >= 1) {
+        setCameraAnimation(null);
+      }
+    }
+  });
+
+  const { clock } = useThree();
+
   const updateCameraLookAtAndUpFromPivotControl = (matrix: THREE.Matrix4) => {
     if (!cameraControlRef.current) return;
 
     const targetPosition = new THREE.Vector3();
     targetPosition.setFromMatrixPosition(matrix);
 
-    // const upVector = new THREE.Vector3();
-    // upVector.setFromMatrixColumn(matrix, 1);
-
     const cameraControls = cameraControlRef.current;
     const camera = cameraControlRef.current.camera;
-    camera.up.setFromMatrixColumn(matrix, 1);
 
-    // Back up position.
-    const prevPosition = new THREE.Vector3();
-    cameraControls.getPosition(prevPosition);
+    // Get target up vector from matrix
+    const targetUp = new THREE.Vector3().setFromMatrixColumn(matrix, 1);
 
-    cameraControls.updateCameraUp();
-    // Restore position, which can get unexpectedly mutated in updateCameraUp().
-    cameraControls.setPosition(
-      prevPosition.x,
-      prevPosition.y,
-      prevPosition.z,
-      false,
-    );
+    // Get current look-at position
+    const currentLookAt = cameraControls.getTarget(new THREE.Vector3());
 
-    cameraControls.setLookAt(
-      cameraControls.camera.position.x,
-      cameraControls.camera.position.y,
-      cameraControls.camera.position.z,
-      targetPosition.x,
-      targetPosition.y,
-      targetPosition.z,
-      true,
-      // {
-      //   up: upVector,
-      // },
-    );
+    // Start new animation
+    setCameraAnimation({
+      startUp: camera.up.clone(),
+      targetUp: targetUp,
+      startLookAt: currentLookAt,
+      targetLookAt: targetPosition,
+      startTime: clock.getElapsedTime(),
+      duration: ANIMATION_DURATION,
+    });
   };
 
   const updatePivotControlFromCameraLookAtAndup = () => {
+    if (cameraAnimation !== null) return;
     if (!cameraControlRef.current) return;
     if (!pivotRef.current) return;
 
@@ -411,9 +474,9 @@ export function SynchronizedCameraControls() {
       />
       <CameraOrientationTool
         pivotRef={pivotRef}
-        onPivotChange={(matrix) =>
-          updateCameraLookAtAndUpFromPivotControl(matrix)
-        }
+        onPivotChange={(matrix) => {
+          updateCameraLookAtAndUpFromPivotControl(matrix);
+        }}
         update={updatePivotControlFromCameraLookAtAndup}
       />
     </>
