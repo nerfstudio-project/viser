@@ -48,6 +48,7 @@ function CameraOrientationTool({
             size: { value: 200.0 },
           }}
           vertexShader={`
+            // Custom shader for defining sphere size in screen space.
             uniform float size;
             void main() {
               vec4 clipPos = projectionMatrix * modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
