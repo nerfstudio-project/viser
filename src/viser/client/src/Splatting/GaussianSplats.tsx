@@ -90,9 +90,6 @@ export function SplatRenderContext({
   children: React.ReactNode;
 }) {
   const store = useGaussianSplatStore();
-  const numGroups = Object.keys(
-    store((state) => state.groupBufferFromId),
-  ).length;
   return (
     <GaussianSplatsContext.Provider
       value={{
@@ -101,7 +98,7 @@ export function SplatRenderContext({
         meshPropsRef: React.useRef(null),
       }}
     >
-      {numGroups > 0 ? <SplatRenderer /> : null}
+      <SplatRenderer />
       {children}
     </GaussianSplatsContext.Provider>
   );
@@ -241,7 +238,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
-    if (weightedDeterminant < 0.5)
+    if (weightedDeterminant < 0.25)
       return;
     vPosition = position.xy;
 
@@ -286,30 +283,48 @@ export const SplatObject = React.forwardRef<
   );
   const name = React.useMemo(() => uuidv4(), [buffer]);
 
-  const [obj, setRef] = React.useState<THREE.Group | null>(null);
-
   React.useEffect(() => {
-    if (obj === null) return;
     setBuffer(name, buffer);
-    if (ref !== null) {
-      if ("current" in ref) {
-        ref.current = obj;
-      } else {
-        ref(obj);
-      }
-    }
-    nodeRefFromId.current[name] = obj;
     return () => {
       removeBuffer(name);
       delete nodeRefFromId.current[name];
     };
-  }, [obj]);
+  }, [buffer]);
 
-  return <group ref={setRef}></group>;
+  return (
+    <group
+      ref={(obj) => {
+        // We'll (a) forward the ref and (b) store it in the splat rendering
+        // state. The latter is used to update the sorter and shader.
+        if (obj === null) return;
+        if (ref !== null) {
+          if ("current" in ref) {
+            ref.current = obj;
+          } else {
+            ref(obj);
+          }
+        }
+        nodeRefFromId.current[name] = obj;
+      }}
+    ></group>
+  );
 });
 
 /** External interface. Component should be added to the root of canvas.  */
 function SplatRenderer() {
+  const splatContext = React.useContext(GaussianSplatsContext)!;
+  const groupBufferFromId = splatContext.useGaussianSplatStore(
+    (state) => state.groupBufferFromId,
+  );
+
+  // Only mount implementation (which will load sort worker, etc) if there are
+  // Gaussians to render.
+  return Object.keys(groupBufferFromId).length > 0 ? (
+    <SplatRendererImpl />
+  ) : null;
+}
+
+function SplatRendererImpl() {
   const splatContext = React.useContext(GaussianSplatsContext)!;
   const groupBufferFromId = splatContext.useGaussianSplatStore(
     (state) => state.groupBufferFromId,
