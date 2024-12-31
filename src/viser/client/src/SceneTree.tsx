@@ -737,10 +737,17 @@ export function SceneNodeThreeObject(props: {
       if (obj === null) return;
       if (attrs === undefined) return;
 
-      const visibility =
+      let visibility =
         (attrs?.overrideVisibility === undefined
           ? attrs?.visibility
           : attrs.overrideVisibility) ?? true;
+      if (
+        message.type === "LineSegmentsMessage" &&
+        !viewer.useSceneTree.getState().showLineSegments
+      ) {
+        visibility = false;
+      }
+
       obj.visible = visibility;
 
       if (attrs.poseUpdateState == "needsUpdate") {

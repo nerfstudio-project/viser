@@ -9,6 +9,7 @@ import {
   NumberInput,
   Paper,
   Progress,
+  SegmentedControl,
   Select,
   Slider,
   Tooltip,
@@ -92,7 +93,10 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
 
       const nodeMessage =
         viewer.useSceneTree.getState().nodeFromName[key]?.message;
-      if (nodeMessage !== undefined && (nodeMessage.type !== "FrameMessage" || nodeMessage.props.show_axes)) {
+      if (
+        nodeMessage !== undefined &&
+        (nodeMessage.type !== "FrameMessage" || nodeMessage.props.show_axes)
+      ) {
         // ^ We don't hide intermediate frames, which can be made automatically.
         attrs[key]!.visibility = false;
       }
@@ -301,6 +305,20 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
               wrapper: { width: "3.25em" },
             }}
             comboboxProps={{ zIndex: 5, width: "5.25em" }}
+          />
+        </Tooltip>
+        <Tooltip
+          zIndex={10}
+          label={"Show or hide motion visualization."}
+          withinPortal
+        >
+          <SegmentedControl
+            data={["Tracks", "Off"]}
+            onChange={(value) =>
+              viewer.useSceneTree.setState({
+                showLineSegments: value === "Tracks",
+              })
+            }
           />
         </Tooltip>
       </Paper>
