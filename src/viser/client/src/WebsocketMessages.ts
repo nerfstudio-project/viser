@@ -319,7 +319,11 @@ export interface CubicBezierSplineMessage {
 export interface GaussianSplatsMessage {
   type: "GaussianSplatsMessage";
   name: string;
-  props: { buffer: Uint8Array };
+  props: {
+    buffer: Uint8Array;
+    num_motion_gaussians: number;
+    motion_coeffs_buffer: Uint8Array;
+  };
 }
 /** Remove a particular node from the scene.
  *
@@ -1073,6 +1077,14 @@ export interface ThemeConfigurationMessage {
       ]
     | null;
 }
+/** SetShapeOfMotionBases(bases: 'npt.NDArray[np.float32]')
+ *
+ * (automatically generated)
+ */
+export interface SetShapeOfMotionBases {
+  type: "SetShapeOfMotionBases";
+  bases: Uint8Array;
+}
 /** Message from server->client requesting a render from a specified camera
  * pose.
  *
@@ -1235,6 +1247,7 @@ export type Message =
   | GuiUpdateMessage
   | SceneNodeUpdateMessage
   | ThemeConfigurationMessage
+  | SetShapeOfMotionBases
   | GetRenderRequestMessage
   | GetRenderResponseMessage
   | FileTransferStart

@@ -522,6 +522,16 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 ),
               )
             }
+            motionCoeffsBuffer={
+              new Uint32Array(
+                message.props.motion_coeffs_buffer.buffer.slice(
+                  message.props.motion_coeffs_buffer.byteOffset,
+                  message.props.motion_coeffs_buffer.byteOffset +
+                    message.props.motion_coeffs_buffer.byteLength,
+                ),
+              )
+            }
+            numMotionGaussians={message.props.num_motion_gaussians}
           />
         ),
       };

@@ -36,12 +36,14 @@ import { v4 as uuidv4 } from "uuid";
 
 /**Global splat state.*/
 interface SplatState {
-  groupBufferFromId: { [id: string]: Uint32Array };
+  groupBufferFromId: {
+    [id: string]: [Uint32Array, Uint32Array, number];
+  };
   nodeRefFromId: React.MutableRefObject<{
     [name: string]: undefined | Object3D;
   }>;
-  setBuffer: (id: string, buffer: Uint32Array) => void;
-  removeBuffer: (id: string) => void;
+  setBuffers: (id: string, buffers: [Uint32Array, Uint32Array, number]) => void;
+  removeBuffers: (id: string) => void;
 }
 
 /**Hook for creating global splat state.*/
@@ -51,12 +53,12 @@ function useGaussianSplatStore() {
     create<SplatState>((set) => ({
       groupBufferFromId: {},
       nodeRefFromId: nodeRefFromId,
-      setBuffer: (id, buffer) => {
+      setBuffers: (id, buffer) => {
         return set((state) => ({
           groupBufferFromId: { ...state.groupBufferFromId, [id]: buffer },
         }));
       },
-      removeBuffer: (id) => {
+      removeBuffers: (id) => {
         return set((state) => {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { [id]: _, ...buffers } = state.groupBufferFromId;
@@ -68,6 +70,11 @@ function useGaussianSplatStore() {
 }
 
 export const GaussianSplatsContext = React.createContext<{
+  postToWorkerRef: React.MutableRefObject<
+    (message: SorterWorkerIncoming) => void
+  >;
+  materialRef: React.MutableRefObject<THREE.ShaderMaterial | null>;
+  shapeOfMotionBasesRef: React.MutableRefObject<Float32Array>;
   useGaussianSplatStore: ReturnType<typeof useGaussianSplatStore>;
   updateCamera: React.MutableRefObject<
     | null
@@ -93,6 +100,9 @@ export function SplatRenderContext({
   return (
     <GaussianSplatsContext.Provider
       value={{
+        postToWorkerRef: React.useRef((message) => {}),
+        materialRef: React.useRef(null),
+        shapeOfMotionBasesRef: React.useRef(new Float32Array(30 * 4)),
         useGaussianSplatStore: store,
         updateCamera: React.useRef(null),
         meshPropsRef: React.useRef(null),
@@ -109,12 +119,15 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     numGaussians: 0,
     focal: 100.0,
     viewport: [640, 480],
+    somNumMotionGaussians: 0,
     near: 1.0,
     far: 100.0,
     depthTest: true,
     depthWrite: false,
     transparent: true,
     textureBuffer: null,
+    somMotionCoeffsBuffer: null,
+    somMotionBases: new Float32Array(30 * 4),
     textureT_camera_groups: null,
     transitionInState: 0.0,
   },
@@ -138,6 +151,11 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   uniform vec2 viewport;
   uniform float near;
   uniform float far;
+
+  // Shape of motion stuff.
+  uniform uint somNumMotionGaussians;
+  uniform usampler2D somMotionCoeffsBuffer;
+  uniform vec4[30] somMotionBases;
 
   // Fade in state between [0, 1].
   uniform float transitionInState;
@@ -167,6 +185,65 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     ivec2 texSize = textureSize(textureBuffer, 0);
     uint texStart = sortedIndex << 1u;
     ivec2 texPos0 = ivec2(texStart % uint(texSize.x), texStart / uint(texSize.x));
+    ivec2 texPos1 = ivec2((texStart + 1u) % uint(texSize.x), (texStart + 1u) / uint(texSize.x));
+
+
+    // Get shape of motion transform.
+    mat3 somRotation = mat3(1.0);
+    vec3 somTranslation = vec3(0.0);
+    float coeffs[10];
+    if (sortedIndex < somNumMotionGaussians) {
+      uvec4 coeffsVec0 = texelFetch(somMotionCoeffsBuffer, texPos0, 0);
+      uvec4 coeffsVec1 = texelFetch(somMotionCoeffsBuffer, texPos1, 0);
+
+      // Unpack first vec2 into array indices 0,1
+      vec2 temp = unpackHalf2x16(coeffsVec0.x);
+      coeffs[0] = temp.x;
+      coeffs[1] = temp.y;
+
+      // Unpack second vec2 into indices 2,3
+      temp = unpackHalf2x16(coeffsVec0.y);
+      coeffs[2] = temp.x;
+      coeffs[3] = temp.y;
+
+      // Indices 4,5
+      temp = unpackHalf2x16(coeffsVec0.z);
+      coeffs[4] = temp.x;
+      coeffs[5] = temp.y;
+
+      // Indices 6,7
+      temp = unpackHalf2x16(coeffsVec0.w);
+      coeffs[6] = temp.x;
+      coeffs[7] = temp.y;
+
+      // Final two coefficients 8,9
+      temp = unpackHalf2x16(coeffsVec1.x);
+      coeffs[8] = temp.x;
+      coeffs[9] = temp.y;
+
+      // uniform vec4[30] somMotionBases;
+      // vec4: x y z _
+      // vec4: rot0 rot1 rot2 _
+      // vec4: rot3 rot4 rot5 _
+
+      vec3 rot_x = vec3(0.0);
+      vec3 rot_y = vec3(0.0);
+
+      for (int i = 0; i < 10; i++) {
+        somTranslation += vec3(somMotionBases[i * 3]) * coeffs[i];
+        rot_x += vec3(somMotionBases[i * 3 + 1]) * coeffs[i];
+        rot_y += vec3(somMotionBases[i * 3 + 2]) * coeffs[i];
+      }
+
+      // Use rot_x and rot_y as 6D continuous rotation representation.
+      rot_x = normalize(rot_x);
+      rot_y = normalize(rot_y - dot(rot_x, rot_y) * rot_x);
+      vec3 rot_z = normalize(cross(rot_x, rot_y));
+
+      somRotation = mat3(
+        rot_x, rot_y, rot_z
+      );
+    }
 
 
     // Fetch from textures.
@@ -178,6 +255,10 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // Get center wrt camera. modelViewMatrix is T_cam_world.
     vec3 center = uintBitsToFloat(floatBufferData.xyz);
+
+    //  Apply shape of motion transform.
+    center = somRotation * center + somTranslation;
+
     vec4 c_cam = T_camera_group * vec4(center, 1);
     if (-c_cam.z < near || -c_cam.z > far)
       return;
@@ -187,7 +268,6 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
       return;
 
     // Read covariance terms.
-    ivec2 texPos1 = ivec2((texStart + 1u) % uint(texSize.x), (texStart + 1u) / uint(texSize.x));
     uvec4 intBufferData = texelFetch(textureBuffer, texPos1, 0);
 
     // Get covariance terms from int buffer.
@@ -206,6 +286,10 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
         triu01.y, triu23.y, triu45.x,
         triu23.x, triu45.x, triu45.y
     );
+
+    // Apply shape of motion to covariance.
+    cov3d = somRotation * cov3d * transpose(somRotation);
+
     mat3 J = mat3(
         // Matrices are column-major.
         focal.x / c_cam.z, 0., 0.0,
@@ -269,14 +353,19 @@ export const SplatObject = React.forwardRef<
   THREE.Group,
   {
     buffer: Uint32Array;
+    motionCoeffsBuffer: Uint32Array;
+    numMotionGaussians: number;
   }
->(function SplatObject({ buffer }, ref) {
+>(function SplatObject(
+  { buffer, motionCoeffsBuffer, numMotionGaussians },
+  ref,
+) {
   const splatContext = React.useContext(GaussianSplatsContext)!;
-  const setBuffer = splatContext.useGaussianSplatStore(
-    (state) => state.setBuffer,
+  const setBuffers = splatContext.useGaussianSplatStore(
+    (state) => state.setBuffers,
   );
-  const removeBuffer = splatContext.useGaussianSplatStore(
-    (state) => state.removeBuffer,
+  const removeBuffers = splatContext.useGaussianSplatStore(
+    (state) => state.removeBuffers,
   );
   const nodeRefFromId = splatContext.useGaussianSplatStore(
     (state) => state.nodeRefFromId,
@@ -284,9 +373,9 @@ export const SplatObject = React.forwardRef<
   const name = React.useMemo(() => uuidv4(), [buffer]);
 
   React.useEffect(() => {
-    setBuffer(name, buffer);
+    setBuffers(name, [buffer, motionCoeffsBuffer, numMotionGaussians]);
     return () => {
-      removeBuffer(name);
+      removeBuffers(name);
       delete nodeRefFromId.current[name];
     };
   }, [buffer]);
@@ -337,7 +426,9 @@ function SplatRendererImpl() {
   const merged = mergeGaussianGroups(groupBufferFromId);
   const meshProps = useGaussianMeshProps(
     merged.gaussianBuffer,
+    merged.coeffsBuffer!,
     merged.numGroups,
+    merged.numMotionGaussians,
   );
   splatContext.meshPropsRef.current = meshProps;
 
@@ -354,6 +445,7 @@ function SplatRendererImpl() {
     if (!initializedBufferTexture) {
       meshProps.material.uniforms.numGaussians.value = merged.numGaussians;
       meshProps.textureBuffer.needsUpdate = true;
+      meshProps.coeffsTexture.needsUpdate = true;
       initializedBufferTexture = true;
     }
   };
@@ -361,14 +453,19 @@ function SplatRendererImpl() {
     sortWorker.postMessage(message);
   }
   postToWorker({
-    setBuffer: merged.gaussianBuffer,
+    setBuffer: [merged.gaussianBuffer, merged.coeffsBuffer!],
     setGroupIndices: merged.groupIndices,
   });
+  postToWorker({
+    setSomMotionBases: splatContext.shapeOfMotionBasesRef.current,
+  });
+  splatContext.postToWorkerRef.current = postToWorker;
 
   // Cleanup.
   React.useEffect(() => {
     return () => {
       meshProps.textureBuffer.dispose();
+      meshProps.coeffsTexture.dispose();
       meshProps.geometry.dispose();
       meshProps.material.dispose();
       postToWorker({ close: true });
@@ -394,6 +491,7 @@ function SplatRendererImpl() {
     (async () => {
       SorterRef.current = new (await MakeSorterModulePromise()).Sorter(
         merged.gaussianBuffer,
+        merged.coeffsBuffer,
         merged.groupIndices,
       );
     })();
@@ -540,21 +638,36 @@ function SplatRendererImpl() {
 /**Consolidate groups of Gaussians into a single buffer, to make it possible
  * for them to be sorted globally.*/
 function mergeGaussianGroups(groupBufferFromName: {
-  [name: string]: Uint32Array;
+  [name: string]: [Uint32Array, Uint32Array, number];
 }) {
   // Create geometry. Each Gaussian will be rendered as a quad.
   let totalBufferLength = 0;
-  for (const buffer of Object.values(groupBufferFromName)) {
+  for (const [buffer] of Object.values(groupBufferFromName)) {
     totalBufferLength += buffer.length;
   }
   const numGaussians = totalBufferLength / 8;
   const gaussianBuffer = new Uint32Array(totalBufferLength);
   const groupIndices = new Uint32Array(numGaussians);
 
+  let coeffsBuffer = null;
+  let numMotionGaussians = 0;
+
   let offset = 0;
-  for (const [groupIndex, groupBuffer] of Object.values(
-    groupBufferFromName,
-  ).entries()) {
+  for (const [
+    groupIndex,
+    [groupBuffer, groupMotionCoeffsBuffer, groupNumMotionGaussians],
+  ] of Object.values(groupBufferFromName).entries()) {
+    // <HACKS> we're going to assume that there's only 1 group.
+    if (Object.keys(groupBufferFromName).length !== 1) {
+      console.error(
+        "SHAPE OF MOTION HACKS: WE'RE GOING TO ASSUME ONLY  1 GROUP, BUT WE FOUND ",
+        Object.keys(groupBufferFromName).length,
+      );
+    }
+    coeffsBuffer = groupMotionCoeffsBuffer;
+    numMotionGaussians = groupNumMotionGaussians;
+    // </HACKS>
+
     groupIndices.fill(
       groupIndex,
       offset / 8,
@@ -575,11 +688,23 @@ function mergeGaussianGroups(groupBufferFromName: {
   }
 
   const numGroups = Object.keys(groupBufferFromName).length;
-  return { numGaussians, gaussianBuffer, numGroups, groupIndices };
+  return {
+    numGaussians,
+    coeffsBuffer,
+    numMotionGaussians,
+    gaussianBuffer,
+    numGroups,
+    groupIndices,
+  };
 }
 
 /**Hook to generate properties for rendering Gaussians via a three.js mesh.*/
-function useGaussianMeshProps(gaussianBuffer: Uint32Array, numGroups: number) {
+function useGaussianMeshProps(
+  gaussianBuffer: Uint32Array,
+  motionCoeffsBuffer: Uint32Array,
+  numGroups: number,
+  numMotionGaussians: number,
+) {
   const numGaussians = gaussianBuffer.length / 8;
   const maxTextureSize = useThree((state) => state.gl).capabilities
     .maxTextureSize;
@@ -621,6 +746,7 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, numGroups: number) {
   textureBuffer.internalFormat = "RGBA32UI";
   textureBuffer.needsUpdate = true;
 
+  // Create texture buffers for group transforms.
   const rowMajorT_camera_groups = new Float32Array(numGroups * 12);
   const textureT_camera_groups = new THREE.DataTexture(
     rowMajorT_camera_groups,
@@ -632,18 +758,48 @@ function useGaussianMeshProps(gaussianBuffer: Uint32Array, numGroups: number) {
   textureT_camera_groups.internalFormat = "RGBA32F";
   textureT_camera_groups.needsUpdate = true;
 
-  const material = new GaussianSplatMaterial({
-    // @ts-ignore
+  // Create texture buffers for shape of motion coefficients.
+  const coeffsTextureWidth = Math.min(numGaussians * 2, maxTextureSize);
+  const coeffsTextureHeight = Math.ceil(
+    (numGaussians * 2) / coeffsTextureWidth,
+  );
+  const coeffsBufferPadded = new Uint32Array(
+    coeffsTextureWidth * coeffsTextureHeight * 4,
+  );
+  console.log("widths", textureWidth, coeffsTextureWidth);
+  console.log("heights", textureHeight, coeffsTextureHeight);
+  coeffsBufferPadded.set(motionCoeffsBuffer);
+  const coeffsTexture = new THREE.DataTexture(
+    coeffsBufferPadded,
+    coeffsTextureWidth,
+    coeffsTextureHeight,
+    THREE.RGBAIntegerFormat,
+    THREE.UnsignedIntType,
+  );
+  coeffsTexture.internalFormat = "RGBA32UI";
+  coeffsTexture.needsUpdate = true;
+
+  const splatContext = React.useContext(GaussianSplatsContext)!;
+  const bases = splatContext.shapeOfMotionBasesRef.current;
+  const args: any = {
     textureBuffer: textureBuffer,
     textureT_camera_groups: textureT_camera_groups,
     numGaussians: 0,
     transitionInState: 0.0,
-  });
+    // shape of motion stuff
+    somNumMotionGaussians: numMotionGaussians,
+    somMotionCoeffsBuffer: coeffsTexture,
+    somMotionBases: bases,
+  };
+  const material = new GaussianSplatMaterial(args);
+  // const bases = splatContext.shapeOfMotionBasesRef.current;
+  splatContext.materialRef.current = material;
 
   return {
     geometry,
     material,
     textureBuffer,
+    coeffsTexture,
     sortedIndexAttribute,
     textureT_camera_groups,
     rowMajorT_camera_groups,

@@ -1305,13 +1305,44 @@ class GaussianSplatsProps:
     - x as f32
     - y as f32
     - z as f32
-    - (unused)
+    - (unused/reserved for renderer)
     - cov1 (f16), cov2 (f16)
     - cov3 (f16), cov4 (f16)
     - cov5 (f16), cov6 (f16)
     - rgba (int32)
 
-    Where cov1-6 are the upper-triangular terms of covariance matrices."""
+    Where cov1-6 are the upper-triangular terms of covariance matrices.
+    """
+
+    num_motion_gaussians: int
+    motion_coeffs_buffer: npt.NDArray[np.uint32]
+    """For each motion Gaussian, our motion coeffs buffer will contain:
+
+    - coeff0 (f16), coeff1 (f16)
+    - coeff2 (f16), coeff3 (f16)
+    - coeff4 (f16), coeff5 (f16)
+    - coeff6 (f16), coeff7 (f16)
+
+    - coeff8 (f16), coeff9 (f16)
+    - (unused)
+    - (unused)
+    - (unused)
+    """
+
+    # num_timesteps: int
+    # motion_bases_buffer: npt.NDArray[np.float32]
+    # """With shape (timesteps, 10), we have:
+    #
+    # vec4: x y z _
+    # vec4: rot0 rot1 rot2 _
+    # vec4: rot3 rot4 rot5 _
+    # """
+
+
+@dataclasses.dataclass
+class SetShapeOfMotionBases(Message):
+    bases: npt.NDArray[np.float32]
+    """Bases to use."""
 
 
 @dataclasses.dataclass

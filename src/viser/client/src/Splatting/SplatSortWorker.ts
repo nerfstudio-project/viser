@@ -5,20 +5,28 @@ import MakeSorterModulePromise from "./WasmSorter/Sorter.mjs";
 
 export type SorterWorkerIncoming =
   | {
-      setBuffer: Uint32Array;
+      setBuffer: [Uint32Array, Uint32Array];
       setGroupIndices: Uint32Array;
     }
   | {
       setTz_camera_groups: Float32Array;
+    }
+  | {
+      setSomMotionBases: Float32Array;
     }
   | { close: true };
 
 {
   let sorter: any = null;
   let Tz_camera_groups: Float32Array | null = null;
+  let somMotionBases: Float32Array | null = null;
   let sortRunning = false;
   const throttledSort = () => {
-    if (sorter === null || Tz_camera_groups === null) {
+    if (
+      sorter === null ||
+      Tz_camera_groups === null ||
+      somMotionBases === null
+    ) {
       setTimeout(throttledSort, 1);
       return;
     }
@@ -31,7 +39,7 @@ export type SorterWorkerIncoming =
     // thread. Compared to relying on postMessage for copying, this reduces
     // backlog artifacts.
     const sortedIndices = (
-      sorter.sort(Tz_camera_groups) as Uint32Array
+      sorter.sort(Tz_camera_groups, somMotionBases) as Uint32Array
     ).slice();
 
     // @ts-ignore
@@ -58,12 +66,17 @@ export type SorterWorkerIncoming =
     if ("setBuffer" in data) {
       // Instantiate sorter with buffers populated.
       sorter = new (await SorterModulePromise).Sorter(
-        data.setBuffer,
+        data.setBuffer[0],
+        data.setBuffer[1],
         data.setGroupIndices,
       );
     } else if ("setTz_camera_groups" in data) {
       // Update object transforms.
       Tz_camera_groups = data.setTz_camera_groups;
+      throttledSort();
+    } else if ("setSomMotionBases" in data) {
+      // Update object transforms.
+      somMotionBases = data.setSomMotionBases;
       throttledSort();
     } else if ("close" in data) {
       // Done!

@@ -1286,6 +1286,29 @@ class SceneApi:
         """Backwards compatibility shim. Use `add_gaussian_splats()` instead."""
         return self.add_gaussian_splats(*args, **kwargs)
 
+    def set_shape_of_motion_bases(
+        self,
+        motion_bases_trans: np.ndarray,
+        motion_bases_rots: np.ndarray,
+    ) -> None:
+        assert motion_bases_trans.shape == (10, 3)
+        assert motion_bases_rots.shape == (10, 6)
+        motion_bases = np.concatenate(
+            [
+                motion_bases_trans[:, None, :],
+                motion_bases_rots.reshape((10, 2, 3)),
+            ],
+            axis=-2,
+        )
+        motion_bases = motion_bases.astype(np.float32)
+        motion_bases = np.concatenate(
+            [motion_bases, np.zeros((10, 3, 1), dtype=np.float32)], axis=-1
+        )
+        motion_bases = motion_bases.astype(np.float32)
+        self._websock_interface.queue_message(
+            _messages.SetShapeOfMotionBases(motion_bases)
+        )
+
     def add_gaussian_splats(
         self,
         name: str,
@@ -1293,6 +1316,7 @@ class SceneApi:
         covariances: np.ndarray,
         rgbs: np.ndarray,
         opacities: np.ndarray,
+        motion_coeffs: np.ndarray,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1321,6 +1345,12 @@ class SceneApi:
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
 
+        num_motion_gaussians = motion_coeffs.shape[0]
+        assert motion_coeffs.shape == (num_motion_gaussians, 10)
+        # timesteps = motion_bases_trans.shape[0]
+        # assert motion_bases_trans.shape == (timesteps, 10, 3)
+        # assert motion_bases_rots.shape == (timesteps, 10, 6)
+
         # Get upper-triangular terms of covariance matrix.
         cov_triu = covariances.reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
         buffer = np.concatenate(
@@ -1341,10 +1371,40 @@ class SceneApi:
         ).view(np.uint32)
         assert buffer.shape == (num_gaussians, 8)
 
+        motion_coeffs_buffer = (
+            np.concatenate(
+                [
+                    motion_coeffs.astype(np.float16).view(np.uint8),
+                    np.zeros((num_motion_gaussians, 4 * 3), dtype=np.uint8),
+                ],
+                axis=-1,
+            )
+            .view(np.uint32)
+            .reshape((num_motion_gaussians, 8))
+        )
+
+        # motion_bases_buffer = np.concatenate(
+        #     [
+        #         motion_bases_trans[:, :, None, :],
+        #         motion_bases_rots.reshape((timesteps, 10, 2, 3)),
+        #     ],
+        #     axis=-2,
+        # )
+        # assert motion_bases_buffer.shape == (timesteps, 10, 3, 3)
+        # motion_bases_buffer = np.concatenate(
+        #     [motion_bases_buffer, np.zeros((timesteps, 10, 3, 1), dtype=np.float32)],
+        #     axis=-1,
+        # )
+        # print(f"{motion_bases_buffer.shape=}")
+
         message = _messages.GaussianSplatsMessage(
             name=name,
             props=_messages.GaussianSplatsProps(
                 buffer=buffer,
+                num_motion_gaussians=num_motion_gaussians,
+                motion_coeffs_buffer=motion_coeffs_buffer,
+                # motion_bases_buffer=motion_bases_buffer,
+                # num_timesteps=timesteps,
             ),
         )
         node_handle = GaussianSplatHandle._make(

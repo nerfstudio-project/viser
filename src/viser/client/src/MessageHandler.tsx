@@ -24,6 +24,7 @@ import { GaussianSplatsContext } from "./Splatting/GaussianSplats";
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
   const viewer = useContext(ViewerContext)!;
+  const splatContext = useContext(GaussianSplatsContext)!;
 
   // We could reduce the redundancy here if we wanted to.
   // https://github.com/nerfstudio-project/viser/issues/39
@@ -118,6 +119,21 @@ function useMessageHandler() {
     }
 
     switch (message.type) {
+      case "SetShapeOfMotionBases": {
+        const bases = new Float32Array(
+          message.bases.buffer.slice(
+            message.bases.byteOffset,
+            message.bases.byteOffset + message.bases.byteLength,
+          ),
+        );
+        splatContext.shapeOfMotionBasesRef.current = bases;
+        if (splatContext.materialRef.current !== null) {
+          splatContext.materialRef.current.uniforms.somMotionBases.value =
+            bases;
+        }
+        splatContext.postToWorkerRef.current({ setSomMotionBases: bases });
+        return;
+      }
       case "SceneNodeUpdateMessage": {
         updateSceneNode(message.name, message.updates);
         return;

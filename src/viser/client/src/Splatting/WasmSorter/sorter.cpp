@@ -2,10 +2,79 @@
 #include <emscripten/val.h>
 #include <wasm_simd128.h>
 
+#include <array>
 #include <cstdint>
-#include <iostream>
-#include <string>
 #include <vector>
+
+#include <math.h>
+#include <stdint.h>
+
+v128_t cross_f32x4(v128_t a, v128_t b) {
+    // For vectors a = (a1, a2, a3, a4) and b = (b1, b2, b3, b4)
+    // Cross product = (a2*b3 - a3*b2, a3*b1 - a1*b3, a1*b2 - a2*b1, 0)
+
+    // Shuffle components for cross product calculation
+    v128_t a_yzx = wasm_i32x4_shuffle(a, a, 1, 2, 0, 3); // (a2, a3, a1, a4)
+    v128_t b_yzx = wasm_i32x4_shuffle(b, b, 1, 2, 0, 3); // (b2, b3, b1, b4)
+    v128_t a_zxy = wasm_i32x4_shuffle(a, a, 2, 0, 1, 3); // (a3, a1, a2, a4)
+    v128_t b_zxy = wasm_i32x4_shuffle(b, b, 2, 0, 1, 3); // (b3, b1, b2, b4)
+
+    // Multiply shuffled vectors
+    v128_t mul1 = wasm_f32x4_mul(a_yzx, b_zxy); // (a2*b3, a3*b1, a1*b2, a4*b4)
+    v128_t mul2 = wasm_f32x4_mul(a_zxy, b_yzx); // (a3*b2, a1*b3, a2*b1, a4*b4)
+
+    // Subtract to get cross product
+    v128_t result = wasm_f32x4_sub(mul1, mul2);
+
+    // Zero out the last component
+    result = wasm_f32x4_replace_lane(result, 3, 0.0f);
+
+    return result;
+}
+
+// Convert a float16 bit pattern to float32
+float float16_to_float32(uint16_t float16) {
+    // Extract components
+    uint32_t sign = (float16 >> 15) & 0x1;
+    uint32_t exp = (float16 >> 10) & 0x1F;
+    uint32_t frac = float16 & 0x3FF;
+
+    // Handle special cases
+    if (exp == 0) {
+        if (frac == 0) {
+            // Zero
+            return sign ? -0.0f : 0.0f;
+        } else {
+            // Denormal
+            float result = (float)frac * powf(2.0f, -24.0f);
+            return sign ? -result : result;
+        }
+    } else if (exp == 31) {
+        if (frac == 0) {
+            // Infinity
+            return sign ? -INFINITY : INFINITY;
+        } else {
+            // NaN
+            return NAN;
+        }
+    }
+
+    // Normal number
+    // Convert to float32 format
+    uint32_t f32 = (sign << 31) | ((exp + (127 - 15)) << 23) | (frac << 13);
+    float result;
+    memcpy(&result, &f32, sizeof(float));
+    return result;
+}
+
+// Unpack two float16s from a uint32
+void unpack_float16s(uint32_t packed, float *first, float *second) {
+    uint16_t float16_1 = (packed >> 16) & 0xFFFF; // Extract upper 16 bits
+    uint16_t float16_2 = packed & 0xFFFF;         // Extract lower 16 bits
+
+    *first = float16_to_float32(float16_1);
+    *second = float16_to_float32(float16_2);
+}
 
 /** SIMD dot product between two 4D vectors. */
 __attribute__((always_inline)) inline float
@@ -42,18 +111,26 @@ class Sorter {
     std::vector<v128_t> centers_homog; // Centers as homogeneous coordinates.
     std::vector<uint32_t> group_indices;
     std::vector<uint32_t> sorted_indices;
+    std::vector<std::array<float, 10>> coeffs;
 
   public:
     Sorter(
-        const emscripten::val &buffer, const emscripten::val &group_indices_val
+        const emscripten::val &buffer,
+        const emscripten::val &coeffsBuffer,
+        const emscripten::val &group_indices_val
     ) {
         const std::vector<uint32_t> bufferVec =
             emscripten::convertJSArrayToNumberVector<uint32_t>(buffer);
         const float *floatBuffer =
             reinterpret_cast<const float *>(bufferVec.data());
+
+        const std::vector<uint32_t> coeffsBufferVec =
+            emscripten::convertJSArrayToNumberVector<uint32_t>(coeffsBuffer);
+
         const int32_t num_gaussians = bufferVec.size() / 8;
         sorted_indices.resize(num_gaussians);
         centers_homog.resize(num_gaussians);
+
         for (int32_t i = 0; i < num_gaussians; i++) {
             centers_homog[i] = wasm_f32x4_make(
                 floatBuffer[i * 8 + 0],
@@ -62,6 +139,17 @@ class Sorter {
                 1.0
             );
         }
+
+        int num_motion_gaussians = coeffsBufferVec.size() / 8;
+        coeffs.resize(num_motion_gaussians);
+        for (int32_t i = 0; i < num_motion_gaussians; i++) {
+            for (int32_t j = 0; j < 5; j++) {
+                float a, b;
+                unpack_float16s(coeffsBufferVec[i * 8 + j], &a, &b);
+                coeffs[i][j + 0] = a;
+                coeffs[i][j + 1] = b;
+            }
+        }
         group_indices =
             emscripten::convertJSArrayToNumberVector<uint32_t>(group_indices_val
             );
@@ -69,10 +157,95 @@ class Sorter {
 
     // Run sorting using the newest view projection matrix. Mutates internal
     // buffers.
-    emscripten::val sort(const emscripten::val &Tz_cam_groups_val) {
+    emscripten::val sort(
+        const emscripten::val &Tz_cam_groups_val,
+        const emscripten::val &motion_bases
+    ) {
+        const auto motion_bases_buffer =
+            emscripten::convertJSArrayToNumberVector<float>(motion_bases);
+
+        std::vector centers_homog_transformed = centers_homog;
+        const int32_t num_gaussians = centers_homog_transformed.size();
+
+        for (int i = 0; i < coeffs.size(); i++) {
+            v128_t trans = wasm_f32x4_splat(0.0f);
+            v128_t col_x = wasm_f32x4_splat(0.0f);
+            v128_t col_y = wasm_f32x4_splat(0.0f);
+            for (int j = 0; j < 10; j++) {
+                v128_t coeff = wasm_f32x4_splat(coeffs[i][j]);
+                trans = wasm_f32x4_add(
+                    trans,
+                    wasm_f32x4_mul(
+                        coeff, wasm_v128_load(&motion_bases_buffer[j * 4 * 3])
+                    )
+                );
+                col_x = wasm_f32x4_add(
+                    col_x,
+                    wasm_f32x4_mul(
+                        coeff,
+                        wasm_v128_load(&motion_bases_buffer[j * 4 * 3 + 4])
+                    )
+                );
+                col_y = wasm_f32x4_add(
+                    col_y,
+                    wasm_f32x4_mul(
+                        coeff,
+                        wasm_v128_load(&motion_bases_buffer[j * 4 * 3 + 8])
+                    )
+                );
+            }
+
+            // The last lanes should all be zero.
+            col_x = wasm_f32x4_replace_lane(col_x, 3, 0.0);
+            col_y = wasm_f32x4_replace_lane(col_y, 3, 0.0);
+
+            // Normalize col_x.
+            col_x = wasm_f32x4_div(
+                col_x, wasm_f32x4_splat(sqrtf(dot_f32x4(col_x, col_x)))
+            );
+            // Gram-schmidt.
+            col_y = wasm_f32x4_sub(
+                col_y,
+                wasm_f32x4_mul(col_x, wasm_f32x4_splat(dot_f32x4(col_x, col_y)))
+            );
+            // Normalize col_y.
+            col_y = wasm_f32x4_div(
+                col_y, wasm_f32x4_splat(sqrtf(dot_f32x4(col_y, col_y)))
+            );
+            v128_t col_z = cross_f32x4(col_x, col_y);
+
+            v128_t row_x = wasm_f32x4_make(
+                wasm_f32x4_extract_lane(col_x, 0),
+                wasm_f32x4_extract_lane(col_y, 0),
+                wasm_f32x4_extract_lane(col_z, 0),
+                0.0
+            );
+            v128_t row_y = wasm_f32x4_make(
+                wasm_f32x4_extract_lane(col_x, 1),
+                wasm_f32x4_extract_lane(col_y, 1),
+                wasm_f32x4_extract_lane(col_z, 1),
+                0.0
+            );
+            v128_t row_z = wasm_f32x4_make(
+                wasm_f32x4_extract_lane(col_x, 2),
+                wasm_f32x4_extract_lane(col_y, 2),
+                wasm_f32x4_extract_lane(col_z, 2),
+                0.0
+            );
+
+            centers_homog_transformed[i] = wasm_f32x4_add(
+                wasm_f32x4_make(
+                    dot_f32x4(row_x, centers_homog_transformed[i]),
+                    dot_f32x4(row_y, centers_homog_transformed[i]),
+                    dot_f32x4(row_z, centers_homog_transformed[i]),
+                    1.0
+                ),
+                trans
+            );
+        }
+
         const auto Tz_cam_groups_buffer =
             emscripten::convertJSArrayToNumberVector<float>(Tz_cam_groups_val);
-        const int32_t num_gaussians = centers_homog.size();
 
         // We do a 16-bit counting sort. This is mostly translated from Kevin
         // Kwok's Javascript implementation:
@@ -101,22 +274,22 @@ class Sorter {
             int32_t gaussianIndex = i * 4;
             const float z0 = dot_f32x4(
                 Tz_cam_groups[group_indices[gaussianIndex]],
-                centers_homog[gaussianIndex]
+                centers_homog_transformed[gaussianIndex]
             );
             gaussianIndex++;
             const float z1 = dot_f32x4(
                 Tz_cam_groups[group_indices[gaussianIndex]],
-                centers_homog[gaussianIndex]
+                centers_homog_transformed[gaussianIndex]
             );
             gaussianIndex++;
             const float z2 = dot_f32x4(
                 Tz_cam_groups[group_indices[gaussianIndex]],
-                centers_homog[gaussianIndex]
+                centers_homog_transformed[gaussianIndex]
             );
             gaussianIndex++;
             const float z3 = dot_f32x4(
                 Tz_cam_groups[group_indices[gaussianIndex]],
-                centers_homog[gaussianIndex]
+                centers_homog_transformed[gaussianIndex]
             );
             const v128_t cam_z = wasm_f32x4_make(z0, z1, z2, z3);
 
@@ -184,6 +357,6 @@ class Sorter {
 
 EMSCRIPTEN_BINDINGS(c) {
     emscripten::class_<Sorter>("Sorter")
-        .constructor<emscripten::val, emscripten::val>()
+        .constructor<emscripten::val, emscripten::val, emscripten::val>()
         .function("sort", &Sorter::sort, emscripten::allow_raw_pointers());
 };
