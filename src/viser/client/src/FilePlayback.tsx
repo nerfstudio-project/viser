@@ -89,8 +89,13 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     const attrs = viewer.nodeAttributesFromName.current;
     Object.keys(attrs).forEach((key) => {
       if (key === "") return;
-      console.log("reset", attrs[key]!.poseUpdateState);
-      attrs[key]!.visibility = false;
+
+      const nodeMessage =
+        viewer.useSceneTree.getState().nodeFromName[key]?.message;
+      if (nodeMessage !== undefined && (nodeMessage.type !== "FrameMessage" || nodeMessage.props.show_axes)) {
+        // ^ We don't hide intermediate frames, which can be made automatically.
+        attrs[key]!.visibility = false;
+      }
 
       // We'll also reset poses. This is to prevent edge cases when looping:
       // - We first add /parent/child.
@@ -126,12 +131,15 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       recording.messages[mutable.currentIndex][0] <= mutable.currentTime;
       mutable.currentIndex++
     ) {
+      if (mutable.currentIndex == 0) {
+        // Reset the scene if sending the first message.
+        resetScene();
+      }
       const message = recording.messages[mutable.currentIndex][1];
       messageQueueRef.current.push(message);
     }
 
     if (mutable.currentTime >= recording.durationSeconds) {
-      resetScene();
       mutable.currentIndex = 0;
       mutable.currentTime = recording.messages[0][0];
     }

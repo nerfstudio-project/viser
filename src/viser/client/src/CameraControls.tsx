@@ -25,7 +25,9 @@ function CameraOrientationTool({
   );
   React.useEffect(update, [showCameraControls]);
 
-  if (!showCameraControls) return null;
+  const searchParams = new URLSearchParams(window.location.search);
+  const logCamera = searchParams.get("logCamera");
+  if (!showCameraControls && logCamera === null) return null;
 
   return (
     <PivotControls
