@@ -2,7 +2,6 @@ import {
   CatmullRomLine,
   CubicBezierLine,
   Grid,
-  Line,
   PivotControls,
   useCursor,
 } from "@react-three/drei";
@@ -35,6 +34,7 @@ import { SceneNodeMessage } from "./WebsocketMessages";
 import { SplatObject } from "./Splatting/GaussianSplats";
 import { Paper } from "@mantine/core";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
+import { Line } from "./Line";
 
 function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -442,24 +442,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
           return (
             <group ref={ref}>
               <Line
-                points={Array.from(
-                  { length: pointsArray.length / 3 },
-                  (_, i) => [
-                    pointsArray[i * 3],
-                    pointsArray[i * 3 + 1],
-                    pointsArray[i * 3 + 2],
-                  ],
-                )}
-                color="white"
+                points={pointsArray}
                 lineWidth={message.props.line_width}
-                vertexColors={Array.from(
-                  { length: colorArray.length / 3 },
-                  (_, i) => [
-                    colorArray[i * 3] / 255,
-                    colorArray[i * 3 + 1] / 255,
-                    colorArray[i * 3 + 2] / 255,
-                  ],
-                )}
+                vertexColors={colorArray}
                 segments={true}
               />
             </group>
