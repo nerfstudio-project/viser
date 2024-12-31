@@ -146,8 +146,8 @@ class Sorter {
             for (int32_t j = 0; j < 5; j++) {
                 float a, b;
                 unpack_float16s(coeffsBufferVec[i * 8 + j], &a, &b);
-                coeffs[i][j + 0] = a;
-                coeffs[i][j + 1] = b;
+                coeffs[i][j * 2 + 0] = b;
+                coeffs[i][j * 2 + 1] = a;
             }
         }
         group_indices =
