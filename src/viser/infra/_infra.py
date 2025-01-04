@@ -41,10 +41,9 @@ ClientId = NewType("ClientId", int)
 TMessage = TypeVar("TMessage", bound=Message)
 
 
-class RecordHandle:
-    """**Experimental.**
-
-    Handle for recording outgoing messages. Useful for logging + debugging."""
+class StateSerializer:
+    """Handle for serializing messages. In Viser, this is used to save the
+    scene state."""
 
     def __init__(
         self, handler: WebsockMessageHandler, filter: Callable[[Message], bool]
@@ -57,7 +56,8 @@ class RecordHandle:
     def _insert_message(self, message: Message) -> None:
         """Insert a message into the recorded file."""
 
-        # Exclude GUI messages. This is hacky.
+        # Exclude messages that are filtered out. In Viser, this is typically
+        # GUI messages.
         if not self._filter(message):
             return
         self._messages.append((self._time, message.as_serializable_dict()))
@@ -66,14 +66,9 @@ class RecordHandle:
         """Insert a sleep into the recorded file."""
         self._time += duration
 
-    def set_loop_start(self) -> None:
-        """Mark the start of the loop. Messages sent after this point will be
-        looped. Should only be called once."""
-        pass
-
-    def end_and_serialize(self) -> bytes:
-        """End the recording and serialize contents. Returns the recording as
-        bytes, which should generally be written to a file."""
+    def serialize(self) -> bytes:
+        """Serialize saved messages. Returns the recording as bytes, which
+        should be written to a file."""
         packed_bytes = msgspec.msgpack.encode(
             {
                 "durationSeconds": self._time,
@@ -96,13 +91,15 @@ class WebsockMessageHandler:
         self._locked_thread_id = -1
 
         # Set to None if not recording.
-        self._record_handle: RecordHandle | None = None
+        self._record_handle: StateSerializer | None = None
 
-    def start_recording(self, filter: Callable[[Message], bool]) -> RecordHandle:
+    def get_message_serializer(
+        self, filter: Callable[[Message], bool]
+    ) -> StateSerializer:
         """Start recording messages that are sent. Sent messages will be
         serialized and can be used for playback."""
         assert self._record_handle is None, "Already recording."
-        self._record_handle = RecordHandle(self, filter)
+        self._record_handle = StateSerializer(self, filter)
         return self._record_handle
 
     def register_handler(
