@@ -48,9 +48,9 @@ jobs:
           sphinx-build docs/source docs/build -b dirhtml
 
       # Get version from pyproject.toml.
-      - name: Override subdirectory to `latest/` for pushes
+      - name: Override subdirectory to `main/` for pushes
         run: |
-          echo "DOCS_SUBDIR=latest" >> $GITHUB_ENV
+          echo "DOCS_SUBDIR=main" >> $GITHUB_ENV
         if: github.event_name == 'push'
 
       # Deploy to version-dependent subdirectory.

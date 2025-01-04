@@ -818,7 +818,7 @@ function ViserLogo() {
             </Anchor>
             &nbsp;&nbsp;&bull;&nbsp;&nbsp;
             <Anchor
-              href="https://viser.studio/latest"
+              href="https://viser.studio/main"
               target="_blank"
               fw="600"
               style={{ "&:focus": { outline: "none" } }}
