@@ -1,6 +1,6 @@
 # viser
 
-|mypy| |nbsp| |pyright| |nbsp| |typescript| |nbsp| |versions|
+|pyright| |nbsp| |typescript| |nbsp| |versions|
 
 **viser** is a library for interactive 3D visualization in Python.
 
@@ -89,10 +89,7 @@ URL (default: `http://localhost:8080`).
 .. |build| image:: https://github.com/nerfstudio-project/viser/workflows/build/badge.svg
    :alt: Build status icon
    :target: https://github.com/nerfstudio-project/viser
-.. |mypy| image:: https://github.com/nerfstudio-project/viser/workflows/mypy/badge.svg?branch=main
-   :alt: Mypy status icon
-   :target: https://github.com/nerfstudio-project/viser
-.. |pyright| image:: https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg?branch=main
+.. |pyright| image:: https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg?
    :alt: Mypy status icon
    :target: https://github.com/nerfstudio-project/viser
 .. |typescript| image:: https://github.com/nerfstudio-project/viser/workflows/typescript-compile/badge.svg
