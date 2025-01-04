@@ -75,6 +75,8 @@ class _CameraHandleState:
     position: npt.NDArray[np.float64]
     fov: float
     aspect: float
+    near: float
+    far: float
     look_at: npt.NDArray[np.float64]
     up_direction: npt.NDArray[np.float64]
     update_timestamp: float
@@ -92,6 +94,8 @@ class CameraHandle:
             position=np.zeros(3),
             fov=0.0,
             aspect=0.0,
+            near=0.01,
+            far=1000.0,
             look_at=np.zeros(3),
             up_direction=np.zeros(3),
             update_timestamp=0.0,
@@ -202,6 +206,40 @@ class CameraHandle:
         self._state.update_timestamp = time.time()
         self._state.client._websock_connection.queue_message(
             _messages.SetCameraFovMessage(fov)
+        )
+
+    @property
+    def near(self) -> float:
+        """Near clipping plane distance. Synchronized automatically when
+        assigned."""
+        assert self._state.update_timestamp != 0.0
+        return self._state.near
+
+    @near.setter
+    def near(self, near: float) -> None:
+        if np.allclose(self._state.near, near):
+            return
+        self._state.near = near
+        self._state.update_timestamp = time.time()
+        self._state.client._websock_connection.queue_message(
+            _messages.SetCameraNearMessage(near)
+        )
+
+    @property
+    def far(self) -> float:
+        """Far clipping plane distance. Synchronized automatically when
+        assigned."""
+        assert self._state.update_timestamp != 0.0
+        return self._state.far
+
+    @far.setter
+    def far(self, far: float) -> None:
+        if np.allclose(self._state.far, far):
+            return
+        self._state.far = far
+        self._state.update_timestamp = time.time()
+        self._state.client._websock_connection.queue_message(
+            _messages.SetCameraFarMessage(far)
         )
 
     @property
@@ -599,11 +637,13 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                     client,
                     np.array(message.wxyz),
                     np.array(message.position),
-                    message.fov,
-                    message.aspect,
-                    np.array(message.look_at),
-                    np.array(message.up_direction),
-                    time.time(),
+                    fov=message.fov,
+                    aspect=message.aspect,
+                    near=message.near,
+                    far=message.far,
+                    look_at=np.array(message.look_at),
+                    up_direction=np.array(message.up_direction),
+                    update_timestamp=time.time(),
                     camera_cb=client.camera._state.camera_cb,
                 )
 

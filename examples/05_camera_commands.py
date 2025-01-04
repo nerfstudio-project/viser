@@ -17,6 +17,29 @@ num_frames = 20
 
 @server.on_client_connect
 def _(client: viser.ClientHandle) -> None:
+    """For each client that connects, create GUI elements for adjusting the
+    near/far clipping planes."""
+
+    client.camera.far = 10.0
+
+    near_slider = client.gui.add_slider(
+        "Near", min=0.01, max=10.0, step=0.001, initial_value=client.camera.near
+    )
+    far_slider = client.gui.add_slider(
+        "Far", min=1, max=20.0, step=0.001, initial_value=client.camera.far
+    )
+
+    @near_slider.on_update
+    def _(_) -> None:
+        client.camera.near = near_slider.value
+
+    @far_slider.on_update
+    def _(_) -> None:
+        client.camera.far = far_slider.value
+
+
+@server.on_client_connect
+def _(client: viser.ClientHandle) -> None:
     """For each client that connects, we create a set of random frames + a click handler for each frame.
 
     When a frame is clicked, we move the camera to the corresponding frame.

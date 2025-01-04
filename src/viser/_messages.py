@@ -177,6 +177,8 @@ class ViewerCameraMessage(Message):
     wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
     fov: float
+    near: float
+    far: float
     aspect: float
     look_at: Tuple[float, float, float]
     up_direction: Tuple[float, float, float]
@@ -699,6 +701,20 @@ class SetCameraLookAtMessage(Message):
     """Server -> client message to set the camera's look-at point."""
 
     look_at: Tuple[float, float, float]
+
+
+@dataclasses.dataclass
+class SetCameraNearMessage(Message):
+    """Server -> client message to set the camera's near clipping plane."""
+
+    near: float
+
+
+@dataclasses.dataclass
+class SetCameraFarMessage(Message):
+    """Server -> client message to set the camera's far clipping plane."""
+
+    far: float
 
 
 @dataclasses.dataclass

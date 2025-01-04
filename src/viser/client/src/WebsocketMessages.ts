@@ -781,6 +781,8 @@ export interface ViewerCameraMessage {
   wxyz: [number, number, number, number];
   position: [number, number, number];
   fov: number;
+  near: number;
+  far: number;
   aspect: number;
   look_at: [number, number, number];
   up_direction: [number, number, number];
@@ -888,6 +890,22 @@ export interface SetCameraUpDirectionMessage {
 export interface SetCameraLookAtMessage {
   type: "SetCameraLookAtMessage";
   look_at: [number, number, number];
+}
+/** Server -> client message to set the camera's near clipping plane.
+ *
+ * (automatically generated)
+ */
+export interface SetCameraNearMessage {
+  type: "SetCameraNearMessage";
+  near: number;
+}
+/** Server -> client message to set the camera's far clipping plane.
+ *
+ * (automatically generated)
+ */
+export interface SetCameraFarMessage {
+  type: "SetCameraFarMessage";
+  far: number;
 }
 /** Server -> client message to set the camera's field of view.
  *
@@ -1201,6 +1219,8 @@ export type Message =
   | SetCameraPositionMessage
   | SetCameraUpDirectionMessage
   | SetCameraLookAtMessage
+  | SetCameraNearMessage
+  | SetCameraFarMessage
   | SetCameraFovMessage
   | SetOrientationMessage
   | SetPositionMessage
