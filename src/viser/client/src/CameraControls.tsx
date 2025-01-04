@@ -10,22 +10,24 @@ import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { useThrottledMessageSender } from "./WebsocketFunctions";
 import { Grid, PivotControls } from "@react-three/drei";
 
-function CameraOrientationTool({
+function OrbitOriginTool({
+  forceShow,
   pivotRef,
   onPivotChange,
   update,
 }: {
+  forceShow: boolean;
   pivotRef: React.RefObject<THREE.Group>;
   onPivotChange: (matrix: THREE.Matrix4) => void;
   update: () => void;
 }) {
   const viewer = useContext(ViewerContext)!;
   const showCameraControls = viewer.useGui(
-    (state) => state.showCameraControlsTool,
+    (state) => state.showOrbitOriginTool,
   );
   React.useEffect(update, [showCameraControls]);
 
-  if (!showCameraControls) return null;
+  if (!showCameraControls && !forceShow) return null;
 
   return (
     <PivotControls
@@ -496,7 +498,8 @@ export function SynchronizedCameraControls() {
         onChange={sendCamera}
         makeDefault
       />
-      <CameraOrientationTool
+      <OrbitOriginTool
+        forceShow={logCamera !== null /* Always show if logging camera */}
         pivotRef={pivotRef}
         onPivotChange={(matrix) => {
           updateCameraLookAtAndUpFromPivotControl(matrix);

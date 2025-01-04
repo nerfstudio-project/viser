@@ -149,10 +149,10 @@ export default function ServerControls() {
         >
           <Switch
             radius="sm"
-            label="Camera Orientation Tool"
+            label="Orbit Origin Tool"
             onChange={(event) => {
               viewer.useGui.setState({
-                showCameraControlsTool: event.currentTarget.checked,
+                showOrbitOriginTool: event.currentTarget.checked,
               });
             }}
             size="sm"
