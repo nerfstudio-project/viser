@@ -992,9 +992,38 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         while True:
             time.sleep(3600)
 
-    def _start_scene_recording(self) -> None:
+    def _start_scene_recording(self) -> Any:
         """**Old API.**"""
-        assert False, "_start_scene_recording() has been removed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API."
+        warnings.warn(
+            "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+            stacklevel=2,
+        )
+
+        serializer = self.get_scene_serializer()
+
+        # We'll add a shim for the old API for now. We can remove this later.
+        class _SceneRecordCompatibilityShim:
+            def set_loop_start(self):
+                warnings.warn(
+                    "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+                    stacklevel=2,
+                )
+
+            def insert_sleep(self, duration: float):
+                warnings.warn(
+                    "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+                    stacklevel=2,
+                )
+                serializer.insert_sleep(duration)
+
+            def end_and_serialize(self) -> bytes:
+                warnings.warn(
+                    "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+                    stacklevel=2,
+                )
+                return serializer.serialize()
+
+        return _SceneRecordCompatibilityShim()
 
     def get_scene_serializer(self) -> StateSerializer:
         """Get handle for serializing the scene state.
