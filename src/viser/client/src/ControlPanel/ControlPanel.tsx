@@ -83,7 +83,7 @@ export default function ControlPanel(props: {
     >
       <Tooltip
         zIndex={100}
-        label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
+        label={showSettings ? "Return to GUI" : "Configuration & diagnostics"}
         withinPortal
       >
         {showSettings ? (

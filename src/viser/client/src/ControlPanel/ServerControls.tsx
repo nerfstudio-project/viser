@@ -7,6 +7,7 @@ import {
   Switch,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
 import { Stats } from "@react-three/drei";
@@ -130,6 +131,33 @@ export default function ServerControls() {
         >
           Reset View
         </Button>
+        <Tooltip
+          label={
+            <>
+              Show tool for setting the look-at point and
+              <br />
+              up direction of the camera.
+              <br />
+              <br />
+              These can be used to set the origin of the
+              <br />
+              camera&apos;s orbit controls.
+            </>
+          }
+          refProp="rootRef"
+          position="top-start"
+        >
+          <Switch
+            radius="sm"
+            label="Orbit Origin Tool"
+            onChange={(event) => {
+              viewer.useGui.setState({
+                showOrbitOriginTool: event.currentTarget.checked,
+              });
+            }}
+            size="sm"
+          />
+        </Tooltip>
         <Switch
           radius="sm"
           label="WebGL Statistics"
