@@ -7,6 +7,9 @@ exclude = ["src/viser/client/.nodeenv", "src/viser/client/node_modules", "**/__p
 # Client build is in the gitignore, but we still want it in the distribution.
 ignore-vcs = true
 
+[tool.hatch.version]
+path = "src/viser/__init__.py"
+
 [tool.hatch.build.targets.sdist]
 only-include = ["src/viser"]
 
@@ -15,7 +18,7 @@ packages = ["src/viser"]
 
 [project]
 name = "viser"
-version = "0.2.19"
+dynamic = ["version"]
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }

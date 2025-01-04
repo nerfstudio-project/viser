@@ -71,6 +71,7 @@ async function deserializeGzippedMsgpackFile<T>(
 interface SerializedMessages {
   durationSeconds: number;
   messages: [number, Message][]; // (time in seconds, message).
+  viserVersion: string;
 }
 
 export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
@@ -116,7 +117,13 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
 
   useEffect(() => {
     deserializeGzippedMsgpackFile<SerializedMessages>(fileUrl, setStatus).then(
-      setRecording,
+      (data) => {
+        console.log(
+          "File loaded! Saved with Viser version:",
+          data.viserVersion,
+        );
+        setRecording(data);
+      },
     );
   }, []);
 

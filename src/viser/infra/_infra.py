@@ -69,10 +69,13 @@ class StateSerializer:
     def serialize(self) -> bytes:
         """Serialize saved messages. Returns the recording as bytes, which
         should be written to a file."""
+        import viser
+
         packed_bytes = msgspec.msgpack.encode(
             {
                 "durationSeconds": self._time,
                 "messages": self._messages,
+                "viserVersion": viser.__version__,
             }
         )
         assert isinstance(packed_bytes, bytes)
