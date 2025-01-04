@@ -139,9 +139,9 @@ export default function ServerControls() {
               up direction of the camera.
               <br />
               <br />
-              These can be used to re-orient the camera&apos;s
+              These can be used to set the origin of the
               <br />
-              orbit controls.
+              camera&apos;s orbit controls.
             </>
           }
           refProp="rootRef"
