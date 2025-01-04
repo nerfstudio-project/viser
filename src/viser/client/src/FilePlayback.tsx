@@ -89,8 +89,17 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     const attrs = viewer.nodeAttributesFromName.current;
     Object.keys(attrs).forEach((key) => {
       if (key === "") return;
-      console.log("reset", attrs[key]!.poseUpdateState);
-      attrs[key]!.visibility = false;
+      const nodeMessage =
+        viewer.useSceneTree.getState().nodeFromName[key]?.message;
+      if (
+        nodeMessage !== undefined &&
+        (nodeMessage.type !== "FrameMessage" || nodeMessage.props.show_axes)
+      ) {
+        // ^ We don't hide intermediate frames. These can be created
+        // automatically by addSceneNodeMakerParents(), in which case there
+        // will be no message to un-hide them.
+        attrs[key]!.visibility = false;
+      }
 
       // We'll also reset poses. This is to prevent edge cases when looping:
       // - We first add /parent/child.
@@ -120,6 +129,10 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     // We have messages with times: [0.0, 0.01, 0.01, 0.02, 0.03]
     // We have our current time: 0.02
     // We want to get of a slice of all message _until_ the current time.
+    if (mutable.currentIndex == 0) {
+      // Reset the scene if sending the first message.
+      resetScene();
+    }
     for (
       ;
       mutable.currentIndex < recording.messages.length &&
@@ -131,7 +144,6 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     }
 
     if (mutable.currentTime >= recording.durationSeconds) {
-      resetScene();
       mutable.currentIndex = 0;
       mutable.currentTime = recording.messages[0][0];
     }
