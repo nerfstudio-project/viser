@@ -104,7 +104,11 @@ export function SynchronizedCameraControls() {
 
     // Log camera.
     if (logCamera != undefined) {
-      console.log("Sending camera", t_world_camera.toArray(), lookAt);
+      console.log(
+        `&initialCameraPosition=${t_world_camera.x.toFixed(3)},${t_world_camera.y.toFixed(3)},${t_world_camera.z.toFixed(3)}` +
+          `&initialCameraLookAt=${lookAt.x.toFixed(3)},${lookAt.y.toFixed(3)},${lookAt.z.toFixed(3)}` +
+          `&initialCameraUp=${up.x.toFixed(3)},${up.y.toFixed(3)},${up.z.toFixed(3)}`,
+      );
     }
   }, [camera, sendCameraThrottled]);
 
@@ -114,6 +118,7 @@ export function SynchronizedCameraControls() {
   const searchParams = new URLSearchParams(window.location.search);
   const initialCameraPosString = searchParams.get("initialCameraPosition");
   const initialCameraLookAtString = searchParams.get("initialCameraLookAt");
+  const initialCameraUpString = searchParams.get("initialCameraUp");
   const logCamera = searchParams.get("logCamera");
 
   // Send camera for new connections.
@@ -142,6 +147,24 @@ export function SynchronizedCameraControls() {
           : [0, 0, 0]) as [number, number, number]),
       );
       initialCameraLookAt.applyMatrix4(computeT_threeworld_world(viewer));
+      const initialCameraUp = new THREE.Vector3(
+        ...((initialCameraUpString
+          ? (initialCameraUpString.split(",").map(Number) as [
+              number,
+              number,
+              number,
+            ])
+          : [0, 0, 1]) as [number, number, number]),
+      );
+      initialCameraUp.applyMatrix4(computeT_threeworld_world(viewer));
+      initialCameraUp.normalize();
+
+      viewer.cameraRef.current!.up.set(
+        initialCameraUp.x,
+        initialCameraUp.y,
+        initialCameraUp.z,
+      );
+      viewer.cameraControlRef.current!.updateCameraUp();
 
       viewer.cameraControlRef.current!.setLookAt(
         initialCameraPos.x,

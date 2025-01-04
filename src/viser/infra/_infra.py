@@ -41,46 +41,50 @@ ClientId = NewType("ClientId", int)
 TMessage = TypeVar("TMessage", bound=Message)
 
 
-class RecordHandle:
-    """**Experimental.**
-
-    Handle for recording outgoing messages. Useful for logging + debugging."""
+class StateSerializer:
+    """Handle for serializing messages. In Viser, this is used to save the
+    scene state."""
 
     def __init__(
         self, handler: WebsockMessageHandler, filter: Callable[[Message], bool]
     ):
         self._handler = handler
         self._filter = filter
-        self._loop_start_index: int | None = None
         self._time: float = 0.0
         self._messages: list[tuple[float, dict[str, Any]]] = []
 
     def _insert_message(self, message: Message) -> None:
         """Insert a message into the recorded file."""
 
-        # Exclude GUI messages. This is hacky.
+        # Exclude messages that are filtered out. In Viser, this is typically
+        # GUI messages.
         if not self._filter(message):
             return
         self._messages.append((self._time, message.as_serializable_dict()))
 
     def insert_sleep(self, duration: float) -> None:
         """Insert a sleep into the recorded file."""
+        assert (
+            self._handler._record_handle is not None
+        ), "serialize() was already called!"
         self._time += duration
 
-    def set_loop_start(self) -> None:
-        """Mark the start of the loop. Messages sent after this point will be
-        looped. Should only be called once."""
-        assert self._loop_start_index is None, "Loop start already set."
-        self._loop_start_index = len(self._messages)
+    def serialize(self) -> bytes:
+        """Serialize saved messages. Should only be called once.
 
-    def end_and_serialize(self) -> bytes:
-        """End the recording and serialize contents. Returns the recording as
-        bytes, which should generally be written to a file."""
+        Returns:
+            The recording as bytes.
+        """
+        assert (
+            self._handler._record_handle is not None
+        ), "serialize() was already called!"
+        import viser
+
         packed_bytes = msgspec.msgpack.encode(
             {
-                "loopStartIndex": self._loop_start_index,
                 "durationSeconds": self._time,
                 "messages": self._messages,
+                "viserVersion": viser.__version__,
             }
         )
         assert isinstance(packed_bytes, bytes)
@@ -99,13 +103,15 @@ class WebsockMessageHandler:
         self._locked_thread_id = -1
 
         # Set to None if not recording.
-        self._record_handle: RecordHandle | None = None
+        self._record_handle: StateSerializer | None = None
 
-    def start_recording(self, filter: Callable[[Message], bool]) -> RecordHandle:
+    def get_message_serializer(
+        self, filter: Callable[[Message], bool]
+    ) -> StateSerializer:
         """Start recording messages that are sent. Sent messages will be
         serialized and can be used for playback."""
         assert self._record_handle is None, "Already recording."
-        self._record_handle = RecordHandle(self, filter)
+        self._record_handle = StateSerializer(self, filter)
         return self._record_handle
 
     def register_handler(

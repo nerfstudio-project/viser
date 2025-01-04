@@ -7,6 +7,9 @@ exclude = ["src/viser/client/.nodeenv", "src/viser/client/node_modules", "**/__p
 # Client build is in the gitignore, but we still want it in the distribution.
 ignore-vcs = true
 
+[tool.hatch.version]
+path = "src/viser/__init__.py"
+
 [tool.hatch.build.targets.sdist]
 only-include = ["src/viser"]
 
@@ -15,7 +18,7 @@ packages = ["src/viser"]
 
 [project]
 name = "viser"
-version = "0.2.19"
+dynamic = ["version"]
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -70,7 +73,7 @@ examples = [
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
 [project.scripts]
-viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
+viser-build-client = "viser._client_autobuild:build_client_entrypoint"
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
@@ -86,6 +89,7 @@ lint.select = [
     "I", # Import sorting.
 ]
 lint.ignore = [
+    "E731",  # Do not assign a lambda expression, use a def.
     "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "E721",  # Do not compare types, use `isinstance()`.
