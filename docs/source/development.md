@@ -31,12 +31,15 @@ pip install -e .[dev]
 pre-commit install
 ```
 
-It would be hard to write unit tests for `viser`. We rely on static typing for
-robustness. To check your code, you can run the following:
+For code quality, rely primarily on `pyright` and `ruff`:
 
 ```bash
-# runs linting, formatting, and type-checking
-viser-dev-checks
+# Check static types.
+pyright
+
+# Lint and format.
+ruff check --fix .
+ruff format .
 ```
 
 ## Message updates

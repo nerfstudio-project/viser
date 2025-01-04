@@ -1,9 +1,11 @@
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import rich
+import tyro
 
 client_dir = Path(__file__).absolute().parent / "client"
 build_dir = client_dir / "build"
@@ -62,30 +64,59 @@ def ensure_client_is_built() -> None:
 
     # Install nodejs and build if necessary. We assume bash is installed.
     if build:
-        node_bin_dir = _install_sandboxed_node()
-        npx_path = node_bin_dir / "npx"
+        _build_viser_client(out_dir=build_dir, cached=False)
 
-        subprocess_env = os.environ.copy()
-        subprocess_env["NODE_VIRTUAL_ENV"] = str(node_bin_dir.parent)
-        subprocess_env["PATH"] = (
-            str(node_bin_dir)
-            + (";" if sys.platform == "win32" else ":")
-            + subprocess_env["PATH"]
+
+def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
+    """Create a build of the Viser client.
+
+    Args:
+        out_dir: The directory to write the built client to.
+        cached: If True, skip the build if the client is already built.
+            Instead, we'll simply copy the previous build to the new location.
+    """
+
+    if cached and build_dir.exists() and (build_dir / "index.html").exists():
+        rich.print(
+            f"[bold](viser)[/bold] Copying client build from {build_dir} to {out_dir}."
         )
-        subprocess.run(
-            args=f"{npx_path} --yes yarn install",
-            env=subprocess_env,
-            cwd=client_dir,
-            shell=True,
-            check=False,
-        )
-        subprocess.run(
-            args=f"{npx_path} --yes yarn run build",
-            env=subprocess_env,
-            cwd=client_dir,
-            shell=True,
-            check=False,
-        )
+        shutil.copytree(build_dir, out_dir)
+        return
+
+    node_bin_dir = _install_sandboxed_node()
+    npx_path = node_bin_dir / "npx"
+
+    subprocess_env = os.environ.copy()
+    subprocess_env["NODE_VIRTUAL_ENV"] = str(node_bin_dir.parent)
+    subprocess_env["PATH"] = (
+        str(node_bin_dir)
+        + (";" if sys.platform == "win32" else ":")
+        + subprocess_env["PATH"]
+    )
+    subprocess.run(
+        args=[str(npx_path), "--yes", "yarn", "install"],
+        env=subprocess_env,
+        cwd=client_dir,
+        check=False,
+    )
+    subprocess.run(
+        args=[
+            str(npx_path),
+            "vite",
+            "build",
+            "--base",
+            "./",
+            "--outDir",
+            # Relative path needs to be made absolute, since we change the CWD.
+            str(out_dir.absolute()),
+        ],
+        env=subprocess_env,
+        cwd=client_dir,
+        check=False,
+    )
+
+
+build_client_entrypoint = lambda: tyro.cli(_build_viser_client)
 
 
 def _install_sandboxed_node() -> Path:

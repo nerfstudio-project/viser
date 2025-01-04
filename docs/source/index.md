@@ -39,6 +39,7 @@ URL (default: `http://localhost:8080`).
 
    ./conventions.md
    ./development.md
+   ./embedded_visualizations.rst
 
 .. toctree::
    :caption: API (Basics)

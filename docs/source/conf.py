@@ -6,11 +6,12 @@
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/stable/config
 
-from pathlib import Path
+import os
 from typing import Dict, List
 
 import m2r2
-import toml
+
+import viser
 
 # -- Path setup --------------------------------------------------------------
 
@@ -25,10 +26,7 @@ project = "viser"
 copyright = "2024"
 author = "brentyi"
 
-# The short X.Y version
-version: str = toml.load(
-    Path(__file__).absolute().parent.parent.parent / "pyproject.toml"
-)["project"]["version"]
+version: str = os.environ.get("VISER_VERSION_STR_OVERRIDE", viser.__version__)
 
 # Formatting!
 #     0.1.30 => v0.1.30

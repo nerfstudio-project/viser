@@ -27,7 +27,7 @@ from ._gui_api import Color, GuiApi, _make_uuid
 from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
 from ._tunnel import ViserTunnel
-from .infra._infra import RecordHandle
+from .infra._infra import StateSerializer
 
 
 class _BackwardsCompatibilityShim:
@@ -982,17 +982,60 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         can be useful for safe concurrent operations."""
         return self._event_loop
 
-    def _start_scene_recording(self) -> RecordHandle:
-        """Start recording outgoing messages for playback or embedding.
-        Includes only the scene.
-
-        **Work-in-progress.** This API may be changed or removed.
+    def sleep_forever(self) -> None:
+        """Equivalent to:
+        ```
+        while True:
+            time.sleep(3600)
+        ```
         """
-        recorder = self._websock_server.start_recording(
+        while True:
+            time.sleep(3600)
+
+    def _start_scene_recording(self) -> Any:
+        """**Old API.**"""
+        warnings.warn(
+            "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+            stacklevel=2,
+        )
+
+        serializer = self.get_scene_serializer()
+
+        # We'll add a shim for the old API for now. We can remove this later.
+        class _SceneRecordCompatibilityShim:
+            def set_loop_start(self):
+                warnings.warn(
+                    "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+                    stacklevel=2,
+                )
+
+            def insert_sleep(self, duration: float):
+                warnings.warn(
+                    "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+                    stacklevel=2,
+                )
+                serializer.insert_sleep(duration)
+
+            def end_and_serialize(self) -> bytes:
+                warnings.warn(
+                    "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+                    stacklevel=2,
+                )
+                return serializer.serialize()
+
+        return _SceneRecordCompatibilityShim()
+
+    def get_scene_serializer(self) -> StateSerializer:
+        """Get handle for serializing the scene state.
+
+        This can be used for saving .viser files, which are used for offline
+        visualization.
+        """
+        serializer = self._websock_server.get_message_serializer(
             # Don't record GUI messages. This feels brittle.
             filter=lambda message: "Gui" not in type(message).__name__
         )
         # Insert current scene state.
         for message in self._websock_server._broadcast_buffer.message_from_id.values():
-            recorder._insert_message(message)
-        return recorder
+            serializer._insert_message(message)
+        return serializer
