@@ -64,11 +64,20 @@ class StateSerializer:
 
     def insert_sleep(self, duration: float) -> None:
         """Insert a sleep into the recorded file."""
+        assert (
+            self._handler._record_handle is not None
+        ), "serialize() was already called!"
         self._time += duration
 
     def serialize(self) -> bytes:
-        """Serialize saved messages. Returns the recording as bytes, which
-        should be written to a file."""
+        """Serialize saved messages. Should only be called once.
+
+        Returns:
+            The recording as bytes.
+        """
+        assert (
+            self._handler._record_handle is not None
+        ), "serialize() was already called!"
         import viser
 
         packed_bytes = msgspec.msgpack.encode(

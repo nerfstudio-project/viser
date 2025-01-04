@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -63,19 +64,24 @@ def ensure_client_is_built() -> None:
 
     # Install nodejs and build if necessary. We assume bash is installed.
     if build:
-        _build_viser_client(base_path="/", out_dir=build_dir)
+        _build_viser_client(out_dir=build_dir, cached=False)
 
 
-def _build_viser_client(base_path: str, out_dir: Path) -> None:
+def _build_viser_client(out_dir: Path, cached: bool = True) -> None:
     """Create a build of the Viser client.
 
     Args:
-        base_path: The base path of the hosted client, relative to the server root.
-            If the client will be hosted locally at `http://127.0.0.1:8000/`,
-            this should be "/". If it is hosted at
-            `http://user.github.io/project/`, this should be "/project/".
         out_dir: The directory to write the built client to.
+        cached: If True, skip the build if the client is already built.
+            Instead, we'll simply copy the previous build to the new location.
     """
+
+    if cached and build_dir.exists() and (build_dir / "index.html").exists():
+        rich.print(
+            f"[bold](viser)[/bold] Copying client build from {build_dir} to {out_dir}."
+        )
+        shutil.copytree(build_dir, out_dir)
+        return
 
     node_bin_dir = _install_sandboxed_node()
     npx_path = node_bin_dir / "npx"
@@ -99,7 +105,7 @@ def _build_viser_client(base_path: str, out_dir: Path) -> None:
             "vite",
             "build",
             "--base",
-            str(base_path),
+            "./",
             "--outDir",
             # Relative path needs to be made absolute, since we change the CWD.
             str(out_dir.absolute()),
