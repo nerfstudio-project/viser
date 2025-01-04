@@ -191,7 +191,7 @@
         const versions = (await getViserVersionList()).trim().split("\n").reverse();
         console.log(versions);
         let htmlString = "<ul style='margin: 0.5rem 0 0 0'>";
-        htmlString += `<li><a href="https://viser.studio/latest">latest</a></li>`;
+        htmlString += `<li><a href="https://viser.studio/main">main</a></li>`;
         for (let version of versions) {
           htmlString += `<li><a href="https://viser.studio/versions/${version}">${version}</a></li>`;
         }
@@ -617,7 +617,7 @@ send synchronization information to other clients.</p>
 <dd><p>Returns a unique key for this message, used for detecting redundant
 messages.</p>
 <p>For example: if we send 1000 “set value” messages for the same GUI element, we
-should only keep the latest message.</p>
+should only keep the main message.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>

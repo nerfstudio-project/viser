@@ -188,7 +188,7 @@
         const versions = (await getViserVersionList()).trim().split("\n").reverse();
         console.log(versions);
         let htmlString = "<ul style='margin: 0.5rem 0 0 0'>";
-        htmlString += `<li><a href="https://viser.studio/latest">latest</a></li>`;
+        htmlString += `<li><a href="https://viser.studio/main">main</a></li>`;
         for (let version of versions) {
           htmlString += `<li><a href="https://viser.studio/versions/${version}">${version}</a></li>`;
         }

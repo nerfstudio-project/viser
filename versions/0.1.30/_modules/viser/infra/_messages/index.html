@@ -190,7 +190,7 @@
         const versions = (await getViserVersionList()).trim().split("\n").reverse();
         console.log(versions);
         let htmlString = "<ul style='margin: 0.5rem 0 0 0'>";
-        htmlString += `<li><a href="https://viser.studio/latest">latest</a></li>`;
+        htmlString += `<li><a href="https://viser.studio/main">main</a></li>`;
         for (let version of versions) {
           htmlString += `<li><a href="https://viser.studio/versions/${version}">${version}</a></li>`;
         }
@@ -480,7 +480,7 @@
 <span class="sd">        messages.</span>
 
 <span class="sd">        For example: if we send 1000 &quot;set value&quot; messages for the same GUI element, we</span>
-<span class="sd">        should only keep the latest message.</span>
+<span class="sd">        should only keep the main message.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 </div>
 
