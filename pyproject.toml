@@ -73,7 +73,7 @@ examples = [
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
 [project.scripts]
-viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
+viser-build-client = "viser._client_autobuild:build_client_entrypoint"
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
@@ -89,6 +89,7 @@ lint.select = [
     "I", # Import sorting.
 ]
 lint.ignore = [
+    "E731",  # Do not assign a lambda expression, use a def.
     "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "E721",  # Do not compare types, use `isinstance()`.
