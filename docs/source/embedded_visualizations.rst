@@ -33,6 +33,7 @@ For static 3D visualizations, use the following code to save the scene state:
    # For example:
    # server.scene.add_mesh(...)
    # server.scene.add_point_cloud(...)
+   server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
 
    # Serialize and save the scene state
    data = server.get_scene_serializer().serialize()  # Returns bytes
@@ -43,14 +44,23 @@ As a suggestion, you can also add a button for exporting the scene state:
 
 .. code-block:: python
 
+   import viser
    server = viser.ViserServer()
 
-   save_button.server.gui.add_button("Save Scene")
+   # Add objects to the scene via server.scene.
+   # For example:
+   # server.scene.add_mesh(...)
+   # server.scene.add_point_cloud(...)
+   server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
+
+   save_button = server.gui.add_button("Save Scene")
 
    @save_button.on_click
    def _(event: viser.GuiEvent) -> None:
        assert event.client is not None
        event.client.send_file_download("recording.viser", server.get_scene_serializer().serialize())
+
+   server.sleep_forever()
 
 Dynamic Scene Export
 ~~~~~~~~~~~~~~~~~~~~
@@ -60,25 +70,29 @@ For dynamic visualizations with animation, you can create a "3D video" by insert
 .. code-block:: python
 
    import viser
+   import numpy as np
    from pathlib import Path
 
-   server = server.ViserServer()
+   server = viser.ViserServer()
 
    # Add objects to the scene via server.scene
    # For example:
    # server.scene.add_mesh(...)
    # server.scene.add_point_cloud(...)
+   box = server.scene.add_box("/box", color=(255, 0, 0), dimensions=(1, 1, 1))
 
+   # Create serializer.
    serializer = server.get_scene_serializer()
 
+   num_frames = 100
    for t in range(num_frames):
-       # Update existing scene objects or add new ones
-       # server.scene.add_point_cloud(...)
+       # Update existing scene objects or add new ones.
+       box.position = (0.0, 0.0, np.sin(t / num_frames * 2 * np.pi))
 
-       # Add a frame delay (e.g., for 30 FPS animation)
-       serializer.insert_sleep(1 / 30)
+       # Add a frame delay.
+       serializer.insert_sleep(1.0 / 30.0)
 
-   # Save the complete animation
+   # Save the complete animation.
    data = serializer.serialize()  # Returns bytes
    Path("recording.viser").write_bytes(data)
 
@@ -169,7 +183,7 @@ Your visualization will be available at: ``https://user.github.io/repo/viser-cli
 You can embed this into other webpages using an HTML ``<iframe />`` tag.
 
 
-Step 4: (Extra) Setting the initial camera pose
+Step 4: Setting the initial camera pose
 -----------------------------------------------
 
 To set the initial camera pose, you can add a ``&logCamera`` parameter to the URL:
