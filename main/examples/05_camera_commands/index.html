@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Camera commands - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -394,19 +395,19 @@
 <h1>Camera commands<a class="headerlink" href="#camera-commands" title="Link to this heading">¶</a></h1>
 <p>In addition to reads, camera parameters also support writes. These are synced to the
 corresponding client automatically.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span> <span class="nn">time</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="linenos"> 3</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="linenos"> 4</span>
-<span class="linenos"> 5</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos"> 6</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="linenos"> 5</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
+<span class="linenos"> 6</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="linenos"> 7</span>
 <span class="linenos"> 8</span><span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos"> 9</span><span class="n">num_frames</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="linenos">10</span>
 <span class="linenos">11</span>
 <span class="linenos">12</span><span class="nd">@server</span><span class="o">.</span><span class="n">on_client_connect</span>
-<span class="linenos">13</span><span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">13</span><span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">14</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;For each client that connects, create GUI elements for adjusting the</span>
 <span class="linenos">15</span><span class="sd">    near/far clipping planes.&quot;&quot;&quot;</span>
 <span class="linenos">16</span>
@@ -420,16 +421,16 @@ corresponding client automatically.</p>
 <span class="linenos">24</span>    <span class="p">)</span>
 <span class="linenos">25</span>
 <span class="linenos">26</span>    <span class="nd">@near_slider</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">27</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">27</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">28</span>        <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">near</span> <span class="o">=</span> <span class="n">near_slider</span><span class="o">.</span><span class="n">value</span>
 <span class="linenos">29</span>
 <span class="linenos">30</span>    <span class="nd">@far_slider</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">31</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">31</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">32</span>        <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">far</span> <span class="o">=</span> <span class="n">far_slider</span><span class="o">.</span><span class="n">value</span>
 <span class="linenos">33</span>
 <span class="linenos">34</span>
 <span class="linenos">35</span><span class="nd">@server</span><span class="o">.</span><span class="n">on_client_connect</span>
-<span class="linenos">36</span><span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">36</span><span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">client</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">37</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;For each client that connects, we create a set of random frames + a click handler for each frame.</span>
 <span class="linenos">38</span>
 <span class="linenos">39</span><span class="sd">    When a frame is clicked, we move the camera to the corresponding frame.</span>
@@ -437,7 +438,7 @@ corresponding client automatically.</p>
 <span class="linenos">41</span>
 <span class="linenos">42</span>    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="linenos">43</span>
-<span class="linenos">44</span>    <span class="k">def</span> <span class="nf">make_frame</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">44</span>    <span class="k">def</span><span class="w"> </span><span class="nf">make_frame</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">45</span>        <span class="c1"># Sample a random orientation + position.</span>
 <span class="linenos">46</span>        <span class="n">wxyz</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="linenos">47</span>        <span class="n">wxyz</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">wxyz</span><span class="p">)</span>
@@ -449,7 +450,7 @@ corresponding client automatically.</p>
 <span class="linenos">53</span>
 <span class="linenos">54</span>        <span class="c1"># Move the camera when we click a frame.</span>
 <span class="linenos">55</span>        <span class="nd">@frame</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">56</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">56</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">57</span>            <span class="n">T_world_current</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SE3</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span>
 <span class="linenos">58</span>                <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">wxyz</span><span class="p">),</span> <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">position</span>
 <span class="linenos">59</span>            <span class="p">)</span>

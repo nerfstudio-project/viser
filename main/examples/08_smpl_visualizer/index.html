@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>SMPL model visualizer - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -397,31 +398,31 @@
 <dt>See here for download instructions:</dt><dd><p><a class="reference external" href="https://github.com/vchoutas/smplx?tab=readme-ov-file#downloading-the-model">https://github.com/vchoutas/smplx?tab=readme-ov-file#downloading-the-model</a></p>
 </dd>
 </dl>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 <span class="linenos">  2</span>
-<span class="linenos">  3</span><span class="kn">import</span> <span class="nn">time</span>
-<span class="linenos">  4</span><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="linenos">  5</span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="linenos">  3</span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="linenos">  4</span><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="linenos">  5</span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="linenos">  6</span>
-<span class="linenos">  7</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="linenos">  8</span><span class="kn">import</span> <span class="nn">tyro</span>
+<span class="linenos">  7</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos">  8</span><span class="kn">import</span><span class="w"> </span><span class="nn">tyro</span>
 <span class="linenos">  9</span>
-<span class="linenos"> 10</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos"> 11</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="linenos"> 10</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
+<span class="linenos"> 11</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="linenos"> 12</span>
 <span class="linenos"> 13</span>
 <span class="linenos"> 14</span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="linenos"> 15</span><span class="k">class</span> <span class="nc">SmplOutputs</span><span class="p">:</span>
+<span class="linenos"> 15</span><span class="k">class</span><span class="w"> </span><span class="nc">SmplOutputs</span><span class="p">:</span>
 <span class="linenos"> 16</span>    <span class="n">vertices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="linenos"> 17</span>    <span class="n">faces</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
 <span class="linenos"> 18</span>    <span class="n">T_world_joint</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>  <span class="c1"># (num_joints, 4, 4)</span>
 <span class="linenos"> 19</span>    <span class="n">T_parent_joint</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>  <span class="c1"># (num_joints, 4, 4)</span>
 <span class="linenos"> 20</span>
 <span class="linenos"> 21</span>
-<span class="linenos"> 22</span><span class="k">class</span> <span class="nc">SmplHelper</span><span class="p">:</span>
+<span class="linenos"> 22</span><span class="k">class</span><span class="w"> </span><span class="nc">SmplHelper</span><span class="p">:</span>
 <span class="linenos"> 23</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for models in the SMPL family, implemented in numpy.&quot;&quot;&quot;</span>
 <span class="linenos"> 24</span>
-<span class="linenos"> 25</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 25</span>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 26</span>        <span class="k">assert</span> <span class="n">model_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;.npz&quot;</span><span class="p">,</span> <span class="s2">&quot;Model should be an .npz file!&quot;</span>
 <span class="linenos"> 27</span>        <span class="n">body_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 <span class="linenos"> 28</span>
@@ -436,7 +437,7 @@
 <span class="linenos"> 37</span>        <span class="bp">self</span><span class="o">.</span><span class="n">num_betas</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shapedirs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="linenos"> 38</span>        <span class="bp">self</span><span class="o">.</span><span class="n">parent_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">body_dict</span><span class="p">[</span><span class="s2">&quot;kintree_table&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 <span class="linenos"> 39</span>
-<span class="linenos"> 40</span>    <span class="k">def</span> <span class="nf">get_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">betas</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">joint_rotmats</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SmplOutputs</span><span class="p">:</span>
+<span class="linenos"> 40</span>    <span class="k">def</span><span class="w"> </span><span class="nf">get_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">betas</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">joint_rotmats</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SmplOutputs</span><span class="p">:</span>
 <span class="linenos"> 41</span>        <span class="c1"># Get shaped vertices + joint positions, when all local poses are identity.</span>
 <span class="linenos"> 42</span>        <span class="n">v_tpose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">v_template</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;vxb,b-&gt;vx&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shapedirs</span><span class="p">,</span> <span class="n">betas</span><span class="p">)</span>
 <span class="linenos"> 43</span>        <span class="n">j_tpose</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;jv,vx-&gt;jx&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">J_regressor</span><span class="p">,</span> <span class="n">v_tpose</span><span class="p">)</span>
@@ -463,7 +464,7 @@
 <span class="linenos"> 64</span>        <span class="k">return</span> <span class="n">SmplOutputs</span><span class="p">(</span><span class="n">v_posed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">faces</span><span class="p">,</span> <span class="n">T_world_joint</span><span class="p">,</span> <span class="n">T_parent_joint</span><span class="p">)</span>
 <span class="linenos"> 65</span>
 <span class="linenos"> 66</span>
-<span class="linenos"> 67</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">model_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 67</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">model_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 68</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos"> 69</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">set_up_direction</span><span class="p">(</span><span class="s2">&quot;+y&quot;</span><span class="p">)</span>
 <span class="linenos"> 70</span>    <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">configure_theme</span><span class="p">(</span><span class="n">control_layout</span><span class="o">=</span><span class="s2">&quot;collapsible&quot;</span><span class="p">)</span>
@@ -513,7 +514,7 @@
 <span class="linenos">114</span>
 <span class="linenos">115</span>
 <span class="linenos">116</span><span class="nd">@dataclass</span>
-<span class="linenos">117</span><span class="k">class</span> <span class="nc">GuiElements</span><span class="p">:</span>
+<span class="linenos">117</span><span class="k">class</span><span class="w"> </span><span class="nc">GuiElements</span><span class="p">:</span>
 <span class="linenos">118</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Structure containing handles for reading from GUI elements.&quot;&quot;&quot;</span>
 <span class="linenos">119</span>
 <span class="linenos">120</span>    <span class="n">gui_rgb</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>
@@ -526,7 +527,7 @@
 <span class="linenos">127</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;This flag will be flipped to True whenever the mesh needs to be re-generated.&quot;&quot;&quot;</span>
 <span class="linenos">128</span>
 <span class="linenos">129</span>
-<span class="linenos">130</span><span class="k">def</span> <span class="nf">make_gui_elements</span><span class="p">(</span>
+<span class="linenos">130</span><span class="k">def</span><span class="w"> </span><span class="nf">make_gui_elements</span><span class="p">(</span>
 <span class="linenos">131</span>    <span class="n">server</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">,</span>
 <span class="linenos">132</span>    <span class="n">num_betas</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="linenos">133</span>    <span class="n">num_joints</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -536,7 +537,7 @@
 <span class="linenos">137</span>
 <span class="linenos">138</span>    <span class="n">tab_group</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_tab_group</span><span class="p">()</span>
 <span class="linenos">139</span>
-<span class="linenos">140</span>    <span class="k">def</span> <span class="nf">set_changed</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">140</span>    <span class="k">def</span><span class="w"> </span><span class="nf">set_changed</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">141</span>        <span class="n">out</span><span class="o">.</span><span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># out is define later!</span>
 <span class="linenos">142</span>
 <span class="linenos">143</span>    <span class="c1"># GUI elements: mesh settings + visibility.</span>
@@ -549,7 +550,7 @@
 <span class="linenos">150</span>        <span class="n">gui_wireframe</span><span class="o">.</span><span class="n">on_update</span><span class="p">(</span><span class="n">set_changed</span><span class="p">)</span>
 <span class="linenos">151</span>
 <span class="linenos">152</span>        <span class="nd">@gui_show_controls</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">153</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">153</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">154</span>            <span class="k">for</span> <span class="n">control</span> <span class="ow">in</span> <span class="n">transform_controls</span><span class="p">:</span>
 <span class="linenos">155</span>                <span class="n">control</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="n">gui_show_controls</span><span class="o">.</span><span class="n">value</span>
 <span class="linenos">156</span>
@@ -559,12 +560,12 @@
 <span class="linenos">160</span>        <span class="n">gui_random_shape</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Random Shape&quot;</span><span class="p">)</span>
 <span class="linenos">161</span>
 <span class="linenos">162</span>        <span class="nd">@gui_reset_shape</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">163</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">163</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">164</span>            <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">gui_betas</span><span class="p">:</span>
 <span class="linenos">165</span>                <span class="n">beta</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">0.0</span>
 <span class="linenos">166</span>
 <span class="linenos">167</span>        <span class="nd">@gui_random_shape</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">168</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">168</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">169</span>            <span class="k">for</span> <span class="n">beta</span> <span class="ow">in</span> <span class="n">gui_betas</span><span class="p">:</span>
 <span class="linenos">170</span>                <span class="n">beta</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="linenos">171</span>
@@ -582,12 +583,12 @@
 <span class="linenos">183</span>        <span class="n">gui_random_joints</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Random Joints&quot;</span><span class="p">)</span>
 <span class="linenos">184</span>
 <span class="linenos">185</span>        <span class="nd">@gui_reset_joints</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">186</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">186</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">187</span>            <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">:</span>
 <span class="linenos">188</span>                <span class="n">joint</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 <span class="linenos">189</span>
 <span class="linenos">190</span>        <span class="nd">@gui_random_joints</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">191</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">191</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">192</span>            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">()</span>
 <span class="linenos">193</span>            <span class="k">for</span> <span class="n">joint</span> <span class="ow">in</span> <span class="n">gui_joints</span><span class="p">:</span>
 <span class="linenos">194</span>                <span class="n">joint</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">sample_uniform</span><span class="p">(</span><span class="n">rng</span><span class="p">)</span><span class="o">.</span><span class="n">log</span><span class="p">()</span>
@@ -601,9 +602,9 @@
 <span class="linenos">202</span>            <span class="p">)</span>
 <span class="linenos">203</span>            <span class="n">gui_joints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gui_joint</span><span class="p">)</span>
 <span class="linenos">204</span>
-<span class="linenos">205</span>            <span class="k">def</span> <span class="nf">set_callback_in_closure</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">205</span>            <span class="k">def</span><span class="w"> </span><span class="nf">set_callback_in_closure</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">206</span>                <span class="nd">@gui_joint</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">207</span>                <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+<span class="linenos">207</span>                <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
 <span class="linenos">208</span>                    <span class="n">transform_controls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
 <span class="linenos">209</span>                        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gui_joints</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 <span class="linenos">210</span>                    <span class="p">)</span><span class="o">.</span><span class="n">wxyz</span>
@@ -631,9 +632,9 @@
 <span class="linenos">232</span>        <span class="p">)</span>
 <span class="linenos">233</span>        <span class="n">transform_controls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">controls</span><span class="p">)</span>
 <span class="linenos">234</span>
-<span class="linenos">235</span>        <span class="k">def</span> <span class="nf">set_callback_in_closure</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">235</span>        <span class="k">def</span><span class="w"> </span><span class="nf">set_callback_in_closure</span><span class="p">(</span><span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">236</span>            <span class="nd">@controls</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">237</span>            <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">237</span>            <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">238</span>                <span class="n">axisangle</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">transform_controls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">wxyz</span><span class="p">)</span><span class="o">.</span><span class="n">log</span><span class="p">()</span>
 <span class="linenos">239</span>                <span class="n">gui_joints</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">axisangle</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axisangle</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axisangle</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
 <span class="linenos">240</span>

@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>RealSense visualizer - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -394,20 +395,20 @@
 <h1>RealSense visualizer<a class="headerlink" href="#realsense-visualizer" title="Link to this heading">¶</a></h1>
 <p>Connect to a RealSense camera, then visualize RGB-D readings as a point clouds. Requires
 pyrealsense2.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 <span class="linenos">  2</span>
-<span class="linenos">  3</span><span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="linenos">  3</span><span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
 <span class="linenos">  4</span>
-<span class="linenos">  5</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="linenos">  6</span><span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
-<span class="linenos">  7</span><span class="kn">import</span> <span class="nn">pyrealsense2</span> <span class="k">as</span> <span class="nn">rs</span>  <span class="c1"># type: ignore</span>
-<span class="linenos">  8</span><span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="linenos">  5</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos">  6</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
+<span class="linenos">  7</span><span class="kn">import</span><span class="w"> </span><span class="nn">pyrealsense2</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rs</span>  <span class="c1"># type: ignore</span>
+<span class="linenos">  8</span><span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 <span class="linenos">  9</span>
-<span class="linenos"> 10</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 10</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
 <span class="linenos"> 11</span>
 <span class="linenos"> 12</span>
 <span class="linenos"> 13</span><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
-<span class="linenos"> 14</span><span class="k">def</span> <span class="nf">realsense_pipeline</span><span class="p">(</span><span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
+<span class="linenos"> 14</span><span class="k">def</span><span class="w"> </span><span class="nf">realsense_pipeline</span><span class="p">(</span><span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">):</span>
 <span class="linenos"> 15</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Context manager that yields a RealSense pipeline.&quot;&quot;&quot;</span>
 <span class="linenos"> 16</span>
 <span class="linenos"> 17</span>    <span class="c1"># Configure depth and color streams.</span>
@@ -429,7 +430,7 @@ pyrealsense2.</p>
 <span class="linenos"> 33</span>    <span class="n">pipeline</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 <span class="linenos"> 34</span>
 <span class="linenos"> 35</span>
-<span class="linenos"> 36</span><span class="k">def</span> <span class="nf">point_cloud_arrays_from_frames</span><span class="p">(</span>
+<span class="linenos"> 36</span><span class="k">def</span><span class="w"> </span><span class="nf">point_cloud_arrays_from_frames</span><span class="p">(</span>
 <span class="linenos"> 37</span>    <span class="n">depth_frame</span><span class="p">,</span> <span class="n">color_frame</span>
 <span class="linenos"> 38</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]]:</span>
 <span class="linenos"> 39</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Maps realsense frames to two arrays.</span>
@@ -481,7 +482,7 @@ pyrealsense2.</p>
 <span class="linenos"> 85</span>    <span class="k">return</span> <span class="n">positions</span><span class="p">,</span> <span class="n">colors</span>
 <span class="linenos"> 86</span>
 <span class="linenos"> 87</span>
-<span class="linenos"> 88</span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<span class="linenos"> 88</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 <span class="linenos"> 89</span>    <span class="c1"># Start visualization server.</span>
 <span class="linenos"> 90</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos"> 91</span>

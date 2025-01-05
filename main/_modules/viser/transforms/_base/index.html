@@ -15,7 +15,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>viser.transforms._base - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
@@ -303,6 +303,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -384,17 +385,17 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for viser.transforms._base</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">abc</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Generic</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Self</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">get_args</span><span class="p">,</span> <span class="n">override</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">get_args</span><span class="p">,</span> <span class="n">override</span>
 
 
 <div class="viewcode-block" id="MatrixLieGroup">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup">[docs]</a>
-<span class="k">class</span> <span class="nc">MatrixLieGroup</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MatrixLieGroup</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface definition for matrix Lie groups.&quot;&quot;&quot;</span>
 
     <span class="n">matrix_dim</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
@@ -409,7 +410,7 @@
     <span class="n">space_dim</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Dimension of coordinates that can be transformed.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="c1"># Notes:</span>
         <span class="c1"># - For the constructor signature to be consistent with subclasses, `parameters`</span>
         <span class="c1">#   should be marked as positional-only. But this isn&#39;t possible in Python 3.7.</span>
@@ -423,7 +424,7 @@
 
 <div class="viewcode-block" id="MatrixLieGroup.__init_subclass__">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.__init_subclass__">[docs]</a>
-    <span class="k">def</span> <span class="nf">__init_subclass__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__init_subclass__</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">matrix_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">parameters_dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -440,16 +441,16 @@
     <span class="c1"># Shared implementations.</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span> <span class="o">...</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="fm">__matmul__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span> <span class="o">...</span>
 
 <div class="viewcode-block" id="MatrixLieGroup.__matmul__">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.__matmul__">[docs]</a>
-    <span class="k">def</span> <span class="fm">__matmul__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__matmul__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Overload for the `@` operator.</span>
@@ -472,7 +473,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.identity">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">identity</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">batch_axes</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns identity element.</span>
@@ -490,7 +491,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.from_matrix">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">from_matrix</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_matrix</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get group member from matrix representation.</span>
 
 <span class="sd">        Args:</span>
@@ -506,14 +507,14 @@
 <div class="viewcode-block" id="MatrixLieGroup.as_matrix">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.as_matrix">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">as_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get transformation as a matrix. Homogeneous for SE groups.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="MatrixLieGroup.parameters">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.parameters">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get underlying representation.&quot;&quot;&quot;</span></div>
 
 
@@ -522,7 +523,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.apply">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.apply">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies group action to a point.</span>
 
 <span class="sd">        Args:</span>
@@ -536,7 +537,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.multiply">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.multiply">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Composes this transformation with another.</span>
 
 <span class="sd">        Returns:</span>
@@ -548,7 +549,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.exp">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">exp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tangent</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tangent</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes `expm(wedge(tangent))`.</span>
 
 <span class="sd">        Args:</span>
@@ -562,7 +563,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.log">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.log">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes `vee(logm(transformation matrix))`.</span>
 
 <span class="sd">        Returns:</span>
@@ -573,7 +574,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.adjoint">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.adjoint">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">adjoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">adjoint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the adjoint, which transforms tangent vectors between tangent</span>
 <span class="sd">        spaces.</span>
 
@@ -593,7 +594,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.inverse">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.inverse">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the inverse of our transform.</span>
 
 <span class="sd">        Returns:</span>
@@ -604,7 +605,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.normalize">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.normalize">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize/projects values and returns.</span>
 
 <span class="sd">        Returns:</span>
@@ -616,7 +617,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.sample_uniform">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">sample_uniform</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_uniform</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">,</span>
         <span class="n">batch_axes</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
@@ -638,7 +639,7 @@
 <div class="viewcode-block" id="MatrixLieGroup.get_batch_axes">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.MatrixLieGroup.get_batch_axes">[docs]</a>
     <span class="nd">@final</span>
-    <span class="k">def</span> <span class="nf">get_batch_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_batch_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return any leading batch axes in contained parameters. If an array of shape</span>
 <span class="sd">        `(100, 4)` is placed in the wxyz field of an SO3 object, for example, this will</span>
 <span class="sd">        return `(100,)`.&quot;&quot;&quot;</span>
@@ -649,7 +650,7 @@
 
 <div class="viewcode-block" id="SOBase">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SOBase">[docs]</a>
-<span class="k">class</span> <span class="nc">SOBase</span><span class="p">(</span><span class="n">MatrixLieGroup</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SOBase</span><span class="p">(</span><span class="n">MatrixLieGroup</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for special orthogonal groups.&quot;&quot;&quot;</span></div>
 
 
@@ -659,7 +660,7 @@
 
 <div class="viewcode-block" id="SEBase">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase">[docs]</a>
-<span class="k">class</span> <span class="nc">SEBase</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">ContainedSOType</span><span class="p">],</span> <span class="n">MatrixLieGroup</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SEBase</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">ContainedSOType</span><span class="p">],</span> <span class="n">MatrixLieGroup</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for special Euclidean groups.</span>
 
 <span class="sd">    Each SE(N) group member contains an SO(N) rotation, as well as an N-dimensional</span>
@@ -672,7 +673,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.from_rotation_and_translation">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">from_rotation_and_translation</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_rotation_and_translation</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">rotation</span><span class="p">:</span> <span class="n">ContainedSOType</span><span class="p">,</span>
         <span class="n">translation</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">],</span>
@@ -692,7 +693,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.from_rotation">[docs]</a>
     <span class="nd">@final</span>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_rotation</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">rotation</span><span class="p">:</span> <span class="n">ContainedSOType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_rotation</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">rotation</span><span class="p">:</span> <span class="n">ContainedSOType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span>
             <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">,</span>
             <span class="n">translation</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
@@ -706,7 +707,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.from_translation">[docs]</a>
     <span class="nd">@final</span>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_translation</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">translation</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_translation</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">translation</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="c1"># Extract rotation class from type parameter.</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__orig_bases__</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>  <span class="c1"># type: ignore</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span>
@@ -718,14 +719,14 @@
 <div class="viewcode-block" id="SEBase.rotation">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.rotation">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContainedSOType</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContainedSOType</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a transform&#39;s rotation term.&quot;&quot;&quot;</span></div>
 
 
 <div class="viewcode-block" id="SEBase.translation">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.translation">[docs]</a>
     <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">translation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">translation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a transform&#39;s translation term.&quot;&quot;&quot;</span></div>
 
 
@@ -735,7 +736,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.apply">[docs]</a>
     <span class="nd">@final</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span> <span class="o">@</span> <span class="n">target</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">translation</span><span class="p">()</span>  <span class="c1"># type: ignore</span></div>
 
 
@@ -743,7 +744,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.multiply">[docs]</a>
     <span class="nd">@final</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">multiply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span>
             <span class="n">rotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">rotation</span><span class="p">(),</span>
             <span class="n">translation</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span> <span class="o">@</span> <span class="n">other</span><span class="o">.</span><span class="n">translation</span><span class="p">())</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">translation</span><span class="p">(),</span>
@@ -754,7 +755,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.inverse">[docs]</a>
     <span class="nd">@final</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="n">R_inv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span>
             <span class="n">rotation</span><span class="o">=</span><span class="n">R_inv</span><span class="p">,</span>
@@ -766,7 +767,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SEBase.normalize">[docs]</a>
     <span class="nd">@final</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span>
             <span class="n">rotation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rotation</span><span class="p">()</span><span class="o">.</span><span class="n">normalize</span><span class="p">(),</span>
             <span class="n">translation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">translation</span><span class="p">(),</span>

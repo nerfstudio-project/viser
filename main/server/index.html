@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Viser Server - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -633,13 +634,13 @@ can be useful for safe concurrent operations.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.ViserServer.get_scene_serializer">
-<span class="sig-name descname"><span class="pre">get_scene_serializer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">StateSerializer</span></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.get_scene_serializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.get_scene_serializer" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_scene_serializer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../state_serializer/#viser.infra.StateSerializer" title="viser.infra._infra.StateSerializer"><span class="pre">StateSerializer</span></a></span></span><a class="reference internal" href="../_modules/viser/_viser/#ViserServer.get_scene_serializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.ViserServer.get_scene_serializer" title="Link to this definition">¶</a></dt>
 <dd><p>Get handle for serializing the scene state.</p>
 <p>This can be used for saving .viser files, which are used for offline
 visualization.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>StateSerializer</em></p>
+<dd class="field-odd"><p><a class="reference internal" href="../state_serializer/#viser.infra.StateSerializer" title="viser.infra._infra.StateSerializer"><em>StateSerializer</em></a></p>
 </dd>
 </dl>
 </dd></dl>

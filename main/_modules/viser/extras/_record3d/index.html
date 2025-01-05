@@ -15,7 +15,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>viser.extras._record3d - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
@@ -303,6 +303,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -384,30 +385,30 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for viser.extras._record3d</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span>
 
-<span class="kn">import</span> <span class="nn">imageio.v3</span> <span class="k">as</span> <span class="nn">iio</span>
-<span class="kn">import</span> <span class="nn">liblzfse</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
-<span class="kn">import</span> <span class="nn">skimage.transform</span>
-<span class="kn">from</span> <span class="nn">scipy.spatial.transform</span> <span class="kn">import</span> <span class="n">Rotation</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">imageio.v3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">iio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">liblzfse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">skimage.transform</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span>
 
 
 <div class="viewcode-block" id="Record3dLoader">
 <a class="viewcode-back" href="../../../../extras/#viser.extras.Record3dLoader">[docs]</a>
-<span class="k">class</span> <span class="nc">Record3dLoader</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Record3dLoader</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for loading frames for Record3D captures.&quot;&quot;&quot;</span>
 
     <span class="c1"># NOTE(hangg): Consider moving this module into</span>
     <span class="c1"># `examples/7_record3d_visualizer.py` since it is usecase-specific.</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
         <span class="n">metadata_path</span> <span class="o">=</span> <span class="n">data_dir</span> <span class="o">/</span> <span class="s2">&quot;metadata&quot;</span>
 
         <span class="c1"># Read metadata.</span>
@@ -439,13 +440,13 @@
 
 <div class="viewcode-block" id="Record3dLoader.num_frames">
 <a class="viewcode-back" href="../../../../extras/#viser.extras.Record3dLoader.num_frames">[docs]</a>
-    <span class="k">def</span> <span class="nf">num_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rgb_paths</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Record3dLoader.get_frame">
 <a class="viewcode-back" href="../../../../extras/#viser.extras.Record3dLoader.get_frame">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Record3dFrame</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Record3dFrame</span><span class="p">:</span>
         <span class="c1"># Read conf.</span>
         <span class="n">conf</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span>
             <span class="n">liblzfse</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conf_paths</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">()),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span>
@@ -484,7 +485,7 @@
 <div class="viewcode-block" id="Record3dFrame">
 <a class="viewcode-back" href="../../../../extras/#viser.extras.Record3dFrame">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">Record3dFrame</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Record3dFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A single frame from a Record3D capture.&quot;&quot;&quot;</span>
 
     <span class="n">K</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
@@ -495,7 +496,7 @@
 
 <div class="viewcode-block" id="Record3dFrame.get_point_cloud">
 <a class="viewcode-back" href="../../../../extras/#viser.extras.Record3dFrame.get_point_cloud">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_point_cloud</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_point_cloud</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">downsample_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">]]:</span>
         <span class="n">rgb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rgb</span><span class="p">[::</span><span class="n">downsample_factor</span><span class="p">,</span> <span class="p">::</span><span class="n">downsample_factor</span><span class="p">]</span>

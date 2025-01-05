@@ -50,6 +50,7 @@ URL (default: `http://localhost:8080`).
    ./server.md
    ./scene_api.md
    ./gui_api.md
+   ./state_serializer.md
 
 
 .. toctree::

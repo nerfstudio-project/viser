@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>GUI basics - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -393,14 +394,14 @@
           <section id="gui-basics">
 <h1>GUI basics<a class="headerlink" href="#gui-basics" title="Link to this heading">¶</a></h1>
 <p>Examples of basic GUI elements that we can create, read from, and write to.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span> <span class="nn">time</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="linenos">  2</span>
-<span class="linenos">  3</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="linenos">  3</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="linenos">  4</span>
-<span class="linenos">  5</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos">  5</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
 <span class="linenos">  6</span>
 <span class="linenos">  7</span>
-<span class="linenos">  8</span><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">  8</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">  9</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos"> 10</span>
 <span class="linenos"> 11</span>    <span class="c1"># Add some common GUI elements: number inputs, sliders, vectors, checkboxes.</span>
@@ -470,7 +471,7 @@
 <span class="linenos"> 75</span>            <span class="p">)</span>
 <span class="linenos"> 76</span>
 <span class="linenos"> 77</span>    <span class="nd">@gui_upload_button</span><span class="o">.</span><span class="n">on_upload</span>
-<span class="linenos"> 78</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 78</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 79</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback for when a file is uploaded.&quot;&quot;&quot;</span>
 <span class="linenos"> 80</span>        <span class="n">file</span> <span class="o">=</span> <span class="n">gui_upload_button</span><span class="o">.</span><span class="n">value</span>
 <span class="linenos"> 81</span>        <span class="nb">print</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">content</span><span class="p">),</span> <span class="s2">&quot;bytes&quot;</span><span class="p">)</span>

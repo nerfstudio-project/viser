@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>COLMAP visualizer - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -393,26 +394,26 @@
           <section id="colmap-visualizer">
 <h1>COLMAP visualizer<a class="headerlink" href="#colmap-visualizer" title="Link to this heading">¶</a></h1>
 <p>Visualize COLMAP sparse reconstruction outputs. To get demo data, see <code class="docutils literal notranslate"><span class="pre">./assets/download_colmap_garden.sh</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span> <span class="nn">random</span>
-<span class="linenos">  2</span><span class="kn">import</span> <span class="nn">time</span>
-<span class="linenos">  3</span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="linenos">  4</span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="linenos">  2</span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="linenos">  3</span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="linenos">  4</span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
 <span class="linenos">  5</span>
-<span class="linenos">  6</span><span class="kn">import</span> <span class="nn">imageio.v3</span> <span class="k">as</span> <span class="nn">iio</span>
-<span class="linenos">  7</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="linenos">  8</span><span class="kn">import</span> <span class="nn">tyro</span>
-<span class="linenos">  9</span><span class="kn">from</span> <span class="nn">tqdm.auto</span> <span class="kn">import</span> <span class="n">tqdm</span>
+<span class="linenos">  6</span><span class="kn">import</span><span class="w"> </span><span class="nn">imageio.v3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">iio</span>
+<span class="linenos">  7</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos">  8</span><span class="kn">import</span><span class="w"> </span><span class="nn">tyro</span>
+<span class="linenos">  9</span><span class="kn">from</span><span class="w"> </span><span class="nn">tqdm.auto</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 <span class="linenos"> 10</span>
-<span class="linenos"> 11</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos"> 12</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="linenos"> 13</span><span class="kn">from</span> <span class="nn">viser.extras.colmap</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="linenos"> 11</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
+<span class="linenos"> 12</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="linenos"> 13</span><span class="kn">from</span><span class="w"> </span><span class="nn">viser.extras.colmap</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
 <span class="linenos"> 14</span>    <span class="n">read_cameras_binary</span><span class="p">,</span>
 <span class="linenos"> 15</span>    <span class="n">read_images_binary</span><span class="p">,</span>
 <span class="linenos"> 16</span>    <span class="n">read_points3d_binary</span><span class="p">,</span>
 <span class="linenos"> 17</span><span class="p">)</span>
 <span class="linenos"> 18</span>
 <span class="linenos"> 19</span>
-<span class="linenos"> 20</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span>
+<span class="linenos"> 20</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
 <span class="linenos"> 21</span>    <span class="n">colmap_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/colmap_garden/sparse/0&quot;</span><span class="p">,</span>
 <span class="linenos"> 22</span>    <span class="n">images_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/colmap_garden/images_8&quot;</span><span class="p">,</span>
 <span class="linenos"> 23</span>    <span class="n">downsample_factor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
@@ -437,7 +438,7 @@
 <span class="linenos"> 42</span>    <span class="p">)</span>
 <span class="linenos"> 43</span>
 <span class="linenos"> 44</span>    <span class="nd">@gui_reset_up</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos"> 45</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 45</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 46</span>        <span class="n">client</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">client</span>
 <span class="linenos"> 47</span>        <span class="k">assert</span> <span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
 <span class="linenos"> 48</span>        <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">up_direction</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">wxyz</span><span class="p">)</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
@@ -474,7 +475,7 @@
 <span class="linenos"> 79</span>    <span class="p">)</span>
 <span class="linenos"> 80</span>    <span class="n">frames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">viser</span><span class="o">.</span><span class="n">FrameHandle</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="linenos"> 81</span>
-<span class="linenos"> 82</span>    <span class="k">def</span> <span class="nf">visualize_frames</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 82</span>    <span class="k">def</span><span class="w"> </span><span class="nf">visualize_frames</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 83</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Send all COLMAP elements to viser for visualization. This could be optimized</span>
 <span class="linenos"> 84</span><span class="sd">        a ton!&quot;&quot;&quot;</span>
 <span class="linenos"> 85</span>
@@ -488,11 +489,11 @@
 <span class="linenos"> 93</span>        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">img_ids</span><span class="p">)</span>
 <span class="linenos"> 94</span>        <span class="n">img_ids</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">img_ids</span><span class="p">[:</span> <span class="n">gui_frames</span><span class="o">.</span><span class="n">value</span><span class="p">])</span>
 <span class="linenos"> 95</span>
-<span class="linenos"> 96</span>        <span class="k">def</span> <span class="nf">attach_callback</span><span class="p">(</span>
+<span class="linenos"> 96</span>        <span class="k">def</span><span class="w"> </span><span class="nf">attach_callback</span><span class="p">(</span>
 <span class="linenos"> 97</span>            <span class="n">frustum</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">CameraFrustumHandle</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">FrameHandle</span>
 <span class="linenos"> 98</span>        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 99</span>            <span class="nd">@frustum</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">100</span>            <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">100</span>            <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">101</span>                <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="n">server</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
 <span class="linenos">102</span>                    <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">wxyz</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">wxyz</span>
 <span class="linenos">103</span>                    <span class="n">client</span><span class="o">.</span><span class="n">camera</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">position</span>
@@ -538,18 +539,18 @@
 <span class="linenos">143</span>    <span class="n">need_update</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="linenos">144</span>
 <span class="linenos">145</span>    <span class="nd">@gui_points</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">146</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">146</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">147</span>        <span class="n">point_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gui_points</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="linenos">148</span>        <span class="n">point_cloud</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">point_mask</span><span class="p">]</span>
 <span class="linenos">149</span>        <span class="n">point_cloud</span><span class="o">.</span><span class="n">colors</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">point_mask</span><span class="p">]</span>
 <span class="linenos">150</span>
 <span class="linenos">151</span>    <span class="nd">@gui_frames</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">152</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">152</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">153</span>        <span class="k">nonlocal</span> <span class="n">need_update</span>
 <span class="linenos">154</span>        <span class="n">need_update</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="linenos">155</span>
 <span class="linenos">156</span>    <span class="nd">@gui_point_size</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">157</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">157</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">158</span>        <span class="n">point_cloud</span><span class="o">.</span><span class="n">point_size</span> <span class="o">=</span> <span class="n">gui_point_size</span><span class="o">.</span><span class="n">value</span>
 <span class="linenos">159</span>
 <span class="linenos">160</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>

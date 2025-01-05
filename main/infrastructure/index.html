@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Communication - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -404,6 +405,45 @@
 <p>These are what <code class="docutils literal notranslate"><span class="pre">viser</span></code> runs on under-the-hood, and generally won’t be useful unless
 you’re building a web-based application from scratch.</p>
 <dl class="py class">
+<dt class="sig sig-object py" id="viser.infra.StateSerializer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">StateSerializer</span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#StateSerializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.StateSerializer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Handle for serializing messages. In Viser, this is used to save the
+scene state so it can be shared/embedded in static webpages.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.StateSerializer.insert_sleep">
+<span class="sig-name descname"><span class="pre">insert_sleep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#StateSerializer.insert_sleep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.StateSerializer.insert_sleep" title="Link to this definition">¶</a></dt>
+<dd><p>Insert a sleep into the recorded file. This can be useful for
+dynamic 3D data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>duration</strong> (<em>float</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.infra.StateSerializer.serialize">
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#StateSerializer.serialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.StateSerializer.serialize" title="Link to this definition">¶</a></dt>
+<dd><p>Serialize saved messages. Should only be called once. Our convention
+is to write this binary format to a file with a <code class="docutils literal notranslate"><span class="pre">.viser</span></code> extension,
+for example via <code class="docutils literal notranslate"><span class="pre">pathlib.Path(&quot;file.viser&quot;).write_bytes(...)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The recording as bytes.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="viser.infra.WebsockClientConnection">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.infra.</span></span><span class="sig-name descname"><span class="pre">WebsockClientConnection</span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockClientConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockClientConnection" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#viser.infra.WebsockMessageHandler" title="viser.infra._infra.WebsockMessageHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">WebsockMessageHandler</span></code></a></p>
@@ -440,7 +480,7 @@ happen synchronously.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.WebsockClientConnection.get_message_serializer">
-<span class="sig-name descname"><span class="pre">get_message_serializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">StateSerializer</span></span></span><a class="headerlink" href="#viser.infra.WebsockClientConnection.get_message_serializer" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_message_serializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../state_serializer/#viser.infra.StateSerializer" title="viser.infra._infra.StateSerializer"><span class="pre">StateSerializer</span></a></span></span><a class="headerlink" href="#viser.infra.WebsockClientConnection.get_message_serializer" title="Link to this definition">¶</a></dt>
 <dd><p>Start recording messages that are sent. Sent messages will be
 serialized and can be used for playback.</p>
 <dl class="field-list simple">
@@ -448,7 +488,7 @@ serialized and can be used for playback.</p>
 <dd class="field-odd"><p><strong>filter</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><em>Message</em></a><em>]</em><em>, </em><em>bool</em><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>StateSerializer</em></p>
+<dd class="field-even"><p><a class="reference internal" href="../state_serializer/#viser.infra.StateSerializer" title="viser.infra._infra.StateSerializer"><em>StateSerializer</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -507,7 +547,7 @@ serialized and can be used for playback.</p>
 <p>Mix-in for adding message handling to a class.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.WebsockMessageHandler.get_message_serializer">
-<span class="sig-name descname"><span class="pre">get_message_serializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">StateSerializer</span></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockMessageHandler.get_message_serializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockMessageHandler.get_message_serializer" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_message_serializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../state_serializer/#viser.infra.StateSerializer" title="viser.infra._infra.StateSerializer"><span class="pre">StateSerializer</span></a></span></span><a class="reference internal" href="../_modules/viser/infra/_infra/#WebsockMessageHandler.get_message_serializer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.infra.WebsockMessageHandler.get_message_serializer" title="Link to this definition">¶</a></dt>
 <dd><p>Start recording messages that are sent. Sent messages will be
 serialized and can be used for playback.</p>
 <dl class="field-list simple">
@@ -515,7 +555,7 @@ serialized and can be used for playback.</p>
 <dd class="field-odd"><p><strong>filter</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><em>Message</em></a><em>]</em><em>, </em><em>bool</em><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>StateSerializer</em></p>
+<dd class="field-even"><p><a class="reference internal" href="../state_serializer/#viser.infra.StateSerializer" title="viser.infra._infra.StateSerializer"><em>StateSerializer</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -727,7 +767,7 @@ happen synchronously.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="viser.infra.WebsockServer.get_message_serializer">
-<span class="sig-name descname"><span class="pre">get_message_serializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">StateSerializer</span></span></span><a class="headerlink" href="#viser.infra.WebsockServer.get_message_serializer" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_message_serializer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../state_serializer/#viser.infra.StateSerializer" title="viser.infra._infra.StateSerializer"><span class="pre">StateSerializer</span></a></span></span><a class="headerlink" href="#viser.infra.WebsockServer.get_message_serializer" title="Link to this definition">¶</a></dt>
 <dd><p>Start recording messages that are sent. Sent messages will be
 serialized and can be used for playback.</p>
 <dl class="field-list simple">
@@ -735,7 +775,7 @@ serialized and can be used for playback.</p>
 <dd class="field-odd"><p><strong>filter</strong> (<em>Callable</em><em>[</em><em>[</em><a class="reference internal" href="#viser.infra.Message" title="viser.infra._messages.Message"><em>Message</em></a><em>]</em><em>, </em><em>bool</em><em>]</em>)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>StateSerializer</em></p>
+<dd class="field-even"><p><a class="reference internal" href="../state_serializer/#viser.infra.StateSerializer" title="viser.infra._infra.StateSerializer"><em>StateSerializer</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -943,6 +983,11 @@ TypeScript annotation corresponding to a dataclass field.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Communication</a><ul>
+<li><a class="reference internal" href="#viser.infra.StateSerializer"><code class="docutils literal notranslate"><span class="pre">StateSerializer</span></code></a><ul>
+<li><a class="reference internal" href="#viser.infra.StateSerializer.insert_sleep"><code class="docutils literal notranslate"><span class="pre">StateSerializer.insert_sleep()</span></code></a></li>
+<li><a class="reference internal" href="#viser.infra.StateSerializer.serialize"><code class="docutils literal notranslate"><span class="pre">StateSerializer.serialize()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#viser.infra.WebsockClientConnection"><code class="docutils literal notranslate"><span class="pre">WebsockClientConnection</span></code></a><ul>
 <li><a class="reference internal" href="#viser.infra.WebsockClientConnection.get_message_buffer"><code class="docutils literal notranslate"><span class="pre">WebsockClientConnection.get_message_buffer()</span></code></a></li>
 <li><a class="reference internal" href="#viser.infra.WebsockClientConnection.atomic"><code class="docutils literal notranslate"><span class="pre">WebsockClientConnection.atomic()</span></code></a></li>

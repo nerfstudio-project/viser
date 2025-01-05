@@ -15,7 +15,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>viser._gui_api - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
@@ -303,6 +303,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -384,19 +385,19 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for viser._gui_api</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">import</span> <span class="nn">builtins</span>
-<span class="kn">import</span> <span class="nn">colorsys</span>
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">asyncio</span> <span class="kn">import</span> <span class="n">AbstractEventLoop</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">builtins</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">colorsys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">AbstractEventLoop</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">TYPE_CHECKING</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Protocol</span><span class="p">,</span>
@@ -407,8 +408,8 @@
     <span class="n">overload</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Literal</span><span class="p">,</span>
     <span class="n">LiteralString</span><span class="p">,</span>
     <span class="n">TypeAlias</span><span class="p">,</span>
@@ -416,10 +417,10 @@
     <span class="n">get_type_hints</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">from</span> <span class="nn">viser</span> <span class="kn">import</span> <span class="n">theme</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">theme</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_messages</span>
-<span class="kn">from</span> <span class="nn">._gui_handles</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._gui_handles</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">GuiButtonGroupHandle</span><span class="p">,</span>
     <span class="n">GuiButtonHandle</span><span class="p">,</span>
     <span class="n">GuiCheckboxHandle</span><span class="p">,</span>
@@ -448,16 +449,16 @@
     <span class="n">_GuiInputHandle</span><span class="p">,</span>
     <span class="n">_make_uuid</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">._icons</span> <span class="kn">import</span> <span class="n">svg_from_icon</span>
-<span class="kn">from</span> <span class="nn">._icons_enum</span> <span class="kn">import</span> <span class="n">IconName</span>
-<span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="n">FileTransferPartAck</span><span class="p">,</span> <span class="n">GuiBaseProps</span><span class="p">,</span> <span class="n">GuiSliderMark</span>
-<span class="kn">from</span> <span class="nn">._scene_api</span> <span class="kn">import</span> <span class="n">cast_vector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._icons</span><span class="w"> </span><span class="kn">import</span> <span class="n">svg_from_icon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._icons_enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">IconName</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileTransferPartAck</span><span class="p">,</span> <span class="n">GuiBaseProps</span><span class="p">,</span> <span class="n">GuiSliderMark</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._scene_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast_vector</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">plotly.graph_objects</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">go</span>
 
-    <span class="kn">from</span> <span class="nn">._viser</span> <span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
-    <span class="kn">from</span> <span class="nn">.infra</span> <span class="kn">import</span> <span class="n">ClientId</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.infra</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientId</span>
 
 <span class="n">GuiInputPropsType</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;GuiInputPropsType&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">GuiBaseProps</span><span class="p">)</span>
 <span class="n">IntOrFloat</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;IntOrFloat&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
@@ -483,7 +484,7 @@
 <span class="p">]</span>
 
 
-<span class="k">def</span> <span class="nf">_hex_from_hls</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_hex_from_hls</span><span class="p">(</span><span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts HLS values in [0.0, 1.0] to a hex-formatted string, eg 0xffffff.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="s2">&quot;#&quot;</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="p">[</span>
@@ -493,7 +494,7 @@
     <span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_compute_step</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_step</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For number inputs: compute an increment size from some number.</span>
 
 <span class="sd">    Example inputs/outputs:</span>
@@ -506,7 +507,7 @@
     <span class="k">return</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">_compute_precision_digits</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
 
-<span class="k">def</span> <span class="nf">_compute_precision_digits</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_compute_precision_digits</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For number inputs: compute digits of precision from some number.</span>
 
 <span class="sd">    Example inputs/outputs:</span>
@@ -523,14 +524,14 @@
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">_RootGuiContainer</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_RootGuiContainer</span><span class="p">:</span>
     <span class="n">_children</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SupportsRemoveProtocol</span><span class="p">]</span>
 
 
 <span class="n">_global_order_counter</span> <span class="o">=</span> <span class="mi">0</span>
 
 
-<span class="k">def</span> <span class="nf">_apply_default_order</span><span class="p">(</span><span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_apply_default_order</span><span class="p">(</span><span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply default ordering logic for GUI elements.</span>
 
 <span class="sd">    If `order` is set to a float, this function is a no-op and returns it back.</span>
@@ -545,11 +546,11 @@
 
 
 <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">get_type_hints_cached</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_type_hints_cached</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
     <span class="k">return</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
 
 
-<span class="k">class</span> <span class="nc">_FileUploadState</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_FileUploadState</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">part_count</span><span class="p">:</span> <span class="nb">int</span>
@@ -561,7 +562,7 @@
 
 <div class="viewcode-block" id="GuiApi">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiApi</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiApi</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for working with the 2D GUI in viser.</span>
 
 <span class="sd">    Used by both our global server object, for sharing the same GUI elements</span>
@@ -570,13 +571,13 @@
     <span class="n">_target_container_from_thread_id</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;ID of container to put GUI elements into.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">owner</span><span class="p">:</span> <span class="n">ViserServer</span> <span class="o">|</span> <span class="n">ClientHandle</span><span class="p">,</span>  <span class="c1"># Who do I belong to?</span>
         <span class="n">thread_executor</span><span class="p">:</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span>
         <span class="n">event_loop</span><span class="p">:</span> <span class="n">AbstractEventLoop</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">._viser</span> <span class="kn">import</span> <span class="n">ViserServer</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ViserServer</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="n">owner</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Entity that owns this API.&quot;&quot;&quot;</span>
@@ -611,7 +612,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_handle_file_transfer_part</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_handle_gui_updates</span><span class="p">(</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_gui_updates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GuiUpdateMessage</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback for handling GUI messages.&quot;&quot;&quot;</span>
@@ -655,7 +656,7 @@
         <span class="c1"># GUI element has been updated!</span>
         <span class="n">handle_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="n">handle_state</span><span class="o">.</span><span class="n">update_cb</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">._viser</span> <span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
 
             <span class="c1"># Get the handle of the client that triggered this event.</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">):</span>
@@ -675,7 +676,7 @@
         <span class="k">if</span> <span class="n">handle_state</span><span class="o">.</span><span class="n">sync_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">handle_state</span><span class="o">.</span><span class="n">sync_cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">updates_cast</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_handle_file_transfer_start</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_file_transfer_start</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferStart</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">source_component_uuid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_input_handle_from_uuid</span><span class="p">:</span>
@@ -690,7 +691,7 @@
             <span class="s2">&quot;lock&quot;</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">(),</span>
         <span class="p">}</span>
 
-    <span class="k">def</span> <span class="nf">_handle_file_transfer_part</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_handle_file_transfer_part</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferPart</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">transfer_uuid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_file_upload_states</span><span class="p">:</span>
@@ -740,7 +741,7 @@
 
         <span class="c1"># Trigger callbacks.</span>
         <span class="k">for</span> <span class="n">cb</span> <span class="ow">in</span> <span class="n">handle_state</span><span class="o">.</span><span class="n">update_cb</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">._viser</span> <span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
 
             <span class="c1"># Get the handle of the client that triggered this event.</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">):</span>
@@ -757,17 +758,17 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">GuiEvent</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">handle</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_get_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get container ID associated with the current thread.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_container_from_thread_id</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">(),</span> <span class="s2">&quot;root&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_set_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">container_uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">container_uuid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set container ID associated with the current thread.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_target_container_from_thread_id</span><span class="p">[</span><span class="n">threading</span><span class="o">.</span><span class="n">get_ident</span><span class="p">()]</span> <span class="o">=</span> <span class="n">container_uuid</span>
 
 <div class="viewcode-block" id="GuiApi.reset">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.reset">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the GUI.&quot;&quot;&quot;</span>
         <span class="n">root_container</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container_handle_from_uuid</span><span class="p">[</span><span class="s2">&quot;root&quot;</span><span class="p">]</span>
         <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">root_container</span><span class="o">.</span><span class="n">_children</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -778,7 +779,7 @@
 
 <div class="viewcode-block" id="GuiApi.set_panel_label">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.set_panel_label">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_panel_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_panel_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the main label that appears in the GUI panel.</span>
 
 <span class="sd">        Args:</span>
@@ -789,7 +790,7 @@
 
 <div class="viewcode-block" id="GuiApi.configure_theme">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.configure_theme">[docs]</a>
-    <span class="k">def</span> <span class="nf">configure_theme</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure_theme</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">titlebar_content</span><span class="p">:</span> <span class="n">theme</span><span class="o">.</span><span class="n">TitlebarConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -867,7 +868,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_folder">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_folder">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_folder</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_folder</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -914,7 +915,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_modal">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_modal">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_modal</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_modal</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -946,7 +947,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_tab_group">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_tab_group">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_tab_group</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_tab_group</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">order</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -988,7 +989,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_markdown">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_markdown">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_markdown</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_markdown</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">image_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1037,7 +1038,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_image">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_image">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_image</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_image</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1076,7 +1077,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_plotly">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_plotly">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_plotly</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_plotly</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">figure</span><span class="p">:</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">,</span>
         <span class="n">aspect</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
@@ -1101,7 +1102,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_plotly_js</span><span class="p">:</span>
             <span class="c1"># Check if plotly is installed.</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="kn">import</span> <span class="nn">plotly</span>
+                <span class="kn">import</span><span class="w"> </span><span class="nn">plotly</span>
             <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
                     <span class="s2">&quot;You must have the `plotly` package installed to use the Plotly GUI element.&quot;</span>
@@ -1157,7 +1158,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_button">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_button">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_button</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_button</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -1210,7 +1211,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_upload_button">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_upload_button">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_upload_button</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_upload_button</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -1265,7 +1266,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_button_group">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_button_group">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_button_group</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_button_group</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
@@ -1313,7 +1314,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_checkbox">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_checkbox">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_checkbox</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_checkbox</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
@@ -1360,7 +1361,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_text">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_text">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_text</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_text</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1407,7 +1408,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_number">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_number">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_number</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_number</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="n">IntOrFloat</span><span class="p">,</span>
@@ -1483,7 +1484,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_vector2">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_vector2">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_vector2</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_vector2</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1552,7 +1553,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_vector3">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_vector3">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_vector3</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_vector3</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1621,7 +1622,7 @@
 
     <span class="c1"># See add_dropdown for notes on overloads.</span>
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="nf">add_dropdown</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_dropdown</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TLiteralString</span><span class="p">],</span>
@@ -1633,7 +1634,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiDropdownHandle</span><span class="p">[</span><span class="n">TLiteralString</span><span class="p">]:</span> <span class="o">...</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="nf">add_dropdown</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_dropdown</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TString</span><span class="p">],</span>
@@ -1646,7 +1647,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_dropdown">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_dropdown">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_dropdown</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_dropdown</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">options</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TLiteralString</span><span class="p">]</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TString</span><span class="p">],</span>
@@ -1697,7 +1698,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_progress_bar">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_progress_bar">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_progress_bar</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_progress_bar</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1744,7 +1745,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_slider">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_slider">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_slider</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_slider</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="nb">min</span><span class="p">:</span> <span class="n">IntOrFloat</span><span class="p">,</span>
@@ -1831,7 +1832,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_multi_slider">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_multi_slider">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_multi_slider</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_multi_slider</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="nb">min</span><span class="p">:</span> <span class="n">IntOrFloat</span><span class="p">,</span>
@@ -1921,7 +1922,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_rgb">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_rgb">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_rgb</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_rgb</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
@@ -1968,7 +1969,7 @@
 
 <div class="viewcode-block" id="GuiApi.add_rgba">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.add_rgba">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_rgba</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_rgba</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">initial_value</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
@@ -2014,12 +2015,12 @@
 
 <div class="viewcode-block" id="GuiApi.GuiMessage">
 <a class="viewcode-back" href="../../../gui_api/#viser.GuiApi.GuiMessage">[docs]</a>
-    <span class="k">class</span> <span class="nc">GuiMessage</span><span class="p">(</span><span class="n">Protocol</span><span class="p">[</span><span class="n">GuiInputPropsType</span><span class="p">]):</span>
+    <span class="k">class</span><span class="w"> </span><span class="nc">GuiMessage</span><span class="p">(</span><span class="n">Protocol</span><span class="p">[</span><span class="n">GuiInputPropsType</span><span class="p">]):</span>
         <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span>
         <span class="n">props</span><span class="p">:</span> <span class="n">GuiInputPropsType</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_create_gui_input</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_gui_input</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
         <span class="n">message</span><span class="p">:</span> <span class="n">GuiMessage</span><span class="p">,</span>
@@ -2048,7 +2049,7 @@
         <span class="c1"># This will be a no-op for client handles.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">is_button</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">sync_other_clients</span><span class="p">(</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">sync_other_clients</span><span class="p">(</span>
                 <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">updates</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
             <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">message</span> <span class="o">=</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GuiUpdateMessage</span><span class="p">(</span><span class="n">handle_state</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">updates</span><span class="p">)</span>

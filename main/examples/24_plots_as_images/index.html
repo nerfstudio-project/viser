@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Plots as Images - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -394,18 +395,18 @@
 <h1>Plots as Images<a class="headerlink" href="#plots-as-images" title="Link to this heading">¶</a></h1>
 <p>Examples of sending plots as images to Viser’s GUI panel. This can be faster
 than using Plotly.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span> <span class="nn">colorsys</span>
-<span class="linenos">  2</span><span class="kn">import</span> <span class="nn">time</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span><span class="w"> </span><span class="nn">colorsys</span>
+<span class="linenos">  2</span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="linenos">  3</span>
-<span class="linenos">  4</span><span class="kn">import</span> <span class="nn">cv2</span>
-<span class="linenos">  5</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="linenos">  6</span><span class="kn">import</span> <span class="nn">tyro</span>
+<span class="linenos">  4</span><span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="linenos">  5</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos">  6</span><span class="kn">import</span><span class="w"> </span><span class="nn">tyro</span>
 <span class="linenos">  7</span>
-<span class="linenos">  8</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos">  9</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">vtf</span>
+<span class="linenos">  8</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
+<span class="linenos">  9</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vtf</span>
 <span class="linenos"> 10</span>
 <span class="linenos"> 11</span>
-<span class="linenos"> 12</span><span class="k">def</span> <span class="nf">get_line_plot</span><span class="p">(</span>
+<span class="linenos"> 12</span><span class="k">def</span><span class="w"> </span><span class="nf">get_line_plot</span><span class="p">(</span>
 <span class="linenos"> 13</span>    <span class="n">xs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <span class="linenos"> 14</span>    <span class="n">ys</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
 <span class="linenos"> 15</span>    <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -474,7 +475,7 @@ than using Plotly.</p>
 <span class="linenos"> 78</span>    <span class="n">plot_area</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">plot_area_color</span>
 <span class="linenos"> 79</span>    <span class="n">img</span><span class="p">[</span><span class="n">top_pad</span> <span class="p">:</span> <span class="n">top_pad</span> <span class="o">+</span> <span class="n">plot_height</span><span class="p">,</span> <span class="n">left_pad</span> <span class="p">:</span> <span class="n">left_pad</span> <span class="o">+</span> <span class="n">plot_width</span><span class="p">]</span> <span class="o">=</span> <span class="n">plot_area</span>
 <span class="linenos"> 80</span>
-<span class="linenos"> 81</span>    <span class="k">def</span> <span class="nf">scale_to_pixels</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">pixels</span><span class="p">):</span>
+<span class="linenos"> 81</span>    <span class="k">def</span><span class="w"> </span><span class="nf">scale_to_pixels</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">pixels</span><span class="p">):</span>
 <span class="linenos"> 82</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Scale values from bounds range to pixel coordinates.&quot;&quot;&quot;</span>
 <span class="linenos"> 83</span>        <span class="n">min_val</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">=</span> <span class="n">bounds</span>
 <span class="linenos"> 84</span>        <span class="n">normalized</span> <span class="o">=</span> <span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">max_val</span> <span class="o">-</span> <span class="n">min_val</span><span class="p">)</span>
@@ -571,7 +572,7 @@ than using Plotly.</p>
 <span class="linenos">175</span>    <span class="k">return</span> <span class="n">img</span>
 <span class="linenos">176</span>
 <span class="linenos">177</span>
-<span class="linenos">178</span><span class="k">def</span> <span class="nf">create_sine_plot</span><span class="p">(</span><span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">counter</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="linenos">178</span><span class="k">def</span><span class="w"> </span><span class="nf">create_sine_plot</span><span class="p">(</span><span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">counter</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="linenos">179</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a sine wave plot with the given counter offset.&quot;&quot;&quot;</span>
 <span class="linenos">180</span>    <span class="n">xs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
 <span class="linenos">181</span>    <span class="n">rgb</span> <span class="o">=</span> <span class="n">colorsys</span><span class="o">.</span><span class="n">hsv_to_rgb</span><span class="p">(</span><span class="n">counter</span> <span class="o">/</span> <span class="mi">4000</span> <span class="o">%</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -585,7 +586,7 @@ than using Plotly.</p>
 <span class="linenos">189</span>    <span class="p">)</span>
 <span class="linenos">190</span>
 <span class="linenos">191</span>
-<span class="linenos">192</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">num_plots</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">192</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">num_plots</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">193</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos">194</span>
 <span class="linenos">195</span>    <span class="c1"># Create GUI elements for display runtimes.</span>

@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Set up direction - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -393,12 +394,12 @@
           <section id="set-up-direction">
 <h1>Set up direction<a class="headerlink" href="#set-up-direction" title="Link to this heading">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">.set_up_direction()</span></code> can help us set the global up direction.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span> <span class="nn">time</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 3</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span>
-<span class="linenos"> 6</span><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 6</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 7</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos"> 8</span>    <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">world_axes</span><span class="o">.</span><span class="n">visible</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="linenos"> 9</span>    <span class="n">gui_up</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_vector3</span><span class="p">(</span>
@@ -408,7 +409,7 @@
 <span class="linenos">13</span>    <span class="p">)</span>
 <span class="linenos">14</span>
 <span class="linenos">15</span>    <span class="nd">@gui_up</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos">16</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">16</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">17</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">set_up_direction</span><span class="p">(</span><span class="n">gui_up</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 <span class="linenos">18</span>
 <span class="linenos">19</span>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>

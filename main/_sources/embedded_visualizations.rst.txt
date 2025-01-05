@@ -14,13 +14,14 @@ Step 1: Exporting Scene State
 ----------------------------
 
 You can export static or dynamic 3D data from a Viser scene using the scene
-serializer. :func:`ViserServer.get_scene_serializer` returns a serializer
+serializer. :meth:`ViserServer.get_scene_serializer` returns a serializer
 object that can serialize the current scene state to a binary format.
 
 Static Scene Export
 ~~~~~~~~~~~~~~~~~~~
 
-For static 3D visualizations, use the following code to save the scene state:
+For static 3D visualizations, :meth:`StateSerializer.serialize` can be used to
+save the scene state:
 
 .. code-block:: python
 
@@ -40,7 +41,9 @@ For static 3D visualizations, use the following code to save the scene state:
    Path("recording.viser").write_bytes(data)
 
 
-As a suggestion, you can also add a button for exporting the scene state:
+As a suggestion, you can also add a button for exporting the scene state.
+Clicking the button in your web browser wil trigger a download of the
+``.viser`` file.
 
 .. code-block:: python
 
@@ -65,7 +68,8 @@ As a suggestion, you can also add a button for exporting the scene state:
 Dynamic Scene Export
 ~~~~~~~~~~~~~~~~~~~~
 
-For dynamic visualizations with animation, you can create a "3D video" by inserting sleep commands between frames:
+For dynamic visualizations with animation, you can create a "3D video" by
+calling :meth:`StateSerializer.insert_sleep` between frames:
 
 .. code-block:: python
 

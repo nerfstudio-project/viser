@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Lights - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -393,17 +394,17 @@
           <section id="lights">
 <h1>Lights<a class="headerlink" href="#lights" title="Link to this heading">¶</a></h1>
 <p>Visualize a mesh under different lighting conditions. To get the demo data, see <code class="docutils literal notranslate"><span class="pre">./assets/download_dragon_mesh.sh</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span> <span class="nn">time</span>
-<span class="linenos">  2</span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="linenos">  2</span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="linenos">  3</span>
-<span class="linenos">  4</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="linenos">  5</span><span class="kn">import</span> <span class="nn">trimesh</span>
+<span class="linenos">  4</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos">  5</span><span class="kn">import</span><span class="w"> </span><span class="nn">trimesh</span>
 <span class="linenos">  6</span>
-<span class="linenos">  7</span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="linenos">  8</span><span class="kn">import</span> <span class="nn">viser.transforms</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="linenos">  7</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
+<span class="linenos">  8</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser.transforms</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="linenos">  9</span>
 <span class="linenos"> 10</span>
-<span class="linenos"> 11</span><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 11</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 12</span>    <span class="c1"># Load mesh.</span>
 <span class="linenos"> 13</span>    <span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">load_mesh</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;assets/dragon.obj&quot;</span><span class="p">))</span>
 <span class="linenos"> 14</span>    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">)</span>
@@ -465,11 +466,11 @@
 <span class="linenos"> 70</span>        <span class="p">)</span>
 <span class="linenos"> 71</span>
 <span class="linenos"> 72</span>        <span class="nd">@gui_directional_color</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos"> 73</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 73</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 74</span>            <span class="n">directional_light</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">gui_directional_color</span><span class="o">.</span><span class="n">value</span>
 <span class="linenos"> 75</span>
 <span class="linenos"> 76</span>        <span class="nd">@gui_directional_intensity</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos"> 77</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 77</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 78</span>            <span class="n">directional_light</span><span class="o">.</span><span class="n">intensity</span> <span class="o">=</span> <span class="n">gui_directional_intensity</span><span class="o">.</span><span class="n">value</span>
 <span class="linenos"> 79</span>
 <span class="linenos"> 80</span>    <span class="k">with</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_folder</span><span class="p">(</span><span class="s2">&quot;Point light&quot;</span><span class="p">):</span>
@@ -483,11 +484,11 @@
 <span class="linenos"> 88</span>        <span class="p">)</span>
 <span class="linenos"> 89</span>
 <span class="linenos"> 90</span>        <span class="nd">@gui_point_color</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos"> 91</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 91</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 92</span>            <span class="n">point_light</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">gui_point_color</span><span class="o">.</span><span class="n">value</span>
 <span class="linenos"> 93</span>
 <span class="linenos"> 94</span>        <span class="nd">@gui_point_intensity</span><span class="o">.</span><span class="n">on_update</span>
-<span class="linenos"> 95</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 95</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 96</span>            <span class="n">point_light</span><span class="o">.</span><span class="n">intensity</span> <span class="o">=</span> <span class="n">gui_point_intensity</span><span class="o">.</span><span class="n">value</span>
 <span class="linenos"> 97</span>
 <span class="linenos"> 98</span>    <span class="c1"># Create GUI elements for controlling environment map.</span>
@@ -532,7 +533,7 @@
 <span class="linenos">137</span>            <span class="n">initial_value</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
 <span class="linenos">138</span>        <span class="p">)</span>
 <span class="linenos">139</span>
-<span class="linenos">140</span>    <span class="k">def</span> <span class="nf">update_environment_map</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">140</span>    <span class="k">def</span><span class="w"> </span><span class="nf">update_environment_map</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">141</span>        <span class="n">server</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">set_environment_map</span><span class="p">(</span>
 <span class="linenos">142</span>            <span class="n">gui_env_preset</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="n">gui_env_preset</span><span class="o">.</span><span class="n">value</span> <span class="o">!=</span> <span class="s2">&quot;None&quot;</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
 <span class="linenos">143</span>            <span class="n">background</span><span class="o">=</span><span class="n">gui_background</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>

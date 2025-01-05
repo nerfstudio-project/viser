@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Embedding Visualizations - viser</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -402,13 +403,14 @@ improvements, issues and PRs are welcome.</p>
 <section id="step-1-exporting-scene-state">
 <h2>Step 1: Exporting Scene State<a class="headerlink" href="#step-1-exporting-scene-state" title="Link to this heading">¶</a></h2>
 <p>You can export static or dynamic 3D data from a Viser scene using the scene
-serializer. <code class="xref py py-func docutils literal notranslate"><span class="pre">ViserServer.get_scene_serializer()</span></code> returns a serializer
+serializer. <code class="xref py py-meth docutils literal notranslate"><span class="pre">ViserServer.get_scene_serializer()</span></code> returns a serializer
 object that can serialize the current scene state to a binary format.</p>
 <section id="static-scene-export">
 <h3>Static Scene Export<a class="headerlink" href="#static-scene-export" title="Link to this heading">¶</a></h3>
-<p>For static 3D visualizations, use the following code to save the scene state:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<p>For static 3D visualizations, <code class="xref py py-meth docutils literal notranslate"><span class="pre">StateSerializer.serialize()</span></code> can be used to
+save the scene state:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 
@@ -423,8 +425,10 @@ object that can serialize the current scene state to a binary format.</p>
 <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;recording.viser&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>As a suggestion, you can also add a button for exporting the scene state:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">viser</span>
+<p>As a suggestion, you can also add a button for exporting the scene state.
+Clicking the button in your web browser wil trigger a download of the
+<code class="docutils literal notranslate"><span class="pre">.viser</span></code> file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
 <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 
 <span class="c1"># Add objects to the scene via server.scene.</span>
@@ -436,7 +440,7 @@ object that can serialize the current scene state to a binary format.</p>
 <span class="n">save_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Save Scene&quot;</span><span class="p">)</span>
 
 <span class="nd">@save_button</span><span class="o">.</span><span class="n">on_click</span>
-<span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">assert</span> <span class="n">event</span><span class="o">.</span><span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="n">event</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_file_download</span><span class="p">(</span><span class="s2">&quot;recording.viser&quot;</span><span class="p">,</span> <span class="n">server</span><span class="o">.</span><span class="n">get_scene_serializer</span><span class="p">()</span><span class="o">.</span><span class="n">serialize</span><span class="p">())</span>
 
@@ -446,10 +450,11 @@ object that can serialize the current scene state to a binary format.</p>
 </section>
 <section id="dynamic-scene-export">
 <h3>Dynamic Scene Export<a class="headerlink" href="#dynamic-scene-export" title="Link to this heading">¶</a></h3>
-<p>For dynamic visualizations with animation, you can create a “3D video” by inserting sleep commands between frames:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">viser</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<p>For dynamic visualizations with animation, you can create a “3D video” by
+calling <code class="xref py py-meth docutils literal notranslate"><span class="pre">StateSerializer.insert_sleep()</span></code> between frames:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 

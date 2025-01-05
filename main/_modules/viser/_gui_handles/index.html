@@ -15,7 +15,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>viser._gui_handles - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
@@ -303,6 +303,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -384,18 +385,18 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for viser._gui_handles</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">base64</span>
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">uuid</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Coroutine</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coroutine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">TYPE_CHECKING</span><span class="p">,</span>
     <span class="n">Any</span><span class="p">,</span>
     <span class="n">Callable</span><span class="p">,</span>
@@ -409,14 +410,14 @@
     <span class="n">get_type_hints</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="kn">import</span> <span class="nn">imageio.v3</span> <span class="k">as</span> <span class="nn">iio</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Protocol</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">imageio.v3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">iio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_messages</span>
-<span class="kn">from</span> <span class="nn">._icons</span> <span class="kn">import</span> <span class="n">svg_from_icon</span>
-<span class="kn">from</span> <span class="nn">._icons_enum</span> <span class="kn">import</span> <span class="n">IconName</span>
-<span class="kn">from</span> <span class="nn">._messages</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._icons</span><span class="w"> </span><span class="kn">import</span> <span class="n">svg_from_icon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._icons_enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">IconName</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._messages</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">GuiBaseProps</span><span class="p">,</span>
     <span class="n">GuiButtonGroupProps</span><span class="p">,</span>
     <span class="n">GuiCheckboxProps</span><span class="p">,</span>
@@ -439,14 +440,14 @@
     <span class="n">GuiVector2Props</span><span class="p">,</span>
     <span class="n">GuiVector3Props</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">._scene_api</span> <span class="kn">import</span> <span class="n">_encode_image_binary</span>
-<span class="kn">from</span> <span class="nn">.infra</span> <span class="kn">import</span> <span class="n">ClientId</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._scene_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">_encode_image_binary</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.infra</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientId</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">plotly.graph_objects</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">go</span>
 
-    <span class="kn">from</span> <span class="nn">._gui_api</span> <span class="kn">import</span> <span class="n">GuiApi</span>
-    <span class="kn">from</span> <span class="nn">._viser</span> <span class="kn">import</span> <span class="n">ClientHandle</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">._gui_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">GuiApi</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientHandle</span>
 
 
 <span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
@@ -454,27 +455,27 @@
 <span class="n">NoneOrCoroutine</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;NoneOrCoroutine&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_make_uuid</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_uuid</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a unique ID for referencing GUI elements.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
 
 
-<span class="k">class</span> <span class="nc">GuiContainerProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiContainerProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
     <span class="n">_children</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SupportsRemoveProtocol</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span>
     <span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">SupportsRemoveProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SupportsRemoveProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
 
 
-<span class="k">class</span> <span class="nc">GuiPropsProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiPropsProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
     <span class="n">order</span><span class="p">:</span> <span class="nb">float</span>
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">_GuiHandleState</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_GuiHandleState</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal API for GUI elements.&quot;&quot;&quot;</span>
 
     <span class="n">uuid</span><span class="p">:</span> <span class="nb">str</span>
@@ -499,10 +500,10 @@
     <span class="n">removed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
 
-<span class="k">class</span> <span class="nc">_OverridableGuiPropApi</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_OverridableGuiPropApi</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mixin that allows reading/assigning properties defined in each scene node message.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;_impl&quot;</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
@@ -526,7 +527,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prop_hints</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -535,16 +536,16 @@
             <span class="p">)</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">_prop_hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prop_hints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="k">return</span> <span class="n">get_type_hints</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="p">))</span>
 
 
-<span class="k">class</span> <span class="nc">_GuiHandle</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_GuiHandle</span><span class="p">(</span>
     <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
     <span class="n">_OverridableGuiPropApi</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="c1"># Let&#39;s shove private implementation details in here...</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span> <span class="o">=</span> <span class="n">_impl</span>
         <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_container_handle_from_uuid</span><span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">parent_container_id</span>
@@ -554,7 +555,7 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_GuiInputHandle</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_gui_input_handle_from_uuid</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">uuid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this GUI element from the visualizer.&quot;&quot;&quot;</span>
 
         <span class="c1"># Warn if already removed.</span>
@@ -581,13 +582,13 @@
             <span class="n">gui_api</span><span class="o">.</span><span class="n">_gui_input_handle_from_uuid</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">_GuiInputHandle</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_GuiInputHandle</span><span class="p">(</span>
     <span class="n">_GuiHandle</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
     <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">],</span>
     <span class="n">GuiBaseProps</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Value of the GUI input. Synchronized automatically when assigned.</span>
 
 <span class="sd">        :meta private:</span>
@@ -598,7 +599,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">value</span>
 
     <span class="nd">@value</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> should be at most 1D!&quot;</span>
             <span class="n">value</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
@@ -625,7 +626,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_event_loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">cb_out</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">update_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read-only timestamp when this input was last updated.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">update_timestamp</span>
 
@@ -639,7 +640,7 @@
 <span class="c1"># are slightly different: we have `on_click()` instead of `on_update()`.</span>
 <div class="viewcode-block" id="GuiInputHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiInputHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiInputHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiInputHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A handle is created for each GUI element that is added in `viser`.</span>
 <span class="sd">    Handles can be used to read and write state.</span>
 
@@ -650,7 +651,7 @@
 
 <div class="viewcode-block" id="GuiInputHandle.on_update">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiInputHandle.on_update">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">:</span> <span class="n">TGuiHandle</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="n">NoneOrCoroutine</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="n">NoneOrCoroutine</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a function to call when a GUI input is updated.</span>
@@ -667,7 +668,7 @@
 
 <div class="viewcode-block" id="GuiInputHandle.remove_update_callback">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiInputHandle.remove_update_callback">[docs]</a>
-    <span class="k">def</span> <span class="nf">remove_update_callback</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_update_callback</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="n">Callable</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove update callbacks from the GUI input.</span>
@@ -685,7 +686,7 @@
 
 <div class="viewcode-block" id="GuiCheckboxHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiCheckboxHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiCheckboxHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">GuiCheckboxProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiCheckboxHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">GuiCheckboxProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for checkbox inputs.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -698,7 +699,7 @@
 
 <div class="viewcode-block" id="GuiTextHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiTextHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiTextHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">GuiTextProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiTextHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">GuiTextProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for text inputs.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -714,7 +715,7 @@
 
 <div class="viewcode-block" id="GuiNumberHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiNumberHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiNumberHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">],</span> <span class="n">GuiNumberProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiNumberHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">],</span> <span class="n">GuiNumberProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for number inputs.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -727,7 +728,7 @@
 
 <div class="viewcode-block" id="GuiSliderHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiSliderHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiSliderHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">],</span> <span class="n">GuiSliderProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiSliderHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">],</span> <span class="n">GuiSliderProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for slider inputs.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -740,7 +741,7 @@
 
 <div class="viewcode-block" id="GuiMultiSliderHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiMultiSliderHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiMultiSliderHandle</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiMultiSliderHandle</span><span class="p">(</span>
     <span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">IntOrFloat</span><span class="p">],</span> <span class="n">GuiMultiSliderProps</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for multi-slider inputs.</span>
@@ -755,7 +756,7 @@
 
 <div class="viewcode-block" id="GuiRgbHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiRgbHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiRgbHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">GuiRgbProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiRgbHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">GuiRgbProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for RGB color inputs.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -768,7 +769,7 @@
 
 <div class="viewcode-block" id="GuiRgbaHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiRgbaHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiRgbaHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">GuiRgbaProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiRgbaHandle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]],</span> <span class="n">GuiRgbaProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for RGBA color inputs.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -781,7 +782,7 @@
 
 <div class="viewcode-block" id="GuiVector2Handle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiVector2Handle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiVector2Handle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">GuiVector2Props</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiVector2Handle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">GuiVector2Props</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for 2D vector inputs.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -794,7 +795,7 @@
 
 <div class="viewcode-block" id="GuiVector3Handle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiVector3Handle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiVector3Handle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">GuiVector3Props</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiVector3Handle</span><span class="p">(</span><span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">GuiVector3Props</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for 3D vector inputs.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -808,7 +809,7 @@
 <div class="viewcode-block" id="GuiEvent">
 <a class="viewcode-back" href="../../../events/#viser.GuiEvent">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">GuiEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiEvent</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information associated with a GUI event, such as an update or click.</span>
 
 <span class="sd">    Passed as input to callback functions.&quot;&quot;&quot;</span>
@@ -824,7 +825,7 @@
 
 <div class="viewcode-block" id="GuiButtonHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiButtonHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="nb">bool</span><span class="p">]):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiButtonHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="nb">bool</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a button input in our visualizer.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -835,7 +836,7 @@
 
 <div class="viewcode-block" id="GuiButtonHandle.on_click">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonHandle.on_click">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_click</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_click</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">:</span> <span class="n">TGuiHandle</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="n">NoneOrCoroutine</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="n">NoneOrCoroutine</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a function to call when a button is pressed.</span>
@@ -855,7 +856,7 @@
 <div class="viewcode-block" id="UploadedFile">
 <a class="viewcode-back" href="../../../gui_handles/#viser.UploadedFile">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">UploadedFile</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">UploadedFile</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Result of a file upload.&quot;&quot;&quot;</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
@@ -867,7 +868,7 @@
 
 <div class="viewcode-block" id="GuiUploadButtonHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiUploadButtonHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiUploadButtonHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">UploadedFile</span><span class="p">]):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiUploadButtonHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="n">UploadedFile</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for an upload file button in our visualizer.</span>
 
 <span class="sd">    The `.value` attribute will be updated with the contents of uploaded files.</span>
@@ -880,7 +881,7 @@
 
 <div class="viewcode-block" id="GuiUploadButtonHandle.on_upload">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiUploadButtonHandle.on_upload">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_upload</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_upload</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">:</span> <span class="n">TGuiHandle</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="n">NoneOrCoroutine</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="n">NoneOrCoroutine</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a function to call when a file is uploaded.</span>
@@ -899,7 +900,7 @@
 
 <div class="viewcode-block" id="GuiButtonGroupHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonGroupHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiButtonGroupHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">GuiButtonGroupProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiButtonGroupHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">GuiButtonGroupProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a button group input in our visualizer.</span>
 
 <span class="sd">    .. attribute:: value</span>
@@ -910,7 +911,7 @@
 
 <div class="viewcode-block" id="GuiButtonGroupHandle.on_click">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiButtonGroupHandle.on_click">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_click</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_click</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">:</span> <span class="n">TGuiHandle</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="n">NoneOrCoroutine</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">GuiEvent</span><span class="p">[</span><span class="n">TGuiHandle</span><span class="p">]],</span> <span class="n">NoneOrCoroutine</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a function to call when a button in the group is clicked.</span>
@@ -926,12 +927,12 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">disabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Button groups cannot be disabled.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="nd">@disabled</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">disabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disabled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disabled</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Button groups cannot be disabled.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="n">disabled</span><span class="p">,</span> <span class="s2">&quot;Button groups cannot be disabled.&quot;</span></div>
 
@@ -939,7 +940,7 @@
 
 <div class="viewcode-block" id="GuiDropdownHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiDropdownHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiDropdownHandle</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiDropdownHandle</span><span class="p">(</span>
     <span class="n">GuiInputHandle</span><span class="p">[</span><span class="n">StringType</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">StringType</span><span class="p">],</span> <span class="n">GuiDropdownProps</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a dropdown-style GUI input in our visualizer.</span>
@@ -951,7 +952,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">StringType</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">StringType</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Options for our dropdown. Synchronized automatically when assigned.</span>
 
 <span class="sd">        For projects that care about typing: the static type of `options` should be</span>
@@ -963,7 +964,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">options</span>  <span class="c1"># type: ignore</span>
 
     <span class="nd">@options</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">StringType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">StringType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
         <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="p">,</span> <span class="n">GuiDropdownProps</span><span class="p">)</span>
         <span class="n">options</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">options</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">props</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span>
@@ -981,16 +982,16 @@
 
 <div class="viewcode-block" id="GuiTabGroupHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiTabGroupHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiTabGroupProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiTabGroupHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiTabGroupProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for a tab group. Call :meth:`add_tab()` to add a tab.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">_impl</span><span class="o">=</span><span class="n">_impl</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tab_handles</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">GuiTabHandle</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="GuiTabGroupHandle.add_tab">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.add_tab">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabHandle</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">icon</span><span class="p">:</span> <span class="n">IconName</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a tab. Returns a handle we can use to add GUI elements to it.&quot;&quot;&quot;</span>
 
         <span class="n">uuid</span> <span class="o">=</span> <span class="n">_make_uuid</span><span class="p">()</span>
@@ -1007,7 +1008,7 @@
         <span class="k">return</span> <span class="n">out</span></div>
 
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_container_handle_from_uuid</span><span class="p">[</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">parent_container_id</span>
         <span class="p">]</span>
@@ -1015,7 +1016,7 @@
 
 <div class="viewcode-block" id="GuiTabGroupHandle.remove">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabGroupHandle.remove">[docs]</a>
-    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove this tab group and all contained GUI elements.&quot;&quot;&quot;</span>
         <span class="c1"># Warn if already removed.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">removed</span><span class="p">:</span>
@@ -1045,7 +1046,7 @@
 <div class="viewcode-block" id="GuiTabHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabHandle">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">GuiTabHandle</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiTabHandle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a tab.&quot;&quot;&quot;</span>
 
     <span class="n">_parent</span><span class="p">:</span> <span class="n">GuiTabGroupHandle</span>
@@ -1056,23 +1057,23 @@
     <span class="p">)</span>
     <span class="n">_removed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabHandle</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiTabHandle</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_get_container_uuid</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_set_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">args</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_set_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_container_handle_from_uuid</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
 <div class="viewcode-block" id="GuiTabHandle.remove">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiTabHandle.remove">[docs]</a>
-    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this tab and all contained GUI elements from the</span>
 <span class="sd">        visualizer.&quot;&quot;&quot;</span>
         <span class="c1"># Warn if already removed.</span>
@@ -1114,10 +1115,10 @@
 
 <div class="viewcode-block" id="GuiFolderHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiFolderHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiFolderHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">,</span> <span class="n">GuiFolderProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiFolderHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">,</span> <span class="n">GuiFolderProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a folder.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">[</span><span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">_impl</span><span class="o">=</span><span class="n">_impl</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_container_handle_from_uuid</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">uuid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_children</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1126,12 +1127,12 @@
         <span class="p">]</span>
         <span class="n">parent</span><span class="o">.</span><span class="n">_children</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">uuid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiFolderHandle</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiFolderHandle</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_get_container_uuid</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_set_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">args</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">gui_api</span><span class="o">.</span><span class="n">_set_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_id_restore</span><span class="p">)</span>
@@ -1139,7 +1140,7 @@
 
 <div class="viewcode-block" id="GuiFolderHandle.remove">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiFolderHandle.remove">[docs]</a>
-    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Permanently remove this folder and all contained GUI elements from the</span>
 <span class="sd">        visualizer.&quot;&quot;&quot;</span>
         <span class="c1"># Warn if already removed.</span>
@@ -1169,7 +1170,7 @@
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">GuiModalHandle</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiModalHandle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Use as a context to place GUI elements into a modal.&quot;&quot;&quot;</span>
 
     <span class="n">_gui_api</span><span class="p">:</span> <span class="n">GuiApi</span>
@@ -1179,22 +1180,22 @@
         <span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span>
     <span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiModalHandle</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GuiModalHandle</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_container_uuid_restore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_get_container_uuid</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_set_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">del</span> <span class="n">args</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_container_uuid_restore</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_set_container_uuid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_container_uuid_restore</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_container_uuid_restore</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_container_handle_from_uuid</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_modal_handle_from_uuid</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span>
 
-    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Close this modal and permananently remove all contained GUI elements.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
             <span class="n">GuiCloseModalMessage</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid</span><span class="p">),</span>
@@ -1205,7 +1206,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_gui_api</span><span class="o">.</span><span class="n">_modal_handle_from_uuid</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uuid</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_get_data_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">image_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_data_url</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">image_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">image_root</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="p">(</span>
@@ -1231,7 +1232,7 @@
         <span class="k">return</span> <span class="n">url</span>
 
 
-<span class="k">def</span> <span class="nf">_parse_markdown</span><span class="p">(</span><span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">image_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_markdown</span><span class="p">(</span><span class="n">markdown</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">image_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="n">markdown</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span>
         <span class="sa">r</span><span class="s2">&quot;\!\[([^]]*)\]\(([^]]*)\)&quot;</span><span class="p">,</span>
         <span class="k">lambda</span> <span class="n">match</span><span class="p">:</span> <span class="p">(</span>
@@ -1242,28 +1243,28 @@
     <span class="k">return</span> <span class="n">markdown</span>
 
 
-<span class="k">class</span> <span class="nc">GuiProgressBarHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">GuiProgressBarProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiProgressBarHandle</span><span class="p">(</span><span class="n">_GuiInputHandle</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">GuiProgressBarProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for updating and removing progress bars.&quot;&quot;&quot;</span>
 
 
 <div class="viewcode-block" id="GuiMarkdownHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiMarkdownHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiMarkdownHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiMarkdownProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiMarkdownHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiMarkdownProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handling for updating and removing markdown elements.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">,</span> <span class="n">_content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_image_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">,</span> <span class="n">_content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_image_root</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">_impl</span><span class="o">=</span><span class="n">_impl</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_content</span> <span class="o">=</span> <span class="n">_content</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_image_root</span> <span class="o">=</span> <span class="n">_image_root</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">content</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">content</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Current content of this markdown element. Synchronized automatically when assigned.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_content</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_content</span>
 
     <span class="nd">@content</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_content</span> <span class="o">=</span> <span class="n">content</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_markdown</span> <span class="o">=</span> <span class="n">_parse_markdown</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image_root</span><span class="p">)</span></div>
 
@@ -1271,21 +1272,21 @@
 
 <div class="viewcode-block" id="GuiPlotlyHandle">
 <a class="viewcode-back" href="../../../gui_handles/#viser.GuiPlotlyHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">GuiPlotlyHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiPlotlyProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiPlotlyHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiPlotlyProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for updating and removing Plotly figures.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">,</span> <span class="n">_figure</span><span class="p">:</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">,</span> <span class="n">_figure</span><span class="p">:</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">_impl</span><span class="o">=</span><span class="n">_impl</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_figure</span> <span class="o">=</span> <span class="n">_figure</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">figure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">figure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Current content of this markdown element. Synchronized automatically when assigned.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_figure</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_figure</span>
 
     <span class="nd">@figure</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">figure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figure</span><span class="p">:</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">figure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figure</span><span class="p">:</span> <span class="n">go</span><span class="o">.</span><span class="n">Figure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_figure</span> <span class="o">=</span> <span class="n">figure</span>
 
         <span class="n">json_str</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
@@ -1294,10 +1295,10 @@
 
 
 
-<span class="k">class</span> <span class="nc">GuiImageHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiImageProps</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GuiImageHandle</span><span class="p">(</span><span class="n">_GuiHandle</span><span class="p">[</span><span class="kc">None</span><span class="p">],</span> <span class="n">GuiImageProps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle for updating and removing images.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">_impl</span><span class="p">:</span> <span class="n">_GuiHandleState</span><span class="p">,</span>
         <span class="n">_image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1308,13 +1309,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span> <span class="o">=</span> <span class="n">_jpeg_quality</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">image</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">image</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Current content of this image element. Synchronized automatically when assigned.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_image</span>
 
     <span class="nd">@image</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_image</span> <span class="o">=</span> <span class="n">image</span>
         <span class="n">media_type</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">_encode_image_binary</span><span class="p">(</span>
             <span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">media_type</span><span class="p">,</span> <span class="n">jpeg_quality</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span>

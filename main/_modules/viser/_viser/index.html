@@ -15,7 +15,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>viser._viser - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
@@ -303,6 +303,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -384,43 +385,43 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for viser._viser</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">mimetypes</span>
-<span class="kn">import</span> <span class="nn">threading</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Coroutine</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">ContextManager</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">overload</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">mimetypes</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coroutine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">ContextManager</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">overload</span>
 
-<span class="kn">import</span> <span class="nn">imageio.v3</span> <span class="k">as</span> <span class="nn">iio</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
-<span class="kn">import</span> <span class="nn">rich</span>
-<span class="kn">from</span> <span class="nn">rich</span> <span class="kn">import</span> <span class="n">box</span><span class="p">,</span> <span class="n">style</span>
-<span class="kn">from</span> <span class="nn">rich.panel</span> <span class="kn">import</span> <span class="n">Panel</span>
-<span class="kn">from</span> <span class="nn">rich.table</span> <span class="kn">import</span> <span class="n">Table</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">imageio.v3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">iio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rich</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span><span class="p">,</span> <span class="n">style</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.panel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Panel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_client_autobuild</span><span class="p">,</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">infra</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
-<span class="kn">from</span> <span class="nn">._gui_api</span> <span class="kn">import</span> <span class="n">Color</span><span class="p">,</span> <span class="n">GuiApi</span><span class="p">,</span> <span class="n">_make_uuid</span>
-<span class="kn">from</span> <span class="nn">._notification_handle</span> <span class="kn">import</span> <span class="n">NotificationHandle</span><span class="p">,</span> <span class="n">_NotificationHandleState</span>
-<span class="kn">from</span> <span class="nn">._scene_api</span> <span class="kn">import</span> <span class="n">SceneApi</span><span class="p">,</span> <span class="n">cast_vector</span>
-<span class="kn">from</span> <span class="nn">._tunnel</span> <span class="kn">import</span> <span class="n">ViserTunnel</span>
-<span class="kn">from</span> <span class="nn">.infra._infra</span> <span class="kn">import</span> <span class="n">StateSerializer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_client_autobuild</span><span class="p">,</span> <span class="n">_messages</span><span class="p">,</span> <span class="n">infra</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._gui_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span><span class="p">,</span> <span class="n">GuiApi</span><span class="p">,</span> <span class="n">_make_uuid</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._notification_handle</span><span class="w"> </span><span class="kn">import</span> <span class="n">NotificationHandle</span><span class="p">,</span> <span class="n">_NotificationHandleState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._scene_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">SceneApi</span><span class="p">,</span> <span class="n">cast_vector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._tunnel</span><span class="w"> </span><span class="kn">import</span> <span class="n">ViserTunnel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.infra._infra</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateSerializer</span>
 
 
-<span class="k">class</span> <span class="nc">_BackwardsCompatibilityShim</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_BackwardsCompatibilityShim</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Shims for backward compatibility with viser API from version</span>
 <span class="sd">    `&lt;=0.1.30`.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="n">fixed_name</span> <span class="o">=</span> <span class="p">{</span>
             <span class="c1"># Map from old method names (viser v0.1.*) to new methods names.</span>
             <span class="s2">&quot;reset_scene&quot;</span><span class="p">:</span> <span class="s2">&quot;reset&quot;</span><span class="p">,</span>
@@ -453,7 +454,7 @@
 
 
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">_CameraHandleState</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_CameraHandleState</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Information about a client&#39;s camera state.&quot;&quot;&quot;</span>
 
     <span class="n">client</span><span class="p">:</span> <span class="n">ClientHandle</span>
@@ -471,11 +472,11 @@
 
 <div class="viewcode-block" id="CameraHandle">
 <a class="viewcode-back" href="../../../camera_handles/#viser.CameraHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">CameraHandle</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CameraHandle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A handle for reading and writing the camera state of a particular</span>
 <span class="sd">    client. Typically accessed via :attr:`ClientHandle.camera`.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client</span><span class="p">:</span> <span class="n">ClientHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span> <span class="o">=</span> <span class="n">_CameraHandleState</span><span class="p">(</span>
             <span class="n">client</span><span class="p">,</span>
             <span class="n">wxyz</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span>
@@ -491,12 +492,12 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClientHandle</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClientHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Client that this camera corresponds to.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">client</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Corresponds to the R in `P_world = [R | t] p_camera`. Synchronized</span>
 <span class="sd">        automatically when assigned.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
@@ -506,7 +507,7 @@
     <span class="c1"># - https://github.com/python/mypy/issues/3004</span>
     <span class="c1"># - https://github.com/python/mypy/pull/11643</span>
     <span class="nd">@wxyz</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">R_world_camera</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">wxyz</span><span class="p">))</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
         <span class="n">look_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">look_at</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>
 
@@ -541,7 +542,7 @@
         <span class="c1"># )</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Corresponds to the t in `P_world = [R | t] p_camera`. Synchronized</span>
 <span class="sd">        automatically when assigned.</span>
 
@@ -552,7 +553,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span>
 
     <span class="nd">@position</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">position_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">position_array</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span><span class="p">):</span>
@@ -567,7 +568,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">look_at</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">look_at</span><span class="p">)</span> <span class="o">+</span> <span class="n">offset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_update_wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_wxyz</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute and update the camera orientation from the internal look_at, position, and up vectors.&quot;&quot;&quot;</span>
         <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">position</span>
         <span class="n">z</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
@@ -580,14 +581,14 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">fov</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fov</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Vertical field of view of the camera, in radians. Synchronized automatically</span>
 <span class="sd">        when assigned.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">fov</span>
 
     <span class="nd">@fov</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">fov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fov</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">fov</span><span class="p">,</span> <span class="n">fov</span><span class="p">):</span>
             <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">fov</span> <span class="o">=</span> <span class="n">fov</span>
@@ -597,14 +598,14 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">near</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">near</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Near clipping plane distance. Synchronized automatically when</span>
 <span class="sd">        assigned.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">near</span>
 
     <span class="nd">@near</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">near</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">near</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">near</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">near</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">near</span><span class="p">,</span> <span class="n">near</span><span class="p">):</span>
             <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">near</span> <span class="o">=</span> <span class="n">near</span>
@@ -614,14 +615,14 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">far</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">far</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Far clipping plane distance. Synchronized automatically when</span>
 <span class="sd">        assigned.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">far</span>
 
     <span class="nd">@far</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">far</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">far</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">far</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">far</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">far</span><span class="p">,</span> <span class="n">far</span><span class="p">):</span>
             <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">far</span> <span class="o">=</span> <span class="n">far</span>
@@ -631,24 +632,24 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Canvas width divided by height. Not assignable.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">aspect</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">update_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Look at point for the camera. Synchronized automatically when set.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span>
 
     <span class="nd">@look_at</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">look_at</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">look_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">look_at</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">look_at_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">look_at</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">look_at</span><span class="p">,</span> <span class="n">look_at_array</span><span class="p">):</span>
             <span class="k">return</span>
@@ -660,13 +661,13 @@
         <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">up_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">up_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Up direction for the camera. Synchronized automatically when set.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">update_timestamp</span> <span class="o">!=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state</span><span class="o">.</span><span class="n">up_direction</span>
 
     <span class="nd">@up_direction</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">up_direction</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">up_direction</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">up_direction</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">up_direction_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">up_direction</span><span class="p">)</span>
@@ -681,7 +682,7 @@
 
 <div class="viewcode-block" id="CameraHandle.on_update">
 <a class="viewcode-back" href="../../../camera_handles/#viser.CameraHandle.on_update">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_update</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_update</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="n">NoneOrCoroutine</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">CameraHandle</span><span class="p">],</span> <span class="n">NoneOrCoroutine</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run when a new camera message is received.</span>
@@ -698,7 +699,7 @@
 
 <div class="viewcode-block" id="CameraHandle.get_render">
 <a class="viewcode-back" href="../../../camera_handles/#viser.CameraHandle.get_render">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_render</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_render</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -729,7 +730,7 @@
 <span class="c1"># __getattr__).</span>
 <div class="viewcode-block" id="ClientHandle">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle">[docs]</a>
-<span class="k">class</span> <span class="nc">ClientHandle</span><span class="p">(</span><span class="n">_BackwardsCompatibilityShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ClientHandle</span><span class="p">(</span><span class="n">_BackwardsCompatibilityShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A handle is created for each client that connects to a server. Handles can be</span>
 <span class="sd">    used to communicate with just one client, as well as for reading and writing of</span>
 <span class="sd">    camera state.</span>
@@ -741,7 +742,7 @@
 <span class="sd">    only one specific client.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">,</span> <span class="n">server</span><span class="p">:</span> <span class="n">ViserServer</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Private attributes.</span>
@@ -764,7 +765,7 @@
 
 <div class="viewcode-block" id="ClientHandle.flush">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.flush">[docs]</a>
-    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
 <span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_viser_server</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">flush_client</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client_id</span><span class="p">)</span></div>
@@ -772,7 +773,7 @@
 
 <div class="viewcode-block" id="ClientHandle.atomic">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.atomic">[docs]</a>
-    <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
 <span class="sd">        clients atomically.</span>
 
@@ -788,7 +789,7 @@
 
 <div class="viewcode-block" id="ClientHandle.send_file_download">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.send_file_download">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_file_download</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_file_download</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a file for a client or clients to download.</span>
@@ -832,7 +833,7 @@
 
 <div class="viewcode-block" id="ClientHandle.add_notification">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.add_notification">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_notification</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_notification</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">body</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -877,7 +878,7 @@
 
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="nf">get_render</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_render</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -889,7 +890,7 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span> <span class="o">...</span>
 
     <span class="nd">@overload</span>
-    <span class="k">def</span> <span class="nf">get_render</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_render</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -899,7 +900,7 @@
 
 <div class="viewcode-block" id="ClientHandle.get_render">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.get_render">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_render</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_render</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">height</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -934,7 +935,7 @@
 
         <span class="n">connection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_websock_connection</span>
 
-        <span class="k">def</span> <span class="nf">got_render_cb</span><span class="p">(</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">got_render_cb</span><span class="p">(</span>
             <span class="n">client_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GetRenderResponseMessage</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">client_id</span>
@@ -974,7 +975,7 @@
 
 <div class="viewcode-block" id="ViserServer">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer">[docs]</a>
-<span class="k">class</span> <span class="nc">ViserServer</span><span class="p">(</span><span class="n">_BackwardsCompatibilityShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ViserServer</span><span class="p">(</span><span class="n">_BackwardsCompatibilityShim</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">TYPE_CHECKING</span> <span class="k">else</span> <span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;:class:`ViserServer` is the main class for working with viser. On</span>
 <span class="sd">    instantiation, it (a) launches a thread with a web server and (b) provides</span>
 <span class="sd">    a high-level API for interactive 3D visualization.</span>
@@ -998,7 +999,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Hide deprecated arguments from docstring and type checkers.</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">,</span>
         <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8080</span><span class="p">,</span>
@@ -1031,16 +1032,16 @@
 
         <span class="c1"># Run &quot;garbage collector&quot; on message buffer when new clients connect.</span>
         <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_connect</span>
-        <span class="k">async</span> <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_run_garbage_collector</span><span class="p">()</span>
 
         <span class="c1"># For new clients, register and add a handler for camera messages.</span>
         <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_connect</span>
-        <span class="k">async</span> <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">client</span> <span class="o">=</span> <span class="n">ClientHandle</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">server</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
             <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
 
-            <span class="k">async</span> <span class="k">def</span> <span class="nf">handle_camera_message</span><span class="p">(</span>
+            <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">handle_camera_message</span><span class="p">(</span>
                 <span class="n">client_id</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">ViewerCameraMessage</span>
             <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">nonlocal</span> <span class="n">first</span>
@@ -1084,7 +1085,7 @@
 
         <span class="c1"># Remove clients when they disconnect.</span>
         <span class="nd">@server</span><span class="o">.</span><span class="n">on_client_disconnect</span>
-        <span class="k">async</span> <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">conn</span><span class="p">:</span> <span class="n">infra</span><span class="o">.</span><span class="n">WebsockClientConnection</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_client_lock</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">conn</span><span class="o">.</span><span class="n">client_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connected_clients</span><span class="p">:</span>
                     <span class="k">return</span>
@@ -1115,7 +1116,7 @@
             <span class="k">lambda</span> <span class="n">client_id</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">disconnect_share_url</span><span class="p">(),</span>
         <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">request_share_url_no_return</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># To suppress type error.</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">request_share_url_no_return</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># To suppress type error.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">request_share_url</span><span class="p">()</span>
 
         <span class="n">server</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span>
@@ -1164,7 +1165,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">set_panel_label</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_run_garbage_collector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_garbage_collector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Clean up old messages. This is not elegant; a refactor of our</span>
 <span class="sd">        message persistence logic will significantly reduce complexity.&quot;&quot;&quot;</span>
         <span class="n">buffer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">_broadcast_buffer</span>
@@ -1224,7 +1225,7 @@
 
 <div class="viewcode-block" id="ViserServer.get_host">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.get_host">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_host</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_host</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the host address of the Viser server.</span>
 
 <span class="sd">        Returns:</span>
@@ -1235,7 +1236,7 @@
 
 <div class="viewcode-block" id="ViserServer.get_port">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.get_port">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_port</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_port</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the port of the Viser server. This could be different from the</span>
 <span class="sd">        originally requested one.</span>
 
@@ -1247,7 +1248,7 @@
 
 <div class="viewcode-block" id="ViserServer.request_share_url">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.request_share_url">[docs]</a>
-    <span class="k">def</span> <span class="nf">request_share_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">request_share_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Request a share URL for the Viser server, which allows for public access.</span>
 <span class="sd">        On the first call, will block until a connecting with the share URL server is</span>
 <span class="sd">        established. Afterwards, the URL will be returned directly.</span>
@@ -1275,13 +1276,13 @@
             <span class="p">)</span>
 
             <span class="nd">@self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">on_disconnect</span>
-            <span class="k">def</span> <span class="nf">_</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;[bold](viser)[/bold] Disconnected from share URL&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">ShareUrlUpdated</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
 
             <span class="nd">@self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">on_connect</span>
-            <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">max_clients</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">max_clients</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                 <span class="n">share_url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">get_url</span><span class="p">()</span>
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
@@ -1302,7 +1303,7 @@
 
 <div class="viewcode-block" id="ViserServer.disconnect_share_url">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.disconnect_share_url">[docs]</a>
-    <span class="k">def</span> <span class="nf">disconnect_share_url</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disconnect_share_url</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Disconnect from the share URL server.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1314,7 +1315,7 @@
 
 <div class="viewcode-block" id="ViserServer.stop">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.stop">[docs]</a>
-    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the Viser server and associated threads and tunnels.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_share_tunnel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1323,7 +1324,7 @@
 
 <div class="viewcode-block" id="ViserServer.get_clients">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.get_clients">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_clients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">ClientHandle</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates and returns a copy of the mapping from connected client IDs to</span>
 <span class="sd">        handles.</span>
 
@@ -1336,7 +1337,7 @@
 
 <div class="viewcode-block" id="ViserServer.on_client_connect">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.on_client_connect">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_client_connect</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_client_connect</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="n">NoneOrCoroutine</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="n">NoneOrCoroutine</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run for newly connected clients.</span>
@@ -1370,7 +1371,7 @@
 
 <div class="viewcode-block" id="ViserServer.on_client_disconnect">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.on_client_disconnect">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_client_disconnect</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_client_disconnect</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">cb</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="n">NoneOrCoroutine</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ClientHandle</span><span class="p">],</span> <span class="n">NoneOrCoroutine</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Attach a callback to run when clients disconnect.</span>
@@ -1387,7 +1388,7 @@
 
 <div class="viewcode-block" id="ViserServer.flush">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.flush">[docs]</a>
-    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Flush the outgoing message buffer. Any buffered messages will immediately be</span>
 <span class="sd">        sent. (by default they are windowed)&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_server</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
@@ -1395,7 +1396,7 @@
 
 <div class="viewcode-block" id="ViserServer.atomic">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.atomic">[docs]</a>
-    <span class="k">def</span> <span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">atomic</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContextManager</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a context where: all outgoing messages are grouped and applied by</span>
 <span class="sd">        clients atomically.</span>
 
@@ -1411,7 +1412,7 @@
 
 <div class="viewcode-block" id="ViserServer.send_file_download">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.send_file_download">[docs]</a>
-    <span class="k">def</span> <span class="nf">send_file_download</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_file_download</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a file for a client or clients to download.</span>
@@ -1427,7 +1428,7 @@
 
 <div class="viewcode-block" id="ViserServer.get_event_loop">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.get_event_loop">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_event_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_event_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the asyncio event loop used by the Viser background thread. This</span>
 <span class="sd">        can be useful for safe concurrent operations.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_loop</span></div>
@@ -1435,7 +1436,7 @@
 
 <div class="viewcode-block" id="ViserServer.sleep_forever">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.sleep_forever">[docs]</a>
-    <span class="k">def</span> <span class="nf">sleep_forever</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sleep_forever</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Equivalent to:</span>
 <span class="sd">        ```</span>
 <span class="sd">        while True:</span>
@@ -1446,7 +1447,7 @@
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3600</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_start_scene_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_start_scene_recording</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;**Old API.**&quot;&quot;&quot;</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
             <span class="s2">&quot;_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.&quot;</span><span class="p">,</span>
@@ -1456,21 +1457,21 @@
         <span class="n">serializer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_scene_serializer</span><span class="p">()</span>
 
         <span class="c1"># We&#39;ll add a shim for the old API for now. We can remove this later.</span>
-        <span class="k">class</span> <span class="nc">_SceneRecordCompatibilityShim</span><span class="p">:</span>
-            <span class="k">def</span> <span class="nf">set_loop_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">class</span><span class="w"> </span><span class="nc">_SceneRecordCompatibilityShim</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">set_loop_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                     <span class="s2">&quot;_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.&quot;</span><span class="p">,</span>
                     <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                 <span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">insert_sleep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">insert_sleep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                     <span class="s2">&quot;_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.&quot;</span><span class="p">,</span>
                     <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="n">serializer</span><span class="o">.</span><span class="n">insert_sleep</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
 
-            <span class="k">def</span> <span class="nf">end_and_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">end_and_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                     <span class="s2">&quot;_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.&quot;</span><span class="p">,</span>
                     <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
@@ -1481,7 +1482,7 @@
 
 <div class="viewcode-block" id="ViserServer.get_scene_serializer">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.get_scene_serializer">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_scene_serializer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateSerializer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_scene_serializer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StateSerializer</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get handle for serializing the scene state.</span>
 
 <span class="sd">        This can be used for saving .viser files, which are used for offline</span>

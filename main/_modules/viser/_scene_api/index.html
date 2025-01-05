@@ -15,7 +15,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>viser._scene_api - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../_static/ansi.css" />
@@ -303,6 +303,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -384,23 +385,23 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for viser._scene_api</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">import</span> <span class="nn">io</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Coroutine</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">get_args</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coroutine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span><span class="p">,</span> <span class="n">get_args</span>
 
-<span class="kn">import</span> <span class="nn">imageio.v3</span> <span class="k">as</span> <span class="nn">iio</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">ParamSpec</span><span class="p">,</span> <span class="n">TypeAlias</span><span class="p">,</span> <span class="n">assert_never</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">imageio.v3</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">iio</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">ParamSpec</span><span class="p">,</span> <span class="n">TypeAlias</span><span class="p">,</span> <span class="n">assert_never</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_messages</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
-<span class="kn">from</span> <span class="nn">._scene_handles</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_messages</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">transforms</span> <span class="k">as</span> <span class="n">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._scene_handles</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AmbientLightHandle</span><span class="p">,</span>
     <span class="n">BatchedAxesHandle</span><span class="p">,</span>
     <span class="n">BoneState</span><span class="p">,</span>
@@ -434,10 +435,10 @@
 <span class="p">)</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">trimesh</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">trimesh</span>
 
-    <span class="kn">from</span> <span class="nn">._viser</span> <span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
-    <span class="kn">from</span> <span class="nn">.infra</span> <span class="kn">import</span> <span class="n">ClientId</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.infra</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientId</span>
 
 
 <span class="n">P</span> <span class="o">=</span> <span class="n">ParamSpec</span><span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">)</span>
@@ -450,7 +451,7 @@
 <span class="n">NoneOrCoroutine</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;NoneOrCoroutine&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">_encode_rgb</span><span class="p">(</span><span class="n">rgb</span><span class="p">:</span> <span class="n">RgbTupleOrArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_encode_rgb</span><span class="p">(</span><span class="n">rgb</span><span class="p">:</span> <span class="n">RgbTupleOrArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rgb</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">rgb</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
     <span class="n">rgb_fixed</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
@@ -461,7 +462,7 @@
     <span class="k">return</span> <span class="n">rgb_fixed</span>  <span class="c1"># type: ignore</span>
 
 
-<span class="k">def</span> <span class="nf">_encode_image_binary</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_encode_image_binary</span><span class="p">(</span>
     <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
     <span class="nb">format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span> <span class="s2">&quot;image/png&quot;</span><span class="p">,</span> <span class="s2">&quot;image/jpeg&quot;</span><span class="p">],</span>
     <span class="n">jpeg_quality</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -489,7 +490,7 @@
 <span class="n">TVector</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;TVector&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="nb">tuple</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">cast_vector</span><span class="p">(</span><span class="n">vector</span><span class="p">:</span> <span class="n">TVector</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TVector</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cast_vector</span><span class="p">(</span><span class="n">vector</span><span class="p">:</span> <span class="n">TVector</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TVector</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
         <span class="k">assert</span> <span class="n">cast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span>
             <span class="n">length</span><span class="p">,</span>
@@ -499,19 +500,19 @@
 
 <div class="viewcode-block" id="SceneApi">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi">[docs]</a>
-<span class="k">class</span> <span class="nc">SceneApi</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SceneApi</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Interface for adding 3D primitives to the scene.</span>
 
 <span class="sd">    Used by both our global server object, for sharing the same GUI elements</span>
 <span class="sd">    with all clients, and by individual client handles.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">owner</span><span class="p">:</span> <span class="n">ViserServer</span> <span class="o">|</span> <span class="n">ClientHandle</span><span class="p">,</span>  <span class="c1"># Who do I belong to?</span>
         <span class="n">thread_executor</span><span class="p">:</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span>
         <span class="n">event_loop</span><span class="p">:</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">AbstractEventLoop</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="kn">from</span> <span class="nn">._viser</span> <span class="kn">import</span> <span class="n">ViserServer</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ViserServer</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span> <span class="o">=</span> <span class="n">thread_executor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_loop</span> <span class="o">=</span> <span class="n">event_loop</span>
@@ -561,7 +562,7 @@
 
 <div class="viewcode-block" id="SceneApi.set_up_direction">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.set_up_direction">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_up_direction</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_up_direction</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">direction</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;+x&quot;</span><span class="p">,</span> <span class="s2">&quot;+y&quot;</span><span class="p">,</span> <span class="s2">&quot;+z&quot;</span><span class="p">,</span> <span class="s2">&quot;-x&quot;</span><span class="p">,</span> <span class="s2">&quot;-y&quot;</span><span class="p">,</span> <span class="s2">&quot;-z&quot;</span><span class="p">]</span>
         <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
@@ -594,7 +595,7 @@
         <span class="n">default_three_up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
         <span class="n">direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">rotate_between</span><span class="p">(</span><span class="n">before</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">after</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">rotate_between</span><span class="p">(</span><span class="n">before</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">after</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">SO3</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">before</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">after</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span>
             <span class="n">before</span> <span class="o">=</span> <span class="n">before</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">before</span><span class="p">)</span>
             <span class="n">after</span> <span class="o">=</span> <span class="n">after</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">after</span><span class="p">)</span>
@@ -639,7 +640,7 @@
             <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">set_global_visibility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_global_visibility</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visible</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set visibility for all scene nodes. If set to False, all scene nodes</span>
 <span class="sd">        will be hidden.</span>
 
@@ -657,7 +658,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_light_directional">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_light_directional">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_light_directional</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_light_directional</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
@@ -692,7 +693,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_light_ambient">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_light_ambient">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_light_ambient</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_light_ambient</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
@@ -725,7 +726,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_light_hemisphere">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_light_hemisphere">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_light_hemisphere</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_light_hemisphere</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">sky_color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
@@ -760,7 +761,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_light_point">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_light_point">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_light_point</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_light_point</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
@@ -803,7 +804,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_light_rectarea">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_light_rectarea">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_light_rectarea</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_light_rectarea</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
@@ -846,7 +847,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_light_spot">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_light_spot">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_light_spot</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_light_spot</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
@@ -892,7 +893,7 @@
 
 <div class="viewcode-block" id="SceneApi.set_environment_map">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.set_environment_map">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_environment_map</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_environment_map</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">hdri</span><span class="p">:</span> <span class="kc">None</span>
         <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span>
@@ -950,7 +951,7 @@
 
 <div class="viewcode-block" id="SceneApi.enable_default_lights">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.enable_default_lights">[docs]</a>
-    <span class="k">def</span> <span class="nf">enable_default_lights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enable_default_lights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable/disable the default lights in the scene. If not otherwise</span>
 <span class="sd">        specified, default lighting will be enabled.</span>
 
@@ -966,7 +967,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_glb">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_glb">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_glb</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_glb</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">glb_data</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
@@ -1001,7 +1002,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_line_segments">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_line_segments">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_line_segments</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_line_segments</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1052,7 +1053,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_spline_catmull_rom">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_spline_catmull_rom">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_spline_catmull_rom</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_spline_catmull_rom</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="c1"># The naming inconsistency here compared to add_line_segments is unfortunate...</span>
@@ -1116,7 +1117,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_spline_cubic_bezier">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_spline_cubic_bezier">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_spline_cubic_bezier</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_spline_cubic_bezier</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">positions</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1180,7 +1181,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_camera_frustum">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_camera_frustum">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_camera_frustum</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_camera_frustum</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">fov</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -1258,7 +1259,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_frame">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_frame">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_frame</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_frame</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">show_axes</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1312,7 +1313,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_batched_axes">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_batched_axes">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_batched_axes</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_batched_axes</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">batched_wxyzs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1372,7 +1373,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_grid">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_grid">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_grid</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_grid</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">width</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
@@ -1435,7 +1436,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_label">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_label">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_label</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_label</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1464,7 +1465,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_point_cloud">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_point_cloud">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_point_cloud</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_point_cloud</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1524,7 +1525,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_mesh_skinned">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_mesh_skinned">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_mesh_skinned</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_mesh_skinned</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">vertices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1636,7 +1637,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_mesh_simple">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_mesh_simple">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_mesh_simple</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_mesh_simple</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">vertices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1702,7 +1703,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_mesh_trimesh">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_mesh_trimesh">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_mesh_trimesh</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_mesh_trimesh</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">mesh</span><span class="p">:</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">Trimesh</span><span class="p">,</span>
@@ -1739,13 +1740,13 @@
             <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_add_gaussian_splats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GaussianSplatHandle</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_gaussian_splats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GaussianSplatHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Backwards compatibility shim. Use `add_gaussian_splats()` instead.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_gaussian_splats</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SceneApi.add_gaussian_splats">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_gaussian_splats">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_gaussian_splats</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_gaussian_splats</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">centers</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -1814,7 +1815,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_box">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_box">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_box</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_box</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">color</span><span class="p">:</span> <span class="n">RgbTupleOrArray</span><span class="p">,</span>
@@ -1837,7 +1838,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Handle for manipulating scene node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">trimesh.creation</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">trimesh.creation</span>
 
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">creation</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="n">dimensions</span><span class="p">)</span>
 
@@ -1855,7 +1856,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_icosphere">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_icosphere">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_icosphere</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_icosphere</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">radius</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -1880,7 +1881,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            Handle for manipulating scene node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">trimesh.creation</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">trimesh.creation</span>
 
         <span class="n">mesh</span> <span class="o">=</span> <span class="n">trimesh</span><span class="o">.</span><span class="n">creation</span><span class="o">.</span><span class="n">icosphere</span><span class="p">(</span><span class="n">subdivisions</span><span class="o">=</span><span class="n">subdivisions</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">)</span>
 
@@ -1900,7 +1901,7 @@
 
 <div class="viewcode-block" id="SceneApi.set_background_image">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.set_background_image">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_background_image</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_background_image</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="nb">format</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;jpeg&quot;</span><span class="p">,</span>
@@ -1953,7 +1954,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_image">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_image">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_image</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_image</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -2002,7 +2003,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_transform_controls">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_transform_controls">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_transform_controls</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_transform_controls</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
@@ -2070,7 +2071,7 @@
             <span class="p">),</span>
         <span class="p">)</span>
 
-        <span class="k">def</span> <span class="nf">sync_cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">TransformControlsHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">sync_cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">TransformControlsHandle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">message_orientation</span> <span class="o">=</span> <span class="n">_messages</span><span class="o">.</span><span class="n">SetOrientationMessage</span><span class="p">(</span>
                 <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                 <span class="n">wxyz</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">_impl</span><span class="o">.</span><span class="n">wxyz</span><span class="p">)),</span>  <span class="c1"># type: ignore</span>
@@ -2100,7 +2101,7 @@
 
 <div class="viewcode-block" id="SceneApi.reset">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.reset">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the scene.&quot;&quot;&quot;</span>
 
         <span class="c1"># Remove all scene nodes.</span>
@@ -2114,10 +2115,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_background_image</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_get_client_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClientHandle</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_client_handle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClientHandle</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Private helper for getting a client handle from its ID.&quot;&quot;&quot;</span>
         <span class="c1"># Avoid circular imports.</span>
-        <span class="kn">from</span> <span class="nn">._viser</span> <span class="kn">import</span> <span class="n">ViserServer</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ViserServer</span>
 
         <span class="c1"># Implementation-wise, note that MessageApi is never directly instantiated.</span>
         <span class="c1"># Instead, it serves as a mixin/base class for either ViserServer, which</span>
@@ -2132,7 +2133,7 @@
             <span class="k">assert</span> <span class="n">client_id</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">client_id</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_handle_transform_controls_updates</span><span class="p">(</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_transform_controls_updates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">TransformControlsUpdateMessage</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback for handling transform gizmo messages.&quot;&quot;&quot;</span>
@@ -2156,7 +2157,7 @@
         <span class="k">if</span> <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">sync_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">sync_cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_handle_node_click_updates</span><span class="p">(</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_node_click_updates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">SceneNodeClickMessage</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback for handling click messages.&quot;&quot;&quot;</span>
@@ -2179,7 +2180,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">_handle_scene_pointer_updates</span><span class="p">(</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_scene_pointer_updates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">ScenePointerMessage</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Callback for handling click messages.&quot;&quot;&quot;</span>
@@ -2201,7 +2202,7 @@
 
 <div class="viewcode-block" id="SceneApi.on_pointer_event">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.on_pointer_event">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_pointer_event</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_pointer_event</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">,</span> <span class="s2">&quot;rect-select&quot;</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span>
         <span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">ScenePointerEvent</span><span class="p">],</span> <span class="kc">None</span><span class="p">]],</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ScenePointerEvent</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
@@ -2214,9 +2215,9 @@
         <span class="c1"># Ensure the event type is valid.</span>
         <span class="k">assert</span> <span class="n">event_type</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">_messages</span><span class="o">.</span><span class="n">ScenePointerEventType</span><span class="p">)</span>
 
-        <span class="kn">from</span> <span class="nn">._viser</span> <span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">._viser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClientHandle</span><span class="p">,</span> <span class="n">ViserServer</span>
 
-        <span class="k">def</span> <span class="nf">cleanup_previous_event</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="n">ViserServer</span> <span class="o">|</span> <span class="n">ClientHandle</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">cleanup_previous_event</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="n">ViserServer</span> <span class="o">|</span> <span class="n">ClientHandle</span><span class="p">):</span>
             <span class="c1"># If the server or client does not have a scene pointer callback, return.</span>
             <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">_scene_pointer_cb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span>
@@ -2224,7 +2225,7 @@
             <span class="c1"># Remove callback.</span>
             <span class="n">target</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">remove_pointer_callback</span><span class="p">()</span>
 
-        <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">decorator</span><span class="p">(</span>
             <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ScenePointerEvent</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">ScenePointerEvent</span><span class="p">],</span> <span class="kc">None</span><span class="p">]:</span>
             <span class="c1"># Check if another scene pointer event was previously registered.</span>
@@ -2255,7 +2256,7 @@
 
 <div class="viewcode-block" id="SceneApi.on_pointer_callback_removed">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.on_pointer_callback_removed">[docs]</a>
-    <span class="k">def</span> <span class="nf">on_pointer_callback_removed</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_pointer_callback_removed</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">NoneOrCoroutine</span><span class="p">],</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">NoneOrCoroutine</span><span class="p">]:</span>
@@ -2274,7 +2275,7 @@
 
 <div class="viewcode-block" id="SceneApi.remove_pointer_callback">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.remove_pointer_callback">[docs]</a>
-    <span class="k">def</span> <span class="nf">remove_pointer_callback</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_pointer_callback</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove the currently attached scene pointer event. This will trigger</span>
@@ -2309,7 +2310,7 @@
 
 <div class="viewcode-block" id="SceneApi.add_3d_gui_container">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.add_3d_gui_container">[docs]</a>
-    <span class="k">def</span> <span class="nf">add_3d_gui_container</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_3d_gui_container</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">wxyz</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
@@ -2332,7 +2333,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Avoids circular import.</span>
-        <span class="kn">from</span> <span class="nn">._gui_api</span> <span class="kn">import</span> <span class="n">_make_uuid</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">._gui_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">_make_uuid</span>
 
         <span class="c1"># New name to make the type checker happy; ViserServer and ClientHandle inherit</span>
         <span class="c1"># from both GuiApi and MessageApi. The pattern below is unideal.</span>
@@ -2359,7 +2360,7 @@
 
 <div class="viewcode-block" id="SceneApi.remove_by_name">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.remove_by_name">[docs]</a>
-    <span class="k">def</span> <span class="nf">remove_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">remove_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper to call `.remove()` on the scene node handles of the `name`</span>
 <span class="sd">        element or any of its children.&quot;&quot;&quot;</span>
         <span class="n">handle_from_node_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_from_node_name</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>

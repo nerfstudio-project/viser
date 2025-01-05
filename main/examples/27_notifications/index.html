@@ -16,7 +16,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>Notifications - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../_static/ansi.css" />
@@ -304,6 +304,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -393,12 +394,12 @@
           <section id="notifications">
 <h1>Notifications<a class="headerlink" href="#notifications" title="Link to this heading">¶</a></h1>
 <p>Examples of adding notifications per client in Viser.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span> <span class="nn">time</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="linenos"> 2</span>
-<span class="linenos"> 3</span><span class="kn">import</span> <span class="nn">viser</span>
+<span class="linenos"> 3</span><span class="kn">import</span><span class="w"> </span><span class="nn">viser</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span>
-<span class="linenos"> 6</span><span class="k">def</span> <span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos"> 6</span><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos"> 7</span>    <span class="n">server</span> <span class="o">=</span> <span class="n">viser</span><span class="o">.</span><span class="n">ViserServer</span><span class="p">()</span>
 <span class="linenos"> 8</span>
 <span class="linenos"> 9</span>    <span class="n">persistent_notif_button</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span>
@@ -411,7 +412,7 @@
 <span class="linenos">16</span>    <span class="n">remove_controlled_notif</span> <span class="o">=</span> <span class="n">server</span><span class="o">.</span><span class="n">gui</span><span class="o">.</span><span class="n">add_button</span><span class="p">(</span><span class="s2">&quot;Remove controlled notification&quot;</span><span class="p">)</span>
 <span class="linenos">17</span>
 <span class="linenos">18</span>    <span class="nd">@persistent_notif_button</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">19</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">19</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">20</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Show persistent notification when the button is clicked.&quot;&quot;&quot;</span>
 <span class="linenos">21</span>        <span class="n">client</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">client</span>
 <span class="linenos">22</span>        <span class="k">assert</span> <span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -425,7 +426,7 @@
 <span class="linenos">30</span>        <span class="p">)</span>
 <span class="linenos">31</span>
 <span class="linenos">32</span>    <span class="nd">@timed_notif_button</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">33</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">33</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">34</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Show timed notification when the button is clicked.&quot;&quot;&quot;</span>
 <span class="linenos">35</span>        <span class="n">client</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">client</span>
 <span class="linenos">36</span>        <span class="k">assert</span> <span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -439,7 +440,7 @@
 <span class="linenos">44</span>        <span class="p">)</span>
 <span class="linenos">45</span>
 <span class="linenos">46</span>    <span class="nd">@controlled_notif_button</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">47</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">47</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">48</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Show controlled notification when the button is clicked.&quot;&quot;&quot;</span>
 <span class="linenos">49</span>        <span class="n">client</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">client</span>
 <span class="linenos">50</span>        <span class="k">assert</span> <span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -453,12 +454,12 @@
 <span class="linenos">58</span>        <span class="p">)</span>
 <span class="linenos">59</span>
 <span class="linenos">60</span>        <span class="nd">@remove_controlled_notif</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">61</span>        <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">61</span>        <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">62</span><span class="w">            </span><span class="sd">&quot;&quot;&quot;Remove controlled notification.&quot;&quot;&quot;</span>
 <span class="linenos">63</span>            <span class="n">controlled_notif</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
 <span class="linenos">64</span>
 <span class="linenos">65</span>    <span class="nd">@loading_notif_button</span><span class="o">.</span><span class="n">on_click</span>
-<span class="linenos">66</span>    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="linenos">66</span>    <span class="k">def</span><span class="w"> </span><span class="nf">_</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">viser</span><span class="o">.</span><span class="n">GuiEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="linenos">67</span><span class="w">        </span><span class="sd">&quot;&quot;&quot;Show loading notification when the button is clicked.&quot;&quot;&quot;</span>
 <span class="linenos">68</span>        <span class="n">client</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">client</span>
 <span class="linenos">69</span>        <span class="k">assert</span> <span class="n">client</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>

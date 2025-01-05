@@ -15,7 +15,7 @@
 
     <!-- Generated with Sphinx 8.0.2 and Furo 2024.08.06 -->
         <title>viser.transforms._se2 - viser</title>
-      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=5349f25f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/custom.css?v=5976cbfc" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/ansi.css" />
@@ -303,6 +303,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../server/">Viser Server</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../scene_api/">Scene API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../gui_api/">GUI API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../state_serializer/">State Serializer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API (Advanced)</span></p>
 <ul>
@@ -384,24 +385,24 @@
         </div>
         <article role="main" id="furo-main-content">
           <h1>Source code for viser.transforms._se2</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">dataclasses</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">cast</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">numpy.typing</span> <span class="k">as</span> <span class="nn">npt</span>
-<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">override</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">npt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">override</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_base</span><span class="p">,</span> <span class="n">hints</span>
-<span class="kn">from</span> <span class="nn">._so2</span> <span class="kn">import</span> <span class="n">SO2</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">broadcast_leading_axes</span><span class="p">,</span> <span class="n">get_epsilon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_base</span><span class="p">,</span> <span class="n">hints</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._so2</span><span class="w"> </span><span class="kn">import</span> <span class="n">SO2</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">broadcast_leading_axes</span><span class="p">,</span> <span class="n">get_epsilon</span>
 
 
 <div class="viewcode-block" id="SE2">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2">[docs]</a>
 <span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">SE2</span><span class="p">(</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SE2</span><span class="p">(</span>
     <span class="n">_base</span><span class="o">.</span><span class="n">SEBase</span><span class="p">[</span><span class="n">SO2</span><span class="p">],</span>
     <span class="n">matrix_dim</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">parameters_dim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
@@ -423,7 +424,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal parameters. `(cos, sin, x, y)`. Shape should be `(*, 4)`.&quot;&quot;&quot;</span>
 
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">unit_complex</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_complex_xy</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="mi">5</span><span class="p">)</span>
         <span class="n">xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_complex_xy</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:],</span> <span class="mi">5</span><span class="p">)</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(unit_complex=</span><span class="si">{</span><span class="n">unit_complex</span><span class="si">}</span><span class="s2">, xy=</span><span class="si">{</span><span class="n">xy</span><span class="si">}</span><span class="s2">)&quot;</span>
@@ -431,7 +432,7 @@
 <div class="viewcode-block" id="SE2.from_xy_theta">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.from_xy_theta">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">from_xy_theta</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SE2</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_xy_theta</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">,</span> <span class="n">theta</span><span class="p">:</span> <span class="n">hints</span><span class="o">.</span><span class="n">Scalar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SE2</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct a transformation from standard 2D pose parameters.</span>
 
 <span class="sd">        This is not the same as integrating over a length-3 twist.</span>
@@ -447,7 +448,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.from_rotation_and_translation">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">from_rotation_and_translation</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_rotation_and_translation</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">rotation</span><span class="p">:</span> <span class="n">SO2</span><span class="p">,</span>
         <span class="n">translation</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">],</span>
@@ -464,14 +465,14 @@
 <div class="viewcode-block" id="SE2.rotation">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.rotation">[docs]</a>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO2</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SO2</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">SO2</span><span class="p">(</span><span class="n">unit_complex</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_complex_xy</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="SE2.translation">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.translation">[docs]</a>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">translation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">translation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_complex_xy</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">:]</span></div>
 
 
@@ -481,7 +482,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.identity">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">identity</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">identity</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">batch_axes</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">DTypeLike</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SE2</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">SE2</span><span class="p">(</span>
@@ -495,7 +496,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.from_matrix">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">from_matrix</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SE2</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_matrix</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SE2</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="ow">or</span> <span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
         <span class="c1"># Currently assumes bottom row is [0, 0, 1].</span>
         <span class="k">return</span> <span class="n">SE2</span><span class="o">.</span><span class="n">from_rotation_and_translation</span><span class="p">(</span>
@@ -509,14 +510,14 @@
 <div class="viewcode-block" id="SE2.parameters">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.parameters">[docs]</a>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unit_complex_xy</span></div>
 
 
 <div class="viewcode-block" id="SE2.as_matrix">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.as_matrix">[docs]</a>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">as_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_complex_xy</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
             <span class="p">[</span>
@@ -541,7 +542,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.exp">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">exp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tangent</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SE2</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">tangent</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SE2</span><span class="p">:</span>
         <span class="c1"># Reference:</span>
         <span class="c1"># &gt; https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se2.hpp#L558</span>
         <span class="c1"># Also see:</span>
@@ -596,7 +597,7 @@
 <div class="viewcode-block" id="SE2.log">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.log">[docs]</a>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="c1"># Reference:</span>
         <span class="c1"># &gt; https://github.com/strasdat/Sophus/blob/a0fe89a323e20c42d3cecb590937eb7a06b8343a/sophus/se2.hpp#L160</span>
         <span class="c1"># Also see:</span>
@@ -648,7 +649,7 @@
 <div class="viewcode-block" id="SE2.adjoint">
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.adjoint">[docs]</a>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">adjoint</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">SE2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">adjoint</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">SE2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">npt</span><span class="o">.</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">floating</span><span class="p">]:</span>
         <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">moveaxis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unit_complex_xy</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
             <span class="p">[</span>
@@ -670,7 +671,7 @@
 <a class="viewcode-back" href="../../../../transforms/#viser.transforms.SE2.sample_uniform">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="nd">@override</span>
-    <span class="k">def</span> <span class="nf">sample_uniform</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_uniform</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">,</span>
         <span class="n">batch_axes</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
