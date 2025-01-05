@@ -43,7 +43,7 @@ TMessage = TypeVar("TMessage", bound=Message)
 
 class StateSerializer:
     """Handle for serializing messages. In Viser, this is used to save the
-    scene state."""
+    scene state so it can be shared/embedded in static webpages."""
 
     def __init__(
         self, handler: WebsockMessageHandler, filter: Callable[[Message], bool]
@@ -63,14 +63,17 @@ class StateSerializer:
         self._messages.append((self._time, message.as_serializable_dict()))
 
     def insert_sleep(self, duration: float) -> None:
-        """Insert a sleep into the recorded file."""
+        """Insert a sleep into the recorded file. This can be useful for
+        dynamic 3D data."""
         assert (
             self._handler._record_handle is not None
         ), "serialize() was already called!"
         self._time += duration
 
     def serialize(self) -> bytes:
-        """Serialize saved messages. Should only be called once.
+        """Serialize saved messages. Should only be called once. Our convention
+        is to write this binary format to a file with a ``.viser`` extension,
+        for example via ``pathlib.Path("file.viser").write_bytes(...)``.
 
         Returns:
             The recording as bytes.
