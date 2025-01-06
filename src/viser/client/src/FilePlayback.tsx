@@ -129,6 +129,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     // We have messages with times: [0.0, 0.01, 0.01, 0.02, 0.03]
     // We have our current time: 0.02
     // We want to get of a slice of all message _until_ the current time.
+    viewer.shapeOfMotionPlaybackState.current.currentTime = mutable.currentTime;
     for (
       ;
       mutable.currentIndex < recording.messages.length &&
@@ -140,6 +141,14 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         resetScene();
       }
       const message = recording.messages[mutable.currentIndex][1];
+
+      // Hack: never hide the motion tracks.
+      if (
+        message.type === "SetSceneNodeVisibilityMessage" &&
+        message.name != "/WorldAxes"
+      )
+        continue;
+
       messageQueueRef.current.push(message);
     }
 
@@ -192,6 +201,12 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     };
   }, [paused]); // Empty dependency array ensures this runs once on mount and cleanup on unmount
 
+  const [trackDuration, setTrackDuration] = useState(0.25);
+  useEffect(() => {
+    // Should match default of input below.
+    viewer.shapeOfMotionPlaybackState.current.trackDuration = trackDuration;
+  }, [trackDuration]);
+
   const updateCurrentTime = useCallback(
     (value: number) => {
       if (value < playbackMutable.current.currentTime) {
@@ -237,7 +252,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           bottom: "1em",
           left: "50%",
           transform: "translateX(-50%)",
-          width: "25em",
+          width: "35em",
           maxWidth: "95%",
           zIndex: 1,
           padding: "0.5em",
@@ -309,16 +324,16 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         </Tooltip>
         <Tooltip
           zIndex={10}
-          label={"Show or hide motion visualization."}
+          label={"Motion track visualization length."}
           withinPortal
         >
           <SegmentedControl
-            data={["Tracks", "Off"]}
-            onChange={(value) =>
-              viewer.useSceneTree.setState({
-                showLineSegments: value === "Tracks",
-              })
-            }
+            data={["0s", "0.25s", "0.5s", "1s"]}
+            defaultValue="0.25s"
+            size="xs"
+            onChange={(value) => {
+              setTrackDuration(parseFloat(value));
+            }}
           />
         </Tooltip>
       </Paper>

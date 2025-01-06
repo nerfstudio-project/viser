@@ -696,6 +696,10 @@ export function SceneNodeThreeObject(props: {
 
   // Update attributes on a per-frame basis. Currently does redundant work,
   // although this shouldn't be a bottleneck.
+
+  // SHAPE OF MOTION: Get track number from name, which should be formatted like `/tracks/{t}`.
+  const trackFrameNumber = parseInt(message.name.split("/").at(-1));
+
   useFrame(
     () => {
       const attrs = viewer.nodeAttributesFromName.current[props.name];
@@ -726,11 +730,13 @@ export function SceneNodeThreeObject(props: {
         (attrs?.overrideVisibility === undefined
           ? attrs?.visibility
           : attrs.overrideVisibility) ?? true;
-      if (
-        message.type === "LineSegmentsMessage" &&
-        !viewer.useSceneTree.getState().showLineSegments
-      ) {
-        visibility = false;
+      const somState = viewer.shapeOfMotionPlaybackState.current;
+      if (message!.type === "LineSegmentsMessage" && somState.currentTime !== null) {
+        const somFrameTime = trackFrameNumber / 30.0;
+        visibility =
+          somFrameTime < somState.currentTime &&
+          somState.currentTime - somFrameTime < somState.trackDuration;
+        console.log(somFrameTime, somState.currentTime);
       }
 
       obj.visible = visibility;

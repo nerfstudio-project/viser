@@ -107,6 +107,10 @@ export type ViewerContextContents = {
       }[];
     };
   }>;
+  shapeOfMotionPlaybackState: React.MutableRefObject<{
+    currentTime: number | null;
+    trackDuration: number;
+  }>;
 };
 export const ViewerContext = React.createContext<null | ViewerContextContents>(
   null,
@@ -184,6 +188,10 @@ function ViewerRoot() {
     }),
     canvas2dRef: React.useRef(null),
     skinnedMeshState: React.useRef({}),
+    shapeOfMotionPlaybackState: React.useRef({
+      currentTime: null,
+      trackDuration: 0,
+    }),
   };
 
   // Set dark default if specified in URL.
