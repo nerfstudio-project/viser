@@ -100,6 +100,19 @@ def _encode_image_binary(
     return media_type, binary
 
 
+def _decode_image_binary(
+    binary: bytes,
+    format: Literal["image/png", "image/jpeg"],
+) -> np.ndarray:
+    if format not in ("image/png", "image/jpeg"):
+        raise ValueError(f"Unsupported media type: {format}")
+
+    extension = ".png" if format == "image/png" else ".jpeg"
+    with io.BytesIO(binary) as buf:
+        image = iio.imread(buf, extension=extension)
+    return image
+
+
 TVector = TypeVar("TVector", bound=tuple)
 
 
