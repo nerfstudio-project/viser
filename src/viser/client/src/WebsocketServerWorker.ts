@@ -60,8 +60,14 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBuffer>) {
       console.log(`Disconnected! ${server} code=${event.code}`);
       clearTimeout(retryTimeout);
 
-      // Try to reconnect.
-      if (server !== null) setTimeout(tryConnect, 1000);
+      // Try to reconnect on next repaint.
+      // requestAnimationFrame() helps us avoid reconnecting from tabs that are
+      // hidden or minimized.
+      if (server !== null) {
+        requestAnimationFrame(() => {
+          setTimeout(tryConnect, 1000);
+        });
+      }
     };
 
     ws.onmessage = async (event) => {
