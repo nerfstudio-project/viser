@@ -100,6 +100,12 @@ def _encode_image_binary(
     return media_type, binary
 
 
+def _decode_image_binary(binary: bytes) -> np.ndarray:
+    with io.BytesIO(binary) as buf:
+        image = iio.imread(buf)
+    return image
+
+
 TVector = TypeVar("TVector", bound=tuple)
 
 
