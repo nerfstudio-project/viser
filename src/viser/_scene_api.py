@@ -812,10 +812,10 @@ class SceneApi:
                 fov=fov,
                 aspect=aspect,
                 scale=scale,
-                line_width=line_width,
+                line_thickness=line_width,
                 color=_encode_rgb(color),
                 image_media_type=media_type,
-                _image_data=binary,
+                image_binary=binary,
             ),
         )
         handle = CameraFrustumHandle._make(self, message, name, wxyz, position, visible)

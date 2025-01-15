@@ -233,13 +233,13 @@ class CameraFrustumProps:
     """Aspect ratio of the camera (width over height). Synchronized automatically when assigned."""
     scale: float
     """Scale factor for the size of the frustum. Synchronized automatically when assigned."""
-    line_width: float
+    line_thickness: float
     """Width of the frustum lines. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the frustum as RGB integers. Synchronized automatically when assigned."""
     image_media_type: Literal["image/jpeg", "image/png"] | None
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
-    _image_data: bytes | None
+    image_binary: bytes | None
     """Optional image to be displayed on the frustum. Synchronized automatically when assigned."""
 
 

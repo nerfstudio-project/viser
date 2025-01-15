@@ -282,9 +282,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             fov={message.props.fov}
             aspect={message.props.aspect}
             scale={message.props.scale}
-            lineWidth={message.props.line_width}
+            lineWidth={message.props.line_thickness * 400.0}
             color={rgbToInt(message.props.color)}
-            imageBinary={message.props._image_data}
+            imageBinary={message.props.image_binary}
             imageMediaType={message.props.image_media_type}
           />
         ),

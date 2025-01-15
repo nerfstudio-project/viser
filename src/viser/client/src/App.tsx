@@ -311,7 +311,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <Canvas
         camera={{ position: [-3.0, 3.0, -3.0], near: 0.01, far: 1000.0 }}
         gl={{ preserveDrawingBuffer: true }}
-        dpr={0.6 * window.devicePixelRatio /* Relaxed initial DPR. */}
+        dpr={2.0 * window.devicePixelRatio}
         style={{
           width: "100%",
           height: "100%",
@@ -467,7 +467,7 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       >
         {inView ? null : <DisableRender />}
         <BackgroundImage />
-        <AdaptiveDpr />
+        {/* <AdaptiveDpr /> */}
         <SceneContextSetter />
         {memoizedCameraControls}
         <SplatRenderContext>

@@ -368,7 +368,7 @@ class CameraFrustumHandle(
         from ._scene_api import _encode_image_binary
 
         if image is None:
-            self._image_data = None
+            self.image_binary = None
             return
 
         if self.image_media_type is None:
@@ -378,7 +378,7 @@ class CameraFrustumHandle(
         media_type, data = _encode_image_binary(
             image, self.image_media_type, jpeg_quality=self._jpeg_quality
         )
-        self._image_data = data
+        self.image_binary = data
         del media_type
 
 

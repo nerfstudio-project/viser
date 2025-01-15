@@ -13,10 +13,10 @@ export interface CameraFrustumMessage {
     fov: number;
     aspect: number;
     scale: number;
-    line_width: number;
+    line_thickness: number;
     color: [number, number, number];
     image_media_type: "image/jpeg" | "image/png" | null;
-    _image_data: Uint8Array | null;
+    image_binary: Uint8Array | null;
   };
 }
 /** GlTF message.
