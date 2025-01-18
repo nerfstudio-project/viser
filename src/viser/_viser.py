@@ -799,7 +799,10 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                 ):
                     remove_message_ids.append(id)
 
-                if isinstance(message, _messages.GuiUpdateMessage):
+                if (
+                    isinstance(message, _messages.GuiUpdateMessage)
+                    and message.uuid in remove_gui_uuids
+                ):
                     remove_message_ids.append(id)
 
             # Remove old messages.
