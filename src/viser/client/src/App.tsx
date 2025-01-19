@@ -27,7 +27,7 @@ import {
   createTheme,
   useMantineTheme,
 } from "@mantine/core";
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { SceneNodeThreeObject, UseSceneTree } from "./SceneTree";
 
 import "./index.css";
@@ -47,10 +47,7 @@ import { ndcFromPointerXy, opencvXyFromPointerXy } from "./ClickUtils";
 import { theme } from "./AppTheme";
 import { FrameSynchronizedMessageHandler } from "./MessageHandler";
 import { PlaybackFromFile } from "./FilePlayback";
-import {
-  GaussianSplatsContext,
-  SplatRenderContext,
-} from "./Splatting/GaussianSplats";
+import { SplatRenderContext } from "./Splatting/GaussianSplats";
 import { BrowserWarning } from "./BrowserWarning";
 
 export type ViewerContextContents = {
