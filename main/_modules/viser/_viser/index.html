@@ -1215,7 +1215,10 @@
                 <span class="p">):</span>
                     <span class="n">remove_message_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GuiUpdateMessage</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">_messages</span><span class="o">.</span><span class="n">GuiUpdateMessage</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="n">message</span><span class="o">.</span><span class="n">uuid</span> <span class="ow">in</span> <span class="n">remove_gui_uuids</span>
+                <span class="p">):</span>
                     <span class="n">remove_message_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
 
             <span class="c1"># Remove old messages.</span>
