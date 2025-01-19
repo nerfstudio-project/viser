@@ -32,6 +32,7 @@ from ._scene_handles import DirectionalLightHandle as DirectionalLightHandle
 from ._scene_handles import FrameHandle as FrameHandle
 from ._scene_handles import GaussianSplatHandle as GaussianSplatHandle
 from ._scene_handles import GlbHandle as GlbHandle
+from ._scene_handles import GridHandle as GridHandle
 from ._scene_handles import Gui3dContainerHandle as Gui3dContainerHandle
 from ._scene_handles import HemisphereLightHandle as HemisphereLightHandle
 from ._scene_handles import ImageHandle as ImageHandle
