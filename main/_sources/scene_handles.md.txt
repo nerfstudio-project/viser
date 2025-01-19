@@ -27,6 +27,8 @@ methods like :func:`viser.ViserServer.add_frame()` or
 
 .. autoclass:: viser.GlbHandle
 
+.. autoclass:: viser.GridHandle
+
 .. autoclass:: viser.Gui3dContainerHandle
 
 .. autoclass:: viser.ImageHandle
