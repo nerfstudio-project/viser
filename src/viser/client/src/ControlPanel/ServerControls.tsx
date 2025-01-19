@@ -139,7 +139,7 @@ export default function ServerControls() {
               up direction of the camera.
               <br />
               <br />
-              These can be used to set the origin of the
+              This can be used to set the origin of the
               <br />
               camera&apos;s orbit controls.
             </>
