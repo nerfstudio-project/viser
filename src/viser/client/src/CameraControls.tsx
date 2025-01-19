@@ -323,9 +323,15 @@ export function SynchronizedCameraControls() {
     // Log camera.
     if (logCamera != undefined) {
       console.log(
-        `&initialCameraPosition=${t_world_camera.x.toFixed(3)},${t_world_camera.y.toFixed(3)},${t_world_camera.z.toFixed(3)}` +
-          `&initialCameraLookAt=${lookAt.x.toFixed(3)},${lookAt.y.toFixed(3)},${lookAt.z.toFixed(3)}` +
-          `&initialCameraUp=${up.x.toFixed(3)},${up.y.toFixed(3)},${up.z.toFixed(3)}`,
+        `&initialCameraPosition=${t_world_camera.x.toFixed(
+          3,
+        )},${t_world_camera.y.toFixed(3)},${t_world_camera.z.toFixed(3)}` +
+          `&initialCameraLookAt=${lookAt.x.toFixed(3)},${lookAt.y.toFixed(
+            3,
+          )},${lookAt.z.toFixed(3)}` +
+          `&initialCameraUp=${up.x.toFixed(3)},${up.y.toFixed(
+            3,
+          )},${up.z.toFixed(3)}`,
       );
     }
   }, [camera, sendCameraThrottled]);

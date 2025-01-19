@@ -311,7 +311,6 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       <Canvas
         camera={{ position: [-3.0, 3.0, -3.0], near: 0.01, far: 1000.0 }}
         gl={{ preserveDrawingBuffer: true }}
-        dpr={0.6 * window.devicePixelRatio /* Relaxed initial DPR. */}
         style={{
           width: "100%",
           height: "100%",
@@ -467,10 +466,10 @@ function ViewerCanvas({ children }: { children: React.ReactNode }) {
       >
         {inView ? null : <DisableRender />}
         <BackgroundImage />
-        <AdaptiveDpr />
         <SceneContextSetter />
         {memoizedCameraControls}
         <SplatRenderContext>
+          <AdaptiveDpr />
           {children}
           <SceneNodeThreeObject name="" parent={null} />
         </SplatRenderContext>
@@ -584,9 +583,7 @@ function AdaptiveDpr() {
   const setDpr = useThree((state) => state.setDpr);
   return (
     <PerformanceMonitor
-      factor={0.6}
-      ms={100}
-      iterations={5}
+      factor={1.0}
       step={0.2}
       bounds={(refreshrate) => {
         const max = Math.min(refreshrate * 0.75, 85);
