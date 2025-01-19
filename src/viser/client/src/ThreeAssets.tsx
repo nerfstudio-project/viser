@@ -148,7 +148,7 @@ export const PointCloud = React.forwardRef<
 /** Component for rendering the contents of GLB files. */
 export const GlbAsset = React.forwardRef<
   THREE.Group,
-  { glb_data: Uint8Array; scale: number }
+  { glb_data: Uint8Array<ArrayBuffer>; scale: number }
 >(function GlbAsset({ glb_data, scale }, ref) {
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.

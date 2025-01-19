@@ -13,7 +13,7 @@ export type WsWorkerOutgoing =
   | { type: "message_batch"; messages: Message[] };
 
 // Helper function to collect all ArrayBuffer objects. This is used for postMessage() move semantics.
-function collectArrayBuffers(obj: any, buffers: Set<ArrayBuffer>) {
+function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
   if (obj instanceof ArrayBuffer) {
     buffers.add(obj);
   } else if (obj instanceof Uint8Array) {
