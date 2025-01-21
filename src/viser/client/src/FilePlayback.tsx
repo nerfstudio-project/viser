@@ -254,19 +254,15 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           gap: "0.375em",
         }}
       >
-        <ActionIcon size="md" variant="subtle">
+        <ActionIcon
+          size="md"
+          variant="subtle"
+          onClick={() => setPaused(!paused)}
+        >
           {paused ? (
-            <IconPlayerPlayFilled
-              onClick={() => setPaused(false)}
-              height="1.125em"
-              width="1.125em"
-            />
+            <IconPlayerPlayFilled height="1.125em" width="1.125em" />
           ) : (
-            <IconPlayerPauseFilled
-              onClick={() => setPaused(true)}
-              height="1.125em"
-              width="1.125em"
-            />
+            <IconPlayerPauseFilled height="1.125em" width="1.125em" />
           )}
         </ActionIcon>
         <NumberInput
