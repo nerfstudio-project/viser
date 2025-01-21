@@ -6,6 +6,7 @@ import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ViewerContext } from "./App";
 import {
   ActionIcon,
+  Box,
   NumberInput,
   Paper,
   Progress,
@@ -207,9 +208,9 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         playbackMutable.current.currentIndex = 0;
       }
       playbackMutable.current.currentTime = value;
-      setCurrentTime(value);
       setPaused(true);
       updatePlayback();
+      setCurrentTime(value);
     },
     [recording],
   );
@@ -252,8 +253,55 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           alignItems: "center",
           justifyContent: "space-between",
           gap: "0.375em",
+          overflow: "visible",
         }}
       >
+        <Box
+          style={{
+            position: "absolute",
+            top: "-0.3em",
+            transform: "translateY(-100%)",
+            left: 0,
+            right: 0,
+            justifyContent: "center",
+            zIndex: 1,
+            display: "flex",
+            gap: "1.5em",
+          }}
+        >
+          <div
+            style={{
+              boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1)",
+              textDecoration: "none",
+              color: "#209cee",
+              backgroundColor: "rgba(255, 255, 255, 1.0)",
+              padding: "0.1em 0.5em",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              setPaused(true);
+              updateCurrentTime(0.0);
+            }}
+          >
+            jump to start
+          </div>
+          <div
+            style={{
+              boxShadow: "0.1em 0 1em 0 rgba(0,0,0,0.1)",
+              textDecoration: "none",
+              color: "#209cee",
+              backgroundColor: "rgba(255, 255, 255, 1.0)",
+              padding: "0.1em 0.5em",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              setPaused(true);
+              updateCurrentTime(recording.durationSeconds);
+            }}
+          >
+            jump to end
+          </div>
+        </Box>
         <ActionIcon size="md" variant="subtle">
           {paused ? (
             <IconPlayerPlayFilled
