@@ -31,6 +31,7 @@ from ._scene_handles import (
     LineSegmentsHandle,
     MeshHandle,
     MeshSkinnedBoneHandle,
+    BatchedMeshHandle,
     MeshSkinnedHandle,
     PointCloudHandle,
     PointLightHandle,
@@ -1298,7 +1299,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
-    ) -> MeshHandle:
+    ) -> BatchedMeshHandle:
         """Add batched meshes to the scene.
 
         Args:
@@ -1357,7 +1358,7 @@ class SceneApi:
                 material=material,
             ),
         )
-        return MeshHandle._make(self, message, name, wxyz, position, visible)
+        return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)
 
     def _add_gaussian_splats(self, *args, **kwargs) -> GaussianSplatHandle:
         """Backwards compatibility shim. Use `add_gaussian_splats()` instead."""

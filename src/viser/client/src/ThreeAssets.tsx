@@ -716,29 +716,34 @@ export const InstancedMesh = React.forwardRef<
     }
   }, [material, materialProps]);
 
+  const num_insts = React.useRef(batched_wxyzs.length / 4);
   const instancedMeshRef = React.useRef<THREE.InstancedMesh>(null);
 
   React.useEffect(() => {
-    const instanceCount = batched_wxyzs.length / 4;
-    const dummy = new THREE.Object3D();
+    const dummy = new THREE.Matrix4();
+    const quaternion = new THREE.Quaternion();
 
+    const instanceCount = Math.min(
+      batched_wxyzs.length / 4,
+      batched_positions.length / 3
+    )
     for (let i = 0; i < instanceCount; i++) {
-      const quaternion = new THREE.Quaternion(
-        batched_wxyzs[i * 4 + 1],
-        batched_wxyzs[i * 4 + 2],
-        batched_wxyzs[i * 4 + 3],
-        batched_wxyzs[i * 4 + 0]
-      );
-      dummy.position.set(
+      dummy.makeRotationFromQuaternion(
+        quaternion.set(
+          batched_wxyzs[i * 4 + 1],
+          batched_wxyzs[i * 4 + 2],
+          batched_wxyzs[i * 4 + 3],
+          batched_wxyzs[i * 4 + 0]
+        )
+      ).setPosition(
         batched_positions[i * 3 + 0],
         batched_positions[i * 3 + 1],
         batched_positions[i * 3 + 2]
       );
-      dummy.quaternion.copy(quaternion);
-      dummy.updateMatrix();
-      instancedMeshRef.current!.setMatrixAt(i, dummy.matrix);
+      instancedMeshRef.current!.setMatrixAt(i, dummy);
     }
     instancedMeshRef.current!.instanceMatrix.needsUpdate = true;
+    num_insts.current = instanceCount;
   }, [batched_wxyzs, batched_positions]);
 
   React.useEffect(() => {
@@ -752,7 +757,7 @@ export const InstancedMesh = React.forwardRef<
     <group ref={ref}>
       <instancedMesh
         ref={instancedMeshRef}
-        args={[geometry, meshMaterial, batched_wxyzs.length / 4]}
+        args={[geometry, meshMaterial, batched_wxyzs.length / 4]} // Max number of rendereable
       >
         <OutlinesIfHovered alwaysMounted />
       </instancedMesh>
