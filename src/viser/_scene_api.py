@@ -1281,6 +1281,83 @@ class SceneApi:
                 position=position,
                 visible=visible,
             )
+    
+    def add_batched_meshes(
+        self,
+        name: str,
+        vertices: np.ndarray,
+        faces: np.ndarray,
+        batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
+        batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        color: RgbTupleOrArray = (90, 200, 255),
+        wireframe: bool = False,
+        opacity: float | None = None,
+        material: Literal["standard", "toon3", "toon5"] = "standard",
+        flat_shading: bool = False,
+        side: Literal["front", "back", "double"] = "front",
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> MeshHandle:
+        """Add batched meshes to the scene.
+
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+                define a kinematic tree.
+            vertices: A numpy array of vertex positions. Should have shape (V, 3).
+            faces: A numpy array of faces, where each face is represented by indices of
+                vertices. Should have shape (F, 3).
+            batched_wxyzs: Float array of shape (N, 4) for orientations.
+            batched_positions: Float array of shape (N, 3) for positions.
+            color: Color of the meshes as an RGB tuple.
+            wireframe: Boolean indicating if the meshes should be rendered as wireframes.
+            opacity: Opacity of the meshes. None means opaque.
+            material: Material type of the meshes ('standard', 'toon3', 'toon5').
+                This argument is ignored when wireframe=True.
+            flat_shading: Whether to do flat shading. This argument is ignored
+                when wireframe=True.
+            side: Side of the surface to render ('front', 'back', 'double').
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation from parent frame to local frame (t_pl).
+            visible: Whether or not these meshes are initially visible.
+
+        Returns:
+            Handle for manipulating scene node.
+        """
+        if wireframe and material != "standard":
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {material=}. Material argument will be ignored.",
+                stacklevel=2,
+            )
+        if wireframe and flat_shading:
+            warnings.warn(
+                f"Invalid combination of {wireframe=} and {flat_shading=}. Flat shading argument will be ignored.",
+                stacklevel=2,
+            )
+
+        batched_wxyzs = np.asarray(batched_wxyzs)
+        batched_positions = np.asarray(batched_positions)
+
+        num_instances = batched_wxyzs.shape[0]
+        assert batched_wxyzs.shape == (num_instances, 4)
+        assert batched_positions.shape == (num_instances, 3)
+
+        message = _messages.BatchedMeshesMessage(
+            name=name,
+            props=_messages.BatchedMeshesProps(
+                vertices=vertices.astype(np.float32),
+                faces=faces.astype(np.uint32),
+                batched_wxyzs=batched_wxyzs.astype(np.float32),
+                batched_positions=batched_positions.astype(np.float32),
+                color=_encode_rgb(color),
+                wireframe=wireframe,
+                opacity=opacity,
+                flat_shading=flat_shading,
+                side=side,
+                material=material,
+            ),
+        )
+        return MeshHandle._make(self, message, name, wxyz, position, visible)
 
     def _add_gaussian_splats(self, *args, **kwargs) -> GaussianSplatHandle:
         """Backwards compatibility shim. Use `add_gaussian_splats()` instead."""

@@ -651,6 +651,115 @@ export const ViserMesh = React.forwardRef<
   }
 });
 
+/** Helper for adding batched/instanced meshes as scene nodes. */
+export const InstancedMesh = React.forwardRef<
+  THREE.Group,
+  {
+    vertices: Float32Array; 
+    faces: Uint32Array;
+    color: [number, number, number] | null;
+    wireframe: boolean;
+    opacity: number | null;
+    material: "standard" | "toon3" | "toon5";
+    flat_shading: boolean;
+    side: "front" | "back" | "double";
+    batched_wxyzs: Float32Array;
+    batched_positions: Float32Array;
+  }
+>(function InstancedMesh(
+  {
+    vertices,
+    faces,
+    color,
+    wireframe,
+    opacity,
+    material,
+    flat_shading,
+    side,
+    batched_wxyzs,
+    batched_positions
+  },
+  ref,
+) {
+  const geometry = React.useMemo(() => {
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute(
+      "position",
+      new THREE.BufferAttribute(new Float32Array(vertices), 3)
+    );
+    geom.setIndex(new THREE.BufferAttribute(new Uint32Array(faces), 1));
+    geom.computeVertexNormals();
+    geom.computeBoundingSphere();
+    return geom;
+  }, [vertices, faces]);
+
+  const materialProps = {
+    color: color === null ? undefined : rgbToInt(color),
+    wireframe,
+    transparent: opacity !== null,
+    opacity: opacity ?? 1.0,
+    flatShading: flat_shading && !wireframe,
+    side: {
+      front: THREE.FrontSide,
+      back: THREE.BackSide,
+      double: THREE.DoubleSide,
+    }[side],
+  };
+
+  const meshMaterial = React.useMemo(() => {
+    switch (material) {
+      case "standard":
+      case "toon3":
+      case "toon5":
+      default:
+        return new THREE.MeshStandardMaterial(materialProps);
+    }
+  }, [material, materialProps]);
+
+  const instancedMeshRef = React.useRef<THREE.InstancedMesh>(null);
+
+  React.useEffect(() => {
+    const instanceCount = batched_wxyzs.length / 4;
+    const dummy = new THREE.Object3D();
+
+    for (let i = 0; i < instanceCount; i++) {
+      const quaternion = new THREE.Quaternion(
+        batched_wxyzs[i * 4 + 1],
+        batched_wxyzs[i * 4 + 2],
+        batched_wxyzs[i * 4 + 3],
+        batched_wxyzs[i * 4 + 0]
+      );
+      dummy.position.set(
+        batched_positions[i * 3 + 0],
+        batched_positions[i * 3 + 1],
+        batched_positions[i * 3 + 2]
+      );
+      dummy.quaternion.copy(quaternion);
+      dummy.updateMatrix();
+      instancedMeshRef.current!.setMatrixAt(i, dummy.matrix);
+    }
+    instancedMeshRef.current!.instanceMatrix.needsUpdate = true;
+  }, [batched_wxyzs, batched_positions]);
+
+  React.useEffect(() => {
+    return () => {
+      geometry.dispose();
+      meshMaterial.dispose();
+    };
+  }, [geometry, meshMaterial]);
+
+  return (
+    <group ref={ref}>
+      <instancedMesh
+        ref={instancedMeshRef}
+        args={[geometry, meshMaterial, batched_wxyzs.length / 4]}
+      >
+        <OutlinesIfHovered alwaysMounted />
+      </instancedMesh>
+    </group>
+  );
+});
+
 export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
   function ViserImage(message, ref) {
     const [imageTexture, setImageTexture] = React.useState<THREE.Texture>();
