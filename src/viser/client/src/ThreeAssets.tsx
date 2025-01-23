@@ -1,5 +1,6 @@
+import { InstancedMesh2 } from "@three.ez/instanced-mesh"
 import { Instance, Instances, Line, shaderMaterial } from "@react-three/drei";
-import { createPortal, useFrame, useThree } from "@react-three/fiber";
+import { extend, createPortal, useFrame, useThree } from "@react-three/fiber";
 import { Outlines } from "./Outlines";
 import React from "react";
 import * as THREE from "three";
@@ -30,6 +31,15 @@ import {
   SkinnedMeshMessage,
 } from "./WebsocketMessages";
 import { ViewerContext } from "./App";
+import { Object3DNode } from '@react-three/fiber';
+
+declare module '@react-three/fiber' {
+  interface ThreeElements {
+    instancedMesh2: Object3DNode<InstancedMesh2, typeof InstancedMesh2>;
+  }
+}
+
+extend({ InstancedMesh2 });
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
@@ -655,7 +665,7 @@ export const ViserMesh = React.forwardRef<
 export const InstancedMesh = React.forwardRef<
   THREE.Group,
   {
-    vertices: Float32Array; 
+    vertices: Float32Array;
     faces: Uint32Array;
     color: [number, number, number] | null;
     wireframe: boolean;
@@ -717,7 +727,7 @@ export const InstancedMesh = React.forwardRef<
   }, [material, materialProps]);
 
   const num_insts = React.useRef(batched_wxyzs.length / 4);
-  const instancedMeshRef = React.useRef<THREE.InstancedMesh>(null);
+  const instancedMeshRef = React.useRef<InstancedMesh2>(null);
 
   React.useEffect(() => {
     const dummy = new THREE.Matrix4();
@@ -726,23 +736,29 @@ export const InstancedMesh = React.forwardRef<
     const instanceCount = Math.min(
       batched_wxyzs.length / 4,
       batched_positions.length / 3
-    )
-    for (let i = 0; i < instanceCount; i++) {
-      dummy.makeRotationFromQuaternion(
-        quaternion.set(
-          batched_wxyzs[i * 4 + 1],
-          batched_wxyzs[i * 4 + 2],
-          batched_wxyzs[i * 4 + 3],
-          batched_wxyzs[i * 4 + 0]
-        )
-      ).setPosition(
-        batched_positions[i * 3 + 0],
-        batched_positions[i * 3 + 1],
-        batched_positions[i * 3 + 2]
-      );
-      instancedMeshRef.current!.setMatrixAt(i, dummy);
+    );
+
+    if (instancedMeshRef.current) {
+      for (let i = 0; i < instanceCount; i++) {
+        dummy.makeRotationFromQuaternion(
+          quaternion.set(
+            batched_wxyzs[i * 4 + 1],
+            batched_wxyzs[i * 4 + 2],
+            batched_wxyzs[i * 4 + 3],
+            batched_wxyzs[i * 4 + 0]
+          )
+        ).setPosition(
+          batched_positions[i * 3 + 0],
+          batched_positions[i * 3 + 1],
+          batched_positions[i * 3 + 2]
+        );
+
+        if (instancedMeshRef.current.instances[i]) {
+          instancedMeshRef.current.instances[i].applyMatrix4(dummy);
+          instancedMeshRef.current.instances[i].updateMatrix();
+        }
+      }
     }
-    instancedMeshRef.current!.instanceMatrix.needsUpdate = true;
     num_insts.current = instanceCount;
   }, [batched_wxyzs, batched_positions]);
 
@@ -755,12 +771,8 @@ export const InstancedMesh = React.forwardRef<
 
   return (
     <group ref={ref}>
-      <instancedMesh
-        ref={instancedMeshRef}
-        args={[geometry, meshMaterial, batched_wxyzs.length / 4]} // Max number of rendereable
-      >
-        <OutlinesIfHovered alwaysMounted />
-      </instancedMesh>
+      <instancedMesh2 ref={instancedMeshRef} args={[geometry, meshMaterial, {createEntities: true, capacity: num_insts.current}]} />
+      <OutlinesIfHovered alwaysMounted />
     </group>
   );
 });
