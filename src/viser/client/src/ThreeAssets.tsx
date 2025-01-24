@@ -675,6 +675,7 @@ export const InstancedMesh = React.forwardRef<
     side: "front" | "back" | "double";
     batched_wxyzs: Float32Array;
     batched_positions: Float32Array;
+    lod_list: [Uint8Array, Uint8Array, number][] | null;
   }
 >(function InstancedMesh(
   {
@@ -687,7 +688,8 @@ export const InstancedMesh = React.forwardRef<
     flat_shading,
     side,
     batched_wxyzs,
-    batched_positions
+    batched_positions,
+    lod_list
   },
   ref,
 ) {
@@ -745,8 +747,21 @@ export const InstancedMesh = React.forwardRef<
         batched_wxyzs[index * 4 + 0]
       ); // wxyz -> xyzw.
     });
+    
+    // Add LODs if provided
+    if (lod_list !== null) {
+      console.log("updating lod");
+      for (const [_verts, _faces, _dist] of lod_list) {
+        const _geom = new THREE.BufferGeometry();
+        _geom.setAttribute("position", new THREE.BufferAttribute(new Float32Array(_verts.buffer.slice(_verts.byteOffset, _verts.byteOffset + _verts.byteLength)), 3));
+        _geom.setIndex(new THREE.BufferAttribute(new Uint32Array(_faces.buffer.slice(_faces.byteOffset, _faces.byteOffset + _faces.byteLength)), 1));
+        _geom.computeVertexNormals();
+        _geom.computeBoundingSphere();
+        instancedMesh.addLOD(_geom, meshMaterial, _dist);
+      }
+    }
     return instancedMesh;
-  }, [num_insts]);
+  }, [num_insts, lod_list]);
 
   React.useEffect(() => {
     // On all subsequent updates, we use the update call.

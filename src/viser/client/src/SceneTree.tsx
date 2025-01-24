@@ -321,6 +321,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 ),
               )
             }
+            lod_list={message.props.lod_list}
           />
         )
       };

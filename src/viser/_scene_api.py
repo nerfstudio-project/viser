@@ -1282,7 +1282,7 @@ class SceneApi:
                 position=position,
                 visible=visible,
             )
-    
+
     def add_batched_meshes(
         self,
         name: str,
@@ -1299,6 +1299,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        lod_list: tuple[tuple[np.ndarray, np.ndarray, int], ...] | None = None,
     ) -> BatchedMeshHandle:
         """Add batched meshes to the scene.
 
@@ -1321,7 +1322,7 @@ class SceneApi:
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not these meshes are initially visible.
-
+            lod_list: List of tuples of (vertices, faces, distance).
         Returns:
             Handle for manipulating scene node.
         """
@@ -1343,6 +1344,14 @@ class SceneApi:
         assert batched_wxyzs.shape == (num_instances, 4)
         assert batched_positions.shape == (num_instances, 3)
 
+        _lod_list = []
+        if lod_list is not None:
+            for _verts, _faces, distance in lod_list:
+                _lod_list.append(
+                    (_verts.astype(np.float32), _faces.astype(np.uint32), distance)
+                )
+        _lod_list = tuple(_lod_list)
+
         message = _messages.BatchedMeshesMessage(
             name=name,
             props=_messages.BatchedMeshesProps(
@@ -1356,6 +1365,7 @@ class SceneApi:
                 flat_shading=flat_shading,
                 side=side,
                 material=material,
+                lod_list=_lod_list,
             ),
         )
         return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)

@@ -621,10 +621,14 @@ class BatchedMeshesMessage(_CreateSceneNodeMessage):
 
 @dataclasses.dataclass
 class BatchedMeshesProps(MeshProps):
+    """Batched meshes message."""
+
     batched_wxyzs: npt.NDArray[np.float32]
     """Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned."""
     batched_positions: npt.NDArray[np.float32]
     """Float array of shape (N, 3) representing positions. Synchronized automatically when assigned."""
+    lod_list: tuple[tuple[npt.NDArray[np.float32], npt.NDArray[np.uint32], int], ...] | None
+    """List of tuples of (vertices, faces, distance). Synchronized automatically when assigned."""
 
     def __post_init__(self):
         super().__post_init__()
