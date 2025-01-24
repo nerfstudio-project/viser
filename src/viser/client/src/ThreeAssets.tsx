@@ -727,39 +727,33 @@ export const InstancedMesh = React.forwardRef<
   }, [material, materialProps]);
 
   const num_insts = React.useRef(batched_wxyzs.length / 4);
-  const instancedMeshRef = React.useRef<InstancedMesh2>(null);
+  const instancedMesh = React.useMemo(() => {
+    const instancedMesh = new InstancedMesh2(geometry, meshMaterial, {
+      capacity: num_insts.current,
+      createEntities: true,
+    });
+    instancedMesh.addInstances(num_insts.current, (obj, index) => {
+      obj.position.set(
+        batched_positions[index * 3 + 0],
+        batched_positions[index * 3 + 1],
+        batched_positions[index * 3 + 2]
+      );
+      obj.quaternion.set(
+        batched_wxyzs[index * 4 + 1],
+        batched_wxyzs[index * 4 + 2],
+        batched_wxyzs[index * 4 + 3],
+        batched_wxyzs[index * 4 + 0]
+      ); // wxyz -> xyzw.
+    });
+    return instancedMesh;
+  }, [num_insts]);
 
   React.useEffect(() => {
-    const dummy = new THREE.Matrix4();
-    const quaternion = new THREE.Quaternion();
-
-    const instanceCount = Math.min(
-      batched_wxyzs.length / 4,
-      batched_positions.length / 3
-    );
-
-    if (instancedMeshRef.current) {
-      for (let i = 0; i < instanceCount; i++) {
-        dummy.makeRotationFromQuaternion(
-          quaternion.set(
-            batched_wxyzs[i * 4 + 1],
-            batched_wxyzs[i * 4 + 2],
-            batched_wxyzs[i * 4 + 3],
-            batched_wxyzs[i * 4 + 0]
-          )
-        ).setPosition(
-          batched_positions[i * 3 + 0],
-          batched_positions[i * 3 + 1],
-          batched_positions[i * 3 + 2]
-        );
-
-        if (instancedMeshRef.current.instances[i]) {
-          instancedMeshRef.current.instances[i].applyMatrix4(dummy);
-          instancedMeshRef.current.instances[i].updateMatrix();
-        }
-      }
-    }
-    num_insts.current = instanceCount;
+    // On all subsequent updates, we use the update call.
+    instancedMesh.updateInstances((obj, index) => {
+      obj.position.set(batched_positions[index * 3 + 0], batched_positions[index * 3 + 1], batched_positions[index * 3 + 2]);
+      obj.quaternion.set(batched_wxyzs[index * 4 + 1], batched_wxyzs[index * 4 + 2], batched_wxyzs[index * 4 + 3], batched_wxyzs[index * 4 + 0]);  // wxyz -> xyzw.
+    });
   }, [batched_wxyzs, batched_positions]);
 
   React.useEffect(() => {
@@ -771,7 +765,7 @@ export const InstancedMesh = React.forwardRef<
 
   return (
     <group ref={ref}>
-      <instancedMesh2 ref={instancedMeshRef} args={[geometry, meshMaterial, {createEntities: true, capacity: num_insts.current}]} />
+      <primitive object={instancedMesh} />
       <OutlinesIfHovered alwaysMounted />
     </group>
   );
