@@ -65,9 +65,9 @@ class StateSerializer:
     def insert_sleep(self, duration: float) -> None:
         """Insert a sleep into the recorded file. This can be useful for
         dynamic 3D data."""
-        assert (
-            self._handler._record_handle is not None
-        ), "serialize() was already called!"
+        assert self._handler._record_handle is not None, (
+            "serialize() was already called!"
+        )
         self._time += duration
 
     def serialize(self) -> bytes:
@@ -78,9 +78,9 @@ class StateSerializer:
         Returns:
             The recording as bytes.
         """
-        assert (
-            self._handler._record_handle is not None
-        ), "serialize() was already called!"
+        assert self._handler._record_handle is not None, (
+            "serialize() was already called!"
+        )
         import viser
 
         packed_bytes = msgspec.msgpack.encode(
@@ -133,9 +133,9 @@ class WebsockMessageHandler:
         callback: Callable[[ClientId, TMessage], None | Coroutine] | None = None,
     ):
         """Unregister a handler for a particular message type."""
-        assert (
-            message_cls in self._incoming_handlers
-        ), "Tried to unregister a handler that hasn't been registered."
+        assert message_cls in self._incoming_handlers, (
+            "Tried to unregister a handler that hasn't been registered."
+        )
         if callback is None:
             self._incoming_handlers.pop(message_cls)
         else:

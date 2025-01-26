@@ -66,6 +66,7 @@ from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._messages import FileTransferPartAck, GuiBaseProps, GuiSliderMark
 from ._scene_api import cast_vector
+from ._threadpool_exceptions import print_threadpool_errors
 
 if TYPE_CHECKING:
     import plotly.graph_objects as go
@@ -282,7 +283,9 @@ class GuiApi:
             if asyncio.iscoroutinefunction(cb):
                 await cb(GuiEvent(client, client_id, handle))
             else:
-                self._thread_executor.submit(cb, GuiEvent(client, client_id, handle))
+                self._thread_executor.submit(
+                    cb, GuiEvent(client, client_id, handle)
+                ).add_done_callback(print_threadpool_errors)
 
         if handle_state.sync_cb is not None:
             handle_state.sync_cb(client_id, updates_cast)
@@ -367,7 +370,9 @@ class GuiApi:
             if asyncio.iscoroutinefunction(cb):
                 self._event_loop.create_task(cb(GuiEvent(client, client_id, handle)))
             else:
-                self._thread_executor.submit(cb, GuiEvent(client, client_id, handle))
+                self._thread_executor.submit(
+                    cb, GuiEvent(client, client_id, handle)
+                ).add_done_callback(print_threadpool_errors)
 
     def _get_container_uuid(self) -> str:
         """Get container ID associated with the current thread."""
@@ -423,9 +428,9 @@ class GuiApi:
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
             if len(brand_color) == 3:
-                assert all(
-                    map(lambda val: isinstance(val, int), brand_color)
-                ), "All channels should be integers."
+                assert all(map(lambda val: isinstance(val, int), brand_color)), (
+                    "All channels should be integers."
+                )
 
                 # RGB => HLS.
                 h, l, s = colorsys.rgb_to_hls(
@@ -697,9 +702,9 @@ class GuiApi:
             plotly_path = (
                 Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
             )
-            assert (
-                plotly_path.exists()
-            ), f"Could not find plotly.min.js at {plotly_path}."
+            assert plotly_path.exists(), (
+                f"Could not find plotly.min.js at {plotly_path}."
+            )
 
             # Send it over!
             plotly_js = plotly_path.read_text(encoding="utf-8")

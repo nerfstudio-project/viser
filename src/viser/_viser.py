@@ -26,6 +26,7 @@ from . import transforms as tf
 from ._gui_api import Color, GuiApi, _make_uuid
 from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
+from ._threadpool_exceptions import print_threadpool_errors
 from ._tunnel import ViserTunnel
 from .infra._infra import StateSerializer
 
@@ -657,13 +658,17 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                             if asyncio.iscoroutinefunction(cb):
                                 await cb(client)
                             else:
-                                self._thread_executor.submit(cb, client)
+                                self._thread_executor.submit(
+                                    cb, client
+                                ).add_done_callback(print_threadpool_errors)
 
                 for camera_cb in client.camera._state.camera_cb:
                     if asyncio.iscoroutinefunction(camera_cb):
                         await camera_cb(client.camera)
                     else:
-                        self._thread_executor.submit(camera_cb, client.camera)
+                        self._thread_executor.submit(
+                            camera_cb, client.camera
+                        ).add_done_callback(print_threadpool_errors)
 
             conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
 
@@ -679,7 +684,9 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                     if asyncio.iscoroutinefunction(cb):
                         await cb(handle)
                     else:
-                        self._thread_executor.submit(cb, handle)
+                        self._thread_executor.submit(cb, handle).add_done_callback(
+                            print_threadpool_errors
+                        )
 
         # Start the server.
         server.start()
@@ -931,7 +938,9 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             if asyncio.iscoroutinefunction(cb):
                 self._event_loop.create_task(cb(client))
             else:
-                self._thread_executor.submit(cb, client)
+                self._thread_executor.submit(cb, client).add_done_callback(
+                    print_threadpool_errors
+                )
 
         return cb  # type: ignore
 
