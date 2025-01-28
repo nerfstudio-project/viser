@@ -54,7 +54,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pyright>=1.1.308",
-    "ruff==0.6.2",
+    "ruff>=0.9.3",
     "pre-commit==3.3.2",
     "pytest",
     "hypothesis[numpy]",

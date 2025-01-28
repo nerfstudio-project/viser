@@ -46,6 +46,7 @@ from ._scene_handles import (
     _TransformControlsState,
     colors_to_uint8,
 )
+from ._threadpool_exceptions import print_threadpool_errors
 
 if TYPE_CHECKING:
     import trimesh
@@ -105,9 +106,9 @@ TVector = TypeVar("TVector", bound=tuple)
 
 def cast_vector(vector: TVector | np.ndarray, length: int) -> TVector:
     if not isinstance(vector, tuple):
-        assert cast(np.ndarray, vector).shape == (
-            length,
-        ), f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
+        assert cast(np.ndarray, vector).shape == (length,), (
+            f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
+        )
     return cast(TVector, tuple(map(float, vector)))
 
 
@@ -1046,9 +1047,9 @@ class SceneApi:
             Handle for manipulating scene node.
         """
         colors_cast = colors_to_uint8(np.asarray(colors))
-        assert (
-            len(points.shape) == 2 and points.shape[-1] == 3
-        ), "Shape of points should be (N, 3)."
+        assert len(points.shape) == 2 and points.shape[-1] == 3, (
+            "Shape of points should be (N, 3)."
+        )
         assert colors_cast.shape in {
             points.shape,
             (3,),
@@ -1674,7 +1675,9 @@ class SceneApi:
             if asyncio.iscoroutinefunction(cb):
                 await cb(handle)
             else:
-                self._thread_executor.submit(cb, handle)
+                self._thread_executor.submit(cb, handle).add_done_callback(
+                    print_threadpool_errors
+                )
         if handle._impl_aux.sync_cb is not None:
             handle._impl_aux.sync_cb(client_id, handle)
 
@@ -1699,7 +1702,9 @@ class SceneApi:
             if asyncio.iscoroutinefunction(cb):
                 await cb(event)
             else:
-                self._thread_executor.submit(cb, event)
+                self._thread_executor.submit(cb, event).add_done_callback(
+                    print_threadpool_errors
+                )
 
     async def _handle_scene_pointer_updates(
         self, client_id: ClientId, message: _messages.ScenePointerMessage
@@ -1719,7 +1724,9 @@ class SceneApi:
         if asyncio.iscoroutinefunction(self._scene_pointer_cb):
             await self._scene_pointer_cb(event)
         else:
-            self._thread_executor.submit(self._scene_pointer_cb, event)
+            self._thread_executor.submit(
+                self._scene_pointer_cb, event
+            ).add_done_callback(print_threadpool_errors)
 
     def on_pointer_event(
         self, event_type: Literal["click", "rect-select"]
