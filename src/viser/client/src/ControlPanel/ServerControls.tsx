@@ -6,7 +6,6 @@ import {
   Divider,
   Group,
   Stack,
-  Switch,
   Text,
   TextInput,
   Tooltip,
