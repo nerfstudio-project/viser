@@ -458,6 +458,28 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 <dd><p>Current content of the image. Synchronized automatically when assigned.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.CameraFrustumHandle.compute_canonical_frustum_size">
+<span class="sig-name descname"><span class="pre">compute_canonical_frustum_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/_scene_handles/#CameraFrustumHandle.compute_canonical_frustum_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.CameraFrustumHandle.compute_canonical_frustum_size" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the X, Y, and Z dimensions of the frustum if it had
+<code class="docutils literal notranslate"><span class="pre">.scale=1.0</span></code>. These dimensions will change whenever <code class="docutils literal notranslate"><span class="pre">.fov</span></code> or <code class="docutils literal notranslate"><span class="pre">.aspect</span></code>
+are changed.</p>
+<p>To set the distance between a frustum’s origin and image plane to 1, we
+can run:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frustum</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">frustum</span><span class="o">.</span><span class="n">compute_canonical_frustum_size</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">.scale</span></code> is a unitless value that scales the X/Y/Z dimensions linearly.
+It aims to preserve the visual volume of the frustum regardless of the
+aspect ratio or FOV. This method allows more precise computation and
+control of the frustum’s dimensions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[float, float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="viser.CameraFrustumHandle.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#viser.CameraFrustumHandle.name" title="Link to this definition">¶</a></dt>
@@ -2466,6 +2488,7 @@ in <code class="docutils literal notranslate"><span class="pre">p_parent</span> 
 </li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle</span></code></a><ul>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.image"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.image</span></code></a></li>
+<li><a class="reference internal" href="#viser.CameraFrustumHandle.compute_canonical_frustum_size"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.compute_canonical_frustum_size()</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.name"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.name</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.on_click"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.on_click()</span></code></a></li>
 <li><a class="reference internal" href="#viser.CameraFrustumHandle.position"><code class="docutils literal notranslate"><span class="pre">CameraFrustumHandle.position</span></code></a></li>

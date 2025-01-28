@@ -780,7 +780,40 @@
             <span class="n">image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_media_type</span><span class="p">,</span> <span class="n">jpeg_quality</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_jpeg_quality</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_image_data</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="k">del</span> <span class="n">media_type</span></div>
+        <span class="k">del</span> <span class="n">media_type</span>
+
+<div class="viewcode-block" id="CameraFrustumHandle.compute_canonical_frustum_size">
+<a class="viewcode-back" href="../../../scene_handles/#viser.CameraFrustumHandle.compute_canonical_frustum_size">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_canonical_frustum_size</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the X, Y, and Z dimensions of the frustum if it had</span>
+<span class="sd">        `.scale=1.0`. These dimensions will change whenever `.fov` or `.aspect`</span>
+<span class="sd">        are changed.</span>
+
+<span class="sd">        To set the distance between a frustum&#39;s origin and image plane to 1, we</span>
+<span class="sd">        can run:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            frustum.scale = 1.0 / frustum.compute_canonical_frustum_size()[2]</span>
+
+
+<span class="sd">        `.scale` is a unitless value that scales the X/Y/Z dimensions linearly.</span>
+<span class="sd">        It aims to preserve the visual volume of the frustum regardless of the</span>
+<span class="sd">        aspect ratio or FOV. This method allows more precise computation and</span>
+<span class="sd">        control of the frustum&#39;s dimensions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Math used in the client implementation.</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fov</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspect</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">volume_scale</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cbrt</span><span class="p">((</span><span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span>
+
+        <span class="n">z</span> <span class="o">/=</span> <span class="n">volume_scale</span>
+
+        <span class="c1"># x and y need to be doubled, since on the client they correspond to</span>
+        <span class="c1"># NDC-style spans [-1, 1].</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">y</span> <span class="o">*</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">z</span></div>
+</div>
 
 
 
