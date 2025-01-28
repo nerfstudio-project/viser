@@ -433,6 +433,7 @@
     <span class="n">_TransformControlsState</span><span class="p">,</span>
     <span class="n">colors_to_uint8</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._threadpool_exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_threadpool_errors</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">trimesh</span>
@@ -492,9 +493,9 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">cast_vector</span><span class="p">(</span><span class="n">vector</span><span class="p">:</span> <span class="n">TVector</span> <span class="o">|</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TVector</span><span class="p">:</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vector</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="n">cast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span>
-            <span class="n">length</span><span class="p">,</span>
-        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Expected vector of shape </span><span class="si">{</span><span class="p">(</span><span class="n">length</span><span class="p">,)</span><span class="si">}</span><span class="s2">, but got </span><span class="si">{</span><span class="n">vector</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> instead&quot;</span>
+        <span class="k">assert</span> <span class="n">cast</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">vector</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">length</span><span class="p">,),</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Expected vector of shape </span><span class="si">{</span><span class="p">(</span><span class="n">length</span><span class="p">,)</span><span class="si">}</span><span class="s2">, but got </span><span class="si">{</span><span class="n">vector</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> instead&quot;</span>
+        <span class="p">)</span>
     <span class="k">return</span> <span class="n">cast</span><span class="p">(</span><span class="n">TVector</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">vector</span><span class="p">)))</span>
 
 
@@ -1494,9 +1495,9 @@
 <span class="sd">            Handle for manipulating scene node.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">colors_cast</span> <span class="o">=</span> <span class="n">colors_to_uint8</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">colors</span><span class="p">))</span>
-        <span class="k">assert</span> <span class="p">(</span>
-            <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span>
-        <span class="p">),</span> <span class="s2">&quot;Shape of points should be (N, 3).&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;Shape of points should be (N, 3).&quot;</span>
+        <span class="p">)</span>
         <span class="k">assert</span> <span class="n">colors_cast</span><span class="o">.</span><span class="n">shape</span> <span class="ow">in</span> <span class="p">{</span>
             <span class="n">points</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
             <span class="p">(</span><span class="mi">3</span><span class="p">,),</span>
@@ -2153,7 +2154,9 @@
             <span class="k">if</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span><span class="n">cb</span><span class="p">):</span>
                 <span class="k">await</span> <span class="n">cb</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span>
+                    <span class="n">print_threadpool_errors</span>
+                <span class="p">)</span>
         <span class="k">if</span> <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">sync_cb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">handle</span><span class="o">.</span><span class="n">_impl_aux</span><span class="o">.</span><span class="n">sync_cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">handle</span><span class="p">)</span>
 
@@ -2178,7 +2181,9 @@
             <span class="k">if</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span><span class="n">cb</span><span class="p">):</span>
                 <span class="k">await</span> <span class="n">cb</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span>
+                    <span class="n">print_threadpool_errors</span>
+                <span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_handle_scene_pointer_updates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">ScenePointerMessage</span>
@@ -2198,7 +2203,9 @@
         <span class="k">if</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">iscoroutinefunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scene_pointer_cb</span><span class="p">):</span>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scene_pointer_cb</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scene_pointer_cb</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_thread_executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_scene_pointer_cb</span><span class="p">,</span> <span class="n">event</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">print_threadpool_errors</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SceneApi.on_pointer_event">
 <a class="viewcode-back" href="../../../scene_api/#viser.SceneApi.on_pointer_event">[docs]</a>
