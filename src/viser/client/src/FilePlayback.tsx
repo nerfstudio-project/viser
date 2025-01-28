@@ -3,7 +3,7 @@ import { Message } from "./WebsocketMessages";
 import { decompress } from "fflate";
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { ViewerContext } from "./App";
+import { ViewerContext } from "./ViewerContext";
 import {
   ActionIcon,
   NumberInput,

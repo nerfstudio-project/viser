@@ -1,4 +1,4 @@
-import { ViewerContext } from "./App";
+import { ViewerContext } from "./ViewerContext";
 import { GuiModalMessage } from "./WebsocketMessages";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
 import { Modal } from "@mantine/core";
