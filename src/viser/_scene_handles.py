@@ -381,6 +381,36 @@ class CameraFrustumHandle(
         self._image_data = data
         del media_type
 
+    def compute_canonical_frustum_size(self) -> tuple[float, float, float]:
+        """Compute the X, Y, and Z dimensions of the frustum if it had
+        `.scale=1.0`. These dimensions will change whenever `.fov` or `.aspect`
+        are changed.
+
+        To set the distance between a frustum's origin and image plane to 1, we
+        can run:
+
+        .. code-block:: python
+
+            frustum.scale = 1.0 / frustum.compute_canonical_frustum_size()[2]
+
+
+        `.scale` is a unitless value that scales the X/Y/Z dimensions linearly.
+        It aims to preserve the visual volume of the frustum regardless of the
+        aspect ratio or FOV. This method allows more precise computation and
+        control of the frustum's dimensions.
+        """
+        # Math used in the client implementation.
+        y = np.tan(self.fov / 2.0)
+        x = y * self.aspect
+        z = 1.0
+        volume_scale = np.cbrt((x * y * z) / 3.0)
+
+        z /= volume_scale
+
+        # x and y need to be doubled, since on the client they correspond to
+        # NDC-style spans [-1, 1].
+        return x * 2.0, y * 2.0, z
+
 
 class DirectionalLightHandle(
     SceneNodeHandle,
