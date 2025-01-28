@@ -2,6 +2,7 @@ import { Instance, Instances, Line, shaderMaterial } from "@react-three/drei";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { Outlines } from "./Outlines";
 import React from "react";
+import { HoverableContext } from "./HoverContext";
 import * as THREE from "three";
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import {
@@ -29,7 +30,7 @@ import {
   MeshMessage,
   SkinnedMeshMessage,
 } from "./WebsocketMessages";
-import { ViewerContext } from "./App";
+import { ViewerContext } from "./ViewerContext";
 
 type AllPossibleThreeJSMaterials =
   | MeshBasicMaterial
@@ -789,9 +790,6 @@ export const CameraFrustum = React.forwardRef<
     </group>
   );
 });
-
-export const HoverableContext =
-  React.createContext<React.MutableRefObject<boolean> | null>(null);
 
 /** Outlines object, which should be placed as a child of all meshes that might
  * be clickable. */

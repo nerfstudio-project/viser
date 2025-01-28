@@ -1,4 +1,4 @@
-import { ViewerContextContents } from "./App";
+import { ViewerContextContents } from "./ViewerContext";
 import * as THREE from "three";
 
 /** Helper for computing the transformation between the three.js world and the

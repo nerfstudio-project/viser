@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { ViewerContextContents } from "./App";
+import { ViewerContextContents } from "./ViewerContext";
 
 /** Turn a click event into a normalized device coordinate (NDC) vector.
  * Normalizes click coordinates to be between -1 and 1, with (0, 0) being the center of the screen.

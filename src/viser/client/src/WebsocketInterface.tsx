@@ -1,7 +1,7 @@
 import WebsocketServerWorker from "./WebsocketServerWorker?worker";
 import React, { useContext } from "react";
 
-import { ViewerContext } from "./App";
+import { ViewerContext } from "./ViewerContext";
 import { syncSearchParamServer } from "./SearchParamsUtils";
 import { WsWorkerIncoming, WsWorkerOutgoing } from "./WebsocketServerWorker";
 

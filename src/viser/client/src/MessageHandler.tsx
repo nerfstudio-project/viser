@@ -4,7 +4,7 @@ import React, { useContext } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 
-import { ViewerContext } from "./App";
+import { ViewerContext } from "./ViewerContext";
 import {
   FileTransferPart,
   FileTransferStart,
@@ -19,7 +19,7 @@ import { Progress } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { rootNodeTemplate } from "./SceneTreeState";
-import { GaussianSplatsContext } from "./Splatting/GaussianSplats";
+import { GaussianSplatsContext } from "./Splatting/GaussianSplatsHelpers";
 
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {

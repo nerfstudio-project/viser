@@ -1,4 +1,4 @@
-import { ViewerContext } from "../App";
+import { ViewerContext } from "../ViewerContext";
 import { useThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiComponentContext } from "./GuiComponentContext";
 
