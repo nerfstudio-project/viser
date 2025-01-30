@@ -191,7 +191,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -385,7 +385,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -393,145 +393,7 @@
         <article role="main" id="furo-main-content">
           <section id="record3d-urdf-helpers">
 <h1>Record3D + URDF Helpers<a class="headerlink" href="#record3d-urdf-helpers" title="Link to this heading">¶</a></h1>
-<!-- prettier-ignore-start --><p id="module-viser.extras">Extra utilities. Used for example scripts.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="viser.extras.Record3dFrame">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.extras.</span></span><span class="sig-name descname"><span class="pre">Record3dFrame</span></span><a class="reference internal" href="../_modules/viser/extras/_record3d/#Record3dFrame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.Record3dFrame" title="Link to this definition">¶</a></dt>
-<dd><p>A single frame from a Record3D capture.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.extras.Record3dFrame.K">
-<span class="sig-name descname"><span class="pre">K</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float32</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.extras.Record3dFrame.K" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.extras.Record3dFrame.rgb">
-<span class="sig-name descname"><span class="pre">rgb</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">uint8</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.extras.Record3dFrame.rgb" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.extras.Record3dFrame.depth">
-<span class="sig-name descname"><span class="pre">depth</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float32</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.extras.Record3dFrame.depth" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.extras.Record3dFrame.mask">
-<span class="sig-name descname"><span class="pre">mask</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.extras.Record3dFrame.mask" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="viser.extras.Record3dFrame.T_world_camera">
-<span class="sig-name descname"><span class="pre">T_world_camera</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float32</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#viser.extras.Record3dFrame.T_world_camera" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.extras.Record3dFrame.get_point_cloud">
-<span class="sig-name descname"><span class="pre">get_point_cloud</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">downsample_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float32</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">uint8</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/extras/_record3d/#Record3dFrame.get_point_cloud"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.Record3dFrame.get_point_cloud" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>downsample_factor</strong> (<em>int</em>)</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>Tuple</em>[<em>ndarray</em>[tuple[int, …], <em>dtype</em>[<em>float32</em>]], <em>ndarray</em>[tuple[int, …], <em>dtype</em>[<em>uint8</em>]]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="viser.extras.Record3dLoader">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.extras.</span></span><span class="sig-name descname"><span class="pre">Record3dLoader</span></span><a class="reference internal" href="../_modules/viser/extras/_record3d/#Record3dLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.Record3dLoader" title="Link to this definition">¶</a></dt>
-<dd><p>Helper for loading frames for Record3D captures.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.extras.Record3dLoader.num_frames">
-<span class="sig-name descname"><span class="pre">num_frames</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../_modules/viser/extras/_record3d/#Record3dLoader.num_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.Record3dLoader.num_frames" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.extras.Record3dLoader.get_frame">
-<span class="sig-name descname"><span class="pre">get_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#viser.extras.Record3dFrame" title="viser.extras._record3d.Record3dFrame"><span class="pre">Record3dFrame</span></a></span></span><a class="reference internal" href="../_modules/viser/extras/_record3d/#Record3dLoader.get_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.Record3dLoader.get_frame" title="Link to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>index</strong> (<em>int</em>)</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#viser.extras.Record3dFrame" title="viser.extras._record3d.Record3dFrame"><em>Record3dFrame</em></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="viser.extras.ViserUrdf">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.extras.</span></span><span class="sig-name descname"><span class="pre">ViserUrdf</span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf" title="Link to this definition">¶</a></dt>
-<dd><p>Helper for rendering URDFs in Viser.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>target</strong> – ViserServer or ClientHandle object to add URDF to.</p></li>
-<li><p><strong>urdf_or_path</strong> – Either a path to a URDF file or a yourdfpy URDF object.</p></li>
-<li><p><strong>scale</strong> – Scale factor to apply to resize the URDF.</p></li>
-<li><p><strong>root_node_name</strong> – Viser scene tree name for the root of the URDF geometry.</p></li>
-<li><p><strong>mesh_color_override</strong> – Optional color to override the URDF’s mesh colors.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.extras.ViserUrdf.remove">
-<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf.remove" title="Link to this definition">¶</a></dt>
-<dd><p>Remove URDF from scene.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.extras.ViserUrdf.update_cfg">
-<span class="sig-name descname"><span class="pre">update_cfg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf.update_cfg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf.update_cfg" title="Link to this definition">¶</a></dt>
-<dd><p>Update the joint angles of the visualized URDF.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>configuration</strong> (<em>ndarray</em>)</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.extras.ViserUrdf.get_actuated_joint_limits">
-<span class="sig-name descname"><span class="pre">get_actuated_joint_limits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf.get_actuated_joint_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf.get_actuated_joint_limits" title="Link to this definition">¶</a></dt>
-<dd><p>Returns an ordered mapping from actuated joint names to position limits.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>dict[str, tuple[float | None, float | None]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="viser.extras.ViserUrdf.get_actuated_joint_names">
-<span class="sig-name descname"><span class="pre">get_actuated_joint_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/viser/extras/_urdf/#ViserUrdf.get_actuated_joint_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.extras.ViserUrdf.get_actuated_joint_names" title="Link to this definition">¶</a></dt>
-<dd><p>Returns a tuple of actuated joint names, in order.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>Tuple</em>[str, …]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<!-- prettier-ignore-end --></section>
+<!-- prettier-ignore-start --><!-- prettier-ignore-end --></section>
 
         </article>
       </div>
@@ -583,47 +445,8 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">Record3D + URDF Helpers</a><ul>
-<li><a class="reference internal" href="#viser.extras.Record3dFrame"><code class="docutils literal notranslate"><span class="pre">Record3dFrame</span></code></a><ul>
-<li><a class="reference internal" href="#viser.extras.Record3dFrame.K"><code class="docutils literal notranslate"><span class="pre">Record3dFrame.K</span></code></a></li>
-<li><a class="reference internal" href="#viser.extras.Record3dFrame.rgb"><code class="docutils literal notranslate"><span class="pre">Record3dFrame.rgb</span></code></a></li>
-<li><a class="reference internal" href="#viser.extras.Record3dFrame.depth"><code class="docutils literal notranslate"><span class="pre">Record3dFrame.depth</span></code></a></li>
-<li><a class="reference internal" href="#viser.extras.Record3dFrame.mask"><code class="docutils literal notranslate"><span class="pre">Record3dFrame.mask</span></code></a></li>
-<li><a class="reference internal" href="#viser.extras.Record3dFrame.T_world_camera"><code class="docutils literal notranslate"><span class="pre">Record3dFrame.T_world_camera</span></code></a></li>
-<li><a class="reference internal" href="#viser.extras.Record3dFrame.get_point_cloud"><code class="docutils literal notranslate"><span class="pre">Record3dFrame.get_point_cloud()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#viser.extras.Record3dLoader"><code class="docutils literal notranslate"><span class="pre">Record3dLoader</span></code></a><ul>
-<li><a class="reference internal" href="#viser.extras.Record3dLoader.num_frames"><code class="docutils literal notranslate"><span class="pre">Record3dLoader.num_frames()</span></code></a></li>
-<li><a class="reference internal" href="#viser.extras.Record3dLoader.get_frame"><code class="docutils literal notranslate"><span class="pre">Record3dLoader.get_frame()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#viser.extras.ViserUrdf"><code class="docutils literal notranslate"><span class="pre">ViserUrdf</span></code></a><ul>
-<li><a class="reference internal" href="#viser.extras.ViserUrdf.remove"><code class="docutils literal notranslate"><span class="pre">ViserUrdf.remove()</span></code></a></li>
-<li><a class="reference internal" href="#viser.extras.ViserUrdf.update_cfg"><code class="docutils literal notranslate"><span class="pre">ViserUrdf.update_cfg()</span></code></a></li>
-<li><a class="reference internal" href="#viser.extras.ViserUrdf.get_actuated_joint_limits"><code class="docutils literal notranslate"><span class="pre">ViserUrdf.get_actuated_joint_limits()</span></code></a></li>
-<li><a class="reference internal" href="#viser.extras.ViserUrdf.get_actuated_joint_names"><code class="docutils literal notranslate"><span class="pre">ViserUrdf.get_actuated_joint_names()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
