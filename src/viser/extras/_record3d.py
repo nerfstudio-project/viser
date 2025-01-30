@@ -2,20 +2,21 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import sys
 from pathlib import Path
 from typing import Tuple, cast
 
 import imageio.v3 as iio
+import numpy as np
+import numpy.typing as npt
+import skimage.transform
+from scipy.spatial.transform import Rotation
 
 try:
     import liblzfse
 except ImportError:
     print("liblzfse is missing. Please install with `pip install liblzfse`.")
-    exit(1)
-import numpy as np
-import numpy.typing as npt
-import skimage.transform
-from scipy.spatial.transform import Rotation
+    sys.exit(1)
 
 
 class Record3dLoader:
