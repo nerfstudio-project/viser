@@ -6,7 +6,12 @@ from pathlib import Path
 from typing import Tuple, cast
 
 import imageio.v3 as iio
-import liblzfse
+
+try:
+    import liblzfse
+except ImportError:
+    print("liblzfse is missing. Please install with `pip install liblzfse`.")
+    exit(1)
 import numpy as np
 import numpy.typing as npt
 import skimage.transform
