@@ -3,6 +3,8 @@
 Examples of sending plots as images to Viser's GUI panel. This can be faster
 than using Plotly."""
 
+from __future__ import annotations
+
 import colorsys
 import time
 
