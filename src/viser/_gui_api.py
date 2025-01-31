@@ -659,6 +659,7 @@ class GuiApi:
                 [0.0, 0.0],
                 props=message.props,
                 parent_container_id=message.container_uuid,
+                is_button=True,
             ),
             _image=image,
             _jpeg_quality=jpeg_quality,
