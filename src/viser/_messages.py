@@ -915,6 +915,8 @@ class GuiImageProps:
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
     visible: bool
     """Visibility state of the image. Synchronized automatically when assigned."""
+    _clickable: bool
+    """(Private) Whether the image is clickable. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass

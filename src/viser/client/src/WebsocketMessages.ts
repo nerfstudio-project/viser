@@ -414,6 +414,7 @@ export interface GuiImageMessage {
     _data: Uint8Array | null;
     media_type: "image/jpeg" | "image/png";
     visible: boolean;
+    _clickable: boolean;
   };
 }
 /** GuiTabGroupMessage(uuid: 'str', container_uuid: 'str', props: 'GuiTabGroupProps')
@@ -522,7 +523,7 @@ export interface GuiSliderMessage {
     _marks: { value: number; label: string | null }[] | null;
   };
 }
-/** GuiMultiSliderMessage(uuid: 'str', value: 'tuple[float, ...]', container_uuid: 'str', props: 'GuiMultiSliderProps')
+/** GuiMultiSliderMessage(uuid: 'str', value: 'Tuple[float, ...]', container_uuid: 'str', props: 'GuiMultiSliderProps')
  *
  * (automatically generated)
  */
