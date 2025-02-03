@@ -847,6 +847,41 @@ visualizer.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="viser.GuiHtmlHandle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiHtmlHandle</span></span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiHtmlHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiHtmlHandle" title="Link to this definition">¶</a></dt>
+<dd><p>Handling for updating and removing HTML elements.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="viser.GuiHtmlHandle.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#viser.GuiHtmlHandle.remove" title="Link to this definition">¶</a></dt>
+<dd><p>Permanently remove this GUI element from the visualizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GuiHtmlHandle.order">
+<span class="sig-name descname"><span class="pre">order</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#viser.GuiHtmlHandle.order" title="Link to this definition">¶</a></dt>
+<dd><p>Order value for arranging GUI elements. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GuiHtmlHandle.content">
+<span class="sig-name descname"><span class="pre">content</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#viser.GuiHtmlHandle.content" title="Link to this definition">¶</a></dt>
+<dd><p>HTML content to be displayed. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="viser.GuiHtmlHandle.visible">
+<span class="sig-name descname"><span class="pre">visible</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#viser.GuiHtmlHandle.visible" title="Link to this definition">¶</a></dt>
+<dd><p>Visibility state of the markdown element. Synchronized automatically when assigned.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="viser.GuiPlotlyHandle">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">viser.</span></span><span class="sig-name descname"><span class="pre">GuiPlotlyHandle</span></span><a class="reference internal" href="../_modules/viser/_gui_handles/#GuiPlotlyHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#viser.GuiPlotlyHandle" title="Link to this definition">¶</a></dt>
 <dd><p>Handle for updating and removing Plotly figures.</p>
@@ -2178,6 +2213,13 @@ visualizer.</p>
 <li><a class="reference internal" href="#viser.GuiMarkdownHandle.order"><code class="docutils literal notranslate"><span class="pre">GuiMarkdownHandle.order</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMarkdownHandle.visible"><code class="docutils literal notranslate"><span class="pre">GuiMarkdownHandle.visible</span></code></a></li>
 <li><a class="reference internal" href="#viser.GuiMarkdownHandle.content"><code class="docutils literal notranslate"><span class="pre">GuiMarkdownHandle.content</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#viser.GuiHtmlHandle"><code class="docutils literal notranslate"><span class="pre">GuiHtmlHandle</span></code></a><ul>
+<li><a class="reference internal" href="#viser.GuiHtmlHandle.remove"><code class="docutils literal notranslate"><span class="pre">GuiHtmlHandle.remove()</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiHtmlHandle.order"><code class="docutils literal notranslate"><span class="pre">GuiHtmlHandle.order</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiHtmlHandle.content"><code class="docutils literal notranslate"><span class="pre">GuiHtmlHandle.content</span></code></a></li>
+<li><a class="reference internal" href="#viser.GuiHtmlHandle.visible"><code class="docutils literal notranslate"><span class="pre">GuiHtmlHandle.visible</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#viser.GuiPlotlyHandle"><code class="docutils literal notranslate"><span class="pre">GuiPlotlyHandle</span></code></a><ul>
