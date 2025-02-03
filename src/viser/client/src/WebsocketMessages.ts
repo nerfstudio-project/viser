@@ -354,6 +354,16 @@ export interface GuiMarkdownMessage {
   container_uuid: string;
   props: { order: number; _markdown: string; visible: boolean };
 }
+/** GuiHtmlMessage(uuid: 'str', container_uuid: 'str', props: 'GuiHtmlProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiHtmlMessage {
+  type: "GuiHtmlMessage";
+  uuid: string;
+  container_uuid: string;
+  props: { order: number; content: string; visible: boolean };
+}
 /** GuiProgressBarMessage(uuid: 'str', value: 'float', container_uuid: 'str', props: 'GuiProgressBarProps')
  *
  * (automatically generated)
@@ -1188,6 +1198,7 @@ export type Message =
   | RemoveSceneNodeMessage
   | GuiFolderMessage
   | GuiMarkdownMessage
+  | GuiHtmlMessage
   | GuiProgressBarMessage
   | GuiPlotlyMessage
   | GuiImageMessage
@@ -1270,6 +1281,7 @@ export type SceneNodeMessage =
 export type GuiComponentMessage =
   | GuiFolderMessage
   | GuiMarkdownMessage
+  | GuiHtmlMessage
   | GuiProgressBarMessage
   | GuiPlotlyMessage
   | GuiImageMessage
@@ -1319,6 +1331,7 @@ export function isSceneNodeMessage(
 const typeSetGuiComponentMessage = new Set([
   "GuiFolderMessage",
   "GuiMarkdownMessage",
+  "GuiHtmlMessage",
   "GuiProgressBarMessage",
   "GuiPlotlyMessage",
   "GuiImageMessage",
