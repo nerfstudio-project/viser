@@ -217,7 +217,7 @@ class GuiApi:
             _messages.GuiUpdateMessage, self._handle_gui_updates
         )
         self._websock_interface.register_handler(
-            _messages.FileTransferStart, self._handle_file_transfer_start
+            _messages.FileTransferStartUpload, self._handle_file_transfer_start
         )
         self._websock_interface.register_handler(
             _messages.FileTransferPart,
@@ -291,7 +291,7 @@ class GuiApi:
             handle_state.sync_cb(client_id, updates_cast)
 
     def _handle_file_transfer_start(
-        self, client_id: ClientId, message: _messages.FileTransferStart
+        self, client_id: ClientId, message: _messages.FileTransferStartUpload
     ) -> None:
         if message.source_component_uuid not in self._gui_input_handle_from_uuid:
             return

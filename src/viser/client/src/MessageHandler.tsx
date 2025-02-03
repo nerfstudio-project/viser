@@ -7,7 +7,7 @@ import { TextureLoader } from "three";
 import { ViewerContext } from "./ViewerContext";
 import {
   FileTransferPart,
-  FileTransferStart,
+  FileTransferStartDownload,
   Message,
   SceneNodeMessage,
   isGuiComponentMessage,
@@ -15,8 +15,8 @@ import {
 } from "./WebsocketMessages";
 import { isTexture } from "./WebsocketFunctions";
 import { useFrame } from "@react-three/fiber";
-import { Progress } from "@mantine/core";
-import { IconCheck } from "@tabler/icons-react";
+import { Button, Progress } from "@mantine/core";
+import { IconCheck, IconDownload } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { rootNodeTemplate } from "./SceneTreeState";
 import { GaussianSplatsContext } from "./Splatting/GaussianSplatsHelpers";
@@ -419,7 +419,7 @@ function useMessageHandler() {
         return;
       }
 
-      case "FileTransferStart":
+      case "FileTransferStartDownload":
       case "FileTransferPart": {
         fileDownloadHandler(message);
         return;
@@ -443,7 +443,7 @@ function useMessageHandler() {
 function useFileDownloadHandler() {
   const downloadStatesRef = React.useRef<{
     [uuid: string]: {
-      metadata: FileTransferStart;
+      metadata: FileTransferStartDownload;
       notificationId: string;
       parts: Uint8Array[];
       bytesDownloaded: number;
@@ -451,12 +451,12 @@ function useFileDownloadHandler() {
     };
   }>({});
 
-  return (message: FileTransferStart | FileTransferPart) => {
+  return (message: FileTransferStartDownload | FileTransferPart) => {
     const notificationId = "download-" + message.transfer_uuid;
 
     // Create or update download state.
     switch (message.type) {
-      case "FileTransferStart": {
+      case "FileTransferStartDownload": {
         let displaySize = message.size_bytes;
         const displayUnits = ["B", "K", "M", "G", "T", "P"];
         let displayUnitIndex = 0;
@@ -503,11 +503,11 @@ function useFileDownloadHandler() {
       ? notifications.show
       : notifications.update)({
       title:
-        (isDone ? "Downloaded " : "Downloading ") +
+        (isDone ? "Received " : "Receiving ") +
         `${downloadState.metadata.filename} (${downloadState.displayFilesize})`,
       message: <Progress size="sm" value={progressValue} />,
       id: notificationId,
-      autoClose: isDone,
+      autoClose: isDone && downloadState.metadata.save_immediately,
       withCloseButton: isDone,
       loading: !isDone,
       icon: isDone ? <IconCheck /> : undefined,
@@ -515,16 +515,49 @@ function useFileDownloadHandler() {
 
     // If done: download file and clear state.
     if (isDone) {
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(
+      const url = window.URL.createObjectURL(
         new Blob(downloadState.parts, {
           type: downloadState.metadata.mime_type,
         }),
       );
-      link.download = downloadState.metadata.filename;
-      link.click();
-      link.remove();
-      delete downloadStatesRef.current[message.transfer_uuid];
+
+      // If save_immediately is true, download the file immediately.
+      // Otherwise, show a notification with a link to download the file.
+      // We should revoke the URL after the notification is dismissed.
+      if (downloadState.metadata.save_immediately) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = downloadState.metadata.filename;
+        link.click();
+        link.remove();
+        delete downloadStatesRef.current[message.transfer_uuid];
+        URL.revokeObjectURL(url);
+      } else {
+        notifications.update({
+          id: notificationId,
+          title: "",
+          message: (
+            <>
+              <a href={url} download={downloadState.metadata.filename}>
+                <Button
+                  leftSection={<IconDownload size={14} />}
+                  variant="light"
+                  size="sm"
+                  mt="0.05em"
+                  w="100%"
+                >
+                  {`${downloadState.metadata.filename} (${downloadState.displayFilesize})`}
+                </Button>
+              </a>
+            </>
+          ),
+          autoClose: false,
+          onClose: () => {
+            URL.revokeObjectURL(url);
+            delete downloadStatesRef.current[message.transfer_uuid];
+          },
+        });
+      }
     }
   };
 }
