@@ -33,6 +33,7 @@ from ._icons_enum import IconName
 from ._messages import (
     GuiBaseProps,
     GuiButtonGroupProps,
+    GuiButtonProps,
     GuiCheckboxProps,
     GuiCloseModalMessage,
     GuiDropdownProps,
@@ -398,7 +399,7 @@ class GuiEvent(Generic[TGuiHandle]):
     """GUI element that was affected."""
 
 
-class GuiButtonHandle(_GuiInputHandle[bool]):
+class GuiButtonHandle(_GuiInputHandle[bool], GuiButtonProps):
     """Handle for a button input in our visualizer.
 
     .. attribute:: value

@@ -1353,11 +1353,32 @@ class GetRenderResponseMessage(Message):
 
 
 @dataclasses.dataclass
-class FileTransferStart(Message):
-    """Signal that a file is about to be sent."""
+class FileTransferStartUpload(Message):
+    """Signal that a file is about to be sent.
 
-    source_component_uuid: Optional[str]
-    """Origin GUI component, used for client->server file uploads."""
+    This message is used to upload files from clients to the server.
+    """
+
+    source_component_uuid: str
+    transfer_uuid: str
+    filename: str
+    mime_type: str
+    part_count: int
+    size_bytes: int
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.transfer_uuid
+
+
+@dataclasses.dataclass
+class FileTransferStartDownload(Message):
+    """Signal that a file is about to be sent.
+
+    This message is used to send files to clients from the server.
+    """
+
+    save_immediately: bool
     transfer_uuid: str
     filename: str
     mime_type: str

@@ -385,7 +385,11 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         return self._websock_connection.atomic()
 
     def send_file_download(
-        self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
+        self,
+        filename: str,
+        content: bytes,
+        chunk_size: int = 1024 * 1024,
+        save_immediately: bool = False,
     ) -> None:
         """Send a file for a client or clients to download.
 
@@ -393,6 +397,9 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             filename: Name of the file to send. Used to infer MIME type.
             content: Content of the file.
             chunk_size: Number of bytes to send at a time.
+            save_immediately: Whether to save the file immediately. If `False`,
+                a link to the file will be shown as a notification. Being able to
+                right click the link and choose "Save as..." can be useful.
         """
         mime_type = mimetypes.guess_type(filename, strict=False)[0]
         if mime_type is None:
@@ -405,8 +412,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
 
         uuid = _make_uuid()
         self._websock_connection.queue_message(
-            _messages.FileTransferStart(
-                source_component_uuid=None,
+            _messages.FileTransferStartDownload(
+                save_immediately=save_immediately,
                 transfer_uuid=uuid,
                 filename=filename,
                 mime_type=mime_type,
@@ -977,7 +984,11 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         return self._websock_server.atomic()
 
     def send_file_download(
-        self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
+        self,
+        filename: str,
+        content: bytes,
+        chunk_size: int = 1024 * 1024,
+        save_immediately: bool = False,
     ) -> None:
         """Send a file for a client or clients to download.
 
@@ -985,9 +996,12 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             filename: Name of the file to send. Used to infer MIME type.
             content: Content of the file.
             chunk_size: Number of bytes to send at a time.
+            save_immediately: Whether to save the file immediately. If `False`,
+                a link to the file will be shown as a notification. Being able to
+                right click the link and choose "Save as..." can be useful.
         """
         for client in self.get_clients().values():
-            client.send_file_download(filename, content, chunk_size)
+            client.send_file_download(filename, content, chunk_size, save_immediately)
 
     def get_event_loop(self) -> asyncio.AbstractEventLoop:
         """Get the asyncio event loop used by the Viser background thread. This

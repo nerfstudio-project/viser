@@ -147,7 +147,7 @@ function useFileUpload({
     });
 
     viewer.sendMessageRef.current({
-      type: "FileTransferStart",
+      type: "FileTransferStartUpload",
       source_component_uuid: componentUuid,
       transfer_uuid: transferUuid,
       filename: file.name,
