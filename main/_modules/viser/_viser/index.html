@@ -791,7 +791,11 @@
 <div class="viewcode-block" id="ClientHandle.send_file_download">
 <a class="viewcode-back" href="../../../client_handles/#viser.ClientHandle.send_file_download">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">send_file_download</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">save_immediately</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a file for a client or clients to download.</span>
 
@@ -799,6 +803,9 @@
 <span class="sd">            filename: Name of the file to send. Used to infer MIME type.</span>
 <span class="sd">            content: Content of the file.</span>
 <span class="sd">            chunk_size: Number of bytes to send at a time.</span>
+<span class="sd">            save_immediately: Whether to save the file immediately. If `False`,</span>
+<span class="sd">                a link to the file will be shown as a notification. Being able to</span>
+<span class="sd">                right click the link and choose &quot;Save as...&quot; can be useful.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mime_type</span> <span class="o">=</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">mime_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -811,8 +818,8 @@
 
         <span class="n">uuid</span> <span class="o">=</span> <span class="n">_make_uuid</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_connection</span><span class="o">.</span><span class="n">queue_message</span><span class="p">(</span>
-            <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferStart</span><span class="p">(</span>
-                <span class="n">source_component_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferStartDownload</span><span class="p">(</span>
+                <span class="n">save_immediately</span><span class="o">=</span><span class="n">save_immediately</span><span class="p">,</span>
                 <span class="n">transfer_uuid</span><span class="o">=</span><span class="n">uuid</span><span class="p">,</span>
                 <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
                 <span class="n">mime_type</span><span class="o">=</span><span class="n">mime_type</span><span class="p">,</span>
@@ -1425,7 +1432,11 @@
 <div class="viewcode-block" id="ViserServer.send_file_download">
 <a class="viewcode-back" href="../../../server/#viser.ViserServer.send_file_download">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">send_file_download</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+        <span class="n">chunk_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>
+        <span class="n">save_immediately</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Send a file for a client or clients to download.</span>
 
@@ -1433,9 +1444,12 @@
 <span class="sd">            filename: Name of the file to send. Used to infer MIME type.</span>
 <span class="sd">            content: Content of the file.</span>
 <span class="sd">            chunk_size: Number of bytes to send at a time.</span>
+<span class="sd">            save_immediately: Whether to save the file immediately. If `False`,</span>
+<span class="sd">                a link to the file will be shown as a notification. Being able to</span>
+<span class="sd">                right click the link and choose &quot;Save as...&quot; can be useful.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">client</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_clients</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">client</span><span class="o">.</span><span class="n">send_file_download</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">)</span></div>
+            <span class="n">client</span><span class="o">.</span><span class="n">send_file_download</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">save_immediately</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ViserServer.get_event_loop">

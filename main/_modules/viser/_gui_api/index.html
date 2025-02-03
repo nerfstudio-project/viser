@@ -606,7 +606,7 @@
             <span class="n">_messages</span><span class="o">.</span><span class="n">GuiUpdateMessage</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_gui_updates</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span>
-            <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferStart</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_file_transfer_start</span>
+            <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferStartUpload</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_file_transfer_start</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_websock_interface</span><span class="o">.</span><span class="n">register_handler</span><span class="p">(</span>
             <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferPart</span><span class="p">,</span>
@@ -680,7 +680,7 @@
             <span class="n">handle_state</span><span class="o">.</span><span class="n">sync_cb</span><span class="p">(</span><span class="n">client_id</span><span class="p">,</span> <span class="n">updates_cast</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_handle_file_transfer_start</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferStart</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">client_id</span><span class="p">:</span> <span class="n">ClientId</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">_messages</span><span class="o">.</span><span class="n">FileTransferStartUpload</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">source_component_uuid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gui_input_handle_from_uuid</span><span class="p">:</span>
             <span class="k">return</span>
