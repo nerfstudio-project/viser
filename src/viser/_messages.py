@@ -867,6 +867,22 @@ class GuiMarkdownMessage(_CreateGuiComponentMessage):
 
 
 @dataclasses.dataclass
+class GuiHtmlProps:
+    order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
+    content: str
+    """HTML content to be displayed. Synchronized automatically when assigned."""
+    visible: bool
+    """Visibility state of the markdown element. Synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class GuiHtmlMessage(_CreateGuiComponentMessage):
+    container_uuid: str
+    props: GuiHtmlProps
+
+
+@dataclasses.dataclass
 class GuiProgressBarProps:
     order: float
     """Order value for arranging GUI elements. Synchronized automatically when assigned."""

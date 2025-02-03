@@ -41,6 +41,7 @@ from ._gui_handles import (
     GuiDropdownHandle,
     GuiEvent,
     GuiFolderHandle,
+    GuiHtmlHandle,
     GuiImageHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
@@ -629,6 +630,44 @@ class GuiApi:
         # Logic for processing markdown, handling images, etc is all in the
         # `.content` setter, which should send a GuiUpdateMessage.
         handle.content = content
+        return handle
+
+    def add_html(
+        self,
+        content: str,
+        order: float | None = None,
+        visible: bool = True,
+    ) -> GuiHtmlHandle:
+        """Add HTML to the GUI.
+
+        Args:
+            content: HTML content to display.
+            order: Optional ordering, smallest values will be displayed first.
+            visible: Whether the component is visible.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        message = _messages.GuiHtmlMessage(
+            uuid=_make_uuid(),
+            container_uuid=self._get_container_uuid(),
+            props=_messages.GuiHtmlProps(
+                order=_apply_default_order(order),
+                content=content,
+                visible=visible,
+            ),
+        )
+        self._websock_interface.queue_message(message)
+
+        handle = GuiHtmlHandle(
+            _GuiHandleState(
+                message.uuid,
+                self,
+                None,
+                props=message.props,
+                parent_container_id=message.container_uuid,
+            ),
+        )
         return handle
 
     def add_image(
