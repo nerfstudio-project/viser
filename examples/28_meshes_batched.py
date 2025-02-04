@@ -83,7 +83,7 @@ def main():
         positions = (positions + delta_positions).astype(np.float32)
         handle.batched_positions = positions
 
-        time.sleep(0.01)
+        time.sleep(1.0 / 30.0)
 
 
 if __name__ == "__main__":

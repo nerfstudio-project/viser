@@ -704,22 +704,35 @@ export const InstancedMesh = React.forwardRef<
     geom.computeVertexNormals();
     geom.computeBoundingSphere();
     return geom;
-  }, [vertices, faces]);
+  }, [
+    // Compare buffer contents instead of buffer instances.
+    vertices.length,
+    vertices.every((v, i) => vertices[i] === v),
+    faces.length,
+    faces.every((f, i) => faces[i] === f),
+  ]);
 
-  const materialProps = {
-    color: color === null ? undefined : rgbToInt(color),
-    wireframe,
-    transparent: opacity !== null,
-    opacity: opacity ?? 1.0,
-    flatShading: flat_shading && !wireframe,
-    side: {
-      front: THREE.FrontSide,
-      back: THREE.BackSide,
-      double: THREE.DoubleSide,
-    }[side],
-  };
+  // We need to dispose the old geometry whenever it changes or the component unmounts.
+  React.useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   const meshMaterial = React.useMemo(() => {
+    const materialProps = {
+      color: color === null ? undefined : rgbToInt(color),
+      wireframe,
+      transparent: opacity !== null,
+      opacity: opacity ?? 1.0,
+      flatShading: flat_shading && !wireframe,
+      side: {
+        front: THREE.FrontSide,
+        back: THREE.BackSide,
+        double: THREE.DoubleSide,
+      }[side],
+    };
+
     switch (material) {
       case "standard":
       case "toon3":
@@ -727,7 +740,14 @@ export const InstancedMesh = React.forwardRef<
       default:
         return new THREE.MeshStandardMaterial(materialProps);
     }
-  }, [material, materialProps]);
+  }, [material, color, opacity, flat_shading, side, wireframe]);
+
+  // We need to dispose the old material whenever it changes or the component unmounts.
+  React.useEffect(() => {
+    return () => {
+      meshMaterial.dispose();
+    };
+  }, [meshMaterial]);
 
   const num_insts = React.useRef(batched_wxyzs.length / 4);
   const instancedMesh = React.useMemo(() => {
@@ -801,13 +821,6 @@ export const InstancedMesh = React.forwardRef<
       ); // wxyz -> xyzw.
     });
   }, [batched_wxyzs, batched_positions]);
-
-  React.useEffect(() => {
-    return () => {
-      geometry.dispose();
-      meshMaterial.dispose();
-    };
-  }, [geometry, meshMaterial]);
 
   return (
     <group ref={ref}>
