@@ -4,7 +4,7 @@ import { Box, Progress } from "@mantine/core";
 
 import { Button } from "@mantine/core";
 import React, { useContext } from "react";
-import { ViewerContext, ViewerContextContents } from "../App";
+import { ViewerContext, ViewerContextContents } from "../ViewerContext";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
@@ -147,7 +147,7 @@ function useFileUpload({
     });
 
     viewer.sendMessageRef.current({
-      type: "FileTransferStart",
+      type: "FileTransferStartUpload",
       source_component_uuid: componentUuid,
       transfer_uuid: transferUuid,
       filename: file.name,

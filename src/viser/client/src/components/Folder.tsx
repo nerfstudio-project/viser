@@ -4,7 +4,7 @@ import { GuiFolderMessage } from "../WebsocketMessages";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import { Box, Collapse, Paper } from "@mantine/core";
 import { GuiComponentContext } from "../ControlPanel/GuiComponentContext";
-import { ViewerContext } from "../App";
+import { ViewerContext } from "../ViewerContext";
 import { folderLabel, folderToggleIcon, folderWrapper } from "./Folder.css";
 
 export default function FolderComponent({

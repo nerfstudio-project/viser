@@ -1,8 +1,9 @@
-import { InstancedMesh2 } from "@three.ez/instanced-mesh"
+import { InstancedMesh2 } from "@three.ez/instanced-mesh";
 import { Instance, Instances, Line, shaderMaterial } from "@react-three/drei";
 import { extend, createPortal, useFrame, useThree } from "@react-three/fiber";
 import { Outlines } from "./Outlines";
 import React from "react";
+import { HoverableContext } from "./HoverContext";
 import * as THREE from "three";
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import {
@@ -30,10 +31,10 @@ import {
   MeshMessage,
   SkinnedMeshMessage,
 } from "./WebsocketMessages";
-import { ViewerContext } from "./App";
-import { Object3DNode } from '@react-three/fiber';
+import { Object3DNode } from "@react-three/fiber";
+import { ViewerContext } from "./ViewerContext";
 
-declare module '@react-three/fiber' {
+declare module "@react-three/fiber" {
   interface ThreeElements {
     instancedMesh2: Object3DNode<InstancedMesh2, typeof InstancedMesh2>;
   }
@@ -689,7 +690,7 @@ export const InstancedMesh = React.forwardRef<
     side,
     batched_wxyzs,
     batched_positions,
-    lod_list
+    lod_list,
   },
   ref,
 ) {
@@ -697,7 +698,7 @@ export const InstancedMesh = React.forwardRef<
     const geom = new THREE.BufferGeometry();
     geom.setAttribute(
       "position",
-      new THREE.BufferAttribute(new Float32Array(vertices), 3)
+      new THREE.BufferAttribute(new Float32Array(vertices), 3),
     );
     geom.setIndex(new THREE.BufferAttribute(new Uint32Array(faces), 1));
     geom.computeVertexNormals();
@@ -738,23 +739,44 @@ export const InstancedMesh = React.forwardRef<
       obj.position.set(
         batched_positions[index * 3 + 0],
         batched_positions[index * 3 + 1],
-        batched_positions[index * 3 + 2]
+        batched_positions[index * 3 + 2],
       );
       obj.quaternion.set(
         batched_wxyzs[index * 4 + 1],
         batched_wxyzs[index * 4 + 2],
         batched_wxyzs[index * 4 + 3],
-        batched_wxyzs[index * 4 + 0]
+        batched_wxyzs[index * 4 + 0],
       ); // wxyz -> xyzw.
     });
-    
+
     // Add LODs if provided
     if (lod_list !== null) {
       console.log("updating lod");
       for (const [_verts, _faces, _dist] of lod_list) {
         const _geom = new THREE.BufferGeometry();
-        _geom.setAttribute("position", new THREE.BufferAttribute(new Float32Array(_verts.buffer.slice(_verts.byteOffset, _verts.byteOffset + _verts.byteLength)), 3));
-        _geom.setIndex(new THREE.BufferAttribute(new Uint32Array(_faces.buffer.slice(_faces.byteOffset, _faces.byteOffset + _faces.byteLength)), 1));
+        _geom.setAttribute(
+          "position",
+          new THREE.BufferAttribute(
+            new Float32Array(
+              _verts.buffer.slice(
+                _verts.byteOffset,
+                _verts.byteOffset + _verts.byteLength,
+              ),
+            ),
+            3,
+          ),
+        );
+        _geom.setIndex(
+          new THREE.BufferAttribute(
+            new Uint32Array(
+              _faces.buffer.slice(
+                _faces.byteOffset,
+                _faces.byteOffset + _faces.byteLength,
+              ),
+            ),
+            1,
+          ),
+        );
         _geom.computeVertexNormals();
         _geom.computeBoundingSphere();
         instancedMesh.addLOD(_geom, meshMaterial, _dist);
@@ -766,8 +788,17 @@ export const InstancedMesh = React.forwardRef<
   React.useEffect(() => {
     // On all subsequent updates, we use the update call.
     instancedMesh.updateInstances((obj, index) => {
-      obj.position.set(batched_positions[index * 3 + 0], batched_positions[index * 3 + 1], batched_positions[index * 3 + 2]);
-      obj.quaternion.set(batched_wxyzs[index * 4 + 1], batched_wxyzs[index * 4 + 2], batched_wxyzs[index * 4 + 3], batched_wxyzs[index * 4 + 0]);  // wxyz -> xyzw.
+      obj.position.set(
+        batched_positions[index * 3 + 0],
+        batched_positions[index * 3 + 1],
+        batched_positions[index * 3 + 2],
+      );
+      obj.quaternion.set(
+        batched_wxyzs[index * 4 + 1],
+        batched_wxyzs[index * 4 + 2],
+        batched_wxyzs[index * 4 + 3],
+        batched_wxyzs[index * 4 + 0],
+      ); // wxyz -> xyzw.
     });
   }, [batched_wxyzs, batched_positions]);
 
@@ -924,9 +955,6 @@ export const CameraFrustum = React.forwardRef<
     </group>
   );
 });
-
-export const HoverableContext =
-  React.createContext<React.MutableRefObject<boolean> | null>(null);
 
 /** Outlines object, which should be placed as a child of all meshes that might
  * be clickable. */

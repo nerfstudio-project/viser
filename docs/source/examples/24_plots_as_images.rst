@@ -14,6 +14,8 @@ than using Plotly.
         :linenos:
 
 
+        from __future__ import annotations
+
         import colorsys
         import time
 

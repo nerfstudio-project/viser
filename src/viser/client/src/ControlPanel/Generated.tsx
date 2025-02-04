@@ -1,4 +1,4 @@
-import { ViewerContext } from "../App";
+import { ViewerContext } from "../ViewerContext";
 import { useThrottledMessageSender } from "../WebsocketFunctions";
 import { GuiComponentContext } from "./GuiComponentContext";
 
@@ -23,6 +23,7 @@ import MultiSliderComponent from "../components/MultiSlider";
 import UploadButtonComponent from "../components/UploadButton";
 import ProgressBarComponent from "../components/ProgressBar";
 import ImageComponent from "../components/Image";
+import HtmlComponent from "../components/Html";
 
 /** Root of generated inputs. */
 export default function GeneratedGuiContainer({
@@ -101,6 +102,8 @@ function GeneratedInput(props: { guiUuid: string }) {
       return <TabGroupComponent {...conf} />;
     case "GuiMarkdownMessage":
       return <MarkdownComponent {...conf} />;
+    case "GuiHtmlMessage":
+      return <HtmlComponent {...conf} />;
     case "GuiPlotlyMessage":
       return <PlotlyComponent {...conf} />;
     case "GuiImageMessage":

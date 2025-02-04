@@ -33,10 +33,12 @@ from ._icons_enum import IconName
 from ._messages import (
     GuiBaseProps,
     GuiButtonGroupProps,
+    GuiButtonProps,
     GuiCheckboxProps,
     GuiCloseModalMessage,
     GuiDropdownProps,
     GuiFolderProps,
+    GuiHtmlProps,
     GuiImageProps,
     GuiMarkdownProps,
     GuiMultiSliderProps,
@@ -397,7 +399,7 @@ class GuiEvent(Generic[TGuiHandle]):
     """GUI element that was affected."""
 
 
-class GuiButtonHandle(_GuiInputHandle[bool]):
+class GuiButtonHandle(_GuiInputHandle[bool], GuiButtonProps):
     """Handle for a button input in our visualizer.
 
     .. attribute:: value
@@ -794,6 +796,10 @@ class GuiMarkdownHandle(_GuiHandle[None], GuiMarkdownProps):
     def content(self, content: str) -> None:
         self._content = content
         self._markdown = _parse_markdown(content, self._image_root)
+
+
+class GuiHtmlHandle(_GuiHandle[None], GuiHtmlProps):
+    """Handling for updating and removing HTML elements."""
 
 
 class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):

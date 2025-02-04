@@ -375,6 +375,16 @@ export interface GuiMarkdownMessage {
   container_uuid: string;
   props: { order: number; _markdown: string; visible: boolean };
 }
+/** GuiHtmlMessage(uuid: 'str', container_uuid: 'str', props: 'GuiHtmlProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiHtmlMessage {
+  type: "GuiHtmlMessage";
+  uuid: string;
+  container_uuid: string;
+  props: { order: number; content: string; visible: boolean };
+}
 /** GuiProgressBarMessage(uuid: 'str', value: 'float', container_uuid: 'str', props: 'GuiProgressBarProps')
  *
  * (automatically generated)
@@ -543,7 +553,7 @@ export interface GuiSliderMessage {
     _marks: { value: number; label: string | null }[] | null;
   };
 }
-/** GuiMultiSliderMessage(uuid: 'str', value: 'tuple[float, ...]', container_uuid: 'str', props: 'GuiMultiSliderProps')
+/** GuiMultiSliderMessage(uuid: 'str', value: 'Tuple[float, ...]', container_uuid: 'str', props: 'GuiMultiSliderProps')
  *
  * (automatically generated)
  */
@@ -1119,11 +1129,30 @@ export interface GetRenderResponseMessage {
 }
 /** Signal that a file is about to be sent.
  *
+ * This message is used to upload files from clients to the server.
+ *
+ *
  * (automatically generated)
  */
-export interface FileTransferStart {
-  type: "FileTransferStart";
-  source_component_uuid: string | null;
+export interface FileTransferStartUpload {
+  type: "FileTransferStartUpload";
+  source_component_uuid: string;
+  transfer_uuid: string;
+  filename: string;
+  mime_type: string;
+  part_count: number;
+  size_bytes: number;
+}
+/** Signal that a file is about to be sent.
+ *
+ * This message is used to send files to clients from the server.
+ *
+ *
+ * (automatically generated)
+ */
+export interface FileTransferStartDownload {
+  type: "FileTransferStartDownload";
+  save_immediately: boolean;
   transfer_uuid: string;
   filename: string;
   mime_type: string;
@@ -1210,6 +1239,7 @@ export type Message =
   | RemoveSceneNodeMessage
   | GuiFolderMessage
   | GuiMarkdownMessage
+  | GuiHtmlMessage
   | GuiProgressBarMessage
   | GuiPlotlyMessage
   | GuiImageMessage
@@ -1259,7 +1289,8 @@ export type Message =
   | ThemeConfigurationMessage
   | GetRenderRequestMessage
   | GetRenderResponseMessage
-  | FileTransferStart
+  | FileTransferStartUpload
+  | FileTransferStartDownload
   | FileTransferPart
   | FileTransferPartAck
   | ShareUrlRequest
@@ -1293,6 +1324,7 @@ export type SceneNodeMessage =
 export type GuiComponentMessage =
   | GuiFolderMessage
   | GuiMarkdownMessage
+  | GuiHtmlMessage
   | GuiProgressBarMessage
   | GuiPlotlyMessage
   | GuiImageMessage
@@ -1343,6 +1375,7 @@ export function isSceneNodeMessage(
 const typeSetGuiComponentMessage = new Set([
   "GuiFolderMessage",
   "GuiMarkdownMessage",
+  "GuiHtmlMessage",
   "GuiProgressBarMessage",
   "GuiPlotlyMessage",
   "GuiImageMessage",

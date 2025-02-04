@@ -38,7 +38,6 @@ dependencies = [
     "numpy>=1.0.0",
     "msgspec>=0.18.6",
     "imageio>=2.0.0",
-    "pyliblzfse>=0.4.1; platform_system!='Windows'",
     "scikit-image>=0.18.0",
     "scipy>=1.7.3",
     "tqdm>=4.0.0",
@@ -54,7 +53,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pyright>=1.1.308",
-    "ruff==0.6.2",
+    "ruff>=0.9.3",
     "pre-commit==3.3.2",
     "pytest",
     "hypothesis[numpy]",
@@ -67,6 +66,7 @@ examples = [
     "gdown>=4.6.6",
     "plyfile",
     "opencv-python",
+    "pyliblzfse>=0.4.1; platform_system!='Windows'",
 ]
 
 [project.urls]

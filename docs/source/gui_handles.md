@@ -14,6 +14,8 @@
 
 .. autoclass:: viser.GuiMarkdownHandle()
 
+.. autoclass:: viser.GuiHtmlHandle()
+
 .. autoclass:: viser.GuiPlotlyHandle()
 
 .. autoclass:: viser.GuiTabGroupHandle()

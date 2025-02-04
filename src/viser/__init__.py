@@ -5,6 +5,7 @@ from ._gui_handles import GuiCheckboxHandle as GuiCheckboxHandle
 from ._gui_handles import GuiDropdownHandle as GuiDropdownHandle
 from ._gui_handles import GuiEvent as GuiEvent
 from ._gui_handles import GuiFolderHandle as GuiFolderHandle
+from ._gui_handles import GuiHtmlHandle as GuiHtmlHandle
 from ._gui_handles import GuiImageHandle as GuiImageHandle
 from ._gui_handles import GuiInputHandle as GuiInputHandle
 from ._gui_handles import GuiMarkdownHandle as GuiMarkdownHandle
@@ -56,4 +57,4 @@ from ._viser import CameraHandle as CameraHandle
 from ._viser import ClientHandle as ClientHandle
 from ._viser import ViserServer as ViserServer
 
-__version__ = "0.2.21"
+__version__ = "0.2.23"

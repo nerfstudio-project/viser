@@ -17,7 +17,7 @@ import {
 } from "./SceneTreeTable.css";
 import { useDisclosure } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
-import { ViewerContext } from "../App";
+import { ViewerContext } from "../ViewerContext";
 import {
   Box,
   Flex,

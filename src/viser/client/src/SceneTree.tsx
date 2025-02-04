@@ -10,7 +10,7 @@ import { createPortal, useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
-import { ViewerContext } from "./App";
+import { ViewerContext } from "./ViewerContext";
 import {
   makeThrottledMessageSender,
   useThrottledMessageSender,
@@ -19,11 +19,11 @@ import { Html } from "@react-three/drei";
 import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
+import { HoverableContext } from "./HoverContext";
 import {
   CameraFrustum,
   CoordinateFrame,
   GlbAsset,
-  HoverableContext,
   InstancedAxes,
   PointCloud,
   ViserImage,

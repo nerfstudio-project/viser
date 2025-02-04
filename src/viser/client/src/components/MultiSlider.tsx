@@ -72,11 +72,15 @@ export default function MultiSliderComponent({
             ? [
                 {
                   value: min,
-                  label: `${parseInt(min.toFixed(6))}`,
+                  // The regex here removes trailing zeros and the decimal
+                  // point if the number is an integer.
+                  label: `${min.toFixed(6).replace(/\.?0+$/, "")}`,
                 },
                 {
                   value: max,
-                  label: `${parseInt(max.toFixed(6))}`,
+                  // The regex here removes trailing zeros and the decimal
+                  // point if the number is an integer.
+                  label: `${max.toFixed(6).replace(/\.?0+$/, "")}`,
                 },
               ]
             : marks
