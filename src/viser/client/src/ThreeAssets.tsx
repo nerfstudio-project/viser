@@ -28,6 +28,7 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import {
   ImageMessage,
   MeshMessage,
+  PointCloudMessage,
   SkinnedMeshMessage,
 } from "./WebsocketMessages";
 import { ViewerContext } from "./ViewerContext";
@@ -90,74 +91,77 @@ const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
    `,
 );
 
-export const PointCloud = React.forwardRef<
-  THREE.Points,
-  {
-    pointSize: number;
-    /** We visualize each point as a 2D ball, which is defined by some norm. */
-    pointBallNorm: number;
-    points: Uint16Array; // Contains float16.
-    colors: Uint8Array;
-  }
->(function PointCloud(props, ref) {
-  const getThreeState = useThree((state) => state.get);
+export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
+  function PointCloud(message, ref) {
+    const getThreeState = useThree((state) => state.get);
 
-  // Create geometry and update it whenever the points or colors change.
-  const [geometry] = React.useState(() => new THREE.BufferGeometry());
+    const props = message.props;
 
-  React.useEffect(() => {
-    geometry.setAttribute(
-      "position",
-      new THREE.Float16BufferAttribute(props.points, 3),
+    // Create geometry and update it whenever the points or colors change.
+    const [geometry] = React.useState(() => new THREE.BufferGeometry());
+
+    React.useEffect(() => {
+      geometry.setAttribute(
+        "position",
+        new THREE.Float16BufferAttribute(
+          new Uint16Array(
+            props.points.buffer.slice(
+              props.points.byteOffset,
+              props.points.byteOffset + props.points.byteLength,
+            ),
+          ),
+          3,
+        ),
+      );
+      // geometry.computeBoundingSphere();
+    }, [props.points]);
+
+    React.useEffect(() => {
+      geometry.setAttribute(
+        "color",
+        new THREE.BufferAttribute(new Uint8Array(props.colors), 3, true),
+      );
+    }, [props.colors]);
+
+    React.useEffect(() => {
+      return () => {
+        geometry.dispose();
+      };
+    }, [geometry]);
+
+    // Create persistent material and update it whenever the point size changes.
+    const [material] = React.useState(
+      () => new PointCloudMaterial({ vertexColors: true }),
     );
-    geometry.computeBoundingSphere();
-  }, [props.points.buffer]);
+    material.uniforms.scale.value = 10.0;
+    material.uniforms.point_ball_norm.value = props.point_ball_norm;
 
-  React.useEffect(() => {
-    geometry.setAttribute(
-      "color",
-      new THREE.BufferAttribute(props.colors, 3, true),
-    );
-  }, [props.colors.buffer]);
+    React.useEffect(() => {
+      return () => {
+        material.dispose();
+      };
+    }, [material]);
 
-  React.useEffect(() => {
-    return () => {
-      geometry.dispose();
-    };
-  }, [geometry]);
-
-  // Create persistent material and update it whenever the point size changes.
-  const [material] = React.useState(
-    () => new PointCloudMaterial({ vertexColors: true }),
-  );
-  material.uniforms.scale.value = 10.0;
-  material.uniforms.point_ball_norm.value = props.pointBallNorm;
-
-  React.useEffect(() => {
-    return () => {
-      material.dispose();
-    };
-  }, [material]);
-
-  const rendererSize = new THREE.Vector2();
-  useFrame(() => {
-    // Match point scale to behavior of THREE.PointsMaterial().
-    if (material === undefined) return;
-    // point px height / actual height = point meters height / frustum meters height
-    // frustum meters height = math.tan(fov / 2.0) * z
-    // point px height = (point meters height / math.tan(fov / 2.0) * actual height)  / z
-    material.uniforms.scale.value =
-      (props.pointSize /
-        Math.tan(
-          (((getThreeState().camera as THREE.PerspectiveCamera).fov / 180.0) *
-            Math.PI) /
-            2.0,
-        )) *
-      getThreeState().gl.getSize(rendererSize).height *
-      getThreeState().gl.getPixelRatio();
-  });
-  return <points ref={ref} geometry={geometry} material={material} />;
-});
+    const rendererSize = new THREE.Vector2();
+    useFrame(() => {
+      // Match point scale to behavior of THREE.PointsMaterial().
+      if (material === undefined) return;
+      // point px height / actual height = point meters height / frustum meters height
+      // frustum meters height = math.tan(fov / 2.0) * z
+      // point px height = (point meters height / math.tan(fov / 2.0) * actual height)  / z
+      material.uniforms.scale.value =
+        (props.point_size /
+          Math.tan(
+            (((getThreeState().camera as THREE.PerspectiveCamera).fov / 180.0) *
+              Math.PI) /
+              2.0,
+          )) *
+        getThreeState().gl.getSize(rendererSize).height *
+        getThreeState().gl.getPixelRatio();
+    });
+    return <points ref={ref} geometry={geometry} material={material} />;
+  },
+);
 
 /** Component for rendering the contents of GLB files. */
 export const GlbAsset = React.forwardRef<
