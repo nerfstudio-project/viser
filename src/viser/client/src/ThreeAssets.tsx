@@ -28,6 +28,7 @@ import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 import {
   ImageMessage,
   MeshMessage,
+  PointCloudMessage,
   SkinnedMeshMessage,
 } from "./WebsocketMessages";
 import { ViewerContext } from "./ViewerContext";
@@ -90,61 +91,77 @@ const PointCloudMaterial = /* @__PURE__ */ shaderMaterial(
    `,
 );
 
-export const PointCloud = React.forwardRef<
-  THREE.Points,
-  {
-    pointSize: number;
-    /** We visualize each point as a 2D ball, which is defined by some norm. */
-    pointBallNorm: number;
-    points: Uint16Array; // Contains float16.
-    colors: Uint8Array;
-  }
->(function PointCloud(props, ref) {
-  const getThreeState = useThree((state) => state.get);
+export const PointCloud = React.forwardRef<THREE.Points, PointCloudMessage>(
+  function PointCloud(message, ref) {
+    const getThreeState = useThree((state) => state.get);
 
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    "position",
-    new THREE.Float16BufferAttribute(props.points, 3),
-  );
-  geometry.computeBoundingSphere();
-  geometry.setAttribute(
-    "color",
-    new THREE.BufferAttribute(props.colors, 3, true),
-  );
+    const props = message.props;
 
-  const [material] = React.useState(
-    () => new PointCloudMaterial({ vertexColors: true }),
-  );
-  material.uniforms.scale.value = 10.0;
-  material.uniforms.point_ball_norm.value = props.pointBallNorm;
+    // Create geometry and update it whenever the points or colors change.
+    const [geometry] = React.useState(() => new THREE.BufferGeometry());
 
-  React.useEffect(() => {
-    return () => {
-      material.dispose();
-      geometry.dispose();
-    };
-  });
+    React.useEffect(() => {
+      geometry.setAttribute(
+        "position",
+        new THREE.Float16BufferAttribute(
+          new Uint16Array(
+            props.points.buffer.slice(
+              props.points.byteOffset,
+              props.points.byteOffset + props.points.byteLength,
+            ),
+          ),
+          3,
+        ),
+      );
+      // geometry.computeBoundingSphere();
+    }, [props.points]);
 
-  const rendererSize = new THREE.Vector2();
-  useFrame(() => {
-    // Match point scale to behavior of THREE.PointsMaterial().
-    if (material === undefined) return;
-    // point px height / actual height = point meters height / frustum meters height
-    // frustum meters height = math.tan(fov / 2.0) * z
-    // point px height = (point meters height / math.tan(fov / 2.0) * actual height)  / z
-    material.uniforms.scale.value =
-      (props.pointSize /
-        Math.tan(
-          (((getThreeState().camera as THREE.PerspectiveCamera).fov / 180.0) *
-            Math.PI) /
-            2.0,
-        )) *
-      getThreeState().gl.getSize(rendererSize).height *
-      getThreeState().gl.getPixelRatio();
-  });
-  return <points ref={ref} geometry={geometry} material={material} />;
-});
+    React.useEffect(() => {
+      geometry.setAttribute(
+        "color",
+        new THREE.BufferAttribute(new Uint8Array(props.colors), 3, true),
+      );
+    }, [props.colors]);
+
+    React.useEffect(() => {
+      return () => {
+        geometry.dispose();
+      };
+    }, [geometry]);
+
+    // Create persistent material and update it whenever the point size changes.
+    const [material] = React.useState(
+      () => new PointCloudMaterial({ vertexColors: true }),
+    );
+    material.uniforms.scale.value = 10.0;
+    material.uniforms.point_ball_norm.value = props.point_ball_norm;
+
+    React.useEffect(() => {
+      return () => {
+        material.dispose();
+      };
+    }, [material]);
+
+    const rendererSize = new THREE.Vector2();
+    useFrame(() => {
+      // Match point scale to behavior of THREE.PointsMaterial().
+      if (material === undefined) return;
+      // point px height / actual height = point meters height / frustum meters height
+      // frustum meters height = math.tan(fov / 2.0) * z
+      // point px height = (point meters height / math.tan(fov / 2.0) * actual height)  / z
+      material.uniforms.scale.value =
+        (props.point_size /
+          Math.tan(
+            (((getThreeState().camera as THREE.PerspectiveCamera).fov / 180.0) *
+              Math.PI) /
+              2.0,
+          )) *
+        getThreeState().gl.getSize(rendererSize).height *
+        getThreeState().gl.getPixelRatio();
+    });
+    return <points ref={ref} geometry={geometry} material={material} />;
+  },
+);
 
 /** Component for rendering the contents of GLB files. */
 export const GlbAsset = React.forwardRef<
@@ -429,30 +446,30 @@ export const ViserMesh = React.forwardRef<
     texture.needsUpdate = true;
     return texture;
   };
-  const standardArgs = {
-    color:
-      message.props.color === null ? undefined : rgbToInt(message.props.color),
-    wireframe: message.props.wireframe,
-    transparent: message.props.opacity !== null,
-    opacity: message.props.opacity ?? 1.0,
-    // Flat shading only makes sense for non-wireframe materials.
-    flatShading: message.props.flat_shading && !message.props.wireframe,
-    side: {
-      front: THREE.FrontSide,
-      back: THREE.BackSide,
-      double: THREE.DoubleSide,
-    }[message.props.side],
-  };
   const assertUnreachable = (x: never): never => {
     throw new Error(`Should never get here! ${x}`);
   };
 
   const [material, setMaterial] = React.useState<THREE.Material>();
-  const [geometry, setGeometry] = React.useState<THREE.BufferGeometry>();
-  const [skeleton, setSkeleton] = React.useState<THREE.Skeleton>();
   const bonesRef = React.useRef<THREE.Bone[]>();
 
   React.useEffect(() => {
+    const standardArgs = {
+      color:
+        message.props.color === null
+          ? undefined
+          : rgbToInt(message.props.color),
+      wireframe: message.props.wireframe,
+      transparent: message.props.opacity !== null,
+      opacity: message.props.opacity ?? 1.0,
+      // Flat shading only makes sense for non-wireframe materials.
+      flatShading: message.props.flat_shading && !message.props.wireframe,
+      side: {
+        front: THREE.FrontSide,
+        back: THREE.BackSide,
+        double: THREE.DoubleSide,
+      }[message.props.side],
+    };
     const material =
       message.props.material == "standard" || message.props.wireframe
         ? new THREE.MeshStandardMaterial(standardArgs)
@@ -467,7 +484,25 @@ export const ViserMesh = React.forwardRef<
                 ...standardArgs,
               })
             : assertUnreachable(message.props.material);
-    const geometry = new THREE.BufferGeometry();
+    setMaterial(material);
+
+    return () => {
+      // Dispose material when done.
+      material.dispose();
+    };
+  }, [
+    message.props.material,
+    message.props.color,
+    message.props.wireframe,
+    message.props.opacity,
+  ]);
+
+  // Create persistent geometry. Set attributes when we receive updates.
+  const [geometry] = React.useState<THREE.BufferGeometry>(
+    () => new THREE.BufferGeometry(),
+  );
+  const [skeleton, setSkeleton] = React.useState<THREE.Skeleton>();
+  React.useEffect(() => {
     geometry.setAttribute(
       "position",
       new THREE.BufferAttribute(
@@ -481,7 +516,6 @@ export const ViserMesh = React.forwardRef<
         3,
       ),
     );
-
     geometry.setIndex(
       new THREE.BufferAttribute(
         new Uint32Array(
@@ -539,7 +573,7 @@ export const ViserMesh = React.forwardRef<
         boneInverse.invert();
         boneInverses.push(boneInverse);
 
-        bone.quaternion.copy(xyzw_quat);
+        bone.setRotationFromQuaternion(xyzw_quat);
         bone.position.set(
           bone_positions[i * 3 + 0],
           bone_positions[i * 3 + 1],
@@ -575,24 +609,38 @@ export const ViserMesh = React.forwardRef<
         ),
       );
     }
-
-    setMaterial(material);
-    setGeometry(geometry);
+    skeleton?.init();
     setSkeleton(skeleton);
     return () => {
-      // TODO: we can switch to the react-three-fiber <bufferGeometry />,
-      // <meshStandardMaterial />, etc components to avoid manual
-      // disposal.
-      geometry.dispose();
-      material.dispose();
-
       if (message.type === "SkinnedMeshMessage") {
         skeleton !== undefined && skeleton.dispose();
         const state = viewer.skinnedMeshState.current[message.name];
         state.initialized = false;
       }
     };
-  }, [message]);
+  }, [
+    message.type,
+    message.props.vertices.buffer,
+    message.props.faces.buffer,
+    message.type == "SkinnedMeshMessage"
+      ? message.props.skin_indices.buffer
+      : null,
+    message.type == "SkinnedMeshMessage"
+      ? message.props.skin_weights.buffer
+      : null,
+    message.type == "SkinnedMeshMessage"
+      ? message.props.bone_wxyzs.buffer
+      : null,
+    message.type == "SkinnedMeshMessage"
+      ? message.props.bone_positions.buffer
+      : null,
+  ]);
+  // Dispose geometry when done.
+  React.useEffect(() => {
+    return () => {
+      geometry.dispose();
+    };
+  }, [geometry]);
 
   // Update bone transforms for skinned meshes.
   useFrame(() => {
@@ -603,7 +651,7 @@ export const ViserMesh = React.forwardRef<
 
     const state = viewer.skinnedMeshState.current[message.name];
     const bones = bonesRef.current;
-    if (bones !== undefined) {
+    if (skeleton !== undefined && bones !== undefined) {
       if (!state.initialized) {
         bones.forEach((bone) => {
           parentNode.add(bone);
