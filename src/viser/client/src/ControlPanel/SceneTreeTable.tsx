@@ -452,12 +452,6 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
               height: "1.5em",
               display: "block",
             }}
-            // onClick={(evt) => {
-            //   evt.stopPropagation();
-            //   const attr = viewer.nodeAttributesFromName.current;
-            //   attr[props.nodeName]!.overrideVisibility = !isVisible;
-            //   setIsVisible(!isVisible);
-            // }}
             onMouseDown={handleVisibilityMouseDown}
             onMouseEnter={handleVisibilityMouseEnter}
           />
