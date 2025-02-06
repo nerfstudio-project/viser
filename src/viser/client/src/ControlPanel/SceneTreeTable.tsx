@@ -383,7 +383,7 @@ const SceneTreeTableRow = React.memo(function SceneTreeTableRow(props: {
     return () => {
       setLabelVisibility(props.nodeName, false);
     };
-  }, [props.nodeName, setLabelVisibility]);
+  });
   React.useEffect(() => {
     // We put the visibility in a ref, so it needs to be polled. This was for
     // performance reasons, but we should probably move it into the zustand
