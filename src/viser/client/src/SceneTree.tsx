@@ -395,15 +395,10 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
       };
     }
     // Add a glTF/GLB asset.
-    case "GlbMessage": {
+    case "GlbMessage": 
+    case "BatchedGlbMessage": {
       return {
-        makeObject: (ref) => (
-          <GlbAsset
-            ref={ref}
-            glb_data={new Uint8Array(message.props.glb_data)}
-            scale={message.props.scale}
-          />
-        ),
+        makeObject: (ref) => <GlbAsset ref={ref} {...message} />,
       };
     }
     case "LineSegmentsMessage": {

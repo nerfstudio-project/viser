@@ -32,6 +32,7 @@ from ._scene_handles import (
     MeshHandle,
     MeshSkinnedBoneHandle,
     BatchedMeshHandle,
+    BatchedGlbHandle,
     MeshSkinnedHandle,
     PointCloudHandle,
     PointLightHandle,
@@ -1284,7 +1285,7 @@ class SceneApi:
                 visible=visible,
             )
 
-    def add_batched_meshes(
+    def add_batched_meshes_simple(
         self,
         name: str,
         vertices: np.ndarray,
@@ -1359,6 +1360,52 @@ class SceneApi:
             ),
         )
         return BatchedMeshHandle._make(self, message, name, wxyz, position, visible)
+    
+    def add_batched_meshes_trimesh(
+        self,
+        name: str,
+        mesh: trimesh.Trimesh,
+        batched_wxyzs: tuple[tuple[float, float, float, float], ...] | np.ndarray,
+        batched_positions: tuple[tuple[float, float, float], ...] | np.ndarray,
+        scale: float = 1.0,
+        wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
+        position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
+        visible: bool = True,
+    ) -> BatchedGlbHandle:
+        """Add batched trimesh meshes to the scene.
+        
+        Args:
+            name: A scene tree name. Names in the format of /parent/child can be used to
+              define a kinematic tree.
+            mesh: A trimesh mesh object.
+            batched_wxyzs: Float array of shape (N, 4) for orientations.
+            batched_positions: Float array of shape (N, 3) for positions.
+            scale: A scale for resizing the mesh.
+            wxyz: Quaternion rotation to parent frame from local frame (R_pl).
+            position: Translation to parent frame from local frame (t_pl).
+            visible: Whether or not this scene node is initially visible.
+        """
+        batched_wxyzs = np.asarray(batched_wxyzs)
+        batched_positions = np.asarray(batched_positions)
+
+        num_instances = batched_wxyzs.shape[0]
+        assert batched_wxyzs.shape == (num_instances, 4)
+        assert batched_positions.shape == (num_instances, 3)
+
+        with io.BytesIO() as data_buffer:
+            mesh.export(data_buffer, file_type="glb")
+            glb_data = data_buffer.getvalue()
+            message = _messages.BatchedGlbMessage(
+                name=name,
+                props=_messages.BatchedGlbProps(
+                    glb_data=glb_data,
+                    scale=scale,
+                    batched_wxyzs=batched_wxyzs.astype(np.float32),
+                    batched_positions=batched_positions.astype(np.float32),
+                ),
+            )
+            return BatchedGlbHandle._make(self, message, name, wxyz, position, visible)
+
 
     def _add_gaussian_splats(self, *args, **kwargs) -> GaussianSplatHandle:
         """Backwards compatibility shim. Use `add_gaussian_splats()` instead."""

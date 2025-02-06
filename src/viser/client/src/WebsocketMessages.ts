@@ -255,6 +255,20 @@ export interface BatchedMeshesMessage {
     batched_positions: Uint8Array;
   };
 }
+/** Message from server->client carrying batched GLB information.
+ *
+ * (automatically generated)
+ */
+export interface BatchedGlbMessage {
+  type: "BatchedGlbMessage";
+  name: string;
+  props: {
+    glb_data: Uint8Array;
+    scale: number;
+    batched_wxyzs: Uint8Array;
+    batched_positions: Uint8Array;
+  };
+}
 /** Message for transform gizmos.
  *
  * (automatically generated)
@@ -1229,6 +1243,7 @@ export type Message =
   | MeshMessage
   | SkinnedMeshMessage
   | BatchedMeshesMessage
+  | BatchedGlbMessage
   | TransformControlsMessage
   | ImageMessage
   | LineSegmentsMessage
@@ -1314,6 +1329,7 @@ export type SceneNodeMessage =
   | MeshMessage
   | SkinnedMeshMessage
   | BatchedMeshesMessage
+  | BatchedGlbMessage
   | TransformControlsMessage
   | ImageMessage
   | LineSegmentsMessage
@@ -1359,6 +1375,7 @@ const typeSetSceneNodeMessage = new Set([
   "MeshMessage",
   "SkinnedMeshMessage",
   "BatchedMeshesMessage",
+  "BatchedGlbMessage",
   "TransformControlsMessage",
   "ImageMessage",
   "LineSegmentsMessage",

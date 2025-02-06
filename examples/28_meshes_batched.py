@@ -59,17 +59,16 @@ def main():
         min=1,
         max=1000,
         step=1,
-        initial_value=1000,
+        initial_value=100,
     )
 
     # Initialize transforms.
     positions, rotations = create_random_transforms(num_insts_handle.value)
 
     # Create batched mesh visualization.
-    mesh_handle = server.scene.add_batched_meshes(
+    mesh_handle = server.scene.add_batched_meshes_trimesh(
         name="dragon",
-        vertices=vertices,
-        faces=faces,
+        mesh=mesh,
         batched_positions=positions,
         batched_wxyzs=rotations,
     )

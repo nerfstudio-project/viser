@@ -637,6 +637,28 @@ class BatchedMeshesProps(MeshProps):
 
 
 @dataclasses.dataclass
+class BatchedGlbMessage(_CreateSceneNodeMessage):
+    """Message from server->client carrying batched GLB information."""
+
+    props: BatchedGlbProps
+
+
+@dataclasses.dataclass
+class BatchedGlbProps(GlbProps):
+    """Batched GLB message."""
+
+    batched_wxyzs: npt.NDArray[np.float32]
+    """Float array of shape (N, 4) representing quaternion rotations. Synchronized automatically when assigned."""
+    batched_positions: npt.NDArray[np.float32]
+    """Float array of shape (N, 3) representing positions. Synchronized automatically when assigned."""
+
+    def __post_init__(self):
+        assert self.batched_wxyzs.shape[-1] == 4
+        assert self.batched_positions.shape[-1] == 3
+        assert self.batched_wxyzs.shape[0] == self.batched_positions.shape[0]
+
+
+@dataclasses.dataclass
 class SetBoneOrientationMessage(Message):
     """Server -> client message to set a skinned mesh bone's orientation.
 
