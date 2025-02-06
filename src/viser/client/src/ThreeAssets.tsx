@@ -522,7 +522,8 @@ export const ViserMesh = React.forwardRef<
         new Float32Array(
           message.props.vertices.buffer.slice(
             message.props.vertices.byteOffset,
-            message.props.vertices.byteOffset + message.props.vertices.byteLength,
+            message.props.vertices.byteOffset +
+              message.props.vertices.byteLength,
           ),
         ),
         3,
@@ -543,6 +544,7 @@ export const ViserMesh = React.forwardRef<
     geometry.computeBoundingSphere();
 
     // Handle skinned mesh setup if needed
+    let skeleton = undefined;
     if (message.type === "SkinnedMeshMessage") {
       // Skinned mesh.
       const bone_wxyzs = new Float32Array(
@@ -657,20 +659,16 @@ export const ViserMesh = React.forwardRef<
   // Create the instanced mesh once
   const instancedMesh = React.useMemo(() => {
     if (message.type !== "BatchedMeshesMessage" || !material) return null;
-    
+
     const num_insts = message.props.batched_wxyzs.length / 4;
-    const mesh = new InstancedMesh2(
-      geometry,
-      material,
-      {
-        capacity: num_insts,
-        createEntities: true,
-      }
-    );
+    const mesh = new InstancedMesh2(geometry, material, {
+      capacity: num_insts,
+      createEntities: true,
+    });
 
-    mesh.addInstances(num_insts, (obj, index) => {});
+    mesh.addInstances(num_insts, () => {});
 
-    if (message.props.lod_list !== null) {
+    if (message.props.lod_list != null) {
       console.log("updating lod");
       for (const [_verts, _faces, _dist] of message.props.lod_list) {
         const _geom = new THREE.BufferGeometry();
@@ -704,7 +702,14 @@ export const ViserMesh = React.forwardRef<
     }
 
     return mesh;
-  }, [message.type, material, geometry, ...(message.type === "BatchedMeshesMessage" ? [message.props.lod_list] : [])]);
+  }, [
+    message.type,
+    material,
+    geometry,
+    ...(message.type === "BatchedMeshesMessage"
+      ? [message.props.lod_list]
+      : []),
+  ]);
 
   // Handle updates to instance positions/orientations
   React.useEffect(() => {
@@ -713,14 +718,16 @@ export const ViserMesh = React.forwardRef<
     const batched_positions = new Float32Array(
       message.props.batched_positions.buffer.slice(
         message.props.batched_positions.byteOffset,
-        message.props.batched_positions.byteOffset + message.props.batched_positions.byteLength,
+        message.props.batched_positions.byteOffset +
+          message.props.batched_positions.byteLength,
       ),
     );
-    
+
     const batched_wxyzs = new Float32Array(
       message.props.batched_wxyzs.buffer.slice(
         message.props.batched_wxyzs.byteOffset,
-        message.props.batched_wxyzs.byteOffset + message.props.batched_wxyzs.byteLength,
+        message.props.batched_wxyzs.byteOffset +
+          message.props.batched_wxyzs.byteLength,
       ),
     );
 
@@ -741,12 +748,12 @@ export const ViserMesh = React.forwardRef<
   }, [
     message.type,
     instancedMesh,
-    ...(
-      message.type === "BatchedMeshesMessage" ? [
-        message.props.batched_positions.buffer,
-        message.props.batched_wxyzs.buffer,
-      ] : []
-    ),
+    ...(message.type === "BatchedMeshesMessage"
+      ? [
+          message.props.batched_positions.buffer,
+          message.props.batched_wxyzs.buffer,
+        ]
+      : []),
   ]);
 
   if (geometry === undefined || material === undefined) {
