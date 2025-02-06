@@ -6,6 +6,7 @@ import React from "react";
 import { HoverableContext } from "./HoverContext";
 import * as THREE from "three";
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { SimplifyModifier } from "three/examples/jsm/modifiers/SimplifyModifier";
 import {
   MeshBasicMaterial,
   MeshDepthMaterial,
@@ -656,7 +657,7 @@ export const ViserMesh = React.forwardRef<
     };
   }, [geometry]);
 
-  // Create the instanced mesh once
+  // Create the instanced mesh once.
   const instancedMesh = React.useMemo(() => {
     if (message.type !== "BatchedMeshesMessage" || !material) return null;
     
@@ -674,41 +675,8 @@ export const ViserMesh = React.forwardRef<
       }
     );
 
-    mesh.removeInstances();
+    // Initial setup of instances.
     mesh.addInstances(num_insts, () => {});
-
-    if (message.props.lod_list != null) {
-      console.log("updating lod");
-      for (const [_verts, _faces, _dist] of message.props.lod_list) {
-        const _geom = new THREE.BufferGeometry();
-        _geom.setAttribute(
-          "position",
-          new THREE.BufferAttribute(
-            new Float32Array(
-              _verts.buffer.slice(
-                _verts.byteOffset,
-                _verts.byteOffset + _verts.byteLength,
-              ),
-            ),
-            3,
-          ),
-        );
-        _geom.setIndex(
-          new THREE.BufferAttribute(
-            new Uint32Array(
-              _faces.buffer.slice(
-                _faces.byteOffset,
-                _faces.byteOffset + _faces.byteLength,
-              ),
-            ),
-            1,
-          ),
-        );
-        _geom.computeVertexNormals();
-        _geom.computeBoundingSphere();
-        mesh.addLOD(_geom, material, _dist);
-      }
-    }
 
     return mesh;
   }, [
@@ -717,7 +685,6 @@ export const ViserMesh = React.forwardRef<
     geometry,
     ...(message.type === "BatchedMeshesMessage" ? [
       message.props.batched_wxyzs.length,
-      message.props.lod_list,
     ] : [])]);
 
   // Handle updates to instance positions/orientations

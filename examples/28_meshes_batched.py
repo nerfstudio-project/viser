@@ -47,7 +47,7 @@ def main():
     vertices = mesh.vertices
     faces = mesh.faces
 
-    server = viser.ViserServer()
+    server = viser.ViserServer(port=8081)
 
     # Add GUI controls.
     wiggle_handle = server.gui.add_checkbox(

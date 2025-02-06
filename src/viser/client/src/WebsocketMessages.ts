@@ -253,7 +253,6 @@ export interface BatchedMeshesMessage {
     material: "standard" | "toon3" | "toon5";
     batched_wxyzs: Uint8Array;
     batched_positions: Uint8Array;
-    lod_list: [Uint8Array, Uint8Array, number][] | null;
   };
 }
 /** Message for transform gizmos.

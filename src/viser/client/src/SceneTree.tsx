@@ -28,7 +28,6 @@ import {
   PointCloud,
   ViserImage,
   ViserMesh,
-  // InstancedMesh,
 } from "./ThreeAssets";
 import { opencvXyFromPointerXy } from "./ClickUtils";
 import { SceneNodeMessage } from "./WebsocketMessages";
