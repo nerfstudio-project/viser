@@ -28,7 +28,7 @@ import {
   PointCloud,
   ViserImage,
   ViserMesh,
-  InstancedMesh,
+  // InstancedMesh,
 } from "./ThreeAssets";
 import { opencvXyFromPointerXy } from "./ClickUtils";
 import { SceneNodeMessage } from "./WebsocketMessages";
@@ -255,60 +255,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
 
     // Add mesh
     case "SkinnedMeshMessage":
-    case "MeshMessage": {
-      return { makeObject: (ref) => <ViserMesh ref={ref} {...message} /> };
-    }
+    case "MeshMessage":
     case "BatchedMeshesMessage": {
-      return {
-        makeObject: (ref) => (
-          <InstancedMesh
-            ref={ref}
-            vertices={
-              new Float32Array(
-                message.props.vertices.buffer.slice(
-                  message.props.vertices.byteOffset,
-                  message.props.vertices.byteOffset +
-                    message.props.vertices.byteLength,
-                ),
-              )
-            }
-            faces={
-              new Uint32Array(
-                message.props.faces.buffer.slice(
-                  message.props.faces.byteOffset,
-                  message.props.faces.byteOffset +
-                    message.props.faces.byteLength,
-                ),
-              )
-            }
-            color={message.props.color}
-            wireframe={message.props.wireframe}
-            opacity={message.props.opacity}
-            flat_shading={message.props.flat_shading}
-            side={message.props.side}
-            material={message.props.material}
-            batched_wxyzs={
-              new Float32Array(
-                message.props.batched_wxyzs.buffer.slice(
-                  message.props.batched_wxyzs.byteOffset,
-                  message.props.batched_wxyzs.byteOffset +
-                  message.props.batched_wxyzs.byteLength,
-                ),
-              )
-            }
-            batched_positions={
-              new Float32Array(
-                message.props.batched_positions.buffer.slice(
-                  message.props.batched_positions.byteOffset,
-                  message.props.batched_positions.byteOffset +
-                  message.props.batched_positions.byteLength,
-                ),
-              )
-            }
-            lod_list={message.props.lod_list}
-          />
-        )
-      };
+      return { makeObject: (ref) => <ViserMesh ref={ref} {...message} /> };
     }
     // Add a camera frustum.
     case "CameraFrustumMessage": {

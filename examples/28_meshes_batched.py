@@ -56,7 +56,7 @@ def main():
     print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
 
     # Create multiple instances of the mesh with different positions
-    num_instances = 1000
+    num_instances = 100
     positions = (
         np.random.rand(num_instances, 3) * 10 - 5
     )  # Random positions in a 10x10x10 cube
@@ -72,16 +72,16 @@ def main():
         batched_wxyzs=rotations,
         batched_positions=positions,
         lod_list=(
-            (mesh_downsample_0.vertices, mesh_downsample_0.faces, 2),
+            (mesh_downsample_0.vertices, mesh_downsample_0.faces, 1),
             (mesh_downsample_1.vertices, mesh_downsample_1.faces, 4),
         ),
     )
 
     while True:
-        num_instances = 1000
-        delta_positions = np.random.rand(num_instances, 3) * 0.01 - 0.005
-        positions = (positions + delta_positions).astype(np.float32)
-        handle.batched_positions = positions
+        # num_instances = 100
+        # delta_positions = np.random.rand(num_instances, 3) * 0.01 - 0.005
+        # positions = (positions + delta_positions).astype(np.float32)
+        # handle.batched_positions = positions
 
         time.sleep(1.0 / 30.0)
 

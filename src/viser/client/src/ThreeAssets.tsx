@@ -31,6 +31,7 @@ import {
   MeshMessage,
   PointCloudMessage,
   SkinnedMeshMessage,
+  BatchedMeshesMessage,
 } from "./WebsocketMessages";
 import { Object3DNode } from "@react-three/fiber";
 import { ViewerContext } from "./ViewerContext";
@@ -440,8 +441,8 @@ export const InstancedAxes = React.forwardRef<
 
 /** Convert raw RGB color buffers to linear color buffers. **/
 export const ViserMesh = React.forwardRef<
-  THREE.Mesh | THREE.SkinnedMesh,
-  MeshMessage | SkinnedMeshMessage
+  THREE.Mesh | THREE.SkinnedMesh | THREE.Group,
+  MeshMessage | SkinnedMeshMessage | BatchedMeshesMessage
 >(function ViserMesh(message, ref) {
   const viewer = React.useContext(ViewerContext)!;
 
@@ -512,6 +513,8 @@ export const ViserMesh = React.forwardRef<
     () => new THREE.BufferGeometry(),
   );
   const [skeleton, setSkeleton] = React.useState<THREE.Skeleton>();
+
+  // Setup geometry attributes
   React.useEffect(() => {
     geometry.setAttribute(
       "position",
@@ -519,8 +522,7 @@ export const ViserMesh = React.forwardRef<
         new Float32Array(
           message.props.vertices.buffer.slice(
             message.props.vertices.byteOffset,
-            message.props.vertices.byteOffset +
-              message.props.vertices.byteLength,
+            message.props.vertices.byteOffset + message.props.vertices.byteLength,
           ),
         ),
         3,
@@ -540,7 +542,7 @@ export const ViserMesh = React.forwardRef<
     geometry.computeVertexNormals();
     geometry.computeBoundingSphere();
 
-    let skeleton = undefined;
+    // Handle skinned mesh setup if needed
     if (message.type === "SkinnedMeshMessage") {
       // Skinned mesh.
       const bone_wxyzs = new Float32Array(
@@ -652,175 +654,25 @@ export const ViserMesh = React.forwardRef<
     };
   }, [geometry]);
 
-  // Update bone transforms for skinned meshes.
-  useFrame(() => {
-    if (message.type !== "SkinnedMeshMessage") return;
-
-    const parentNode = viewer.nodeRefFromName.current[message.name];
-    if (parentNode === undefined) return;
-
-    const state = viewer.skinnedMeshState.current[message.name];
-    const bones = bonesRef.current;
-    if (skeleton !== undefined && bones !== undefined) {
-      if (!state.initialized) {
-        bones.forEach((bone) => {
-          parentNode.add(bone);
-        });
-        state.initialized = true;
-      }
-      bones.forEach((bone, i) => {
-        const wxyz = state.poses[i].wxyz;
-        const position = state.poses[i].position;
-        bone.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-        bone.position.set(position[0], position[1], position[2]);
-      });
-    }
-  });
-
-  if (geometry === undefined || material === undefined) {
-    return;
-  } else if (message.type === "SkinnedMeshMessage") {
-    return (
-      <skinnedMesh
-        ref={ref as React.ForwardedRef<THREE.SkinnedMesh>}
-        geometry={geometry}
-        material={material}
-        skeleton={skeleton}
-        // TODO: leaving culling on (default) sometimes causes the
-        // mesh to randomly disappear, as of r3f==8.16.2.
-        //
-        // Probably this is because we don't update the bounding
-        // sphere after the bone transforms change.
-        frustumCulled={false}
-      >
-        <OutlinesIfHovered alwaysMounted />
-      </skinnedMesh>
-    );
-  } else {
-    // Normal mesh.
-    return (
-      <mesh
-        ref={ref as React.ForwardedRef<THREE.Mesh>}
-        geometry={geometry}
-        material={material}
-      >
-        <OutlinesIfHovered alwaysMounted />
-      </mesh>
-    );
-  }
-});
-
-/** Helper for adding batched/instanced meshes as scene nodes. */
-export const InstancedMesh = React.forwardRef<
-  THREE.Group,
-  {
-    vertices: Float32Array;
-    faces: Uint32Array;
-    color: [number, number, number] | null;
-    wireframe: boolean;
-    opacity: number | null;
-    material: "standard" | "toon3" | "toon5";
-    flat_shading: boolean;
-    side: "front" | "back" | "double";
-    batched_wxyzs: Float32Array;
-    batched_positions: Float32Array;
-    lod_list: [Uint8Array, Uint8Array, number][] | null;
-  }
->(function InstancedMesh(
-  {
-    vertices,
-    faces,
-    color,
-    wireframe,
-    opacity,
-    material,
-    flat_shading,
-    side,
-    batched_wxyzs,
-    batched_positions,
-    lod_list,
-  },
-  ref,
-) {
-  const geometry = React.useMemo(() => {
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute(
-      "position",
-      new THREE.BufferAttribute(new Float32Array(vertices), 3),
-    );
-    geom.setIndex(new THREE.BufferAttribute(new Uint32Array(faces), 1));
-    geom.computeVertexNormals();
-    geom.computeBoundingSphere();
-    return geom;
-  }, [
-    // Compare buffer contents instead of buffer instances.
-    vertices.length,
-    vertices.every((v, i) => vertices[i] === v),
-    faces.length,
-    faces.every((f, i) => faces[i] === f),
-  ]);
-
-  // We need to dispose the old geometry whenever it changes or the component unmounts.
-  React.useEffect(() => {
-    return () => {
-      geometry.dispose();
-    };
-  }, [geometry]);
-
-  const meshMaterial = React.useMemo(() => {
-    const materialProps = {
-      color: color === null ? undefined : rgbToInt(color),
-      wireframe,
-      transparent: opacity !== null,
-      opacity: opacity ?? 1.0,
-      flatShading: flat_shading && !wireframe,
-      side: {
-        front: THREE.FrontSide,
-        back: THREE.BackSide,
-        double: THREE.DoubleSide,
-      }[side],
-    };
-
-    switch (material) {
-      case "standard":
-      case "toon3":
-      case "toon5":
-      default:
-        return new THREE.MeshStandardMaterial(materialProps);
-    }
-  }, [material, color, opacity, flat_shading, side, wireframe]);
-
-  // We need to dispose the old material whenever it changes or the component unmounts.
-  React.useEffect(() => {
-    return () => {
-      meshMaterial.dispose();
-    };
-  }, [meshMaterial]);
-
-  const num_insts = React.useRef(batched_wxyzs.length / 4);
+  // Create the instanced mesh once
   const instancedMesh = React.useMemo(() => {
-    const instancedMesh = new InstancedMesh2(geometry, meshMaterial, {
-      capacity: num_insts.current,
-      createEntities: true,
-    });
-    instancedMesh.addInstances(num_insts.current, (obj, index) => {
-      obj.position.set(
-        batched_positions[index * 3 + 0],
-        batched_positions[index * 3 + 1],
-        batched_positions[index * 3 + 2],
-      );
-      obj.quaternion.set(
-        batched_wxyzs[index * 4 + 1],
-        batched_wxyzs[index * 4 + 2],
-        batched_wxyzs[index * 4 + 3],
-        batched_wxyzs[index * 4 + 0],
-      ); // wxyz -> xyzw.
-    });
+    if (message.type !== "BatchedMeshesMessage" || !material) return null;
+    
+    const num_insts = message.props.batched_wxyzs.length / 4;
+    const mesh = new InstancedMesh2(
+      geometry,
+      material,
+      {
+        capacity: num_insts,
+        createEntities: true,
+      }
+    );
 
-    // Add LODs if provided
-    if (lod_list !== null) {
+    mesh.addInstances(num_insts, (obj, index) => {});
+
+    if (message.props.lod_list !== null) {
       console.log("updating lod");
-      for (const [_verts, _faces, _dist] of lod_list) {
+      for (const [_verts, _faces, _dist] of message.props.lod_list) {
         const _geom = new THREE.BufferGeometry();
         _geom.setAttribute(
           "position",
@@ -847,14 +699,32 @@ export const InstancedMesh = React.forwardRef<
         );
         _geom.computeVertexNormals();
         _geom.computeBoundingSphere();
-        instancedMesh.addLOD(_geom, meshMaterial, _dist);
+        mesh.addLOD(_geom, material, _dist);
       }
     }
-    return instancedMesh;
-  }, [num_insts, lod_list]);
 
+    return mesh;
+  }, [message.type, material, geometry, ...(message.type === "BatchedMeshesMessage" ? [message.props.lod_list] : [])]);
+
+  // Handle updates to instance positions/orientations
   React.useEffect(() => {
-    // On all subsequent updates, we use the update call.
+    if (message.type !== "BatchedMeshesMessage" || !instancedMesh) return;
+
+    const batched_positions = new Float32Array(
+      message.props.batched_positions.buffer.slice(
+        message.props.batched_positions.byteOffset,
+        message.props.batched_positions.byteOffset + message.props.batched_positions.byteLength,
+      ),
+    );
+    
+    const batched_wxyzs = new Float32Array(
+      message.props.batched_wxyzs.buffer.slice(
+        message.props.batched_wxyzs.byteOffset,
+        message.props.batched_wxyzs.byteOffset + message.props.batched_wxyzs.byteLength,
+      ),
+    );
+
+    console.log("updating instances");
     instancedMesh.updateInstances((obj, index) => {
       obj.position.set(
         batched_positions[index * 3 + 0],
@@ -866,16 +736,58 @@ export const InstancedMesh = React.forwardRef<
         batched_wxyzs[index * 4 + 2],
         batched_wxyzs[index * 4 + 3],
         batched_wxyzs[index * 4 + 0],
-      ); // wxyz -> xyzw.
+      );
     });
-  }, [batched_wxyzs, batched_positions]);
+  }, [
+    message.type,
+    instancedMesh,
+    ...(
+      message.type === "BatchedMeshesMessage" ? [
+        message.props.batched_positions.buffer,
+        message.props.batched_wxyzs.buffer,
+      ] : []
+    ),
+  ]);
 
-  return (
-    <group ref={ref}>
-      <primitive object={instancedMesh} />
-      <OutlinesIfHovered alwaysMounted />
-    </group>
-  );
+  if (geometry === undefined || material === undefined) {
+    return null;
+  }
+
+  // Render the appropriate mesh type
+  if (message.type === "BatchedMeshesMessage") {
+    return (
+      <group ref={ref as React.ForwardedRef<THREE.Group>}>
+        {instancedMesh && (
+          <>
+            <primitive object={instancedMesh} />
+            <OutlinesIfHovered alwaysMounted />
+          </>
+        )}
+      </group>
+    );
+  } else if (message.type === "SkinnedMeshMessage") {
+    return (
+      <skinnedMesh
+        ref={ref as React.ForwardedRef<THREE.SkinnedMesh>}
+        geometry={geometry}
+        material={material}
+        skeleton={skeleton}
+        frustumCulled={false}
+      >
+        <OutlinesIfHovered alwaysMounted />
+      </skinnedMesh>
+    );
+  } else {
+    return (
+      <mesh
+        ref={ref as React.ForwardedRef<THREE.Mesh>}
+        geometry={geometry}
+        material={material}
+      >
+        <OutlinesIfHovered alwaysMounted />
+      </mesh>
+    );
+  }
 });
 
 export const ViserImage = React.forwardRef<THREE.Group, ImageMessage>(
