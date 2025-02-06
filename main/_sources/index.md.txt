@@ -87,13 +87,10 @@ URL (default: `http://localhost:8080`).
    examples/*
 
 
-.. |build| image:: https://github.com/nerfstudio-project/viser/workflows/build/badge.svg
-   :alt: Build status icon
+.. |pyright| image:: https://github.com/nerfstudio-project/viser/actions/workflows/pyright/badge.svg
+   :alt: Pyright status icon
    :target: https://github.com/nerfstudio-project/viser
-.. |pyright| image:: https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg?
-   :alt: Mypy status icon
-   :target: https://github.com/nerfstudio-project/viser
-.. |typescript| image:: https://github.com/nerfstudio-project/viser/workflows/typescript-compile/badge.svg
+.. |typescript| image:: https://github.com/nerfstudio-project/viser/actions/workflows/typescript-compile/badge.svg
    :alt: TypeScript status icon
    :target: https://github.com/nerfstudio-project/viser
 .. |versions| image:: https://img.shields.io/pypi/pyversions/viser
