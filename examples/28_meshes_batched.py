@@ -5,6 +5,7 @@ Visualize batched meshes. To get the demo data, see `./assets/download_dragon_me
 
 import time
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import trimesh
@@ -14,74 +15,86 @@ import viser
 import viser.transforms as tf
 
 
-def _decimate_mesh(mesh: trimesh.Trimesh, target_faces: int = 500) -> trimesh.Trimesh:
-    """Decimate a mesh using Open3D's quartile decimation.
+def create_random_transforms(num_instances: int) -> tuple[np.ndarray, np.ndarray]:
+    """Create random positions and rotations for mesh instances.
 
     Args:
-        mesh: trimesh.Trimesh object containing the mesh to decimate
-        target_faces: Target number of faces to keep after decimation
+        num_instances: Number of mesh instances to create transforms for.
 
     Returns:
-        trimesh.Trimesh: Decimated mesh
+        tuple containing:
+            - positions: (N, 3) float32 array of random positions
+            - rotations: (N, 4) float32 array of quaternions (wxyz format)
     """
-    # Create Open3D mesh
-    o3d_mesh = o3d.geometry.TriangleMesh()
-    o3d_mesh.vertices = o3d.utility.Vector3dVector(mesh.vertices)
-    o3d_mesh.triangles = o3d.utility.Vector3iVector(mesh.faces)
+    # Random positions in a 10x10x10 cube centered at origin
+    positions = (np.random.rand(num_instances, 3) * 10 - 5).astype(np.float32)
 
-    # Decimate mesh
-    o3d_mesh = o3d_mesh.simplify_quadric_decimation(
-        target_number_of_triangles=target_faces
+    # All instances rotated 90 degrees around X axis
+    rotations = np.array(
+        [tf.SO3.from_x_radians(np.pi / 2).wxyz for _ in range(num_instances)],
+        dtype=np.float32,
     )
 
-    # Convert back to trimesh
-    vertices_decimated = np.asarray(o3d_mesh.vertices)
-    faces_decimated = np.asarray(o3d_mesh.triangles)
-
-    return trimesh.Trimesh(vertices=vertices_decimated, faces=faces_decimated)
+    return positions, rotations
 
 
 def main():
+    # Load and prepare mesh data.
     mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
     assert isinstance(mesh, trimesh.Trimesh)
     mesh.apply_scale(0.01)
-    # mesh = trimesh.creation.cylinder(radius=0.5, height=1.0)
 
     vertices = mesh.vertices
     faces = mesh.faces
 
-    mesh_downsample_0 = _decimate_mesh(mesh, target_faces=len(faces) // 10)
-    mesh_downsample_1 = _decimate_mesh(mesh, target_faces=len(faces) // 100)
-
-    print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
-
-    # Create multiple instances of the mesh with different positions
-    num_instances = 100
-    positions = (
-        np.random.rand(num_instances, 3) * 10 - 5
-    )  # Random positions in a 10x10x10 cube
-    rotations = [tf.SO3.from_x_radians(np.pi / 2).wxyz for _ in range(num_instances)]
-    positions = positions.astype(np.float32)
-    rotations = np.array(rotations, dtype=np.float32)
-
     server = viser.ViserServer()
-    handle = server.scene.add_batched_meshes(
+
+    # Add GUI controls.
+    wiggle_handle = server.gui.add_checkbox(
+        "wiggle",
+        initial_value=True,
+    )
+    num_insts_handle = server.gui.add_slider(
+        "num_insts",
+        min=1,
+        max=1000,
+        step=1,
+        initial_value=1000,
+    )
+
+    # Initialize transforms.
+    positions, rotations = create_random_transforms(num_insts_handle.value)
+
+    # Create batched mesh visualization.
+    mesh_handle = server.scene.add_batched_meshes(
         name="dragon",
         vertices=vertices,
         faces=faces,
-        batched_wxyzs=rotations,
         batched_positions=positions,
-        lod_list=(
-            (mesh_downsample_0.vertices, mesh_downsample_0.faces, 1),
-            (mesh_downsample_1.vertices, mesh_downsample_1.faces, 4),
-        ),
+        batched_wxyzs=rotations,
     )
 
+    # Animation loop.
     while True:
-        # num_instances = 100
-        # delta_positions = np.random.rand(num_instances, 3) * 0.01 - 0.005
-        # positions = (positions + delta_positions).astype(np.float32)
-        # handle.batched_positions = positions
+        current_num_instances = num_insts_handle.value
+        update_visualization = False
+
+        # Recreate transforms if instance count changed.
+        if positions.shape[0] != current_num_instances:
+            positions, rotations = create_random_transforms(current_num_instances)
+            update_visualization = True
+
+        # Add small random perturbations, to test the update latency.
+        if wiggle_handle.value:
+            delta = np.random.rand(current_num_instances, 3) * 0.02 - 0.01
+            positions = (positions + delta).astype(np.float32)
+            update_visualization = True
+
+        # Update visualization -- positions and wxyzs together, to make sure the shapes remain consistent.
+        if update_visualization:
+            with server.atomic():
+                mesh_handle.batched_positions = positions
+                mesh_handle.batched_wxyzs = rotations
 
         time.sleep(1.0 / 30.0)
 

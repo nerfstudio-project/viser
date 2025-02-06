@@ -659,13 +659,22 @@ export const ViserMesh = React.forwardRef<
   // Create the instanced mesh once
   const instancedMesh = React.useMemo(() => {
     if (message.type !== "BatchedMeshesMessage" || !material) return null;
+    
+    const num_insts = new Float32Array(
+      message.props.batched_wxyzs.buffer.slice(
+        message.props.batched_wxyzs.byteOffset,
+        message.props.batched_wxyzs.byteOffset +
+          message.props.batched_wxyzs.byteLength,
+      ),
+    ).length / 4;
+    const mesh = new InstancedMesh2(geometry, material,
+      {
+        capacity: num_insts,
+        createEntities: true,
+      }
+    );
 
-    const num_insts = message.props.batched_wxyzs.length / 4;
-    const mesh = new InstancedMesh2(geometry, material, {
-      capacity: num_insts,
-      createEntities: true,
-    });
-
+    mesh.removeInstances();
     mesh.addInstances(num_insts, () => {});
 
     if (message.props.lod_list != null) {
@@ -706,10 +715,10 @@ export const ViserMesh = React.forwardRef<
     message.type,
     material,
     geometry,
-    ...(message.type === "BatchedMeshesMessage"
-      ? [message.props.lod_list]
-      : []),
-  ]);
+    ...(message.type === "BatchedMeshesMessage" ? [
+      message.props.batched_wxyzs.length,
+      message.props.lod_list,
+    ] : [])]);
 
   // Handle updates to instance positions/orientations
   React.useEffect(() => {
