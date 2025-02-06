@@ -249,23 +249,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a point cloud.
     case "PointCloudMessage": {
       return {
-        makeObject: (ref) => (
-          <PointCloud
-            ref={ref}
-            pointSize={message.props.point_size}
-            pointBallNorm={message.props.point_ball_norm}
-            points={
-              new Uint16Array( // (contains float16)
-                message.props.points.buffer.slice(
-                  message.props.points.byteOffset,
-                  message.props.points.byteOffset +
-                    message.props.points.byteLength,
-                ),
-              )
-            }
-            colors={new Uint8Array(message.props.colors)}
-          />
-        ),
+        makeObject: (ref) => <PointCloud ref={ref} {...message} />,
       };
     }
 
