@@ -42,10 +42,10 @@ def main():
     # Load and prepare mesh data.
     mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
     assert isinstance(mesh, trimesh.Trimesh)
-    mesh.apply_scale(0.01)
 
-    vertices = mesh.vertices
-    faces = mesh.faces
+    # mesh = cast(trimesh.Scene, trimesh.load_mesh('source/car_glb.glb'))
+    # mesh.apply_scale(0.1)
+    # mesh.apply_translation(-mesh.centroid)
 
     server = viser.ViserServer(port=8081)
 

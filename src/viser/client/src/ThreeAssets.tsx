@@ -302,7 +302,7 @@ export const GlbAsset = React.forwardRef<
     scene.traverse((node) => {
       if (node instanceof THREE.Mesh) {
         const instancedMesh = new InstancedMesh2(
-          node.geometry,
+          node.geometry.clone(),
           node.material,
           {
             capacity: batched_positions.length / 3,
@@ -315,6 +315,29 @@ export const GlbAsset = React.forwardRef<
           node.parent.add(instancedMesh);
           node.parent.remove(node);
         }
+
+        const addLODs = (mesh: THREE.Mesh, ratios: number[], distances: number[]) => {
+          ratios.forEach((ratio, index) => {
+            const targetCount = Math.floor(mesh.geometry.index!.array.length * ratio / 3) * 3;
+            const lodGeometry = mesh.geometry.clone();
+
+            const dstIndexArray = MeshoptSimplifier.simplify(
+              new Uint32Array(lodGeometry.index!.array),
+              new Float32Array(lodGeometry.attributes.position.array),
+              3,
+              targetCount,
+              0.1,
+            )[0];
+
+            lodGeometry.index!.array.set(dstIndexArray);
+            lodGeometry.index!.needsUpdate = true;
+            lodGeometry.setDrawRange(0, dstIndexArray.length);
+            instancedMesh.addLOD(lodGeometry, mesh.material, distances[index]);
+          });
+        };
+        const ratios = [0.01];
+        const distances = [2];
+        addLODs(node, ratios, distances);
         
         // Initial setup of instances
         instancedMesh.addInstances(batched_positions.length / 3, () => {});
@@ -328,6 +351,7 @@ export const GlbAsset = React.forwardRef<
   // Handle updates to instance positions/orientations
   React.useEffect(() => {
     if (message.type !== "BatchedGlbMessage" || !instancedMeshes) return;
+    if (instancedMeshes.instancedMeshes.length !== meshes.length) return;
 
     const batched_positions = new Float32Array(
       message.props.batched_positions.buffer.slice(
@@ -343,26 +367,72 @@ export const GlbAsset = React.forwardRef<
       )
     );
 
-    // Update all instanced meshes with the same transforms
-    instancedMeshes.instancedMeshes.forEach((instancedMesh) => {
+    // Pre-allocate matrices to avoid garbage collection
+    // const T_world_obj = new THREE.Matrix4();
+    // const T_world_mesh = new THREE.Matrix4();
+    // const T_obj_mesh = new THREE.Matrix4();
+    // const tmpQuat = new THREE.Quaternion();
+
+    instancedMeshes.instancedMeshes.forEach((instancedMesh, mesh_index) => {
+      // Get the original mesh's transform relative to the GLB root
+      // if (instancedMesh.parent) {
+      //   T_obj_mesh.copy(instancedMesh.matrix);
+      // }
+
       instancedMesh.updateInstances((obj, index) => {
         obj.position.set(
           batched_positions[index * 3 + 0],
           batched_positions[index * 3 + 1],
           batched_positions[index * 3 + 2]
-        );
+        )
         obj.quaternion.set(
           batched_wxyzs[index * 4 + 1],
           batched_wxyzs[index * 4 + 2],
           batched_wxyzs[index * 4 + 3],
           batched_wxyzs[index * 4 + 0]
-        );
+        )
+        // Set object-to-world transform
+        // T_world_obj.makeRotationFromQuaternion(
+        //   tmpQuat.set(
+        //     batched_wxyzs[index * 4 + 1],
+        //     batched_wxyzs[index * 4 + 2],
+        //     batched_wxyzs[index * 4 + 3],
+        //     batched_wxyzs[index * 4 + 0]
+        //   )
+        // ).setPosition(
+        //   batched_positions[index * 3 + 0],
+        //   batched_positions[index * 3 + 1],
+        //   batched_positions[index * 3 + 2]
+        // );
+
+        // T_obj_mesh.makeRotationFromQuaternion(
+        //   tmpQuat.set(
+        //     meshes[mesh_index].quaternion.x,
+        //     meshes[mesh_index].quaternion.y,
+        //     meshes[mesh_index].quaternion.z,
+        //     meshes[mesh_index].quaternion.w
+        //   )
+        // ).setPosition(
+        //   meshes[mesh_index].position.x,
+        //   meshes[mesh_index].position.y,
+        //   meshes[mesh_index].position.z
+        // );
+
+        // // Combine transforms: T_world_mesh = T_world_obj * T_obj_mesh
+        // T_world_mesh.copy(T_world_obj) // .multiply(T_obj_mesh);
+
+        // // Extract position and rotation from final transform
+        // obj.position.setFromMatrixPosition(T_world_mesh);
+        // obj.quaternion.setFromRotationMatrix(T_world_mesh);
       });
     });
   }, [
     message.type,
     instancedMeshes,
-    ...(message.type === "BatchedGlbMessage" ? [message.props.batched_positions, message.props.batched_wxyzs] : []),
+    ...(message.type === "BatchedGlbMessage" ? [
+      message.props.batched_positions,
+      message.props.batched_wxyzs
+    ] : [])
   ]);
 
   if (!gltf) return null;
