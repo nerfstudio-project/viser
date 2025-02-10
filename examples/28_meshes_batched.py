@@ -9,7 +9,6 @@ from typing import cast
 
 import numpy as np
 import trimesh
-import open3d as o3d
 
 import viser
 import viser.transforms as tf
@@ -42,10 +41,12 @@ def main():
     # Load and prepare mesh data.
     mesh = trimesh.load_mesh(str(Path(__file__).parent / "assets/dragon.obj"))
     assert isinstance(mesh, trimesh.Trimesh)
+    mesh.apply_scale(0.01)
 
-    # mesh = cast(trimesh.Scene, trimesh.load_mesh('source/car_glb.glb'))
-    # mesh.apply_scale(0.1)
-    # mesh.apply_translation(-mesh.centroid)
+    mesh = cast(trimesh.Scene, trimesh.load_mesh('source/car_glb.glb'))
+    # mesh = list(mesh.geometry.values())[0]
+    mesh.apply_scale(0.01)
+    mesh.apply_translation(-mesh.centroid)
 
     server = viser.ViserServer(port=8081)
 
