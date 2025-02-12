@@ -15,9 +15,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     depthTest: true,
     depthWrite: false,
     transparent: true,
-    sh_degree: 0,
     textureBuffer: null,
     shTextureBuffer: null,
+    normTextureBuffer: null,
     textureT_camera_groups: null,
     transitionInState: 0.0,
   },
@@ -170,6 +170,33 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 v1 = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
     vec2 v2 = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
 
+    // NEW ADDITION*******************************************************
+    // Calculate the spherical harmonics.
+    vec3 viewDir = normalize(center - cameraPosition);
+    const float C0 = 0.28209479177387814;
+    const float C1 = 0.4886025119029199;
+    const float C2[5] = float[5](
+        1.0925484305920792,
+        -1.0925484305920792,
+        0.31539156525252005,
+        -1.0925484305920792,
+        0.5462742152960396
+    );
+    const float C3[7] = float[7](
+        -0.5900435899266435,
+        2.890611442640554,
+        -0.4570457994644658,
+        0.3731763325901154,
+        -0.4570457994644658,
+        1.445305721320277,
+        -0.5900435899266435
+    );
+
+    vec3 sh_coeffs[16];
+    for (int i = 0; i < 16; i++) {
+        sh_coeffs[i] = vec3(0.0);
+    }
+
     vRgba = vec4(
       float(rgbaUint32 & uint(0xFF)) / 255.0,
       float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
@@ -209,6 +236,8 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 /**Hook to generate properties for rendering Gaussians via a three.js mesh.*/
 export function useGaussianMeshProps(
   gaussianBuffer: Uint32Array,
+  combinedSHBuffer: Uint32Array, // NEW ADDITION*******************************************************
+  combinedNormBuffer: Uint32Array, // NEW ADDITION***************************************************
   numGroups: number,
 ) {
   const numGaussians = gaussianBuffer.length / 8;
@@ -252,36 +281,6 @@ export function useGaussianMeshProps(
   textureBuffer.internalFormat = "RGBA32UI";
   textureBuffer.needsUpdate = true;
 
-  // NEW ADDITION*******************************************************
-  // Create texture buffers for spherical harmonics.
-  const shBufferPadded = new Uint32Array(textureWidth * textureHeight * 4);
-  shBufferPadded.set(shBuffer);
-  const shTextureBuffer = new THREE.DataTexture(
-    shBufferPadded,
-    textureWidth,
-    textureHeight,
-    THREE.RGBAIntegerFormat,
-    THREE.UnsignedIntType,
-  );
-  shTextureBuffer.internalFormat = "RGBA32UI";
-  shTextureBuffer.needsUpdate = true;
-  // END NEW ADDITION***************************************************
-
-  // NEW ADDITION*******************************************************
-  // Create texture buffers for normals.
-  const normBufferPadded = new Uint32Array(textureWidth * textureHeight * 4);
-  normBufferPadded.set(normBuffer);
-  const normTextureBuffer = new THREE.DataTexture(
-    normBufferPadded,
-    textureWidth,
-    textureHeight,
-    THREE.RGBAIntegerFormat,
-    THREE.UnsignedIntType,
-  );
-  normTextureBuffer.internalFormat = "RGBA32UI";
-  normTextureBuffer.needsUpdate = true;
-  // END NEW ADDITION***************************************************
-
   const rowMajorT_camera_groups = new Float32Array(numGroups * 12);
   const textureT_camera_groups = new THREE.DataTexture(
     rowMajorT_camera_groups,
@@ -293,9 +292,44 @@ export function useGaussianMeshProps(
   textureT_camera_groups.internalFormat = "RGBA32F";
   textureT_camera_groups.needsUpdate = true;
 
+  // NEW ADDITION*******************************************************
+  // Values taken from PR https://github.com/nerfstudio-project/viser/pull/286/files
+  const shTextureWidth = Math.min(numGaussians * 6, maxTextureSize);
+  const shTextureHeight = Math.ceil((numGaussians * 6) / shTextureWidth);
+  const shBufferPadded = new Uint32Array(shTextureWidth * shTextureHeight * 4);
+  shBufferPadded.set(combinedSHBuffer);
+  const shTextureBuffer = new THREE.DataTexture(
+    shBufferPadded,
+    shTextureWidth,
+    shTextureHeight,
+    THREE.RGBAIntegerFormat,
+    THREE.UnsignedIntType,
+  );
+  shTextureBuffer.internalFormat = "RGBA32UI";
+  shTextureBuffer.needsUpdate = true;
+
+  const normTexturwWidth = Math.min(numGaussians * 6, maxTextureSize);
+  const normTextureHeight = Math.ceil((numGaussians * 6) / normTexturwWidth);
+  const normBufferPadded = new Uint32Array(normTexturwWidth * normTextureHeight * 4);
+  normBufferPadded.set(combinedNormBuffer);
+  const normTextureBuffer = new THREE.DataTexture(
+    normBufferPadded,
+    normTexturwWidth,
+    normTextureHeight,
+    THREE.RGBAIntegerFormat,
+    THREE.UnsignedIntType,
+  );
+  normTextureBuffer.internalFormat = "RGBA32UI";
+  normTextureBuffer.needsUpdate = true;
+
+  // END NEW ADDITION***************************************************
+
+
   const material = new GaussianSplatMaterial({
     // @ts-ignore
     textureBuffer: textureBuffer,
+    shTextureBuffer: shTextureBuffer, // NEW ADDITION*******************************************************
+    normTextureBuffer: normTextureBuffer, // NEW ADDITION***************************************************
     textureT_camera_groups: textureT_camera_groups,
     numGaussians: 0,
     transitionInState: 0.0,

@@ -64,7 +64,7 @@ export const SplatObject = React.forwardRef<
     sh_buffer: Uint32Array;
     norm_buffer: Uint32Array;
   }
->(function SplatObject({ buffer }, ref) {
+>(function SplatObject({ buffer, sh_buffer, norm_buffer }, ref) {
   const splatContext = React.useContext(GaussianSplatsContext)!;
   const setBuffer = splatContext.useGaussianSplatStore(
     (state) => state.setBuffer,
@@ -76,11 +76,18 @@ export const SplatObject = React.forwardRef<
     (state) => state.nodeRefFromId,
   );
   const name = React.useMemo(() => uuidv4(), [buffer]);
+  // Inspired from PR, maybe should look more similar to the original code above
+  const sh_buffer_name = "sh_buffer_" + name; 
+  const norm_buffer_name = "norm_buffer_" + name;
 
   React.useEffect(() => {
     setBuffer(name, buffer);
+    setBuffer(sh_buffer_name, sh_buffer);
+    setBuffer(norm_buffer_name, norm_buffer);
     return () => {
       removeBuffer(name);
+      removeBuffer(sh_buffer_name);
+      removeBuffer(norm_buffer_name);
       delete nodeRefFromId.current[name];
     };
   }, [buffer]);
@@ -131,6 +138,8 @@ function SplatRendererImpl() {
   const merged = mergeGaussianGroups(groupBufferFromId);
   const meshProps = useGaussianMeshProps(
     merged.gaussianBuffer,
+    merged.combinedSHBuffer,
+    merged.combinedNormBuffer,
     merged.numGroups,
   );
   splatContext.meshPropsRef.current = meshProps;
@@ -148,6 +157,8 @@ function SplatRendererImpl() {
     if (!initializedBufferTexture) {
       meshProps.material.uniforms.numGaussians.value = merged.numGaussians;
       meshProps.textureBuffer.needsUpdate = true;
+      meshProps.shTextureBuffer.needsUpdate = true;
+      meshProps.normTextureBuffer.needsUpdate = true;
       initializedBufferTexture = true;
     }
   };
@@ -163,6 +174,8 @@ function SplatRendererImpl() {
   React.useEffect(() => {
     return () => {
       meshProps.textureBuffer.dispose();
+      meshProps.shTextureBuffer.dispose();
+      meshProps.normTextureBuffer.dispose();
       meshProps.geometry.dispose();
       meshProps.material.dispose();
       postToWorker({ close: true });
@@ -338,7 +351,13 @@ function mergeGaussianGroups(groupBufferFromName: {
 }) {
   // Create geometry. Each Gaussian will be rendered as a quad.
   let totalBufferLength = 0;
-  for (const buffer of Object.values(groupBufferFromName)) {
+  const groupBufferFromNameFiltered = Object.fromEntries(
+    Object.entries(groupBufferFromName).filter(
+      ([key]) => !key.startsWith("sh_buffer_") && !key.startsWith("norm_buffer_")
+    )
+  );
+
+  for (const buffer of Object.values(groupBufferFromNameFiltered)) {
     totalBufferLength += buffer.length;
   }
   const numGaussians = totalBufferLength / 8;
@@ -347,7 +366,7 @@ function mergeGaussianGroups(groupBufferFromName: {
 
   let offset = 0;
   for (const [groupIndex, groupBuffer] of Object.values(
-    groupBufferFromName,
+    groupBufferFromNameFiltered,
   ).entries()) {
     groupIndices.fill(
       groupIndex,
@@ -368,6 +387,39 @@ function mergeGaussianGroups(groupBufferFromName: {
     offset += groupBuffer.length;
   }
 
-  const numGroups = Object.keys(groupBufferFromName).length;
-  return { numGaussians, gaussianBuffer, numGroups, groupIndices };
+  let totalSHBufferLength = 0;
+
+  const shGaussianBuffers = Object.fromEntries(
+    Object.entries(groupBufferFromName).filter(([key]) => key.startsWith("sh_buffer_"))
+  );
+
+  for (const sh_buffer of Object.values(shGaussianBuffers)) {
+    totalSHBufferLength += sh_buffer.length;
+  }
+
+  const combinedSHBuffer = new Uint32Array(totalSHBufferLength);
+  let sh_offset = 0;
+  for (const sh_buffer of Object.values(shGaussianBuffers)) {
+    combinedSHBuffer.set(sh_buffer, sh_offset);
+    sh_offset += sh_buffer.length;
+  }
+
+  const normGaussianBuffers = Object.fromEntries(
+    Object.entries(groupBufferFromName).filter(([key]) => key.startsWith("norm_buffer_"))
+  );
+
+  for (const norm_buffer of Object.values(normGaussianBuffers)) {
+    totalSHBufferLength += norm_buffer.length;
+  }
+
+  const combinedNormBuffer = new Uint32Array(totalSHBufferLength);
+  let norm_offset = 0;
+  for (const norm_buffer of Object.values(normGaussianBuffers)) {
+    combinedNormBuffer.set(norm_buffer, norm_offset);
+    norm_offset += norm_buffer.length;
+  }
+
+  const numGroups = Object.keys(groupBufferFromNameFiltered).length;
+
+  return { numGaussians, gaussianBuffer, numGroups, groupIndices, combinedSHBuffer, combinedNormBuffer };
 }

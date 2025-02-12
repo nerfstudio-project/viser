@@ -1325,7 +1325,6 @@ class SceneApi:
         assert rgbs.shape == (num_gaussians, 3)
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
-        
 
         # Get upper-triangular terms of covariance matrix.
         cov_triu = covariances.reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
@@ -1349,22 +1348,24 @@ class SceneApi:
         assert buffer.shape == (num_gaussians, 8)
 
         if sh_coeffs is not None and normals is not None:
+            assert sh_coeffs.shape == (num_gaussians, 48)
             sh_buffer = np.concatenate(
                 [
                     sh_coeffs.astype(np.float16).copy().view(np.uint8)
                 ],
             ).view(np.uint32)
         else:
-            sh_buffer = np.empty((0,), dtype=np.uint32)
+            sh_buffer = np.zeros((num_gaussians, 48), dtype=np.uint32)
 
         if normals is not None:
+            assert normals.shape == (num_gaussians, 3)
             norm_buffer = np.concatenate(
                 [
                     normals.astype(np.float32).view(np.uint8)
                 ],
             ).view(np.uint32)
         else:
-            norm_buffer = np.empty((0,), dtype=np.uint32)
+            norm_buffer = np.zeros((num_gaussians, 3), dtype=np.uint32)
 
         message = _messages.GaussianSplatsMessage(
             name=name,
