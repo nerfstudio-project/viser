@@ -491,6 +491,24 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
                 ),
               )
             }
+            sh_buffer={
+              new Uint32Array(
+                message.props.sh_buffer.buffer.slice(
+                  message.props.sh_buffer.byteOffset,
+                  message.props.sh_buffer.byteOffset +
+                    message.props.sh_buffer.byteLength,
+                ),
+              )
+            }
+            norm_buffer={
+              new Uint32Array(
+                message.props.norm_buffer.buffer.slice(
+                  message.props.norm_buffer.byteOffset,
+                  message.props.norm_buffer.byteOffset +
+                    message.props.norm_buffer.byteLength,
+                ),
+              )
+            }
           />
         ),
       };
