@@ -1294,6 +1294,8 @@ class SceneApi:
         covariances: np.ndarray,
         rgbs: np.ndarray,
         opacities: np.ndarray,
+        normals: np.ndarray | None = None,
+        sh_coeffs: np.ndarray | None = None,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1309,6 +1311,8 @@ class SceneApi:
             covariances: Second moment for each Gaussian. (N, 3, 3).
             rgbs: Color for each Gaussian. (N, 3).
             opacities: Opacity for each Gaussian. (N, 1).
+            normals: Normals for each Gaussian. (N, 3).
+            sh_coeffs: Spherical harmonics coefficients for each Gaussian. (N, 48).
             wxyz: R_parent_local transformation.
             position: t_parent_local transformation.
             visible: Initial visibility of scene node.
@@ -1321,26 +1325,50 @@ class SceneApi:
         assert rgbs.shape == (num_gaussians, 3)
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
+        assert normals is None or normals.shape == (num_gaussians, 3)
+        assert sh_coeffs is None or sh_coeffs.shape == (num_gaussians, 48)
 
         # Get upper-triangular terms of covariance matrix.
         cov_triu = covariances.reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
-        buffer = np.concatenate(
-            [
-                # First texelFetch.
-                # - xyz (96 bits): centers.
-                centers.astype(np.float32).view(np.uint8),
-                # - w (32 bits): this is reserved for use by the renderer.
-                np.zeros((num_gaussians, 4), dtype=np.uint8),
-                # Second texelFetch.
-                # - xyz (96 bits): upper-triangular terms of covariance.
-                cov_triu.astype(np.float16).copy().view(np.uint8),
-                # - w (32 bits): rgba.
-                colors_to_uint8(rgbs),
-                colors_to_uint8(opacities),
-            ],
-            axis=-1,
-        ).view(np.uint32)
-        assert buffer.shape == (num_gaussians, 8)
+
+        if sh_coeffs and normals:
+            buffer = np.concatenate(
+                [
+                    # First texelFetch.
+                    # - xyz (96 bits): centers.
+                    centers.astype(np.float32).view(np.uint8),
+                    # - w (32 bits): this is reserved for use by the renderer.
+                    np.zeros((num_gaussians, 4), dtype=np.uint8),
+                    # Second texelFetch.
+                    # - xyz (96 bits): upper-triangular terms of covariance.
+                    cov_triu.astype(np.float16).copy().view(np.uint8),
+                    # - w (32 bits): rgba.
+                    np.zeros((num_gaussians, 1), dtype=np.uint8),
+                    colors_to_uint8(opacities),
+                    # - w (56-bit padding).
+                    
+                ],
+                axis=-1,
+            ).view(np.uint32)
+            assert buffer.shape == (num_gaussians, 8) # TODO: Change assertion criteria.
+        else:
+            buffer = np.concatenate(
+                [
+                    # First texelFetch.
+                    # - xyz (96 bits): centers.
+                    centers.astype(np.float32).view(np.uint8),
+                    # - w (32 bits): this is reserved for use by the renderer.
+                    np.zeros((num_gaussians, 4), dtype=np.uint8),
+                    # Second texelFetch.
+                    # - xyz (96 bits): upper-triangular terms of covariance.
+                    cov_triu.astype(np.float16).copy().view(np.uint8),
+                    # - w (32 bits): rgba.
+                    colors_to_uint8(rgbs),
+                    colors_to_uint8(opacities),
+                ],
+                axis=-1,
+            ).view(np.uint32)
+            assert buffer.shape == (num_gaussians, 8)
 
         message = _messages.GaussianSplatsMessage(
             name=name,
