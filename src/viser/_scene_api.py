@@ -1342,15 +1342,15 @@ class SceneApi:
                     # Second texelFetch.
                     # - xyz (96 bits): upper-triangular terms of covariance.
                     cov_triu.astype(np.float16).copy().view(np.uint8),
-                    # - w (32 bits): rgba.
-                    np.zeros((num_gaussians, 1), dtype=np.uint8),
+                    # - w (32 bits): normals + alphas.
+                    colors_to_uint8(normals),
                     colors_to_uint8(opacities),
-                    # - w (56-bit padding).
-                    
+                    # - SH (768 bits).
+                    sh_coeffs.astype(np.float16).copy().view(np.uint8)    
                 ],
                 axis=-1,
             ).view(np.uint32)
-            assert buffer.shape == (num_gaussians, 8) # TODO: Change assertion criteria.
+            assert buffer.shape == (num_gaussians, 32) # TODO: Change assertion criteria.
         else:
             buffer = np.concatenate(
                 [
