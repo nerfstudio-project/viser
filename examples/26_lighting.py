@@ -43,6 +43,7 @@ def main() -> None:
     directional_light = server.scene.add_light_directional(
         name="/control0/directional_light",
         color=(186, 219, 173),
+        castShadow=True
     )
     point_light = server.scene.add_light_point(
         name="/control1/point_light",
@@ -68,6 +69,10 @@ def main() -> None:
             step=0.01,
             initial_value=directional_light.intensity,
         )
+        gui_directional_shadows = server.gui.add_checkbox(
+            "Shadows",
+            True
+        )
 
         @gui_directional_color.on_update
         def _(_) -> None:
@@ -76,6 +81,11 @@ def main() -> None:
         @gui_directional_intensity.on_update
         def _(_) -> None:
             directional_light.intensity = gui_directional_intensity.value
+        
+        @gui_directional_shadows.on_update
+        def _(_) -> None:
+            directional_light.castShadow = gui_directional_shadows.value
+
 
     with server.gui.add_folder("Point light"):
         gui_point_color = server.gui.add_rgb("Color", initial_value=point_light.color)
@@ -86,6 +96,10 @@ def main() -> None:
             step=0.01,
             initial_value=point_light.intensity,
         )
+        gui_point_shadows = server.gui.add_checkbox(
+            "Shadows",
+            True
+        )
 
         @gui_point_color.on_update
         def _(_) -> None:
@@ -94,6 +108,10 @@ def main() -> None:
         @gui_point_intensity.on_update
         def _(_) -> None:
             point_light.intensity = gui_point_intensity.value
+        
+        @gui_point_shadows.on_update
+        def _(_) -> None:
+            point_light.castShadow = gui_point_shadows.value
 
     # Create GUI elements for controlling environment map.
     with server.gui.add_folder("Environment map"):
