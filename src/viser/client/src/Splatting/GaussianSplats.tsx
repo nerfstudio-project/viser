@@ -61,6 +61,8 @@ export const SplatObject = React.forwardRef<
   THREE.Group,
   {
     buffer: Uint32Array;
+    sh_buffer: Uint32Array;
+    norm_buffer: Uint32Array;
   }
 >(function SplatObject({ buffer }, ref) {
   const splatContext = React.useContext(GaussianSplatsContext)!;

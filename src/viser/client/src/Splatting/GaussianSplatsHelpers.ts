@@ -15,7 +15,9 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     depthTest: true,
     depthWrite: false,
     transparent: true,
+    sh_degree: 0,
     textureBuffer: null,
+    shTextureBuffer: null,
     textureT_camera_groups: null,
     transitionInState: 0.0,
   },
@@ -29,6 +31,12 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   // copy quadjr for this.
   uniform usampler2D textureBuffer;
 
+  // NEW ADDITION*******************************************************
+  // Buffer for spherical harmonics; Each Gaussian gets 24 int32s representing
+  // this information.
+  uniform usampler2D shTextureBuffer;
+  // END NEW ADDITION***************************************************
+
   // We could also use a uniform to store transforms, but this would be more
   // limiting in terms of the # of groups we can have.
   uniform sampler2D textureT_camera_groups;
@@ -39,6 +47,7 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
   uniform vec2 viewport;
   uniform float near;
   uniform float far;
+  uniform uint sh_degree;
 
   // Fade in state between [0, 1].
   uniform float transitionInState;
@@ -96,6 +105,37 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     vec2 triu01 = unpackHalf2x16(intBufferData.x);
     vec2 triu23 = unpackHalf2x16(intBufferData.y);
     vec2 triu45 = unpackHalf2x16(intBufferData.z);
+
+    // NEW ADDITION*******************************************************
+    // Get spherical harmonics terms from int buffer. 48 coefficents per vertex.
+    uint shTexStart = sortedIndex * 6u
+    ivec2 shTexSize = textureSize(shTextureBuffer, 0);
+    float sh_coeffs_unpacked[48];
+    for (int i = 0; i < 6; i++) {
+        ivec2 shTexPos = ivec2((shTexStart + uint(i)) % uint(shTexSize.x), 
+                                (shTexStart + uint(i)) / uint(shTexSize.x));
+        uvec4 packedCoeffs = texelFetch(shTextureBuffer, shTexPos, 0);
+
+        // unpack each uint32 directly into two float16 values, we read 4 at a time
+        vec2 unpacked;
+        unpacked = unpackHalf2x16(packedCoeffs.x);
+        sh_coeffs_unpacked[i*8]   = unpacked.x;
+        sh_coeffs_unpacked[i*8+1] = unpacked.y;
+        
+        unpacked = unpackHalf2x16(packedCoeffs.y);
+        sh_coeffs_unpacked[i*8+2] = unpacked.x;
+        sh_coeffs_unpacked[i*8+3] = unpacked.y;
+        
+        unpacked = unpackHalf2x16(packedCoeffs.z);
+        sh_coeffs_unpacked[i*8+4] = unpacked.x;
+        sh_coeffs_unpacked[i*8+5] = unpacked.y;
+        
+        unpacked = unpackHalf2x16(packedCoeffs.w);
+        sh_coeffs_unpacked[i*8+6] = unpacked.x;
+        sh_coeffs_unpacked[i*8+7] = unpacked.y;
+    }
+    // TODO: CONTINUE, NOT YET FINISHED
+    // END NEW ADDITION***************************************************
 
     // Transition in.
     float startTime = 0.8 * float(sortedIndex) / float(numGaussians);
@@ -212,6 +252,36 @@ export function useGaussianMeshProps(
   textureBuffer.internalFormat = "RGBA32UI";
   textureBuffer.needsUpdate = true;
 
+  // NEW ADDITION*******************************************************
+  // Create texture buffers for spherical harmonics.
+  const shBufferPadded = new Uint32Array(textureWidth * textureHeight * 4);
+  shBufferPadded.set(shBuffer);
+  const shTextureBuffer = new THREE.DataTexture(
+    shBufferPadded,
+    textureWidth,
+    textureHeight,
+    THREE.RGBAIntegerFormat,
+    THREE.UnsignedIntType,
+  );
+  shTextureBuffer.internalFormat = "RGBA32UI";
+  shTextureBuffer.needsUpdate = true;
+  // END NEW ADDITION***************************************************
+
+  // NEW ADDITION*******************************************************
+  // Create texture buffers for normals.
+  const normBufferPadded = new Uint32Array(textureWidth * textureHeight * 4);
+  normBufferPadded.set(normBuffer);
+  const normTextureBuffer = new THREE.DataTexture(
+    normBufferPadded,
+    textureWidth,
+    textureHeight,
+    THREE.RGBAIntegerFormat,
+    THREE.UnsignedIntType,
+  );
+  normTextureBuffer.internalFormat = "RGBA32UI";
+  normTextureBuffer.needsUpdate = true;
+  // END NEW ADDITION***************************************************
+
   const rowMajorT_camera_groups = new Float32Array(numGroups * 12);
   const textureT_camera_groups = new THREE.DataTexture(
     rowMajorT_camera_groups,
@@ -235,6 +305,8 @@ export function useGaussianMeshProps(
     geometry,
     material,
     textureBuffer,
+    shTextureBuffer, // NEW ADDITION*******************************************************
+    normTextureBuffer, // NEW ADDITION***************************************************
     sortedIndexAttribute,
     textureT_camera_groups,
     rowMajorT_camera_groups,
