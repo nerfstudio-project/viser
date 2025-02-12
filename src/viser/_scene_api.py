@@ -1325,55 +1325,53 @@ class SceneApi:
         assert rgbs.shape == (num_gaussians, 3)
         assert opacities.shape == (num_gaussians, 1)
         assert covariances.shape == (num_gaussians, 3, 3)
-        assert normals is None or normals.shape == (num_gaussians, 3)
-        assert sh_coeffs is None or sh_coeffs.shape == (num_gaussians, 48)
+        
 
         # Get upper-triangular terms of covariance matrix.
         cov_triu = covariances.reshape((-1, 9))[:, np.array([0, 1, 2, 4, 5, 8])]
 
-        if sh_coeffs and normals:
-            buffer = np.concatenate(
+        buffer = np.concatenate(
+            [
+                # First texelFetch.
+                # - xyz (96 bits): centers.
+                centers.astype(np.float32).view(np.uint8),
+                # - w (32 bits): this is reserved for use by the renderer.
+                np.zeros((num_gaussians, 4), dtype=np.uint8),
+                # Second texelFetch.
+                # - xyz (96 bits): upper-triangular terms of covariance.
+                cov_triu.astype(np.float16).copy().view(np.uint8),
+                # - w (32 bits): rgba.
+                colors_to_uint8(rgbs),
+                colors_to_uint8(opacities),
+            ],
+            axis=-1,
+        ).view(np.uint32)
+        assert buffer.shape == (num_gaussians, 8)
+
+        if sh_coeffs is not None and normals is not None:
+            sh_buffer = np.concatenate(
                 [
-                    # First texelFetch.
-                    # - xyz (96 bits): centers.
-                    centers.astype(np.float32).view(np.uint8),
-                    # - w (32 bits): this is reserved for use by the renderer.
-                    np.zeros((num_gaussians, 4), dtype=np.uint8),
-                    # Second texelFetch.
-                    # - xyz (96 bits): upper-triangular terms of covariance.
-                    cov_triu.astype(np.float16).copy().view(np.uint8),
-                    # - w (32 bits): normals + alphas.
-                    colors_to_uint8(normals),
-                    colors_to_uint8(opacities),
-                    # - SH (768 bits).
-                    sh_coeffs.astype(np.float16).copy().view(np.uint8)    
+                    sh_coeffs.astype(np.float16).copy().view(np.uint8)
                 ],
-                axis=-1,
             ).view(np.uint32)
-            assert buffer.shape == (num_gaussians, 32) # TODO: Change assertion criteria.
         else:
-            buffer = np.concatenate(
+            sh_buffer = np.empty((0,), dtype=np.uint32)
+
+        if normals is not None:
+            norm_buffer = np.concatenate(
                 [
-                    # First texelFetch.
-                    # - xyz (96 bits): centers.
-                    centers.astype(np.float32).view(np.uint8),
-                    # - w (32 bits): this is reserved for use by the renderer.
-                    np.zeros((num_gaussians, 4), dtype=np.uint8),
-                    # Second texelFetch.
-                    # - xyz (96 bits): upper-triangular terms of covariance.
-                    cov_triu.astype(np.float16).copy().view(np.uint8),
-                    # - w (32 bits): rgba.
-                    colors_to_uint8(rgbs),
-                    colors_to_uint8(opacities),
+                    normals.astype(np.float32).view(np.uint8)
                 ],
-                axis=-1,
             ).view(np.uint32)
-            assert buffer.shape == (num_gaussians, 8)
+        else:
+            norm_buffer = np.empty((0,), dtype=np.uint32)
 
         message = _messages.GaussianSplatsMessage(
             name=name,
             props=_messages.GaussianSplatsProps(
                 buffer=buffer,
+                sh_buffer=sh_buffer,
+                norm_buffer=norm_buffer,
             ),
         )
         node_handle = GaussianSplatHandle._make(
