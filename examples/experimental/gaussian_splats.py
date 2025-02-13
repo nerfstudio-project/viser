@@ -26,50 +26,10 @@ class SplatFile(TypedDict):
     """(N, 1). Range [0, 1]."""
     covariances: npt.NDArray[np.floating]
     """(N, 3, 3)."""
-
-
-def load_splat_file(splat_path: Path, center: bool = False) -> SplatFile:
-    """Load an antimatter15-style splat file."""
-    start_time = time.time()
-    splat_buffer = splat_path.read_bytes()
-    bytes_per_gaussian = (
-        # Each Gaussian is serialized as:
-        # - position (vec3, float32)
-        3 * 4
-        # - xyz (vec3, float32)
-        + 3 * 4
-        # - rgba (vec4, uint8)
-        + 4
-        # - ijkl (vec4, uint8), where 0 => -1, 255 => 1.
-        + 4
-    )
-    assert len(splat_buffer) % bytes_per_gaussian == 0
-    num_gaussians = len(splat_buffer) // bytes_per_gaussian
-
-    # Reinterpret cast to dtypes that we want to extract.
-    splat_uint8 = np.frombuffer(splat_buffer, dtype=np.uint8).reshape(
-        (num_gaussians, bytes_per_gaussian)
-    )
-    scales = splat_uint8[:, 12:24].copy().view(np.float32)
-    wxyzs = splat_uint8[:, 28:32] / 255.0 * 2.0 - 1.0
-    Rs = tf.SO3(wxyzs).as_matrix()
-    covariances = np.einsum(
-        "nij,njk,nlk->nil", Rs, np.eye(3)[None, :, :] * scales[:, None, :] ** 2, Rs
-    )
-    centers = splat_uint8[:, 0:12].copy().view(np.float32)
-    if center:
-        centers -= np.mean(centers, axis=0, keepdims=True)
-    print(
-        f"Splat file with {num_gaussians=} loaded in {time.time() - start_time} seconds"
-    )
-    return {
-        "centers": centers,
-        # Colors should have shape (N, 3).
-        "rgbs": splat_uint8[:, 24:27] / 255.0,
-        "opacities": splat_uint8[:, 27:28] / 255.0,
-        # Covariances should have shape (N, 3, 3).
-        "covariances": covariances,
-    }
+    sh_coeffs: npt.NDArray[np.floating]
+    """(N, 48)."""
+    normals: npt.NDArray[np.floating]
+    """(N, 3)."""
 
 
 def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
@@ -85,6 +45,10 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
     wxyzs = np.stack([v["rot_0"], v["rot_1"], v["rot_2"], v["rot_3"]], axis=1)
     colors = 0.5 + SH_C0 * np.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
     opacities = 1.0 / (1.0 + np.exp(-v["opacity"][:, None]))
+    dc_coeffs = np.stack([v["f_dc_0"], v["f_dc_1"], v["f_dc_2"]], axis=1)
+    rest_coeffs = np.stack([v[f"f_rest_{i}"] for i in range(45)], axis=1)
+    sh_coeffs = np.concatenate([dc_coeffs, rest_coeffs], axis=1)
+    normals = np.stack([v["nx"], v["ny"], v["nz"]], axis=-1)
 
     Rs = tf.SO3(wxyzs).as_matrix()
     covariances = np.einsum(
@@ -102,11 +66,13 @@ def load_ply_file(ply_file_path: Path, center: bool = False) -> SplatFile:
         "rgbs": colors,
         "opacities": opacities,
         "covariances": covariances,
+        "sh_coeffs": sh_coeffs,
+        "normals": normals,
     }
 
 
 def main(splat_paths: tuple[Path, ...]) -> None:
-    server = viser.ViserServer()
+    server = viser.ViserServer(port=8001)
     server.gui.configure_theme(dark_mode=True)
     gui_reset_up = server.gui.add_button(
         "Reset up direction",
@@ -122,9 +88,7 @@ def main(splat_paths: tuple[Path, ...]) -> None:
         )
 
     for i, splat_path in enumerate(splat_paths):
-        if splat_path.suffix == ".splat":
-            splat_data = load_splat_file(splat_path, center=True)
-        elif splat_path.suffix == ".ply":
+        if splat_path.suffix == ".ply":
             splat_data = load_ply_file(splat_path, center=True)
         else:
             raise SystemExit("Please provide a filepath to a .splat or .ply file.")
@@ -136,6 +100,7 @@ def main(splat_paths: tuple[Path, ...]) -> None:
             rgbs=splat_data["rgbs"],
             opacities=splat_data["opacities"],
             covariances=splat_data["covariances"],
+            sh_coeffs=splat_data["sh_coeffs"],
         )
 
         remove_button = server.gui.add_button(f"Remove splat object {i}")
