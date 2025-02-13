@@ -981,7 +981,7 @@ class GuiCloseModalMessage(Message):
 
 @dataclasses.dataclass
 class GuiButtonProps(GuiBaseProps):
-    color: Color | None
+    color: Optional[Color]
     """Color of the button. Synchronized automatically when assigned."""
     _icon_html: Optional[str]
     """(Private) HTML string for the icon to be displayed on the button. Synchronized automatically when assigned."""
@@ -996,9 +996,9 @@ class GuiButtonMessage(_CreateGuiComponentMessage):
 
 @dataclasses.dataclass
 class GuiUploadButtonProps(GuiBaseProps):
-    color: Color | None
+    color: Optional[Color]
     """Color of the upload button. Synchronized automatically when assigned."""
-    _icon_html: str | None
+    _icon_html: Optional[str]
     """(Private) HTML string for the icon to be displayed on the upload button. Synchronized automatically when assigned."""
     mime_type: str
     """MIME type of the files that can be uploaded. Synchronized automatically when assigned."""
@@ -1045,7 +1045,7 @@ class GuiMultiSliderProps(GuiBaseProps):
     """Number of decimal places to display for the multi-slider values. Synchronized automatically when assigned."""
     fixed_endpoints: bool
     """If True, the first and last handles cannot be moved. Synchronized automatically when assigned."""
-    _marks: Tuple[GuiSliderMark, ...] | None
+    _marks: Optional[Tuple[GuiSliderMark, ...]]
     """(Private) Optional tuple of GuiSliderMark objects to display custom marks on the multi-slider. Synchronized automatically when assigned."""
 
 
@@ -1301,7 +1301,7 @@ class CubicBezierSplineProps:
     """Width of the spline line. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the spline as RGB integers. Synchronized automatically when assigned."""
-    segments: int | None
+    segments: Optional[int]
     """Number of segments to divide the spline into. Synchronized automatically when assigned."""
 
 
