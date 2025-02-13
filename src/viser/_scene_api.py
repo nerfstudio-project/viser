@@ -1347,7 +1347,7 @@ class SceneApi:
         ).view(np.uint32)
         assert buffer.shape == (num_gaussians, 8)
 
-        if sh_coeffs is not None and normals is not None:
+        if sh_coeffs is not None:
             assert sh_coeffs.shape == (num_gaussians, 48)
             sh_buffer = np.concatenate(
                 [
@@ -1355,17 +1355,13 @@ class SceneApi:
                 ],
             ).view(np.uint32)
         else:
-            sh_buffer = np.zeros((num_gaussians, 48), dtype=np.uint32)
+            sh_buffer = np.zeros((num_gaussians, 48), dtype=np.float16).view(np.uint32)
 
         if normals is not None:
             assert normals.shape == (num_gaussians, 3)
-            norm_buffer = np.concatenate(
-                [
-                    normals.astype(np.float32).view(np.uint8)
-                ],
-            ).view(np.uint32)
+            norm_buffer = normals.astype(np.float32).view(np.uint8).view(np.uint32)
         else:
-            norm_buffer = np.zeros((num_gaussians, 3), dtype=np.uint32)
+            norm_buffer = np.zeros((num_gaussians, 3), dtype=np.float32).view(np.uint8).view(np.uint32)
 
         message = _messages.GaussianSplatsMessage(
             name=name,

@@ -353,13 +353,15 @@ function mergeGaussianGroups(groupBufferFromName: {
   let totalBufferLength = 0;
   const groupBufferFromNameFiltered = Object.fromEntries(
     Object.entries(groupBufferFromName).filter(
-      ([key]) => !key.startsWith("sh_buffer_") && !key.startsWith("norm_buffer_")
+      ([key]) => !key.startsWith("sh_buffer_")
     )
   );
 
   // Temporarily using groupBufferFromName instead of groupBufferFromNameFiltered
   // because it causes an error in the shader
-  for (const buffer of Object.values(groupBufferFromName)) {
+  console.log(groupBufferFromName);
+  console.log(groupBufferFromNameFiltered);
+  for (const buffer of Object.values(groupBufferFromNameFiltered)) {
     totalBufferLength += buffer.length;
   }
   const numGaussians = totalBufferLength / 8;
