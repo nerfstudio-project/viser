@@ -77,8 +77,8 @@ export const SplatObject = React.forwardRef<
   );
   const name = React.useMemo(() => uuidv4(), [buffer]);
   // Inspired from PR, maybe should look more similar to the original code above
-  const sh_buffer_name = "sh_buffer_" + name; 
-  const norm_buffer_name = "norm_buffer_" + name;
+  const sh_buffer_name = `sh_buffer_${name}`;
+  const norm_buffer_name = `norm_buffer_${name}`;
 
   React.useEffect(() => {
     setBuffer(name, buffer);
@@ -357,7 +357,9 @@ function mergeGaussianGroups(groupBufferFromName: {
     )
   );
 
-  for (const buffer of Object.values(groupBufferFromNameFiltered)) {
+  // Temporarily using groupBufferFromName instead of groupBufferFromNameFiltered
+  // because it causes an error in the shader
+  for (const buffer of Object.values(groupBufferFromName)) {
     totalBufferLength += buffer.length;
   }
   const numGaussians = totalBufferLength / 8;
@@ -404,15 +406,17 @@ function mergeGaussianGroups(groupBufferFromName: {
     sh_offset += sh_buffer.length;
   }
 
+  let totalNormBufferLength = 0;
+
   const normGaussianBuffers = Object.fromEntries(
     Object.entries(groupBufferFromName).filter(([key]) => key.startsWith("norm_buffer_"))
   );
 
   for (const norm_buffer of Object.values(normGaussianBuffers)) {
-    totalSHBufferLength += norm_buffer.length;
+    totalNormBufferLength += norm_buffer.length;
   }
 
-  const combinedNormBuffer = new Uint32Array(totalSHBufferLength);
+  const combinedNormBuffer = new Uint32Array(totalNormBufferLength);
   let norm_offset = 0;
   for (const norm_buffer of Object.values(normGaussianBuffers)) {
     combinedNormBuffer.set(norm_buffer, norm_offset);

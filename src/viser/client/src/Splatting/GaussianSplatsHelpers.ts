@@ -108,12 +108,11 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     // NEW ADDITION*******************************************************
     // Get spherical harmonics terms from int buffer. 48 coefficents per vertex.
-    uint shTexStart = sortedIndex * 6u
+    uint shTexStart = sortedIndex * 6u;
     ivec2 shTexSize = textureSize(shTextureBuffer, 0);
     float sh_coeffs_unpacked[48];
     for (int i = 0; i < 6; i++) {
-        ivec2 shTexPos = ivec2((shTexStart + uint(i)) % uint(shTexSize.x), 
-                                (shTexStart + uint(i)) / uint(shTexSize.x));
+        ivec2 shTexPos = ivec2((shTexStart + uint(i)) % uint(shTexSize.x), (shTexStart + uint(i)) / uint(shTexSize.x));
         uvec4 packedCoeffs = texelFetch(shTextureBuffer, shTexPos, 0);
 
         // unpack each uint32 directly into two float16 values, we read 4 at a time
@@ -134,19 +133,22 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
         sh_coeffs_unpacked[i*8+6] = unpacked.x;
         sh_coeffs_unpacked[i*8+7] = unpacked.y;
     }
-    // TODO: CONTINUE, NOT YET FINISHED
     // END NEW ADDITION***************************************************
 
     // Transition in.
     float startTime = 0.8 * float(sortedIndex) / float(numGaussians);
     float cov_scale = smoothstep(startTime, startTime + 0.2, transitionInState);
 
+    // NEW ADDITION*******************************************************
     // Do the actual splatting.
-    mat3 cov3d = mat3(
+    mat3 triu = mat3(
         triu01.x, triu01.y, triu23.x,
-        triu01.y, triu23.y, triu45.x,
-        triu23.x, triu45.x, triu45.y
+        0.,       triu23.y, triu45.x,
+        0.,       0.,       triu45.y
     );
+    mat3 cov3d = triu * transpose(triu) * cov_scale;
+    // END NEW ADDITION***************************************************
+
     mat3 J = mat3(
         // Matrices are column-major.
         focal.x / c_cam.z, 0., 0.0,
@@ -196,7 +198,6 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     for (int i = 0; i < 16; i++) {
         sh_coeffs[i] = vec3(sh_coeffs_unpacked[i*3], sh_coeffs_unpacked[i*3+1], sh_coeffs_unpacked[i*3+2]);
     }
-  
     float x = viewDir.x;
     float y = viewDir.y;
     float z = viewDir.z;
@@ -206,26 +207,41 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
     float xy = viewDir.x * viewDir.y;
     float yz = viewDir.y * viewDir.z;
     float xz = viewDir.x * viewDir.z;
-
-    // 0th degree, standard RGB
-    vec3 rgb = C0 * sh_coeffs[0];
+    
+    // 0th degree
+    vec3 rgb = C0 * sh_coeffs[0]; // line 74 of plenoxels
     vec3 pointFive = vec3(0.5, 0.5, 0.5);
 
-    // This is taken from gsplat
-    // 1st degree
-    rgb = rgb + C1 * (-y * sh_coeffs[1] + z * sh_coeffs[2] - x * sh_coeffs[3]);
+    //vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
+    
+    // could be useful code for debugging (make sure to set 1 gaussian to use this)
+    // if (sh_coeffs[0].x > 1.0 && sh_coeffs[0].x < 1.6) {
+    //     vRgba = vec4(1.0, 0.0, 0.0, 1.0);
+    // } else {
+    //     vRgba = vec4(1.0, 1.0, 1.0, 1.0);
+    // }
 
+
+    // ----GSPLAT IMPLEMENTATION-----
+
+    // 1st degree
+    rgb = rgb + C1 * (-y * sh_coeffs[1] +
+                                    z * sh_coeffs[2] - 
+                                    x * sh_coeffs[3]);
     // 2nd degree
-    float fTmp0B = -1.0925484305920792 * z; // Reuse the constants
+
+    float fTmp0B = -1.092548430592079 * z;
     float fC1 = xx - yy;
     float fS1 = 2.0 * xy;
-    float pSH5 = fTmp0B * y;
     float pSH6 = (0.9461746957575601 * zz - 0.3153915652525201);
     float pSH7 = fTmp0B * x;
+    float pSH5 = fTmp0B * y;
     float pSH8 = 0.5462742152960395 * fC1;
-
-    rgb = rgb + pSH4 * sh_coeffs[4] + pSH5 * sh_coeffs[5] + pSH6 * sh_coeffs[6] + pSH7 * sh_coeffs[7] + pSH8 * sh_coeffs[8];
-
+    float pSH4 = 0.5462742152960395 * fS1;
+    rgb = rgb + pSH4 * sh_coeffs[4] + pSH5 * sh_coeffs[5] +
+                      pSH6 * sh_coeffs[6] + pSH7 * sh_coeffs[7] +
+                      pSH8 * sh_coeffs[8];
+    
     // 3rd degree
     float fTmp0C = -2.285228997322329f * zz + 0.4570457994644658f;
     float fTmp1B = 1.445305721320277 * z;
@@ -243,14 +259,14 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
                     pSH11 * sh_coeffs[11] + pSH12 * sh_coeffs[12] +
                     pSH13 * sh_coeffs[13] + pSH14 * sh_coeffs[14]+
                     pSH15 * sh_coeffs[15];
+    
+    vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> uint(24)) / 255.0);
 
-    vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> 24) / 255.0);
-    // INRIA IMPLEMENTATION NOT INCLUDED
-    // END NEW ADDITION***************************************************
+    // ----END GSPLAT IMPLEMENTATION-----
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
-    if (weightedDeterminant < 0.25)
+    if (weightedDeterminant < 0.5)
       return;
     vPosition = position.xy;
 
