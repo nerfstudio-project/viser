@@ -194,15 +194,59 @@ const GaussianSplatMaterial = /* @__PURE__ */ shaderMaterial(
 
     vec3 sh_coeffs[16];
     for (int i = 0; i < 16; i++) {
-        sh_coeffs[i] = vec3(0.0);
+        sh_coeffs[i] = vec3(sh_coeffs_unpacked[i*3], sh_coeffs_unpacked[i*3+1], sh_coeffs_unpacked[i*3+2]);
     }
+  
+    float x = viewDir.x;
+    float y = viewDir.y;
+    float z = viewDir.z;
+    float xx = viewDir.x * viewDir.x;
+    float yy = viewDir.y * viewDir.y;
+    float zz = viewDir.z * viewDir.z;
+    float xy = viewDir.x * viewDir.y;
+    float yz = viewDir.y * viewDir.z;
+    float xz = viewDir.x * viewDir.z;
 
-    vRgba = vec4(
-      float(rgbaUint32 & uint(0xFF)) / 255.0,
-      float((rgbaUint32 >> uint(8)) & uint(0xFF)) / 255.0,
-      float((rgbaUint32 >> uint(16)) & uint(0xFF)) / 255.0,
-      float(rgbaUint32 >> uint(24)) / 255.0
-    );
+    // 0th degree, standard RGB
+    vec3 rgb = C0 * sh_coeffs[0];
+    vec3 pointFive = vec3(0.5, 0.5, 0.5);
+
+    // This is taken from gsplat
+    // 1st degree
+    rgb = rgb + C1 * (-y * sh_coeffs[1] + z * sh_coeffs[2] - x * sh_coeffs[3]);
+
+    // 2nd degree
+    float fTmp0B = -1.0925484305920792 * z; // Reuse the constants
+    float fC1 = xx - yy;
+    float fS1 = 2.0 * xy;
+    float pSH5 = fTmp0B * y;
+    float pSH6 = (0.9461746957575601 * zz - 0.3153915652525201);
+    float pSH7 = fTmp0B * x;
+    float pSH8 = 0.5462742152960395 * fC1;
+
+    rgb = rgb + pSH4 * sh_coeffs[4] + pSH5 * sh_coeffs[5] + pSH6 * sh_coeffs[6] + pSH7 * sh_coeffs[7] + pSH8 * sh_coeffs[8];
+
+    // 3rd degree
+    float fTmp0C = -2.285228997322329f * zz + 0.4570457994644658f;
+    float fTmp1B = 1.445305721320277 * z;
+    float fC2 = x * fC1 - y * fS1;
+    float fS2 = x * fS1 + y * fC1;
+    float pSH12 = z * (1.865881662950577 * zz - 1.119528997770346f);
+    float pSH13 = fTmp0C * x;
+    float pSH11 = fTmp0C * y;
+    float pSH14 = fTmp1B * fC1;
+    float pSH10 = fTmp1B * fS1;
+    float pSH15 = -0.5900435899266435 * fC2;
+    float pSH9 = -0.5900435899266435 * fS2;
+
+    rgb = rgb + pSH9 * sh_coeffs[9] + pSH10 * sh_coeffs[10] +
+                    pSH11 * sh_coeffs[11] + pSH12 * sh_coeffs[12] +
+                    pSH13 * sh_coeffs[13] + pSH14 * sh_coeffs[14]+
+                    pSH15 * sh_coeffs[15];
+
+    vRgba = vec4(rgb + pointFive, float(rgbaUint32 >> 24) / 255.0);
+    // INRIA IMPLEMENTATION NOT INCLUDED
+    // END NEW ADDITION***************************************************
 
     // Throw the Gaussian off the screen if it's too close, too far, or too small.
     float weightedDeterminant = vRgba.a * (diag1 * diag2 - offDiag * offDiag);
