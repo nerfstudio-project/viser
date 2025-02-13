@@ -171,15 +171,13 @@ export const GlbAsset = React.forwardRef<
   // We track both the GLTF asset itself and all meshes within it. Meshes are
   // used for hover effects.
 
-  const [material, setMaterial] = React.useState<THREE.Material>();
   const [gltf, setGltf] = React.useState<GLTF>();
   const [meshes, setMeshes] = React.useState<THREE.Mesh[]>([]);
 
   // glTF/GLB files support animations.
   const mixerRef = React.useRef<THREE.AnimationMixer | null>(null);
   React.useEffect(() => {
-    const material = new THREE.MeshStandardMaterial()
-
+    const newMaterial = new THREE.MeshStandardMaterial()
     const loader = new GLTFLoader();
 
     // We use a CDN for Draco. We could move this locally if we want to use Viser offline.
@@ -204,11 +202,10 @@ export const GlbAsset = React.forwardRef<
             obj.geometry.computeBoundingSphere();
             obj.castShadow = true;
             obj.receiveShadow = true;
-            obj.material = material;
+            obj.material = newMaterial;
             meshes.push(obj);}
         });
         
-        setMaterial(material);
         setMeshes(meshes);
         setGltf(gltf);
         
