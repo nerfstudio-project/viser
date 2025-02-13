@@ -14,7 +14,7 @@ export default function ButtonComponent({
   if (!(visible ?? true)) return <></>;
 
   return (
-    <Box mx="xs" mb="0.5em">
+    <Box mx="xs" pb="0.5em">
       <Button
         id={uuid}
         fullWidth
