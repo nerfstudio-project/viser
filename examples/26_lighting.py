@@ -27,12 +27,12 @@ def main() -> None:
         wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
         position=(0.0, 0.0, 0.0),
     )
-    server.scene.add_mesh_trimesh(
-        name="/trimesh",
-        mesh=mesh,
-        wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
-        position=(0.0, 5.0, 0.0),
-    )
+    # server.scene.add_mesh_trimesh(
+    #     name="/trimesh",
+    #     mesh=mesh,
+    #     wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
+    #     position=(0.0, 5.0, 0.0),
+    # )
 
     # adding controls to custom lights in the scene
     server.scene.add_transform_controls("/control0", position=(0.0, 10.0, 5.0))

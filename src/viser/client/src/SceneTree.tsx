@@ -504,7 +504,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             ref={ref}
             intensity={message.props.intensity}
             color={rgbToInt(message.props.color)}
-            castShadow={message.props.castShadow}
+            castShadow={message.props.cast_shadow}
           />
         ),
       };
@@ -547,7 +547,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             color={rgbToInt(message.props.color)}
             distance={message.props.distance}
             decay={message.props.decay}
-            castShadow={message.props.castShadow}
+            castShadow={message.props.cast_shadow}
           />
         ),
       };
@@ -579,7 +579,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             angle={message.props.angle}
             penumbra={message.props.penumbra}
             decay={message.props.decay}
-            castShadow={message.props.castShadow}
+            castShadow={message.props.cast_shadow}
           />
         ),
       };
