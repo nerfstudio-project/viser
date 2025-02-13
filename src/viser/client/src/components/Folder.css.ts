@@ -6,7 +6,7 @@ export const folderWrapper = style({
   marginTop: vars.spacing.xs,
   marginLeft: vars.spacing.xs,
   marginRight: vars.spacing.xs,
-  marginBottom: vars.spacing.md,
+  marginBottom: vars.spacing.sm,
   ":last-child": {
     marginBottom: vars.spacing.xs,
   },

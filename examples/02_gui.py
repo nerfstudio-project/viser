@@ -5,7 +5,6 @@ Examples of basic GUI elements that we can create, read from, and write to."""
 import time
 
 import numpy as np
-
 import viser
 
 
@@ -28,6 +27,8 @@ def main() -> None:
             disabled=True,
         )
         gui_progress = server.gui.add_progress_bar(25, animated=True)
+
+    gui_button = server.gui.add_button("Button between two folders", color="grape")
 
     with server.gui.add_folder("Editable"):
         gui_vector2 = server.gui.add_vector2(
@@ -77,6 +78,7 @@ def main() -> None:
             gui_upload_button = server.gui.add_upload_button(
                 "Upload", icon=viser.Icon.UPLOAD
             )
+        gui_button = server.gui.add_button("Button after folder", color="grape")
 
     @gui_upload_button.on_upload
     def _(_) -> None:
