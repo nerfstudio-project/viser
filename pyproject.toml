@@ -1,10 +1,24 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = ["src/viser/client/.nodeenv", "src/viser/client/node_modules", "**/__pycache__/**"]
+# Client build is in the gitignore, but we still want it in the distribution.
+ignore-vcs = true
+
+[tool.hatch.version]
+path = "src/viser/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+only-include = ["src/viser"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/viser"]
 
 [project]
 name = "viser"
-version = "0.2.12"
+dynamic = ["version"]
 description = "3D visualization + Python"
 readme = "README.md"
 license = { text="MIT" }
@@ -24,7 +38,6 @@ dependencies = [
     "numpy>=1.0.0",
     "msgspec>=0.18.6",
     "imageio>=2.0.0",
-    "pyliblzfse>=0.4.1; platform_system!='Windows'",
     "scikit-image>=0.18.0",
     "scipy>=1.7.3",
     "tqdm>=4.0.0",
@@ -40,7 +53,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pyright>=1.1.308",
-    "ruff==0.6.2",
+    "ruff>=0.9.3",
     "pre-commit==3.3.2",
     "pytest",
     "hypothesis[numpy]",
@@ -52,36 +65,15 @@ examples = [
     "robot_descriptions>=1.10.0",
     "gdown>=4.6.6",
     "plyfile",
+    "opencv-python",
+    "pyliblzfse>=0.4.1; platform_system!='Windows'",
 ]
 
 [project.urls]
 "GitHub" = "https://github.com/nerfstudio-project/viser"
 
-# <>
-# Important: in the ./.github/workflows/publish.yml action, we have sed
-# commands that assume the `viser = ...` line below directly follows
-# `[tool.setuptools.package-data]`. We use this to remove the client source
-# from PyPI builds.
-#
-# We should make sure that any modifications to the package-data list remain
-# compatible with the sed commands!
-#
-# We keep the client source in by default to support things like pip
-# installation via the Git URL, because build artifacts aren't
-# version-controlled.
-[tool.setuptools.package-data]
-viser = ["py.typed", "*.pyi", "_icons/tabler-icons.zip", "client/**/*", "client/**/.*"]
-# </>
-
-[tool.setuptools.exclude-package-data]
-# We exclude node_modules to prevent long build times for wheels when
-# installing from source, eg via `pip install .`.
-#
-# https://github.com/nerfstudio-project/viser/issues/271
-viser = ["**/node_modules/**"]
-
 [project.scripts]
-viser-dev-checks = "viser.scripts.dev_checks:entrypoint"
+viser-build-client = "viser._client_autobuild:build_client_entrypoint"
 
 [tool.pyright]
 exclude = ["./docs/**/*", "./examples/assets/**/*", "./src/viser/client/.nodeenv", "./build"]
@@ -97,6 +89,7 @@ lint.select = [
     "I", # Import sorting.
 ]
 lint.ignore = [
+    "E731",  # Do not assign a lambda expression, use a def.
     "E741", # Ambiguous variable name. (l, O, or I)
     "E501",  # Line too long.
     "E721",  # Do not compare types, use `isinstance()`.

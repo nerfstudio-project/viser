@@ -121,7 +121,7 @@ def assert_transforms_close(a: vtf.MatrixLieGroup, b: vtf.MatrixLieGroup):
     assert_arrays_close(p1, p2)
 
 
-def assert_arrays_close(*arrays: Union[npt.NDArray[np.float64], float]):
+def assert_arrays_close(*arrays: Union[npt.NDArray[np.floating], float]):
     """Make sure two arrays are close. (and not NaN)"""
     for array1, array2 in zip(arrays[:-1], arrays[1:]):
         assert np.asarray(array1).dtype == np.asarray(array2).dtype

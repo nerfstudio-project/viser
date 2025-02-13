@@ -32,14 +32,14 @@ jobs:
       # Get version from pyproject.toml.
       - name: Get version + subdirectory
         run: |
-          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          VERSION=$(python -c "import viser; print(viser.__version__)")
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "DOCS_SUBDIR=versions/$VERSION" >> $GITHUB_ENV
 
       # Hack to overwrite version.
-      - name: Set version to 'latest' for pushes (this will appear in the doc banner)
+      - name: Set version to 'main' for pushes (this will appear in the doc banner)
         run: |
-          python -c "import toml; conf = toml.load('pyproject.toml'); conf['project']['version'] = 'latest'; toml.dump(conf, open('pyproject.toml', 'w'))"
+          echo "VISER_VERSION_STR_OVERRIDE=main" >> $GITHUB_ENV
         if: github.event_name == 'push'
 
       # Build documentation.
@@ -48,9 +48,9 @@ jobs:
           sphinx-build docs/source docs/build -b dirhtml
 
       # Get version from pyproject.toml.
-      - name: Override subdirectory to `latest/` for pushes
+      - name: Override subdirectory to `main/` for pushes
         run: |
-          echo "DOCS_SUBDIR=latest" >> $GITHUB_ENV
+          echo "DOCS_SUBDIR=main" >> $GITHUB_ENV
         if: github.event_name == 'push'
 
       # Deploy to version-dependent subdirectory.

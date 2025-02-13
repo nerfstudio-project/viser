@@ -29,12 +29,13 @@ jobs:
           sed -i '/<!-- pypi-strip -->/,/<!-- \/pypi-strip -->/d' README.md
       - name: Only bundle client build for PyPI release
         run: |
-          # This sed command finds the line that immediately follows
-          # [tool.setuptools.package-data], then replaces instances of
-          # `client/**/*` with `client/build/**/*`.
-          sed -i=bak '/\[tool\.setuptools\.package-data\]/{n;s/"client\/\*\*\/\*"/"client\/build\/\*\*\/\*"/g;}' pyproject.toml
-          # This sed commands removes `, "client/**/.*"` from the package-data.
-          sed -i=bak '/\[tool\.setuptools\.package-data\]/{n;s/, "client\/\*\*\/\.\*"//g;}' pyproject.toml
+          # This should delete everything in src/viser/client except for the
+          # build folder + original source files. We don't want to package
+          # .nodeenv, node_modules, etc in the release.
+          mv src/viser/client/build ./__built_client
+          rm -rf src/viser/client/*
+          git checkout src/viser/client
+          mv ./__built_client src/viser/client/build
       - name: Build and publish
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}

@@ -2,7 +2,6 @@ import {
   CatmullRomLine,
   CubicBezierLine,
   Grid,
-  Line,
   PivotControls,
   useCursor,
 } from "@react-three/drei";
@@ -11,7 +10,7 @@ import { createPortal, useFrame } from "@react-three/fiber";
 import React from "react";
 import * as THREE from "three";
 
-import { ViewerContext } from "./App";
+import { ViewerContext } from "./ViewerContext";
 import {
   makeThrottledMessageSender,
   useThrottledMessageSender,
@@ -20,11 +19,11 @@ import { Html } from "@react-three/drei";
 import { useSceneTreeState } from "./SceneTreeState";
 import { ErrorBoundary } from "react-error-boundary";
 import { rayToViserCoords } from "./WorldTransformUtils";
+import { HoverableContext } from "./HoverContext";
 import {
   CameraFrustum,
   CoordinateFrame,
   GlbAsset,
-  HoverableContext,
   InstancedAxes,
   PointCloud,
   ViserImage,
@@ -35,6 +34,7 @@ import { SceneNodeMessage } from "./WebsocketMessages";
 import { SplatObject } from "./Splatting/GaussianSplats";
 import { Paper } from "@mantine/core";
 import GeneratedGuiContainer from "./ControlPanel/Generated";
+import { Line } from "./Line";
 
 function rgbToInt(rgb: [number, number, number]): number {
   return (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
@@ -147,6 +147,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             axesLength={message.props.axes_length}
             axesRadius={message.props.axes_radius}
             originRadius={message.props.origin_radius}
+            originColor={rgbToInt(message.props.origin_color)}
           />
         ),
       };
@@ -247,23 +248,7 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
     // Add a point cloud.
     case "PointCloudMessage": {
       return {
-        makeObject: (ref) => (
-          <PointCloud
-            ref={ref}
-            pointSize={message.props.point_size}
-            pointBallNorm={message.props.point_ball_norm}
-            points={
-              new Uint16Array( // (contains float16)
-                message.props.points.buffer.slice(
-                  message.props.points.byteOffset,
-                  message.props.points.byteOffset +
-                    message.props.points.byteLength,
-                ),
-              )
-            }
-            colors={new Uint8Array(message.props.colors)}
-          />
-        ),
+        makeObject: (ref) => <PointCloud ref={ref} {...message} />,
       };
     }
 
@@ -281,8 +266,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
             fov={message.props.fov}
             aspect={message.props.aspect}
             scale={message.props.scale}
+            lineWidth={message.props.line_width}
             color={rgbToInt(message.props.color)}
-            imageBinary={message.props.image_binary}
+            imageBinary={message.props._image_data}
             imageMediaType={message.props.image_media_type}
           />
         ),
@@ -440,24 +426,9 @@ function useObjectFactory(message: SceneNodeMessage | undefined): {
           return (
             <group ref={ref}>
               <Line
-                points={Array.from(
-                  { length: pointsArray.length / 3 },
-                  (_, i) => [
-                    pointsArray[i * 3],
-                    pointsArray[i * 3 + 1],
-                    pointsArray[i * 3 + 2],
-                  ],
-                )}
-                color="white"
+                points={pointsArray}
                 lineWidth={message.props.line_width}
-                vertexColors={Array.from(
-                  { length: colorArray.length / 3 },
-                  (_, i) => [
-                    colorArray[i * 3] / 255,
-                    colorArray[i * 3 + 1] / 255,
-                    colorArray[i * 3 + 2] / 255,
-                  ],
-                )}
+                vertexColors={colorArray}
                 segments={true}
               />
             </group>
@@ -736,14 +707,10 @@ export function SceneNodeThreeObject(props: {
 
       if (attrs.poseUpdateState == "needsUpdate") {
         attrs.poseUpdateState = "updated";
-        const wxyz = attrs.wxyz;
-        if (wxyz !== undefined) {
-          obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
-        }
-        const position = attrs.position;
-        if (position !== undefined) {
-          obj.position.set(position[0], position[1], position[2]);
-        }
+        const wxyz = attrs.wxyz ?? [1, 0, 0, 0];
+        obj.quaternion.set(wxyz[1], wxyz[2], wxyz[3], wxyz[0]);
+        const position = attrs.position ?? [0, 0, 0];
+        obj.position.set(position[0], position[1], position[2]);
 
         // Update matrices if necessary. This is necessary for PivotControls.
         if (!obj.matrixAutoUpdate) obj.updateMatrix();

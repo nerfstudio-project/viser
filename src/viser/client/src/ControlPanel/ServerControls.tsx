@@ -1,17 +1,21 @@
-import { ViewerContext } from "../App";
+import { ViewerContext } from "../ViewerContext";
 import {
   Box,
   Button,
+  Checkbox,
   Divider,
+  Group,
   Stack,
-  Switch,
   Text,
   TextInput,
+  Tooltip,
 } from "@mantine/core";
 import { IconHomeMove, IconPhoto } from "@tabler/icons-react";
 import { Stats } from "@react-three/drei";
 import React from "react";
 import SceneTreeTable from "./SceneTreeTable";
+
+const MemoizedTable = React.memo(SceneTreeTable);
 
 export default function ServerControls() {
   const viewer = React.useContext(ViewerContext)!;
@@ -22,7 +26,6 @@ export default function ServerControls() {
     event.currentTarget.blur();
     event.currentTarget.focus();
   }
-  const MemoizedTable = React.memo(SceneTreeTable);
 
   return (
     <>
@@ -42,22 +45,6 @@ export default function ServerControls() {
               padding: "0 0.5em",
             },
           }}
-        />
-        <TextInput
-          label="Label"
-          defaultValue={viewer.useGui((state) => state.label)}
-          onBlur={(event) =>
-            viewer.useGui.setState({ label: event.currentTarget.value })
-          }
-          onKeyDown={triggerBlur}
-          styles={{
-            input: {
-              minHeight: "1.75rem",
-              height: "1.75rem",
-              padding: "0 0.5em",
-            },
-          }}
-          mb="0.375em"
         />
         <Button
           onClick={async () => {
@@ -129,17 +116,58 @@ export default function ServerControls() {
         >
           Reset View
         </Button>
-        <Switch
-          radius="sm"
-          label="WebGL Statistics"
-          onChange={(event) => {
-            setShowStats(event.currentTarget.checked);
-          }}
-          size="sm"
-        />
+        <Group>
+          <Tooltip
+            label={
+              <>
+                Show tool for setting the look-at point and
+                <br />
+                up direction of the camera.
+                <br />
+                <br />
+                This can be used to set the origin of the
+                <br />
+                camera&apos;s orbit controls.
+              </>
+            }
+            refProp="rootRef"
+            position="top-start"
+          >
+            <Checkbox
+              radius="xs"
+              label="Orbit Origin Tool"
+              onChange={(event) => {
+                viewer.useGui.setState({
+                  showOrbitOriginTool: event.currentTarget.checked,
+                });
+              }}
+              styles={{
+                label: { paddingLeft: "8px", letterSpacing: "-0.3px" },
+              }}
+              size="sm"
+            />
+          </Tooltip>
+          <Tooltip
+            label={"Show WebGL statistics."}
+            refProp="rootRef"
+            position="top-start"
+          >
+            <Checkbox
+              radius="xs"
+              label="WebGL Stats"
+              onChange={(event) => {
+                setShowStats(event.currentTarget.checked);
+              }}
+              styles={{
+                label: { paddingLeft: "8px", letterSpacing: "-0.3px" },
+              }}
+              size="sm"
+            />
+          </Tooltip>
+        </Group>
         <Divider mt="xs" />
         <Box>
-          <Text mb="0.2em" fw={500}>
+          <Text mb="0.2em" fw={500} fz="sm">
             Scene tree
           </Text>
           <MemoizedTable />

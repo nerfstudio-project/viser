@@ -12,7 +12,7 @@ import React from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 
-export const SidebarPanelContext = React.createContext<null | {
+const SidebarPanelContext = React.createContext<null | {
   collapsible: boolean;
   toggleCollapsed: () => void;
 }>(null);

@@ -1,92 +1,5 @@
 // AUTOMATICALLY GENERATED message interfaces, from Python dataclass definitions.
 // This file should not be manually modified.
-/** Message for running some arbitrary Javascript on the client.
- * We use this to set up the Plotly.js package, via the plotly.min.js source
- * code.
- *
- * (automatically generated)
- */
-export interface RunJavascriptMessage {
-  type: "RunJavascriptMessage";
-  source: string;
-}
-/** Notification message.
- *
- * (automatically generated)
- */
-export interface NotificationMessage {
-  type: "NotificationMessage";
-  mode: "show" | "update";
-  uuid: string;
-  props: {
-    title: string;
-    body: string;
-    loading: boolean;
-    with_close_button: boolean;
-    auto_close: number | false;
-    color:
-      | "dark"
-      | "gray"
-      | "red"
-      | "pink"
-      | "grape"
-      | "violet"
-      | "indigo"
-      | "blue"
-      | "cyan"
-      | "green"
-      | "lime"
-      | "yellow"
-      | "orange"
-      | "teal"
-      | null;
-  };
-}
-/** Remove a specific notification.
- *
- * (automatically generated)
- */
-export interface RemoveNotificationMessage {
-  type: "RemoveNotificationMessage";
-  uuid: string;
-}
-/** Message for a posed viewer camera.
- * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
- *
- * (automatically generated)
- */
-export interface ViewerCameraMessage {
-  type: "ViewerCameraMessage";
-  wxyz: [number, number, number, number];
-  position: [number, number, number];
-  fov: number;
-  aspect: number;
-  look_at: [number, number, number];
-  up_direction: [number, number, number];
-}
-/** Message for a raycast-like pointer in the scene.
- * origin is the viewing camera position, in world coordinates.
- * direction is the vector if a ray is projected from the camera through the clicked pixel,
- *
- *
- * (automatically generated)
- */
-export interface ScenePointerMessage {
-  type: "ScenePointerMessage";
-  event_type: "click" | "rect-select";
-  ray_origin: [number, number, number] | null;
-  ray_direction: [number, number, number] | null;
-  screen_pos: [number, number][];
-}
-/** Message to enable/disable scene click events.
- *
- * (automatically generated)
- */
-export interface ScenePointerEnableMessage {
-  type: "ScenePointerEnableMessage";
-  enable: boolean;
-  event_type: "click" | "rect-select";
-}
 /** Variant of CameraMessage used for visualizing camera frustums.
  *
  * OpenCV convention, +Z forward.
@@ -100,9 +13,10 @@ export interface CameraFrustumMessage {
     fov: number;
     aspect: number;
     scale: number;
+    line_width: number;
     color: [number, number, number];
     image_media_type: "image/jpeg" | "image/png" | null;
-    image_binary: Uint8Array | null;
+    _image_data: Uint8Array | null;
   };
 }
 /** GlTF message.
@@ -126,6 +40,7 @@ export interface FrameMessage {
     axes_length: number;
     axes_radius: number;
     origin_radius: number;
+    origin_color: [number, number, number];
   };
 }
 /** Batched axes message.
@@ -284,39 +199,6 @@ export interface SpotLightMessage {
     castShadow: boolean;
   };
 }
-/** Environment Map message.
- *
- * (automatically generated)
- */
-export interface EnvironmentMapMessage {
-  type: "EnvironmentMapMessage";
-  hdri:
-    | "apartment"
-    | "city"
-    | "dawn"
-    | "forest"
-    | "lobby"
-    | "night"
-    | "park"
-    | "studio"
-    | "sunset"
-    | "warehouse"
-    | null;
-  background: boolean;
-  background_blurriness: number;
-  background_intensity: number;
-  background_rotation: [number, number, number];
-  environment_intensity: number;
-  environment_rotation: [number, number, number];
-}
-/** Spot light message.
- *
- * (automatically generated)
- */
-export interface EnableLightsMessage {
-  type: "EnableLightsMessage";
-  enabled: boolean;
-}
 /** Mesh message.
  *
  * Vertices are internally canonicalized to float32, faces to uint32.
@@ -363,30 +245,6 @@ export interface SkinnedMeshMessage {
     skin_weights: Uint8Array;
   };
 }
-/** Server -> client message to set a skinned mesh bone's orientation.
- *
- * As with all other messages, transforms take the `T_parent_local` convention.
- *
- * (automatically generated)
- */
-export interface SetBoneOrientationMessage {
-  type: "SetBoneOrientationMessage";
-  name: string;
-  bone_index: number;
-  wxyz: [number, number, number, number];
-}
-/** Server -> client message to set a skinned mesh bone's position.
- *
- * As with all other messages, transforms take the `T_parent_local` convention.
- *
- * (automatically generated)
- */
-export interface SetBonePositionMessage {
-  type: "SetBonePositionMessage";
-  name: string;
-  bone_index: number;
-  position: [number, number, number];
-}
 /** Message for transform gizmos.
  *
  * (automatically generated)
@@ -409,82 +267,6 @@ export interface TransformControlsMessage {
     opacity: number;
   };
 }
-/** Server -> client message to set the camera's position.
- *
- * (automatically generated)
- */
-export interface SetCameraPositionMessage {
-  type: "SetCameraPositionMessage";
-  position: [number, number, number];
-}
-/** Server -> client message to set the camera's up direction.
- *
- * (automatically generated)
- */
-export interface SetCameraUpDirectionMessage {
-  type: "SetCameraUpDirectionMessage";
-  position: [number, number, number];
-}
-/** Server -> client message to set the camera's look-at point.
- *
- * (automatically generated)
- */
-export interface SetCameraLookAtMessage {
-  type: "SetCameraLookAtMessage";
-  look_at: [number, number, number];
-}
-/** Server -> client message to set the camera's field of view.
- *
- * (automatically generated)
- */
-export interface SetCameraFovMessage {
-  type: "SetCameraFovMessage";
-  fov: number;
-}
-/** Server -> client message to set a scene node's orientation.
- *
- * As with all other messages, transforms take the `T_parent_local` convention.
- *
- * (automatically generated)
- */
-export interface SetOrientationMessage {
-  type: "SetOrientationMessage";
-  name: string;
-  wxyz: [number, number, number, number];
-}
-/** Server -> client message to set a scene node's position.
- *
- * As with all other messages, transforms take the `T_parent_local` convention.
- *
- * (automatically generated)
- */
-export interface SetPositionMessage {
-  type: "SetPositionMessage";
-  name: string;
-  position: [number, number, number];
-}
-/** Client -> server message when a transform control is updated.
- *
- * As with all other messages, transforms take the `T_parent_local` convention.
- *
- * (automatically generated)
- */
-export interface TransformControlsUpdateMessage {
-  type: "TransformControlsUpdateMessage";
-  name: string;
-  wxyz: [number, number, number, number];
-  position: [number, number, number];
-}
-/** Message for rendering a background image.
- *
- * (automatically generated)
- */
-export interface BackgroundImageMessage {
-  type: "BackgroundImageMessage";
-  media_type: "image/jpeg" | "image/png";
-  rgb_bytes: Uint8Array;
-  depth_bytes: Uint8Array | null;
-}
 /** Message for rendering 2D images.
  *
  * (automatically generated)
@@ -494,10 +276,60 @@ export interface ImageMessage {
   name: string;
   props: {
     media_type: "image/jpeg" | "image/png";
-    data: Uint8Array;
+    _data: Uint8Array;
     render_width: number;
     render_height: number;
   };
+}
+/** Message from server->client carrying line segments information.
+ *
+ * (automatically generated)
+ */
+export interface LineSegmentsMessage {
+  type: "LineSegmentsMessage";
+  name: string;
+  props: { points: Uint8Array; line_width: number; colors: Uint8Array };
+}
+/** Message from server->client carrying Catmull-Rom spline information.
+ *
+ * (automatically generated)
+ */
+export interface CatmullRomSplineMessage {
+  type: "CatmullRomSplineMessage";
+  name: string;
+  props: {
+    positions: [number, number, number][];
+    curve_type: "centripetal" | "chordal" | "catmullrom";
+    tension: number;
+    closed: boolean;
+    line_width: number;
+    color: [number, number, number];
+    segments: number | null;
+  };
+}
+/** Message from server->client carrying Cubic Bezier spline information.
+ *
+ * (automatically generated)
+ */
+export interface CubicBezierSplineMessage {
+  type: "CubicBezierSplineMessage";
+  name: string;
+  props: {
+    positions: [number, number, number][];
+    control_points: [number, number, number][];
+    line_width: number;
+    color: [number, number, number];
+    segments: number | null;
+  };
+}
+/** Message from server->client carrying splattable Gaussians.
+ *
+ * (automatically generated)
+ */
+export interface GaussianSplatsMessage {
+  type: "GaussianSplatsMessage";
+  name: string;
+  props: { buffer: Uint8Array };
 }
 /** Remove a particular node from the scene.
  *
@@ -506,50 +338,6 @@ export interface ImageMessage {
 export interface RemoveSceneNodeMessage {
   type: "RemoveSceneNodeMessage";
   name: string;
-}
-/** Set the visibility of a particular node in the scene.
- *
- * (automatically generated)
- */
-export interface SetSceneNodeVisibilityMessage {
-  type: "SetSceneNodeVisibilityMessage";
-  name: string;
-  visible: boolean;
-}
-/** Set the clickability of a particular node in the scene.
- *
- * (automatically generated)
- */
-export interface SetSceneNodeClickableMessage {
-  type: "SetSceneNodeClickableMessage";
-  name: string;
-  clickable: boolean;
-}
-/** Message for clicked objects.
- *
- * (automatically generated)
- */
-export interface SceneNodeClickMessage {
-  type: "SceneNodeClickMessage";
-  name: string;
-  instance_index: number | null;
-  ray_origin: [number, number, number];
-  ray_direction: [number, number, number];
-  screen_pos: [number, number];
-}
-/** Reset scene.
- *
- * (automatically generated)
- */
-export interface ResetSceneMessage {
-  type: "ResetSceneMessage";
-}
-/** Reset GUI.
- *
- * (automatically generated)
- */
-export interface ResetGuiMessage {
-  type: "ResetGuiMessage";
 }
 /** GuiFolderMessage(uuid: 'str', container_uuid: 'str', props: 'GuiFolderProps')
  *
@@ -576,14 +364,24 @@ export interface GuiMarkdownMessage {
   container_uuid: string;
   props: { order: number; _markdown: string; visible: boolean };
 }
-/** GuiProgressBarMessage(value: 'float', uuid: 'str', container_uuid: 'str', props: 'GuiProgressBarProps')
+/** GuiHtmlMessage(uuid: 'str', container_uuid: 'str', props: 'GuiHtmlProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiHtmlMessage {
+  type: "GuiHtmlMessage";
+  uuid: string;
+  container_uuid: string;
+  props: { order: number; content: string; visible: boolean };
+}
+/** GuiProgressBarMessage(uuid: 'str', value: 'float', container_uuid: 'str', props: 'GuiProgressBarProps')
  *
  * (automatically generated)
  */
 export interface GuiProgressBarMessage {
   type: "GuiProgressBarMessage";
-  value: number;
   uuid: string;
+  value: number;
   container_uuid: string;
   props: {
     order: number;
@@ -622,6 +420,22 @@ export interface GuiPlotlyMessage {
     visible: boolean;
   };
 }
+/** GuiImageMessage(uuid: 'str', container_uuid: 'str', props: 'GuiImageProps')
+ *
+ * (automatically generated)
+ */
+export interface GuiImageMessage {
+  type: "GuiImageMessage";
+  uuid: string;
+  container_uuid: string;
+  props: {
+    order: number;
+    label: string | null;
+    _data: Uint8Array | null;
+    media_type: "image/jpeg" | "image/png";
+    visible: boolean;
+  };
+}
 /** GuiTabGroupMessage(uuid: 'str', container_uuid: 'str', props: 'GuiTabGroupProps')
  *
  * (automatically generated)
@@ -638,32 +452,14 @@ export interface GuiTabGroupMessage {
     visible: boolean;
   };
 }
-/** GuiModalMessage(order: 'float', uuid: 'str', title: 'str')
- *
- * (automatically generated)
- */
-export interface GuiModalMessage {
-  type: "GuiModalMessage";
-  order: number;
-  uuid: string;
-  title: string;
-}
-/** GuiCloseModalMessage(uuid: 'str')
- *
- * (automatically generated)
- */
-export interface GuiCloseModalMessage {
-  type: "GuiCloseModalMessage";
-  uuid: string;
-}
-/** GuiButtonMessage(value: 'bool', uuid: 'str', container_uuid: 'str', props: 'GuiButtonProps')
+/** GuiButtonMessage(uuid: 'str', value: 'bool', container_uuid: 'str', props: 'GuiButtonProps')
  *
  * (automatically generated)
  */
 export interface GuiButtonMessage {
   type: "GuiButtonMessage";
-  value: boolean;
   uuid: string;
+  value: boolean;
   container_uuid: string;
   props: {
     order: number;
@@ -724,14 +520,14 @@ export interface GuiUploadButtonMessage {
     mime_type: string;
   };
 }
-/** GuiSliderMessage(value: 'float', uuid: 'str', container_uuid: 'str', props: 'GuiSliderProps')
+/** GuiSliderMessage(uuid: 'str', value: 'float', container_uuid: 'str', props: 'GuiSliderProps')
  *
  * (automatically generated)
  */
 export interface GuiSliderMessage {
   type: "GuiSliderMessage";
-  value: number;
   uuid: string;
+  value: number;
   container_uuid: string;
   props: {
     order: number;
@@ -746,14 +542,14 @@ export interface GuiSliderMessage {
     _marks: { value: number; label: string | null }[] | null;
   };
 }
-/** GuiMultiSliderMessage(value: 'tuple[float, ...]', uuid: 'str', container_uuid: 'str', props: 'GuiMultiSliderProps')
+/** GuiMultiSliderMessage(uuid: 'str', value: 'Tuple[float, ...]', container_uuid: 'str', props: 'GuiMultiSliderProps')
  *
  * (automatically generated)
  */
 export interface GuiMultiSliderMessage {
   type: "GuiMultiSliderMessage";
-  value: number[];
   uuid: string;
+  value: number[];
   container_uuid: string;
   props: {
     order: number;
@@ -770,14 +566,14 @@ export interface GuiMultiSliderMessage {
     _marks: { value: number; label: string | null }[] | null;
   };
 }
-/** GuiNumberMessage(value: 'float', uuid: 'str', container_uuid: 'str', props: 'GuiNumberProps')
+/** GuiNumberMessage(uuid: 'str', value: 'float', container_uuid: 'str', props: 'GuiNumberProps')
  *
  * (automatically generated)
  */
 export interface GuiNumberMessage {
   type: "GuiNumberMessage";
-  value: number;
   uuid: string;
+  value: number;
   container_uuid: string;
   props: {
     order: number;
@@ -791,14 +587,14 @@ export interface GuiNumberMessage {
     max: number | null;
   };
 }
-/** GuiRgbMessage(value: 'Tuple[int, int, int]', uuid: 'str', container_uuid: 'str', props: 'GuiRgbProps')
+/** GuiRgbMessage(uuid: 'str', value: 'Tuple[int, int, int]', container_uuid: 'str', props: 'GuiRgbProps')
  *
  * (automatically generated)
  */
 export interface GuiRgbMessage {
   type: "GuiRgbMessage";
-  value: [number, number, number];
   uuid: string;
+  value: [number, number, number];
   container_uuid: string;
   props: {
     order: number;
@@ -808,14 +604,14 @@ export interface GuiRgbMessage {
     disabled: boolean;
   };
 }
-/** GuiRgbaMessage(value: 'Tuple[int, int, int, int]', uuid: 'str', container_uuid: 'str', props: 'GuiRgbaProps')
+/** GuiRgbaMessage(uuid: 'str', value: 'Tuple[int, int, int, int]', container_uuid: 'str', props: 'GuiRgbaProps')
  *
  * (automatically generated)
  */
 export interface GuiRgbaMessage {
   type: "GuiRgbaMessage";
-  value: [number, number, number, number];
   uuid: string;
+  value: [number, number, number, number];
   container_uuid: string;
   props: {
     order: number;
@@ -825,14 +621,14 @@ export interface GuiRgbaMessage {
     disabled: boolean;
   };
 }
-/** GuiCheckboxMessage(value: 'bool', uuid: 'str', container_uuid: 'str', props: 'GuiCheckboxProps')
+/** GuiCheckboxMessage(uuid: 'str', value: 'bool', container_uuid: 'str', props: 'GuiCheckboxProps')
  *
  * (automatically generated)
  */
 export interface GuiCheckboxMessage {
   type: "GuiCheckboxMessage";
-  value: boolean;
   uuid: string;
+  value: boolean;
   container_uuid: string;
   props: {
     order: number;
@@ -842,14 +638,14 @@ export interface GuiCheckboxMessage {
     disabled: boolean;
   };
 }
-/** GuiVector2Message(value: 'Tuple[float, float]', uuid: 'str', container_uuid: 'str', props: 'GuiVector2Props')
+/** GuiVector2Message(uuid: 'str', value: 'Tuple[float, float]', container_uuid: 'str', props: 'GuiVector2Props')
  *
  * (automatically generated)
  */
 export interface GuiVector2Message {
   type: "GuiVector2Message";
-  value: [number, number];
   uuid: string;
+  value: [number, number];
   container_uuid: string;
   props: {
     order: number;
@@ -863,14 +659,14 @@ export interface GuiVector2Message {
     precision: number;
   };
 }
-/** GuiVector3Message(value: 'Tuple[float, float, float]', uuid: 'str', container_uuid: 'str', props: 'GuiVector3Props')
+/** GuiVector3Message(uuid: 'str', value: 'Tuple[float, float, float]', container_uuid: 'str', props: 'GuiVector3Props')
  *
  * (automatically generated)
  */
 export interface GuiVector3Message {
   type: "GuiVector3Message";
-  value: [number, number, number];
   uuid: string;
+  value: [number, number, number];
   container_uuid: string;
   props: {
     order: number;
@@ -884,14 +680,14 @@ export interface GuiVector3Message {
     precision: number;
   };
 }
-/** GuiTextMessage(value: 'str', uuid: 'str', container_uuid: 'str', props: 'GuiTextProps')
+/** GuiTextMessage(uuid: 'str', value: 'str', container_uuid: 'str', props: 'GuiTextProps')
  *
  * (automatically generated)
  */
 export interface GuiTextMessage {
   type: "GuiTextMessage";
-  value: string;
   uuid: string;
+  value: string;
   container_uuid: string;
   props: {
     order: number;
@@ -901,14 +697,14 @@ export interface GuiTextMessage {
     disabled: boolean;
   };
 }
-/** GuiDropdownMessage(value: 'str', uuid: 'str', container_uuid: 'str', props: 'GuiDropdownProps')
+/** GuiDropdownMessage(uuid: 'str', value: 'str', container_uuid: 'str', props: 'GuiDropdownProps')
  *
  * (automatically generated)
  */
 export interface GuiDropdownMessage {
   type: "GuiDropdownMessage";
-  value: string;
   uuid: string;
+  value: string;
   container_uuid: string;
   props: {
     order: number;
@@ -919,14 +715,14 @@ export interface GuiDropdownMessage {
     options: string[];
   };
 }
-/** GuiButtonGroupMessage(value: 'str', uuid: 'str', container_uuid: 'str', props: 'GuiButtonGroupProps')
+/** GuiButtonGroupMessage(uuid: 'str', value: 'str', container_uuid: 'str', props: 'GuiButtonGroupProps')
  *
  * (automatically generated)
  */
 export interface GuiButtonGroupMessage {
   type: "GuiButtonGroupMessage";
-  value: string;
   uuid: string;
+  value: string;
   container_uuid: string;
   props: {
     order: number;
@@ -943,6 +739,299 @@ export interface GuiButtonGroupMessage {
  */
 export interface GuiRemoveMessage {
   type: "GuiRemoveMessage";
+  uuid: string;
+}
+/** Message for running some arbitrary Javascript on the client.
+ * We use this to set up the Plotly.js package, via the plotly.min.js source
+ * code.
+ *
+ * (automatically generated)
+ */
+export interface RunJavascriptMessage {
+  type: "RunJavascriptMessage";
+  source: string;
+}
+/** Notification message.
+ *
+ * (automatically generated)
+ */
+export interface NotificationMessage {
+  type: "NotificationMessage";
+  mode: "show" | "update";
+  uuid: string;
+  props: {
+    title: string;
+    body: string;
+    loading: boolean;
+    with_close_button: boolean;
+    auto_close: number | false;
+    color:
+      | "dark"
+      | "gray"
+      | "red"
+      | "pink"
+      | "grape"
+      | "violet"
+      | "indigo"
+      | "blue"
+      | "cyan"
+      | "green"
+      | "lime"
+      | "yellow"
+      | "orange"
+      | "teal"
+      | null;
+  };
+}
+/** Remove a specific notification.
+ *
+ * (automatically generated)
+ */
+export interface RemoveNotificationMessage {
+  type: "RemoveNotificationMessage";
+  uuid: string;
+}
+/** Message for a posed viewer camera.
+ * Pose is in the form T_world_camera, OpenCV convention, +Z forward.
+ *
+ * (automatically generated)
+ */
+export interface ViewerCameraMessage {
+  type: "ViewerCameraMessage";
+  wxyz: [number, number, number, number];
+  position: [number, number, number];
+  fov: number;
+  near: number;
+  far: number;
+  aspect: number;
+  look_at: [number, number, number];
+  up_direction: [number, number, number];
+}
+/** Message for a raycast-like pointer in the scene.
+ * origin is the viewing camera position, in world coordinates.
+ * direction is the vector if a ray is projected from the camera through the clicked pixel,
+ *
+ *
+ * (automatically generated)
+ */
+export interface ScenePointerMessage {
+  type: "ScenePointerMessage";
+  event_type: "click" | "rect-select";
+  ray_origin: [number, number, number] | null;
+  ray_direction: [number, number, number] | null;
+  screen_pos: [number, number][];
+}
+/** Message to enable/disable scene click events.
+ *
+ * (automatically generated)
+ */
+export interface ScenePointerEnableMessage {
+  type: "ScenePointerEnableMessage";
+  enable: boolean;
+  event_type: "click" | "rect-select";
+}
+/** Environment Map message.
+ *
+ * (automatically generated)
+ */
+export interface EnvironmentMapMessage {
+  type: "EnvironmentMapMessage";
+  hdri:
+    | "apartment"
+    | "city"
+    | "dawn"
+    | "forest"
+    | "lobby"
+    | "night"
+    | "park"
+    | "studio"
+    | "sunset"
+    | "warehouse"
+    | null;
+  background: boolean;
+  background_blurriness: number;
+  background_intensity: number;
+  background_wxyz: [number, number, number, number];
+  environment_intensity: number;
+  environment_wxyz: [number, number, number, number];
+}
+/** Spot light message.
+ *
+ * (automatically generated)
+ */
+export interface EnableLightsMessage {
+  type: "EnableLightsMessage";
+  enabled: boolean;
+}
+/** Server -> client message to set a skinned mesh bone's orientation.
+ *
+ * As with all other messages, transforms take the `T_parent_local` convention.
+ *
+ * (automatically generated)
+ */
+export interface SetBoneOrientationMessage {
+  type: "SetBoneOrientationMessage";
+  name: string;
+  bone_index: number;
+  wxyz: [number, number, number, number];
+}
+/** Server -> client message to set a skinned mesh bone's position.
+ *
+ * As with all other messages, transforms take the `T_parent_local` convention.
+ *
+ * (automatically generated)
+ */
+export interface SetBonePositionMessage {
+  type: "SetBonePositionMessage";
+  name: string;
+  bone_index: number;
+  position: [number, number, number];
+}
+/** Server -> client message to set the camera's position.
+ *
+ * (automatically generated)
+ */
+export interface SetCameraPositionMessage {
+  type: "SetCameraPositionMessage";
+  position: [number, number, number];
+}
+/** Server -> client message to set the camera's up direction.
+ *
+ * (automatically generated)
+ */
+export interface SetCameraUpDirectionMessage {
+  type: "SetCameraUpDirectionMessage";
+  position: [number, number, number];
+}
+/** Server -> client message to set the camera's look-at point.
+ *
+ * (automatically generated)
+ */
+export interface SetCameraLookAtMessage {
+  type: "SetCameraLookAtMessage";
+  look_at: [number, number, number];
+}
+/** Server -> client message to set the camera's near clipping plane.
+ *
+ * (automatically generated)
+ */
+export interface SetCameraNearMessage {
+  type: "SetCameraNearMessage";
+  near: number;
+}
+/** Server -> client message to set the camera's far clipping plane.
+ *
+ * (automatically generated)
+ */
+export interface SetCameraFarMessage {
+  type: "SetCameraFarMessage";
+  far: number;
+}
+/** Server -> client message to set the camera's field of view.
+ *
+ * (automatically generated)
+ */
+export interface SetCameraFovMessage {
+  type: "SetCameraFovMessage";
+  fov: number;
+}
+/** Server -> client message to set a scene node's orientation.
+ *
+ * As with all other messages, transforms take the `T_parent_local` convention.
+ *
+ * (automatically generated)
+ */
+export interface SetOrientationMessage {
+  type: "SetOrientationMessage";
+  name: string;
+  wxyz: [number, number, number, number];
+}
+/** Server -> client message to set a scene node's position.
+ *
+ * As with all other messages, transforms take the `T_parent_local` convention.
+ *
+ * (automatically generated)
+ */
+export interface SetPositionMessage {
+  type: "SetPositionMessage";
+  name: string;
+  position: [number, number, number];
+}
+/** Client -> server message when a transform control is updated.
+ *
+ * As with all other messages, transforms take the `T_parent_local` convention.
+ *
+ * (automatically generated)
+ */
+export interface TransformControlsUpdateMessage {
+  type: "TransformControlsUpdateMessage";
+  name: string;
+  wxyz: [number, number, number, number];
+  position: [number, number, number];
+}
+/** Message for rendering a background image.
+ *
+ * (automatically generated)
+ */
+export interface BackgroundImageMessage {
+  type: "BackgroundImageMessage";
+  media_type: "image/jpeg" | "image/png";
+  rgb_data: Uint8Array | null;
+  depth_data: Uint8Array | null;
+}
+/** Set the visibility of a particular node in the scene.
+ *
+ * (automatically generated)
+ */
+export interface SetSceneNodeVisibilityMessage {
+  type: "SetSceneNodeVisibilityMessage";
+  name: string;
+  visible: boolean;
+}
+/** Set the clickability of a particular node in the scene.
+ *
+ * (automatically generated)
+ */
+export interface SetSceneNodeClickableMessage {
+  type: "SetSceneNodeClickableMessage";
+  name: string;
+  clickable: boolean;
+}
+/** Message for clicked objects.
+ *
+ * (automatically generated)
+ */
+export interface SceneNodeClickMessage {
+  type: "SceneNodeClickMessage";
+  name: string;
+  instance_index: number | null;
+  ray_origin: [number, number, number];
+  ray_direction: [number, number, number];
+  screen_pos: [number, number];
+}
+/** Reset GUI.
+ *
+ * (automatically generated)
+ */
+export interface ResetGuiMessage {
+  type: "ResetGuiMessage";
+}
+/** GuiModalMessage(order: 'float', uuid: 'str', title: 'str')
+ *
+ * (automatically generated)
+ */
+export interface GuiModalMessage {
+  type: "GuiModalMessage";
+  order: number;
+  uuid: string;
+  title: string;
+}
+/** GuiCloseModalMessage(uuid: 'str')
+ *
+ * (automatically generated)
+ */
+export interface GuiCloseModalMessage {
+  type: "GuiCloseModalMessage";
   uuid: string;
 }
 /** Sent client<->server when any property of a GUI component is changed.
@@ -1004,56 +1093,6 @@ export interface ThemeConfigurationMessage {
       ]
     | null;
 }
-/** Message from server->client carrying line segments information.
- *
- * (automatically generated)
- */
-export interface LineSegmentsMessage {
-  type: "LineSegmentsMessage";
-  name: string;
-  props: { points: Uint8Array; line_width: number; colors: Uint8Array };
-}
-/** Message from server->client carrying Catmull-Rom spline information.
- *
- * (automatically generated)
- */
-export interface CatmullRomSplineMessage {
-  type: "CatmullRomSplineMessage";
-  name: string;
-  props: {
-    positions: [number, number, number][];
-    curve_type: "centripetal" | "chordal" | "catmullrom";
-    tension: number;
-    closed: boolean;
-    line_width: number;
-    color: [number, number, number];
-    segments: number | null;
-  };
-}
-/** Message from server->client carrying Cubic Bezier spline information.
- *
- * (automatically generated)
- */
-export interface CubicBezierSplineMessage {
-  type: "CubicBezierSplineMessage";
-  name: string;
-  props: {
-    positions: [number, number, number][];
-    control_points: [number, number, number][];
-    line_width: number;
-    color: [number, number, number];
-    segments: number | null;
-  };
-}
-/** Message from server->client carrying splattable Gaussians.
- *
- * (automatically generated)
- */
-export interface GaussianSplatsMessage {
-  type: "GaussianSplatsMessage";
-  name: string;
-  props: { buffer: Uint8Array };
-}
 /** Message from server->client requesting a render from a specified camera
  * pose.
  *
@@ -1079,11 +1118,30 @@ export interface GetRenderResponseMessage {
 }
 /** Signal that a file is about to be sent.
  *
+ * This message is used to upload files from clients to the server.
+ *
+ *
  * (automatically generated)
  */
-export interface FileTransferStart {
-  type: "FileTransferStart";
-  source_component_uuid: string | null;
+export interface FileTransferStartUpload {
+  type: "FileTransferStartUpload";
+  source_component_uuid: string;
+  transfer_uuid: string;
+  filename: string;
+  mime_type: string;
+  part_count: number;
+  size_bytes: number;
+}
+/** Signal that a file is about to be sent.
+ *
+ * This message is used to send files to clients from the server.
+ *
+ *
+ * (automatically generated)
+ */
+export interface FileTransferStartDownload {
+  type: "FileTransferStartDownload";
+  save_immediately: boolean;
   transfer_uuid: string;
   filename: string;
   mime_type: string;
@@ -1144,12 +1202,6 @@ export interface SetGuiPanelLabelMessage {
 }
 
 export type Message =
-  | RunJavascriptMessage
-  | NotificationMessage
-  | RemoveNotificationMessage
-  | ViewerCameraMessage
-  | ScenePointerMessage
-  | ScenePointerEnableMessage
   | CameraFrustumMessage
   | GlbMessage
   | FrameMessage
@@ -1164,35 +1216,22 @@ export type Message =
   | PointLightMessage
   | RectAreaLightMessage
   | SpotLightMessage
-  | EnvironmentMapMessage
-  | EnableLightsMessage
   | MeshMessage
   | SkinnedMeshMessage
-  | SetBoneOrientationMessage
-  | SetBonePositionMessage
   | TransformControlsMessage
-  | SetCameraPositionMessage
-  | SetCameraUpDirectionMessage
-  | SetCameraLookAtMessage
-  | SetCameraFovMessage
-  | SetOrientationMessage
-  | SetPositionMessage
-  | TransformControlsUpdateMessage
-  | BackgroundImageMessage
   | ImageMessage
+  | LineSegmentsMessage
+  | CatmullRomSplineMessage
+  | CubicBezierSplineMessage
+  | GaussianSplatsMessage
   | RemoveSceneNodeMessage
-  | SetSceneNodeVisibilityMessage
-  | SetSceneNodeClickableMessage
-  | SceneNodeClickMessage
-  | ResetSceneMessage
-  | ResetGuiMessage
   | GuiFolderMessage
   | GuiMarkdownMessage
+  | GuiHtmlMessage
   | GuiProgressBarMessage
   | GuiPlotlyMessage
+  | GuiImageMessage
   | GuiTabGroupMessage
-  | GuiModalMessage
-  | GuiCloseModalMessage
   | GuiButtonMessage
   | GuiUploadButtonMessage
   | GuiSliderMessage
@@ -1207,16 +1246,39 @@ export type Message =
   | GuiDropdownMessage
   | GuiButtonGroupMessage
   | GuiRemoveMessage
+  | RunJavascriptMessage
+  | NotificationMessage
+  | RemoveNotificationMessage
+  | ViewerCameraMessage
+  | ScenePointerMessage
+  | ScenePointerEnableMessage
+  | EnvironmentMapMessage
+  | EnableLightsMessage
+  | SetBoneOrientationMessage
+  | SetBonePositionMessage
+  | SetCameraPositionMessage
+  | SetCameraUpDirectionMessage
+  | SetCameraLookAtMessage
+  | SetCameraNearMessage
+  | SetCameraFarMessage
+  | SetCameraFovMessage
+  | SetOrientationMessage
+  | SetPositionMessage
+  | TransformControlsUpdateMessage
+  | BackgroundImageMessage
+  | SetSceneNodeVisibilityMessage
+  | SetSceneNodeClickableMessage
+  | SceneNodeClickMessage
+  | ResetGuiMessage
+  | GuiModalMessage
+  | GuiCloseModalMessage
   | GuiUpdateMessage
   | SceneNodeUpdateMessage
   | ThemeConfigurationMessage
-  | LineSegmentsMessage
-  | CatmullRomSplineMessage
-  | CubicBezierSplineMessage
-  | GaussianSplatsMessage
   | GetRenderRequestMessage
   | GetRenderResponseMessage
-  | FileTransferStart
+  | FileTransferStartUpload
+  | FileTransferStartDownload
   | FileTransferPart
   | FileTransferPartAck
   | ShareUrlRequest
@@ -1249,8 +1311,10 @@ export type SceneNodeMessage =
 export type GuiComponentMessage =
   | GuiFolderMessage
   | GuiMarkdownMessage
+  | GuiHtmlMessage
   | GuiProgressBarMessage
   | GuiPlotlyMessage
+  | GuiImageMessage
   | GuiTabGroupMessage
   | GuiButtonMessage
   | GuiUploadButtonMessage
@@ -1297,8 +1361,10 @@ export function isSceneNodeMessage(
 const typeSetGuiComponentMessage = new Set([
   "GuiFolderMessage",
   "GuiMarkdownMessage",
+  "GuiHtmlMessage",
   "GuiProgressBarMessage",
   "GuiPlotlyMessage",
+  "GuiImageMessage",
   "GuiTabGroupMessage",
   "GuiButtonMessage",
   "GuiUploadButtonMessage",

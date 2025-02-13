@@ -66,10 +66,21 @@ class AsyncMessageBuffer:
                 self.message_from_id.pop(old_message_id)
             self.id_from_redundancy_key[redundancy_key] = new_message_id
 
-        # Pulse message event to notify consumers that a new message is available.
-        # But only do so if we're not in an atomic block.
-        if self.atomic_counter == 0:
-            self.event_loop.call_soon_threadsafe(self.message_event.set)
+            # Pulse message event to notify consumers that a new message is
+            # available.
+            #
+            # We set this both inside and outside of the event loop.
+            #
+            # This call is necessary so we can read the value immedaitely
+            # in synchronous logic.
+            self.message_event.set()
+            if self.atomic_counter == 0:
+                # This call is necessary to make sure that awaiting tasks are
+                # triggered correctly.
+                #
+                # If we're in an atomic block, this will happen when
+                # atomic_end() is called.
+                self.event_loop.call_soon_threadsafe(self.message_event.set)
 
     def atomic_start(self) -> None:
         """Start an atomic block. No new messages/windows should be sent."""

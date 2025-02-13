@@ -41,6 +41,8 @@ from ._gui_handles import (
     GuiDropdownHandle,
     GuiEvent,
     GuiFolderHandle,
+    GuiHtmlHandle,
+    GuiImageHandle,
     GuiMarkdownHandle,
     GuiModalHandle,
     GuiMultiSliderHandle,
@@ -65,6 +67,7 @@ from ._icons import svg_from_icon
 from ._icons_enum import IconName
 from ._messages import FileTransferPartAck, GuiBaseProps, GuiSliderMark
 from ._scene_api import cast_vector
+from ._threadpool_exceptions import print_threadpool_errors
 
 if TYPE_CHECKING:
     import plotly.graph_objects as go
@@ -205,6 +208,7 @@ class GuiApi:
         self._container_handle_from_uuid: dict[str, GuiContainerProtocol] = {
             "root": _RootGuiContainer({})
         }
+        self._modal_handle_from_uuid: dict[str, GuiModalHandle] = {}
         self._current_file_upload_states: dict[str, _FileUploadState] = {}
 
         # Set to True when plotly.min.js has been sent to client.
@@ -214,7 +218,7 @@ class GuiApi:
             _messages.GuiUpdateMessage, self._handle_gui_updates
         )
         self._websock_interface.register_handler(
-            _messages.FileTransferStart, self._handle_file_transfer_start
+            _messages.FileTransferStartUpload, self._handle_file_transfer_start
         )
         self._websock_interface.register_handler(
             _messages.FileTransferPart,
@@ -280,13 +284,15 @@ class GuiApi:
             if asyncio.iscoroutinefunction(cb):
                 await cb(GuiEvent(client, client_id, handle))
             else:
-                self._thread_executor.submit(cb, GuiEvent(client, client_id, handle))
+                self._thread_executor.submit(
+                    cb, GuiEvent(client, client_id, handle)
+                ).add_done_callback(print_threadpool_errors)
 
         if handle_state.sync_cb is not None:
             handle_state.sync_cb(client_id, updates_cast)
 
     def _handle_file_transfer_start(
-        self, client_id: ClientId, message: _messages.FileTransferStart
+        self, client_id: ClientId, message: _messages.FileTransferStartUpload
     ) -> None:
         if message.source_component_uuid not in self._gui_input_handle_from_uuid:
             return
@@ -365,19 +371,25 @@ class GuiApi:
             if asyncio.iscoroutinefunction(cb):
                 self._event_loop.create_task(cb(GuiEvent(client, client_id, handle)))
             else:
-                self._thread_executor.submit(cb, GuiEvent(client, client_id, handle))
+                self._thread_executor.submit(
+                    cb, GuiEvent(client, client_id, handle)
+                ).add_done_callback(print_threadpool_errors)
 
     def _get_container_uuid(self) -> str:
         """Get container ID associated with the current thread."""
         return self._target_container_from_thread_id.get(threading.get_ident(), "root")
 
-    def _set_container_uid(self, container_uuid: str) -> None:
+    def _set_container_uuid(self, container_uuid: str) -> None:
         """Set container ID associated with the current thread."""
         self._target_container_from_thread_id[threading.get_ident()] = container_uuid
 
     def reset(self) -> None:
         """Reset the GUI."""
-        self._websock_interface.queue_message(_messages.ResetGuiMessage())
+        root_container = self._container_handle_from_uuid["root"]
+        while len(root_container._children) > 0:
+            next(iter(root_container._children.values())).remove()
+        while len(self._modal_handle_from_uuid) > 0:
+            next(iter(self._modal_handle_from_uuid.values())).close()
 
     def set_panel_label(self, label: str | None) -> None:
         """Set the main label that appears in the GUI panel.
@@ -417,9 +429,9 @@ class GuiApi:
         if brand_color is not None:
             assert len(brand_color) in (3, 10)
             if len(brand_color) == 3:
-                assert all(
-                    map(lambda val: isinstance(val, int), brand_color)
-                ), "All channels should be integers."
+                assert all(map(lambda val: isinstance(val, int), brand_color)), (
+                    "All channels should be integers."
+                )
 
                 # RGB => HLS.
                 h, l, s = colorsys.rgb_to_hls(
@@ -532,7 +544,7 @@ class GuiApi:
         )
         return GuiModalHandle(
             _gui_api=self,
-            _uid=modal_container_id,
+            _uuid=modal_container_id,
         )
 
     def add_tab_group(
@@ -620,6 +632,80 @@ class GuiApi:
         handle.content = content
         return handle
 
+    def add_html(
+        self,
+        content: str,
+        order: float | None = None,
+        visible: bool = True,
+    ) -> GuiHtmlHandle:
+        """Add HTML to the GUI.
+
+        Args:
+            content: HTML content to display.
+            order: Optional ordering, smallest values will be displayed first.
+            visible: Whether the component is visible.
+
+        Returns:
+            A handle that can be used to interact with the GUI element.
+        """
+        message = _messages.GuiHtmlMessage(
+            uuid=_make_uuid(),
+            container_uuid=self._get_container_uuid(),
+            props=_messages.GuiHtmlProps(
+                order=_apply_default_order(order),
+                content=content,
+                visible=visible,
+            ),
+        )
+        self._websock_interface.queue_message(message)
+
+        handle = GuiHtmlHandle(
+            _GuiHandleState(
+                message.uuid,
+                self,
+                None,
+                props=message.props,
+                parent_container_id=message.container_uuid,
+            ),
+        )
+        return handle
+
+    def add_image(
+        self,
+        image: np.ndarray,
+        label: str | None = None,
+        format: Literal["png", "jpeg"] = "jpeg",
+        jpeg_quality: int | None = None,
+        order: float | None = None,
+        visible: bool = True,
+    ) -> GuiImageHandle:
+        message = _messages.GuiImageMessage(
+            uuid=_make_uuid(),
+            container_uuid=self._get_container_uuid(),
+            props=_messages.GuiImageProps(
+                _data=None,  # Sent in prop update later.
+                label=label,
+                media_type="image/png" if format == "png" else "image/jpeg",
+                order=_apply_default_order(order),
+                visible=visible,
+            ),
+        )
+        self._websock_interface.queue_message(message)
+
+        handle = GuiImageHandle(
+            _GuiHandleState(
+                message.uuid,
+                self,
+                None,
+                props=message.props,
+                parent_container_id=message.container_uuid,
+            ),
+            _image=image,
+            _jpeg_quality=jpeg_quality,
+        )
+        handle.image = image
+        return handle
+
     def add_plotly(
         self,
         figure: go.Figure,
@@ -655,9 +741,9 @@ class GuiApi:
             plotly_path = (
                 Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
             )
-            assert (
-                plotly_path.exists()
-            ), f"Could not find plotly.min.js at {plotly_path}."
+            assert plotly_path.exists(), (
+                f"Could not find plotly.min.js at {plotly_path}."
+            )
 
             # Send it over!
             plotly_js = plotly_path.read_text(encoding="utf-8")
@@ -841,7 +927,8 @@ class GuiApi:
                         visible=visible,
                     ),
                 ),
-            )
+                is_button=True,
+            ),
         )
 
     def add_checkbox(

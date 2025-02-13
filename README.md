@@ -1,12 +1,12 @@
 <h1 align="left">
-    <img alt="viser logo" src="https://viser.studio/latest/_static/logo.svg" width="auto" height="30" />
+    <img alt="viser logo" src="https://viser.studio/main/_static/logo.svg" width="auto" height="30" />
     viser
-    <img alt="viser logo" src="https://viser.studio/latest/_static/logo.svg" width="auto" height="30" />
+    <img alt="viser logo" src="https://viser.studio/main/_static/logo.svg" width="auto" height="30" />
 </h1>
 
 <p align="left">
-    <img alt="pyright" src="https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg?branch=main" />
-    <img alt="typescript-compile" src="https://github.com/nerfstudio-project/viser/workflows/typescript-compile/badge.svg?branch=main" />
+    <img alt="pyright" src="https://github.com/nerfstudio-project/viser/actions/workflows/pyright.yml/badge.svg" />
+    <img alt="typescript-compile" src="https://github.com/nerfstudio-project/viser/actions/workflows/typescript-compile.yml/badge.svg" />
     <a href="https://pypi.org/project/viser/">
         <img alt="codecov" src="https://img.shields.io/pypi/pyversions/viser" />
     </a>
@@ -22,7 +22,7 @@ Features include:
 - Programmatic camera control and rendering
 - An entirely web-based client, for easy use over SSH!
 
-For usage and API reference, see our <a href="https://viser.studio/latest">documentation</a>.
+For usage and API reference, see our <a href="https://viser.studio/main">documentation</a>.
 
 ## Installation
 
@@ -41,7 +41,7 @@ pip install viser[examples]
 After an example script is running, you can connect by navigating to the printed
 URL (default: `http://localhost:8080`).
 
-See also: our [development docs](https://viser.studio/latest/development/).
+See also: our [development docs](https://viser.studio/main/development/).
 
 ## Examples
 

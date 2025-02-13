@@ -5,6 +5,8 @@ from ._gui_handles import GuiCheckboxHandle as GuiCheckboxHandle
 from ._gui_handles import GuiDropdownHandle as GuiDropdownHandle
 from ._gui_handles import GuiEvent as GuiEvent
 from ._gui_handles import GuiFolderHandle as GuiFolderHandle
+from ._gui_handles import GuiHtmlHandle as GuiHtmlHandle
+from ._gui_handles import GuiImageHandle as GuiImageHandle
 from ._gui_handles import GuiInputHandle as GuiInputHandle
 from ._gui_handles import GuiMarkdownHandle as GuiMarkdownHandle
 from ._gui_handles import GuiMultiSliderHandle as GuiMultiSliderHandle
@@ -31,6 +33,7 @@ from ._scene_handles import DirectionalLightHandle as DirectionalLightHandle
 from ._scene_handles import FrameHandle as FrameHandle
 from ._scene_handles import GaussianSplatHandle as GaussianSplatHandle
 from ._scene_handles import GlbHandle as GlbHandle
+from ._scene_handles import GridHandle as GridHandle
 from ._scene_handles import Gui3dContainerHandle as Gui3dContainerHandle
 from ._scene_handles import HemisphereLightHandle as HemisphereLightHandle
 from ._scene_handles import ImageHandle as ImageHandle
@@ -52,3 +55,5 @@ from ._scene_handles import TransformControlsHandle as TransformControlsHandle
 from ._viser import CameraHandle as CameraHandle
 from ._viser import ClientHandle as ClientHandle
 from ._viser import ViserServer as ViserServer
+
+__version__ = "0.2.23"

@@ -13,7 +13,7 @@ export type WsWorkerOutgoing =
   | { type: "message_batch"; messages: Message[] };
 
 // Helper function to collect all ArrayBuffer objects. This is used for postMessage() move semantics.
-function collectArrayBuffers(obj: any, buffers: Set<ArrayBuffer>) {
+function collectArrayBuffers(obj: any, buffers: Set<ArrayBufferLike>) {
   if (obj instanceof ArrayBuffer) {
     buffers.add(obj);
   } else if (obj instanceof Uint8Array) {
@@ -60,8 +60,14 @@ function collectArrayBuffers(obj: any, buffers: Set<ArrayBuffer>) {
       console.log(`Disconnected! ${server} code=${event.code}`);
       clearTimeout(retryTimeout);
 
-      // Try to reconnect.
-      if (server !== null) setTimeout(tryConnect, 1000);
+      // Try to reconnect on next repaint.
+      // requestAnimationFrame() helps us avoid reconnecting from tabs that are
+      // hidden or minimized.
+      if (server !== null) {
+        requestAnimationFrame(() => {
+          setTimeout(tryConnect, 1000);
+        });
+      }
     };
 
     ws.onmessage = async (event) => {

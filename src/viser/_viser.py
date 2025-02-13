@@ -26,8 +26,9 @@ from . import transforms as tf
 from ._gui_api import Color, GuiApi, _make_uuid
 from ._notification_handle import NotificationHandle, _NotificationHandleState
 from ._scene_api import SceneApi, cast_vector
+from ._threadpool_exceptions import print_threadpool_errors
 from ._tunnel import ViserTunnel
-from .infra._infra import RecordHandle
+from .infra._infra import StateSerializer
 
 
 class _BackwardsCompatibilityShim:
@@ -75,6 +76,8 @@ class _CameraHandleState:
     position: npt.NDArray[np.float64]
     fov: float
     aspect: float
+    near: float
+    far: float
     look_at: npt.NDArray[np.float64]
     up_direction: npt.NDArray[np.float64]
     update_timestamp: float
@@ -92,6 +95,8 @@ class CameraHandle:
             position=np.zeros(3),
             fov=0.0,
             aspect=0.0,
+            near=0.01,
+            far=1000.0,
             look_at=np.zeros(3),
             up_direction=np.zeros(3),
             update_timestamp=0.0,
@@ -183,7 +188,9 @@ class CameraHandle:
         y = y - np.dot(z, y) * z
         y /= np.linalg.norm(y)
         x = np.cross(y, z)
-        self._state.wxyz = tf.SO3.from_matrix(np.stack([x, y, z], axis=1)).wxyz
+        self._state.wxyz = tf.SO3.from_matrix(np.stack([x, y, z], axis=1)).wxyz.astype(
+            np.float64
+        )
 
     @property
     def fov(self) -> float:
@@ -200,6 +207,40 @@ class CameraHandle:
         self._state.update_timestamp = time.time()
         self._state.client._websock_connection.queue_message(
             _messages.SetCameraFovMessage(fov)
+        )
+
+    @property
+    def near(self) -> float:
+        """Near clipping plane distance. Synchronized automatically when
+        assigned."""
+        assert self._state.update_timestamp != 0.0
+        return self._state.near
+
+    @near.setter
+    def near(self, near: float) -> None:
+        if np.allclose(self._state.near, near):
+            return
+        self._state.near = near
+        self._state.update_timestamp = time.time()
+        self._state.client._websock_connection.queue_message(
+            _messages.SetCameraNearMessage(near)
+        )
+
+    @property
+    def far(self) -> float:
+        """Far clipping plane distance. Synchronized automatically when
+        assigned."""
+        assert self._state.update_timestamp != 0.0
+        return self._state.far
+
+    @far.setter
+    def far(self, far: float) -> None:
+        if np.allclose(self._state.far, far):
+            return
+        self._state.far = far
+        self._state.update_timestamp = time.time()
+        self._state.client._websock_connection.queue_message(
+            _messages.SetCameraFarMessage(far)
         )
 
     @property
@@ -344,7 +385,11 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         return self._websock_connection.atomic()
 
     def send_file_download(
-        self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
+        self,
+        filename: str,
+        content: bytes,
+        chunk_size: int = 1024 * 1024,
+        save_immediately: bool = False,
     ) -> None:
         """Send a file for a client or clients to download.
 
@@ -352,6 +397,9 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
             filename: Name of the file to send. Used to infer MIME type.
             content: Content of the file.
             chunk_size: Number of bytes to send at a time.
+            save_immediately: Whether to save the file immediately. If `False`,
+                a link to the file will be shown as a notification. Being able to
+                right click the link and choose "Save as..." can be useful.
         """
         mime_type = mimetypes.guess_type(filename, strict=False)[0]
         if mime_type is None:
@@ -364,8 +412,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
 
         uuid = _make_uuid()
         self._websock_connection.queue_message(
-            _messages.FileTransferStart(
-                source_component_uuid=None,
+            _messages.FileTransferStartDownload(
+                save_immediately=save_immediately,
                 transfer_uuid=uuid,
                 filename=filename,
                 mime_type=mime_type,
@@ -433,8 +481,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         height: int,
         width: int,
         *,
-        wxyz: tuple[float, float, float, float],
-        position: tuple[float, float, float],
+        wxyz: tuple[float, float, float, float] | np.ndarray,
+        position: tuple[float, float, float] | np.ndarray,
         fov: float,
         transport_format: Literal["png", "jpeg"] = "jpeg",
     ) -> np.ndarray: ...
@@ -453,8 +501,8 @@ class ClientHandle(_BackwardsCompatibilityShim if not TYPE_CHECKING else object)
         height: int,
         width: int,
         *,
-        wxyz: tuple[float, float, float, float] | None = None,
-        position: tuple[float, float, float] | None = None,
+        wxyz: tuple[float, float, float, float] | np.ndarray | None = None,
+        position: tuple[float, float, float] | np.ndarray | None = None,
         fov: float | None = None,
         transport_format: Literal["png", "jpeg"] = "jpeg",
     ) -> np.ndarray:
@@ -574,6 +622,11 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
 
         self._thread_executor = ThreadPoolExecutor(max_workers=32)
 
+        # Run "garbage collector" on message buffer when new clients connect.
+        @server.on_client_connect
+        async def _(_: infra.WebsockClientConnection) -> None:
+            self._run_garbage_collector()
+
         # For new clients, register and add a handler for camera messages.
         @server.on_client_connect
         async def _(conn: infra.WebsockClientConnection) -> None:
@@ -592,11 +645,13 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                     client,
                     np.array(message.wxyz),
                     np.array(message.position),
-                    message.fov,
-                    message.aspect,
-                    np.array(message.look_at),
-                    np.array(message.up_direction),
-                    time.time(),
+                    fov=message.fov,
+                    aspect=message.aspect,
+                    near=message.near,
+                    far=message.far,
+                    look_at=np.array(message.look_at),
+                    up_direction=np.array(message.up_direction),
+                    update_timestamp=time.time(),
                     camera_cb=client.camera._state.camera_cb,
                 )
 
@@ -610,13 +665,17 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                             if asyncio.iscoroutinefunction(cb):
                                 await cb(client)
                             else:
-                                self._thread_executor.submit(cb, client)
+                                self._thread_executor.submit(
+                                    cb, client
+                                ).add_done_callback(print_threadpool_errors)
 
                 for camera_cb in client.camera._state.camera_cb:
                     if asyncio.iscoroutinefunction(camera_cb):
                         await camera_cb(client.camera)
                     else:
-                        self._thread_executor.submit(camera_cb, client.camera)
+                        self._thread_executor.submit(
+                            camera_cb, client.camera
+                        ).add_done_callback(print_threadpool_errors)
 
             conn.register_handler(_messages.ViewerCameraMessage, handle_camera_message)
 
@@ -632,7 +691,9 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
                     if asyncio.iscoroutinefunction(cb):
                         await cb(handle)
                     else:
-                        self._thread_executor.submit(cb, handle)
+                        self._thread_executor.submit(cb, handle).add_done_callback(
+                            print_threadpool_errors
+                        )
 
         # Start the server.
         server.start()
@@ -701,6 +762,67 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         self.scene.reset()
         self.gui.reset()
         self.gui.set_panel_label(label)
+
+    def _run_garbage_collector(self, force: bool = False) -> None:
+        """Clean up old messages. This is not elegant; a refactor of our
+        message persistence logic will significantly reduce complexity."""
+        buffer = self._websock_server._broadcast_buffer
+        with buffer.buffer_lock:
+            # Skip garbage collection if we have messages that are queeud but
+            # not yet processed by the window generators.
+            #
+            # This makes sure that we don't accidentally cull messages before
+            # they're sent to existing clients. RemoveSceneNodeMessage, for example,
+            # needs to be sent to old clients but not new ones.
+            if (
+                not force
+                and self._websock_server._broadcast_buffer.message_event.is_set()
+            ):
+                return
+
+            remove_message_ids: list[int] = []
+
+            remove_scene_names: set[str] = set()
+            remove_gui_uuids: set[str] = set()
+
+            for id, message in reversed(buffer.message_from_id.items()):
+                # Find scene nodes or GUI elements that were removed.
+                if isinstance(message, _messages.RemoveSceneNodeMessage):
+                    remove_message_ids.append(id)
+                    remove_scene_names.add(message.name)
+                elif isinstance(message, _messages.GuiRemoveMessage):
+                    remove_message_ids.append(id)
+                    remove_gui_uuids.add(message.uuid)
+                elif isinstance(message, _messages.GuiCloseModalMessage):
+                    remove_message_ids.append(id)
+
+                # For removed elements, no need to send any update messages.
+                if (
+                    isinstance(
+                        message,
+                        (
+                            _messages.SetPositionMessage,
+                            _messages.SetOrientationMessage,
+                            _messages.SetBonePositionMessage,
+                            _messages.SetBoneOrientationMessage,
+                            _messages.SetSceneNodeClickableMessage,
+                            _messages.SetSceneNodeVisibilityMessage,
+                        ),
+                    )
+                    and message.name in remove_scene_names
+                ):
+                    remove_message_ids.append(id)
+
+                if (
+                    isinstance(message, _messages.GuiUpdateMessage)
+                    and message.uuid in remove_gui_uuids
+                ):
+                    remove_message_ids.append(id)
+
+            # Remove old messages.
+            for id in remove_message_ids:
+                message = buffer.message_from_id.pop(id)
+                buffer.id_from_redundancy_key.pop(message.redundancy_key())
 
     def get_host(self) -> str:
         """Returns the host address of the Viser server.
@@ -823,7 +945,9 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             if asyncio.iscoroutinefunction(cb):
                 self._event_loop.create_task(cb(client))
             else:
-                self._thread_executor.submit(cb, client)
+                self._thread_executor.submit(cb, client).add_done_callback(
+                    print_threadpool_errors
+                )
 
         return cb  # type: ignore
 
@@ -860,7 +984,11 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
         return self._websock_server.atomic()
 
     def send_file_download(
-        self, filename: str, content: bytes, chunk_size: int = 1024 * 1024
+        self,
+        filename: str,
+        content: bytes,
+        chunk_size: int = 1024 * 1024,
+        save_immediately: bool = False,
     ) -> None:
         """Send a file for a client or clients to download.
 
@@ -868,26 +996,72 @@ class ViserServer(_BackwardsCompatibilityShim if not TYPE_CHECKING else object):
             filename: Name of the file to send. Used to infer MIME type.
             content: Content of the file.
             chunk_size: Number of bytes to send at a time.
+            save_immediately: Whether to save the file immediately. If `False`,
+                a link to the file will be shown as a notification. Being able to
+                right click the link and choose "Save as..." can be useful.
         """
         for client in self.get_clients().values():
-            client.send_file_download(filename, content, chunk_size)
+            client.send_file_download(filename, content, chunk_size, save_immediately)
 
     def get_event_loop(self) -> asyncio.AbstractEventLoop:
         """Get the asyncio event loop used by the Viser background thread. This
         can be useful for safe concurrent operations."""
         return self._event_loop
 
-    def _start_scene_recording(self) -> RecordHandle:
-        """Start recording outgoing messages for playback or embedding.
-        Includes only the scene.
-
-        **Work-in-progress.** This API may be changed or removed.
+    def sleep_forever(self) -> None:
+        """Equivalent to:
+        ```
+        while True:
+            time.sleep(3600)
+        ```
         """
-        recorder = self._websock_server.start_recording(
+        while True:
+            time.sleep(3600)
+
+    def _start_scene_recording(self) -> Any:
+        """**Old API.**"""
+        warnings.warn(
+            "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+            stacklevel=2,
+        )
+
+        serializer = self.get_scene_serializer()
+
+        # We'll add a shim for the old API for now. We can remove this later.
+        class _SceneRecordCompatibilityShim:
+            def set_loop_start(self):
+                warnings.warn(
+                    "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+                    stacklevel=2,
+                )
+
+            def insert_sleep(self, duration: float):
+                warnings.warn(
+                    "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+                    stacklevel=2,
+                )
+                serializer.insert_sleep(duration)
+
+            def end_and_serialize(self) -> bytes:
+                warnings.warn(
+                    "_start_scene_recording() has been renamed. See notes in https://github.com/nerfstudio-project/viser/pull/357 for the new API.",
+                    stacklevel=2,
+                )
+                return serializer.serialize()
+
+        return _SceneRecordCompatibilityShim()
+
+    def get_scene_serializer(self) -> StateSerializer:
+        """Get handle for serializing the scene state.
+
+        This can be used for saving .viser files, which are used for offline
+        visualization.
+        """
+        serializer = self._websock_server.get_message_serializer(
             # Don't record GUI messages. This feels brittle.
             filter=lambda message: "Gui" not in type(message).__name__
         )
         # Insert current scene state.
         for message in self._websock_server._broadcast_buffer.message_from_id.values():
-            recorder._insert_message(message)
-        return recorder
+            serializer._insert_message(message)
+        return serializer

@@ -4,10 +4,10 @@ import React, { useContext } from "react";
 import * as THREE from "three";
 import { TextureLoader } from "three";
 
-import { ViewerContext } from "./App";
+import { ViewerContext } from "./ViewerContext";
 import {
   FileTransferPart,
-  FileTransferStart,
+  FileTransferStartDownload,
   Message,
   SceneNodeMessage,
   isGuiComponentMessage,
@@ -15,10 +15,11 @@ import {
 } from "./WebsocketMessages";
 import { isTexture } from "./WebsocketFunctions";
 import { useFrame } from "@react-three/fiber";
-import { Progress } from "@mantine/core";
-import { IconCheck } from "@tabler/icons-react";
+import { Button, Progress } from "@mantine/core";
+import { IconCheck, IconDownload } from "@tabler/icons-react";
 import { computeT_threeworld_world } from "./WorldTransformUtils";
 import { rootNodeTemplate } from "./SceneTreeState";
+import { GaussianSplatsContext } from "./Splatting/GaussianSplatsHelpers";
 
 /** Returns a handler for all incoming messages. */
 function useMessageHandler() {
@@ -28,9 +29,7 @@ function useMessageHandler() {
   // https://github.com/nerfstudio-project/viser/issues/39
   const updateSceneNode = viewer.useSceneTree((state) => state.updateSceneNode);
   const removeSceneNode = viewer.useSceneTree((state) => state.removeSceneNode);
-  const resetScene = viewer.useSceneTree((state) => state.resetScene);
   const addSceneNode = viewer.useSceneTree((state) => state.addSceneNode);
-  const resetGui = viewer.useGui((state) => state.resetGui);
   const setTheme = viewer.useGui((state) => state.setTheme);
   const setShareUrl = viewer.useGui((state) => state.setShareUrl);
   const addGui = viewer.useGui((state) => state.addGui);
@@ -50,8 +49,15 @@ function useMessageHandler() {
       overrideVisibility: attrs[message.name]?.overrideVisibility,
     };
 
-    // Don't update the pose of the object until we've made a new one!
-    attrs[message.name]!.poseUpdateState = "waitForMakeObject";
+    // If the object is new or changed, we need to wait until it's created
+    // before updating its pose. Updating the pose too early can cause
+    // flickering when we replace objects (old object will take the pose of the new
+    // object while it's being loaded/mounted)
+    const oldMessage =
+      viewer.useSceneTree.getState().nodeFromName[message.name]?.message;
+    if (oldMessage === undefined || message !== oldMessage) {
+      attrs[message.name]!.poseUpdateState = "waitForMakeObject";
+    }
 
     // Make sure parents exists.
     const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
@@ -294,11 +300,23 @@ function useMessageHandler() {
         viewer.sendCameraRef.current !== null && viewer.sendCameraRef.current();
         return;
       }
+      case "SetCameraNearMessage": {
+        const camera = viewer.cameraRef.current!;
+        camera.near = message.near;
+        camera.updateProjectionMatrix();
+        return;
+      }
+      case "SetCameraFarMessage": {
+        const camera = viewer.cameraRef.current!;
+        camera.far = message.far;
+        camera.updateProjectionMatrix();
+        return;
+      }
       case "SetOrientationMessage": {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.wxyz = message.wxyz;
-        if (attr[message.name]!.poseUpdateState == "updated")
+        if (attr[message.name]!.poseUpdateState != "waitForMakeObject")
           attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
@@ -306,7 +324,7 @@ function useMessageHandler() {
         const attr = viewer.nodeAttributesFromName.current;
         if (attr[message.name] === undefined) attr[message.name] = {};
         attr[message.name]!.position = message.position;
-        if (attr[message.name]!.poseUpdateState == "updated")
+        if (attr[message.name]!.poseUpdateState != "waitForMakeObject")
           attr[message.name]!.poseUpdateState = "needsUpdate";
         break;
       }
@@ -318,29 +336,41 @@ function useMessageHandler() {
       }
       // Add a background image.
       case "BackgroundImageMessage": {
-        const rgb_url = URL.createObjectURL(
-          new Blob([message.rgb_bytes], {
-            type: message.media_type,
-          }),
-        );
-        new TextureLoader().load(rgb_url, (texture) => {
-          URL.revokeObjectURL(rgb_url);
+        if (message.rgb_data !== null) {
+          const rgb_url = URL.createObjectURL(
+            new Blob([message.rgb_data], {
+              type: message.media_type,
+            }),
+          );
+          new TextureLoader().load(rgb_url, (texture) => {
+            URL.revokeObjectURL(rgb_url);
+            const oldBackgroundTexture =
+              viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
+            viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
+              texture;
+
+            // Dispose the old background texture.
+            if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
+          });
+
+          viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
+        } else {
+          // Dispose the old background texture.
           const oldBackgroundTexture =
             viewer.backgroundMaterialRef.current!.uniforms.colorMap.value;
-          viewer.backgroundMaterialRef.current!.uniforms.colorMap.value =
-            texture;
           if (isTexture(oldBackgroundTexture)) oldBackgroundTexture.dispose();
 
-          viewer.useGui.setState({ backgroundAvailable: true });
-        });
-        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = true;
-        viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
-          message.depth_bytes !== null;
+          // Disable the background.
+          viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
+        }
 
-        if (message.depth_bytes !== null) {
+        // Set the depth texture.
+        viewer.backgroundMaterialRef.current!.uniforms.hasDepth.value =
+          message.depth_data !== null;
+        if (message.depth_data !== null) {
           // If depth is available set the texture
           const depth_url = URL.createObjectURL(
-            new Blob([message.depth_bytes], {
+            new Blob([message.depth_data], {
               type: message.media_type,
             }),
           );
@@ -360,7 +390,7 @@ function useMessageHandler() {
         console.log("Removing scene node:", message.name);
         const nodeFromName = viewer.useSceneTree.getState().nodeFromName;
         if (!(message.name in nodeFromName)) {
-          console.log("Skipping scene node removal for " + name);
+          console.log("(OK) Skipping scene node removal for " + name);
           return;
         }
         removeSceneNode(message.name);
@@ -378,24 +408,6 @@ function useMessageHandler() {
         setTimeout(() => setClickable(message.name, message.clickable), 50);
         return;
       }
-      // Reset the entire scene, removing all scene nodes.
-      case "ResetSceneMessage": {
-        resetScene();
-
-        const oldBackground = viewer.sceneRef.current?.background;
-        viewer.sceneRef.current!.background = null;
-        if (isTexture(oldBackground)) oldBackground.dispose();
-
-        viewer.useGui.setState({ backgroundAvailable: false });
-        // Disable the depth texture rendering
-        viewer.backgroundMaterialRef.current!.uniforms.enabled.value = false;
-        return;
-      }
-      // Reset the GUI state.
-      case "ResetGuiMessage": {
-        resetGui();
-        return;
-      }
       // Update props of a GUI component
       case "GuiUpdateMessage": {
         updateGuiProps(message.uuid, message.updates);
@@ -407,7 +419,7 @@ function useMessageHandler() {
         return;
       }
 
-      case "FileTransferStart":
+      case "FileTransferStartDownload":
       case "FileTransferPart": {
         fileDownloadHandler(message);
         return;
@@ -431,7 +443,7 @@ function useMessageHandler() {
 function useFileDownloadHandler() {
   const downloadStatesRef = React.useRef<{
     [uuid: string]: {
-      metadata: FileTransferStart;
+      metadata: FileTransferStartDownload;
       notificationId: string;
       parts: Uint8Array[];
       bytesDownloaded: number;
@@ -439,12 +451,12 @@ function useFileDownloadHandler() {
     };
   }>({});
 
-  return (message: FileTransferStart | FileTransferPart) => {
+  return (message: FileTransferStartDownload | FileTransferPart) => {
     const notificationId = "download-" + message.transfer_uuid;
 
     // Create or update download state.
     switch (message.type) {
-      case "FileTransferStart": {
+      case "FileTransferStartDownload": {
         let displaySize = message.size_bytes;
         const displayUnits = ["B", "K", "M", "G", "T", "P"];
         let displayUnitIndex = 0;
@@ -491,11 +503,11 @@ function useFileDownloadHandler() {
       ? notifications.show
       : notifications.update)({
       title:
-        (isDone ? "Downloaded " : "Downloading ") +
+        (isDone ? "Received " : "Receiving ") +
         `${downloadState.metadata.filename} (${downloadState.displayFilesize})`,
       message: <Progress size="sm" value={progressValue} />,
       id: notificationId,
-      autoClose: isDone,
+      autoClose: isDone && downloadState.metadata.save_immediately,
       withCloseButton: isDone,
       loading: !isDone,
       icon: isDone ? <IconCheck /> : undefined,
@@ -503,16 +515,49 @@ function useFileDownloadHandler() {
 
     // If done: download file and clear state.
     if (isDone) {
-      const link = document.createElement("a");
-      link.href = window.URL.createObjectURL(
+      const url = window.URL.createObjectURL(
         new Blob(downloadState.parts, {
           type: downloadState.metadata.mime_type,
         }),
       );
-      link.download = downloadState.metadata.filename;
-      link.click();
-      link.remove();
-      delete downloadStatesRef.current[message.transfer_uuid];
+
+      // If save_immediately is true, download the file immediately.
+      // Otherwise, show a notification with a link to download the file.
+      // We should revoke the URL after the notification is dismissed.
+      if (downloadState.metadata.save_immediately) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = downloadState.metadata.filename;
+        link.click();
+        link.remove();
+        delete downloadStatesRef.current[message.transfer_uuid];
+        URL.revokeObjectURL(url);
+      } else {
+        notifications.update({
+          id: notificationId,
+          title: "",
+          message: (
+            <>
+              <a href={url} download={downloadState.metadata.filename}>
+                <Button
+                  leftSection={<IconDownload size={14} />}
+                  variant="light"
+                  size="sm"
+                  mt="0.05em"
+                  w="100%"
+                >
+                  {`${downloadState.metadata.filename} (${downloadState.displayFilesize})`}
+                </Button>
+              </a>
+            </>
+          ),
+          autoClose: false,
+          onClose: () => {
+            URL.revokeObjectURL(url);
+            delete downloadStatesRef.current[message.transfer_uuid];
+          },
+        });
+      }
     }
   };
 }
@@ -521,6 +566,7 @@ export function FrameSynchronizedMessageHandler() {
   const handleMessage = useMessageHandler();
   const viewer = useContext(ViewerContext)!;
   const messageQueueRef = viewer.messageQueueRef;
+  const splatContext = React.useContext(GaussianSplatsContext)!;
 
   useFrame(
     () => {
@@ -567,6 +613,21 @@ export function FrameSynchronizedMessageHandler() {
             ),
         );
 
+        // Update splatting camera if needed.
+        // We'll back up the current sorted indices, and restore them after rendering.
+        const splatMeshProps = splatContext.meshPropsRef.current;
+        const sortedIndicesOrig =
+          splatMeshProps !== null
+            ? splatMeshProps.sortedIndexAttribute.array.slice()
+            : null;
+        if (splatContext.updateCamera.current !== null)
+          splatContext.updateCamera.current!(
+            camera,
+            targetWidth,
+            targetHeight,
+            true,
+          );
+
         // Note: We don't need to add the camera to the scene for rendering
         // The renderer.render() function uses the camera directly
         // Create a new renderer
@@ -582,6 +643,12 @@ export function FrameSynchronizedMessageHandler() {
 
         // Render the scene.
         renderer.render(viewer.sceneRef.current!, camera);
+
+        // Restore splatting indices.
+        if (sortedIndicesOrig !== null && splatMeshProps !== null) {
+          splatMeshProps.sortedIndexAttribute.array = sortedIndicesOrig;
+          splatMeshProps.sortedIndexAttribute.needsUpdate = true;
+        }
 
         // Get the rendered image.
         viewer.getRenderRequestState.current = "in_progress";

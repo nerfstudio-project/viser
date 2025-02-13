@@ -33,10 +33,13 @@ from ._icons_enum import IconName
 from ._messages import (
     GuiBaseProps,
     GuiButtonGroupProps,
+    GuiButtonProps,
     GuiCheckboxProps,
     GuiCloseModalMessage,
     GuiDropdownProps,
     GuiFolderProps,
+    GuiHtmlProps,
+    GuiImageProps,
     GuiMarkdownProps,
     GuiMultiSliderProps,
     GuiNumberProps,
@@ -396,7 +399,7 @@ class GuiEvent(Generic[TGuiHandle]):
     """GUI element that was affected."""
 
 
-class GuiButtonHandle(_GuiInputHandle[bool]):
+class GuiButtonHandle(_GuiInputHandle[bool], GuiButtonProps):
     """Handle for a button input in our visualizer.
 
     .. attribute:: value
@@ -597,13 +600,13 @@ class GuiTabHandle:
 
     def __enter__(self) -> GuiTabHandle:
         self._container_id_restore = self._parent._impl.gui_api._get_container_uuid()
-        self._parent._impl.gui_api._set_container_uid(self._id)
+        self._parent._impl.gui_api._set_container_uuid(self._id)
         return self
 
     def __exit__(self, *args) -> None:
         del args
         assert self._container_id_restore is not None
-        self._parent._impl.gui_api._set_container_uid(self._container_id_restore)
+        self._parent._impl.gui_api._set_container_uuid(self._container_id_restore)
         self._container_id_restore = None
 
     def __post_init__(self) -> None:
@@ -661,13 +664,13 @@ class GuiFolderHandle(_GuiHandle, GuiFolderProps):
 
     def __enter__(self) -> GuiFolderHandle:
         self._container_id_restore = self._impl.gui_api._get_container_uuid()
-        self._impl.gui_api._set_container_uid(self._impl.uuid)
+        self._impl.gui_api._set_container_uuid(self._impl.uuid)
         return self
 
     def __exit__(self, *args) -> None:
         del args
         assert self._container_id_restore is not None
-        self._impl.gui_api._set_container_uid(self._container_id_restore)
+        self._impl.gui_api._set_container_uuid(self._container_id_restore)
         self._container_id_restore = None
 
     def remove(self) -> None:
@@ -702,34 +705,36 @@ class GuiModalHandle:
     """Use as a context to place GUI elements into a modal."""
 
     _gui_api: GuiApi
-    _uid: str  # Used as container ID of children.
-    _container_uid_restore: str | None = None
+    _uuid: str  # Used as container ID of children.
+    _container_uuid_restore: str | None = None
     _children: dict[str, SupportsRemoveProtocol] = dataclasses.field(
         default_factory=dict
     )
 
     def __enter__(self) -> GuiModalHandle:
-        self._container_uid_restore = self._gui_api._get_container_uuid()
-        self._gui_api._set_container_uid(self._uid)
+        self._container_uuid_restore = self._gui_api._get_container_uuid()
+        self._gui_api._set_container_uuid(self._uuid)
         return self
 
     def __exit__(self, *args) -> None:
         del args
-        assert self._container_uid_restore is not None
-        self._gui_api._set_container_uid(self._container_uid_restore)
-        self._container_uid_restore = None
+        assert self._container_uuid_restore is not None
+        self._gui_api._set_container_uuid(self._container_uuid_restore)
+        self._container_uuid_restore = None
 
     def __post_init__(self) -> None:
-        self._gui_api._container_handle_from_uuid[self._uid] = self
+        self._gui_api._container_handle_from_uuid[self._uuid] = self
+        self._gui_api._modal_handle_from_uuid[self._uuid] = self
 
     def close(self) -> None:
         """Close this modal and permananently remove all contained GUI elements."""
         self._gui_api._websock_interface.queue_message(
-            GuiCloseModalMessage(self._uid),
+            GuiCloseModalMessage(self._uuid),
         )
         for child in tuple(self._children.values()):
             child.remove()
-        self._gui_api._container_handle_from_uuid.pop(self._uid)
+        self._gui_api._container_handle_from_uuid.pop(self._uuid)
+        self._gui_api._modal_handle_from_uuid.pop(self._uuid)
 
 
 def _get_data_url(url: str, image_root: Path | None) -> str:
@@ -793,6 +798,10 @@ class GuiMarkdownHandle(_GuiHandle[None], GuiMarkdownProps):
         self._markdown = _parse_markdown(content, self._image_root)
 
 
+class GuiHtmlHandle(_GuiHandle[None], GuiHtmlProps):
+    """Handling for updating and removing HTML elements."""
+
+
 class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
     """Handle for updating and removing Plotly figures."""
 
@@ -813,3 +822,32 @@ class GuiPlotlyHandle(_GuiHandle[None], GuiPlotlyProps):
         json_str = figure.to_json()
         assert isinstance(json_str, str)
         self._plotly_json_str = json_str
+
+
+class GuiImageHandle(_GuiHandle[None], GuiImageProps):
+    """Handle for updating and removing images."""
+
+    def __init__(
+        self,
+        _impl: _GuiHandleState,
+        _image: np.ndarray,
+        _jpeg_quality: int | None,
+    ):
+        super().__init__(_impl=_impl)
+        self._image = _image
+        self._jpeg_quality = _jpeg_quality
+
+    @property
+    def image(self) -> np.ndarray:
+        """Current content of this image element. Synchronized automatically when assigned."""
+        assert self._image is not None
+        return self._image
+
+    @image.setter
+    def image(self, image: np.ndarray) -> None:
+        self._image = image
+        media_type, data = _encode_image_binary(
+            image, self.media_type, jpeg_quality=self._jpeg_quality
+        )
+        self._data = data
+        del media_type

@@ -3,7 +3,7 @@ import { Message } from "./WebsocketMessages";
 import { decompress } from "fflate";
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { ViewerContext } from "./App";
+import { ViewerContext } from "./ViewerContext";
 import {
   ActionIcon,
   NumberInput,
@@ -69,9 +69,9 @@ async function deserializeGzippedMsgpackFile<T>(
 }
 
 interface SerializedMessages {
-  loopStartIndex: number | null;
   durationSeconds: number;
-  messages: [number, Message][];
+  messages: [number, Message][]; // (time in seconds, message).
+  viserVersion: string;
 }
 
 export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
@@ -84,13 +84,46 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
   const [paused, setPaused] = useState(false);
   const [recording, setRecording] = useState<SerializedMessages | null>(null);
 
+  // Instead of removing all of the existing scene nodes, we're just going to hide them.
+  // This will prevent unnecessary remounting when messages are looped.
+  function resetScene() {
+    const attrs = viewer.nodeAttributesFromName.current;
+    Object.keys(attrs).forEach((key) => {
+      if (key === "") return;
+      const nodeMessage =
+        viewer.useSceneTree.getState().nodeFromName[key]?.message;
+      if (
+        nodeMessage !== undefined &&
+        (nodeMessage.type !== "FrameMessage" || nodeMessage.props.show_axes)
+      ) {
+        // ^ We don't hide intermediate frames. These can be created
+        // automatically by addSceneNodeMakerParents(), in which case there
+        // will be no message to un-hide them.
+        attrs[key]!.visibility = false;
+      }
+
+      // We'll also reset poses. This is to prevent edge cases when looping:
+      // - We first add /parent/child.
+      // - We then add /parent.
+      // - We then modify the pose of /parent.
+      attrs[key]!.wxyz = [1, 0, 0, 0];
+      attrs[key]!.position = [0, 0, 0];
+    });
+  }
+
   const [currentTime, setCurrentTime] = useState(0.0);
 
   const theme = useMantineTheme();
 
   useEffect(() => {
     deserializeGzippedMsgpackFile<SerializedMessages>(fileUrl, setStatus).then(
-      setRecording,
+      (data) => {
+        console.log(
+          "File loaded! Saved with Viser version:",
+          data.viserVersion,
+        );
+        setRecording(data);
+      },
     );
   }, []);
 
@@ -103,6 +136,10 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     // We have messages with times: [0.0, 0.01, 0.01, 0.02, 0.03]
     // We have our current time: 0.02
     // We want to get of a slice of all message _until_ the current time.
+    if (mutable.currentIndex == 0) {
+      // Reset the scene if sending the first message.
+      resetScene();
+    }
     for (
       ;
       mutable.currentIndex < recording.messages.length &&
@@ -113,12 +150,9 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
       messageQueueRef.current.push(message);
     }
 
-    if (
-      mutable.currentTime >= recording.durationSeconds &&
-      recording.loopStartIndex !== null
-    ) {
-      mutable.currentIndex = recording.loopStartIndex!;
-      mutable.currentTime = recording.messages[recording.loopStartIndex!][0];
+    if (mutable.currentTime >= recording.durationSeconds) {
+      mutable.currentIndex = 0;
+      mutable.currentTime = recording.messages[0][0];
     }
     setCurrentTime(mutable.currentTime);
   }, [recording]);
@@ -136,7 +170,7 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
         updatePlayback();
         if (
           playbackMutable.current.currentIndex === recording.messages.length &&
-          recording.loopStartIndex === null
+          recording.durationSeconds === 0.0
         ) {
           clearInterval(interval);
         }
@@ -169,7 +203,8 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
     (value: number) => {
       if (value < playbackMutable.current.currentTime) {
         // Going backwards is more expensive...
-        playbackMutable.current.currentIndex = recording!.loopStartIndex!;
+        resetScene();
+        playbackMutable.current.currentIndex = 0;
       }
       playbackMutable.current.currentTime = value;
       setCurrentTime(value);
@@ -219,19 +254,15 @@ export function PlaybackFromFile({ fileUrl }: { fileUrl: string }) {
           gap: "0.375em",
         }}
       >
-        <ActionIcon size="md" variant="subtle">
+        <ActionIcon
+          size="md"
+          variant="subtle"
+          onClick={() => setPaused(!paused)}
+        >
           {paused ? (
-            <IconPlayerPlayFilled
-              onClick={() => setPaused(false)}
-              height="1.125em"
-              width="1.125em"
-            />
+            <IconPlayerPlayFilled height="1.125em" width="1.125em" />
           ) : (
-            <IconPlayerPauseFilled
-              onClick={() => setPaused(true)}
-              height="1.125em"
-              width="1.125em"
-            />
+            <IconPlayerPauseFilled height="1.125em" width="1.125em" />
           )}
         </ActionIcon>
         <NumberInput

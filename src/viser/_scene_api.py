@@ -46,6 +46,7 @@ from ._scene_handles import (
     _TransformControlsState,
     colors_to_uint8,
 )
+from ._threadpool_exceptions import print_threadpool_errors
 
 if TYPE_CHECKING:
     import trimesh
@@ -77,16 +78,16 @@ def _encode_rgb(rgb: RgbTupleOrArray) -> tuple[int, int, int]:
 
 def _encode_image_binary(
     image: np.ndarray,
-    format: Literal["png", "jpeg"],
+    format: Literal["png", "jpeg", "image/png", "image/jpeg"],
     jpeg_quality: int | None = None,
 ) -> tuple[Literal["image/png", "image/jpeg"], bytes]:
     media_type: Literal["image/png", "image/jpeg"]
     image = colors_to_uint8(image)
     with io.BytesIO() as data_buffer:
-        if format == "png":
+        if format in ("png", "image/png"):
             media_type = "image/png"
             iio.imwrite(data_buffer, image, extension=".png")
-        elif format == "jpeg":
+        elif format in ("jpeg", "image/jpeg"):
             media_type = "image/jpeg"
             iio.imwrite(
                 data_buffer,
@@ -105,9 +106,9 @@ TVector = TypeVar("TVector", bound=tuple)
 
 def cast_vector(vector: TVector | np.ndarray, length: int) -> TVector:
     if not isinstance(vector, tuple):
-        assert cast(np.ndarray, vector).shape == (
-            length,
-        ), f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
+        assert cast(np.ndarray, vector).shape == (length,), (
+            f"Expected vector of shape {(length,)}, but got {vector.shape} instead"
+        )
     return cast(TVector, tuple(map(float, vector)))
 
 
@@ -180,6 +181,11 @@ class SceneApi:
         """Set the global up direction of the scene. By default we follow +Z-up
         (similar to Blender, 3DS Max, ROS, etc), the most common alternative is
         +Y (OpenGL, Maya, etc).
+
+        In practice, the impact of this can improve (1) the ergonomics of
+        camera controls, which will default to the same up direction as the
+        scene, and (2) lighting, because the default lights and environment map
+        are oriented to match the scene's up direction.
 
         Args:
             direction: New up direction. Can either be a string (one of +x, +y,
@@ -495,9 +501,19 @@ class SceneApi:
         background: bool = False,
         background_blurriness: float = 0.0,
         background_intensity: float = 1.0,
-        background_rotation: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        background_wxyz: tuple[float, float, float, float] | np.ndarray = (
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+        ),
         environment_intensity: float = 1.0,
-        environment_rotation: tuple[float, float, float] = (0.0, 0.0, 0.0),
+        environment_wxyz: tuple[float, float, float, float] | np.ndarray = (
+            1.0,
+            0.0,
+            0.0,
+            0.0,
+        ),
     ) -> None:
         """Set the environment map for the scene. This will set some lights and background.
 
@@ -506,9 +522,9 @@ class SceneApi:
             background: Show or hide the environment map in the background.
             background_blurriness: Blur factor of the environment map background (0-1).
             background_intensity: Intensity of the background.
-            background_rotation: Rotation of the background in radians.
+            background_wxyz: Orientation of the background.
             environment_intensity: Intensity of the environment lighting.
-            environment_rotation: Rotation of the environment lighting in radians.
+            environment_wxyz: Orientation of the environment lighting.
         """
         self._websock_interface.queue_message(
             _messages.EnvironmentMapMessage(
@@ -516,9 +532,9 @@ class SceneApi:
                 background=background,
                 background_blurriness=background_blurriness,
                 background_intensity=background_intensity,
-                background_rotation=background_rotation,
+                background_wxyz=cast_vector(background_wxyz, 4),
                 environment_intensity=environment_intensity,
-                environment_rotation=environment_rotation,
+                environment_wxyz=cast_vector(environment_wxyz, 4),
             )
         )
 
@@ -530,7 +546,7 @@ class SceneApi:
         see :meth:`SceneApi.set_environment_map()`.
 
         Args:
-            enabled: True if user wants default lighting. False is user does
+            enabled: True if user wants default lighting. False if user does
                 not want default lighting.
         """
         self._websock_interface.queue_message(_messages.EnableLightsMessage(enabled))
@@ -743,6 +759,7 @@ class SceneApi:
         fov: float,
         aspect: float,
         scale: float = 0.3,
+        line_width: float = 2.0,
         color: RgbTupleOrArray = (20, 20, 20),
         image: np.ndarray | None = None,
         format: Literal["png", "jpeg"] = "jpeg",
@@ -750,6 +767,7 @@ class SceneApi:
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
+        *_removed_kwargs,
     ) -> CameraFrustumHandle:
         """Add a camera frustum to the scene for visualization.
 
@@ -758,7 +776,7 @@ class SceneApi:
         and coverage of a camera in the 3D space.
 
         Like all cameras in the viser Python API, frustums follow the OpenCV [+Z forward,
-        +X right, +Y down] convention. fov is vertical in radians; aspect is width over height
+        +X right, +Y down] convention. fov is vertical in radians; aspect is width over height.
 
         Args:
             name: A scene tree name. Names in the format of /parent/child can be used to
@@ -766,6 +784,7 @@ class SceneApi:
             fov: Field of view of the camera (in radians).
             aspect: Aspect ratio of the camera (width over height).
             scale: Scale factor for the size of the frustum.
+            line_width: Width of the frustum lines, in screen space. Defaults to `2.0`.
             color: Color of the frustum as an RGB tuple.
             image: Optional image to be displayed on the frustum.
             format: Format of the provided image ('png' or 'jpeg').
@@ -777,6 +796,12 @@ class SceneApi:
         Returns:
             Handle for manipulating scene node.
         """
+
+        if "line_thickness" in _removed_kwargs:
+            warnings.warn(
+                "The 'line_thickness' argument has been removed. Please use 'line_width' instead. Note that the units have been changed from world space to screen space.",
+                DeprecationWarning,
+            )
 
         if image is not None:
             media_type, binary = _encode_image_binary(
@@ -792,12 +817,16 @@ class SceneApi:
                 fov=fov,
                 aspect=aspect,
                 scale=scale,
+                line_width=line_width,
                 color=_encode_rgb(color),
                 image_media_type=media_type,
-                image_binary=binary,
+                _image_data=binary,
             ),
         )
-        return CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
+        handle = CameraFrustumHandle._make(self, message, name, wxyz, position, visible)
+        handle._image = image
+        handle._jpeg_quality = jpeg_quality
+        return handle
 
     def add_frame(
         self,
@@ -806,6 +835,7 @@ class SceneApi:
         axes_length: float = 0.5,
         axes_radius: float = 0.025,
         origin_radius: float | None = None,
+        origin_color: RgbTupleOrArray = (236, 236, 0),
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -844,6 +874,7 @@ class SceneApi:
                 axes_length=axes_length,
                 axes_radius=axes_radius,
                 origin_radius=origin_radius,
+                origin_color=_encode_rgb(origin_color),
             ),
         )
         return FrameHandle._make(self, message, name, wxyz, position, visible)
@@ -1020,9 +1051,9 @@ class SceneApi:
             Handle for manipulating scene node.
         """
         colors_cast = colors_to_uint8(np.asarray(colors))
-        assert (
-            len(points.shape) == 2 and points.shape[-1] == 3
-        ), "Shape of points should be (N, 3)."
+        assert len(points.shape) == 2 and points.shape[-1] == 3, (
+            "Shape of points should be (N, 3)."
+        )
         assert colors_cast.shape in {
             points.shape,
             (3,),
@@ -1149,8 +1180,8 @@ class SceneApi:
                         name=name,
                         websock_interface=self._websock_interface,
                         bone_index=i,
-                        wxyz=bone_wxyzs[i],
-                        position=bone_positions[i],
+                        wxyz=bone_wxyzs[i].copy(),
+                        position=bone_positions[i].copy(),
                     )
                 )
                 for i in range(num_bones)
@@ -1412,7 +1443,7 @@ class SceneApi:
 
     def set_background_image(
         self,
-        image: np.ndarray,
+        image: np.ndarray | None,
         format: Literal["png", "jpeg"] = "jpeg",
         jpeg_quality: int | None = None,
         depth: np.ndarray | None = None,
@@ -1425,9 +1456,13 @@ class SceneApi:
             jpeg_quality: Quality of the jpeg image (if jpeg format is used).
             depth: Optional depth image to use to composite background with scene elements.
         """
-        media_type, rgb_bytes = _encode_image_binary(
-            image, format, jpeg_quality=jpeg_quality
-        )
+        if image is None:
+            media_type = "image/png"
+            rgb_bytes = None
+        else:
+            media_type, rgb_bytes = _encode_image_binary(
+                image, format, jpeg_quality=jpeg_quality
+            )
 
         # Encode depth if provided. We use a 3-channel PNG to represent a fixed point
         # depth at each pixel.
@@ -1451,8 +1486,8 @@ class SceneApi:
         self._websock_interface.queue_message(
             _messages.BackgroundImageMessage(
                 media_type=media_type,
-                rgb_bytes=rgb_bytes,
-                depth_bytes=depth_bytes,
+                rgb_data=rgb_bytes,
+                depth_data=depth_bytes,
             )
         )
 
@@ -1492,12 +1527,15 @@ class SceneApi:
             name=name,
             props=_messages.ImageProps(
                 media_type=media_type,
-                data=binary,
+                _data=binary,
                 render_width=render_width,
                 render_height=render_height,
             ),
         )
-        return ImageHandle._make(self, message, name, wxyz, position, visible)
+        handle = ImageHandle._make(self, message, name, wxyz, position, visible)
+        handle._image = image
+        handle._jpeg_quality = jpeg_quality
+        return handle
 
     def add_transform_controls(
         self,
@@ -1596,7 +1634,16 @@ class SceneApi:
 
     def reset(self) -> None:
         """Reset the scene."""
-        self._websock_interface.queue_message(_messages.ResetSceneMessage())
+
+        # Remove all scene nodes.
+        handles = list(self._handle_from_node_name.values())
+        for handle in handles:
+            if handle.name == "/WorldAxes":
+                continue
+            handle.remove()
+
+        # Clear the background image.
+        self.set_background_image(image=None)
 
     def _get_client_handle(self, client_id: ClientId) -> ClientHandle:
         """Private helper for getting a client handle from its ID."""
@@ -1636,7 +1683,9 @@ class SceneApi:
             if asyncio.iscoroutinefunction(cb):
                 await cb(handle)
             else:
-                self._thread_executor.submit(cb, handle)
+                self._thread_executor.submit(cb, handle).add_done_callback(
+                    print_threadpool_errors
+                )
         if handle._impl_aux.sync_cb is not None:
             handle._impl_aux.sync_cb(client_id, handle)
 
@@ -1661,7 +1710,9 @@ class SceneApi:
             if asyncio.iscoroutinefunction(cb):
                 await cb(event)
             else:
-                self._thread_executor.submit(cb, event)
+                self._thread_executor.submit(cb, event).add_done_callback(
+                    print_threadpool_errors
+                )
 
     async def _handle_scene_pointer_updates(
         self, client_id: ClientId, message: _messages.ScenePointerMessage
@@ -1681,7 +1732,9 @@ class SceneApi:
         if asyncio.iscoroutinefunction(self._scene_pointer_cb):
             await self._scene_pointer_cb(event)
         else:
-            self._thread_executor.submit(self._scene_pointer_cb, event)
+            self._thread_executor.submit(
+                self._scene_pointer_cb, event
+            ).add_done_callback(print_threadpool_errors)
 
     def on_pointer_event(
         self, event_type: Literal["click", "rect-select"]

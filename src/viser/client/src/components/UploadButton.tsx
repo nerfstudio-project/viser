@@ -4,7 +4,7 @@ import { Box, Progress } from "@mantine/core";
 
 import { Button } from "@mantine/core";
 import React, { useContext } from "react";
-import { ViewerContext, ViewerContextContents } from "../App";
+import { ViewerContext, ViewerContextContents } from "../ViewerContext";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { htmlIconWrapper } from "./ComponentStyles.css";
@@ -96,7 +96,7 @@ function useFileUpload({
     if (uploadState.uploadedBytes === 0) {
       // Show notification.
       notifications.show({
-        uuid: notificationId,
+        id: notificationId,
         title: "Uploading " + `${filename} (${totalBytesString})`,
         message: <Progress size="sm" value={0} />,
         autoClose: false,
@@ -108,7 +108,7 @@ function useFileUpload({
       const progressValue = uploadState.uploadedBytes / uploadState.totalBytes;
       const isDone = progressValue === 1.0;
       notifications.update({
-        uuid: notificationId,
+        id: notificationId,
         title: "Uploading " + `${filename} (${totalBytesString})`,
         message: !isDone ? (
           <Progress
@@ -147,7 +147,7 @@ function useFileUpload({
     });
 
     viewer.sendMessageRef.current({
-      type: "FileTransferStart",
+      type: "FileTransferStartUpload",
       source_component_uuid: componentUuid,
       transfer_uuid: transferUuid,
       filename: file.name,

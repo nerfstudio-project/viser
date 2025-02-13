@@ -167,7 +167,8 @@ class Message(abc.ABC):
         def _get_subclasses(typ: Type[T]) -> List[Type[T]]:
             out = []
             for sub in typ.__subclasses__():
-                out.append(sub)
+                if not sub.__name__.startswith("_"):
+                    out.append(sub)
                 out.extend(_get_subclasses(sub))
             return out
 

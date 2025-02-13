@@ -1,6 +1,6 @@
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import GeneratedGuiContainer from "./Generated";
-import { ViewerContext } from "../App";
+import { ViewerContext } from "../ViewerContext";
 
 import QRCode from "react-qr-code";
 import ServerControls from "./ServerControls";
@@ -42,6 +42,8 @@ import SidebarPanel from "./SidebarPanel";
 // Must match constant in Python.
 const ROOT_CONTAINER_ID = "root";
 
+const MemoizedGeneratedGuiContainer = React.memo(GeneratedGuiContainer);
+
 export default function ControlPanel(props: {
   control_layout: ThemeConfigurationMessage["control_layout"];
 }) {
@@ -81,7 +83,7 @@ export default function ControlPanel(props: {
     >
       <Tooltip
         zIndex={100}
-        label={showSettings ? "Return to GUI" : "Connection & diagnostics"}
+        label={showSettings ? "Return to GUI" : "Configuration & diagnostics"}
         withinPortal
       >
         {showSettings ? (
@@ -99,7 +101,7 @@ export default function ControlPanel(props: {
         <ServerControls />
       </Collapse>
       <Collapse in={showGenerated && !showSettings}>
-        <GeneratedGuiContainer containerUuid={ROOT_CONTAINER_ID} />
+        <MemoizedGeneratedGuiContainer containerUuid={ROOT_CONTAINER_ID} />
       </Collapse>
     </>
   );

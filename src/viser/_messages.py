@@ -74,6 +74,52 @@ class Message(infra.Message):
             cls._tags = cls._tags + (tag,)
 
 
+@dataclasses.dataclass
+class _CreateSceneNodeMessage(Message, tag="SceneNodeMessage"):
+    name: str
+
+    @override
+    def redundancy_key(self) -> str:
+        """All scene nodes will have the same redundancy key."""
+        return f"create-or-remove-scene-{self.name}"
+
+
+@dataclasses.dataclass
+class RemoveSceneNodeMessage(Message):
+    """Remove a particular node from the scene."""
+
+    name: str
+
+    @override
+    def redundancy_key(self) -> str:
+        # This is intentionally the same as the redundancy key for
+        # _CreateSceneNodeMessage: this way, when we remove a scene node the
+        # message for creating the scene node will automatically be culled.
+        return f"create-or-remove-scene-{self.name}"
+
+
+@dataclasses.dataclass
+class _CreateGuiComponentMessage(Message, tag="GuiComponentMessage"):
+    uuid: str
+
+    @override
+    def redundancy_key(self) -> str:
+        return f"create-or-remove-gui-{self.uuid}"
+
+
+@dataclasses.dataclass
+class GuiRemoveMessage(Message):
+    """Sent server->client to remove a GUI element."""
+
+    uuid: str
+
+    @override
+    def redundancy_key(self) -> str:
+        # Intentionally the same as the redundancy key for
+        # _CreateGuiComponentMessage.
+        return f"create-or-remove-gui-{self.uuid}"
+
+
 T = TypeVar("T", bound=Type[Message])
 
 
@@ -131,6 +177,8 @@ class ViewerCameraMessage(Message):
     wxyz: Tuple[float, float, float, float]
     position: Tuple[float, float, float]
     fov: float
+    near: float
+    far: float
     aspect: float
     look_at: Tuple[float, float, float]
     up_direction: Tuple[float, float, float]
@@ -169,12 +217,11 @@ class ScenePointerEnableMessage(Message):
 
 
 @dataclasses.dataclass
-class CameraFrustumMessage(Message, tag="SceneNodeMessage"):
+class CameraFrustumMessage(_CreateSceneNodeMessage):
     """Variant of CameraMessage used for visualizing camera frustums.
 
     OpenCV convention, +Z forward."""
 
-    name: str
     props: CameraFrustumProps
 
 
@@ -186,19 +233,20 @@ class CameraFrustumProps:
     """Aspect ratio of the camera (width over height). Synchronized automatically when assigned."""
     scale: float
     """Scale factor for the size of the frustum. Synchronized automatically when assigned."""
+    line_width: float
+    """Width of the frustum lines. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the frustum as RGB integers. Synchronized automatically when assigned."""
     image_media_type: Optional[Literal["image/jpeg", "image/png"]]
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
-    image_binary: Optional[bytes]
+    _image_data: Optional[bytes]
     """Optional image to be displayed on the frustum. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
-class GlbMessage(Message, tag="SceneNodeMessage"):
+class GlbMessage(_CreateSceneNodeMessage):
     """GlTF message."""
 
-    name: str
     props: GlbProps
 
 
@@ -211,10 +259,9 @@ class GlbProps:
 
 
 @dataclasses.dataclass
-class FrameMessage(Message, tag="SceneNodeMessage"):
+class FrameMessage(_CreateSceneNodeMessage):
     """Coordinate frame message."""
 
-    name: str
     props: FrameProps
 
 
@@ -228,16 +275,17 @@ class FrameProps:
     """Radius of each axis. Synchronized automatically when assigned."""
     origin_radius: float
     """Radius of the origin sphere. Synchronized automatically when assigned."""
+    origin_color: Tuple[int, int, int]
+    """Color of the origin sphere as RGB integers. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
-class BatchedAxesMessage(Message, tag="SceneNodeMessage"):
+class BatchedAxesMessage(_CreateSceneNodeMessage):
     """Batched axes message.
 
     Positions and orientations should follow a `T_parent_local` convention, which
     corresponds to the R matrix and t vector in `p_parent = [R | t] p_local`."""
 
-    name: str
     props: BatchedAxesProps
 
 
@@ -254,10 +302,9 @@ class BatchedAxesProps:
 
 
 @dataclasses.dataclass
-class GridMessage(Message, tag="SceneNodeMessage"):
+class GridMessage(_CreateSceneNodeMessage):
     """Grid message. Helpful for visualizing things like ground planes."""
 
-    name: str
     props: GridProps
 
 
@@ -288,10 +335,9 @@ class GridProps:
 
 
 @dataclasses.dataclass
-class LabelMessage(Message, tag="SceneNodeMessage"):
+class LabelMessage(_CreateSceneNodeMessage):
     """Add a 2D label to the scene."""
 
-    name: str
     props: LabelProps
 
 
@@ -302,10 +348,9 @@ class LabelProps:
 
 
 @dataclasses.dataclass
-class Gui3DMessage(Message, tag="SceneNodeMessage"):
+class Gui3DMessage(_CreateSceneNodeMessage):
     """Add a 3D gui element to the scene."""
 
-    name: str
     props: Gui3DProps
 
 
@@ -318,7 +363,7 @@ class Gui3DProps:
 
 
 @dataclasses.dataclass
-class PointCloudMessage(Message, tag="SceneNodeMessage"):
+class PointCloudMessage(_CreateSceneNodeMessage):
     """Point cloud message.
 
     Positions are internally canonicalized to float32, colors to uint8.
@@ -326,7 +371,6 @@ class PointCloudMessage(Message, tag="SceneNodeMessage"):
     Float color inputs should be in the range [0,1], int color inputs should be in the
     range [0,255]."""
 
-    name: str
     props: PointCloudProps
 
 
@@ -352,10 +396,9 @@ class PointCloudProps:
 
 
 @dataclasses.dataclass
-class DirectionalLightMessage(Message, tag="SceneNodeMessage"):
+class DirectionalLightMessage(_CreateSceneNodeMessage):
     """Directional light message."""
 
-    name: str
     props: DirectionalLightProps
 
 
@@ -368,10 +411,9 @@ class DirectionalLightProps:
     castShadow: bool
 
 @dataclasses.dataclass
-class AmbientLightMessage(Message, tag="SceneNodeMessage"):
+class AmbientLightMessage(_CreateSceneNodeMessage):
     """Ambient light message."""
 
-    name: str
     props: AmbientLightProps
 
 
@@ -384,10 +426,9 @@ class AmbientLightProps:
 
 
 @dataclasses.dataclass
-class HemisphereLightMessage(Message, tag="SceneNodeMessage"):
+class HemisphereLightMessage(_CreateSceneNodeMessage):
     """Hemisphere light message."""
 
-    name: str
     props: HemisphereLightProps
 
 
@@ -402,10 +443,9 @@ class HemisphereLightProps:
 
 
 @dataclasses.dataclass
-class PointLightMessage(Message, tag="SceneNodeMessage"):
+class PointLightMessage(_CreateSceneNodeMessage):
     """Point light message."""
 
-    name: str
     props: PointLightProps
 
 
@@ -423,10 +463,9 @@ class PointLightProps:
 
 
 @dataclasses.dataclass
-class RectAreaLightMessage(Message, tag="SceneNodeMessage"):
+class RectAreaLightMessage(_CreateSceneNodeMessage):
     """Rectangular Area light message."""
 
-    name: str
     props: RectAreaLightProps
 
 
@@ -443,10 +482,9 @@ class RectAreaLightProps:
 
 
 @dataclasses.dataclass
-class SpotLightMessage(Message, tag="SceneNodeMessage"):
+class SpotLightMessage(_CreateSceneNodeMessage):
     """Spot light message."""
 
-    name: str
     props: SpotLightProps
 
 
@@ -475,7 +513,7 @@ class SpotLightProps:
 class EnvironmentMapMessage(Message):
     """Environment Map message."""
 
-    hdri: Optional[
+    hdri: Union[
         Literal[
             "apartment",
             "city",
@@ -487,14 +525,15 @@ class EnvironmentMapMessage(Message):
             "studio",
             "sunset",
             "warehouse",
-        ]
+        ],
+        None,
     ]
     background: bool
     background_blurriness: float
     background_intensity: float
-    background_rotation: tuple[float, float, float]
+    background_wxyz: Tuple[float, float, float, float]
     environment_intensity: float
-    environment_rotation: tuple[float, float, float]
+    environment_wxyz: Tuple[float, float, float, float]
 
 
 @dataclasses.dataclass
@@ -505,12 +544,11 @@ class EnableLightsMessage(Message):
 
 
 @dataclasses.dataclass
-class MeshMessage(Message, tag="SceneNodeMessage"):
+class MeshMessage(_CreateSceneNodeMessage):
     """Mesh message.
 
     Vertices are internally canonicalized to float32, faces to uint32."""
 
-    name: str
     props: MeshProps
 
 
@@ -520,7 +558,7 @@ class MeshProps:
     """A numpy array of vertex positions. Should have shape (V, 3). Synchronized automatically when assigned."""
     faces: npt.NDArray[np.uint32]
     """A numpy array of faces, where each face is represented by indices of vertices. Should have shape (F, 3). Synchronized automatically when assigned."""
-    color: Optional[Tuple[int, int, int]]
+    color: Union[Tuple[int, int, int], None]
     """Color of the mesh as RGB integers. Synchronized automatically when assigned."""
     wireframe: bool
     """Boolean indicating if the mesh should be rendered as a wireframe. Synchronized automatically when assigned."""
@@ -541,10 +579,9 @@ class MeshProps:
 
 
 @dataclasses.dataclass
-class SkinnedMeshMessage(Message, tag="SceneNodeMessage"):
+class SkinnedMeshMessage(_CreateSceneNodeMessage):
     """Skinned mesh message."""
 
-    name: str
     props: SkinnedMeshProps
 
 
@@ -609,10 +646,9 @@ class SetBonePositionMessage(Message):
 
 
 @dataclasses.dataclass
-class TransformControlsMessage(Message, tag="SceneNodeMessage"):
+class TransformControlsMessage(_CreateSceneNodeMessage):
     """Message for transform gizmos."""
 
-    name: str
     props: TransformControlsProps
 
 
@@ -670,6 +706,20 @@ class SetCameraLookAtMessage(Message):
 
 
 @dataclasses.dataclass
+class SetCameraNearMessage(Message):
+    """Server -> client message to set the camera's near clipping plane."""
+
+    near: float
+
+
+@dataclasses.dataclass
+class SetCameraFarMessage(Message):
+    """Server -> client message to set the camera's far clipping plane."""
+
+    far: float
+
+
+@dataclasses.dataclass
 class SetCameraFovMessage(Message):
     """Server -> client message to set the camera's field of view."""
 
@@ -712,15 +762,14 @@ class BackgroundImageMessage(Message):
     """Message for rendering a background image."""
 
     media_type: Literal["image/jpeg", "image/png"]
-    rgb_bytes: bytes
-    depth_bytes: Optional[bytes]
+    rgb_data: Optional[bytes]
+    depth_data: Optional[bytes]
 
 
 @dataclasses.dataclass
-class ImageMessage(Message, tag="SceneNodeMessage"):
+class ImageMessage(_CreateSceneNodeMessage):
     """Message for rendering 2D images."""
 
-    name: str
     props: ImageProps
 
 
@@ -728,19 +777,12 @@ class ImageMessage(Message, tag="SceneNodeMessage"):
 class ImageProps:
     media_type: Literal["image/jpeg", "image/png"]
     """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
-    data: bytes
+    _data: bytes
     """Binary data of the image. Synchronized automatically when assigned."""
     render_width: float
     """Width at which the image should be rendered in the scene. Synchronized automatically when assigned."""
     render_height: float
     """Height at which the image should be rendered in the scene. Synchronized automatically when assigned."""
-
-
-@dataclasses.dataclass
-class RemoveSceneNodeMessage(Message):
-    """Remove a particular node from the scene."""
-
-    name: str
 
 
 @dataclasses.dataclass
@@ -769,11 +811,6 @@ class SceneNodeClickMessage(Message):
     ray_origin: Tuple[float, float, float]
     ray_direction: Tuple[float, float, float]
     screen_pos: Tuple[float, float]
-
-
-@dataclasses.dataclass
-class ResetSceneMessage(Message):
-    """Reset scene."""
 
 
 @dataclasses.dataclass
@@ -810,8 +847,7 @@ class GuiFolderProps:
 
 
 @dataclasses.dataclass
-class GuiFolderMessage(Message, tag="GuiComponentMessage"):
-    uuid: str
+class GuiFolderMessage(_CreateGuiComponentMessage):
     container_uuid: str
     props: GuiFolderProps
 
@@ -827,10 +863,25 @@ class GuiMarkdownProps:
 
 
 @dataclasses.dataclass
-class GuiMarkdownMessage(Message, tag="GuiComponentMessage"):
-    uuid: str
+class GuiMarkdownMessage(_CreateGuiComponentMessage):
     container_uuid: str
     props: GuiMarkdownProps
+
+
+@dataclasses.dataclass
+class GuiHtmlProps:
+    order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
+    content: str
+    """HTML content to be displayed. Synchronized automatically when assigned."""
+    visible: bool
+    """Visibility state of the markdown element. Synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class GuiHtmlMessage(_CreateGuiComponentMessage):
+    container_uuid: str
+    props: GuiHtmlProps
 
 
 @dataclasses.dataclass
@@ -846,9 +897,8 @@ class GuiProgressBarProps:
 
 
 @dataclasses.dataclass
-class GuiProgressBarMessage(Message, tag="GuiComponentMessage"):
+class GuiProgressBarMessage(_CreateGuiComponentMessage):
     value: float
-    uuid: str
     container_uuid: str
     props: GuiProgressBarProps
 
@@ -866,10 +916,29 @@ class GuiPlotlyProps:
 
 
 @dataclasses.dataclass
-class GuiPlotlyMessage(Message, tag="GuiComponentMessage"):
-    uuid: str
+class GuiPlotlyMessage(_CreateGuiComponentMessage):
     container_uuid: str
     props: GuiPlotlyProps
+
+
+@dataclasses.dataclass
+class GuiImageProps:
+    order: float
+    """Order value for arranging GUI elements. Synchronized automatically when assigned."""
+    label: Optional[str]
+    """Label text for the image. Synchronized automatically when assigned."""
+    _data: Optional[bytes]
+    """Binary data of the image. Synchronized automatically when assigned."""
+    media_type: Literal["image/jpeg", "image/png"]
+    """Format of the provided image ('image/jpeg' or 'image/png'). Synchronized automatically when assigned."""
+    visible: bool
+    """Visibility state of the image. Synchronized automatically when assigned."""
+
+
+@dataclasses.dataclass
+class GuiImageMessage(_CreateGuiComponentMessage):
+    container_uuid: str
+    props: GuiImageProps
 
 
 @dataclasses.dataclass
@@ -887,8 +956,7 @@ class GuiTabGroupProps:
 
 
 @dataclasses.dataclass
-class GuiTabGroupMessage(Message, tag="GuiComponentMessage"):
-    uuid: str
+class GuiTabGroupMessage(_CreateGuiComponentMessage):
     container_uuid: str
     props: GuiTabGroupProps
 
@@ -899,41 +967,47 @@ class GuiModalMessage(Message):
     uuid: str
     title: str
 
+    @override
+    def redundancy_key(self) -> str:
+        return f"modal-{self.uuid}"
+
 
 @dataclasses.dataclass
 class GuiCloseModalMessage(Message):
     uuid: str
 
+    @override
+    def redundancy_key(self) -> str:
+        return f"modal-{self.uuid}"
+
 
 @dataclasses.dataclass
 class GuiButtonProps(GuiBaseProps):
-    color: Optional[Color]
+    color: Color | None
     """Color of the button. Synchronized automatically when assigned."""
     _icon_html: Optional[str]
     """(Private) HTML string for the icon to be displayed on the button. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
-class GuiButtonMessage(Message, tag="GuiComponentMessage"):
+class GuiButtonMessage(_CreateGuiComponentMessage):
     value: bool
-    uuid: str
     container_uuid: str
     props: GuiButtonProps
 
 
 @dataclasses.dataclass
 class GuiUploadButtonProps(GuiBaseProps):
-    color: Optional[Color]
+    color: Color | None
     """Color of the upload button. Synchronized automatically when assigned."""
-    _icon_html: Optional[str]
+    _icon_html: str | None
     """(Private) HTML string for the icon to be displayed on the upload button. Synchronized automatically when assigned."""
     mime_type: str
     """MIME type of the files that can be uploaded. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
-class GuiUploadButtonMessage(Message, tag="GuiComponentMessage"):
-    uuid: str
+class GuiUploadButtonMessage(_CreateGuiComponentMessage):
     container_uuid: str
     props: GuiUploadButtonProps
 
@@ -948,14 +1022,13 @@ class GuiSliderProps(GuiBaseProps):
     """Step size for the slider. Synchronized automatically when assigned."""
     precision: int
     """Number of decimal places to display for the slider value. Synchronized automatically when assigned."""
-    _marks: Optional[Tuple[GuiSliderMark, ...]] = None
+    _marks: Optional[Tuple[GuiSliderMark, ...]]
     """(Private) Optional tuple of GuiSliderMark objects to display custom marks on the slider. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
-class GuiSliderMessage(Message, tag="GuiComponentMessage"):
+class GuiSliderMessage(_CreateGuiComponentMessage):
     value: float
-    uuid: str
     container_uuid: str
     props: GuiSliderProps
 
@@ -972,16 +1045,15 @@ class GuiMultiSliderProps(GuiBaseProps):
     """Minimum allowed range between slider handles. Synchronized automatically when assigned."""
     precision: int
     """Number of decimal places to display for the multi-slider values. Synchronized automatically when assigned."""
-    fixed_endpoints: bool = False
+    fixed_endpoints: bool
     """If True, the first and last handles cannot be moved. Synchronized automatically when assigned."""
-    _marks: Optional[Tuple[GuiSliderMark, ...]] = None
+    _marks: Tuple[GuiSliderMark, ...] | None
     """(Private) Optional tuple of GuiSliderMark objects to display custom marks on the multi-slider. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
-class GuiMultiSliderMessage(Message, tag="GuiComponentMessage"):
-    value: tuple[float, ...]
-    uuid: str
+class GuiMultiSliderMessage(_CreateGuiComponentMessage):
+    value: Tuple[float, ...]
     container_uuid: str
     props: GuiMultiSliderProps
 
@@ -999,9 +1071,8 @@ class GuiNumberProps(GuiBaseProps):
 
 
 @dataclasses.dataclass
-class GuiNumberMessage(Message, tag="GuiComponentMessage"):
+class GuiNumberMessage(_CreateGuiComponentMessage):
     value: float
-    uuid: str
     container_uuid: str
     props: GuiNumberProps
 
@@ -1012,9 +1083,8 @@ class GuiRgbProps(GuiBaseProps):
 
 
 @dataclasses.dataclass
-class GuiRgbMessage(Message, tag="GuiComponentMessage"):
+class GuiRgbMessage(_CreateGuiComponentMessage):
     value: Tuple[int, int, int]
-    uuid: str
     container_uuid: str
     props: GuiRgbProps
 
@@ -1025,9 +1095,8 @@ class GuiRgbaProps(GuiBaseProps):
 
 
 @dataclasses.dataclass
-class GuiRgbaMessage(Message, tag="GuiComponentMessage"):
+class GuiRgbaMessage(_CreateGuiComponentMessage):
     value: Tuple[int, int, int, int]
-    uuid: str
     container_uuid: str
     props: GuiRgbaProps
 
@@ -1038,9 +1107,8 @@ class GuiCheckboxProps(GuiBaseProps):
 
 
 @dataclasses.dataclass
-class GuiCheckboxMessage(Message, tag="GuiComponentMessage"):
+class GuiCheckboxMessage(_CreateGuiComponentMessage):
     value: bool
-    uuid: str
     container_uuid: str
     props: GuiCheckboxProps
 
@@ -1058,9 +1126,8 @@ class GuiVector2Props(GuiBaseProps):
 
 
 @dataclasses.dataclass
-class GuiVector2Message(Message, tag="GuiComponentMessage"):
+class GuiVector2Message(_CreateGuiComponentMessage):
     value: Tuple[float, float]
-    uuid: str
     container_uuid: str
     props: GuiVector2Props
 
@@ -1078,9 +1145,8 @@ class GuiVector3Props(GuiBaseProps):
 
 
 @dataclasses.dataclass
-class GuiVector3Message(Message, tag="GuiComponentMessage"):
+class GuiVector3Message(_CreateGuiComponentMessage):
     value: Tuple[float, float, float]
-    uuid: str
     container_uuid: str
     props: GuiVector3Props
 
@@ -1091,9 +1157,8 @@ class GuiTextProps(GuiBaseProps):
 
 
 @dataclasses.dataclass
-class GuiTextMessage(Message, tag="GuiComponentMessage"):
+class GuiTextMessage(_CreateGuiComponentMessage):
     value: str
-    uuid: str
     container_uuid: str
     props: GuiTextProps
 
@@ -1106,9 +1171,8 @@ class GuiDropdownProps(GuiBaseProps):
 
 
 @dataclasses.dataclass
-class GuiDropdownMessage(Message, tag="GuiComponentMessage"):
+class GuiDropdownMessage(_CreateGuiComponentMessage):
     value: str
-    uuid: str
     container_uuid: str
     props: GuiDropdownProps
 
@@ -1120,18 +1184,10 @@ class GuiButtonGroupProps(GuiBaseProps):
 
 
 @dataclasses.dataclass
-class GuiButtonGroupMessage(Message, tag="GuiComponentMessage"):
+class GuiButtonGroupMessage(_CreateGuiComponentMessage):
     value: str
-    uuid: str
     container_uuid: str
     props: GuiButtonGroupProps
-
-
-@dataclasses.dataclass
-class GuiRemoveMessage(Message):
-    """Sent server->client to remove a GUI element."""
-
-    uuid: str
 
 
 @dataclasses.dataclass
@@ -1186,10 +1242,9 @@ class ThemeConfigurationMessage(Message):
 
 
 @dataclasses.dataclass
-class LineSegmentsMessage(Message, tag="SceneNodeMessage"):
+class LineSegmentsMessage(_CreateSceneNodeMessage):
     """Message from server->client carrying line segments information."""
 
-    name: str
     props: LineSegmentsProps
 
 
@@ -1206,10 +1261,9 @@ class LineSegmentsProps:
 
 
 @dataclasses.dataclass
-class CatmullRomSplineMessage(Message, tag="SceneNodeMessage"):
+class CatmullRomSplineMessage(_CreateSceneNodeMessage):
     """Message from server->client carrying Catmull-Rom spline information."""
 
-    name: str
     props: CatmullRomSplineProps
 
 
@@ -1233,10 +1287,9 @@ class CatmullRomSplineProps:
 
 
 @dataclasses.dataclass
-class CubicBezierSplineMessage(Message, tag="SceneNodeMessage"):
+class CubicBezierSplineMessage(_CreateSceneNodeMessage):
     """Message from server->client carrying Cubic Bezier spline information."""
 
-    name: str
     props: CubicBezierSplineProps
 
 
@@ -1250,15 +1303,14 @@ class CubicBezierSplineProps:
     """Width of the spline line. Synchronized automatically when assigned."""
     color: Tuple[int, int, int]
     """Color of the spline as RGB integers. Synchronized automatically when assigned."""
-    segments: Optional[int]
+    segments: int | None
     """Number of segments to divide the spline into. Synchronized automatically when assigned."""
 
 
 @dataclasses.dataclass
-class GaussianSplatsMessage(Message, tag="SceneNodeMessage"):
+class GaussianSplatsMessage(_CreateSceneNodeMessage):
     """Message from server->client carrying splattable Gaussians."""
 
-    name: str
     props: GaussianSplatsProps
 
 
@@ -1303,11 +1355,32 @@ class GetRenderResponseMessage(Message):
 
 
 @dataclasses.dataclass
-class FileTransferStart(Message):
-    """Signal that a file is about to be sent."""
+class FileTransferStartUpload(Message):
+    """Signal that a file is about to be sent.
 
-    source_component_uuid: Optional[str]
-    """Origin GUI component, used for client->server file uploads."""
+    This message is used to upload files from clients to the server.
+    """
+
+    source_component_uuid: str
+    transfer_uuid: str
+    filename: str
+    mime_type: str
+    part_count: int
+    size_bytes: int
+
+    @override
+    def redundancy_key(self) -> str:
+        return type(self).__name__ + "-" + self.transfer_uuid
+
+
+@dataclasses.dataclass
+class FileTransferStartDownload(Message):
+    """Signal that a file is about to be sent.
+
+    This message is used to send files to clients from the server.
+    """
+
+    save_immediately: bool
     transfer_uuid: str
     filename: str
     mime_type: str
@@ -1323,7 +1396,6 @@ class FileTransferStart(Message):
 class FileTransferPart(Message):
     """Send a file for clients to download or upload files from client."""
 
-    # TODO: it would make sense to rename all "id" instances to "uuid" for GUI component ids.
     source_component_uuid: Optional[str]
     transfer_uuid: str
     part: int

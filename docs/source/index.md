@@ -1,6 +1,6 @@
 # viser
 
-|mypy| |nbsp| |pyright| |nbsp| |typescript| |nbsp| |versions|
+|pyright| |nbsp| |typescript| |nbsp| |versions|
 
 **viser** is a library for interactive 3D visualization in Python.
 
@@ -39,6 +39,7 @@ URL (default: `http://localhost:8080`).
 
    ./conventions.md
    ./development.md
+   ./embedded_visualizations.rst
 
 .. toctree::
    :caption: API (Basics)
@@ -49,6 +50,7 @@ URL (default: `http://localhost:8080`).
    ./server.md
    ./scene_api.md
    ./gui_api.md
+   ./state_serializer.md
 
 
 .. toctree::
@@ -85,16 +87,10 @@ URL (default: `http://localhost:8080`).
    examples/*
 
 
-.. |build| image:: https://github.com/nerfstudio-project/viser/workflows/build/badge.svg
-   :alt: Build status icon
+.. |pyright| image:: https://github.com/nerfstudio-project/viser/actions/workflows/pyright.yml/badge.svg
+   :alt: Pyright status icon
    :target: https://github.com/nerfstudio-project/viser
-.. |mypy| image:: https://github.com/nerfstudio-project/viser/workflows/mypy/badge.svg?branch=main
-   :alt: Mypy status icon
-   :target: https://github.com/nerfstudio-project/viser
-.. |pyright| image:: https://github.com/nerfstudio-project/viser/workflows/pyright/badge.svg?branch=main
-   :alt: Mypy status icon
-   :target: https://github.com/nerfstudio-project/viser
-.. |typescript| image:: https://github.com/nerfstudio-project/viser/workflows/typescript-compile/badge.svg
+.. |typescript| image:: https://github.com/nerfstudio-project/viser/actions/workflows/typescript-compile.yml/badge.svg
    :alt: TypeScript status icon
    :target: https://github.com/nerfstudio-project/viser
 .. |versions| image:: https://img.shields.io/pypi/pyversions/viser

@@ -71,7 +71,17 @@ class _OverridableScenePropApi:
             elif current_value == value:
                 return
 
-            setattr(handle._impl.props, name, value)
+            # Update the value.
+            if isinstance(value, np.ndarray):
+                assert value.dtype == current_value.dtype
+                if value.shape == current_value.shape:
+                    current_value[:] = value
+                else:
+                    setattr(handle._impl.props, name, value.copy())
+            else:
+                # Non-array properties should be immutable, so no need to copy.
+                setattr(handle._impl.props, name, value)
+
             handle._impl.api._websock_interface.queue_message(
                 _messages.SceneNodeUpdateMessage(handle.name, {name: value})
             )
@@ -171,7 +181,7 @@ class SceneNodeHandle:
         assert isinstance(message, _messages.Message)
         api._websock_interface.queue_message(message)
 
-        out = cls(_SceneNodeHandleState(name, copy.copy(message.props), api))
+        out = cls(_SceneNodeHandleState(name, copy.deepcopy(message.props), api))
         api._handle_from_node_name[name] = out
 
         out.wxyz = wxyz
@@ -198,7 +208,7 @@ class SceneNodeHandle:
         wxyz_array = np.asarray(wxyz)
         if np.allclose(wxyz_cast, self._impl.wxyz):
             return
-        self._impl.wxyz = wxyz_array
+        self._impl.wxyz[:] = wxyz_array
         self._impl.api._websock_interface.queue_message(
             _messages.SetOrientationMessage(self._impl.name, wxyz_cast)
         )
@@ -218,7 +228,7 @@ class SceneNodeHandle:
         position_array = np.asarray(position)
         if np.allclose(position_array, self._impl.position):
             return
-        self._impl.position = position_array
+        self._impl.position[:] = position_array
         self._impl.api._websock_interface.queue_message(
             _messages.SetPositionMessage(self._impl.name, position_cast)
         )
@@ -319,6 +329,23 @@ class _ClickableSceneNodeHandle(SceneNodeHandle):
             self._impl.click_cb.clear()
         else:
             self._impl.click_cb = [cb for cb in self._impl.click_cb if cb != callback]
+        if len(self._impl.click_cb) == 0:
+            self._impl.api._websock_interface.queue_message(
+                _messages.SetSceneNodeClickableMessage(self._impl.name, False)
+            )
+
+    def remove(self) -> None:
+        """Remove the node from the scene."""
+        if len(self._impl.click_cb) > 0:
+            # SetSceneNodeClickableMessage can still remain in the message
+            # buffer, even if a scene node is removed. This could cause a new
+            # scene node to be mistakenly considered clickable if it is made
+            # with the same name. We ideally would fix this with better state
+            # management... in the meantime we can just set the flag to False.
+            self._impl.api._websock_interface.queue_message(
+                _messages.SetSceneNodeClickableMessage(self._impl.name, False)
+            )
+        super().remove()
 
 
 class CameraFrustumHandle(
@@ -327,6 +354,62 @@ class CameraFrustumHandle(
     _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for camera frustums."""
+
+    _image: np.ndarray | None
+    _jpeg_quality: int | None
+
+    @property
+    def image(self) -> np.ndarray | None:
+        """Current content of the image. Synchronized automatically when assigned."""
+        return self._image
+
+    @image.setter
+    def image(self, image: np.ndarray | None) -> None:
+        from ._scene_api import _encode_image_binary
+
+        if image is None:
+            self._image_data = None
+            return
+
+        if self.image_media_type is None:
+            self.image_media_type = "image/png"
+
+        self._image = image
+        media_type, data = _encode_image_binary(
+            image, self.image_media_type, jpeg_quality=self._jpeg_quality
+        )
+        self._image_data = data
+        del media_type
+
+    def compute_canonical_frustum_size(self) -> tuple[float, float, float]:
+        """Compute the X, Y, and Z dimensions of the frustum if it had
+        `.scale=1.0`. These dimensions will change whenever `.fov` or `.aspect`
+        are changed.
+
+        To set the distance between a frustum's origin and image plane to 1, we
+        can run:
+
+        .. code-block:: python
+
+            frustum.scale = 1.0 / frustum.compute_canonical_frustum_size()[2]
+
+
+        `.scale` is a unitless value that scales the X/Y/Z dimensions linearly.
+        It aims to preserve the visual volume of the frustum regardless of the
+        aspect ratio or FOV. This method allows more precise computation and
+        control of the frustum's dimensions.
+        """
+        # Math used in the client implementation.
+        y = np.tan(self.fov / 2.0)
+        x = y * self.aspect
+        z = 1.0
+        volume_scale = np.cbrt((x * y * z) / 3.0)
+
+        z /= volume_scale
+
+        # x and y need to be doubled, since on the client they correspond to
+        # NDC-style spans [-1, 1].
+        return x * 2.0, y * 2.0, z
 
 
 class DirectionalLightHandle(
@@ -464,7 +547,7 @@ class MeshSkinnedBoneHandle:
         wxyz_array = np.asarray(wxyz)
         if np.allclose(wxyz_cast, self._impl.wxyz):
             return
-        self._impl.wxyz = wxyz_array
+        self._impl.wxyz[:] = wxyz_array
         self._impl.websock_interface.queue_message(
             _messages.SetBoneOrientationMessage(
                 self._impl.name, self._impl.bone_index, wxyz_cast
@@ -486,7 +569,7 @@ class MeshSkinnedBoneHandle:
         position_array = np.asarray(position)
         if np.allclose(position_array, self._impl.position):
             return
-        self._impl.position = position_array
+        self._impl.position[:] = position_array
         self._impl.websock_interface.queue_message(
             _messages.SetBonePositionMessage(
                 self._impl.name, self._impl.bone_index, position_cast
@@ -540,6 +623,26 @@ class ImageHandle(
     _OverridableScenePropApi if not TYPE_CHECKING else object,
 ):
     """Handle for 2D images, rendered in 3D."""
+
+    _image: np.ndarray
+    _jpeg_quality: int | None
+
+    @property
+    def image(self) -> np.ndarray:
+        """Current content of the image. Synchronized automatically when assigned."""
+        assert self._image is not None
+        return self._image
+
+    @image.setter
+    def image(self, image: np.ndarray) -> None:
+        from ._scene_api import _encode_image_binary
+
+        self._image = image
+        media_type, data = _encode_image_binary(
+            image, self.media_type, jpeg_quality=self._jpeg_quality
+        )
+        self._data = data
+        del media_type
 
 
 class LabelHandle(
@@ -601,6 +704,11 @@ class TransformControlsHandle(
                 cb for cb in self._impl_aux.update_cb if cb != callback
             ]
 
+    def remove(self) -> None:
+        """Remove the node from the scene."""
+        self._impl.api._handle_from_transform_controls_name.pop(self.name)
+        super().remove()
+
 
 class Gui3dContainerHandle(
     SceneNodeHandle,
@@ -619,13 +727,13 @@ class Gui3dContainerHandle(
 
     def __enter__(self) -> Gui3dContainerHandle:
         self._container_id_restore = self._gui_api._get_container_uuid()
-        self._gui_api._set_container_uid(self._container_id)
+        self._gui_api._set_container_uuid(self._container_id)
         return self
 
     def __exit__(self, *args) -> None:
         del args
         assert self._container_id_restore is not None
-        self._gui_api._set_container_uid(self._container_id_restore)
+        self._gui_api._set_container_uuid(self._container_id_restore)
         self._container_id_restore = None
 
     def remove(self) -> None:

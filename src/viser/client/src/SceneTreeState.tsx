@@ -37,6 +37,7 @@ export const rootNodeTemplate: SceneNode = {
       axes_length: 0.5,
       axes_radius: 0.0125,
       origin_radius: 0.025,
+      origin_color: [236, 236, 0],
     },
   },
   children: ["/WorldAxes"],
@@ -51,6 +52,7 @@ const worldAxesNodeTemplate: SceneNode = {
       axes_length: 0.5,
       axes_radius: 0.0125,
       origin_radius: 0.025,
+      origin_color: [236, 236, 0],
     },
   },
   children: [],
@@ -79,9 +81,9 @@ export function useSceneTreeState(
           background: false,
           background_blurriness: 0,
           background_intensity: 1,
-          background_rotation: [0, 0, 0],
+          background_wxyz: [1, 0, 0, 0],
           environment_intensity: 1,
-          environment_rotation: [0, 0, 0],
+          environment_wxyz: [1, 0, 0, 0],
         },
         setClickable: (name, clickable) =>
           set((state) => {
@@ -135,6 +137,13 @@ export function useSceneTreeState(
           }),
         updateSceneNode: (name, updates) =>
           set((state) => {
+            if (state.nodeFromName[name] === undefined) {
+              console.error(
+                `Attempted to update non-existent node ${name} with updates:`,
+                updates,
+              );
+              return;
+            }
             state.nodeFromName[name]!.message.props = {
               ...state.nodeFromName[name]!.message.props,
               ...updates,
