@@ -408,7 +408,9 @@ class DirectionalLightProps:
     """Color of the directional light. Synchronized automatically when assigned."""
     intensity: float
     """Intensity of the directional light. Synchronized automatically when assigned."""
-    castShadow: bool
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
+
 
 @dataclasses.dataclass
 class AmbientLightMessage(_CreateSceneNodeMessage):
@@ -459,7 +461,9 @@ class PointLightProps:
     """Distance of the point light. Synchronized automatically when assigned."""
     decay: float
     """Decay of the point light. Synchronized automatically when assigned."""
-    castShadow: bool
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
+
 
 
 @dataclasses.dataclass
@@ -502,7 +506,9 @@ class SpotLightProps:
     """Penumbra of the spot light. Synchronized automatically when assigned."""
     decay: float
     """Decay of the spot light. Synchronized automatically when assigned."""
-    castShadow: bool
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
+
 
     def __post_init__(self):
         assert self.angle <= np.pi / 2
@@ -568,8 +574,10 @@ class MeshProps:
     """Whether to do flat shading. Synchronized automatically when assigned."""
     side: Literal["front", "back", "double"]
     """Side of the surface to render. Synchronized automatically when assigned."""
-    castShadow: bool
-    receiveShadow: bool
+    cast_shadow: bool
+    """If set to true mesh will cast a shadow. Synchronized automatically when assigned."""
+    receive_shadow: bool
+    """If set to true mesh will receive shadows. Synchronized automatically when assigned."""
     material: Literal["standard", "toon3", "toon5"]
     """Material type of the mesh. Synchronized automatically when assigned."""
     def __post_init__(self):

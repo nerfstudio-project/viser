@@ -267,7 +267,7 @@ class SceneApi:
         name: str,
         color: Tuple[int, int, int] = (255, 255, 255),
         intensity: float = 1.0,
-        castShadow: bool = False,
+        cast_shadow: bool = False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -280,6 +280,7 @@ class SceneApi:
                 define a kinematic tree.
             color: Color of the light.
             intensity: Light's strength/intensity.
+            cast_shadow: If set to true light will cast dynamic shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -289,7 +290,7 @@ class SceneApi:
         """
 
         message = _messages.DirectionalLightMessage(
-            name, _messages.DirectionalLightProps(color, intensity, castShadow)
+            name, _messages.DirectionalLightProps(color, intensity, cast_shadow)
         )
         return DirectionalLightHandle._make(
             self, message, name, wxyz, position, visible
@@ -364,7 +365,7 @@ class SceneApi:
         intensity: float = 1.0,
         distance: float = 0.0,
         decay: float = 2.0,
-        castShadow: bool = False,
+        cast_shadow: bool = False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -379,6 +380,7 @@ class SceneApi:
             intensity: Light's strength/intensity.
             distance: Maximum distance of light.
             decay: The amount the light dims along the distance of the light.
+            cast_shadow: If set to true light will cast dynamic shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -394,7 +396,7 @@ class SceneApi:
                 intensity=intensity,
                 distance=distance,
                 decay=decay,
-                castShadow=castShadow,
+                cast_shadow=cast_shadow,
             ),
         )
         return PointLightHandle._make(self, message, name, wxyz, position, visible)
@@ -448,7 +450,7 @@ class SceneApi:
         penumbra: float = 0.0,
         decay: float = 2.0,
         intensity: float = 1.0,
-        castShadow: bool = False,
+        cast_shadow: bool = False,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -467,6 +469,7 @@ class SceneApi:
                 Between 0 and 1.
             decay: The amount the light dims along the distance of the light.
             intensity: Light's strength/intensity.
+            cast_shadow: If set to true light will cast dynamic shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation to parent frame from local frame (t_pl).
             visible: Whether or not this scene node is initially visible.
@@ -478,7 +481,7 @@ class SceneApi:
         message = _messages.SpotLightMessage(
             name,
             _messages.SpotLightProps(
-                color, intensity, distance, angle, penumbra, decay, castShadow
+                color, intensity, distance, angle, penumbra, decay, cast_shadow
             ),
         )
         return SpotLightHandle._make(self, message, name, wxyz, position, visible)
@@ -1093,6 +1096,8 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
+        cast_shadow: bool = True,
+        receive_shadow: bool = True,
         wxyz: Tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: Tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1119,6 +1124,8 @@ class SceneApi:
             flat_shading: Whether to do flat shading. This argument is ignored
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
+            cast_shadow: If set to true mesh will cast a shadow
+            receive_shadow: If set to true mesh will receive shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
@@ -1164,6 +1171,8 @@ class SceneApi:
                 opacity=opacity,
                 flat_shading=flat_shading,
                 side=side,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
                 material=material,
                 bone_wxyzs=bone_wxyzs.astype(np.float32),
                 bone_positions=bone_positions.astype(np.float32),
@@ -1199,8 +1208,8 @@ class SceneApi:
         material: Literal["standard", "toon3", "toon5"] = "standard",
         flat_shading: bool = False,
         side: Literal["front", "back", "double"] = "front",
-        castShadow: bool=False,
-        receiveShadow: bool=False,
+        cast_shadow: bool=True,
+        receive_shadow: bool=True,
         wxyz: tuple[float, float, float, float] | np.ndarray = (1.0, 0.0, 0.0, 0.0),
         position: tuple[float, float, float] | np.ndarray = (0.0, 0.0, 0.0),
         visible: bool = True,
@@ -1221,6 +1230,8 @@ class SceneApi:
             flat_shading: Whether to do flat shading. This argument is ignored
                 when wireframe=True.
             side: Side of the surface to render ('front', 'back', 'double').
+            cast_shadow: If set to true mesh will cast a shadow
+            receive_shadow: If set to true mesh will receive shadows
             wxyz: Quaternion rotation to parent frame from local frame (R_pl).
             position: Translation from parent frame to local frame (t_pl).
             visible: Whether or not this mesh is initially visible.
@@ -1248,8 +1259,8 @@ class SceneApi:
                 opacity=opacity,
                 flat_shading=flat_shading,
                 side=side,
-                castShadow=castShadow,
-                receiveShadow=receiveShadow,
+                cast_shadow=cast_shadow,
+                receive_shadow=receive_shadow,
                 material=material,
             ),
         )

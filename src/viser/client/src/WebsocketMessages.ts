@@ -128,7 +128,7 @@ export interface DirectionalLightMessage {
   props: {
     color: [number, number, number];
     intensity: number;
-    castShadow: boolean;
+    cast_shadow: boolean;
   };
 }
 /** Ambient light message.
@@ -165,7 +165,7 @@ export interface PointLightMessage {
     intensity: number;
     distance: number;
     decay: number;
-    castShadow: boolean;
+    cast_shadow: boolean;
   };
 }
 /** Rectangular Area light message.
@@ -196,7 +196,7 @@ export interface SpotLightMessage {
     angle: number;
     penumbra: number;
     decay: number;
-    castShadow: boolean;
+    cast_shadow: boolean;
   };
 }
 /** Mesh message.
@@ -216,8 +216,8 @@ export interface MeshMessage {
     opacity: number | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
-    castShadow: boolean;
-    receiveShadow: boolean;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
     material: "standard" | "toon3" | "toon5";
   };
 }
@@ -236,8 +236,8 @@ export interface SkinnedMeshMessage {
     opacity: number | null;
     flat_shading: boolean;
     side: "front" | "back" | "double";
-    castShadow: boolean;
-    receiveShadow: boolean;
+    cast_shadow: boolean;
+    receive_shadow: boolean;
     material: "standard" | "toon3" | "toon5";
     bone_wxyzs: Uint8Array;
     bone_positions: Uint8Array;
