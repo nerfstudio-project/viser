@@ -418,6 +418,9 @@ function DefaultLights() {
   const enableDefaultLights = viewer.useSceneTree(
     (state) => state.enableDefaultLights,
   );
+  const castShadow = viewer.useSceneTree(
+    (state) => state.castShadow,
+  );
   const environmentMap = viewer.useSceneTree((state) => state.environmentMap);
 
   // Environment map frames:
@@ -494,6 +497,7 @@ function DefaultLights() {
       />
     );
   }
+  console.log("castshadows", castShadow)
   if (enableDefaultLights)
     return (
       <>
@@ -501,11 +505,13 @@ function DefaultLights() {
           color={0xffffff}
           intensity={2.0}
           position={[0, 1, 0]}
+          castShadow={castShadow}
         />
         <directionalLight
           color={0xffffff}
           intensity={0.4}
           position={[0, -1, 0]}
+          castShadow={castShadow}
         />
         {envMapNode}
       </>

@@ -541,7 +541,7 @@ class SceneApi:
             )
         )
 
-    def enable_default_lights(self, enabled: bool = True) -> None:
+    def enable_default_lights(self, enabled: bool = True, cast_shadow: bool = False) -> None:
         """Enable/disable the default lights in the scene. If not otherwise
         specified, default lighting will be enabled.
 
@@ -551,8 +551,9 @@ class SceneApi:
         Args:
             enabled: True if user wants default lighting. False if user does
                 not want default lighting.
+            cast_shadow:  If set to true light will cast dynamic shadows
         """
-        self._websock_interface.queue_message(_messages.EnableLightsMessage(enabled))
+        self._websock_interface.queue_message(_messages.EnableLightsMessage(enabled, cast_shadow))
 
     def add_glb(
         self,

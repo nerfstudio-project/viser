@@ -17,6 +17,13 @@ def main() -> None:
     faces = mesh.faces
     print(f"Loaded mesh with {vertices.shape} vertices, {faces.shape} faces")
     print(mesh)
+    mesh2 = trimesh.load_mesh(str(Path(__file__).parent / "assets/plane.obj"))
+    assert isinstance(mesh, trimesh.Trimesh)
+    # mesh2.apply_scale(0.05)
+    vertices2 = mesh2.vertices
+    faces2 = mesh2.faces
+    print(f"Loaded mesh with {vertices2.shape} vertices, {faces2.shape} faces")
+    print(mesh2)
     # Start Viser server with mesh.
     server = viser.ViserServer()
 
@@ -27,12 +34,19 @@ def main() -> None:
         wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
         position=(0.0, 0.0, 0.0),
     )
-    # server.scene.add_mesh_trimesh(
-    #     name="/trimesh",
-    #     mesh=mesh,
-    #     wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
-    #     position=(0.0, 5.0, 0.0),
-    # )
+    server.scene.add_mesh_trimesh(
+        name="/trimesh",
+        mesh=mesh,
+        wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
+        position=(0.0, 5.0, 0.0),
+    )
+    server.scene.add_mesh_simple(
+        name="/plane",
+        vertices=vertices2,
+        faces=faces2,
+        wxyz=tf.SO3.from_x_radians(np.pi / 2).wxyz,
+        position=(0.0, 0.0, -1.0),
+    )
 
     # adding controls to custom lights in the scene
     server.scene.add_transform_controls("/control0", position=(0.0, 10.0, 5.0))
@@ -53,8 +67,13 @@ def main() -> None:
 
     # Create default light toggle.
     gui_default_lights = server.gui.add_checkbox("Default lights", initial_value=True)
+    gui_default_shadows = server.gui.add_checkbox("Default shadows", initial_value=False)
+
     gui_default_lights.on_update(
-        lambda _: server.scene.enable_default_lights(gui_default_lights.value)
+        lambda _: server.scene.enable_default_lights(gui_default_lights.value, gui_default_shadows.value)
+    )
+    gui_default_shadows.on_update(
+        lambda _: server.scene.enable_default_lights(gui_default_lights.value, gui_default_shadows.value)
     )
 
     # Create light control inputs.

@@ -544,9 +544,10 @@ class EnvironmentMapMessage(Message):
 
 @dataclasses.dataclass
 class EnableLightsMessage(Message):
-    """Spot light message."""
+    """Default light message."""
 
     enabled: bool
+    cast_shadow: bool
 
 
 @dataclasses.dataclass
